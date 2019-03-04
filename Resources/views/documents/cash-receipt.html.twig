@@ -1,0 +1,92 @@
+{% extends '@ZakjakubOswisAccommodation/documents/pdf-document.html.twig' %}
+
+{% block css %}
+    {% include '@ZakjakubOswisAccommodation/documents/cash-receipt.css.twig' %}
+{% endblock %}
+
+{% block title %}{{ title }} {{ subTitle }}{% endblock %}
+
+{% block content %}
+
+    <div class="receipt">
+
+        <div class="title">
+            <h1>
+                {{ title }}
+                <small>{{ subTitle }}</small>
+            </h1>
+        </div>
+
+        <div class="contact-subjects">
+            <div class="contact-subject left">
+                <div class="header-with-logo">
+                    <div class="left">
+                        <h2>Organizace:</h2>
+                    </div>
+                    <div class="right">
+                        <div class="logo">
+                            <img src="{{ asset('images/logos/UP_logo_PrF_UP_horizont_cz.png') }}"
+                                 style="height: 3em;"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="pl-2em">
+                    <h3>{{ organization.name }}</h3>
+                    IČ: {{ organization.identificationNumber }}<br>
+                    {{ organization.fullAddress }}<br>
+                </div>
+            </div>
+            <div class="contact-subject right">
+                <div class="pl-2em">
+                    <h2>{{ (payment.numericValue < 0) ? 'Příjemce:' : 'Přijato od:' }}</h2>
+                    <h3>{{ customer.fullName }}</h3>
+                    {{ customer.fullAddress }}
+                </div>
+            </div>
+        </div>
+
+        <div class="prices">
+            <table>
+                <thead>
+                <tr style="font-weight: bold;">
+                    <th colspan="6" class="text-left">Položka</th>
+                    <th colspan="2">Cena bez DPH</th>
+                    <th colspan="2">DPH</th>
+                    <th colspan="2">Celkem</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="6" class="text-left">Poplatek za ubytování (záloha)</td>
+                    <td colspan="2">100,- Kč</td>
+                    <td colspan="2">21%</td>
+                    <td colspan="2">121,- Kč</td>
+                </tr>
+                </tbody>
+                <tbody>
+                <tr class="prices-total">
+                    <td colspan="6" class="text-left"><strong>Celkem</strong></td>
+                    <td colspan="2">100,- Kč</td>
+                    <td colspan="2">21%</td>
+                    <td colspan="2">121,- Kč</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div class="footer-item footer-author">
+                <strong>{{ (payment.numericValue < 0) ? 'Vydal: ' : 'Přijal: ' }}</strong>
+                {{ author.fullName }}
+            </div>
+            <div class="footer-item footer-date">
+                <strong>Datum: </strong> {{ payment.createdDateTime|date("j. n. Y, H:i") }}
+            </div>
+            <div class="footer-item footer-sign">
+                <strong>Razítko:<br>Podpis:</strong>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

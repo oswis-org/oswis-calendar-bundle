@@ -1,0 +1,6 @@
+services:
+
+    Zakjakub\OswisCalendarBundle\Controller\:
+        resource: '../../Controller/*'
+        tags: ['controller.service_arguments']
+        public: true
