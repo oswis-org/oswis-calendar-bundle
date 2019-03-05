@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -28,7 +29,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
  */
 class Event
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use DateRangeTrait;
@@ -59,7 +59,7 @@ class Event
     /**
      * @var Place|null $parentEvent
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisAddressbookBundle\Entity\Place",
+     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place",
      *     inversedBy="events",
      *     fetch="EAGER"
      * )
@@ -237,5 +237,4 @@ class Event
     {
         $this->maxCapacity = $maxCapacity;
     }
-
 }

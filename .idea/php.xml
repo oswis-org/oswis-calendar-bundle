@@ -103,6 +103,7 @@
       <path value="$PROJECT_DIR$/vendor/symfony/property-access" />
       <path value="$PROJECT_DIR$/vendor/symfony/http-foundation" />
       <path value="$PROJECT_DIR$/vendor/ocramius/proxy-manager" />
+      <path value="$PROJECT_DIR$/vendor/zakjakub/oswis-address-book-bundle" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

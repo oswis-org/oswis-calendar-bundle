@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "3af29f891f7a931b93fe7d2af6102cb0",
+  "content-hash": "81a90943be639746eedb88981e9c69f8",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -6005,6 +6005,67 @@
         "negotiation"
       ],
       "time": "2017-05-14T17:21:12+00:00"
+    },
+    {
+      "name": "zakjakub/oswis-address-book-bundle",
+      "version": "v0.0.53",
+      "source": {
+        "type": "git",
+        "url": "git@github.com:zakjakub/oswis-address-book-bundle.git",
+        "reference": "84aafcb5469e7873cff5fb41e08a35475ccbd1b9"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/84aafcb5469e7873cff5fb41e08a35475ccbd1b9",
+        "reference": "84aafcb5469e7873cff5fb41e08a35475ccbd1b9",
+        "shasum": ""
+      },
+      "require": {
+        "mpdf/mpdf": "^7.1",
+        "php": "^7.1.3",
+        "vich/uploader-bundle": "^1.8",
+        "zakjakub/oswis-core-bundle": "*"
+      },
+      "require-dev": {
+        "roave/security-advisories": "dev-master"
+      },
+      "type": "symfony-bundle",
+      "autoload": {
+        "psr-4": {
+          "Zakjakub\\OswisAddressBookBundle\\": ""
+        },
+        "classmap": [
+          ""
+        ]
+      },
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "zakjakub",
+          "email": "mail@jakubzak.eu",
+          "homepage": "https://jakubzak.cz",
+          "role": "author"
+        }
+      ],
+      "description": "Address book module for One Simple Web IS.",
+      "homepage": "https://github.com/zakjakub/oswis-address-book-bundle",
+      "keywords": [
+        "fair",
+        "information-system",
+        "is",
+        "job",
+        "job fair",
+        "oswis",
+        "php",
+        "zakjakub"
+      ],
+      "support": {
+        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.53",
+        "issues": "https://github.com/zakjakub/oswis-address-book-bundle/issues"
+      },
+      "time": "2019-03-05T15:00:38+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
