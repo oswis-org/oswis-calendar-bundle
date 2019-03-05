@@ -60,7 +60,6 @@ class Event
      * @var Place|null $parentEvent
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place",
-     *     inversedBy="events",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
