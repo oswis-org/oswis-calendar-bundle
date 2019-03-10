@@ -18,7 +18,36 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 /**
  * @Doctrine\ORM\Mapping\Entity
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
- * @ApiResource()
+ * @ApiResource(
+ *   iri="http://schema.org/Place",
+ *   attributes={
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"address_book_organizations_get"}},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"address_book_organizations_post"}}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"address_book_organization_get"}},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"address_book_organization_put"}}
+ *     },
+ *     "delete"={
+ *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "denormalization_context"={"groups"={"address_book_organization_delete"}}
+ *     }
+ *   }
+ * )
  * @ApiFilter(OrderFilter::class)
  * @Searchable({
  *     "id",
@@ -35,7 +64,7 @@ class Event
 
     /**
      * Parent event (if this is not top level event).
-     * @var Event|null $parentEvent
+     * @var Event|null $superEvent
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
      *     inversedBy="subEvents",
@@ -43,28 +72,28 @@ class Event
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $parentEvent;
+    protected $superEvent;
 
     /**
      * Sub events.
      * @var Collection|null $subEvents
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
-     *     mappedBy="parentEvent",
+     *     mappedBy="superEvent",
      *     fetch="EAGER"
      * )
      */
     protected $subEvents;
 
     /**
-     * @var Place|null $parentEvent
+     * @var Place|null $location
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $place;
+    protected $location;
 
     /**
      * @var bool
@@ -82,33 +111,87 @@ class Event
      * @var int
      * @ORM\Column(type="integer", nullable=true)
      */
-    protected $maxCapacity;
+    protected $maximumAttendeeCapacity;
+
+    /**
+     * People and organizations involved in event organization.
+     * @var Collection
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="EventOrganizer",
+     *     mappedBy="event"
+     * )
+     */
+    protected $eventOrganizers;
+
+    /**
+     * People and organizations who attend at the event.
+     * @var Collection
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventAttendee",
+     *     mappedBy="event"
+     * )
+     */
+    protected $eventAttendees;
+
+    /**
+     * Type of this event.
+     * @var EventType|null $eventType
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\ContactDetailType",
+     *     inversedBy="contacts",
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
+     */
+    private $eventType;
 
     /**
      * Event constructor.
      *
      * @param Nameable|null $nameable
-     * @param Event|null    $parentEvent
-     * @param Place|null    $place
+     * @param Event|null    $superEvent
+     * @param Place|null    $location
      * @param bool|null     $registrationRequired
      * @param bool|null     $registrationsAllowed
-     * @param int|null      $maxCapacity
+     * @param int|null      $maximumAttendeeCapacity
      */
     public function __construct(
         ?Nameable $nameable = null,
-        ?Event $parentEvent = null,
-        ?Place $place = null,
+        ?Event $superEvent = null,
+        ?Place $location = null,
         ?bool $registrationRequired = null,
         ?bool $registrationsAllowed = null,
-        ?int $maxCapacity = null
+        ?int $maximumAttendeeCapacity = null
     ) {
         $this->subEvents = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
-        $this->setParentEvent($parentEvent);
-        $this->setPlace($place);
+        $this->setSuperEvent($superEvent);
+        $this->setLocation($location);
         $this->setRegistrationRequired($registrationRequired);
         $this->setRegistrationsAllowed($registrationsAllowed);
-        $this->setMaxCapacity($maxCapacity);
+        $this->setMaximumAttendeeCapacity($maximumAttendeeCapacity);
+    }
+
+    /**
+     * @return EventType|null
+     */
+    final public function getEventType(): ?EventType
+    {
+        return $this->eventType;
+    }
+
+    /**
+     * @param EventType|null $eventType
+     */
+    final public function setEventType(?EventType $eventType): void
+    {
+        if ($this->eventType && $eventType !== $this->eventType) {
+            $this->eventType->removeEvent($this);
+        }
+        $this->eventType = $eventType;
+        if ($eventType && $this->eventType !== $eventType) {
+            $eventType->addEvent($this);
+        }
     }
 
     /**
@@ -156,7 +239,7 @@ class Event
      */
     final public function isRootEvent(): bool
     {
-        return $this->parentEvent ? false : true;
+        return $this->superEvent ? false : true;
     }
 
     /**
@@ -166,7 +249,7 @@ class Event
     {
         if ($event && !$this->subEvents->contains($event)) {
             $this->subEvents->add($event);
-            $event->setParentEvent($this);
+            $event->setSuperEvent($this);
         }
     }
 
@@ -179,61 +262,142 @@ class Event
             return;
         }
         if ($this->subEvents->removeElement($event)) {
-            $event->setParentEvent(null);
+            $event->setSuperEvent(null);
         }
     }
 
     /**
      * @return Event|null
      */
-    final public function getParentEvent(): ?Event
+    final public function getSuperEvent(): ?Event
     {
-        return $this->parentEvent;
+        return $this->superEvent;
     }
 
     /**
      * @param Event|null $event
      */
-    final public function setParentEvent(?Event $event): void
+    final public function setSuperEvent(?Event $event): void
     {
-        if ($this->parentEvent && $event !== $this->parentEvent) {
-            $this->parentEvent->removeSubEvent($this);
+        if ($this->superEvent && $event !== $this->superEvent) {
+            $this->superEvent->removeSubEvent($this);
         }
-        $this->parentEvent = $event;
-        if ($this->parentEvent) {
-            $this->parentEvent->addSubEvent($this);
+        $this->superEvent = $event;
+        if ($this->superEvent) {
+            $this->superEvent->addSubEvent($this);
         }
     }
 
     /**
      * @return Place|null
      */
-    final public function getPlace(): ?Place
+    final public function getLocation(): ?Place
     {
-        return $this->place;
+        return $this->location;
     }
 
     /**
      * @param Place|null $event
      */
-    final public function setPlace(?Place $event): void
+    final public function setLocation(?Place $event): void
     {
-        $this->place = $event;
+        $this->location = $event;
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventOrganizers(): ?Collection
+    {
+        return $this->eventOrganizers;
+    }
+
+    final public function addEventOrganizer(?EventOrganizer $eventOrganizer): void
+    {
+        if ($eventOrganizer && !$this->eventOrganizers->contains($eventOrganizer)) {
+            $this->eventOrganizers->add($eventOrganizer);
+            $eventOrganizer->setEvent($this);
+        }
+    }
+
+    final public function removeEventOrganizer(?EventOrganizer $eventOrganizer): void
+    {
+        if (!$eventOrganizer) {
+            return;
+        }
+        if ($this->eventOrganizers->removeElement($eventOrganizer)) {
+            $eventOrganizer->setEvent(null);
+        }
+    }
+
+    final public function addEventAttendee(?EventAttendee $eventAttendee): void
+    {
+        if ($eventAttendee && !$this->eventAttendees->contains($eventAttendee)) {
+            $this->eventAttendees->add($eventAttendee);
+            $eventAttendee->setEvent($this);
+        }
+    }
+
+    final public function removeEventAttendee(?EventAttendee $eventAttendee): void
+    {
+        if (!$eventAttendee) {
+            return;
+        }
+        if ($this->eventAttendees->removeElement($eventAttendee)) {
+            $eventAttendee->setEvent(null);
+        }
+    }
+
+    final public function getRemainingCapacityPercent(): ?int
+    {
+        if ($this->getOccupancy() && $this->getRemainingCapacity()) {
+            $remaining = $this->getRemainingCapacity() / $this->getOccupancy();
+
+            return $remaining > 0 && $remaining <= 1 ? $remaining : 0;
+        }
+
+        return null;
+    }
+
+    final public function getOccupancy(): int
+    {
+        return $this->getEventAttendees() ? $this->getEventAttendees()->count() : 0;
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventAttendees(): ?Collection
+    {
+        return $this->eventAttendees;
+    }
+
+    final public function getRemainingCapacity(): ?int
+    {
+        if ($this->getOccupancy() && $this->getMaximumAttendeeCapacity()) {
+            $remaining = $this->getMaximumAttendeeCapacity() - $this->getOccupancy();
+
+            return $remaining > 0 ? $remaining : 0;
+        }
+
+        return null;
     }
 
     /**
      * @return int|null
      */
-    final public function getMaxCapacity(): ?int
+    final public function getMaximumAttendeeCapacity(): ?int
     {
-        return $this->maxCapacity;
+        return $this->maximumAttendeeCapacity;
     }
 
     /**
-     * @param int|null $maxCapacity
+     * @param int|null $maximumAttendeeCapacity
      */
-    final public function setMaxCapacity(?int $maxCapacity): void
+    final public function setMaximumAttendeeCapacity(?int $maximumAttendeeCapacity): void
     {
-        $this->maxCapacity = $maxCapacity;
+        $this->maximumAttendeeCapacity = $maximumAttendeeCapacity;
     }
+
+
 }
