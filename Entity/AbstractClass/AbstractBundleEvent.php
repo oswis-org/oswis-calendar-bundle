@@ -6,14 +6,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
 abstract class AbstractBundleEvent
 {
-    /*
-    public const ALLOWED_TYPES = [
-        'year-of-event'        => ['name' => 'Ročník akce', 'color' => '#000000'],
-        'lecture'              => ['name' => 'Přednáška', 'color' => '#0000FF'],
-        'workshop'             => ['name' => 'Workshop', 'color' => '#00FF00'],
-        'moderated-discussion' => ['name' => 'Moderovaná diskuze', 'color' => '#FF0000'],
-    ];
-    */
 
     use BasicEntityTrait;
 

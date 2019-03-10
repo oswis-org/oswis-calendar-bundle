@@ -148,22 +148,25 @@ class Event
     /**
      * Event constructor.
      *
-     * @param Nameable|null $nameable
-     * @param Event|null    $superEvent
-     * @param Place|null    $location
-     * @param bool|null     $registrationRequired
-     * @param bool|null     $registrationsAllowed
-     * @param int|null      $maximumAttendeeCapacity
+     * @param Nameable|null  $nameable
+     * @param Event|null     $superEvent
+     * @param Place|null     $location
+     * @param EventType|null $type
+     * @param bool|null      $registrationRequired
+     * @param bool|null      $registrationsAllowed
+     * @param int|null       $maximumAttendeeCapacity
      */
     public function __construct(
         ?Nameable $nameable = null,
         ?Event $superEvent = null,
         ?Place $location = null,
+        ?EventType $type = null,
         ?bool $registrationRequired = null,
         ?bool $registrationsAllowed = null,
         ?int $maximumAttendeeCapacity = null
     ) {
         $this->subEvents = new ArrayCollection();
+        $this->setEventType($type);
         $this->setFieldsFromNameable($nameable);
         $this->setSuperEvent($superEvent);
         $this->setLocation($location);
