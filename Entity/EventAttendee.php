@@ -106,7 +106,6 @@ class EventAttendee
         $this->setEvent($event);
     }
 
-
     final public function getEventAttendeeFlagConnections(): Collection
     {
         return $this->eventAttendeeFlagConnections ?? new ArrayCollection();
