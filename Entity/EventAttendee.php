@@ -102,6 +102,7 @@ class EventAttendee
         ?AbstractContact $contact = null,
         ?Event $event = null
     ) {
+        $this->eventAttendeeFlagConnections = new ArrayCollection();
         $this->setContact($contact);
         $this->setEvent($event);
     }

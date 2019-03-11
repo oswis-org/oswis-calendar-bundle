@@ -166,6 +166,8 @@ class Event
         ?int $maximumAttendeeCapacity = null
     ) {
         $this->subEvents = new ArrayCollection();
+        $this->eventAttendees = new ArrayCollection();
+        $this->eventOrganizers = new ArrayCollection();
         $this->setEventType($type);
         $this->setFieldsFromNameable($nameable);
         $this->setSuperEvent($superEvent);
