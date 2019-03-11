@@ -63,6 +63,7 @@ class EventAttendeeFlag
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlagConnection",
      *     mappedBy="flag",
+     *     cascade={"all"},
      *     fetch="EAGER"
      * )
      */

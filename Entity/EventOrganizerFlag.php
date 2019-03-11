@@ -62,6 +62,7 @@ class EventOrganizerFlag
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventOrganizerFlagConnection",
+     *     cascade={"all"},
      *     mappedBy="flag",
      *     fetch="EAGER"
      * )
