@@ -99,8 +99,8 @@ class EventAttendee
      * @param Event|null           $event
      */
     public function __construct(
-        ?AbstractContact $contact,
-        ?Event $event
+        ?AbstractContact $contact = null,
+        ?Event $event = null
     ) {
         $this->setContact($contact);
         $this->setEvent($event);
