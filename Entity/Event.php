@@ -117,7 +117,7 @@ class Event
      * People and organizations involved in event organization.
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="EventOrganizer",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventOrganizer",
      *     mappedBy="event"
      * )
      */
