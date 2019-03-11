@@ -6,10 +6,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Zakjakub\OswisCalendarBundle\Entity\EventOrganizer;
 
-/**
- * Class JobFairEventRepository
- * @package Zakjakub\OswisJobFairBundle\Repository
- */
 class EventOrganizerRepository extends EntityRepository
 {
 
@@ -17,7 +13,7 @@ class EventOrganizerRepository extends EntityRepository
      * @param int    $contactId
      * @param string $eventSlug
      *
-     * @return JobFairEvent|null
+     * @return EventOrganizer|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     final public function findOneEventOrganizer(int $contactId, string $eventSlug): ?EventOrganizer
