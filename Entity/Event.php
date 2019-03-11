@@ -118,6 +118,7 @@ class Event
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventOrganizer",
+     *     cascade={"all"},
      *     mappedBy="event"
      * )
      */
@@ -128,6 +129,7 @@ class Event
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventAttendee",
+     *     cascade={"all"},
      *     mappedBy="event"
      * )
      */
