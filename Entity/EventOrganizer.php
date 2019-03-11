@@ -13,7 +13,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
 /**
  * Event organizer (somebody who is involved in event organization).
- * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventOrganizerRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_organizer")
  * @ApiResource(
  *   attributes={
