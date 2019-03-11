@@ -137,8 +137,8 @@ class Event
      * Type of this event.
      * @var EventType|null $eventType
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\ContactDetailType",
-     *     inversedBy="contacts",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventType",
+     *     inversedBy="events",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
