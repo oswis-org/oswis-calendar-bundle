@@ -9,7 +9,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
+use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -360,6 +362,21 @@ class Event
         foreach ($this->getEventAttendees() as $eventAttendee) {
             \assert($eventAttendee instanceof EventAttendee);
             if ($eventAttendee->getContact() && $contact->getId() === $eventAttendee->getContact()->getId()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    final public function containsEventAttendeeAppUser(AppUser $appUser): bool {
+        foreach ($this->getEventAttendees() as $eventAttendee) {
+            \assert($eventAttendee instanceof EventAttendee);
+            $person = $eventAttendee->getContact();
+            if (!$person)  {
+                continue;
+            }
+            \assert($person instanceof Person);
+            if ($person && $person->getAppUser() && $appUser->getId() === $person->getAppUser()->getId()) {
                 return true;
             }
         }
