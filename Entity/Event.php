@@ -363,7 +363,7 @@ class Event
             return $remaining > 0 && $remaining <= 1 ? $remaining : 0;
         }
 
-        return null;
+        return -1;
     }
 
     final public function getOccupancy(): int
@@ -387,7 +387,7 @@ class Event
             return $remaining > 0 ? $remaining : 0;
         }
 
-        return null;
+        return -1;
     }
 
     /**
@@ -395,7 +395,7 @@ class Event
      */
     final public function getMaximumAttendeeCapacity(): ?int
     {
-        return $this->maximumAttendeeCapacity >= 0 ? $this->maximumAttendeeCapacity : null;
+        return $this->maximumAttendeeCapacity >= 0 ? $this->maximumAttendeeCapacity : -1;
     }
 
     /**
@@ -403,7 +403,7 @@ class Event
      */
     final public function setMaximumAttendeeCapacity(?int $maximumAttendeeCapacity): void
     {
-        $this->maximumAttendeeCapacity = $maximumAttendeeCapacity;
+        $this->maximumAttendeeCapacity = $maximumAttendeeCapacity ?? -1;
     }
 
 
