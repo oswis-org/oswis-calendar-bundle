@@ -357,8 +357,8 @@ class Event
 
     final public function getRemainingCapacityPercent(): ?int
     {
-        if ($this->getOccupancy() && $this->getRemainingCapacity()) {
-            $remaining = $this->getRemainingCapacity() / $this->getOccupancy();
+        if ($this->getMaximumAttendeeCapacity() >= 0 && $this->getRemainingCapacity() >= 0) {
+            $remaining = $this->getRemainingCapacity() / $this->getMaximumAttendeeCapacity();
 
             return $remaining > 0 && $remaining <= 1 ? $remaining : 0;
         }
@@ -381,7 +381,7 @@ class Event
 
     final public function getRemainingCapacity(): ?int
     {
-        if ($this->getOccupancy() && $this->getMaximumAttendeeCapacity()) {
+        if ($this->getOccupancy() >= 0 && $this->getMaximumAttendeeCapacity() >= 0) {
             $remaining = $this->getMaximumAttendeeCapacity() - $this->getOccupancy();
 
             return $remaining > 0 ? $remaining : 0;
@@ -395,7 +395,7 @@ class Event
      */
     final public function getMaximumAttendeeCapacity(): ?int
     {
-        return $this->maximumAttendeeCapacity;
+        return $this->maximumAttendeeCapacity >= 0 ? $this->maximumAttendeeCapacity : null;
     }
 
     /**
