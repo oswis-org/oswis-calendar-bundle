@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
@@ -353,6 +354,16 @@ class Event
         if ($this->eventAttendees->removeElement($eventAttendee)) {
             $eventAttendee->setEvent(null);
         }
+    }
+
+    final public function containsEventAttendeeContact(AbstractContact $contact): bool {
+        foreach ($this->getEventAttendees() as $eventAttendee) {
+            \assert($eventAttendee instanceof EventAttendee);
+            if ($eventAttendee->getContact() && $contact->getId() === $eventAttendee->getContact()->getId()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     final public function getRemainingCapacityPercent(): ?int
