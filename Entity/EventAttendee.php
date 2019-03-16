@@ -59,6 +59,12 @@ class EventAttendee
     use BasicEntityTrait;
 
     /**
+     * Dummy property for use in forms.
+     * @var bool
+     */
+    public $selected;
+
+    /**
      * Person or organization.
      * @var AbstractContact|null
      * @Doctrine\ORM\Mapping\ManyToOne(
