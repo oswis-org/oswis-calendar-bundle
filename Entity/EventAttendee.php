@@ -59,10 +59,18 @@ class EventAttendee
     use BasicEntityTrait;
 
     /**
-     * Dummy property for use in forms.
+     * Dummy property for use in forms (if this eventAttendee is selected).
      * @var bool
      */
     public $selected;
+
+    /**
+     * Dummy property for use in forms (events of EventsAttendee).
+     * @var bool
+     */
+    public $events;
+
+
 
     /**
      * Person or organization.
