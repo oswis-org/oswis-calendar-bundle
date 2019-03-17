@@ -88,8 +88,8 @@ class EventOrganizerFlagConnection
         ?EventOrganizerFlag $flag = null,
         ?EventOrganizer $employer = null
     ) {
-        $this->flag = $flag;
-        $this->eventOrganizer = $employer;
+        $this->setFlag($flag);
+        $this->setEventOrganizer($employer);
     }
 
     final public function getEventOrganizer(): ?EventOrganizer
@@ -102,8 +102,8 @@ class EventOrganizerFlagConnection
         if ($this->eventOrganizer && $eventOrganizer !== $this->eventOrganizer) {
             $this->eventOrganizer->removeFlag($this);
         }
+        $this->eventOrganizer = $eventOrganizer;
         if ($eventOrganizer && $this->eventOrganizer !== $eventOrganizer) {
-            $this->eventOrganizer = $eventOrganizer;
             $eventOrganizer->addFlag($this);
         }
     }
@@ -118,8 +118,8 @@ class EventOrganizerFlagConnection
         if ($this->flag && $employerFlag !== $this->flag) {
             $this->flag->removeEventOrganizerFlagConnection($this);
         }
+        $this->flag = $employerFlag;
         if ($employerFlag && $this->flag !== $employerFlag) {
-            $this->flag = $employerFlag;
             $employerFlag->addEventOrganizerFlagConnection($this);
         }
     }

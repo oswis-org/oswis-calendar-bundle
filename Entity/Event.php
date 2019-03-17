@@ -358,45 +358,16 @@ class Event
         }
     }
 
-    final public function containsEventAttendeeContact(AbstractContact $contact): bool {
+    final public function containsEventAttendeeContact(AbstractContact $contact): bool
+    {
         foreach ($this->getEventAttendees() as $eventAttendee) {
             \assert($eventAttendee instanceof EventAttendee);
             if ($eventAttendee->getContact() && $contact->getId() === $eventAttendee->getContact()->getId()) {
                 return true;
             }
         }
+
         return false;
-    }
-
-    final public function containsEventAttendeeAppUser(AppUser $appUser): bool {
-        foreach ($this->getEventAttendees() as $eventAttendee) {
-            \assert($eventAttendee instanceof EventAttendee);
-            $person = $eventAttendee->getContact();
-            if (!$person)  {
-                continue;
-            }
-            \assert($person instanceof Person);
-            if ($person && $person->getAppUser() && $appUser->getId() === $person->getAppUser()->getId()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    final public function getRemainingCapacityPercent(): ?int
-    {
-        if ($this->getMaximumAttendeeCapacity() >= 0 && $this->getRemainingCapacity() >= 0) {
-            $remaining = $this->getRemainingCapacity() / $this->getMaximumAttendeeCapacity();
-
-            return $remaining > 0 && $remaining <= 1 ? $remaining : 0;
-        }
-
-        return -1;
-    }
-
-    final public function getOccupancy(): int
-    {
-        return $this->getEventAttendees() ? $this->getEventAttendees()->count() : 0;
     }
 
     /**
@@ -407,12 +378,29 @@ class Event
         return $this->eventAttendees;
     }
 
-    final public function getRemainingCapacity(): ?int
+    final public function containsEventAttendeeAppUser(AppUser $appUser): bool
     {
-        if ($this->getOccupancy() >= 0 && $this->getMaximumAttendeeCapacity() >= 0) {
-            $remaining = $this->getMaximumAttendeeCapacity() - $this->getOccupancy();
+        foreach ($this->getEventAttendees() as $eventAttendee) {
+            \assert($eventAttendee instanceof EventAttendee);
+            $person = $eventAttendee->getContact();
+            if (!$person) {
+                continue;
+            }
+            \assert($person instanceof Person);
+            if ($person && $person->getAppUser() && $appUser->getId() === $person->getAppUser()->getId()) {
+                return true;
+            }
+        }
 
-            return $remaining > 0 ? $remaining : 0;
+        return false;
+    }
+
+    final public function getRemainingCapacityPercent(): ?int
+    {
+        if ($this->getMaximumAttendeeCapacity() >= 0 && $this->getRemainingCapacity() >= 0) {
+            $remaining = $this->getRemainingCapacity() / $this->getMaximumAttendeeCapacity();
+
+            return $remaining > 0 && $remaining <= 1 ? $remaining : 0;
         }
 
         return -1;
@@ -432,6 +420,22 @@ class Event
     final public function setMaximumAttendeeCapacity(?int $maximumAttendeeCapacity): void
     {
         $this->maximumAttendeeCapacity = $maximumAttendeeCapacity ?? -1;
+    }
+
+    final public function getRemainingCapacity(): ?int
+    {
+        if ($this->getOccupancy() >= 0 && $this->getMaximumAttendeeCapacity() >= 0) {
+            $remaining = $this->getMaximumAttendeeCapacity() - $this->getOccupancy();
+
+            return $remaining > 0 ? $remaining : 0;
+        }
+
+        return -1;
+    }
+
+    final public function getOccupancy(): int
+    {
+        return $this->getEventAttendees() ? $this->getEventAttendees()->count() : 0;
     }
 
 

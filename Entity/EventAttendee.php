@@ -66,11 +66,9 @@ class EventAttendee
 
     /**
      * Dummy property for use in forms (events of EventsAttendee).
-     * @var bool
+     * @var Collection
      */
     public $events;
-
-
 
     /**
      * Person or organization.
@@ -119,6 +117,7 @@ class EventAttendee
         ?Event $event = null
     ) {
         $this->eventAttendeeFlagConnections = new ArrayCollection();
+        $this->events = new ArrayCollection();
         $this->setContact($contact);
         $this->setEvent($event);
     }
