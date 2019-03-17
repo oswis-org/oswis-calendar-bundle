@@ -122,6 +122,7 @@ class Event
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventOrganizer",
      *     cascade={"all"},
+     *     orphanRemoval=true,
      *     mappedBy="event"
      * )
      */
@@ -133,6 +134,7 @@ class Event
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventAttendee",
      *     cascade={"all"},
+     *     orphanRemoval=true,
      *     mappedBy="event"
      * )
      */
