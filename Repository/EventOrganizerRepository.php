@@ -29,5 +29,4 @@ class EventOrganizerRepository extends EntityRepository
             ->getOneOrNullResult(Query::HYDRATE_OBJECT);
     }
 
-
 }
