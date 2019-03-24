@@ -3,6 +3,7 @@
 namespace Zakjakub\OswisCalendarBundle\Controller\MediaObjects;
 
 use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -28,6 +29,8 @@ final class CreateEventImageAction
      */
     private $factory;
 
+    private $logger;
+
     /**
      * @param RegistryInterface    $doctrine
      * @param FormFactoryInterface $factory
@@ -36,11 +39,13 @@ final class CreateEventImageAction
     public function __construct(
         RegistryInterface $doctrine,
         FormFactoryInterface $factory,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        LoggerInterface $logger
     ) {
         $this->validator = $validator;
         $this->doctrine = $doctrine;
         $this->factory = $factory;
+        $this->logger = $logger;
     }
 
     /**
@@ -61,7 +66,12 @@ final class CreateEventImageAction
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $this->doctrine->getManager();
             $em->persist($mediaObject);
-            $em->flush();
+            try {
+                $em->flush();
+            } catch (\Exception $exception) {
+                $this->logger->error($exception->getMessage());
+                $this->logger->error($exception->getTraceAsString());
+            }
             // Prevent the serialization of the file property
             $mediaObject->file = null;
 
