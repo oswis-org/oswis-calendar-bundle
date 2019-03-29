@@ -13,8 +13,7 @@ abstract class AbstractBundleEventOrganizer
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventOrganizer",
      *     fetch="EAGER",
-     *     cascade={"all"},
-     *     orphanRemoval=true
+     *     cascade={"all"}
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
