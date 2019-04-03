@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
@@ -16,6 +17,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_attendee")
  * @ApiResource(
  *   attributes={
+ *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_CUSTOMER')"
  *   },
  *   collectionOperations={
@@ -71,10 +73,10 @@ class EventAttendee
     public $events;
 
     /**
-     * Person or organization.
-     * @var AbstractContact|null
+     * Person.
+     * @var Person|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
+     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Person",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )

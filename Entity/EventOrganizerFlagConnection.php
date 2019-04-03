@@ -14,6 +14,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_organizer_flag_connection")
  * @ApiResource(
  *   attributes={
+ *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={

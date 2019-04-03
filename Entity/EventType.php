@@ -19,6 +19,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_type")
  * @ApiResource(
  *   attributes={
+ *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={

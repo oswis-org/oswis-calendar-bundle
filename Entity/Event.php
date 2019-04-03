@@ -24,6 +24,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
  * @ApiResource(
  *   iri="http://schema.org/Place",
  *   attributes={
+ *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={
