@@ -5,6 +5,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use function assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -364,7 +365,7 @@ class Event
     final public function containsEventAttendeeContact(AbstractContact $contact): bool
     {
         foreach ($this->getEventAttendees() as $eventAttendee) {
-            \assert($eventAttendee instanceof EventAttendee);
+            assert($eventAttendee instanceof EventAttendee);
             if ($eventAttendee->getContact() && $contact->getId() === $eventAttendee->getContact()->getId()) {
                 return true;
             }
@@ -384,13 +385,30 @@ class Event
     final public function containsEventAttendeeAppUser(AppUser $appUser): bool
     {
         foreach ($this->getEventAttendees() as $eventAttendee) {
-            \assert($eventAttendee instanceof EventAttendee);
+            assert($eventAttendee instanceof EventAttendee);
             $person = $eventAttendee->getContact();
             if (!$person) {
                 continue;
             }
-            \assert($person instanceof Person);
+            assert($person instanceof Person);
             if ($person && $person->getAppUser() && $appUser->getId() === $person->getAppUser()->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    final public function containsEventAttendeePerson(Person $person): bool
+    {
+        foreach ($this->getEventAttendees() as $eventAttendee) {
+            assert($eventAttendee instanceof EventAttendee);
+            $containedPerson = $eventAttendee->getContact();
+            if (!$containedPerson) {
+                continue;
+            }
+            assert($containedPerson instanceof Person);
+            if ($containedPerson && $person->getId() === $containedPerson->getId()) {
                 return true;
             }
         }
@@ -440,6 +458,5 @@ class Event
     {
         return $this->getEventAttendees() ? $this->getEventAttendees()->count() : 0;
     }
-
 
 }

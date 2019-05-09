@@ -18,7 +18,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_CUSTOMER')"
+ *     "access_control"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={
  *     "get"={
@@ -26,21 +26,21 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  *       "normalization_context"={"groups"={"calendar_event_attendees_get"}},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_CUSTOMER')",
+ *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_event_attendees_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_CUSTOMER')",
+ *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar_event_attendee_get"}},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_CUSTOMER')",
+ *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_event_attendee_put"}}
  *     },
  *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_event_attendee_delete"}}
  *     }
  *   }
