@@ -111,11 +111,12 @@
       <path value="$PROJECT_DIR$/vendor/symfony/web-link" />
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php73" />
       <path value="$PROJECT_DIR$/vendor/symfony/mime" />
+      <path value="$PROJECT_DIR$/vendor/hirak/prestissimo" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
     <interpreters>
-      <interpreter home="$USER_HOME$/.PhpStorm2018.3/system/plugins/idea-php-latest-plugin/php-v7.2.12/php.sh" id="7d9c9d5a-7067-4a72-aa4e-5ba94994782a" name="PHP latest" debugger_id="php.debugger.XDebug" />
+      <interpreter id="7d9c9d5a-7067-4a72-aa4e-5ba94994782a" name="PHP latest" home="$USER_HOME$/.PhpStorm2018.3/system/plugins/idea-php-latest-plugin/php-v7.2.12/php.sh" debugger_id="php.debugger.XDebug" />
     </interpreters>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.1" />

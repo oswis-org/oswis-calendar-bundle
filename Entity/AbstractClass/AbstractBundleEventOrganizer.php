@@ -4,6 +4,10 @@ namespace Zakjakub\OswisCalendarBundle\Entity;
 
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
+/**
+ * @package Zakjakub\OswisCalendarBundle\Entity
+ * @deprecated
+ */
 abstract class AbstractBundleEventOrganizer
 {
     use BasicEntityTrait;

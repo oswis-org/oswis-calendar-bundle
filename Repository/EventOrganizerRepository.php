@@ -3,6 +3,7 @@
 namespace Zakjakub\OswisCalendarBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query;
 use Zakjakub\OswisCalendarBundle\Entity\EventOrganizer;
 
@@ -14,7 +15,7 @@ class EventOrganizerRepository extends EntityRepository
      * @param string $eventSlug
      *
      * @return EventOrganizer|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     final public function findOneEventOrganizer(int $contactId, string $eventSlug): ?EventOrganizer
     {

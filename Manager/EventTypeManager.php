@@ -3,12 +3,14 @@
 namespace Zakjakub\OswisCalendarBundle\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
-use Zakjakub\OswisCalendarBundle\Entity\EventType;
+use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventTypeManager
 {
+
     /**
      * @var EntityManagerInterface
      */
@@ -43,7 +45,7 @@ class EventTypeManager
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger ? $this->logger->info('ERROR: Event type not created: '.$e->getMessage()) : null;
 
             return null;
