@@ -68,7 +68,7 @@ class EventFlagConnection
      * Event flag.
      * @var EventFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventFlag",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlag",
      *     inversedBy="eventFlagConnections",
      *     fetch="EAGER"
      * )
@@ -80,7 +80,7 @@ class EventFlagConnection
      * Event.
      * @var EventRevision|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision",
      *     inversedBy="eventFlagConnections",
      *     fetch="EAGER"
      * )

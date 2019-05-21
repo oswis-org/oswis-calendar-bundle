@@ -17,7 +17,7 @@ abstract class AbstractBundleEvent
     /**
      * @var Event|null $parentEvent
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     cascade={"persist"},
      *     fetch="EAGER"
      * )

@@ -15,14 +15,14 @@ abstract class AbstractEventFlagType
 
     /**
      * Minimal amount of flags used.
-     * @var int
+     * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected $minFlagsAllowed;
 
     /**
      * Maximal amount of flags used.
-     * @var int
+     * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected $maxFlagsAllowed;

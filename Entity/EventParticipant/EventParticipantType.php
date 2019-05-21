@@ -69,7 +69,7 @@ class EventParticipantType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     cascade={"all"},
      *     mappedBy="eventContactType",
      *     fetch="EAGER"
@@ -80,7 +80,7 @@ class EventParticipantType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventPrice",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
      *     cascade={"all"},
      *     mappedBy="eventParticipantType",
      *     fetch="EAGER"
@@ -91,7 +91,7 @@ class EventParticipantType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventCapacity",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
      *     cascade={"all"},
      *     mappedBy="eventParticipantType",
      *     fetch="EAGER"
@@ -102,7 +102,7 @@ class EventParticipantType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventRegistrationRange",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
      *     cascade={"all"},
      *     mappedBy="eventParticipantType",
      *     fetch="EAGER"

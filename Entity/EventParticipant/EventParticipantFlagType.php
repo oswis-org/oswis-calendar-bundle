@@ -61,7 +61,7 @@ class EventParticipantFlagType extends AbstractEventFlagType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="EventParticipantFlag",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
      *     mappedBy="eventParticipantFlagType",
      *     cascade={"all"},
      *     fetch="EAGER"

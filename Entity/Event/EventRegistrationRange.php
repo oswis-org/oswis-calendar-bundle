@@ -65,7 +65,7 @@ class EventRegistrationRange
     /**
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventRegistrationRanges",
      *     fetch="EAGER"
      * )
@@ -76,7 +76,7 @@ class EventRegistrationRange
     /**
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipantType",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     inversedBy="eventPrices",
      *     fetch="EAGER"
      * )

@@ -81,7 +81,7 @@ class Event extends AbstractRevisionContainer
      * Parent event (if this is not top level event).
      * @var Event|null $superEvent
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="subEvents",
      *     fetch="EAGER"
      * )
@@ -93,7 +93,7 @@ class Event extends AbstractRevisionContainer
      * Sub events.
      * @var Collection|null $subEvents
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     mappedBy="superEvent",
      *     fetch="EAGER"
      * )

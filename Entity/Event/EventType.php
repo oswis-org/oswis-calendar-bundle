@@ -69,7 +69,7 @@ class EventType extends AbstractRevisionContainer
     /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventTypeRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventTypeRevision",
      *     mappedBy="container",
      *     cascade={"all"},
      *     orphanRemoval=true,
@@ -82,7 +82,7 @@ class EventType extends AbstractRevisionContainer
      * Event revisions of that type.
      * @var Collection|null $eventRevisions EventRevisions of this event type.
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision",
      *     mappedBy="eventType",
      *     cascade={"all"}
      * )

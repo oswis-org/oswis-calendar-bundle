@@ -64,7 +64,7 @@ class EventCapacity
      * Event that is affected by this capacity.
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventCapacities",
      *     fetch="EAGER"
      * )

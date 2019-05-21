@@ -82,7 +82,7 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="EventParticipantRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
      *     mappedBy="container",
      *     cascade={"all"},
      *     orphanRemoval=true,

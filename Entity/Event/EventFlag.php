@@ -58,7 +58,7 @@ class EventFlag extends AbstractEventFlag
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventFlagConnection",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",
      *     mappedBy="eventFlag",
      *     cascade={"all"},
      *     fetch="EAGER"

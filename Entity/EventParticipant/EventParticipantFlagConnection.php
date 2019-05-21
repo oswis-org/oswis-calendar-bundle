@@ -68,7 +68,7 @@ class EventParticipantFlagConnection
      * Event contact flag.
      * @var EventParticipantFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="EventParticipantFlag",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
      *     inversedBy="eventParticipantFlagConnections",
      *     fetch="EAGER"
      * )
@@ -80,7 +80,7 @@ class EventParticipantFlagConnection
      * Event contact revision (connected to person or organization).
      * @var EventParticipantRevision|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="EventParticipantRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
      *     inversedBy="eventParticipantFlagConnections",
      *     fetch="EAGER"
      * )
