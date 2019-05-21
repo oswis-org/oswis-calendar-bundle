@@ -1,6 +1,6 @@
 <?php
 
-namespace ZakJakub\OswisCalendarBundle\Entity\AbstractClass;
+namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
 
 use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;

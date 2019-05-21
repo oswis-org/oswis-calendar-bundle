@@ -1,6 +1,6 @@
 <?php
 
-namespace ZakJakub\OswisCalendarBundle\Entity\AbstractClass;
+namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
 
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;

@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use ZakJakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
+use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
