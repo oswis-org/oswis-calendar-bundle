@@ -2,6 +2,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -48,7 +49,8 @@ use function assert;
  *       "denormalization_context"={"groups"={"calendar_event_attendee_delete"}}
  *     }
  *   }
- * ) * @ApiFilter(OrderFilter::class)
+ * )
+ * @ApiFilter(OrderFilter::class)
  * @Searchable({
  *     "id",
  *     "student.person.fullName",
