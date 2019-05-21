@@ -9,9 +9,10 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Zakjakub\OswisCalendarBundle\Entity\EventAttendee;
 use Zakjakub\OswisAddressBookBundle\Form\StudentPersonType;
+use Zakjakub\OswisCalendarBundle\Entity\EventAttendee;
 
 class EventParticipantType extends AbstractType
 {
@@ -99,7 +100,7 @@ class EventParticipantType extends AbstractType
     /**
      * @param OptionsResolver $resolver
      *
-     * @throws \Symfony\Component\OptionsResolver\Exception\AccessException
+     * @throws AccessException
      */
     final public function configureOptions(OptionsResolver $resolver): void
     {

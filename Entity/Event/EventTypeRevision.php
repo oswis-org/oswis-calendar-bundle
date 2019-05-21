@@ -2,7 +2,6 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
-use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;

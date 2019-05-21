@@ -2,7 +2,6 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -78,7 +77,7 @@ class EventParticipantRevision extends AbstractRevision
      * Related contact (person or organization).
      * @var AbstractContact|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity=Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
+     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )
@@ -199,22 +198,6 @@ class EventParticipantRevision extends AbstractRevision
         return $price < 0 ? 0 : $price;
     }
 
-    /**
-     * @return int
-     * @throws PriceInvalidArgumentException
-     */
-    final public function getDeposit(): int
-    {
-        $participant = $this->getContainer();
-        assert($participant instanceof EventParticipant);
-        if (!$this->getEvent()) {
-            throw new PriceInvalidArgumentException();
-        }
-        $price = $this->getEvent()->getDeposit($participant->getEventParticipantType());
-
-        return $price < 0 ? 0 : $price;
-    }
-
     final public function getEvent(): ?Event
     {
         return $this->event;
@@ -261,5 +244,21 @@ class EventParticipantRevision extends AbstractRevision
                 }
             }
         }
+    }
+
+    /**
+     * @return int
+     * @throws PriceInvalidArgumentException
+     */
+    final public function getDeposit(): int
+    {
+        $participant = $this->getContainer();
+        assert($participant instanceof EventParticipant);
+        if (!$this->getEvent()) {
+            throw new PriceInvalidArgumentException();
+        }
+        $price = $this->getEvent()->getDeposit($participant->getEventParticipantType());
+
+        return $price < 0 ? 0 : $price;
     }
 }

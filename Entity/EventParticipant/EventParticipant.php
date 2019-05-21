@@ -187,7 +187,8 @@ class EventParticipant extends AbstractRevisionContainer
      * @throws RevisionMissingException
      * @throws PriceInvalidArgumentException
      */
-    final public function getPrice(?DateTime $referenceDateTime = null): int {
+    final public function getPrice(?DateTime $referenceDateTime = null): int
+    {
         return $this->getRevisionByDate($referenceDateTime)->getPrice();
     }
 
