@@ -6603,16 +6603,16 @@
         },
         {
             "name": "zakjakub/oswis-core-bundle",
-            "version": "v0.0.172",
+            "version": "v0.0.173",
             "source": {
                 "type": "git",
                 "url": "git@github.com:zakjakub/oswis-core-bundle.git",
-                "reference": "0b47b6375a0d6e1072085efd88532f9cff3d3004"
+                "reference": "9e617add89165d016a5fb29df2a91b509dc8196a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/0b47b6375a0d6e1072085efd88532f9cff3d3004",
-                "reference": "0b47b6375a0d6e1072085efd88532f9cff3d3004",
+                "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/9e617add89165d016a5fb29df2a91b509dc8196a",
+                "reference": "9e617add89165d016a5fb29df2a91b509dc8196a",
                 "shasum": ""
             },
             "require": {
@@ -6677,10 +6677,10 @@
                 "zakjakub"
             ],
             "support": {
-                "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.172",
+                "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.173",
                 "issues": "https://github.com/zakjakub/oswis-core-bundle/issues"
             },
-            "time": "2019-05-20T15:12:17+00:00"
+            "time": "2019-05-21T16:53:14+00:00"
         },
         {
             "name": "zendframework/zend-code",
