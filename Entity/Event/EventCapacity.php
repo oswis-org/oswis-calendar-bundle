@@ -88,7 +88,7 @@ class EventCapacity
     /**
      * Allow participants overflow (manually by manager).
      * @var int|null
-     * @Doctrine\ORM\Mapping\\Column(type="integer")
+     * @Doctrine\ORM\Mapping\Column(type="integer")
      */
     protected $overflowAllowedAmount;
 

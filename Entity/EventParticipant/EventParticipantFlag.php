@@ -82,7 +82,7 @@ class EventParticipantFlag extends AbstractEventFlag
     /**
      * Price adjust (positive, negative or zero).
      * @var int
-     * @Doctrine\ORM\Mapping\\Column(type="integer", nullable=true)
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected $price;
 
