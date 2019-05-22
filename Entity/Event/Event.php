@@ -180,6 +180,17 @@ class Event extends AbstractRevisionContainer
     protected $revisions;
 
     /**
+     * @var EventSeries|null $eventType
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
+     *     inversedBy="events",
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
+     */
+    private $eventSeries;
+
+    /**
      * Event constructor.
      *
      * @param Nameable|null  $nameable
@@ -700,6 +711,28 @@ class Event extends AbstractRevisionContainer
         }
 
         return $price <= 0 ? 0 : $price;
+    }
+
+    /**
+     * @return EventSeries|null
+     */
+    final public function getEventSeries(): ?EventSeries
+    {
+        return $this->eventSeries;
+    }
+
+    /**
+     * @param EventSeries|null $eventSeries
+     */
+    final public function setEventSeries(?EventSeries $eventSeries): void
+    {
+        if ($this->eventSeries && $eventSeries !== $this->eventSeries) {
+            $this->eventSeries->removeEvent($this);
+        }
+        $this->eventSeries = $eventSeries;
+        if ($eventSeries && $this->eventSeries !== $eventSeries) {
+            $eventSeries->addEvent($this);
+        }
     }
 
 }
