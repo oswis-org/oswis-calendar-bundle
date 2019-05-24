@@ -36,7 +36,7 @@ class EventRegistrationRange
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventPrices",
+     *     inversedBy="eventRegistrationRanges",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)

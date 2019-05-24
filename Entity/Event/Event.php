@@ -127,7 +127,7 @@ class Event extends AbstractRevisionContainer
     /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
      *     cascade={"all"},
      *     mappedBy="event",
      *     fetch="EAGER"
