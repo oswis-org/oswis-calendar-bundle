@@ -21,7 +21,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 /**
  * Participation of contact in event.
  * @Doctrine\ORM\Mapping\Entity
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_attendee")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant")
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -30,25 +30,25 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendees_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participants_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendees_post"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participants_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_put"}}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_delete"}}
  *     }
  *   }
  * )

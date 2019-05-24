@@ -7,7 +7,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_in_event_connection_connection")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_in_event_connection")
  */
 class EventParticipantFlagInEventConnection
 {

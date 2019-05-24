@@ -12,7 +12,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_attendee_flag_connection")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_note")
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -21,25 +21,25 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_flag_connections_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_notes_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_connections_post"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_notes_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_flag_connection_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_note_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_connection_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_note_put"}}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_connection_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_note_delete"}}
  *     }
  *   }
  * )
