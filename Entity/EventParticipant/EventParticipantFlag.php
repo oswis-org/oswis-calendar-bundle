@@ -82,7 +82,7 @@ class EventParticipantFlag extends AbstractEventFlag
      * @var EventParticipantFlagType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType",
-     *     inversedBy="eventContactFlagTypes",
+     *     inversedBy="eventParticipantFlags",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)

@@ -96,7 +96,7 @@ class EventParticipant extends AbstractRevisionContainer
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventContactRevisions",
+     *     inversedBy="eventParticipants",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )

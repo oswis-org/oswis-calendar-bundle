@@ -71,7 +71,7 @@ class EventParticipantType
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     cascade={"all"},
-     *     mappedBy="eventContactType",
+     *     mappedBy="eventParticipantType",
      *     fetch="EAGER"
      * )
      */
@@ -115,7 +115,7 @@ class EventParticipantType
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
      *     cascade={"all"},
-     *     mappedBy="event",
+     *     mappedBy="eventParticipantType",
      *     fetch="EAGER"
      * )
      */

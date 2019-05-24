@@ -49,7 +49,7 @@ class EventRevision extends AbstractRevision
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",
      *     cascade={"all"},
-     *     mappedBy="eventContactRevision",
+     *     mappedBy="eventRevision",
      *     fetch="EAGER"
      * )
      */

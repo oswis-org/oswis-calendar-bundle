@@ -116,17 +116,6 @@ class Event extends AbstractRevisionContainer
     /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",
-     *     cascade={"all"},
-     *     mappedBy="eventContactRevision",
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventFlagConnections;
-
-    /**
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
      *     cascade={"all"},
      *     mappedBy="event",
@@ -245,14 +234,6 @@ class Event extends AbstractRevisionContainer
     public static function checkRevision(?AbstractRevision $revision): void
     {
         assert($revision instanceof EventRevision);
-    }
-
-    /**
-     * @return Collection|null
-     */
-    final public function getEventFlagConnections(): Collection
-    {
-        return $this->eventFlagConnections;
     }
 
     /**
