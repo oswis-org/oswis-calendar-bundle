@@ -5,11 +5,12 @@ namespace Zakjakub\OswisCalendarBundle\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
+use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
 
-class EventTypeManager
+class EventParticipantTypeInEventConnectionManager
 {
     /**
      * @var EntityManagerInterface
@@ -30,26 +31,24 @@ class EventTypeManager
     }
 
     final public function create(
-        ?Nameable $nameable = null,
-        ?string $type = null,
-        ?string $color = null
-    ): EventType {
+        ?EventParticipantType $eventParticipantType = null,
+        ?Event $event = null
+    ): EventParticipantTypeInEventConnection {
         try {
             $em = $this->em;
-            $entity = new EventType(
-                $nameable,
-                $type,
-                $color
+            $entity = new EventParticipantTypeInEventConnection(
+                $eventParticipantType,
+                $event
             );
             $em->persist($entity);
             $em->flush();
-            $infoMessage = 'CREATE: Created event type (by manager): '.$entity->getId().' '.$entity->getName().'.';
+            $infoMessage = 'CREATE: Created event participant type in event connection (by manager): '.$entity->getId().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
         } catch (Exception $e) {
             $this->logger
-                ? $this->logger->info('ERROR: Event event type not created (by manager): '.$e->getMessage())
+                ? $this->logger->info('ERROR: Event event participant type in event connection not created (by manager): '.$e->getMessage())
                 : null;
 
             return null;

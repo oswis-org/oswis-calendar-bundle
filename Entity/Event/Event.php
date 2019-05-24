@@ -207,7 +207,8 @@ class Event extends AbstractRevisionContainer
         ?Place $location = null,
         ?EventType $eventType = null,
         ?DateTime $startDateTime = null,
-        ?DateTime $endDateTime = null
+        ?DateTime $endDateTime = null,
+        ?EventSeries $eventSeries = null
     ) {
         $this->subEvents = new ArrayCollection();
         $this->eventParticipantRevisions = new ArrayCollection();
@@ -218,6 +219,7 @@ class Event extends AbstractRevisionContainer
         $this->revisions = new ArrayCollection();
         $this->revisions->add(new EventRevision($nameable, $location, $eventType, $startDateTime, $endDateTime));
         $this->setSuperEvent($superEvent);
+        $this->setEventSeries($eventSeries);
     }
 
     /**
