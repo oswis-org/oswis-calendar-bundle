@@ -13,6 +13,7 @@ use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
@@ -40,25 +41,25 @@ use function assert;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"address_book_organizations_get"}},
+ *       "normalization_context"={"groups"={"calendar_events_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"address_book_organizations_post"}}
+ *       "denormalization_context"={"groups"={"calendar_events_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"address_book_organization_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"address_book_organization_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_put"}}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"address_book_organization_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_delete"}}
  *     }
  *   }
  * )
@@ -168,6 +169,17 @@ class Event extends AbstractRevisionContainer
     protected $eventParticipantTypeInEventConnections;
 
     /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
+     *     cascade={"all"},
+     *     mappedBy="event",
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantFlagInEventConnections;
+
+    /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision",
@@ -257,6 +269,14 @@ class Event extends AbstractRevisionContainer
     final public function getEventParticipantTypeInEventConnections(): Collection
     {
         return $this->eventParticipantTypeInEventConnections;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventParticipantFlagInEventConnections(): Collection
+    {
+        return $this->eventParticipantFlagInEventConnections;
     }
 
     /**
@@ -463,6 +483,30 @@ class Event extends AbstractRevisionContainer
         }
         if ($this->eventParticipantTypeInEventConnections->removeElement($eventParticipantTypeInEventConnection)) {
             $eventParticipantTypeInEventConnection->setEvent(null);
+        }
+    }
+
+    /**
+     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
+     */
+    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
+        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
+            $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
+            $eventParticipantFlagInEventConnection->setEvent($this);
+        }
+    }
+
+    /**
+     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
+     */
+    final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
+        if (!$eventParticipantFlagInEventConnection) {
+            return;
+        }
+        if ($this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
+            $eventParticipantFlagInEventConnection->setEvent(null);
         }
     }
 

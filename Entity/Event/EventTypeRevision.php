@@ -12,6 +12,10 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use function assert;
 use function in_array;
 
+/**
+ * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_type_revision")
+ */
 class EventTypeRevision extends AbstractRevision
 {
 

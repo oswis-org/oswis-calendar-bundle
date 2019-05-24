@@ -2,58 +2,17 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_attendee_flag")
- * @ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_flags_get"}},
- *     },
- *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flags_post"}}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_flag_get"}},
- *     },
- *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_put"}}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_delete"}}
- *     }
- *   }
- * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
- *     "id",
- *     "name",
- *     "description",
- *     "note"
- * })
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_registration_range")
  */
 class EventRegistrationRange
 {

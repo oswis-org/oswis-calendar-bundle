@@ -18,7 +18,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\ColorContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
 
 /**
- * Class ContactType
  * @Doctrine\ORM\Mapping\Entity
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_type")
  * @ApiResource(

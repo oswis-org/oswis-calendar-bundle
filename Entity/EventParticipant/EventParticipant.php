@@ -105,6 +105,17 @@ class EventParticipant extends AbstractRevisionContainer
     protected $eventParticipantType;
 
     /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
+     *     cascade={"all"},
+     *     mappedBy="eventParticipant",
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantNotes;
+
+    /**
      * EventAttendee constructor.
      *
      * @param AbstractContact|null $contact
@@ -137,6 +148,32 @@ class EventParticipant extends AbstractRevisionContainer
     public static function checkRevision(?AbstractRevision $revision): void
     {
         assert($revision instanceof EventParticipantRevision);
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventParticipantNotes(): ?Collection
+    {
+        return $this->eventParticipantNotes;
+    }
+
+    final public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    {
+        if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
+            $this->eventParticipantNotes->add($eventParticipantNote);
+            $eventParticipantNote->setEventParticipant($this);
+        }
+    }
+
+    final public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    {
+        if (!$eventParticipantNote) {
+            return;
+        }
+        if ($this->eventParticipantNotes->removeElement($eventParticipantNote)) {
+            $eventParticipantNote->setEventParticipant(null);
+        }
     }
 
     final public function getEventParticipantType(): ?EventParticipantType

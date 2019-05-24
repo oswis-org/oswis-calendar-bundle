@@ -2,9 +2,6 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -13,53 +10,12 @@ use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use function assert;
 
 /**
- * @Doctrine\ORM\Mapping\Entity
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_attendee")
- * @ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendees_get"}},
- *     },
- *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendees_post"}}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_get"}},
- *     },
- *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_put"}}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_delete"}}
- *     }
- *   }
- * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
- *     "id",
- *     "student.person.fullName",
- *     "student.person.description",
- *     "student.person.note",
- *     "event.name",
- *     "event.description",
- *     "event.note"
- * })
+ * @Doctrine\ORM\Mapping\Entity()
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_revision")
  */
 class EventParticipantRevision extends AbstractRevision
 {

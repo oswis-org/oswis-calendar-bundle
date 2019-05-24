@@ -12,11 +12,8 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
- * Type of registration's flag.
- *
- * Type of flag used in "registrations" (event contacts).
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_attendee_flag")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_type")
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -25,25 +22,25 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_flags_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_flag_types_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flags_post"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_flag_types_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_attendee_flag_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_flag_type_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_flag_type_put"}}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_attendee_flag_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_flag_type_delete"}}
  *     }
  *   }
  * )

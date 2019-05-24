@@ -48,10 +48,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  *     "name",
  *     "description",
  *     "note",
- *     "textValue",
- *     "flag.name",
- *     "flag.description",
- *     "flag.note"
+ *     "textValue"
  * })
  */
 class EventParticipantTypeInEventConnection

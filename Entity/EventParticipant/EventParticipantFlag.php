@@ -67,6 +67,17 @@ class EventParticipantFlag extends AbstractEventFlag
     protected $eventParticipantFlagConnections;
 
     /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
+     *     mappedBy="eventParticipantFlag",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantFlagInEventConnections;
+
+    /**
      * Event contact flag type.
      * @var EventParticipantFlagType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -148,6 +159,29 @@ class EventParticipantFlag extends AbstractEventFlag
         }
         if ($this->eventParticipantFlagConnections->removeElement($flagConnection)) {
             $flagConnection->setEventParticipantFlag(null);
+        }
+    }
+
+    final public function getEventParticipantFlagInEventConnections(): Collection
+    {
+        return $this->eventParticipantFlagInEventConnections;
+    }
+
+    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
+        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
+            $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
+            $eventParticipantFlagInEventConnection->setEventParticipantFlag($this);
+        }
+    }
+
+    final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
+        if (!$eventParticipantFlagInEventConnection) {
+            return;
+        }
+        if ($this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
+            $eventParticipantFlagInEventConnection->setEventParticipantFlag(null);
         }
     }
 
