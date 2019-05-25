@@ -25,6 +25,7 @@ class ZakjakubOswisCalendarExtension extends Extension implements PrependExtensi
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yaml');
         $configuration = $this->getConfiguration($configs, $container);
+        /** @noinspection PhpUnusedLocalVariableInspection */
         $config = $configuration ? $this->processConfiguration($configuration, $configs) : [];
     }
 

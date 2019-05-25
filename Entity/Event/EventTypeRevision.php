@@ -2,15 +2,14 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
-use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 use function assert;
-use function in_array;
 
 /**
  * @Doctrine\ORM\Mapping\Entity
@@ -18,19 +17,16 @@ use function in_array;
  */
 class EventTypeRevision extends AbstractRevision
 {
+    use TypeTrait;
 
-    public const ALLOWED_TYPES_DEFAULT = [
-        'year-of-event',
-        'batch-of-event',
-        'lecture',
-        'workshop',
-        'moderated-discussion',
-        'transport',
-        'team-building-stay',
-        'team-building',
-    ];
-
-    public const ALLOWED_TYPES_CUSTOM = [];
+    public const YEAR_OF_EVENT = 'year-of-event';
+    public const BATCH_OF_EVENT = 'batch-of-event';
+    public const LECTURE = 'lecture';
+    public const WORKSHOP = 'workshop';
+    public const MODERATED_DISCUSSION = 'moderated-discussion';
+    public const TRANSPORT = 'transport';
+    public const TEAM_BUILDING_STAY = 'team-building-stay';
+    public const TEAM_BUILDING = 'team-building';
 
     /**
      * @var Event
@@ -49,10 +45,6 @@ class EventTypeRevision extends AbstractRevision
      */
     private $type;
 
-    use BasicEntityTrait;
-    use NameableBasicTrait;
-    use ColorTrait;
-
     /**
      * EventRevision constructor.
      *
@@ -70,23 +62,27 @@ class EventTypeRevision extends AbstractRevision
         $this->setColor($color);
     }
 
-    /**
-     * @param string|null $typeName
-     *
-     * @return bool
-     * @throws InvalidArgumentException
-     */
-    final public static function checkType(?string $typeName): bool
+    public static function getAllowedTypesDefault(): array
     {
-        if (in_array($typeName, self::getAllowedTypes(), true)) {
-            return true;
-        }
-        throw new InvalidArgumentException('Typ události "'.$typeName.'" není povolen.');
+        return [
+            self::YEAR_OF_EVENT,
+            self::BATCH_OF_EVENT,
+            self::LECTURE,
+            self::WORKSHOP,
+            self::MODERATED_DISCUSSION,
+            self::TRANSPORT,
+            self::TEAM_BUILDING_STAY,
+            self::TEAM_BUILDING,
+        ];
     }
 
-    final public static function getAllowedTypes(): array
+    use BasicEntityTrait;
+    use NameableBasicTrait;
+    use ColorTrait;
+
+    public static function getAllowedTypesCustom(): array
     {
-        return array_merge(self::ALLOWED_TYPES_DEFAULT, self::ALLOWED_TYPES_CUSTOM);
+        return [];
     }
 
     /**
@@ -122,5 +118,4 @@ class EventTypeRevision extends AbstractRevision
         /// TODO: Check type!!
         $this->type = $type;
     }
-
 }
