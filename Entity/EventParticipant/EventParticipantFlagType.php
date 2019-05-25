@@ -70,12 +70,18 @@ class EventParticipantFlagType extends AbstractEventFlagType
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
+     * @param int|null      $minFlagsAllowed
+     * @param int|null      $maxFlagsAllowed
      */
     public function __construct(
-        ?Nameable $nameable = null
+        ?Nameable $nameable = null,
+        ?int $minFlagsAllowed = null,
+        ?int $maxFlagsAllowed = null
     ) {
         $this->eventParticipantFlags = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
+        $this->setMinFlagsAllowed($minFlagsAllowed);
+        $this->setMaxFlagsAllowed($maxFlagsAllowed);
     }
 
     public static function getAllowedTypesDefault(): array
