@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 

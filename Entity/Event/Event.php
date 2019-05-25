@@ -194,12 +194,13 @@ class Event extends AbstractRevisionContainer
     /**
      * Event constructor.
      *
-     * @param Nameable|null  $nameable
-     * @param Event|null     $superEvent
-     * @param Place|null     $location
-     * @param EventType|null $eventType
-     * @param DateTime|null  $startDateTime
-     * @param DateTime|null  $endDateTime
+     * @param Nameable|null    $nameable
+     * @param Event|null       $superEvent
+     * @param Place|null       $location
+     * @param EventType|null   $eventType
+     * @param DateTime|null    $startDateTime
+     * @param DateTime|null    $endDateTime
+     * @param EventSeries|null $eventSeries
      */
     public function __construct(
         ?Nameable $nameable = null,
