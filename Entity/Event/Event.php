@@ -2,13 +2,11 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
+use InvalidArgumentException;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
@@ -23,7 +21,6 @@ use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
@@ -32,44 +29,6 @@ use function assert;
 /**
  * @Doctrine\ORM\Mapping\Entity
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
- * @ApiResource(
- *   iri="http://schema.org/Place",
- *   attributes={
- *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_events_get"}},
- *     },
- *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_events_post"}}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_get"}},
- *     },
- *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_put"}}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_delete"}}
- *     }
- *   }
- * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
- *     "id",
- *     "name",
- *     "description",
- *     "note"
- * })
  */
 class Event extends AbstractRevisionContainer
 {
@@ -179,6 +138,17 @@ class Event extends AbstractRevisionContainer
      * )
      */
     protected $revisions;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",
+     *     cascade={"all"},
+     *     mappedBy="event",
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventWebContents;
 
     /**
      * @var EventSeries|null $eventType
@@ -760,6 +730,67 @@ class Event extends AbstractRevisionContainer
         $this->eventSeries = $eventSeries;
         if ($eventSeries && $this->eventSeries !== $eventSeries) {
             $eventSeries->addEvent($this);
+        }
+    }
+
+    /**
+     * @param EventWebContent|null $eventWebContent
+     *
+     * @throws InvalidArgumentException
+     */
+    final public function addEventWebContent(?EventWebContent $eventWebContent): void
+    {
+        $existingOne = null;
+        if ($eventWebContent && $eventWebContent->getType()) {
+            $existingOne = $this->getEventWebContent($eventWebContent->getType());
+        }
+        if ($existingOne) {
+            $this->removeWebContent($existingOne);
+        }
+        if ($eventWebContent && !$this->eventWebContents->contains($eventWebContent)) {
+            $this->eventWebContents->add($eventWebContent);
+            $eventWebContent->setEvent($this);
+        }
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return EventWebContent|null
+     * @throws InvalidArgumentException
+     */
+    final public function getEventWebContent(string $type = 'html'): ?EventWebContent
+    {
+        foreach ($this->getEventWebContents() as $eventWebContent) {
+            assert($eventWebContent instanceof EventWebContent);
+            if ($type === $eventWebContent->getType()) {
+                return $eventWebContent;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventWebContents(): ?Collection
+    {
+        return $this->eventWebContents;
+    }
+
+    /**
+     * @param EventWebContent|null $eventWebContent
+     *
+     * @throws InvalidArgumentException
+     */
+    final public function removeWebContent(?EventWebContent $eventWebContent): void
+    {
+        if (!$eventWebContent) {
+            return;
+        }
+        if ($this->eventWebContents->removeElement($eventWebContent)) {
+            $eventWebContent->setEvent(null);
         }
     }
 

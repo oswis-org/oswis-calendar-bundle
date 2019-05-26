@@ -2,6 +2,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
+use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
@@ -12,6 +13,12 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 class EventParticipantFlagInEventConnection
 {
     use BasicEntityTrait;
+
+    /**
+     * @var int|null
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    protected $maxAmountInEvent;
 
     /**
      * @var EventParticipantFlag|null
@@ -39,13 +46,32 @@ class EventParticipantFlagInEventConnection
     /**
      * @param EventParticipantFlag|null $eventParticipantFlag
      * @param Event|null                $event
+     * @param int|null                  $maxAmountInEvent
      */
     public function __construct(
         ?EventParticipantFlag $eventParticipantFlag = null,
-        ?Event $event = null
+        ?Event $event = null,
+        ?int $maxAmountInEvent = null
     ) {
         $this->setEventParticipantFlag($eventParticipantFlag);
         $this->setEvent($event);
+        $this->setMaxAmountInEvent($maxAmountInEvent);
+    }
+
+    /**
+     * @return int|null
+     */
+    final public function getMaxAmountInEvent(): ?int
+    {
+        return $this->maxAmountInEvent;
+    }
+
+    /**
+     * @param int|null $maxAmountInEvent
+     */
+    final public function setMaxAmountInEvent(?int $maxAmountInEvent): void
+    {
+        $this->maxAmountInEvent = $maxAmountInEvent;
     }
 
     final public function getEvent(): ?Event

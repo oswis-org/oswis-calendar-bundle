@@ -96,6 +96,7 @@ class EventParticipantFlag extends AbstractEventFlag
      */
     protected $price;
 
+
     /**
      * EmployerFlag constructor.
      *

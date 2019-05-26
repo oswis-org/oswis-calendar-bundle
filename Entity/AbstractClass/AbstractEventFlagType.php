@@ -18,54 +18,54 @@ abstract class AbstractEventFlagType
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected $minFlagsAllowed;
+    protected $minInEventParticipant;
 
     /**
      * Maximal amount of flags used.
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected $maxFlagsAllowed;
+    protected $maxInEventParticipant;
 
     abstract public static function getAllowedTypesDefault(): array;
 
     abstract public static function getAllowedTypesCustom(): array;
 
-    final public function isAmountOfFlagsValid(int $amount): bool
+    final public function isInRangeInEventParticipant(int $amount): bool
     {
-        return $amount >= $this->getMinFlagsAllowed() && $amount <= $this->getMaxFlagsAllowed();
+        return $amount >= $this->getMinInEventParticipant() && $amount <= $this->getMaxInEventParticipant();
     }
 
     /**
      * @return int|null
      */
-    final public function getMinFlagsAllowed(): ?int
+    final public function getMinInEventParticipant(): ?int
     {
-        return $this->minFlagsAllowed;
+        return $this->minInEventParticipant;
     }
 
     /**
-     * @param int|null $minFlagsAllowed
+     * @param int|null $minInEventParticipant
      */
-    final public function setMinFlagsAllowed(?int $minFlagsAllowed): void
+    final public function setMinInEventParticipant(?int $minInEventParticipant): void
     {
-        $this->minFlagsAllowed = $minFlagsAllowed;
+        $this->minInEventParticipant = $minInEventParticipant;
     }
 
     /**
      * @return int|null
      */
-    final public function getMaxFlagsAllowed(): ?int
+    final public function getMaxInEventParticipant(): ?int
     {
-        return $this->maxFlagsAllowed;
+        return $this->maxInEventParticipant;
     }
 
     /**
-     * @param int|null $maxFlagsAllowed
+     * @param int|null $maxInEventParticipant
      */
-    final public function setMaxFlagsAllowed(?int $maxFlagsAllowed): void
+    final public function setMaxInEventParticipant(?int $maxInEventParticipant): void
     {
-        $this->maxFlagsAllowed = $maxFlagsAllowed;
+        $this->maxInEventParticipant = $maxInEventParticipant;
     }
 
 }

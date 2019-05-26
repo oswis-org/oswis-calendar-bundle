@@ -3,6 +3,7 @@
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
@@ -83,6 +84,7 @@ class EventRevision extends AbstractRevision
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null
     ) {
+        $this->eventFlagConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setStartDateTime($startDateTime);
         $this->setEndDate($endDateTime);
@@ -106,12 +108,27 @@ class EventRevision extends AbstractRevision
         assert($revision instanceof Event);
     }
 
+    final public function __clone()
+    {
+        foreach ($this->eventFlagConnections as $eventFlagConnection) {
+            $this->addEventFlagConnection(clone $eventFlagConnection);
+        }
+    }
+
     final public function addEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
     {
         if ($eventContactFlagConnection && !$this->eventFlagConnections->contains($eventContactFlagConnection)) {
             $this->eventFlagConnections->add($eventContactFlagConnection);
             $eventContactFlagConnection->setEventRevision($this);
         }
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventFlagConnections(): ?Collection
+    {
+        return $this->eventFlagConnections;
     }
 
     final public function removeEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void

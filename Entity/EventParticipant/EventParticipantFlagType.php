@@ -80,8 +80,8 @@ class EventParticipantFlagType extends AbstractEventFlagType
     ) {
         $this->eventParticipantFlags = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
-        $this->setMinFlagsAllowed($minFlagsAllowed);
-        $this->setMaxFlagsAllowed($maxFlagsAllowed);
+        $this->setMinInEventParticipant($minFlagsAllowed);
+        $this->setMaxInEventParticipant($maxFlagsAllowed);
     }
 
     public static function getAllowedTypesDefault(): array
