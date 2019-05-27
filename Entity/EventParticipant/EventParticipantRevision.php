@@ -149,7 +149,7 @@ class EventParticipantRevision extends AbstractRevision
         if (!$this->getEvent()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()->getEventPrice($participant->getEventParticipantType());
+        $price = $this->getEvent()->getPrice($participant->getEventParticipantType());
 
         foreach ($this->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
             assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
