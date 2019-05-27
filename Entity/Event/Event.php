@@ -892,4 +892,22 @@ class Event extends AbstractRevisionContainer
         return $endDateTime === $minDateTime ? null : $endDateTime;
     }
 
+    final public function getAllowedFlagsByType(): array
+    {
+        $output = [];
+        foreach ($this->getEventParticipantFlagInEventConnections() as $eventParticipantFlagInEventConnection) {
+            assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
+            $eventParticipantFlag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
+            if (!$eventParticipantFlag) {
+                continue;
+            }
+            $eventParticipantFlagType = $eventParticipantFlag->getEventParticipantFlagType();
+            $id = $eventParticipantFlagType ? $eventParticipantFlagType->getId() : -1;
+            $output[$id]['eventParticipantFlagType'] = $eventParticipantFlagType;
+            $output[$id]['eventParticipantFlags'][] = $eventParticipantFlag;
+        }
+
+        return $output;
+    }
+
 }
