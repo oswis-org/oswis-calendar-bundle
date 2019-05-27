@@ -30,11 +30,13 @@ class EventParticipantFlagTypeManager
     }
 
     final public function create(
-        ?Nameable $nameable = null
+        ?Nameable $nameable = null,
+        ?int $minFlagsAllowed = null,
+        ?int $maxFlagsAllowed = null
     ): EventParticipantFlagType {
         try {
             $em = $this->em;
-            $entity = new EventParticipantFlagType($nameable);
+            $entity = new EventParticipantFlagType($nameable, $minFlagsAllowed, $maxFlagsAllowed);
             $em->persist($entity);
             $em->flush();
             $infoMessage = 'CREATE: Created event participant flag type (by manager): '.$entity->getId().' '.$entity->getName().'.';
