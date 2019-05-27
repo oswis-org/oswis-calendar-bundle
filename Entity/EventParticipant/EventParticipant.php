@@ -118,20 +118,22 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * EventAttendee constructor.
      *
-     * @param AbstractContact|null $contact
-     * @param Event|null           $event
-     * @param Collection|null      $eventContactFlagConnections
+     * @param AbstractContact|null      $contact
+     * @param Event|null                $event
+     * @param EventParticipantType|null $eventParticipantType
+     * @param Collection|null           $eventContactFlagConnections
      *
      * @throws EventCapacityExceededException
      */
     public function __construct(
         ?AbstractContact $contact = null,
         ?Event $event = null,
+        ?EventParticipantType $eventParticipantType = null,
         ?Collection $eventContactFlagConnections = null
     ) {
         $this->revisions = new ArrayCollection([new EventParticipantRevision($contact, $event, $eventContactFlagConnections)]);
+        $this->setEventParticipantType($eventParticipantType);
         $this->eventsDummy = new ArrayCollection();
-        /// set flags
     }
 
     /**
@@ -158,11 +160,25 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->eventParticipantNotes;
     }
 
-    final public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
     {
-        if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
-            $this->eventParticipantNotes->add($eventParticipantNote);
-            $eventParticipantNote->setEventParticipant($this);
+        if (!$this->eventParticipantNotes) {
+            $this->eventParticipantNotes = new ArrayCollection();
+        }
+        if (!$newEventParticipantNotes) {
+            $newEventParticipantNotes = new ArrayCollection();
+        }
+        foreach ($this->eventParticipantNotes as $oldEventParticipantNote) {
+            if (!$newEventParticipantNotes->contains($oldEventParticipantNote)) {
+                $this->removeEventParticipantNote($oldEventParticipantNote);
+            }
+        }
+        if ($newEventParticipantNotes) {
+            foreach ($newEventParticipantNotes as $newEventParticipantNote) {
+                if (!$this->eventParticipantNotes->contains($newEventParticipantNote)) {
+                    $this->addEventParticipantNote($newEventParticipantNote);
+                }
+            }
         }
     }
 
@@ -173,6 +189,14 @@ class EventParticipant extends AbstractRevisionContainer
         }
         if ($this->eventParticipantNotes->removeElement($eventParticipantNote)) {
             $eventParticipantNote->setEventParticipant(null);
+        }
+    }
+
+    final public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    {
+        if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
+            $this->eventParticipantNotes->add($eventParticipantNote);
+            $eventParticipantNote->setEventParticipant($this);
         }
     }
 

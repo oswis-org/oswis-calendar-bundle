@@ -310,6 +310,17 @@ class Event extends AbstractRevisionContainer
     }
 
     /**
+     * @param EventParticipant $eventParticipant
+     *
+     * @throws EventCapacityExceededException
+     * @throws RevisionMissingException
+     */
+    final public function addEventParticipant(EventParticipant $eventParticipant): void
+    {
+        $this->addEventParticipantRevision($eventParticipant->getRevisionByDate());
+    }
+
+    /**
      * @param EventParticipantRevision|null $eventParticipantRevision
      *
      * @throws EventCapacityExceededException
@@ -399,6 +410,17 @@ class Event extends AbstractRevisionContainer
     final public function getEventParticipantRevisions(): Collection
     {
         return $this->eventParticipantRevisions ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventParticipant $eventParticipant
+     *
+     * @throws EventCapacityExceededException
+     * @throws RevisionMissingException
+     */
+    final public function removeEventParticipant(EventParticipant $eventParticipant): void
+    {
+        $this->removeEventParticipantRevision($eventParticipant->getRevisionByDate());
     }
 
     /**

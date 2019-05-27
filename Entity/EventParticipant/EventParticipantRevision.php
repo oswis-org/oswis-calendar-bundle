@@ -199,7 +199,7 @@ class EventParticipantRevision extends AbstractRevision
         }
         foreach ($this->eventParticipantFlagConnections as $oldEventContactFlagConnection) {
             if (!$newEventContactFlagConnections->contains($oldEventContactFlagConnection)) {
-                $this->eventParticipantFlagConnections->removeElement($oldEventContactFlagConnection);
+                $this->removeEventParticipantFlagConnection($oldEventContactFlagConnection);
             }
         }
         if ($newEventContactFlagConnections) {
