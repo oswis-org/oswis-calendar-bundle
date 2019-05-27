@@ -24,8 +24,8 @@ use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
-use function assert;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
+use function assert;
 
 /**
  * @Doctrine\ORM\Mapping\Entity
@@ -699,10 +699,12 @@ class Event extends AbstractRevisionContainer
         return $this->getActiveEventParticipantsByType($eventParticipantType)->count();
     }
 
-    final public function getEventPriceRecursive(EventParticipantType $eventParticipantType): ?int {
+    final public function getEventPriceRecursive(EventParticipantType $eventParticipantType): ?int
+    {
         if ($this->getEventPrice($eventParticipantType)) {
             return $this->getEventPrice($eventParticipantType);
         }
+
         return $this->getSuperEvent() ? $this->getSuperEvent()->getEventPriceRecursive($eventParticipantType) : null;
     }
 
@@ -830,7 +832,8 @@ class Event extends AbstractRevisionContainer
      * @return Place|null
      * @throws RevisionMissingException
      */
-    final public function getLocation(?DateTime $referenceDateTime  = null): ?Place {
+    final public function getLocation(?DateTime $referenceDateTime = null): ?Place
+    {
         return $this->getRevisionByDate($referenceDateTime)->getLocation();
     }
 
@@ -840,14 +843,17 @@ class Event extends AbstractRevisionContainer
      * @return Place|null
      * @throws RevisionMissingException
      */
-    final public function getLocationRecursive(?DateTime $referenceDateTime  = null): ?Place {
+    final public function getLocationRecursive(?DateTime $referenceDateTime = null): ?Place
+    {
         if ($this->getLocation($referenceDateTime)) {
             return $this->getLocation($referenceDateTime);
         }
+
         return $this->getSuperEvent() ? $this->getSuperEvent()->getLocationRecursive($referenceDateTime) : null; //// TODO
     }
 
-    final public function getStartDateTimeRecursive(?DateTime $referenceDateTime  = null): ?DateTime  {
+    final public function getStartDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
+    {
         $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
         $startDateTime = $this->getStartDateTime($referenceDateTime) ?? $maxDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
@@ -861,7 +867,8 @@ class Event extends AbstractRevisionContainer
         return $startDateTime === $maxDateTime ? null : $startDateTime;
     }
 
-    final public function getEndDateTimeRecursive(?DateTime $referenceDateTime  = null): ?DateTime {
+    final public function getEndDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
+    {
         $minDateTime = new DateTime(DateTimeUtils::MIN_DATE_TIME_STRING);
         $endDateTime = $this->getEndDateTime($referenceDateTime) ?? $minDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
