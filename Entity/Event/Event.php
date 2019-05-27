@@ -694,13 +694,19 @@ class Event extends AbstractRevisionContainer
     }
 
     final public function getActiveEventParticipantsAmount(
-        ?EventParticipantType $eventParticipantType = null,
-        ?DateTime $referenceDateTime = null
+        ?EventParticipantType $eventParticipantType = null
     ): int {
-        return $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
+        return $this->getActiveEventParticipantsByType($eventParticipantType)->count();
     }
 
-    final public function getPrice(EventParticipantType $eventParticipantType): int
+    final public function getEventPriceRecursive(EventParticipantType $eventParticipantType): ?int {
+        if ($this->getEventPrice($eventParticipantType)) {
+            return $this->getEventPrice($eventParticipantType);
+        }
+        return $this->getSuperEvent() ? $this->getSuperEvent()->getEventPriceRecursive($eventParticipantType) : null;
+    }
+
+    final public function getEventPrice(EventParticipantType $eventParticipantType): int
     {
         $price = 0;
         foreach ($this->getEventPrices() as $eventPrice) {
