@@ -51,19 +51,22 @@ class EventPrice
      * @param EventParticipantType|null $eventParticipantType
      * @param int|null                  $numericValue
      * @param int|null                  $taxRate
+     * @param int|null                  $depositValue
      */
     public function __construct(
         ?Nameable $nameable = null,
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
         ?int $numericValue = null,
-        ?int $taxRate = null
+        ?int $taxRate = null,
+        ?int $depositValue = null
     ) {
         $this->setEvent($event);
         $this->setEventParticipantType($eventParticipantType);
         $this->setNumericValue($numericValue);
         $this->setTaxRate($taxRate);
         $this->setFieldsFromNameable($nameable);
+        $this->setDepositValue($depositValue);
     }
 
     final public function getEvent(): ?Event
