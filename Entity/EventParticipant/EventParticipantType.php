@@ -7,6 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use InvalidArgumentException;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
@@ -125,12 +126,17 @@ class EventParticipantType
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
+     * @param string|null   $type
+     *
+     * @throws InvalidArgumentException
      */
     public function __construct(
-        ?Nameable $nameable = null
+        ?Nameable $nameable = null,
+        ?string $type = null
     ) {
         $this->eventParticipants = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
+        $this->setType($type);
     }
 
     public static function getAllowedTypesDefault(): array
