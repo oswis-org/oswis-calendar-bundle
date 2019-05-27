@@ -30,11 +30,12 @@ class EventParticipantTypeManager
     }
 
     final public function create(
-        ?Nameable $nameable = null
+        ?Nameable $nameable = null,
+        ?string $type = null
     ): EventParticipantType {
         try {
             $em = $this->em;
-            $entity = new EventParticipantType($nameable);
+            $entity = new EventParticipantType($nameable, $type);
             $em->persist($entity);
             $em->flush();
             $infoMessage = 'CREATE: Created event participant type (by manager): '.$entity->getId().' '.$entity->getName().'.';
