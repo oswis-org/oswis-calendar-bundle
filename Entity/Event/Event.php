@@ -164,7 +164,7 @@ class Event extends AbstractRevisionContainer
     private $eventType;
 
     /**
-     * @var EventSeries|null $eventType
+     * @var EventSeries|null $eventSeries
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
      *     inversedBy="events",

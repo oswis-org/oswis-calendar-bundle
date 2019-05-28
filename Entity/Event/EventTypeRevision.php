@@ -31,7 +31,7 @@ class EventTypeRevision extends AbstractRevision
     /**
      * @var Event
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
      *     inversedBy="revisions"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
