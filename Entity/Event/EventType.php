@@ -101,6 +101,7 @@ class EventType extends AbstractRevisionContainer
         ?string $color = null
     ) {
         $this->eventRevisions = new ArrayCollection();
+        $this->revisions = new ArrayCollection();
         $this->addRevision(new EventTypeRevision($nameable, $type, $color));
     }
 
