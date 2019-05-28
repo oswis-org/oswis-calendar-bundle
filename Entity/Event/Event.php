@@ -152,6 +152,18 @@ class Event extends AbstractRevisionContainer
     protected $eventWebContents;
 
     /**
+     * Type of this event.
+     * @var EventType|null $eventType
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
+     *     inversedBy="events",
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
+     */
+    private $eventType;
+
+    /**
      * @var EventSeries|null $eventType
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
@@ -209,6 +221,28 @@ class Event extends AbstractRevisionContainer
     public static function checkRevision(?AbstractRevision $revision): void
     {
         assert($revision instanceof EventRevision);
+    }
+
+    /**
+     * @return EventType|null
+     */
+    final public function getEventType(): ?EventType
+    {
+        return $this->eventType;
+    }
+
+    /**
+     * @param EventType|null $eventType
+     */
+    final public function setEventType(?EventType $eventType): void
+    {
+        if ($this->eventType && $eventType !== $this->eventType) {
+            $this->eventType->removeEvent($this);
+        }
+        $this->eventType = $eventType;
+        if ($eventType && $this->eventType !== $eventType) {
+            $eventType->addEvent($this);
+        }
     }
 
     /**

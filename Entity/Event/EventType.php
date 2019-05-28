@@ -78,15 +78,15 @@ class EventType extends AbstractRevisionContainer
     protected $revisions;
 
     /**
-     * Event revisions of that type.
-     * @var Collection|null $eventRevisions EventRevisions of this event type.
+     * Events of that type.
+     * @var Collection|null $event
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     mappedBy="eventType",
      *     cascade={"all"}
      * )
      */
-    protected $eventRevisions;
+    protected $events;
 
     /**
      * ContactDetailType constructor.
@@ -100,7 +100,7 @@ class EventType extends AbstractRevisionContainer
         ?string $type = null,
         ?string $color = null
     ) {
-        $this->eventRevisions = new ArrayCollection();
+        $this->events = new ArrayCollection();
         $this->revisions = new ArrayCollection();
         $this->addRevision(new EventTypeRevision($nameable, $type, $color));
     }
@@ -121,27 +121,27 @@ class EventType extends AbstractRevisionContainer
         assert($revision instanceof EventTypeRevision);
     }
 
-    final public function addEvent(?EventRevision $contact): void
+    final public function addEvent(?Event $event): void
     {
-        if ($contact && !$this->eventRevisions->contains($contact)) {
-            $this->eventRevisions->add($contact);
-            $contact->setEventType($this);
+        if ($event && !$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setEventType($this);
         }
     }
 
-    final public function removeEvent(?EventRevision $contact): void
+    final public function removeEvent(?Event $event): void
     {
-        if ($contact && $this->eventRevisions->removeElement($contact)) {
-            $contact->setEventType(null);
+        if ($event && $this->events->removeElement($event)) {
+            $event->setEventType(null);
         }
     }
 
     /**
      * @return Collection
      */
-    final public function getEventRevisions(): Collection
+    final public function getEvents(): Collection
     {
-        return $this->eventRevisions;
+        return $this->events;
     }
 
     /**

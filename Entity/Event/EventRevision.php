@@ -57,30 +57,16 @@ class EventRevision extends AbstractRevision
     protected $eventFlagConnections;
 
     /**
-     * Type of this event.
-     * @var EventType|null $eventType
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
-     *     inversedBy="eventRevisions",
-     *     fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
-     */
-    private $eventType;
-
-    /**
      * EventRevision constructor.
      *
-     * @param Nameable|null  $nameable
-     * @param Place|null     $location
-     * @param EventType|null $eventType
-     * @param DateTime|null  $startDateTime
-     * @param DateTime|null  $endDateTime
+     * @param Nameable|null $nameable
+     * @param Place|null    $location
+     * @param DateTime|null $startDateTime
+     * @param DateTime|null $endDateTime
      */
     public function __construct(
         ?Nameable $nameable = null,
         ?Place $location = null,
-        ?EventType $eventType = null,
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null
     ) {
@@ -89,7 +75,6 @@ class EventRevision extends AbstractRevision
         $this->setStartDateTime($startDateTime);
         $this->setEndDate($endDateTime);
         $this->setLocation($location);
-        $this->setEventType($eventType);
     }
 
     /**
@@ -155,28 +140,6 @@ class EventRevision extends AbstractRevision
     final public function setLocation(?Place $event): void
     {
         $this->location = $event;
-    }
-
-    /**
-     * @return EventType|null
-     */
-    final public function getEventType(): ?EventType
-    {
-        return $this->eventType;
-    }
-
-    /**
-     * @param EventType|null $eventType
-     */
-    final public function setEventType(?EventType $eventType): void
-    {
-        if ($this->eventType && $eventType !== $this->eventType) {
-            $this->eventType->removeEvent($this);
-        }
-        $this->eventType = $eventType;
-        if ($eventType && $this->eventType !== $eventType) {
-            $eventType->addEvent($this);
-        }
     }
 
 }
