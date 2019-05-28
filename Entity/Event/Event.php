@@ -200,6 +200,7 @@ class Event extends AbstractRevisionContainer
         $this->eventCapacities = new ArrayCollection();
         $this->eventRegistrationRanges = new ArrayCollection();
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
+        $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->eventWebContents = new ArrayCollection();
         $this->revisions = new ArrayCollection();
         $this->addRevision(new EventRevision($nameable, $location, $startDateTime, $endDateTime));
