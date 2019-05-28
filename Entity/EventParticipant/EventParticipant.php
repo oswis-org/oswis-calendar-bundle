@@ -131,9 +131,9 @@ class EventParticipant extends AbstractRevisionContainer
         ?EventParticipantType $eventParticipantType = null,
         ?Collection $eventContactFlagConnections = null
     ) {
-        $this->revisions = new ArrayCollection([new EventParticipantRevision($contact, $event, $eventContactFlagConnections)]);
         $this->setEventParticipantType($eventParticipantType);
         $this->eventsDummy = new ArrayCollection();
+        $this->revisions = new ArrayCollection([new EventParticipantRevision($contact, $event, $eventContactFlagConnections)]);
     }
 
     /**
@@ -239,6 +239,17 @@ class EventParticipant extends AbstractRevisionContainer
         assert($revision instanceof EventParticipantRevision);
 
         return $revision;
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return Event
+     * @throws RevisionMissingException
+     */
+    final public function getEvent(?DateTime $referenceDateTime = null): Event
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getEvent();
     }
 
     /**

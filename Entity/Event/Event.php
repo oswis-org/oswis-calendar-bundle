@@ -228,36 +228,6 @@ class Event extends AbstractRevisionContainer
     }
 
     /**
-     * @return Collection
-     */
-    final public function getEventParticipantFlagInEventConnections(): Collection
-    {
-        return $this->eventParticipantFlagInEventConnections;
-    }
-
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventRevision);
-
-        return $revision;
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getSubEvents(): Collection
-    {
-        return $this->subEvents;
-    }
-
-    /**
      * @return bool
      */
     final public function isRootEvent(): bool
@@ -319,7 +289,11 @@ class Event extends AbstractRevisionContainer
      */
     final public function addEventParticipant(EventParticipant $eventParticipant): void
     {
-        $this->addEventParticipantRevision($eventParticipant->getRevisionByDate());
+        $eventParticipantRevision = $eventParticipant->getRevisionByDate();
+        if (!$eventParticipantRevision) {
+            return;
+        }
+        $this->addEventParticipantRevision($eventParticipantRevision);
     }
 
     /**
@@ -331,15 +305,73 @@ class Event extends AbstractRevisionContainer
     {
         if ($eventParticipantRevision && !$this->eventParticipantRevisions->contains($eventParticipantRevision)) {
             // Check capacity.
+            assert($eventParticipantRevision instanceof EventParticipantRevision);
             $eventParticipant = $eventParticipantRevision->getContainer();
             assert($eventParticipant instanceof EventParticipant);
             $eventParticipantType = $eventParticipant->getEventParticipantType();
-            if ($this->getOccupancy(null, $eventParticipantType) === 0) {
+            if ($this->getRemainingCapacity($eventParticipantType) === 0) {
                 throw new EventCapacityExceededException();
             }
             $this->eventParticipantRevisions->add($eventParticipantRevision);
             $eventParticipantRevision->setEvent($this);
         }
+    }
+
+    /**
+     * @param EventParticipantType|null $eventParticipantType
+     *
+     * @param DateTime|null             $referenceDateTime
+     *
+     * @return int|null
+     */
+    final public function getRemainingCapacity(
+        ?EventParticipantType $eventParticipantType = null,
+        ?DateTime $referenceDateTime = null
+    ): ?int {
+        if ($this->getMaximumCapacity() === null) {
+            return -1;
+        }
+        $occupancy = $this->getOccupancy($referenceDateTime, $eventParticipantType);
+        $maximumCapacity = $this->getMaximumCapacity($eventParticipantType);
+        if ($occupancy >= 0 && $maximumCapacity >= 0) {
+            $remaining = $maximumCapacity - $occupancy;
+
+            return $remaining > 0 ? $remaining : 0;
+        }
+
+        return -1;
+    }
+
+    /**
+     * @param EventParticipantType|null $eventParticipantType
+     *
+     * @return int|null
+     */
+    final public function getMaximumCapacity(
+        ?EventParticipantType $eventParticipantType = null
+    ): ?int {
+        $capacity = -1;
+        foreach ($this->getEventCapacities() as $eventCapacity) {
+            try {
+                assert($eventCapacity instanceof EventCapacity);
+                $oneEventParticipantType = $eventCapacity->getEventParticipantType();
+                if (!$eventParticipantType || ($oneEventParticipantType && $eventParticipantType->getId() === $oneEventParticipantType->getId())) {
+                    $capacity += $eventCapacity->getNumericValue();
+                }
+            } catch (Exception $e) {
+                continue;
+            }
+        }
+
+        return $capacity;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventCapacities(): Collection
+    {
+        return $this->eventCapacities ?? new ArrayCollection();
     }
 
     /**
@@ -637,63 +669,6 @@ class Event extends AbstractRevisionContainer
         return false;
     }
 
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     *
-     * @param DateTime|null             $referenceDateTime
-     *
-     * @return int|null
-     */
-    final public function getRemainingCapacity(
-        ?EventParticipantType $eventParticipantType = null,
-        ?DateTime $referenceDateTime = null
-    ): ?int {
-        if ($this->getMaximumCapacity() === null) {
-            return -1;
-        }
-        $occupancy = $this->getOccupancy($referenceDateTime, $eventParticipantType);
-        $maximumCapacity = $this->getMaximumCapacity($eventParticipantType);
-        if ($occupancy >= 0 && $maximumCapacity >= 0) {
-            $remaining = $maximumCapacity - $occupancy;
-
-            return $remaining > 0 ? $remaining : 0;
-        }
-
-        return -1;
-    }
-
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     *
-     * @return int|null
-     */
-    final public function getMaximumCapacity(
-        ?EventParticipantType $eventParticipantType = null
-    ): ?int {
-        $capacity = -1;
-        foreach ($this->getEventCapacities() as $eventCapacity) {
-            try {
-                assert($eventCapacity instanceof EventCapacity);
-                $oneEventParticipantType = $eventCapacity->getEventParticipantType();
-                if (!$eventParticipantType || ($oneEventParticipantType && $eventParticipantType->getId() === $oneEventParticipantType->getId())) {
-                    $capacity += $eventCapacity->getNumericValue();
-                }
-            } catch (Exception $e) {
-                continue;
-            }
-        }
-
-        return $capacity;
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventCapacities(): Collection
-    {
-        return $this->eventCapacities ?? new ArrayCollection();
-    }
-
     final public function getActiveEventParticipantsAmount(
         ?EventParticipantType $eventParticipantType = null
     ): int {
@@ -707,15 +682,6 @@ class Event extends AbstractRevisionContainer
         }
 
         return $this->getSuperEvent() ? $this->getSuperEvent()->getPriceRecursive($eventParticipantType) : null;
-    }
-
-    final public function getDepositRecursive(EventParticipantType $eventParticipantType): ?int
-    {
-        if ($this->getDeposit($eventParticipantType)) {
-            return $this->getDeposit($eventParticipantType);
-        }
-
-        return $this->getSuperEvent() ? $this->getSuperEvent()->getDepositRecursive($eventParticipantType) : null;
     }
 
     final public function getPrice(EventParticipantType $eventParticipantType): int
@@ -739,6 +705,14 @@ class Event extends AbstractRevisionContainer
         return $this->eventPrices;
     }
 
+    final public function getDepositRecursive(EventParticipantType $eventParticipantType): ?int
+    {
+        if ($this->getDeposit($eventParticipantType)) {
+            return $this->getDeposit($eventParticipantType);
+        }
+
+        return $this->getSuperEvent() ? $this->getSuperEvent()->getDepositRecursive($eventParticipantType) : null;
+    }
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int
     {
@@ -836,18 +810,6 @@ class Event extends AbstractRevisionContainer
         }
     }
 
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Place|null
-     * @throws RevisionMissingException
-     */
-    final public function getLocation(?DateTime $referenceDateTime = null): ?Place
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getLocation();
-    }
-
     /**
      * @param DateTime|null $referenceDateTime
      *
@@ -863,6 +825,31 @@ class Event extends AbstractRevisionContainer
         return $this->getSuperEvent() ? $this->getSuperEvent()->getLocationRecursive($referenceDateTime) : null; //// TODO
     }
 
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return Place|null
+     * @throws RevisionMissingException
+     */
+    final public function getLocation(?DateTime $referenceDateTime = null): ?Place
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getLocation();
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @return EventRevision
+     * @throws RevisionMissingException
+     */
+    final public function getRevisionByDate(?DateTime $dateTime = null): EventRevision
+    {
+        $revision = $this->getRevision($dateTime);
+        assert($revision instanceof EventRevision);
+
+        return $revision;
+    }
+
     final public function getStartDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
     {
         $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
@@ -876,6 +863,14 @@ class Event extends AbstractRevisionContainer
         }
 
         return $startDateTime === $maxDateTime ? null : $startDateTime;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getSubEvents(): Collection
+    {
+        return $this->subEvents;
     }
 
     final public function getEndDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
@@ -909,6 +904,14 @@ class Event extends AbstractRevisionContainer
         }
 
         return $output;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventParticipantFlagInEventConnections(): Collection
+    {
+        return $this->eventParticipantFlagInEventConnections;
     }
 
 }
