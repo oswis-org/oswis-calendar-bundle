@@ -135,6 +135,10 @@ class EventParticipantType
         ?string $type = null
     ) {
         $this->eventParticipants = new ArrayCollection();
+        $this->eventPrices = new ArrayCollection();
+        $this->eventCapacities = new ArrayCollection();
+        $this->eventRegistrationRanges = new ArrayCollection();
+        $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
     }
