@@ -202,7 +202,8 @@ class Event extends AbstractRevisionContainer
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->eventWebContents = new ArrayCollection();
         $this->revisions = new ArrayCollection();
-        $this->addRevision(new EventRevision($nameable, $location, $eventType, $startDateTime, $endDateTime));
+        $this->addRevision(new EventRevision($nameable, $location, $startDateTime, $endDateTime));
+        $this->setEventType($eventType);
         $this->setSuperEvent($superEvent);
         $this->setEventSeries($eventSeries);
     }
