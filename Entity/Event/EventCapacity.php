@@ -24,8 +24,7 @@ class EventCapacity
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventCapacities",
-     *     fetch="EAGER"
+     *     inversedBy="eventCapacities"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -36,8 +35,7 @@ class EventCapacity
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventCapacities",
-     *     fetch="EAGER"
+     *     inversedBy="eventCapacities"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */

@@ -26,8 +26,7 @@ class EventWebContent
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventWebContents",
-     *     fetch="EAGER"
+     *     inversedBy="eventWebContents"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */

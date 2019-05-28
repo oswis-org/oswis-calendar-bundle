@@ -27,8 +27,7 @@ class EventPrice
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventPrices",
-     *     fetch="EAGER"
+     *     inversedBy="eventPrices"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -38,8 +37,7 @@ class EventPrice
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventPrices",
-     *     fetch="EAGER"
+     *     inversedBy="eventPrices"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
