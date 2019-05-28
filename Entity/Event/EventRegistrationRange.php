@@ -2,8 +2,6 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -47,15 +45,17 @@ class EventRegistrationRange
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
+     * @param Event|null    $event
      */
     public function __construct(
-        ?Nameable $nameable = null
+        ?Nameable $nameable = null,
+        ?Event $event = null
     ) {
-        $this->event = new ArrayCollection();
+        $this->setEvent($event);
         $this->setFieldsFromNameable($nameable);
     }
 
-    final public function getEvent(): Collection
+    final public function getEvent(): Event
     {
         return $this->event;
     }

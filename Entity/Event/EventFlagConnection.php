@@ -46,15 +46,15 @@ class EventFlagConnection
     /**
      * FlagInEmployerInEvent constructor.
      *
-     * @param EventFlag|null     $eventContactFlag
+     * @param EventFlag|null     $eventFlag
      * @param EventRevision|null $eventRevision
      */
     public function __construct(
-        ?EventFlag $eventContactFlag = null,
+        ?EventFlag $eventFlag = null,
         ?EventRevision $eventRevision = null
     ) {
-        $this->eventFlag = $eventContactFlag;
-        $this->eventRevision = $eventRevision;
+        $this->setEventFlag($eventFlag);
+        $this->setEventRevision($eventRevision);
     }
 
     final public function getEventRevision(): ?EventRevision

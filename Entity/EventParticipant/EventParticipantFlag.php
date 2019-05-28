@@ -116,6 +116,7 @@ class EventParticipantFlag extends AbstractEventFlag
         ?string $publicOnWebRoute = null
     ) {
         $this->eventParticipantFlagConnections = new ArrayCollection();
+        $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEventParticipantFlagType($eventParticipantFlagType);
         $this->setPublicInIS($publicInIS);
