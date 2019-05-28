@@ -83,6 +83,7 @@ class EventType extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     mappedBy="eventType",
+     *     fetch="EAGER",
      *     cascade={"all"}
      * )
      */
