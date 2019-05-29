@@ -2,6 +2,8 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
+use DateTime;
+use Exception;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -71,6 +73,25 @@ class EventRegistrationRange
         }
     }
 
+    final public function isApplicable(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
+    {
+        try {
+            if ($eventParticipantType && !$this->getEventParticipantType()) {
+                return false;
+            }
+            if ($eventParticipantType && $this->getEventParticipantType()->getId() !== $eventParticipantType->getId()) {
+                return false;
+            }
+            if (!$this->containsDateTimeInRange($referenceDateTime)) {
+                return false;
+            }
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     final public function getEventParticipantType(): ?EventParticipantType
     {
         return $this->eventParticipantType;
@@ -86,6 +107,5 @@ class EventRegistrationRange
             $eventParticipantType->addEventRegistrationRange($this);
         }
     }
-
 
 }

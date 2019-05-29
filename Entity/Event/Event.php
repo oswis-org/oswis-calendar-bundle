@@ -250,14 +250,6 @@ class Event extends AbstractRevisionContainer
     /**
      * @return Collection
      */
-    final public function getEventRegistrationRanges(): Collection
-    {
-        return $this->eventRegistrationRanges;
-    }
-
-    /**
-     * @return Collection
-     */
     final public function getEventParticipantTypeInEventConnections(): Collection
     {
         return $this->eventParticipantTypeInEventConnections;
@@ -948,6 +940,32 @@ class Event extends AbstractRevisionContainer
     final public function getEventParticipantFlagInEventConnections(): Collection
     {
         return $this->eventParticipantFlagInEventConnections;
+    }
+
+    /**
+     * True if registrations for some participant type (or any if not specified) is allowed in some datetime (or now if not specified).
+     *
+     * @param EventParticipantType $eventParticipantType
+     * @param DateTime|null        $referenceDateTime
+     *
+     * @return bool
+     * @throws Exception
+     */
+    final public function isRegistrationsAllowed(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
+    {
+        return $this->getEventRegistrationRanges()->filter(
+                static function (EventRegistrationRange $eventRegistrationRange) use ($eventParticipantType, $referenceDateTime) {
+                    return $eventRegistrationRange->isApplicable($eventParticipantType, $referenceDateTime);
+                }
+            )->count() > 0;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventRegistrationRanges(): Collection
+    {
+        return $this->eventRegistrationRanges;
     }
 
 }

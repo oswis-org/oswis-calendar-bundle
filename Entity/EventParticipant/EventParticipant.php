@@ -121,7 +121,7 @@ class EventParticipant extends AbstractRevisionContainer
      * @param AbstractContact|null      $contact
      * @param Event|null                $event
      * @param EventParticipantType|null $eventParticipantType
-     * @param Collection|null           $eventContactFlagConnections
+     * @param Collection|null           $eventParticipantFlagConnections
      *
      * @throws EventCapacityExceededException
      */
@@ -129,13 +129,13 @@ class EventParticipant extends AbstractRevisionContainer
         ?AbstractContact $contact = null,
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
-        ?Collection $eventContactFlagConnections = null
+        ?Collection $eventParticipantFlagConnections = null
     ) {
         $this->setEventParticipantType($eventParticipantType);
         $this->eventsDummy = new ArrayCollection();
         $this->eventParticipantNotes = new ArrayCollection();
         $this->revisions = new ArrayCollection();
-        $this->addRevision(new EventParticipantRevision($contact, $event, $eventContactFlagConnections));
+        $this->addRevision(new EventParticipantRevision($contact, $event, $eventParticipantFlagConnections));
     }
 
     /**
