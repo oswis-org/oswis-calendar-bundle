@@ -246,10 +246,10 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @param DateTime|null $referenceDateTime
      *
-     * @return Event
+     * @return Event|null
      * @throws RevisionMissingException
      */
-    final public function getEvent(?DateTime $referenceDateTime = null): Event
+    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
     {
         return $this->getRevisionByDate($referenceDateTime)->getEvent();
     }
