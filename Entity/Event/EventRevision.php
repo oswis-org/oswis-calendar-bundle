@@ -15,7 +15,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use function assert;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventRevisionRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_revision")
  */
 class EventRevision extends AbstractRevision

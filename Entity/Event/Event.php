@@ -28,7 +28,7 @@ use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
 
 /**
- * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
  */
 class Event extends AbstractRevisionContainer
