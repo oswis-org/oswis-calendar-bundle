@@ -32,7 +32,8 @@
     }
   ],
   "require": {
-    "zakjakub/oswis-core-bundle": "^0.0",
+    "bigit/vokativ": "dev-master",
+    "zakjakub/oswis-core-bundle": "^0.0.194",
     "zakjakub/oswis-address-book-bundle": "^0.0"
   },
   "autoload": {

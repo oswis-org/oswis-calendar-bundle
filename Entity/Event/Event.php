@@ -968,4 +968,21 @@ class Event extends AbstractRevisionContainer
         return $this->eventRegistrationRanges;
     }
 
+    final public function __toString(): string
+    {
+        $output = ''.$this->getShortName() ?? $this->getName();
+        if ($this->getStartDate()
+            && $this->getEndDate()
+            && $this->getLengthInHours(null) > 24
+            && $this->getStartDate()->format('Y') === $this->getEndDate()->format('Y')
+        ) {
+            $output .= ' ('.$this->getStartDate()->format('d. m.');
+            $output .= ' až '.$this->getEndDate()->format('d. m.');
+            $output .= ' '.$this->getStartDate()->format('Y').')';
+        }
+
+        return ''.$output;
+    }
+
+
 }
