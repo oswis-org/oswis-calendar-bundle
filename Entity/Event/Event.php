@@ -744,15 +744,15 @@ class Event extends AbstractRevisionContainer
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int
     {
-        $price = 0;
+        $depositValue = 0;
         foreach ($this->getEventPrices() as $eventPrice) {
             assert($eventPrice instanceof EventPrice);
             if ($eventPrice->isApplicableForEventParticipantType($eventParticipantType)) {
-                $price += $eventPrice->getDepo;
+                $depositValue += $eventPrice->getDepositValue();
             }
         }
 
-        return $price <= 0 ? 0 : $price;
+        return $depositValue <= 0 ? 0 : $depositValue;
     }
 
     /**
