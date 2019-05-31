@@ -5,6 +5,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use InvalidArgumentException;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -173,6 +174,28 @@ class Event extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      */
     private $eventSeries;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $priceRecursiveFromParent;
+
+    /**
+     * @return bool
+     */
+    final public function isPriceRecursiveFromParent(): bool
+    {
+        return $this->priceRecursiveFromParent ?? false;
+    }
+
+    /**
+     * @param bool $priceRecursiveFromParent
+     */
+    final public function setPriceRecursiveFromParent(bool $priceRecursiveFromParent): void
+    {
+        $this->priceRecursiveFromParent = $priceRecursiveFromParent;
+    }
 
     /**
      * Event constructor.
@@ -704,16 +727,16 @@ class Event extends AbstractRevisionContainer
         return $this->getActiveEventParticipantsByType($eventParticipantType)->count();
     }
 
-    final public function getPriceRecursive(EventParticipantType $eventParticipantType): ?int
+    final public function getPrice(EventParticipantType $eventParticipantType): ?int
     {
-        if ($this->getPrice($eventParticipantType)) {
-            return $this->getPrice($eventParticipantType);
+        if ($this->getPriceOfEvent($eventParticipantType)) {
+            return $this->getPriceOfEvent($eventParticipantType);
         }
 
-        return $this->getSuperEvent() ? $this->getSuperEvent()->getPriceRecursive($eventParticipantType) : null;
+        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getPrice($eventParticipantType) : null;
     }
 
-    final public function getPrice(EventParticipantType $eventParticipantType): int
+    final public function getPriceOfEvent(EventParticipantType $eventParticipantType): int
     {
         $price = 0;
         foreach ($this->getEventPrices() as $eventPrice) {
@@ -734,16 +757,16 @@ class Event extends AbstractRevisionContainer
         return $this->eventPrices;
     }
 
-    final public function getDepositRecursive(EventParticipantType $eventParticipantType): ?int
+    final public function getDeposit(EventParticipantType $eventParticipantType): ?int
     {
-        if ($this->getDeposit($eventParticipantType)) {
-            return $this->getDeposit($eventParticipantType);
+        if ($this->getDepositOfEvent($eventParticipantType)) {
+            return $this->getDepositOfEvent($eventParticipantType);
         }
 
-        return $this->getSuperEvent() ? $this->getSuperEvent()->getDepositRecursive($eventParticipantType) : null;
+        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : null;
     }
 
-    final public function getDeposit(EventParticipantType $eventParticipantType): int
+    final public function getDepositOfEvent(EventParticipantType $eventParticipantType): int
     {
         $depositValue = 0;
         foreach ($this->getEventPrices() as $eventPrice) {
