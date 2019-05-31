@@ -46,15 +46,24 @@ class EventRegistrationRange
     /**
      * EmployerFlag constructor.
      *
-     * @param Nameable|null $nameable
-     * @param Event|null    $event
+     * @param Nameable|null             $nameable
+     * @param Event|null                $event
+     * @param EventParticipantType|null $eventParticipantType
+     * @param DateTime|null             $startDateTime
+     * @param DateTime|null             $endDateTime
      */
     public function __construct(
         ?Nameable $nameable = null,
-        ?Event $event = null
+        ?Event $event = null,
+        ?EventParticipantType $eventParticipantType = null,
+        ?DateTime $startDateTime = null,
+        ?DateTime $endDateTime = null
     ) {
         $this->setEvent($event);
         $this->setFieldsFromNameable($nameable);
+        $this->setEventParticipantType($eventParticipantType);
+        $this->setStartDateTime($startDateTime);
+        $this->setEndDateTime($endDateTime);
     }
 
     final public function getEvent(): Event

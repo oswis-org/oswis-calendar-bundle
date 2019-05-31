@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use InvalidArgumentException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
@@ -314,9 +315,17 @@ class Event extends AbstractRevisionContainer
      *
      * @throws EventCapacityExceededException
      * @throws RevisionMissingException
+     * @throws Exception
      */
     final public function addEventParticipant(EventParticipant $eventParticipant): void
     {
+        if (!$this->isRegistrationsAllowed($eventParticipant->getEventParticipantType())) {
+            throw new AccessDeniedException('Přihlášky nejsou aktuálně povoleny.');
+        }
+        if ($this->getRemainingCapacity($eventParticipant->getEventParticipantType()) < 1) {
+            throw new EventCapacityExceededException();
+        }
+
         $eventParticipantRevision = $eventParticipant->getRevisionByDate();
         if (!$eventParticipantRevision) {
             return;
