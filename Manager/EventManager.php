@@ -40,7 +40,8 @@ class EventManager
         ?EventType $eventType = null,
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null,
-        ?EventSeries $eventSeries = null
+        ?EventSeries $eventSeries = null,
+        ?bool $priceRecursiveFromParent = null
     ): Event {
         try {
             $em = $this->em;
@@ -51,7 +52,8 @@ class EventManager
                 $eventType,
                 $startDateTime,
                 $endDateTime,
-                $eventSeries
+                $eventSeries,
+                $priceRecursiveFromParent
             );
             $em->persist($entity);
             $em->flush();
