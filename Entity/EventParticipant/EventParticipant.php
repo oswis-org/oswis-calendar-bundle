@@ -221,12 +221,13 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @param DateTime|null $referenceDateTime
      *
-     * @return AbstractContact
+     * @return int
+     * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
      */
-    final public function getContact(?DateTime $referenceDateTime = null): AbstractContact
+    final public function getPriceDeposit(?DateTime $referenceDateTime = null): int
     {
-        return $this->getRevisionByDate($referenceDateTime)->getContact();
+        return $this->getRevisionByDate($referenceDateTime)->getDeposit();
     }
 
     /**
@@ -241,41 +242,6 @@ class EventParticipant extends AbstractRevisionContainer
         assert($revision instanceof EventParticipantRevision);
 
         return $revision;
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Event|null
-     * @throws RevisionMissingException
-     */
-    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getEvent();
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws RevisionMissingException
-     * @throws PriceInvalidArgumentException
-     */
-    final public function getPrice(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getPrice();
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
-     */
-    final public function getPriceDeposit(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getDeposit();
     }
 
     /**
@@ -297,12 +263,78 @@ class EventParticipant extends AbstractRevisionContainer
      * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
      */
-    final public function getRemainingPrice(?DateTime $referenceDateTime = null): int {
+    final public function getRemainingPrice(?DateTime $referenceDateTime = null): int
+    {
         return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
     }
 
-    final public function getPaidPrice(): int {
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws RevisionMissingException
+     * @throws PriceInvalidArgumentException
+     */
+    final public function getPrice(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getPrice();
+    }
+
+    final public function getPaidPrice(): int
+    {
         return 0;
     }
+
+    /**
+     * @param Event|null $event
+     *
+     * @throws EventCapacityExceededException
+     * @throws RevisionMissingException
+     */
+    final public function setEvent(?Event $event): void
+    {
+        if ($this->getEvent() !== $event) {
+            $newRevision = clone $this->getRevisionByDate();
+            $newRevision->setEvent($event);
+            $this->addRevision($newRevision);
+        }
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return Event|null
+     * @throws RevisionMissingException
+     */
+    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getEvent();
+    }
+
+    /**
+     * @param AbstractContact|null $contact
+     *
+     * @throws RevisionMissingException
+     */
+    final public function setContact(?AbstractContact $contact): void
+    {
+        if ($this->getContact() !== $contact) {
+            $newRevision = clone $this->getRevisionByDate();
+            $newRevision->setContact($contact);
+            $this->addRevision($newRevision);
+        }
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return AbstractContact
+     * @throws RevisionMissingException
+     */
+    final public function getContact(?DateTime $referenceDateTime = null): AbstractContact
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getContact();
+    }
+
 
 }
