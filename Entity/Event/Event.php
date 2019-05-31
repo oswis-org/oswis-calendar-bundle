@@ -319,13 +319,6 @@ class Event extends AbstractRevisionContainer
      */
     final public function addEventParticipant(EventParticipant $eventParticipant): void
     {
-        if (!$this->isRegistrationsAllowed($eventParticipant->getEventParticipantType())) {
-            throw new AccessDeniedException('Přihlášky nejsou aktuálně povoleny.');
-        }
-        if ($this->getRemainingCapacity($eventParticipant->getEventParticipantType()) < 1) {
-            throw new EventCapacityExceededException();
-        }
-
         $eventParticipantRevision = $eventParticipant->getRevisionByDate();
         if (!$eventParticipantRevision) {
             return;
