@@ -149,13 +149,14 @@ class EventParticipantRevision extends AbstractRevision
         if (!$participant || !$this->getEvent() || !$participant->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()->getPriceOfEvent($participant->getEventParticipantType());
+        $price = $this->getEvent()->getPrice($participant->getEventParticipantType());
         $price += $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
 
-    final public function getFlagsPrice(): int {
+    final public function getFlagsPrice(): int
+    {
         $price = 0;
         foreach ($this->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
             assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
@@ -165,6 +166,7 @@ class EventParticipantRevision extends AbstractRevision
             }
             $price += $eventParticipantFlag->getPrice();
         }
+
         return $price;
     }
 
@@ -227,7 +229,7 @@ class EventParticipantRevision extends AbstractRevision
         if (!$participant || !$this->getEvent() || !$participant->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()->getDepositOfEvent($participant->getEventParticipantType());
+        $price = $this->getEvent()->getDeposit($participant->getEventParticipantType());
 
         return $price < 0 ? 0 : $price;
     }
