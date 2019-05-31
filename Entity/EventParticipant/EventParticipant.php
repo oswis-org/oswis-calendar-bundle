@@ -253,7 +253,7 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function getPriceRest(?DateTime $referenceDateTime = null): int
     {
-        return $this->getRevisionByDate($referenceDateTime)->getPrice() - $this->getRevisionByDate($referenceDateTime)->getDeposit();
+        return $this->getPrice($referenceDateTime) - $this->getPriceDeposit($referenceDateTime);
     }
 
     /**
