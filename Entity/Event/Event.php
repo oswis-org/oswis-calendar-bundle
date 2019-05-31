@@ -207,6 +207,7 @@ class Event extends AbstractRevisionContainer
      * @param DateTime|null    $startDateTime
      * @param DateTime|null    $endDateTime
      * @param EventSeries|null $eventSeries
+     * @param bool|null        $priceRecursiveFromParent
      */
     public function __construct(
         ?Nameable $nameable = null,
@@ -215,7 +216,8 @@ class Event extends AbstractRevisionContainer
         ?EventType $eventType = null,
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null,
-        ?EventSeries $eventSeries = null
+        ?EventSeries $eventSeries = null,
+        ?bool $priceRecursiveFromParent = null
     ) {
         $this->subEvents = new ArrayCollection();
         $this->eventParticipantRevisions = new ArrayCollection();
@@ -230,6 +232,7 @@ class Event extends AbstractRevisionContainer
         $this->setEventType($eventType);
         $this->setSuperEvent($superEvent);
         $this->setEventSeries($eventSeries);
+        $this->setPriceRecursiveFromParent($priceRecursiveFromParent);
     }
 
     /**
