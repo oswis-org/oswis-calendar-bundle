@@ -727,23 +727,29 @@ class Event extends AbstractRevisionContainer
         return $this->getActiveEventParticipantsByType($eventParticipantType)->count();
     }
 
-    final public function getPrice(EventParticipantType $eventParticipantType): ?int
+    final public function getPrice(EventParticipantType $eventParticipantType): int
     {
-        if ($this->getPriceOfEvent($eventParticipantType)) {
+        if ($this->getPriceOfEvent($eventParticipantType) !== null) {
             return $this->getPriceOfEvent($eventParticipantType);
         }
 
-        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getPrice($eventParticipantType) : null;
+        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getPrice($eventParticipantType) : 0;
     }
 
-    final public function getPriceOfEvent(EventParticipantType $eventParticipantType): int
+    final public function getPriceOfEvent(EventParticipantType $eventParticipantType): ?int
     {
+        $hasPrice = false;
         $price = 0;
         foreach ($this->getEventPrices() as $eventPrice) {
             assert($eventPrice instanceof EventPrice);
             if ($eventPrice->isApplicableForEventParticipantType($eventParticipantType)) {
                 $price += $eventPrice->getNumericValue();
+                $hasPrice = true;
             }
+        }
+
+        if (!$hasPrice) {
+            return null;
         }
 
         return $price <= 0 ? 0 : $price;
@@ -757,23 +763,29 @@ class Event extends AbstractRevisionContainer
         return $this->eventPrices;
     }
 
-    final public function getDeposit(EventParticipantType $eventParticipantType): ?int
+    final public function getDeposit(EventParticipantType $eventParticipantType): int
     {
-        if ($this->getDepositOfEvent($eventParticipantType)) {
+        if ($this->getDepositOfEvent($eventParticipantType) !== null) {
             return $this->getDepositOfEvent($eventParticipantType);
         }
 
-        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : null;
+        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : 0;
     }
 
-    final public function getDepositOfEvent(EventParticipantType $eventParticipantType): int
+    final public function getDepositOfEvent(EventParticipantType $eventParticipantType): ?int
     {
+        $hasDeposit = false;
         $depositValue = 0;
         foreach ($this->getEventPrices() as $eventPrice) {
             assert($eventPrice instanceof EventPrice);
             if ($eventPrice->isApplicableForEventParticipantType($eventParticipantType)) {
                 $depositValue += $eventPrice->getDepositValue();
+                $hasDeposit = true;
             }
+        }
+
+        if (!$hasDeposit) {
+            return null;
         }
 
         return $depositValue <= 0 ? 0 : $depositValue;
