@@ -64,7 +64,7 @@ class EventSeries
      */
     final public function getEvents(): Collection
     {
-        return $this->events;
+        return $this->events ?? new ArrayCollection();
     }
 
 }

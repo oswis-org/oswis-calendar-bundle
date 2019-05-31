@@ -146,7 +146,7 @@ class EventParticipantRevision extends AbstractRevision
     {
         $participant = $this->getContainer();
         assert($participant instanceof EventParticipant);
-        if (!$this->getEvent()) {
+        if (!$participant || !$this->getEvent() || !$participant->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
         $price = $this->getEvent()->getPrice($participant->getEventParticipantType());
@@ -219,7 +219,7 @@ class EventParticipantRevision extends AbstractRevision
     {
         $participant = $this->getContainer();
         assert($participant instanceof EventParticipant);
-        if (!$this->getEvent()) {
+        if (!$participant || !$this->getEvent() || !$participant->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
         $price = $this->getEvent()->getDeposit($participant->getEventParticipantType());
