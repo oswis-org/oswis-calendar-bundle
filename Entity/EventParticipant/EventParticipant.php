@@ -308,9 +308,11 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventParticipantFlagConnection): void
     {
-        $newRevision = clone $this->getRevisionByDate();
-        $newRevision->addEventParticipantFlagConnection($eventParticipantFlagConnection);
-        $this->addRevision($newRevision);
+        if (!$this->getEventParticipantFlagConnections()->contains($eventParticipantFlagConnection)) {
+            $newRevision = clone $this->getRevisionByDate();
+            $newRevision->addEventParticipantFlagConnection($eventParticipantFlagConnection);
+            $this->addRevision($newRevision);
+        }
     }
 
     /**
