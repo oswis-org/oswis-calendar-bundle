@@ -182,22 +182,6 @@ class Event extends AbstractRevisionContainer
     private $priceRecursiveFromParent;
 
     /**
-     * @return bool
-     */
-    final public function isPriceRecursiveFromParent(): bool
-    {
-        return $this->priceRecursiveFromParent ?? false;
-    }
-
-    /**
-     * @param bool $priceRecursiveFromParent
-     */
-    final public function setPriceRecursiveFromParent(bool $priceRecursiveFromParent): void
-    {
-        $this->priceRecursiveFromParent = $priceRecursiveFromParent;
-    }
-
-    /**
      * Event constructor.
      *
      * @param Nameable|null    $nameable
@@ -764,6 +748,22 @@ class Event extends AbstractRevisionContainer
     final public function getEventPrices(): Collection
     {
         return $this->eventPrices;
+    }
+
+    /**
+     * @return bool
+     */
+    final public function isPriceRecursiveFromParent(): bool
+    {
+        return $this->priceRecursiveFromParent ?? false;
+    }
+
+    /**
+     * @param bool $priceRecursiveFromParent
+     */
+    final public function setPriceRecursiveFromParent(bool $priceRecursiveFromParent): void
+    {
+        $this->priceRecursiveFromParent = $priceRecursiveFromParent;
     }
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int

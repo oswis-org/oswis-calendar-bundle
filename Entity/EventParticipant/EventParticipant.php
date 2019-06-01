@@ -215,9 +215,21 @@ class EventParticipant extends AbstractRevisionContainer
      * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
      */
-    final public function getPriceDeposit(?DateTime $referenceDateTime = null): int
+    final public function getPriceRest(?DateTime $referenceDateTime = null): int
     {
-        return $this->getRevisionByDate($referenceDateTime)->getDeposit();
+        return $this->getPrice($referenceDateTime) - $this->getPriceDeposit($referenceDateTime);
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws RevisionMissingException
+     * @throws PriceInvalidArgumentException
+     */
+    final public function getPrice(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getPrice();
     }
 
     /**
@@ -241,9 +253,9 @@ class EventParticipant extends AbstractRevisionContainer
      * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
      */
-    final public function getPriceRest(?DateTime $referenceDateTime = null): int
+    final public function getPriceDeposit(?DateTime $referenceDateTime = null): int
     {
-        return $this->getPrice($referenceDateTime) - $this->getPriceDeposit($referenceDateTime);
+        return $this->getRevisionByDate($referenceDateTime)->getDeposit();
     }
 
     /**
@@ -256,18 +268,6 @@ class EventParticipant extends AbstractRevisionContainer
     final public function getRemainingPrice(?DateTime $referenceDateTime = null): int
     {
         return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws RevisionMissingException
-     * @throws PriceInvalidArgumentException
-     */
-    final public function getPrice(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getPrice();
     }
 
     final public function getPaidPrice(): int
@@ -291,6 +291,17 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return Event|null
+     * @throws RevisionMissingException
+     */
+    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getEvent();
+    }
+
+    /**
      * @param EventParticipantFlagConnection|null $eventParticipantFlagConnection
      *
      * @throws RevisionMissingException
@@ -308,19 +319,9 @@ class EventParticipant extends AbstractRevisionContainer
      * @return Collection
      * @throws RevisionMissingException
      */
-    final public function getEventParticipantFlagConnections(?DateTime $referenceDateTime = null): Collection {
-        return $this->getRevisionByDate($referenceDateTime)->getEventParticipantFlagConnections();
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Event|null
-     * @throws RevisionMissingException
-     */
-    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
+    final public function getEventParticipantFlagConnections(?DateTime $referenceDateTime = null): Collection
     {
-        return $this->getRevisionByDate($referenceDateTime)->getEvent();
+        return $this->getRevisionByDate($referenceDateTime)->getEventParticipantFlagConnections();
     }
 
     /**
@@ -347,7 +348,6 @@ class EventParticipant extends AbstractRevisionContainer
     {
         return $this->getRevisionByDate($referenceDateTime)->getContact();
     }
-
 
 
 }

@@ -155,21 +155,6 @@ class EventParticipantRevision extends AbstractRevision
         return $price < 0 ? 0 : $price;
     }
 
-    final public function getFlagsPrice(): int
-    {
-        $price = 0;
-        foreach ($this->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
-            assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
-            $eventParticipantFlag = $eventParticipantFlagConnection->getEventParticipantFlag();
-            if (!$eventParticipantFlag) {
-                continue;
-            }
-            $price += $eventParticipantFlag->getPrice();
-        }
-
-        return $price;
-    }
-
     final public function getEvent(): ?Event
     {
         return $this->event;
@@ -189,6 +174,21 @@ class EventParticipantRevision extends AbstractRevision
             $this->event = $event;
             $event->addEventParticipantRevision($this);
         }
+    }
+
+    final public function getFlagsPrice(): int
+    {
+        $price = 0;
+        foreach ($this->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
+            assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
+            $eventParticipantFlag = $eventParticipantFlagConnection->getEventParticipantFlag();
+            if (!$eventParticipantFlag) {
+                continue;
+            }
+            $price += $eventParticipantFlag->getPrice();
+        }
+
+        return $price;
     }
 
     final public function getEventParticipantFlagConnections(): Collection
