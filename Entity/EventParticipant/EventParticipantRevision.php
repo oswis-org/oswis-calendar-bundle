@@ -103,7 +103,7 @@ class EventParticipantRevision extends AbstractRevision
         assert($revision instanceof EventParticipant);
     }
 
-    final public function __clone()
+    public function __clone()
     {
         foreach ($this->eventParticipantFlagConnections as $eventParticipantFlagConnection) {
             $this->addEventParticipantFlagConnection(clone $eventParticipantFlagConnection);
