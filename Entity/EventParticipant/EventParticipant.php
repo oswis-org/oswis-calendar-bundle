@@ -305,6 +305,16 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @param DateTime|null $referenceDateTime
      *
+     * @return Collection
+     * @throws RevisionMissingException
+     */
+    final public function getEventParticipantFlagConnections(?DateTime $referenceDateTime = null): Collection {
+        return $this->getRevisionByDate($referenceDateTime)->getEventParticipantFlagConnections();
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
      * @return Event|null
      * @throws RevisionMissingException
      */
