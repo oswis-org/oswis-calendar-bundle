@@ -291,6 +291,18 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
+     * @param EventParticipantFlagConnection|null $eventParticipantFlagConnection
+     *
+     * @throws RevisionMissingException
+     */
+    final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventParticipantFlagConnection): void
+    {
+        $newRevision = clone $this->getRevisionByDate();
+        $newRevision->addEventParticipantFlagConnection($eventParticipantFlagConnection);
+        $this->addRevision($newRevision);
+    }
+
+    /**
      * @param DateTime|null $referenceDateTime
      *
      * @return Event|null
@@ -325,6 +337,7 @@ class EventParticipant extends AbstractRevisionContainer
     {
         return $this->getRevisionByDate($referenceDateTime)->getContact();
     }
+
 
 
 }
