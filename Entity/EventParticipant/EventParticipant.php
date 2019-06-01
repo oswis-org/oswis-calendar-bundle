@@ -68,18 +68,6 @@ class EventParticipant extends AbstractRevisionContainer
     use BasicEntityTrait;
 
     /**
-     * DUMMY property for use in forms.
-     * @var bool
-     */
-    public $selectedDummy;
-
-    /**
-     * DUMMY property for use in forms.
-     * @var Collection
-     */
-    public $eventsDummy;
-
-    /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
@@ -123,17 +111,19 @@ class EventParticipant extends AbstractRevisionContainer
      * @param EventParticipantType|null $eventParticipantType
      * @param Collection|null           $eventParticipantFlagConnections
      *
+     * @param Collection|null           $eventParticipantNotes
+     *
      * @throws EventCapacityExceededException
      */
     public function __construct(
         ?AbstractContact $contact = null,
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
-        ?Collection $eventParticipantFlagConnections = null
+        ?Collection $eventParticipantFlagConnections = null,
+        ?Collection $eventParticipantNotes = null
     ) {
         $this->setEventParticipantType($eventParticipantType);
-        $this->eventsDummy = new ArrayCollection();
-        $this->eventParticipantNotes = new ArrayCollection();
+        $this->setEventParticipantNotes($eventParticipantNotes);
         $this->revisions = new ArrayCollection();
         $this->addRevision(new EventParticipantRevision($contact, $event, $eventParticipantFlagConnections));
     }

@@ -36,11 +36,12 @@ class EventParticipantManager
         ?AbstractContact $contact = null,
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
-        ?Collection $eventContactFlagConnections = null
+        ?Collection $eventContactFlagConnections = null,
+        ?Collection $eventParticipantNotes = null
     ): EventParticipant {
         try {
             $em = $this->em;
-            $entity = new EventParticipant($contact, $event, $eventParticipantType, $eventContactFlagConnections);
+            $entity = new EventParticipant($contact, $event, $eventParticipantType, $eventContactFlagConnections, $eventParticipantNotes);
             $em->persist($entity);
             $em->flush();
             $infoMessage = 'CREATE: Created event participant (by manager): '.$entity->getId().', '.$entity->getContact()->getContactName().', '.$entity->getEvent()->getName().'.';
