@@ -69,11 +69,14 @@ class EventParticipantNote
 
     /**
      * @param EventParticipant|null $eventParticipant
+     * @param string|null           $textValue
      */
     public function __construct(
-        ?EventParticipant $eventParticipant = null
+        ?EventParticipant $eventParticipant = null,
+        ?string $textValue = null
     ) {
         $this->setEventParticipant($eventParticipant);
+        $this->setTextValue($textValue);
     }
 
     final public function getEventParticipant(): ?EventParticipant
