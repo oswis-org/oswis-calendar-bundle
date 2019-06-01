@@ -106,7 +106,9 @@ class EventParticipantRevision extends AbstractRevision
     public function __clone()
     {
         foreach ($this->eventParticipantFlagConnections as $eventParticipantFlagConnection) {
-            $this->addEventParticipantFlagConnection(clone $eventParticipantFlagConnection);
+            $newEventParticipantFlagConnection = clone $eventParticipantFlagConnection;
+            assert($newEventParticipantFlagConnection instanceof EventParticipantFlagConnection);
+            $newEventParticipantFlagConnection->setEventContactRevision($this);
         }
     }
 
