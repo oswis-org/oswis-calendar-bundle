@@ -3,6 +3,7 @@
 namespace Zakjakub\OswisAddressBookBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
@@ -16,10 +17,11 @@ class EventParticipantNoteType extends AbstractType
         $builder
             ->add(
                 'textValue',
-                TextType::class,
+                TextareaType::class,
                 array(
                     'label'    => 'Poznámka',
                     'required' => false,
+                    'help' => 'Zde můžeš zadat svůj dotaz, poznámku nebo vzkaz pořadatelům.',
                     'attr'     => ['placeholder' => false],
                 )
             );
