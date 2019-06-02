@@ -200,8 +200,8 @@ class EventParticipantType
      */
     final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
     {
-        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantTypeInEventConnections->contains($eventParticipantFlagInEventConnection)) {
-            $this->eventParticipantTypeInEventConnections->add($eventParticipantFlagInEventConnection);
+        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
+            $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
             $eventParticipantFlagInEventConnection->setEventParticipantType($this);
         }
     }
@@ -214,7 +214,7 @@ class EventParticipantType
         if (!$eventParticipantFlagInEventConnection) {
             return;
         }
-        if ($this->eventParticipantTypeInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
+        if ($this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
             $eventParticipantFlagInEventConnection->setEventParticipantType(null);
         }
     }

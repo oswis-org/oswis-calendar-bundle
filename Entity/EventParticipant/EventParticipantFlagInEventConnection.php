@@ -68,9 +68,9 @@ class EventParticipantFlagInEventConnection
         ?int $maxAmountInEvent = null
     ) {
         $this->setEventParticipantFlag($eventParticipantFlag);
+        $this->setEventParticipantType($eventParticipantType);
         $this->setEvent($event);
         $this->setMaxAmountInEvent($maxAmountInEvent);
-        $this->setEventParticipantType($eventParticipantType);
     }
 
     final public function getEventParticipantType(): ?EventParticipantType
