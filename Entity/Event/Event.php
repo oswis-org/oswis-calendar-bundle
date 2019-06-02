@@ -955,22 +955,19 @@ class Event extends AbstractRevisionContainer
         return $endDateTime === $minDateTime ? null : $endDateTime;
     }
 
-    final public function getAllowedFlagsByType(): array
+    final public function getAllowedFlagsByType(?EventParticipantType $eventParticipantType = null): array
     {
-        $output = [];
-        foreach ($this->getEventParticipantFlagInEventConnections() as $eventParticipantFlagInEventConnection) {
+        $flags = [];
+        foreach ($this->getEventParticipantFlagInEventConnections($eventParticipantType) as $eventParticipantFlagInEventConnection) {
             assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-            $eventParticipantFlag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
-            if (!$eventParticipantFlag) {
-                continue;
+            $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
+            if ($flag) {
+                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '';
+                $flags[$flagTypeId][] = $flag;
             }
-            $eventParticipantFlagType = $eventParticipantFlag->getEventParticipantFlagType();
-            $id = $eventParticipantFlagType ? $eventParticipantFlagType->getId() : -1;
-            $output[$id]['eventParticipantFlagType'] = $eventParticipantFlagType;
-            $output[$id]['eventParticipantFlags'][] = $eventParticipantFlag;
         }
 
-        return $output;
+        return $flags;
     }
 
     /**
