@@ -761,7 +761,7 @@ class Event extends AbstractRevisionContainer
     /**
      * @param bool $priceRecursiveFromParent
      */
-    final public function setPriceRecursiveFromParent(bool $priceRecursiveFromParent): void
+    final public function setPriceRecursiveFromParent(?bool $priceRecursiveFromParent): void
     {
         $this->priceRecursiveFromParent = $priceRecursiveFromParent;
     }
