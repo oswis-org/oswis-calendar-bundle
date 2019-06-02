@@ -44,18 +44,49 @@ class EventParticipantFlagInEventConnection
     protected $event;
 
     /**
+     * Event contact type.
+     * @var EventParticipantType|null
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
+     *     inversedBy="eventParticipantFlagInEventConnections",
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected $eventParticipantType;
+
+    /**
      * @param EventParticipantFlag|null $eventParticipantFlag
      * @param Event|null                $event
+     * @param EventParticipantType|null $eventParticipantType
      * @param int|null                  $maxAmountInEvent
      */
     public function __construct(
         ?EventParticipantFlag $eventParticipantFlag = null,
         ?Event $event = null,
+        ?EventParticipantType $eventParticipantType = null,
         ?int $maxAmountInEvent = null
     ) {
         $this->setEventParticipantFlag($eventParticipantFlag);
         $this->setEvent($event);
         $this->setMaxAmountInEvent($maxAmountInEvent);
+        $this->setEventParticipantType($eventParticipantType);
+    }
+
+    final public function getEventParticipantType(): ?EventParticipantType
+    {
+        return $this->eventParticipantType;
+    }
+
+    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    {
+        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
+            $this->eventParticipantType->removeEventParticipantFlagInEventConnection($this);
+        }
+        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
+            $this->eventParticipantType = $eventParticipantType;
+            $eventParticipantType->addEventParticipantFlagInEventConnection($this);
+        }
     }
 
     /**

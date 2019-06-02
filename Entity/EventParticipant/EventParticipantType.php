@@ -123,6 +123,17 @@ class EventParticipantType
     protected $eventParticipantTypeInEventConnections;
 
     /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
+     *     cascade={"all"},
+     *     mappedBy="eventParticipantType",
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantFlagInEventConnections;
+
+    /**
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
@@ -139,6 +150,7 @@ class EventParticipantType
         $this->eventCapacities = new ArrayCollection();
         $this->eventRegistrationRanges = new ArrayCollection();
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
+        $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
     }
@@ -181,6 +193,46 @@ class EventParticipantType
         if ($this->eventParticipantTypeInEventConnections->removeElement($eventContactRevision)) {
             $eventContactRevision->setEventParticipantType(null);
         }
+    }
+
+    /**
+     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
+     */
+    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
+        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantTypeInEventConnections->contains($eventParticipantFlagInEventConnection)) {
+            $this->eventParticipantTypeInEventConnections->add($eventParticipantFlagInEventConnection);
+            $eventParticipantFlagInEventConnection->setEventParticipantType($this);
+        }
+    }
+
+    /**
+     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
+     */
+    final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
+        if (!$eventParticipantFlagInEventConnection) {
+            return;
+        }
+        if ($this->eventParticipantTypeInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
+            $eventParticipantFlagInEventConnection->setEventParticipantType(null);
+        }
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventParticipantTypeInEventConnections(): ?Collection
+    {
+        return $this->eventParticipantTypeInEventConnections ?? new ArrayCollection();
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventParticipantFlagInEventConnections(): ?Collection
+    {
+        return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
     }
 
     final public function getEventParticipants(): Collection

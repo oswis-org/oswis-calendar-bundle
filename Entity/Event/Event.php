@@ -974,11 +974,22 @@ class Event extends AbstractRevisionContainer
     }
 
     /**
+     * @param EventParticipantType|null $eventParticipantType
+     *
      * @return Collection
      */
-    final public function getEventParticipantFlagInEventConnections(): Collection
+    final public function getEventParticipantFlagInEventConnections(EventParticipantType $eventParticipantType = null): Collection
     {
-        return $this->eventParticipantFlagInEventConnections;
+        if (!$eventParticipantType) {
+            return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
+        }
+
+        return $this->eventParticipantFlagInEventConnections->filter(
+                static function (EventParticipantFlagInEventConnection $eventParticipantFlag) use ($eventParticipantType) {
+                    return $eventParticipantFlag->getEventParticipantType()
+                        && $eventParticipantFlag->getEventParticipantType()->getId() === $eventParticipantType->getId();
+                }
+            ) ?? new ArrayCollection();
     }
 
     /**
