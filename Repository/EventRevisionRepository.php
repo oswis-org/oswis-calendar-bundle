@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision;
 
 class EventRevisionRepository extends EntityRepository
@@ -21,7 +20,7 @@ class EventRevisionRepository extends EntityRepository
      * @return EventRevision|null
      * @throws NonUniqueResultException
      */
-    final public function findOneActiveBySlug(string $slug, ?DateTime $referenceDateTime = null): ?Event
+    final public function findOneActiveBySlug(string $slug, ?DateTime $referenceDateTime = null): ?EventRevision
     {
         $eventRevisions = new ArrayCollection(
             $this->createQueryBuilder('event_revision')
