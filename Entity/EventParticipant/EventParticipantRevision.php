@@ -81,10 +81,9 @@ class EventParticipantRevision extends AbstractRevision
         ?Event $event = null,
         ?Collection $eventContactFlagConnections = null
     ) {
-        $this->eventParticipantFlagConnections = new ArrayCollection();
+        $this->setEventParticipantFlagConnections($eventContactFlagConnections);
         $this->setContact($contact);
         $this->setEvent($event);
-        $this->setEventParticipantFlagConnections($eventContactFlagConnections);
     }
 
     /**

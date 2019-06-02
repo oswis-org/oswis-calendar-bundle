@@ -122,9 +122,9 @@ class EventParticipant extends AbstractRevisionContainer
         ?Collection $eventParticipantFlagConnections = null,
         ?Collection $eventParticipantNotes = null
     ) {
+        $this->revisions = new ArrayCollection();
         $this->setEventParticipantType($eventParticipantType);
         $this->setEventParticipantNotes($eventParticipantNotes);
-        $this->revisions = new ArrayCollection();
         $this->addRevision(new EventParticipantRevision($contact, $event, $eventParticipantFlagConnections));
     }
 

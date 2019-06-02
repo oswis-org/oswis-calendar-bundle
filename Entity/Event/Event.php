@@ -203,6 +203,7 @@ class Event extends AbstractRevisionContainer
         ?EventSeries $eventSeries = null,
         ?bool $priceRecursiveFromParent = null
     ) {
+        $this->revisions = new ArrayCollection();
         $this->subEvents = new ArrayCollection();
         $this->eventParticipantRevisions = new ArrayCollection();
         $this->eventPrices = new ArrayCollection();
@@ -211,12 +212,11 @@ class Event extends AbstractRevisionContainer
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->eventWebContents = new ArrayCollection();
-        $this->revisions = new ArrayCollection();
-        $this->addRevision(new EventRevision($nameable, $location, $startDateTime, $endDateTime));
         $this->setEventType($eventType);
         $this->setSuperEvent($superEvent);
         $this->setEventSeries($eventSeries);
         $this->setPriceRecursiveFromParent($priceRecursiveFromParent);
+        $this->addRevision(new EventRevision($nameable, $location, $startDateTime, $endDateTime));
     }
 
     /**
