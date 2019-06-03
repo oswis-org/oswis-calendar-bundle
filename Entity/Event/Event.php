@@ -12,6 +12,8 @@ use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
@@ -975,19 +977,32 @@ class Event extends AbstractRevisionContainer
 
     /**
      * @param EventParticipantType|null $eventParticipantType
+     * @param EventParticipantFlag|null $eventParticipantFlag
      *
      * @return Collection
      */
-    final public function getEventParticipantFlagInEventConnections(EventParticipantType $eventParticipantType = null): Collection
-    {
+    final public function getEventParticipantFlagInEventConnections(
+        EventParticipantType $eventParticipantType = null,
+        ?EventParticipantFlag $eventParticipantFlag = null
+    ): Collection {
         if (!$eventParticipantType) {
             return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
         }
 
         return $this->eventParticipantFlagInEventConnections->filter(
-                static function (EventParticipantFlagInEventConnection $eventParticipantFlag) use ($eventParticipantType) {
-                    return $eventParticipantFlag->getEventParticipantType()
-                        && $eventParticipantFlag->getEventParticipantType()->getId() === $eventParticipantType->getId();
+                static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
+                    if ($eventParticipantFlag
+                        && !($flagInEventConnection->getEventParticipantFlag()
+                            && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId())) {
+                        return false;
+                    }
+                    if ($eventParticipantType
+                        && !($flagInEventConnection->getEventParticipantType()
+                            && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId())) {
+                        return false;
+                    }
+
+                    return true;
                 }
             ) ?? new ArrayCollection();
     }
@@ -1032,6 +1047,48 @@ class Event extends AbstractRevisionContainer
         }
 
         return ''.$output;
+    }
+
+    final public function getEventParticipantFlagConnections(
+        ?EventParticipantType $eventParticipantType = null,
+        ?DateTime $referenceDateTime = null
+    ): Collection {
+        $flagConnections = new ArrayCollection();
+        foreach ($this->getActiveEventParticipantRevisions($referenceDateTime) as $eventParticipantRevision) {
+            assert($eventParticipantRevision instanceof EventParticipantRevision);
+            foreach ($eventParticipantRevision->getEventParticipantFlagConnections($eventParticipantType) as $eventParticipantFlagConnection) {
+                assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
+                if (!$flagConnections->contains($eventParticipantFlagConnection)) {
+                    $flagConnections->add($eventParticipantFlagConnection);
+                }
+            }
+        }
+
+        return $flagConnections;
+    }
+
+    final public function getAllowedEventParticipantFlagAmount(
+        ?EventParticipantFlag $eventParticipantFlag,
+        ?EventParticipantType $eventParticipantType
+    ): int {
+        $allowedAmount = 0;
+        foreach ($this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag) as $flagInEventConnection) {
+            assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
+            $allowedAmount += $flagInEventConnection->getMaxAmountInEvent();
+        }
+
+        return $allowedAmount;
+    }
+
+    final public function getAllowedEventParticipantFlagRemainingAmount(
+        ?EventParticipantFlag $eventParticipantFlag,
+        ?EventParticipantType $eventParticipantType
+    ): int {
+        $allowedAmount = $this->getAllowedEventParticipantFlagAmount($eventParticipantFlag, $eventParticipantType);
+        $actualAmount = $this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag);
+        $result = $allowedAmount - $actualAmount;
+
+        return $result < 0 ? 0 : $result;
     }
 
 

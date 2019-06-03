@@ -4,6 +4,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Exception;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
@@ -114,6 +115,11 @@ class EventParticipantRevision extends AbstractRevision
 
     final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
     {
+        $eventParticipantFlag = $eventContactFlagConnection->getEventParticipantFlag();
+        $eventParticipant = $this->getContainer();
+        assert($eventParticipant instanceof EventParticipant);
+        $eventParticipantType = $eventParticipant->getEventParticipantType();
+        $event = $this->getEvent()->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType);
         if ($eventContactFlagConnection && !$this->eventParticipantFlagConnections->contains($eventContactFlagConnection)) {
             $this->eventParticipantFlagConnections->add($eventContactFlagConnection);
             $eventContactFlagConnection->setEventContactRevision($this);
@@ -193,9 +199,25 @@ class EventParticipantRevision extends AbstractRevision
         return $price;
     }
 
-    final public function getEventParticipantFlagConnections(): Collection
+    final public function getEventParticipantFlagConnections(?EventParticipantType $eventParticipantType = null): Collection
     {
-        return $this->eventParticipantFlagConnections ?? new ArrayCollection();
+        if (!$eventParticipantType) {
+            return $this->eventParticipantFlagConnections ?? new ArrayCollection();
+        }
+
+        return $this->eventParticipantFlagConnections->filter(
+            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantType) {
+                try {
+                    $participant = $eventParticipantFlagConnection->getEventContactRevision()->getContainer();
+                    assert($participant instanceof EventParticipant);
+
+                    return $participant->getEventParticipantType()
+                        && $participant->getEventParticipantType()->getId() === $eventParticipantType->getId();
+                } catch (Exception $e) {
+                    return false;
+                }
+        }
+        );
     }
 
     final public function setEventParticipantFlagConnections(?Collection $newEventContactFlagConnections): void
