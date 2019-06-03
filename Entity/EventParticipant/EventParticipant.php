@@ -351,5 +351,4 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->getRevisionByDate($referenceDateTime)->getContact();
     }
 
-
 }
