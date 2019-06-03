@@ -342,6 +342,9 @@ class Event extends AbstractRevisionContainer
      */
     final public function addEventParticipantRevision(?EventParticipantRevision $eventParticipantRevision): void
     {
+        if (!$this->eventParticipantRevisions) {
+            $this->eventParticipantRevisions = new ArrayCollection();
+        }
         if ($eventParticipantRevision && !$this->eventParticipantRevisions->contains($eventParticipantRevision)) {
             // Check capacity.
             assert($eventParticipantRevision instanceof EventParticipantRevision);
