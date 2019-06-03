@@ -62,6 +62,11 @@ class EventParticipantFlagConnection
         return $this->eventContactRevision;
     }
 
+    /**
+     * @param EventParticipantRevision|null $eventContactRevision
+     *
+     * @throws \Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException
+     */
     final public function setEventContactRevision(?EventParticipantRevision $eventContactRevision): void
     {
         if ($this->eventContactRevision && $eventContactRevision !== $this->eventContactRevision) {

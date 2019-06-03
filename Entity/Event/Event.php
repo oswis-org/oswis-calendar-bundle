@@ -1067,6 +1067,17 @@ class Event extends AbstractRevisionContainer
         return $flagConnections;
     }
 
+    final public function getAllowedEventParticipantFlagRemainingAmount(
+        ?EventParticipantFlag $eventParticipantFlag,
+        ?EventParticipantType $eventParticipantType
+    ): int {
+        $allowedAmount = $this->getAllowedEventParticipantFlagAmount($eventParticipantFlag, $eventParticipantType);
+        $actualAmount = $this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag);
+        $result = $allowedAmount - $actualAmount;
+
+        return $result < 0 ? 0 : $result;
+    }
+
     final public function getAllowedEventParticipantFlagAmount(
         ?EventParticipantFlag $eventParticipantFlag,
         ?EventParticipantType $eventParticipantType
@@ -1078,17 +1089,6 @@ class Event extends AbstractRevisionContainer
         }
 
         return $allowedAmount;
-    }
-
-    final public function getAllowedEventParticipantFlagRemainingAmount(
-        ?EventParticipantFlag $eventParticipantFlag,
-        ?EventParticipantType $eventParticipantType
-    ): int {
-        $allowedAmount = $this->getAllowedEventParticipantFlagAmount($eventParticipantFlag, $eventParticipantType);
-        $actualAmount = $this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag);
-        $result = $allowedAmount - $actualAmount;
-
-        return $result < 0 ? 0 : $result;
     }
 
 

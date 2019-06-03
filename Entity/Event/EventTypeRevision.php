@@ -40,13 +40,6 @@ class EventTypeRevision extends AbstractRevision
     protected $container;
 
     /**
-     * Type of this event.
-     * @var string|null $type
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     */
-    private $type;
-
-    /**
      * EventRevision constructor.
      *
      * @param Nameable|null $nameable
@@ -102,21 +95,4 @@ class EventTypeRevision extends AbstractRevision
         assert($revision instanceof EventType);
     }
 
-    /**
-     * @return string|null
-     */
-    final public function getType(): ?string
-    {
-        /// TODO: Check type!!!
-        return $this->type;
-    }
-
-    /**
-     * @param string|null $type
-     */
-    final public function setType(?string $type): void
-    {
-        /// TODO: Check type!!
-        $this->type = $type;
-    }
 }

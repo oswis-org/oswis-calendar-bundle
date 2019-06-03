@@ -6,8 +6,8 @@ use Exception;
 
 class EventCapacityExceededException extends Exception
 {
-    public function __construct()
+    public function __construct(?string $message = null)
     {
-        parent::__construct('Kapacita akce byla překročena.');
+        parent::__construct($message ?? 'Kapacita akce byla překročena.');
     }
 }

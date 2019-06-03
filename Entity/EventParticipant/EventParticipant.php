@@ -305,6 +305,7 @@ class EventParticipant extends AbstractRevisionContainer
      * @param EventParticipantFlagConnection|null $eventParticipantFlagConnection
      *
      * @throws RevisionMissingException
+     * @throws EventCapacityExceededException
      */
     final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventParticipantFlagConnection): void
     {

@@ -113,16 +113,44 @@ class EventParticipantRevision extends AbstractRevision
         $this->setEventParticipantFlagConnections($newConnections);
     }
 
+    /**
+     * @param EventParticipantFlagConnection|null $eventContactFlagConnection
+     *
+     * @throws EventCapacityExceededException
+     */
     final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
     {
         $eventParticipantFlag = $eventContactFlagConnection->getEventParticipantFlag();
         $eventParticipant = $this->getContainer();
         assert($eventParticipant instanceof EventParticipant);
         $eventParticipantType = $eventParticipant->getEventParticipantType();
-        $event = $this->getEvent()->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType);
+        if ($this->getEvent()->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
+            throw new EventCapacityExceededException('Byla překročena kapacita pro přihlášky s příznakem'.$eventParticipantFlag->getName().'.');
+        }
         if ($eventContactFlagConnection && !$this->eventParticipantFlagConnections->contains($eventContactFlagConnection)) {
             $this->eventParticipantFlagConnections->add($eventContactFlagConnection);
             $eventContactFlagConnection->setEventContactRevision($this);
+        }
+    }
+
+    final public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    /**
+     * @param Event|null $event
+     *
+     * @throws EventCapacityExceededException
+     */
+    final public function setEvent(?Event $event): void
+    {
+        if ($this->event && $event !== $this->event) {
+            $this->event->removeEventParticipantRevision($this);
+        }
+        if ($event && $this->event !== $event) {
+            $this->event = $event;
+            $event->addEventParticipantRevision($this);
         }
     }
 
@@ -163,27 +191,6 @@ class EventParticipantRevision extends AbstractRevision
         return $price < 0 ? 0 : $price;
     }
 
-    final public function getEvent(): ?Event
-    {
-        return $this->event;
-    }
-
-    /**
-     * @param Event|null $event
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function setEvent(?Event $event): void
-    {
-        if ($this->event && $event !== $this->event) {
-            $this->event->removeEventParticipantRevision($this);
-        }
-        if ($event && $this->event !== $event) {
-            $this->event = $event;
-            $event->addEventParticipantRevision($this);
-        }
-    }
-
     final public function getFlagsPrice(): int
     {
         $price = 0;
@@ -216,10 +223,15 @@ class EventParticipantRevision extends AbstractRevision
                 } catch (Exception $e) {
                     return false;
                 }
-        }
+            }
         );
     }
 
+    /**
+     * @param Collection|null $newEventContactFlagConnections
+     *
+     * @throws EventCapacityExceededException
+     */
     final public function setEventParticipantFlagConnections(?Collection $newEventContactFlagConnections): void
     {
         if (!$this->eventParticipantFlagConnections) {
