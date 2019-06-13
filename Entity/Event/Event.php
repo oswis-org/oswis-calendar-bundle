@@ -1067,6 +1067,17 @@ class Event extends AbstractRevisionContainer
         return $flagConnections;
     }
 
+    final public function getAllowedEventParticipantFlagRemainingAmount(
+        ?EventParticipantFlag $eventParticipantFlag,
+        ?EventParticipantType $eventParticipantType
+    ): int {
+        $allowedAmount = $this->getAllowedEventParticipantFlagAmount($eventParticipantFlag, $eventParticipantType);
+        $actualAmount = $this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag)->count();
+        $result = $allowedAmount - $actualAmount;
+
+        return $result < 0 ? 0 : $result;
+    }
+
     final public function getAllowedEventParticipantFlagAmount(
         ?EventParticipantFlag $eventParticipantFlag,
         ?EventParticipantType $eventParticipantType
@@ -1080,15 +1091,28 @@ class Event extends AbstractRevisionContainer
         return $allowedAmount;
     }
 
-    final public function getAllowedEventParticipantFlagRemainingAmount(
-        ?EventParticipantFlag $eventParticipantFlag,
-        ?EventParticipantType $eventParticipantType
-    ): int {
-        $allowedAmount = $this->getAllowedEventParticipantFlagAmount($eventParticipantFlag, $eventParticipantType);
-        $actualAmount = $this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag)->count();
-        $result = $allowedAmount - $actualAmount;
+    final public function getEventParticipantsRecursive(?DateTime $referenceDateTime = null): Collection
+    {
+        $eventParticipants = $this->getEventParticipants();
+        foreach ($this->getSubEvents() as $subEvent) {
+            assert($subEvent instanceof self);
+            foreach ($subEvent->getEventParticipants() as $newEventParticipant) {
+                if (!$eventParticipants->contains($newEventParticipant)) {
+                    $eventParticipants->add($newEventParticipant);
+                }
+            }
+        }
 
-        return $result < 0 ? 0 : $result;
+        return $eventParticipants;
+    }
+
+    final public function getEventParticipants(): Collection
+    {
+        return $this->getEventParticipantRevisions()->map(
+            static function (EventParticipantRevision $eventParticipantRevision) {
+                return $eventParticipantRevision->getContainer();
+            }
+        );
     }
 
 
