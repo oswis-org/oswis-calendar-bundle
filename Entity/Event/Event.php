@@ -1091,12 +1091,14 @@ class Event extends AbstractRevisionContainer
         return $allowedAmount;
     }
 
-    final public function getEventParticipantsRecursive(?DateTime $referenceDateTime = null): Collection
-    {
-        $eventParticipants = $this->getEventParticipants();
+    final public function getActiveEventParticipantsRecursive(
+        ?EventParticipantType $eventParticipantType = null,
+        ?DateTime $referenceDateTime = null
+    ): Collection {
+        $eventParticipants = $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime);
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
-            foreach ($subEvent->getEventParticipants() as $newEventParticipant) {
+            foreach ($subEvent->getEventParticipantsByType($eventParticipantType, $referenceDateTime) as $newEventParticipant) {
                 if (!$eventParticipants->contains($newEventParticipant)) {
                     $eventParticipants->add($newEventParticipant);
                 }
