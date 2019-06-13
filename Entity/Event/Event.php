@@ -1098,7 +1098,7 @@ class Event extends AbstractRevisionContainer
         $eventParticipants = $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime);
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
-            foreach ($subEvent->getEventParticipantsByType($eventParticipantType, $referenceDateTime) as $newEventParticipant) {
+            foreach ($subEvent->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime) as $newEventParticipant) {
                 if (!$eventParticipants->contains($newEventParticipant)) {
                     $eventParticipants->add($newEventParticipant);
                 }
