@@ -1216,6 +1216,8 @@ class Event extends AbstractRevisionContainer
      * @param bool|null                 $includeDeleted
      * @param bool|null                 $includeNotActivatedUsers
      *
+     * @param int|null                  $recursiveDepth
+     *
      * @return array
      * @throws RevisionMissingException
      */
@@ -1223,10 +1225,11 @@ class Event extends AbstractRevisionContainer
         ?DateTime $referenceDateTime = null,
         ?EventParticipantType $eventParticipantType = null,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true
+        ?bool $includeNotActivatedUsers = true,
+        ?int $recursiveDepth = 0
     ): array {
         $output = [];
-        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
+        $eventParticipants = $this->getActiveEventParticipants($referenceDateTime, $eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth);
         foreach ($eventParticipants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
             $person = $eventParticipant->getContact();
