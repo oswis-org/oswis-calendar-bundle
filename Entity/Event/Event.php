@@ -422,7 +422,7 @@ class Event extends AbstractRevisionContainer
      * @param DateTime|null             $referenceDateTime
      * @param EventParticipantType|null $eventParticipantType
      *
-     * @param bool|null                 $recursive
+     * @param int|null                  $recursiveDepth
      * @param bool|null                 $includeDeleted
      * @param bool|null                 $includeNotActivatedUsers
      *
@@ -431,16 +431,17 @@ class Event extends AbstractRevisionContainer
     final public function getOccupancy(
         ?DateTime $referenceDateTime = null,
         ?EventParticipantType $eventParticipantType = null,
-        ?bool $recursive = false,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true
+        ?bool $includeNotActivatedUsers = true,
+        ?int $recursiveDepth = null
     ): int {
-        if ($recursive) {
+        if ($recursiveDepth > 0) {
             return $this->getActiveEventParticipantsRecursive(
                 $eventParticipantType,
                 $referenceDateTime,
                 $includeDeleted,
-                $includeNotActivatedUsers
+                $includeNotActivatedUsers,
+                $recursiveDepth
             )->count();
         }
 
@@ -451,8 +452,10 @@ class Event extends AbstractRevisionContainer
         ?EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true
+        ?bool $includeNotActivatedUsers = true,
+        ?int $recursiveDepth = 1
     ): Collection {
+        /// TODO: Implement depth.
         $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
