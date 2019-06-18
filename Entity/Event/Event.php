@@ -1204,7 +1204,7 @@ class Event extends AbstractRevisionContainer
 
         return $output;
     }
-    
+
     /**
      * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
      *
@@ -1217,6 +1217,7 @@ class Event extends AbstractRevisionContainer
      * @param bool|null                 $includeNotActivatedUsers
      *
      * @return array
+     * @throws RevisionMissingException
      */
     final public function getActiveEventParticipantsAggregatedBySchool(
         ?DateTime $referenceDateTime = null,
