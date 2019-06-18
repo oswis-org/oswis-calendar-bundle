@@ -436,7 +436,7 @@ class Event extends AbstractRevisionContainer
         ?int $recursiveDepth = null
     ): int {
         if ($recursiveDepth > 0) {
-            return $this->getActiveEventParticipantsRecursive(
+            return $this->getActiveEventParticipants(
                 $eventParticipantType,
                 $referenceDateTime,
                 $includeDeleted,
@@ -448,20 +448,34 @@ class Event extends AbstractRevisionContainer
         return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
     }
 
-    final public function getActiveEventParticipantsRecursive(
+    final public function getActiveEventParticipants(
         ?EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivatedUsers = true,
         ?int $recursiveDepth = 1
     ): Collection {
-        /// TODO: Implement depth.
-        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
-        foreach ($this->getSubEvents() as $subEvent) {
-            assert($subEvent instanceof self);
-            foreach ($subEvent->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers) as $newEventParticipant) {
-                if (!$eventParticipants->contains($newEventParticipant)) {
-                    $eventParticipants->add($newEventParticipant);
+        /// TODO: Duplicities!!!
+        $eventParticipants = $this->getEventParticipantsByType(
+            $eventParticipantType,
+            $referenceDateTime,
+            $includeDeleted,
+            $includeNotActivatedUsers
+        );
+        if ($recursiveDepth > 0) {
+            foreach ($this->getSubEvents() as $subEvent) {
+                assert($subEvent instanceof self);
+                $subEventParticipants = $subEvent->getActiveEventParticipants(
+                    $eventParticipantType,
+                    $referenceDateTime,
+                    $includeDeleted,
+                    $includeNotActivatedUsers,
+                    $recursiveDepth - 1
+                );
+                foreach ($subEventParticipants as $newEventParticipant) {
+                    if (!$eventParticipants->contains($newEventParticipant)) {
+                        $eventParticipants->add($newEventParticipant);
+                    }
                 }
             }
         }
