@@ -435,17 +435,13 @@ class Event extends AbstractRevisionContainer
         ?bool $includeNotActivatedUsers = true,
         ?int $recursiveDepth = null
     ): int {
-        if ($recursiveDepth > 0) {
-            return $this->getActiveEventParticipants(
-                $referenceDateTime,
-                $eventParticipantType,
-                $includeDeleted,
-                $includeNotActivatedUsers,
-                $recursiveDepth
-            )->count();
-        }
-
-        return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
+        return $this->getActiveEventParticipants(
+            $referenceDateTime,
+            $eventParticipantType,
+            $includeDeleted,
+            $includeNotActivatedUsers,
+            $recursiveDepth
+        )->count();
     }
 
     final public function getActiveEventParticipants(
@@ -1172,16 +1168,19 @@ class Event extends AbstractRevisionContainer
      * @param bool|null                 $includeDeleted
      * @param bool|null                 $includeNotActivatedUsers
      *
+     * @param int|null                  $recursiveDepth
+     *
      * @return array
      */
     final public function getActiveEventParticipantsAggregatedByFlags(
         ?DateTime $referenceDateTime = null,
         ?EventParticipantType $eventParticipantType = null,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true
+        ?bool $includeNotActivatedUsers = true,
+        ?int $recursiveDepth = 0
     ): array {
         $output = [];
-        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
+        $eventParticipants = $this->getActiveEventParticipants($referenceDateTime, $eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth);
         foreach ($eventParticipants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
             foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
