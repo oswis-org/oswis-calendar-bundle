@@ -447,6 +447,25 @@ class Event extends AbstractRevisionContainer
         return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
     }
 
+    final public function getActiveEventParticipantsRecursive(
+        ?EventParticipantType $eventParticipantType = null,
+        ?DateTime $referenceDateTime = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true
+    ): Collection {
+        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
+        foreach ($this->getSubEvents() as $subEvent) {
+            assert($subEvent instanceof self);
+            foreach ($subEvent->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers) as $newEventParticipant) {
+                if (!$eventParticipants->contains($newEventParticipant)) {
+                    $eventParticipants->add($newEventParticipant);
+                }
+            }
+        }
+
+        return $eventParticipants;
+    }
+
     final public function getEventParticipantsByType(
         ?EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null,
@@ -521,6 +540,14 @@ class Event extends AbstractRevisionContainer
     final public function getEventParticipantRevisions(): Collection
     {
         return $this->eventParticipantRevisions ?? new ArrayCollection();
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getSubEvents(): Collection
+    {
+        return $this->subEvents;
     }
 
     /**
@@ -970,14 +997,6 @@ class Event extends AbstractRevisionContainer
         return $startDateTime === $maxDateTime ? null : $startDateTime;
     }
 
-    /**
-     * @return Collection
-     */
-    final public function getSubEvents(): Collection
-    {
-        return $this->subEvents;
-    }
-
     final public function getEndDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
     {
         $minDateTime = new DateTime(DateTimeUtils::MIN_DATE_TIME_STRING);
@@ -1122,25 +1141,6 @@ class Event extends AbstractRevisionContainer
         }
 
         return $allowedAmount;
-    }
-
-    final public function getActiveEventParticipantsRecursive(
-        ?EventParticipantType $eventParticipantType = null,
-        ?DateTime $referenceDateTime = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true
-    ): Collection {
-        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
-        foreach ($this->getSubEvents() as $subEvent) {
-            assert($subEvent instanceof self);
-            foreach ($subEvent->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers) as $newEventParticipant) {
-                if (!$eventParticipants->contains($newEventParticipant)) {
-                    $eventParticipants->add($newEventParticipant);
-                }
-            }
-        }
-
-        return $eventParticipants;
     }
 
     /**
