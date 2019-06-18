@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
+use Zakjakub\OswisAddressBookBundle\Entity\Position;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection;
@@ -1160,8 +1161,8 @@ class Event extends AbstractRevisionContainer
      * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
      *
      * array[flagTypeSlug]['flagType']
-     * array[flagTypeSlug][flagSlug]['flag']
-     * array[flagTypeSlug][flagSlug]['eventParticipants']
+     * array[flagTypeSlug]['flags'][flagSlug]['flag']
+     * array[flagTypeSlug]['flags'][flagSlug]['eventParticipants']
      *
      * @param DateTime|null             $referenceDateTime
      * @param EventParticipantType|null $eventParticipantType
@@ -1190,13 +1191,52 @@ class Event extends AbstractRevisionContainer
                     $flagType = $flag->getEventParticipantFlagType();
                     $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
                     $flagSlug = $flag->getSlug() ?? '';
-                    $output[$flagTypeSlug][$flagSlug]['eventParticipants'][] = $eventParticipant;
+                    $output[$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
                     if (!isset($output[$flagTypeSlug]['flagType']) || $output[$flagTypeSlug]['flagType'] !== $flagType) {
                         $output[$flagTypeSlug]['flagType'] = $flagType;
                     }
-                    if (!isset($output[$flagTypeSlug][$flagSlug]['flag']) || $output[$flagTypeSlug][$flagSlug]['flag'] !== $flag) {
-                        $output[$flagTypeSlug][$flagSlug]['flag'] = $flag;
+                    if (!isset($output[$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
+                        $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
                     }
+                }
+            }
+        }
+
+        return $output;
+    }
+    
+    /**
+     * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
+     *
+     * array[schoolSlug]['school']
+     * array[schoolSlug]['eventParticipants'][]
+     *
+     * @param DateTime|null             $referenceDateTime
+     * @param EventParticipantType|null $eventParticipantType
+     * @param bool|null                 $includeDeleted
+     * @param bool|null                 $includeNotActivatedUsers
+     *
+     * @return array
+     */
+    final public function getActiveEventParticipantsAggregatedBySchool(
+        ?DateTime $referenceDateTime = null,
+        ?EventParticipantType $eventParticipantType = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true
+    ): array {
+        $output = [];
+        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
+        foreach ($eventParticipants as $eventParticipant) {
+            assert($eventParticipant instanceof EventParticipant);
+            $person = $eventParticipant->getContact();
+            assert($person instanceof Person);
+            foreach ($person->getStudies() as $study) {
+                assert($study instanceof Position);
+                $school = $study->getOrganization();
+                $schoolSlug = $school ? $school->getSlug() : '';
+                $output[$schoolSlug]['eventParticipants'][] = $eventParticipant;
+                if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['slug'] !== $school) {
+                    $output[$schoolSlug]['school'] = $school;
                 }
             }
         }
