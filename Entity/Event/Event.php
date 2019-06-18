@@ -473,7 +473,7 @@ class Event extends AbstractRevisionContainer
         ?EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivated = null
+        ?bool $includeNotActivated = true
     ): Collection {
         if ($eventParticipantType) {
             return $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
