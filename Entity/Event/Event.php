@@ -437,8 +437,8 @@ class Event extends AbstractRevisionContainer
     ): int {
         if ($recursiveDepth > 0) {
             return $this->getActiveEventParticipants(
-                $eventParticipantType,
                 $referenceDateTime,
+                $eventParticipantType,
                 $includeDeleted,
                 $includeNotActivatedUsers,
                 $recursiveDepth
@@ -449,8 +449,8 @@ class Event extends AbstractRevisionContainer
     }
 
     final public function getActiveEventParticipants(
-        ?EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null,
+        ?EventParticipantType $eventParticipantType = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivatedUsers = true,
         ?int $recursiveDepth = 1
@@ -466,8 +466,8 @@ class Event extends AbstractRevisionContainer
             foreach ($this->getSubEvents() as $subEvent) {
                 assert($subEvent instanceof self);
                 $subEventParticipants = $subEvent->getActiveEventParticipants(
-                    $eventParticipantType,
                     $referenceDateTime,
+                    $eventParticipantType,
                     $includeDeleted,
                     $includeNotActivatedUsers,
                     $recursiveDepth - 1
