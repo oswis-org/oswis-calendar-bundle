@@ -422,12 +422,28 @@ class Event extends AbstractRevisionContainer
      * @param DateTime|null             $referenceDateTime
      * @param EventParticipantType|null $eventParticipantType
      *
+     * @param bool|null                 $recursive
+     * @param bool|null                 $includeDeleted
+     * @param bool|null                 $includeNotActivatedUsers
+     *
      * @return int
      */
     final public function getOccupancy(
         ?DateTime $referenceDateTime = null,
-        ?EventParticipantType $eventParticipantType = null
+        ?EventParticipantType $eventParticipantType = null,
+        ?bool $recursive = false,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true
     ): int {
+        if ($recursive) {
+            return $this->getActiveEventParticipantsRecursive(
+                $eventParticipantType,
+                $referenceDateTime,
+                $includeDeleted,
+                $includeNotActivatedUsers
+            )->count();
+        }
+
         return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
     }
 
@@ -469,7 +485,7 @@ class Event extends AbstractRevisionContainer
                     if (!$includeNotActivatedUsers) {
                         $person = $eventParticipantRevision->getContact();
                         assert($person instanceof Person);
-                        if (!$person->getAppUser() || !$person->getAppUser()->getAccountActivationDateTime()) {
+                        if ($person instanceof Person && $person->getAppUser() && !$person->getAppUser()->getAccountActivationDateTime()) {
                             return false;
                         }
                     }
