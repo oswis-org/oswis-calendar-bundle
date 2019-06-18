@@ -428,15 +428,17 @@ class Event extends AbstractRevisionContainer
         ?DateTime $referenceDateTime = null,
         ?EventParticipantType $eventParticipantType = null
     ): int {
-        return $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
+        return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->count();
     }
 
-    final public function getActiveEventParticipantsByType(
+    final public function getEventParticipantsByType(
         ?EventParticipantType $eventParticipantType = null,
-        ?DateTime $referenceDateTime = null
+        ?DateTime $referenceDateTime = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivated = null
     ): Collection {
         if ($eventParticipantType) {
-            return $this->getActiveEventParticipants($referenceDateTime)->filter(
+            return $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
                 static function (EventParticipant $eventParticipant) use ($eventParticipantType) {
                     if (!$eventParticipant->getEventParticipantType()) {
                         return false;
@@ -447,23 +449,38 @@ class Event extends AbstractRevisionContainer
             );
         }
 
-        return $this->getActiveEventParticipants($referenceDateTime);
+        return $this->getEventParticipants($referenceDateTime);
     }
 
-    /**
-     * Returns EventParticipants whose are active at specified moment (or now, if no referenceDateTime is specified).
-     *
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Collection Active EventParticipants.
-     */
-    final public function getActiveEventParticipants(?DateTime $referenceDateTime = null): Collection
-    {
-        return $this->getActiveEventParticipantRevisions($referenceDateTime)->map(
-            static function (EventParticipantRevision $eventParticipantRevision) {
-                return $eventParticipantRevision->getContainer();
-            }
-        );
+    final public function getEventParticipants(
+        ?DateTime $referenceDateTime = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true
+    ): Collection {
+        return $this->getActiveEventParticipantRevisions($referenceDateTime)
+            ->filter(
+                static function (EventParticipantRevision $eventParticipantRevision) use ($includeDeleted, $includeNotActivatedUsers) {
+                    if ($includeDeleted && $includeNotActivatedUsers) {
+                        return true;
+                    }
+                    if (!$includeDeleted && $eventParticipantRevision->isDeleted()) {
+                        return false;
+                    }
+                    if (!$includeNotActivatedUsers) {
+                        $person = $eventParticipantRevision->getContact();
+                        assert($person instanceof Person);
+                        if (!$person->getAppUser() || !$person->getAppUser()->getAccountActivationDateTime()) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            )->map(
+                static function (EventParticipantRevision $eventParticipantRevision) {
+                    return $eventParticipantRevision->getContainer();
+                }
+            );
     }
 
     /**
@@ -648,7 +665,7 @@ class Event extends AbstractRevisionContainer
         EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null
     ): bool {
-        return $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime)->exists(
+        return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->exists(
             static function (EventParticipant $eventParticipant) use ($contact, $referenceDateTime) {
                 $participantContact = $eventParticipant->getContact($referenceDateTime);
 
@@ -670,7 +687,7 @@ class Event extends AbstractRevisionContainer
         ?EventParticipantType $eventParticipantType = null,
         ?DateTime $referenceDateTime = null
     ): bool {
-        return $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime)->exists(
+        return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->exists(
             static function (EventParticipant $eventParticipant) use ($appUser, $referenceDateTime) {
                 try {
                     /** @noinspection PhpUndefinedMethodInspection */
@@ -716,7 +733,7 @@ class Event extends AbstractRevisionContainer
     final public function getActiveEventParticipantsAmount(
         ?EventParticipantType $eventParticipantType = null
     ): int {
-        return $this->getActiveEventParticipantsByType($eventParticipantType)->count();
+        return $this->getEventParticipantsByType($eventParticipantType)->count();
     }
 
     final public function getPrice(EventParticipantType $eventParticipantType): int
@@ -1038,7 +1055,7 @@ class Event extends AbstractRevisionContainer
         $output = ''.$this->getShortName() ?? $this->getName();
         if ($this->getStartDate()
             && $this->getEndDate()
-            && $this->getLengthInHours(null) > 24
+            && $this->getLengthInHours() > 24
             && $this->getStartDate()->format('Y') === $this->getEndDate()->format('Y')
         ) {
             $output .= ' ('.$this->getStartDate()->format('d. m.');
@@ -1093,12 +1110,14 @@ class Event extends AbstractRevisionContainer
 
     final public function getActiveEventParticipantsRecursive(
         ?EventParticipantType $eventParticipantType = null,
-        ?DateTime $referenceDateTime = null
+        ?DateTime $referenceDateTime = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true
     ): Collection {
-        $eventParticipants = $this->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime);
+        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
-            foreach ($subEvent->getActiveEventParticipantsByType($eventParticipantType, $referenceDateTime) as $newEventParticipant) {
+            foreach ($subEvent->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers) as $newEventParticipant) {
                 if (!$eventParticipants->contains($newEventParticipant)) {
                     $eventParticipants->add($newEventParticipant);
                 }
@@ -1108,14 +1127,49 @@ class Event extends AbstractRevisionContainer
         return $eventParticipants;
     }
 
-    final public function getEventParticipants(): Collection
-    {
-        return $this->getEventParticipantRevisions()->map(
-            static function (EventParticipantRevision $eventParticipantRevision) {
-                return $eventParticipantRevision->getContainer();
+    /**
+     * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
+     *
+     * array[flagTypeSlug]['flagType']
+     * array[flagTypeSlug][flagSlug]['flag']
+     * array[flagTypeSlug][flagSlug]['eventParticipants']
+     *
+     * @param DateTime|null             $referenceDateTime
+     * @param EventParticipantType|null $eventParticipantType
+     * @param bool|null                 $includeDeleted
+     * @param bool|null                 $includeNotActivatedUsers
+     *
+     * @return array
+     */
+    final public function getActiveEventParticipantsAggregatedByFlags(
+        ?DateTime $referenceDateTime = null,
+        ?EventParticipantType $eventParticipantType = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true
+    ): array {
+        $output = [];
+        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime, $includeDeleted, $includeNotActivatedUsers);
+        foreach ($eventParticipants as $eventParticipant) {
+            assert($eventParticipant instanceof EventParticipant);
+            foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
+                assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
+                $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
+                if ($flag) {
+                    $flagType = $flag->getEventParticipantFlagType();
+                    $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
+                    $flagSlug = $flag->getSlug() ?? '';
+                    $output[$flagTypeSlug][$flagSlug]['eventParticipants'][] = $eventParticipant;
+                    if (!isset($output[$flagTypeSlug]['flagType']) || $output[$flagTypeSlug]['flagType'] !== $flagType) {
+                        $output[$flagTypeSlug]['flagType'] = $flagType;
+                    }
+                    if (!isset($output[$flagTypeSlug][$flagSlug]['flag']) || $output[$flagTypeSlug][$flagSlug]['flag'] !== $flag) {
+                        $output[$flagTypeSlug][$flagSlug]['flag'] = $flag;
+                    }
+                }
             }
-        );
-    }
+        }
 
+        return $output;
+    }
 
 }

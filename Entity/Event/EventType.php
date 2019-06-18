@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -95,6 +96,8 @@ class EventType extends AbstractRevisionContainer
      * @param Nameable|null $nameable
      * @param string|null   $type
      * @param string|null   $color
+     *
+     * @throws InvalidArgumentException
      */
     public function __construct(
         ?Nameable $nameable = null,

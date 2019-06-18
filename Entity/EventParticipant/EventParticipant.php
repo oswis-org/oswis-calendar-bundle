@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Exception;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
@@ -17,6 +18,7 @@ use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
 
 /**
  * Participation of contact in event.
@@ -66,6 +68,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 class EventParticipant extends AbstractRevisionContainer
 {
     use BasicEntityTrait;
+    use EntityDeletedContainerTrait;
 
     /**
      * @var Collection
@@ -320,11 +323,14 @@ class EventParticipant extends AbstractRevisionContainer
      * @param DateTime|null $referenceDateTime
      *
      * @return Collection
-     * @throws RevisionMissingException
      */
     final public function getEventParticipantFlagConnections(?DateTime $referenceDateTime = null): Collection
     {
-        return $this->getRevisionByDate($referenceDateTime)->getEventParticipantFlagConnections() ?? new ArrayCollection();
+        try {
+            return $this->getRevisionByDate($referenceDateTime)->getEventParticipantFlagConnections() ?? new ArrayCollection();
+        } catch (Exception $e) {
+            return new ArrayCollection();
+        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
+use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
 
@@ -48,6 +49,8 @@ class EventParticipantFlagConnection
      *
      * @param EventParticipantFlag|null     $eventContactFlag
      * @param EventParticipantRevision|null $eventContactRevision
+     *
+     * @throws EventCapacityExceededException
      */
     public function __construct(
         ?EventParticipantFlag $eventContactFlag = null,
@@ -65,7 +68,7 @@ class EventParticipantFlagConnection
     /**
      * @param EventParticipantRevision|null $eventContactRevision
      *
-     * @throws \Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException
+     * @throws EventCapacityExceededException
      */
     final public function setEventContactRevision(?EventParticipantRevision $eventContactRevision): void
     {

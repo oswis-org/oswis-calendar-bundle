@@ -12,6 +12,7 @@ use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
 use function assert;
 
 /**
@@ -21,6 +22,7 @@ use function assert;
 class EventParticipantRevision extends AbstractRevision
 {
     use BasicEntityTrait;
+    use DeletedTrait;
 
     /**
      * @var EventParticipant
@@ -103,6 +105,9 @@ class EventParticipantRevision extends AbstractRevision
         assert($revision instanceof EventParticipant);
     }
 
+    /**
+     * @throws EventCapacityExceededException
+     */
     public function __clone()
     {
         $newConnections = $this->eventParticipantFlagConnections->map(
@@ -154,6 +159,11 @@ class EventParticipantRevision extends AbstractRevision
         }
     }
 
+    /**
+     * @param EventParticipantFlagConnection|null $eventContactFlagConnection
+     *
+     * @throws EventCapacityExceededException
+     */
     final public function removeEventParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
     {
         if (!$eventContactFlagConnection) {

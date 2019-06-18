@@ -2,6 +2,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
+use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -45,6 +46,8 @@ class EventTypeRevision extends AbstractRevision
      * @param Nameable|null $nameable
      * @param string|null   $type
      * @param string|null   $color
+     *
+     * @throws InvalidArgumentException
      */
     public function __construct(
         ?Nameable $nameable = null,
