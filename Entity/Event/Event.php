@@ -1240,7 +1240,7 @@ class Event extends AbstractRevisionContainer
                 $school = $study->getOrganization();
                 $schoolSlug = $school ? $school->getSlug() : '';
                 $output[$schoolSlug]['eventParticipants'][] = $eventParticipant;
-                if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['slug'] !== $school) {
+                if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['school'] !== $school) {
                     $output[$schoolSlug]['school'] = $school;
                 }
             }
