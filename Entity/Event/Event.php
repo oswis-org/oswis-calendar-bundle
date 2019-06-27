@@ -1157,6 +1157,7 @@ class Event extends AbstractRevisionContainer
         return $allowedAmount;
     }
 
+
     /**
      * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
      *
@@ -1247,5 +1248,6 @@ class Event extends AbstractRevisionContainer
 
         return $output;
     }
+
 
 }
