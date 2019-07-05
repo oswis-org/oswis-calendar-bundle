@@ -21,8 +21,11 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
 
 /**
- * Participation of contact in event.
- * @Doctrine\ORM\Mapping\Entity
+ * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
+ *
+ * @Doctrine\ORM\Mapping\Entity(
+ *     repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository"
+ * )
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant")
  * @ApiResource(
  *   attributes={
@@ -57,11 +60,14 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
  * @ApiFilter(OrderFilter::class)
  * @Searchable({
  *     "id",
- *     "student.person.fullName",
- *     "student.person.description",
- *     "student.person.note",
+ *     "contact.person.fullName",
+ *     "contact.person.description",
+ *     "contact.person.note",
  *     "event.name",
+ *     "event.shortName",
+ *     "event.slug",
  *     "event.description",
+ *     "event.internalNote",
  *     "event.note"
  * })
  */

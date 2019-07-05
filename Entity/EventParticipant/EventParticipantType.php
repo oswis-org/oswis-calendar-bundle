@@ -198,9 +198,11 @@ class EventParticipantType
     /**
      * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
      */
-    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
-    {
-        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
+    final public function addEventParticipantFlagInEventConnection(
+        ?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection
+    ): void {
+        if ($eventParticipantFlagInEventConnection
+            && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
             $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
             $eventParticipantFlagInEventConnection->setEventParticipantType($this);
         }
@@ -209,8 +211,9 @@ class EventParticipantType
     /**
      * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
      */
-    final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
-    {
+    final public function removeEventParticipantFlagInEventConnection(
+        ?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection
+    ): void {
         if (!$eventParticipantFlagInEventConnection) {
             return;
         }
