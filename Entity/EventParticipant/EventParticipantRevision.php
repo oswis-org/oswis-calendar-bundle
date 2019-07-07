@@ -125,6 +125,9 @@ class EventParticipantRevision extends AbstractRevision
      */
     final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
     {
+        if (!$eventContactFlagConnection) {
+            return;
+        }
         $eventParticipantFlag = $eventContactFlagConnection->getEventParticipantFlag();
         $eventParticipant = $this->getContainer();
         assert($eventParticipant instanceof EventParticipant);
