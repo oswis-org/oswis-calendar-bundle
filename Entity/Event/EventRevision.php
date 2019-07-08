@@ -10,6 +10,7 @@ use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use function assert;
@@ -20,10 +21,10 @@ use function assert;
  */
 class EventRevision extends AbstractRevision
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use DateRangeTrait;
+    use ColorTrait;
 
     /**
      * @var Event

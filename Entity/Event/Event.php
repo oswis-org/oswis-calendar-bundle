@@ -2,6 +2,9 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -25,22 +28,65 @@ use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
+use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\ColorContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
 
 /**
+ * Event.
+ *
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
+ * @ApiResource(
+ *   attributes={
+ *     "filters"={"search"},
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"calendar_events_get"}},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"calendar_events_post"}}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"calendar_event_get"}},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"calendar_event_put"}}
+ *     },
+ *     "delete"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"calendar_event_delete"}}
+ *     }
+ *   }
+ * )
+ * @ApiFilter(OrderFilter::class)
+ * @Searchable({
+ *     "id",
+ *     "name",
+ *     "description",
+ *     "note",
+ *     "shortName",
+ *     "slug"
+ * })
  */
 class Event extends AbstractRevisionContainer
 {
-
     use BasicEntityTrait;
     use NameableBasicContainerTrait;
     use DateRangeContainerTrait;
+    use ColorContainerTrait;
 
     /**
      * Parent event (if this is not top level event).

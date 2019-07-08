@@ -10,11 +10,9 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\ValueTrait;
 
 abstract class AbstractEventFlag
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use ValueTrait;
     use EntityPublicTrait;
     use ColorTrait;
-
 }

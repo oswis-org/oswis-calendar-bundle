@@ -19,7 +19,9 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\ColorContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
 
 /**
- * @Doctrine\ORM\Mapping\Entity
+ * Type of Event.
+ *
+ * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_type")
  * @ApiResource(
  *   attributes={

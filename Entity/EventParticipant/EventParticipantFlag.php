@@ -12,6 +12,8 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
+ * Flag of participant of some event.
+ *
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag")
  * @ApiResource(
@@ -95,7 +97,6 @@ class EventParticipantFlag extends AbstractEventFlag
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected $price;
-
 
     /**
      * EmployerFlag constructor.
