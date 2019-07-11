@@ -1,0 +1,110 @@
+Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
+    attributes:
+        id:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payment_get']
+        createdDateTime:
+            groups: ['calendar_event_participant_payment_get']
+        updatedDateTime:
+            groups: ['calendar_event_participant_payment_get']
+        createdAuthor:
+            groups: ['calendar_event_participant_payment_get']
+        updatedAuthor:
+            groups: ['calendar_event_participant_payment_get']
+        createdIp:
+            groups: ['calendar_event_participant_payment_get']
+        updatedIp:
+            groups: ['calendar_event_participant_payment_get']
+        dateTime:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
+        eventParticipant:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get']
+        numericValue:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
+        type:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
+        note:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
+        internalNote:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
+        eMailConfirmationDateTime:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payment_get']
+        eMailConfirmationCount:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payment_get']
+        eMailConfirmationSource:
+            groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payment_get']
+
+Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
+    attributes:
+        id:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payments_post'
+                - 'calendar_event_participant_payment_get'
+        createdDateTime:
+            groups: ['calendar_event_participant_payment_get']
+        updatedDateTime:
+            groups: ['calendar_event_participant_payment_get']
+        createdAuthor:
+            groups: ['calendar_event_participant_payment_get']
+        updatedAuthor:
+            groups: ['calendar_event_participant_payment_get']
+        event:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        contact:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+
+
+Zakjakub\OswisCalendarBundle\Entity\Event\Event:
+    attributes:
+        id:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        name:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        shortName:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        description:
+            groups:
+                - 'calendar_event_participant_payment_get'
+        note:
+            groups:
+                - 'calendar_event_participant_payment_get'
+        internalNote:
+            groups:
+                - 'calendar_event_participant_payment_get'
+        slug:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+
+
+Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
+    attributes:
+        id:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        contactName:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        phone:
+            groups:
+                - 'calendar_event_participant_payments_get'
+                - 'calendar_event_participant_payment_get'
+        url:
+            groups:
+                - 'calendar_event_participant_payment_get'
+        email:
+            groups:
+                - 'calendar_event_participant_payment_get'
+

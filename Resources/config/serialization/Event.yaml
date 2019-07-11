@@ -1,43 +1,3 @@
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
-    attributes:
-        id:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-        createdDateTime:
-            groups: ['calendar_event_participant_get']
-        updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_get']
-        createdIp:
-            groups: ['calendar_event_participant_get']
-        updatedIp:
-            groups: ['calendar_event_participant_get']
-        deleted:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get', 'calendar_event_participant_put']
-        eventParticipantType:
-            groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
-        eventParticipantNotes:
-            groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
-        contact:
-            groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
-        event:
-            groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
-        eventParticipantFlagConnections:
-            groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
-        priceRest:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-        priceDeposit:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-        price:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-        remainingPrice:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-        paidPrice:
-            groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-
-
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
     attributes:
         id:
@@ -179,6 +139,18 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
             groups:
                 - 'calendar_event_participants_get'
                 - 'calendar_event_participant_get'
+        startDateTime:
+            groups:
+                - 'calendar_event_participants_get'
+                - 'calendar_event_participant_get'
+        endDateTime:
+            groups:
+                - 'calendar_event_participants_get'
+                - 'calendar_event_participant_get'
+        eventType:
+            groups:
+                - 'calendar_event_participants_get'
+                - 'calendar_event_participant_get'
 
 
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
@@ -204,44 +176,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
                 - 'calendar_event_participant_get'
                 - 'calendar_event_participant_put'
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
-    attributes:
-        id:
-            groups:
-                - 'calendar_event_participant_get'
-        createdDateTime:
-            groups: ['calendar_event_participant_get']
-        updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_get']
-        numericValue:
-            groups:
-                - 'calendar_event_participant_get'
-        note:
-            groups:
-                - 'calendar_event_participant_get'
-        internalNote:
-            groups:
-                - 'calendar_event_participant_get'
-        dateTime:
-            groups:
-                - 'calendar_event_participant_get'
-        type:
-            groups:
-                - 'calendar_event_participant_get'
-        eMailConfirmationDateTime:
-            groups:
-                - 'calendar_event_participant_get'
-        eMailConfirmationCount:
-            groups:
-                - 'calendar_event_participant_get'
-        eMailConfirmationSource:
-            groups:
-                - 'calendar_event_participant_get'
-
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
     attributes:
         id:
@@ -266,25 +200,27 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
                 - 'calendar_event_participant_put'
 
 
-Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
+Zakjakub\OswisCalendarBundle\Entity\Event\EventType:
     attributes:
         id:
             groups:
                 - 'calendar_event_participants_get'
+                - 'calendar_event_participants_post'
                 - 'calendar_event_participant_get'
-        contactName:
+                - 'calendar_event_participant_put'
+        createdDateTime:
+            groups: ['calendar_event_participant_get']
+        updatedDateTime:
+            groups: ['calendar_event_participant_get']
+        createdAuthor:
+            groups: ['calendar_event_participant_get']
+        updatedAuthor:
+            groups: ['calendar_event_participant_get']
+        name:
             groups:
                 - 'calendar_event_participants_get'
                 - 'calendar_event_participant_get'
-        phone:
+        shortName:
             groups:
                 - 'calendar_event_participants_get'
                 - 'calendar_event_participant_get'
-        url:
-            groups:
-                - 'calendar_event_participant_get'
-        email:
-            groups:
-                - 'calendar_event_participant_get'
-
-

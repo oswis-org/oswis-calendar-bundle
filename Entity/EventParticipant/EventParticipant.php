@@ -19,6 +19,7 @@ use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
+use function assert;
 
 /**
  * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
@@ -111,6 +112,17 @@ class EventParticipant extends AbstractRevisionContainer
      * )
      */
     protected $eventParticipantNotes;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment",
+     *     cascade={"all"},
+     *     mappedBy="eventParticipant",
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantPayments;
 
     /**
      * EventAttendee constructor.
@@ -281,7 +293,61 @@ class EventParticipant extends AbstractRevisionContainer
 
     final public function getPaidPrice(): int
     {
-        return 0;
+        $paid = 0;
+        foreach ($this->getEventParticipantPayments() as $eventParticipantPayment) {
+            assert($eventParticipantPayment instanceof EventParticipantPayment);
+            $paid += $eventParticipantPayment->getNumericValue();
+        }
+
+        return $paid;
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventParticipantPayments(): ?Collection
+    {
+        return $this->eventParticipantPayments;
+    }
+
+    final public function setEventParticipantPayments(?Collection $newEventParticipantPayments): void
+    {
+        if (!$this->eventParticipantPayments) {
+            $this->eventParticipantPayments = new ArrayCollection();
+        }
+        if (!$newEventParticipantPayments) {
+            $newEventParticipantPayments = new ArrayCollection();
+        }
+        foreach ($this->eventParticipantPayments as $oldEventParticipantPayment) {
+            if (!$newEventParticipantPayments->contains($oldEventParticipantPayment)) {
+                $this->removeEventParticipantPayment($oldEventParticipantPayment);
+            }
+        }
+        if ($newEventParticipantPayments) {
+            foreach ($newEventParticipantPayments as $newEventParticipantPayment) {
+                if (!$this->eventParticipantPayments->contains($newEventParticipantPayment)) {
+                    $this->addEventParticipantPayment($newEventParticipantPayment);
+                }
+            }
+        }
+    }
+
+    final public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
+    {
+        if (!$eventParticipantPayment) {
+            return;
+        }
+        if ($this->eventParticipantPayments->removeElement($eventParticipantPayment)) {
+            $eventParticipantPayment->setEventParticipant(null);
+        }
+    }
+
+    final public function addEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
+    {
+        if ($eventParticipantPayment && !$this->eventParticipantPayments->contains($eventParticipantPayment)) {
+            $this->eventParticipantPayments->add($eventParticipantPayment);
+            $eventParticipantPayment->setEventParticipant($this);
+        }
     }
 
     /**
