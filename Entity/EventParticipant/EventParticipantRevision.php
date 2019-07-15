@@ -108,7 +108,7 @@ class EventParticipantRevision extends AbstractRevision
     /**
      * @throws EventCapacityExceededException
      */
-    final public function __clone()
+    public function __clone()
     {
         $newConnections = $this->eventParticipantFlagConnections->map(
             static function (EventParticipantFlagConnection $eventParticipantFlagConnection) {
