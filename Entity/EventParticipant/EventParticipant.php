@@ -291,6 +291,18 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
     }
 
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
+    final public function getRemainingDeposit(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getPriceDeposit($referenceDateTime) - $this->getPaidPrice();
+    }
+
     final public function getPaidPrice(): int
     {
         $paid = 0;
