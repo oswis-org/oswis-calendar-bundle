@@ -44,7 +44,9 @@ class EventParticipantManager
             $entity = new EventParticipant($contact, $event, $eventParticipantType, $eventContactFlagConnections, $eventParticipantNotes);
             $em->persist($entity);
             $em->flush();
-            $infoMessage = 'CREATE: Created event participant (by manager): '.$entity->getId().', '.$entity->getContact()->getContactName().', '.$entity->getEvent()->getName().'.';
+            $infoMessage = 'CREATE: Created event participant (by manager): '.$entity->getId()
+                .', '.$entity->getContact()->getContactName()
+                .', '.($entity->getEvent() ? $entity->getEvent()->getName() : '').'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;

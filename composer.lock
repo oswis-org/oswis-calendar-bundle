@@ -4018,16 +4018,16 @@
     },
     {
       "name": "symfony/flex",
-      "version": "v1.4.2",
+      "version": "v1.4.4",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/flex.git",
-        "reference": "c949d59794cbbc21e6f886597a5e29c7a7864f00"
+        "reference": "4b5d25a5538e2dc37ff84645fe7498a9a04947b3"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/flex/zipball/c949d59794cbbc21e6f886597a5e29c7a7864f00",
-        "reference": "c949d59794cbbc21e6f886597a5e29c7a7864f00",
+        "url": "https://api.github.com/repos/symfony/flex/zipball/4b5d25a5538e2dc37ff84645fe7498a9a04947b3",
+        "reference": "4b5d25a5538e2dc37ff84645fe7498a9a04947b3",
         "shasum": ""
       },
       "require": {
@@ -4063,7 +4063,7 @@
         }
       ],
       "description": "Composer plugin for Symfony",
-      "time": "2019-07-11T14:56:17+00:00"
+      "time": "2019-07-12T06:29:25+00:00"
     },
     {
       "name": "symfony/form",
@@ -7333,16 +7333,16 @@
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.232",
+      "version": "v0.0.234",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-core-bundle.git",
-        "reference": "64f046c3f606b33f74c186768a9dedb467552411"
+        "reference": "9f194f73e079173962837b6ccb97a46fca9504f3"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/64f046c3f606b33f74c186768a9dedb467552411",
-        "reference": "64f046c3f606b33f74c186768a9dedb467552411",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/9f194f73e079173962837b6ccb97a46fca9504f3",
+        "reference": "9f194f73e079173962837b6ccb97a46fca9504f3",
         "shasum": ""
       },
       "require": {
@@ -7415,10 +7415,10 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.232",
+        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.234",
         "issues": "https://github.com/zakjakub/oswis-core-bundle/issues"
       },
-      "time": "2019-07-11T14:40:09+00:00"
+      "time": "2019-07-15T15:05:59+00:00"
     },
     {
       "name": "zendframework/zend-code",
@@ -7535,12 +7535,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "a53a6f855cbff7edb078f87c72bb808c89443a00"
+        "reference": "2e50fc5a89e1e77b68c7e3c3aa6d87da0b8d4c6d"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/a53a6f855cbff7edb078f87c72bb808c89443a00",
-        "reference": "a53a6f855cbff7edb078f87c72bb808c89443a00",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/2e50fc5a89e1e77b68c7e3c3aa6d87da0b8d4c6d",
+        "reference": "2e50fc5a89e1e77b68c7e3c3aa6d87da0b8d4c6d",
         "shasum": ""
       },
       "conflict": {
@@ -7643,7 +7643,7 @@
         "silverstripe/userforms": "<3",
         "simple-updates/phpwhois": "<=1",
         "simplesamlphp/saml2": "<1.10.6|>=2,<2.3.8|>=3,<3.1.4",
-        "simplesamlphp/simplesamlphp": "<1.15.2|>=1.16,<1.16.3",
+        "simplesamlphp/simplesamlphp": "<1.17.3",
         "simplesamlphp/simplesamlphp-module-infocard": "<1.0.1",
         "slim/slim": "<2.6",
         "smarty/smarty": "<3.1.33",
@@ -7742,7 +7742,7 @@
         }
       ],
       "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-      "time": "2019-06-25T10:37:35+00:00"
+      "time": "2019-07-14T14:21:52+00:00"
     }
   ],
   "aliases": [],

@@ -108,7 +108,7 @@ class EventParticipantRevision extends AbstractRevision
     /**
      * @throws EventCapacityExceededException
      */
-    public function __clone()
+    final public function __clone()
     {
         $newConnections = $this->eventParticipantFlagConnections->map(
             static function (EventParticipantFlagConnection $eventParticipantFlagConnection) {
@@ -132,8 +132,10 @@ class EventParticipantRevision extends AbstractRevision
         $eventParticipant = $this->getContainer();
         assert($eventParticipant instanceof EventParticipant);
         $eventParticipantType = $eventParticipant->getEventParticipantType();
-        if ($this->getEvent()->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
-            throw new EventCapacityExceededException('Byla překročena kapacita pro přihlášky s příznakem'.$eventParticipantFlag->getName().'.');
+        if ($this->getEvent() && $this->getEvent()->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
+            throw new EventCapacityExceededException(
+                'Byla překročena kapacita pro přihlášky s příznakem'.($eventParticipantFlag ? $eventParticipantFlag->getName() : '').'.'
+            );
         }
         if ($eventContactFlagConnection && !$this->eventParticipantFlagConnections->contains($eventContactFlagConnection)) {
             $this->eventParticipantFlagConnections->add($eventContactFlagConnection);
@@ -228,7 +230,8 @@ class EventParticipantRevision extends AbstractRevision
         return $this->eventParticipantFlagConnections->filter(
             static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantType) {
                 try {
-                    $participant = $eventParticipantFlagConnection->getEventContactRevision()->getContainer();
+                    $eventContactRevision = $eventParticipantFlagConnection->getEventContactRevision();
+                    $participant = $eventContactRevision ? $eventContactRevision->getContainer() : null;
                     assert($participant instanceof EventParticipant);
 
                     return $participant->getEventParticipantType()

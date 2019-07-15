@@ -103,11 +103,11 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
             $reservations->add($payment);
             switch ($type) {
                 case 'get-receipt-pdf':
-                    $output = $this->reservationPaymentManager->createReceiptPdfString($payment);
+                    // $output = $this->reservationPaymentManager->createReceiptPdfString($payment);
                     $processedActionsCount++;
                     break;
                 case 'send-receipt-pdf-customer':
-                    $this->reservationPaymentManager->sendReceiptPdf($payment);
+                    // $this->reservationPaymentManager->sendReceiptPdf($payment);
                     $processedActionsCount++;
                     break;
                 default:
