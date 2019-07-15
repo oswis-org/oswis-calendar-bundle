@@ -75,7 +75,7 @@ class EventParticipantPayment
      * @var EventParticipant|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     inversedBy="eventParticipantNotes",
+     *     inversedBy="eventParticipantPayments",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
