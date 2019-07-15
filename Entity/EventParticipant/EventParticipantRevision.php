@@ -105,6 +105,7 @@ class EventParticipantRevision extends AbstractRevision
         assert($revision instanceof EventParticipant);
     }
 
+    /** @noinspection MethodShouldBeFinalInspection */
     /**
      * @throws EventCapacityExceededException
      */
