@@ -61,15 +61,7 @@ use function assert;
  * @ApiFilter(OrderFilter::class)
  * @Searchable({
  *     "id",
- *     "contact.person.fullName",
- *     "contact.person.description",
- *     "contact.person.note",
- *     "event.name",
- *     "event.shortName",
- *     "event.slug",
- *     "event.description",
- *     "event.internalNote",
- *     "event.note"
+ *     "revisions.contact.contactDetails.content",
  * })
  */
 class EventParticipant extends AbstractRevisionContainer
@@ -291,18 +283,6 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
     }
 
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
-     */
-    final public function getRemainingDeposit(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getPriceDeposit($referenceDateTime) - $this->getPaidPrice();
-    }
-
     final public function getPaidPrice(): int
     {
         $paid = 0;
@@ -360,6 +340,18 @@ class EventParticipant extends AbstractRevisionContainer
             $this->eventParticipantPayments->add($eventParticipantPayment);
             $eventParticipantPayment->setEventParticipant($this);
         }
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
+    final public function getRemainingDeposit(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getPriceDeposit($referenceDateTime) - $this->getPaidPrice();
     }
 
     /**

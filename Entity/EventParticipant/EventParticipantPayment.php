@@ -53,11 +53,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
  * @ApiFilter(OrderFilter::class)
  * @Searchable({
  *     "id",
- *     "numericValue",
- *     "eventParticipant.event.name",
- *     "eventParticipant.contact.contactName",
- *     "eventParticipant.contact.phone",
- *     "eventParticipant.contact.email"
+ *     "numericValue"
  * })
  */
 class EventParticipantPayment

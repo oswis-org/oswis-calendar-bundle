@@ -1,226 +1,126 @@
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
-    attributes:
-        id:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-        createdDateTime:
-            groups: ['calendar_event_participant_get']
-        updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_get']
-        textValue:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-        eventParticipantFlag:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-
-
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
-    attributes:
-        id:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-        name:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        shortName:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        description:
-            groups:
-                - 'calendar_event_participant_get'
-        note:
-            groups:
-                - 'calendar_event_participant_get'
-        internalNote:
-            groups:
-                - 'calendar_event_participant_get'
-        slug:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        valueAllowed:
-            groups:
-                - 'calendar_event_participant_get'
-        valueLabel:
-            groups:
-                - 'calendar_event_participant_get'
-        valueRegex:
-            groups:
-                - 'calendar_event_participant_get'
-        color:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        eventParticipantFlagType:
-            groups:
-                - 'calendar_event_participant_get'
-
-
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
-    attributes:
-        id:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-        name:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        shortName:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        description:
-            groups:
-                - 'calendar_event_participant_get'
-        note:
-            groups:
-                - 'calendar_event_participant_get'
-        internalNote:
-            groups:
-                - 'calendar_event_participant_get'
-        slug:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-        type:
-            groups:
-                - 'calendar_event_participant_get'
-
-
-
 Zakjakub\OswisCalendarBundle\Entity\Event\Event:
     attributes:
         id:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         name:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         shortName:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         description:
             groups:
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         note:
             groups:
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         internalNote:
             groups:
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         slug:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         startDateTime:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         endDateTime:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         eventType:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
-
-
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
-    attributes:
-        id:
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
+        location:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-        createdDateTime:
-            groups: ['calendar_event_participant_get']
-        updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_get']
-        textValue:
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
+        superEvent:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
-    attributes:
-        id:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
-        createdDateTime:
-            groups: ['calendar_event_participant_get']
-        updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_get']
-        textValue:
-            groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
 
 
 Zakjakub\OswisCalendarBundle\Entity\Event\EventType:
     attributes:
         id:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participants_post'
-                - 'calendar_event_participant_get'
-                - 'calendar_event_participant_put'
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
         createdDateTime:
-            groups: ['calendar_event_participant_get']
+            groups: ['calendar_event_get']
         updatedDateTime:
-            groups: ['calendar_event_participant_get']
+            groups: ['calendar_event_get']
         createdAuthor:
-            groups: ['calendar_event_participant_get']
+            groups: ['calendar_event_get']
         updatedAuthor:
-            groups: ['calendar_event_participant_get']
+            groups: ['calendar_event_get']
         name:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_event_get'
         shortName:
             groups:
-                - 'calendar_event_participants_get'
-                - 'calendar_event_participant_get'
+                - 'calendar_events_get'
+                - 'calendar_event_get'
+
+
+Zakjakub\OswisAddressBookBundle\Entity\Place:
+    attributes:
+        id:
+            groups:
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
+        createdDateTime:
+            groups: ['calendar_event_get']
+        updatedDateTime:
+            groups: ['calendar_event_get']
+        createdAuthor:
+            groups: ['calendar_event_get']
+        updatedAuthor:
+            groups: ['calendar_event_get']
+        name:
+            groups:
+                - 'calendar_events_get'
+                - 'calendar_event_get'
+        shortName:
+            groups:
+                - 'calendar_events_get'
+                - 'calendar_event_get'
