@@ -80,6 +80,12 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_events_post'
                 - 'calendar_event_get'
                 - 'calendar_event_put'
+        activeEventParticipantsAggregatedBySchool:
+            groups:
+                - 'calendar_event_get'
+        activeEventParticipantsAggregatedByFlags:
+            groups:
+                - 'calendar_event_get'
 
 
 Zakjakub\OswisCalendarBundle\Entity\Event\EventType:
