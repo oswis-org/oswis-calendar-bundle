@@ -1215,8 +1215,7 @@ class Event extends AbstractRevisionContainer
      * @param EventParticipantType|null $eventParticipantType
      * @param bool|null                 $includeDeleted
      * @param bool|null                 $includeNotActivatedUsers
-     *
-     * @param int|null                  $recursiveDepth
+     * @param int|null                  $recursiveDepth Default is 1 for root events, 0 for others.
      *
      * @return array
      */
@@ -1225,25 +1224,58 @@ class Event extends AbstractRevisionContainer
         ?EventParticipantType $eventParticipantType = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivatedUsers = true,
-        ?int $recursiveDepth = 0
+        ?int $recursiveDepth = null
     ): array {
+        if (null === $recursiveDepth) {
+            $recursiveDepth = $this->getSuperEvent() ? 0 : 1;
+        }
         $output = [];
         $eventParticipants = $this->getActiveEventParticipants($referenceDateTime, $eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth);
-        foreach ($eventParticipants as $eventParticipant) {
-            assert($eventParticipant instanceof EventParticipant);
-            foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
-                assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-                $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
-                if ($flag) {
-                    $flagType = $flag->getEventParticipantFlagType();
-                    $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
-                    $flagSlug = $flag->getSlug() ?? '';
-                    $output[$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
-                    if (!isset($output[$flagTypeSlug]['flagType']) || $output[$flagTypeSlug]['flagType'] !== $flagType) {
-                        $output[$flagTypeSlug]['flagType'] = $flagType;
+        if ($eventParticipantType) {
+            foreach ($eventParticipants as $eventParticipant) {
+                assert($eventParticipant instanceof EventParticipant);
+                foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
+                    assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
+                    $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
+                    if ($flag) {
+                        $flagType = $flag->getEventParticipantFlagType();
+                        $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
+                        $flagSlug = $flag->getSlug() ?? '';
+                        $output[$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
+                        if (!isset($output[$flagTypeSlug]['flagType']) || $output[$flagTypeSlug]['flagType'] !== $flagType) {
+                            $output[$flagTypeSlug]['flagType'] = $flagType;
+                        }
+                        if (!isset($output[$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
+                            $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
+                        }
                     }
-                    if (!isset($output[$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
-                        $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
+                }
+            }
+        } else {
+            foreach ($eventParticipants as $eventParticipant) {
+                assert($eventParticipant instanceof EventParticipant);
+                $eventParticipantType = $eventParticipant->getEventParticipantType();
+                $eventParticipantTypeSlug = $eventParticipantType->getSlug();
+                foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
+                    assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
+                    $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
+                    if ($flag) {
+                        $flagType = $flag->getEventParticipantFlagType();
+                        $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
+                        $flagSlug = $flag->getSlug() ?? '';
+                        $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
+                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'])
+                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagType) {
+                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] = $flagType;
+                        }
+                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'])
+                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
+                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
+                        }
+                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType'])
+                            || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantType) {
+                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $flag;
+                        }
                     }
                 }
             }
@@ -1262,8 +1294,7 @@ class Event extends AbstractRevisionContainer
      * @param EventParticipantType|null $eventParticipantType
      * @param bool|null                 $includeDeleted
      * @param bool|null                 $includeNotActivatedUsers
-     *
-     * @param int|null                  $recursiveDepth
+     * @param int|null                  $recursiveDepth Default is 1 for root events, 0 for others.
      *
      * @return array
      * @throws RevisionMissingException
@@ -1272,22 +1303,49 @@ class Event extends AbstractRevisionContainer
         ?DateTime $referenceDateTime = null,
         ?EventParticipantType $eventParticipantType = null,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true,
-        ?int $recursiveDepth = 0
+        ?bool $includeNotActivatedUsers = false,
+        ?int $recursiveDepth = null
     ): array {
+        if (null === $recursiveDepth) {
+            $recursiveDepth = $this->getSuperEvent() ? 0 : 1;
+        }
         $output = [];
         $eventParticipants = $this->getActiveEventParticipants($referenceDateTime, $eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth);
-        foreach ($eventParticipants as $eventParticipant) {
-            assert($eventParticipant instanceof EventParticipant);
-            $person = $eventParticipant->getContact();
-            assert($person instanceof Person);
-            foreach ($person->getStudies() as $study) {
-                assert($study instanceof Position);
-                $school = $study->getOrganization();
-                $schoolSlug = $school ? $school->getSlug() : '';
-                $output[$schoolSlug]['eventParticipants'][] = $eventParticipant;
-                if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['school'] !== $school) {
-                    $output[$schoolSlug]['school'] = $school;
+        if ($eventParticipantType) {
+            foreach ($eventParticipants as $eventParticipant) {
+                assert($eventParticipant instanceof EventParticipant);
+                $person = $eventParticipant->getContact();
+                if ($person instanceof Person) { // Fix for organizations!
+                    foreach ($person->getStudies() as $study) {
+                        assert($study instanceof Position);
+                        $school = $study->getOrganization();
+                        $schoolSlug = $school ? $school->getSlug() : '';
+                        $output[$schoolSlug]['eventParticipants'][] = $eventParticipant;
+                        if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['school'] !== $school) {
+                            $output[$schoolSlug]['school'] = $school;
+                        }
+                    }
+                }
+            }
+        } else {
+            foreach ($eventParticipants as $eventParticipant) {
+                assert($eventParticipant instanceof EventParticipant);
+                $eventParticipantType = $eventParticipant->getEventParticipantType();
+                $eventParticipantTypeSlug = $eventParticipantType->getSlug();
+                $person = $eventParticipant->getContact();
+                if ($person instanceof Person) { // Fix for organizations!
+                    foreach ($person->getStudies() as $study) {
+                        assert($study instanceof Position);
+                        $school = $study->getOrganization();
+                        $schoolSlug = $school ? $school->getSlug() : '';
+                        $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['eventParticipants'][] = $eventParticipant;
+                        if (!isset($output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school']) || $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school'] !== $school) {
+                            $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school'] = $school;
+                        }
+                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType']) || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantType) {
+                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $eventParticipantType;
+                        }
+                    }
                 }
             }
         }

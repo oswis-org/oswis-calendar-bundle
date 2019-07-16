@@ -6,6 +6,14 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_events_post'
                 - 'calendar_event_get'
                 - 'calendar_event_put'
+        createdDateTime:
+            groups: ['calendar_event_get']
+        updatedDateTime:
+            groups: ['calendar_event_get']
+        createdAuthor:
+            groups: ['calendar_event_get']
+        updatedAuthor:
+            groups: ['calendar_event_get']
         name:
             groups:
                 - 'calendar_events_get'
