@@ -1256,25 +1256,46 @@ class Event extends AbstractRevisionContainer
                 assert($eventParticipant instanceof EventParticipant);
                 $eventParticipantType = $eventParticipant->getEventParticipantType();
                 $eventParticipantTypeSlug = $eventParticipantType->getSlug();
+                $eventParticipantTypeArray = [
+                    'id'        => $eventParticipantType->getId(),
+                    'name'      => $eventParticipantType->getName(),
+                    'shortName' => $eventParticipantType->getShortName(),
+                ];
                 foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
                     assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
                     $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
                     if ($flag) {
                         $flagType = $flag->getEventParticipantFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
+                        $flagArray = [
+                            'id'        => $flag->getId(),
+                            'name'      => $flag->getName(),
+                            'shortName' => $flag->getShortName(),
+                            'color'     => $flag->getColor(),
+                        ];
+                        $flagTypeArray = [
+                            'id'        => $flagType->getId(),
+                            'name'      => $flagType->getName(),
+                            'shortName' => $flagType->getShortName(),
+                        ];
                         $flagSlug = $flag->getSlug() ?? '';
                         $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
+                        if ($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] > 0) {
+                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']++;
+                        } else {
+                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] = 1;
+                        }
                         if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'])
-                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagType) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] = $flagType;
+                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagTypeArray) {
+                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] = $flagTypeArray;
                         }
                         if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'])
-                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
+                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flagArray) {
+                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flagArray;
                         }
                         if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType'])
-                            || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantType) {
-                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $flag;
+                            || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantTypeArray) {
+                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $eventParticipantTypeArray;
                         }
                     }
                 }

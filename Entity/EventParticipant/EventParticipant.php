@@ -62,6 +62,8 @@ use function assert;
  * @Searchable({
  *     "id",
  *     "revisions.contact.contactDetails.content",
+ *     "revisions.contact.revisions.givenName",
+ *     "revisions.contact.revisions.familyName"
  * })
  */
 class EventParticipant extends AbstractRevisionContainer
