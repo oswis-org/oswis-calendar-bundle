@@ -5,11 +5,11 @@ namespace Zakjakub\OswisCalendarBundle\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Swift_Image;
-use Swift_Mailer;
-use Swift_Message;
-use Swift_Mime_SimpleMessage;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mime\NamedAddress;
 use Twig\Environment;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
@@ -31,7 +31,7 @@ class EventParticipantPaymentManager
     protected $em;
 
     /**
-     * @var Swift_Mailer
+     * @var Mailer
      */
     protected $mailer;
 
@@ -54,14 +54,14 @@ class EventParticipantPaymentManager
      * EventParticipantPaymentManager constructor.
      *
      * @param EntityManagerInterface    $em
-     * @param Swift_Mailer              $mailer
+     * @param Mailer                    $mailer
      * @param LoggerInterface           $logger
      * @param Environment               $templating
      * @param OswisCoreSettingsProvider $oswisCoreSettings
      */
     public function __construct(
         EntityManagerInterface $em,
-        Swift_Mailer $mailer,
+        Mailer $mailer,
         LoggerInterface $logger,
         Environment $templating,
         OswisCoreSettingsProvider $oswisCoreSettings
@@ -97,68 +97,66 @@ class EventParticipantPaymentManager
             $eventParticipant = $payment->getEventParticipant();
             $contact = $eventParticipant ? $eventParticipant->getContact() : null;
 
-            $title = 'Potvrzení o platbě';
-
-            $event = $eventParticipant->getEvent();
+            if ($payment->getNumericValue() < 0) {
+                $title = 'Vrácení/oprava platby';
+            } else {
+                $title = 'Přijetí platby';
+            }
 
             if ($contact instanceof Person) {
-                $salutation = 'Ahoj';
                 $salutationName = $contact ? $contact->getSalutationName() : '';
                 $a = $contact ? $contact->getCzechSuffixA() : '';
             } else {
                 // TODO: Correct salutation (contact of organization).
-                $salutation = 'Dobrý den,';
                 $salutationName = $contact ? $contact->getContactName() : '';
                 $a = '';
             }
 
             if ($contact->getAppUser()) {
+                $name = $contact->getAppUser()->getFullName();
                 $eMail = $contact->getAppUser()->getEmail();
             } else {
+                $name = $contact->getContactName();
                 $eMail = $contact->getEmail();
             }
 
-            // $pdfString = $this->createReceiptPdfString($payment);
-            $message = new Swift_Message(EmailUtils::mime_header_encode($title));
+            $mailData = array(
+                'salutationName' => $salutationName,
+                'a'              => $a,
+                'payment'        => $payment,
+                'logo'           => 'cid:logo',
+                'appNameShort'   => 'OSWIS',
+                'appNameLong'    => 'One Simple Web IS',
+            );
 
             $mailSettings = $this->oswisCoreSettings->getEmail();
 
-            $message->setTo(array($eMail => $contact->getContactName()))
-                ->setBcc(array($mailSettings['archive_address'] => EmailUtils::mime_header_encode($mailSettings['archive_name'])))
-                ->setFrom(array($mailSettings['address'] => EmailUtils::mime_header_encode($mailSettings['name'])))
-                ->setSender($mailSettings['address'])
-                ->setReturnPath($mailSettings['return_path'])
-                ->setCharset('UTF-8')
-                ->setPriority(Swift_Mime_SimpleMessage::PRIORITY_NORMAL);
+            $email = (new TemplatedEmail())
+                ->to(
+                    new NamedAddress(
+                        $eMail ?? '',
+                        EmailUtils::mime_header_encode($name ?? '') ?? ''
+                    )
+                )
+                ->bcc(
+                    new NamedAddress(
+                        $mailSettings['archive_address'] ?? '',
+                        EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+                    )
+                )
+                ->subject(EmailUtils::mime_header_encode($title))
+                ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')
+                ->context($mailData);
+            $this->mailer->send($email);
 
-            $cidLogo = $message->embed(Swift_Image::fromPath('../public/img/web/logo-whitebg.png'));
+            $payment->setMailConfirmationSend('event-participant-payment-manager');
+            $em->persist($payment);
+            $em->flush();
 
-            $mailData = array(
-                'logo'             => $cidLogo,
-                'salutation'       => $salutation,
-                'salutationName'   => $salutationName,
-                'a'                => $a,
-                'eventParticipant' => $eventParticipant,
-                'person'           => $contact,
-                'event'            => $event,
-            );
-
-            // TODO: Correct templates!!
-            $message->setBody($this->templating->render('email/platba.html.twig', $mailData), 'text/html');
-            $message->addPart($this->templating->render('email/platba.txt.twig', $mailData), 'text/plain');
-
-            $this->mailer->send($message);
-
-            if ($this->mailer->send($message)) {
-                $payment->setMailConfirmationSend('event-participant-payment-manager');
-                $em->persist($payment);
-                $em->flush();
-
-                return true;
-            }
-
-            throw new OswisException();
+            return true;
         } catch (Exception $e) {
+            throw new OswisException('Problém s odesláním potvrzení o platbě.  '.$e->getMessage());
+        } catch (TransportExceptionInterface $e) {
             throw new OswisException('Problém s odesláním potvrzení o platbě.  '.$e->getMessage());
         }
     }

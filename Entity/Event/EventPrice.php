@@ -23,6 +23,8 @@ class EventPrice
     use TaxRateTrait;
     use DepositValueTrait;
 
+    // TODO: Dates missing!
+
     /**
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(

@@ -1,0 +1,35 @@
+{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+
+{% block html_title %}{{ email.subject|default('Přijetí/vrácení/oprava platby') }}{% endblock %}
+{% block meta_description %}{{ block('html_title') }}{% endblock %}
+
+{% block content_inner %}
+    <p>
+        Právě jsme úspěšně zpracovali
+        {% if payment.numericValue < 0 %}
+            navrácení/zrušení/opravu {{ f ? 'Vaší' : 'Tvé' }} platby
+        {% else %}
+            {{ f ? 'Vaši' : 'Tvou' }} platbu
+        {% endif %}
+        ve výši <strong>{{ payment.numericValue }},- Kč</strong>
+        u události {{ payment.eventParticipant.event.name }}.
+    </p>
+
+    <p>
+        {% if payment.eventParticipant.remainingDeposit > 0 %}
+            Celkem zbývá doplatit ještě částku ve výši <strong>{{ payment.eventParticipant.remainingPrice }},- Kč</strong>.
+            Zálohu uhraď{{ f ? 'te' : '' }}, prosím, do <!-- !!! -->31. července,
+            doplatek do <!-- !!! -->31. srpna (pokud js{{ f ? 'te' : 'i' }} tak ještě neučinil{{ a }}).
+        {% elseif payment.eventParticipant.remainingPrice > 0 %}
+            Zbývající částku ve výši <strong>{{ payment.eventParticipant.remainingPrice }},- Kč</strong>
+            uhraď{{ f ? 'te' : '' }},
+            prosím, stejným způsobem do <!-- !!! --> 31. srpna (pokud js{{ f ? 'te' : 'i' }} tak ještě neučinil{{ a }}).
+        {% else %}
+            <strong>Celá částka</strong> ({{ payment.eventParticipant.paidPrice }},- Kč) <strong>je nyní uhrazená</strong>.
+        {% endif %}
+    </p>
+{% endblock %}
+
+
+
+
