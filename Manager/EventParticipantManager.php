@@ -119,7 +119,6 @@ class EventParticipantManager
      * @param EventParticipant|null             $eventParticipant
      * @param bool                              $new
      * @param UserPasswordEncoderInterface|null $encoder
-     * @param string|null                       $password
      *
      * @return bool
      * @throws OswisException
@@ -128,14 +127,13 @@ class EventParticipantManager
     final public function sendMail(
         EventParticipant $eventParticipant = null,
         UserPasswordEncoderInterface $encoder = null,
-        bool $new = false,
-        ?string $password = null
+        bool $new = false
     ): bool {
         if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
             return false;
         }
         if ($eventParticipant->hasActivatedContactUser()) {
-            return $this->sendSummary($eventParticipant, $encoder, $new, $password);
+            return $this->sendSummary($eventParticipant, $encoder, $new);
         }
 
         return $this->sendVerification($eventParticipant);
@@ -147,7 +145,6 @@ class EventParticipantManager
      * @param EventParticipant                  $eventParticipant
      * @param bool                              $new
      * @param UserPasswordEncoderInterface|null $encoder
-     * @param string|null                       $password
      *
      * @return bool
      * @throws OswisException
@@ -155,8 +152,7 @@ class EventParticipantManager
     final public function sendSummary(
         EventParticipant $eventParticipant,
         UserPasswordEncoderInterface $encoder = null,
-        bool $new = false,
-        ?string $password = null
+        bool $new = false
     ): bool {
         try {
             if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
@@ -212,6 +208,7 @@ class EventParticipantManager
             $mailSuccessCount = 0;
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
+                $password = null;
                 $name = $contactPerson->getContactName() ?? $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : '';
                 $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
                 if ($encoder) {
