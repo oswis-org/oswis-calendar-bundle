@@ -134,7 +134,7 @@ class EventParticipantManager
             return false;
         }
         if ($eventParticipant->hasActivatedContactUser()) {
-            return $this->sendSummary($eventParticipant, $new, $encoder, $password);
+            return $this->sendSummary($eventParticipant, $encoder, $new, $password);
         }
 
         return $this->sendVerification($eventParticipant);
@@ -153,8 +153,8 @@ class EventParticipantManager
      */
     final public function sendSummary(
         EventParticipant $eventParticipant,
-        bool $new = false,
         UserPasswordEncoderInterface $encoder = null,
+        bool $new = false,
         ?string $password = null
     ): bool {
         try {
@@ -163,14 +163,14 @@ class EventParticipantManager
             }
             assert($eventParticipant instanceof EventParticipant);
             $event = $eventParticipant->getEvent();
+            assert($event instanceof Event);
             $em = $this->em;
             $mailSettings = $this->oswisCoreSettings->getEmail();
             $eventParticipantContact = $eventParticipant->getContact();
-            $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId()
-                .', '.$eventParticipant->getEvent()->getName();
+            $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
 
             $depositPaymentQr = new QrPayment(
-                $eventParticipant->getEvent()->getBankAccountNumber(), $eventParticipant->getEvent()->getBankAccountNumber(),
+                $event->getBankAccountNumber(), $event->getBankAccountNumber(),
                 [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
@@ -180,7 +180,7 @@ class EventParticipantManager
                 ]
             );
             $restPaymentQr = new QrPayment(
-                $eventParticipant->getEvent()->getBankAccountNumber(), $eventParticipant->getEvent()->getBankAccountNumber(),
+                $event->getBankAccountNumber(), $event->getBankAccountNumber(),
                 [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
