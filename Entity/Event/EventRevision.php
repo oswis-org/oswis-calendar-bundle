@@ -9,6 +9,7 @@ use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
@@ -25,6 +26,7 @@ class EventRevision extends AbstractRevision
     use NameableBasicTrait;
     use DateRangeTrait;
     use ColorTrait;
+    use BankAccountTrait;
 
     /**
      * @var Event

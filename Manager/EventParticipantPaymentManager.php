@@ -18,10 +18,6 @@ use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
 use function assert;
 
-/**
- * Class EventParticipantPaymentManager
- * @package Zakjakub\OswisCalendarBundle\Manager
- */
 class EventParticipantPaymentManager
 {
 
@@ -81,7 +77,7 @@ class EventParticipantPaymentManager
      * @return string
      * @throws OswisException
      */
-    final public function sendReceiptPdf(
+    final public function sendConfirmation(
         EventParticipantPayment $payment = null
     ): string {
         try {
@@ -124,20 +120,12 @@ class EventParticipantPaymentManager
                 'salutationName' => $salutationName,
                 'a'              => $a,
                 'payment'        => $payment,
-                'logo'           => 'cid:logo',
-                'appNameShort'   => 'OSWIS',
-                'appNameLong'    => 'One Simple Web IS',
             );
 
             $mailSettings = $this->oswisCoreSettings->getEmail();
 
             $email = (new TemplatedEmail())
-                ->to(
-                    new NamedAddress(
-                        $eMail ?? '',
-                        EmailUtils::mime_header_encode($name ?? '') ?? ''
-                    )
-                )
+                ->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))
                 ->bcc(
                     new NamedAddress(
                         $mailSettings['archive_address'] ?? '',

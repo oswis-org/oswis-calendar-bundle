@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "1820b129e7d9103c675ccbe9115d8f2f",
+  "content-hash": "4b4f55a03609bf38c4f5b89b9ef3fe74",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -1481,16 +1481,16 @@
     },
     {
       "name": "egulias/email-validator",
-      "version": "2.1.9",
+      "version": "2.1.10",
       "source": {
         "type": "git",
         "url": "https://github.com/egulias/EmailValidator.git",
-        "reference": "128cc721d771ec2c46ce59698f4ca42b73f71b25"
+        "reference": "a6c8d7101b19a451c1707b1b79bbbc56e4bdb7ec"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/128cc721d771ec2c46ce59698f4ca42b73f71b25",
-        "reference": "128cc721d771ec2c46ce59698f4ca42b73f71b25",
+        "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/a6c8d7101b19a451c1707b1b79bbbc56e4bdb7ec",
+        "reference": "a6c8d7101b19a451c1707b1b79bbbc56e4bdb7ec",
         "shasum": ""
       },
       "require": {
@@ -1500,7 +1500,8 @@
       "require-dev": {
         "dominicsayers/isemail": "dev-master",
         "phpunit/phpunit": "^4.8.35||^5.7||^6.0",
-        "satooshi/php-coveralls": "^1.0.1"
+        "satooshi/php-coveralls": "^1.0.1",
+        "symfony/phpunit-bridge": "^4.4@dev"
       },
       "suggest": {
         "ext-intl": "PHP Internationalization Libraries are required to use the SpoofChecking validation"
@@ -1534,7 +1535,7 @@
         "validation",
         "validator"
       ],
-      "time": "2019-06-23T10:14:27+00:00"
+      "time": "2019-07-19T20:52:08+00:00"
     },
     {
       "name": "fig/link-util",
@@ -2983,6 +2984,53 @@
       "time": "2018-11-20T15:27:04+00:00"
     },
     {
+      "name": "rikudou/czqrpayment",
+      "version": "v4.0.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/RikudouSage/QrPaymentCZ.git",
+        "reference": "6decca1c5ef90ecb0af5db890d1a3bdc2e0f2bf5"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/RikudouSage/QrPaymentCZ/zipball/6decca1c5ef90ecb0af5db890d1a3bdc2e0f2bf5",
+        "reference": "6decca1c5ef90ecb0af5db890d1a3bdc2e0f2bf5",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^7.1"
+      },
+      "require-dev": {
+        "phpunit/phpunit": "^7.5"
+      },
+      "suggest": {
+        "endroid/qr-code": "^3.2"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "rikudou\\CzQrPayment\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "WTFPL"
+      ],
+      "authors": [
+        {
+          "name": "Dominik Chrastecky",
+          "email": "dominik@chrastecky.cz"
+        }
+      ],
+      "description": "QR payment library for Czech accounts",
+      "homepage": "https://github.com/RikudouSage/QrPaymentCZ",
+      "keywords": [
+        "payment",
+        "qr"
+      ],
+      "time": "2018-12-10T15:23:39+00:00"
+    },
+    {
       "name": "sensio/framework-extra-bundle",
       "version": "v5.4.1",
       "source": {
@@ -4019,16 +4067,16 @@
     },
     {
       "name": "symfony/flex",
-      "version": "v1.4.4",
+      "version": "v1.4.5",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/flex.git",
-        "reference": "4b5d25a5538e2dc37ff84645fe7498a9a04947b3"
+        "reference": "4467ab35c82edebac58fe58c22cea166a805eb1f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/flex/zipball/4b5d25a5538e2dc37ff84645fe7498a9a04947b3",
-        "reference": "4b5d25a5538e2dc37ff84645fe7498a9a04947b3",
+        "url": "https://api.github.com/repos/symfony/flex/zipball/4467ab35c82edebac58fe58c22cea166a805eb1f",
+        "reference": "4467ab35c82edebac58fe58c22cea166a805eb1f",
         "shasum": ""
       },
       "require": {
@@ -4064,7 +4112,7 @@
         }
       ],
       "description": "Composer plugin for Symfony",
-      "time": "2019-07-12T06:29:25+00:00"
+      "time": "2019-07-19T08:59:18+00:00"
     },
     {
       "name": "symfony/form",
@@ -7278,16 +7326,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.101",
+      "version": "v0.0.104",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-address-book-bundle.git",
-        "reference": "b5f7476ffb0c97f295fb4e02d8b2c72a1815c2e3"
+        "reference": "78f169ee2136c7a8c7223087c93fc5b2037ab839"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/b5f7476ffb0c97f295fb4e02d8b2c72a1815c2e3",
-        "reference": "b5f7476ffb0c97f295fb4e02d8b2c72a1815c2e3",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/78f169ee2136c7a8c7223087c93fc5b2037ab839",
+        "reference": "78f169ee2136c7a8c7223087c93fc5b2037ab839",
         "shasum": ""
       },
       "require": {
@@ -7327,23 +7375,23 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.101",
+        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.104",
         "issues": "https://github.com/zakjakub/oswis-address-book-bundle/issues"
       },
-      "time": "2019-07-07T10:13:35+00:00"
+      "time": "2019-07-23T13:47:11+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.237",
+      "version": "v0.0.243",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-core-bundle.git",
-        "reference": "5d0025e077117432b6173c2debcd950503b4f69b"
+        "reference": "08b318322c535c38784a51c529ffa3ba3d1be3f2"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/5d0025e077117432b6173c2debcd950503b4f69b",
-        "reference": "5d0025e077117432b6173c2debcd950503b4f69b",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/08b318322c535c38784a51c529ffa3ba3d1be3f2",
+        "reference": "08b318322c535c38784a51c529ffa3ba3d1be3f2",
         "shasum": ""
       },
       "require": {
@@ -7416,10 +7464,10 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.237",
+        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/master",
         "issues": "https://github.com/zakjakub/oswis-core-bundle/issues"
       },
-      "time": "2019-07-18T20:26:04+00:00"
+      "time": "2019-07-23T13:00:20+00:00"
     },
     {
       "name": "zendframework/zend-code",

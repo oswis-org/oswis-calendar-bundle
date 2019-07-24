@@ -63,7 +63,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
  */
 class EventType extends AbstractRevisionContainer
 {
-
     use BasicEntityTrait;
     use NameableBasicContainerTrait;
     use ColorContainerTrait;

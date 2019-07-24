@@ -29,6 +29,7 @@ use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeContainerTrait;
@@ -87,6 +88,8 @@ class Event extends AbstractRevisionContainer
     use NameableBasicContainerTrait;
     use DateRangeContainerTrait;
     use ColorContainerTrait;
+    use BankAccountContainerTrait;
+
 
     /**
      * Parent event (if this is not top level event).
@@ -965,7 +968,6 @@ class Event extends AbstractRevisionContainer
      * @param string $type
      *
      * @return EventWebContent|null
-     * @throws InvalidArgumentException
      */
     final public function getEventWebContent(string $type = 'html'): ?EventWebContent
     {
@@ -1000,6 +1002,34 @@ class Event extends AbstractRevisionContainer
         if ($this->eventWebContents->removeElement($eventWebContent)) {
             $eventWebContent->setEvent(null);
         }
+    }
+
+    final public function getOrganizer(): ?AbstractContact
+    {
+        $this->getEventParticipantsByTypeOfType(EventParticipantType::TYPE_ORGANIZER)->first();
+
+        return null;
+    }
+
+    final public function getEventParticipantsByTypeOfType(
+        ?string $eventParticipantTypeOfType = null,
+        ?DateTime $referenceDateTime = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivated = true
+    ): Collection {
+        if ($eventParticipantTypeOfType) {
+            return $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
+                static function (EventParticipant $eventParticipant) use ($eventParticipantTypeOfType) {
+                    if (!$eventParticipant->getEventParticipantType()) {
+                        return false;
+                    }
+
+                    return $eventParticipantTypeOfType === $eventParticipant->getEventParticipantType()->getType();
+                }
+            );
+        }
+
+        return $this->getEventParticipants($referenceDateTime);
     }
 
     /**

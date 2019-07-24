@@ -59,6 +59,10 @@ class EventTypeRevision extends AbstractRevision
         $this->setColor($color);
     }
 
+    use BasicEntityTrait;
+    use NameableBasicTrait;
+    use ColorTrait;
+
     public static function getAllowedTypesDefault(): array
     {
         return [
@@ -72,10 +76,6 @@ class EventTypeRevision extends AbstractRevision
             self::TEAM_BUILDING,
         ];
     }
-
-    use BasicEntityTrait;
-    use NameableBasicTrait;
-    use ColorTrait;
 
     public static function getAllowedTypesCustom(): array
     {

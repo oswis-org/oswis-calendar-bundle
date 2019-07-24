@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use Zakjakub\OswisAddressBookBundle\Entity\Organization;
+use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
@@ -434,6 +436,42 @@ class EventParticipant extends AbstractRevisionContainer
     final public function getContact(?DateTime $referenceDateTime = null): AbstractContact
     {
         return $this->getRevisionByDate($referenceDateTime)->getContact();
+    }
+
+    final public function hasActivatedContactUser(): bool
+    {
+        try {
+            $contact = $this->getContact();
+            if ($contact && $contact->getAppUser() && $contact->getAppUser()->getAccountActivationDateTime()) {
+                return true;
+            }
+            if ($contact instanceof Organization) {
+                foreach ($contact->getContactPersons() as $contactPerson) {
+                    assert($contactPerson instanceof Person);
+                    if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->getAccountActivationDateTime()) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /** @noinspection MethodShouldBeFinalInspection */
+
+    public function getVariableSymbol(): ?string
+    {
+        try {
+            $phone = $this->getContact()->getPhone();
+        } catch (RevisionMissingException $e) {
+            return null;
+        }
+        $phone = preg_replace('/\s/', '', $phone);
+
+        return substr(trim($phone), strlen(trim($phone)) - 9, 9);
     }
 
 }

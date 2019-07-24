@@ -7,14 +7,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Exception;
+use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DateTimeTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\InternalNoteTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NoteTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 
 /**
  * Payment (or return - when numericValue is negative).
@@ -56,15 +50,8 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
  *     "numericValue"
  * })
  */
-class EventParticipantPayment
+class EventParticipantPayment extends AbstractPayment
 {
-    use BasicEntityTrait;
-    use DateTimeTrait;
-    use NumericValueTrait;
-    use TypeTrait;
-    use NoteTrait;
-    use InternalNoteTrait;
-    use BasicMailConfirmationTrait;
 
     /**
      * Event contact revision (connected to person or organization).
@@ -103,19 +90,6 @@ class EventParticipantPayment
         $this->setNote($note);
         $this->setInternalNote($internalNote);
         $this->setType($type);
-    }
-
-    public static function getAllowedTypesDefault(): array
-    {
-        return [
-            '',
-            'administration',
-        ];
-    }
-
-    public static function getAllowedTypesCustom(): array
-    {
-        return [];
     }
 
     final public function getEventParticipant(): ?EventParticipant

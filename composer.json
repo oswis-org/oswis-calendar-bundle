@@ -33,6 +33,7 @@
   ],
   "require": {
     "bigit/vokativ": "dev-master",
+    "rikudou/czqrpayment": "^4.0",
     "zakjakub/oswis-core-bundle": "^0.0",
     "zakjakub/oswis-address-book-bundle": "^0.0"
   },

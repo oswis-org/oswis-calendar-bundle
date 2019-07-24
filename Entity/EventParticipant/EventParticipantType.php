@@ -17,6 +17,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
+use function in_array;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -66,6 +67,20 @@ class EventParticipantType
     use NameableBasicTrait;
     use EntityPublicTrait;
     use TypeTrait;
+
+    public const TYPE_ATTENDEE = 'attendee';
+
+    public const TYPE_ORGANIZER = 'attendee';
+
+    public const TYPE_STAFF = 'attendee';
+
+    public const TYPE_SPONSOR = 'attendee';
+
+    public const TYPE_GUEST = 'attendee';
+
+    public const TYPE_MANAGER = 'attendee';
+
+    public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     /**
      * @var Collection|null
@@ -158,17 +173,23 @@ class EventParticipantType
     public static function getAllowedTypesDefault(): array
     {
         return [
-            'attendee', // Attendee of event.
-            'organizer', // Organization/department/person who organizes event.
-            'staff', // Somebody who works (is member of realization team) in event.
-            'sponsor', // Somebody (organization) who supports event.
-            'guest', // Somebody who performs at the event.
+            self::TYPE_ATTENDEE, // Attendee of event.
+            self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
+            self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
+            self::TYPE_SPONSOR, // Somebody (organization) who supports event.
+            self::TYPE_GUEST, // Somebody who performs at the event.
+            self::TYPE_MANAGER, // Somebody who manages the event.
         ];
     }
 
     public static function getAllowedTypesCustom(): array
     {
         return [];
+    }
+
+    final public function isManager(): bool
+    {
+        return in_array($this->getType(), self::MANAGEMENT_TYPES, true);
     }
 
     /**
