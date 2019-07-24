@@ -75,6 +75,7 @@ class EventParticipantManager
         $this->mailer = $mailer;
 
         /// TODO: Encoder, createAppUser...
+        /// TOOD: Throw exceptions!
 
     }
 
