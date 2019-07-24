@@ -11,7 +11,7 @@ use rikudou\CzQrPayment\QrPayment;
 use rikudou\CzQrPayment\QrPaymentOptions;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\NamedAddress;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -51,7 +51,7 @@ class EventParticipantManager
     protected $oswisCoreSettings;
 
     /**
-     * @var Mailer|null
+     * @var MailerInterface|null
      */
     protected $mailer;
 
@@ -59,13 +59,13 @@ class EventParticipantManager
      * EventParticipantManager constructor.
      *
      * @param EntityManagerInterface         $em
-     * @param Mailer|null                    $mailer
+     * @param MailerInterface                $mailer
      * @param OswisCoreSettingsProvider|null $oswisCoreSettings
      * @param LoggerInterface|null           $logger
      */
     public function __construct(
         EntityManagerInterface $em,
-        Mailer $mailer,
+        MailerInterface $mailer,
         OswisCoreSettingsProvider $oswisCoreSettings,
         ?LoggerInterface $logger = null
     ) {
