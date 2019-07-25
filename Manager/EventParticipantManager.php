@@ -228,14 +228,14 @@ class EventParticipantManager
                     'password'         => $password,
                 );
 
+                $archiveAddress = new NamedAddress(
+                    $mailSettings['archive_address'] ?? '',
+                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                );
+
                 $email = (new TemplatedEmail())
                     ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
-                    ->bcc(
-                        new NamedAddress(
-                            $mailSettings['archive_address'] ?? '',
-                            self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
-                        )
-                    )
+                    ->bcc($archiveAddress)
                     ->subject(self::mimeEnc($title))
                     ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')
                     ->embed($depositPaymentQrPng, 'depositQr')
