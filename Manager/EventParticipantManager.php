@@ -195,8 +195,8 @@ class EventParticipantManager
                 $isOrganization = false;
                 $contactPersons = new ArrayCollection([$eventParticipantContact]);
             } else {
-                $isOrganization = true;
                 assert($eventParticipantContact instanceof Organization);
+                $isOrganization = true;
                 $contactPersons = $eventParticipantContact->getContactPersons();
             }
 
@@ -209,7 +209,7 @@ class EventParticipantManager
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $password = null;
-                $name = $contactPerson->getContactName() ?? $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : '';
+                $name = $contactPerson->getContactName() ?? $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '';
                 $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
                 if ($encoder) {
                     $password = StringUtils::generatePassword();
