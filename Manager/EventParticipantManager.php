@@ -296,7 +296,7 @@ class EventParticipantManager
             $mailSuccessCount = 0;
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
-                $name = $contactPerson->getContactName() ?? $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : '';
+                $name = $contactPerson->getContactName() ?? $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '';
                 $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
                 if (!$contactPerson->getAppUser()) {
                     $contactPerson->setAppUser(new AppUser($contactPerson->getContactName(), null, $contactPerson->getEmail()));
