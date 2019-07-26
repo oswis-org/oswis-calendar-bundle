@@ -169,6 +169,19 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->eventParticipantNotes;
     }
 
+    /**
+     * Remove notes where no content is present.
+     */
+    final public function removeEmptyEventParticipantNotes(): void
+    {
+        foreach ($this->getEventParticipantNotes() as $note) {
+            assert($note instanceof EventParticipantNote);
+            if (!$note->getTextValue() || '' === $note->getTextValue()) {
+                $this->removeEventParticipantNote($note);
+            }
+        }
+    }
+
     final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
     {
         if (!$this->eventParticipantNotes) {
