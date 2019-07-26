@@ -2053,15 +2053,15 @@
       "authors": [
         {
           "name": "Nick Cernis",
+          "role": "Original Author",
           "email": "nick@cern.is",
-          "homepage": "http://modernnerd.net",
-          "role": "Original Author"
+          "homepage": "http://modernnerd.net"
         },
         {
           "name": "Colin O'Dell",
+          "role": "Lead Developer",
           "email": "colinodell@gmail.com",
-          "homepage": "https://www.colinodell.com",
-          "role": "Lead Developer"
+          "homepage": "https://www.colinodell.com"
         }
       ],
       "description": "An HTML-to-markdown conversion helper for PHP",
@@ -3018,7 +3018,7 @@
       ],
       "authors": [
         {
-          "name": "Dominik Chrastecky",
+          "name": "Dominik Chrástecký",
           "email": "dominik@chrastecky.cz"
         }
       ],
@@ -4977,7 +4977,7 @@
         },
         {
           "name": "Gert de Pagter",
-          "email": "backendtea@gmail.com"
+          "email": "BackEndTea@gmail.com"
         }
       ],
       "description": "Symfony polyfill for ctype functions",
@@ -6934,9 +6934,9 @@
       "authors": [
         {
           "name": "Fabien Potencier",
+          "role": "Lead Developer",
           "email": "fabien@symfony.com",
-          "homepage": "http://fabien.potencier.org",
-          "role": "Lead Developer"
+          "homepage": "http://fabien.potencier.org"
         }
       ],
       "description": "A Twig extension to allow inlining CSS",
@@ -7326,16 +7326,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.106",
+      "version": "v0.0.108",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-address-book-bundle.git",
-        "reference": "fff05b703770c89ca69270c173c2b3fd30fa1f77"
+        "reference": "987f7737af0c984121ca46ffd58522fb8df1ac20"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/fff05b703770c89ca69270c173c2b3fd30fa1f77",
-        "reference": "fff05b703770c89ca69270c173c2b3fd30fa1f77",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/987f7737af0c984121ca46ffd58522fb8df1ac20",
+        "reference": "987f7737af0c984121ca46ffd58522fb8df1ac20",
         "shasum": ""
       },
       "require": {
@@ -7375,23 +7375,23 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.106",
+        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.108",
         "issues": "https://github.com/zakjakub/oswis-address-book-bundle/issues"
       },
-      "time": "2019-07-24T19:30:17+00:00"
+      "time": "2019-07-25T12:44:20+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.247",
+      "version": "v0.0.250",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-core-bundle.git",
-        "reference": "4f763da77dd8cc6d177c79f312ea1db5c0da918c"
+        "reference": "e4d99b77cd3f2ac72534adece633aa71f15dcf5e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/4f763da77dd8cc6d177c79f312ea1db5c0da918c",
-        "reference": "4f763da77dd8cc6d177c79f312ea1db5c0da918c",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/e4d99b77cd3f2ac72534adece633aa71f15dcf5e",
+        "reference": "e4d99b77cd3f2ac72534adece633aa71f15dcf5e",
         "shasum": ""
       },
       "require": {
@@ -7412,27 +7412,27 @@
         "lexik/jwt-authentication-bundle": "^2.6",
         "mpdf/mpdf": "^8.0",
         "php": "^7.1.3",
-        "sensio/framework-extra-bundle": "^5.3",
+        "sensio/framework-extra-bundle": "^5.4",
         "stof/doctrine-extensions-bundle": "^1.3",
-        "symfony/dependency-injection": "^4.2",
-        "symfony/flex": "^1.2",
+        "symfony/dependency-injection": "^4.3",
+        "symfony/flex": "^1.4",
         "symfony/mailer": "^4.3",
         "symfony/mime": "^4.3",
-        "symfony/monolog-bundle": "^3.3",
+        "symfony/monolog-bundle": "^3.4",
         "symfony/orm-pack": "^1.0",
-        "symfony/process": "^4.2",
+        "symfony/process": "^4.3",
         "symfony/serializer-pack": "^1.0",
         "symfony/swiftmailer-bundle": "^3.2",
-        "symfony/twig-bundle": "^4.2",
-        "symfony/web-link": "^4.2",
+        "symfony/twig-bundle": "^4.3",
+        "symfony/web-link": "^4.3",
         "twig/cssinliner-extension": "^2.0",
         "twig/inky-extension": "^2.0",
         "twig/markdown-extension": "^1.0",
-        "vich/uploader-bundle": "^1.9"
+        "vich/uploader-bundle": "^1.10"
       },
       "require-dev": {
         "roave/security-advisories": "dev-master",
-        "symfony/debug": "^4.2"
+        "symfony/debug": "^4.3"
       },
       "type": "symfony-bundle",
       "autoload": {
@@ -7464,10 +7464,10 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.247",
+        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.250",
         "issues": "https://github.com/zakjakub/oswis-core-bundle/issues"
       },
-      "time": "2019-07-24T16:52:29+00:00"
+      "time": "2019-07-26T11:51:40+00:00"
     },
     {
       "name": "zendframework/zend-code",

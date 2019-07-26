@@ -90,7 +90,6 @@ class Event extends AbstractRevisionContainer
     use ColorContainerTrait;
     use BankAccountContainerTrait;
 
-
     /**
      * Parent event (if this is not top level event).
      * @var Event|null $superEvent

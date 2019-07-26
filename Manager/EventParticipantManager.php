@@ -73,10 +73,8 @@ class EventParticipantManager
         $this->logger = $logger;
         $this->oswisCoreSettings = $oswisCoreSettings;
         $this->mailer = $mailer;
-
         /// TODO: Encoder, createAppUser...
         /// TOOD: Throw exceptions!
-
     }
 
     /**
@@ -337,6 +335,86 @@ class EventParticipantManager
 
             if ($mailSuccessCount < $contactPersons->count()) {
                 throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage());
+            throw new OswisException('Problém s odesláním potvrzení o platbě.  '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Send confirmation of delete.
+     *
+     * @param EventParticipant $eventParticipant
+     *
+     * @return bool
+     * @throws OswisException
+     */
+    final public function sendCancelConfirmation(EventParticipant $eventParticipant): bool
+    {
+        try {
+            if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
+                return false;
+            }
+            assert($eventParticipant instanceof EventParticipant);
+            $event = $eventParticipant->getEvent();
+            assert($event instanceof Event);
+            $em = $this->em;
+            $mailSettings = $this->oswisCoreSettings->getEmail();
+            $eventParticipantContact = $eventParticipant->getContact();
+
+            if ($eventParticipantContact instanceof Person) {
+                $isOrganization = false;
+                $contactPersons = new ArrayCollection([$eventParticipantContact]);
+            } else {
+                assert($eventParticipantContact instanceof Organization);
+                $isOrganization = true;
+                $contactPersons = $eventParticipantContact->getContactPersons();
+            }
+
+            $title = 'Zrušení přihlášky';
+
+            $mailSuccessCount = 0;
+            foreach ($contactPersons as $contactPerson) {
+                assert($contactPerson instanceof Person);
+                $password = null;
+                $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
+                $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
+
+                $mailData = array(
+                    'eventParticipant' => $eventParticipant,
+                    'event'            => $event,
+                    'contactPerson'    => $contactPerson,
+                    'salutationName'   => $contactPerson->getSalutationName(),
+                    'a'                => $contactPerson->getCzechSuffixA(),
+                    'isOrganization'   => $isOrganization,
+                );
+
+                $archiveAddress = new NamedAddress(
+                    $mailSettings['archive_address'] ?? '',
+                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                );
+
+                $email = (new TemplatedEmail())
+                    ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
+                    ->bcc($archiveAddress)
+                    ->subject(self::mimeEnc($title))
+                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')
+                    ->context($mailData);
+                $em->persist($eventParticipant);
+                try {
+                    $this->mailer->send($email);
+                    $mailSuccessCount++;
+                } catch (TransportExceptionInterface $e) {
+                    $this->logger->error($e->getMessage());
+                    throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
+                }
+            }
+            $em->flush();
+            if ($mailSuccessCount < $contactPersons->count()) {
+                throw new OswisException("Část zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
             }
 
             return true;

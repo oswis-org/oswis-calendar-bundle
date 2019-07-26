@@ -35,7 +35,7 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *       "normalization_context"={"groups"={"calendar_event_participant_payment_get"}},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "access_control"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"calendar_event_participant_payment_put"}}
  *     },
  *     "delete"={
