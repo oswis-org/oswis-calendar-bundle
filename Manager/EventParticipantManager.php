@@ -256,7 +256,7 @@ class EventParticipantManager
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním potvrzení o platbě.  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním shrnutí přihlášky.  '.$e->getMessage());
         }
     }
 
@@ -340,7 +340,7 @@ class EventParticipantManager
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním potvrzení o platbě.  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním ověřovacího e-mailu.  '.$e->getMessage());
         }
     }
 

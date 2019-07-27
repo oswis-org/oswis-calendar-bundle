@@ -96,9 +96,7 @@
             {% endif %}
         </p>
 
-        <p>
-            Pro zrušení nebo změnu přihlášky nás kontaktuj{{ f ? 'te' : '' }} odpovědí na tuto zprávu.
-        </p>
+        <p>Pro zrušení nebo změnu přihlášky nás kontaktuj{{ f ? 'te' : '' }} odpovědí na tuto zprávu.</p>
 
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             <meta itemprop="name" content="{{ event.name }}"/>
@@ -142,5 +140,5 @@
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
     </div>
-{% endblock %}
+{% endblock content_inner %}
 
