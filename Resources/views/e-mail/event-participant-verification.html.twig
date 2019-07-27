@@ -1,7 +1,7 @@
 {% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
 
-{% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock %}
-{% block meta_description %}{{ block('html_title') }}{% endblock %}
+{% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
+{% block meta_description %}{{ block('html_title') }}{% endblock meta_description %}
 
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
@@ -143,7 +143,4 @@
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
     </div>
 {% endblock %}
-
-
-
 

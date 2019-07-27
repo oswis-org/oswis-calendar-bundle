@@ -162,14 +162,6 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
-     * @return Collection|null
-     */
-    final public function getEventParticipantNotes(): ?Collection
-    {
-        return $this->eventParticipantNotes;
-    }
-
-    /**
      * Remove notes where no content is present.
      */
     final public function removeEmptyEventParticipantNotes(): void
@@ -180,6 +172,14 @@ class EventParticipant extends AbstractRevisionContainer
                 $this->removeEventParticipantNote($note);
             }
         }
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventParticipantNotes(): ?Collection
+    {
+        return $this->eventParticipantNotes;
     }
 
     final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
