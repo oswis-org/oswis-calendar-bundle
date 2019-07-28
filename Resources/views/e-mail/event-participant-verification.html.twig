@@ -23,13 +23,13 @@
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
                     {% if isOrganization %}
-                        Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }}
+                        Vaše organizace {{ eventParticipant.contact.contactName }} byl{{ a }}
                     {% else %}
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                     {% endif %}
                     úspěšně přihlášen{{ a }} na&nbsp;akci {{ event.name }},
-                    {% if eventParticipant.event.organizer is defined and eventParticipant.event.organizer.name %}
-                        kterou pořádá {{ eventParticipant.event.organizer.name }}.
+                    {% if eventParticipant.event.organizer is defined and eventParticipant.event.organizer.contact.contactName %}
+                        kterou pořádá {{ eventParticipant.event.organizer.contact.contactName }}.
                     {% else %}
                         která se koná od {{ eventParticipant.event.startDateTime|date("j. n. Y") }}.
                     {% endif %}
