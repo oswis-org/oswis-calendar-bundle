@@ -301,6 +301,7 @@ class EventParticipantManager
                 }
                 $contactPerson->getAppUser()->generateAccountActivationRequestToken();
                 $em->flush();
+
                 $mailData = array(
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
@@ -308,6 +309,8 @@ class EventParticipantManager
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,
+                    'logo'             => 'cid:logo',
+                    'oswis'            => $this->oswisCoreSettings->getArray(),
                 );
 
                 $email = (new TemplatedEmail())
@@ -342,6 +345,24 @@ class EventParticipantManager
             $this->logger->error($e->getMessage());
             throw new OswisException('Problém s odesláním ověřovacího e-mailu.  '.$e->getMessage());
         }
+    }
+
+    /**
+     * @param EventParticipant|null $eventParticipant
+     *
+     * @throws OswisException
+     */
+    final public function checkEventParticipantCompleteness(?EventParticipant $eventParticipant): void
+    {
+        try {
+            if ($eventParticipant && $eventParticipant->getEvent() && $eventParticipant->getContact()) {
+                return;
+            }
+        } catch (RevisionMissingException $exception) {
+            throw new OswisException('Nastal problém s přihláškou (revize nebyla nalezena).');
+        }
+
+        throw new OswisException('Přihláška není kompletní.');
     }
 
     /**
