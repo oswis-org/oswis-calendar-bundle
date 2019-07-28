@@ -92,8 +92,11 @@
 
         <p>
             Potvrzením registrace také souhlasíš se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
-            {% if eventParticipant.event.organizer is defined and eventParticipant.event.organizer.name %}
-                Tyto údaje budou zpracovány subjektem {{ eventParticipant.event.organizer.name }}
+            {% if eventParticipant.event.organizer is defined
+                and eventParticipant.event.organizer
+                and eventParticipant.event.organizer.contact
+                and eventParticipant.event.organizer.contact.contactName %}
+                Tyto údaje budou zpracovány subjektem {{ eventParticipant.event.organizer.contact.contactName }}
                 a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
                 <a href="{{ absolute_url(path('gdpr')) }}" target="_blank">našich webových stránkách</a>.
             {% endif %}
