@@ -28,7 +28,10 @@
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                     {% endif %}
                     úspěšně přihlášen{{ a }} na&nbsp;akci {{ event.name }},
-                    {% if eventParticipant.event.organizer is defined and eventParticipant.event.organizer.contact.contactName %}
+                    {% if eventParticipant.event.organizer is defined
+                        and eventParticipant.event.organizer
+                        and eventParticipant.event.organizer.contact
+                        and eventParticipant.event.organizer.contact.contactName %}
                         kterou pořádá {{ eventParticipant.event.organizer.contact.contactName }}.
                     {% else %}
                         která se koná od {{ eventParticipant.event.startDateTime|date("j. n. Y") }}.
