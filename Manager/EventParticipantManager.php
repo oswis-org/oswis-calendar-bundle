@@ -343,6 +343,7 @@ class EventParticipantManager
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
+            $this->logger->error($e->getTraceAsString());
             throw new OswisException('Problém s odesláním ověřovacího e-mailu.  '.$e->getMessage());
         }
     }
