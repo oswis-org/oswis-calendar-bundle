@@ -1100,28 +1100,30 @@
     },
     {
       "name": "doctrine/lexer",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/lexer.git",
-        "reference": "1febd6c3ef84253d7c815bed85fc622ad207a9f8"
+        "reference": "e17f069ede36f7534b95adec71910ed1b49c74ea"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/lexer/zipball/1febd6c3ef84253d7c815bed85fc622ad207a9f8",
-        "reference": "1febd6c3ef84253d7c815bed85fc622ad207a9f8",
+        "url": "https://api.github.com/repos/doctrine/lexer/zipball/e17f069ede36f7534b95adec71910ed1b49c74ea",
+        "reference": "e17f069ede36f7534b95adec71910ed1b49c74ea",
         "shasum": ""
       },
       "require": {
-        "php": ">=5.3.2"
+        "php": "^7.2"
       },
       "require-dev": {
-        "phpunit/phpunit": "^4.5"
+        "doctrine/coding-standard": "^6.0",
+        "phpstan/phpstan": "^0.11.8",
+        "phpunit/phpunit": "^8.2"
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "1.0.x-dev"
+          "dev-master": "1.1.x-dev"
         }
       },
       "autoload": {
@@ -1135,12 +1137,12 @@
       ],
       "authors": [
         {
-          "name": "Roman Borschel",
-          "email": "roman@code-factory.org"
-        },
-        {
           "name": "Guilherme Blanco",
           "email": "guilhermeblanco@gmail.com"
+        },
+        {
+          "name": "Roman Borschel",
+          "email": "roman@code-factory.org"
         },
         {
           "name": "Johannes Schmitt",
@@ -1156,20 +1158,20 @@
         "parser",
         "php"
       ],
-      "time": "2019-06-08T11:03:04+00:00"
+      "time": "2019-07-30T19:33:28+00:00"
     },
     {
       "name": "doctrine/migrations",
-      "version": "v2.1.0",
+      "version": "2.1.1",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/migrations.git",
-        "reference": "ebe6f891a4c61574f77fc4a06d913d29236b8466"
+        "reference": "a89fa87a192e90179163c1e863a145c13337f442"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/migrations/zipball/ebe6f891a4c61574f77fc4a06d913d29236b8466",
-        "reference": "ebe6f891a4c61574f77fc4a06d913d29236b8466",
+        "url": "https://api.github.com/repos/doctrine/migrations/zipball/a89fa87a192e90179163c1e863a145c13337f442",
+        "reference": "a89fa87a192e90179163c1e863a145c13337f442",
         "shasum": ""
       },
       "require": {
@@ -1238,7 +1240,7 @@
         "migrations",
         "php"
       ],
-      "time": "2019-06-06T15:47:41+00:00"
+      "time": "2019-07-30T18:51:47+00:00"
     },
     {
       "name": "doctrine/orm",
@@ -2074,16 +2076,16 @@
     },
     {
       "name": "lexik/jwt-authentication-bundle",
-      "version": "v2.6.3",
+      "version": "v2.6.4",
       "source": {
         "type": "git",
         "url": "https://github.com/lexik/LexikJWTAuthenticationBundle.git",
-        "reference": "c4c6b54acf5388c621d3e917c9cb15262c0501cf"
+        "reference": "f79f20b282834878aab10530ca102a80396624ed"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/lexik/LexikJWTAuthenticationBundle/zipball/c4c6b54acf5388c621d3e917c9cb15262c0501cf",
-        "reference": "c4c6b54acf5388c621d3e917c9cb15262c0501cf",
+        "url": "https://api.github.com/repos/lexik/LexikJWTAuthenticationBundle/zipball/f79f20b282834878aab10530ca102a80396624ed",
+        "reference": "f79f20b282834878aab10530ca102a80396624ed",
         "shasum": ""
       },
       "require": {
@@ -2127,11 +2129,6 @@
       ],
       "authors": [
         {
-          "name": "Robin Chalas",
-          "email": "robin.chalas@gmail.com",
-          "homepage": "https://github.com/chalasr"
-        },
-        {
           "name": "Jeremy Barthe",
           "email": "j.barthe@lexik.fr",
           "homepage": "https://github.com/jeremyb"
@@ -2147,13 +2144,18 @@
           "homepage": "https://github.com/cedric-g"
         },
         {
-          "name": "Lexik Community",
-          "homepage": "https://github.com/lexik/LexikJWTAuthenticationBundle/graphs/contributors"
-        },
-        {
           "name": "Dev Lexik",
           "email": "dev@lexik.fr",
           "homepage": "https://github.com/lexik"
+        },
+        {
+          "name": "Robin Chalas",
+          "email": "robin.chalas@gmail.com",
+          "homepage": "https://github.com/chalasr"
+        },
+        {
+          "name": "Lexik Community",
+          "homepage": "https://github.com/lexik/LexikJWTAuthenticationBundle/graphs/contributors"
         }
       ],
       "description": "This bundle provides JWT authentication for your Symfony REST API",
@@ -2167,7 +2169,7 @@
         "rest",
         "symfony"
       ],
-      "time": "2019-04-17T13:54:49+00:00"
+      "time": "2019-07-29T10:02:31+00:00"
     },
     {
       "name": "lorenzo/pinky",
@@ -7328,16 +7330,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.109",
+      "version": "v0.0.110",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-address-book-bundle.git",
-        "reference": "acbceef3c67bceec6aecc8487c817c2a60f85ea5"
+        "reference": "6a0d1a526bc7d3fa500352f329312f3511c51024"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/acbceef3c67bceec6aecc8487c817c2a60f85ea5",
-        "reference": "acbceef3c67bceec6aecc8487c817c2a60f85ea5",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/6a0d1a526bc7d3fa500352f329312f3511c51024",
+        "reference": "6a0d1a526bc7d3fa500352f329312f3511c51024",
         "shasum": ""
       },
       "require": {
@@ -7377,10 +7379,10 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.109",
+        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.110",
         "issues": "https://github.com/zakjakub/oswis-address-book-bundle/issues"
       },
-      "time": "2019-07-26T16:42:30+00:00"
+      "time": "2019-07-31T04:04:25+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",

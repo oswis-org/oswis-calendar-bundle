@@ -115,8 +115,10 @@ class EventParticipantManager
      * Sends summary e-mail if user is already activated or activation e-mail if user is not activated.
      *
      * @param EventParticipant|null             $eventParticipant
-     * @param bool                              $new
      * @param UserPasswordEncoderInterface|null $encoder
+     *
+     * @param bool                              $new
+     * @param string|null                       $token
      *
      * @return bool
      * @throws OswisException
@@ -125,13 +127,24 @@ class EventParticipantManager
     final public function sendMail(
         EventParticipant $eventParticipant = null,
         UserPasswordEncoderInterface $encoder = null,
-        bool $new = false
+        ?bool $new = false,
+        ?string $token = null
     ): bool {
         if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
             return false;
         }
         if ($eventParticipant->hasActivatedContactUser()) {
             return $this->sendSummary($eventParticipant, $encoder, $new);
+        }
+
+        if ($token) {
+            foreach ($eventParticipant->getContact()->getContactPersons() as $contactPerson) {
+                assert($contactPerson instanceof Person);
+                if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
+                    $this->sendSummary($eventParticipant, $encoder, $new);
+                    break;
+                }
+            }
         }
 
         return $this->sendVerification($eventParticipant);
@@ -431,7 +444,7 @@ class EventParticipantManager
                     $mailSuccessCount++;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
-                    throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
+                    // throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
             }
             $em->flush();
@@ -442,7 +455,7 @@ class EventParticipantManager
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním potvrzení o platbě.  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním potvrzení o zrušení přihlášky.  '.$e->getMessage());
         }
     }
 
