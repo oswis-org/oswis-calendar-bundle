@@ -1298,12 +1298,14 @@ class Event extends AbstractRevisionContainer
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
                         $flagArray = [
                             'id'        => $flag->getId(),
+                            'slug'      => $flag->getSlug(),
                             'name'      => $flag->getName(),
                             'shortName' => $flag->getShortName(),
                             'color'     => $flag->getColor(),
                         ];
                         $flagTypeArray = [
                             'id'        => $flagType->getId(),
+                            'slug'      => $flagType->getSlug(),
                             'name'      => $flagType->getName(),
                             'shortName' => $flagType->getShortName(),
                         ];
