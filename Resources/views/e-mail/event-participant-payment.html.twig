@@ -11,23 +11,46 @@
         {% else %}
             {{ f ? 'Vaši' : 'Tvou' }} platbu
         {% endif %}
-        ve výši <strong>{{ payment.numericValue }},- Kč</strong>
+        ve výši <strong>{{ payment.numericValue }},- Kč</strong> ze dne {{ payment.date|date("j. n. Y") }}
         u události {{ payment.eventParticipant.event.name }}.
     </p>
 
-    <p>
-        {% if payment.eventParticipant.remainingDeposit > 0 %}
-            Celkem zbývá doplatit ještě částku ve výši <strong>{{ payment.eventParticipant.remainingPrice }},- Kč</strong>.
-            Zálohu uhraď{{ f ? 'te' : '' }}, prosím, do <!-- !!! -->31. července,
-            doplatek do <!-- !!! -->31. srpna (pokud js{{ f ? 'te' : 'i' }} tak ještě neučinil{{ a }}).
-        {% elseif payment.eventParticipant.remainingPrice > 0 %}
-            Zbývající částku ve výši <strong>{{ payment.eventParticipant.remainingPrice }},- Kč</strong>
-            uhraď{{ f ? 'te' : '' }},
-            prosím, stejným způsobem do <!-- !!! --> 31. srpna (pokud js{{ f ? 'te' : 'i' }} tak ještě neučinil{{ a }}).
-        {% else %}
-            <strong>Celá částka</strong> ({{ payment.eventParticipant.paidPrice }},- Kč) <strong>je nyní uhrazená</strong>.
+    {% block message_payment_outer %}
+        {% if eventParticipant.priceDeposit > 0 or eventParticipant.priceRest > 0 %}
+            <p>
+                Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ eventParticipant.priceDeposit }},-&nbsp;Kč</b>, a&nbsp;to
+                {% if bankAccount %}
+                    na&nbsp;účet&nbsp;<b>{{ bankAccount }}</b> s&nbsp;variabilním symbolem <b>{{ eventParticipant.variableSymbol }}</b>.
+                    Samozřejmě počítáme s&nbsp;tím, že&nbsp;převod může pár dní trvat. :)
+                {% else %}
+                    dle údajů uvedených na webových stránkách.
+                {% endif %}
+            </p>
+
+            {% if eventParticipant.priceDeposit > 0 %}
+                <p>
+                    <b>Zbytek zálohy</b> ve&nbsp;výši <b>{{ eventParticipant.priceDeposit }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                    úplně stejným způsobem{% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}.
+                </p>
+            {% endif %}
+
+            {% if eventParticipant.priceRest > 0 %}
+                <p>
+                    <b>Doplatek</b> ve&nbsp;výši <b>{{ eventParticipant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                    úplně stejným způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
+                </p>
+            {% endif %}
+
+            {% if eventParticipant.priceDeposit > 0 and eventParticipant.priceRest > 0 %}
+                <p>
+                    Zbytek zálohy i doplatek můžeš zaplatit i v&nbsp;jedné společné platbě, potom jde o&nbsp;částku
+                    <span itemprop="totalPrice">{{ eventParticipant.price }}</span>,-&nbsp;
+                    <span itemprop="priceCurrency" content="CZK">Kč</span>.
+                </p>
+            {% endif %}
         {% endif %}
-    </p>
-{% endblock %}
+    {% endblock message_payment_outer %}
+
+{% endblock content_inner %}
 
 
