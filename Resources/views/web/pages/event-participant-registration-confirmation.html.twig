@@ -1,0 +1,22 @@
+{% extends '@ZakjakubOswisCore/web/page-skeleton-default.html.twig' %}
+
+{% block html_title %}{{ title }}{% endblock %}
+{% block html_description %}{% if message is defined and message %}{{ message }}{% else %}{{ title }}{% endif %}{% endblock %}
+{% block og_description %}{{ block('html_description') }}{% endblock %}
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        <div class="row">
+            <div class="col-lg-12 registration-output">
+                {% if type %}
+                    <header><h2 class="text-uppercase {{ type }}">{{ title }}</h2></header>
+                    {% if message is defined %}
+                        <p>{{ message }}</p>
+                    {% endif %}
+                {% else %}
+                    <header><h2 class="text-uppercase">Nastala chyba.</h2></header>
+                    <p>Kontaktujte nás, prosím.</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+{% endblock %}

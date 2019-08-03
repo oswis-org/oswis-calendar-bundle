@@ -1,0 +1,12 @@
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+{% extends '@ZakjakubOswisCore/web/page-skeleton-default.html.twig' %}
+
+{% block html_title %}{{ title }}{% endblock %}
+{% block html_description %}{% if message is defined and message %}{{ message }}{% else %}{{ title }}{% endif %}{% endblock %}
+{% block og_description %}{{ block('html_description') }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        {% include '@ZakjakubOswisCalendar/web/parts/prihlaska.html.twig' %}
+    </main>
+{% endblock %}

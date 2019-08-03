@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-lg-12">
+        {% if type == 'success' %}
+            {% include '@ZakjakubOswisCalendar/web/parts/prihlaska-odeslana.html.twig' %}
+        {% elseif registrationsActive == false %}
+            {% include '@ZakjakubOswisCalendar/web/parts/prihlaska-jiz-brzy.html.twig' %}
+        {% elseif type == 'form' and registrationsActive == true %}
+            {% include '@ZakjakubOswisCalendar/web/parts/prihlaska-formular.html.twig' %}
+        {% else %}
+            {% include '@ZakjakubOswisCalendar/web/parts/prihlaska-chyba.html.twig' %}
+        {% endif %}
+    </div>
+</div>
+
+{% block structured_data %}
+{% endblock structured_data %}
