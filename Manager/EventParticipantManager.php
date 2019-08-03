@@ -23,6 +23,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
+use Zakjakub\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
@@ -310,11 +311,13 @@ class EventParticipantManager
                 $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
                 $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
                 if (!$contactPerson->getAppUser()) {
-                    $contactPerson->setAppUser(new AppUser($contactPerson->getContactName(), null, $contactPerson->getEmail()));
+                    if ($em->getRepository(AppUser::class)->findByEmail($eMail)->count() > 0) {
+                        throw new OswisUserNotUniqueException('Zadaný e-mail je již použitý.');
+                    }
+                    $contactPerson->setAppUser(new AppUser($name, null, $eMail));
                 }
                 $contactPerson->getAppUser()->generateAccountActivationRequestToken();
                 $em->flush();
-
                 $mailData = array(
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
