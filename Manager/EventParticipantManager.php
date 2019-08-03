@@ -75,7 +75,7 @@ class EventParticipantManager
         $this->oswisCoreSettings = $oswisCoreSettings;
         $this->mailer = $mailer;
         /// TODO: Encoder, createAppUser...
-        /// TOOD: Throw exceptions!
+        /// TODO: Throw exceptions!
     }
 
     /**

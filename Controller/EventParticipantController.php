@@ -9,7 +9,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
@@ -23,7 +22,6 @@ class EventParticipantController extends AbstractController
     /**
      * Process registration and appUser account activation.
      *
-     * @Route("/potvrzeni-prihlasky/{token}/{eventParticipantId}", name="potvrzeni-prihlasky")
      * @param string                       $token
      * @param int                          $eventParticipantId
      * @param EntityManagerInterface       $em
