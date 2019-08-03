@@ -4,3 +4,15 @@ services:
         resource: '../../Controller/*'
         tags: ['controller.service_arguments']
         public: true
+
+    zakjakub_oswis_calendar.event_participant_controller:
+        class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantController
+        autowire: true
+        public: true
+        arguments:
+            - 'doctrine.orm.entity_manager.abstract'
+            - 'monolog.logger'
+            - 'security.password_encoder'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - 'mailer'
+

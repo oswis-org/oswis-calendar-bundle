@@ -1,0 +1,7 @@
+controllers:
+    resource: ../../Controller/
+    type: annotation
+
+zakjakub_oswis_calendar_event_participant_registration_confirm:
+    controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
+    path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"

@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Controller\EventParticipant;
+namespace Zakjakub\OswisCalendarBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
