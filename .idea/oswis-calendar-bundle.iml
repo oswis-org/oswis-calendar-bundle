@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" packagePrefix="Zakjakub\OswisCalendarBundle\" />
       <excludeFolder url="file://$MODULE_DIR$/.github" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/adci/full-name-parser" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/api-platform/core" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/behat/transliterator" />
