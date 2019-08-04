@@ -33,7 +33,7 @@
                     {% if password is defined and password %}
                         Bylo nastaveno nové, náhodně vygenerované, heslo <b>{{ password }}</b>.
                     {% endif %}
-                    {% if portal %}
+                    {% if portal is defined and portal %}
                         Přihlašovací údaje slouží pro přihlášení do aplikace {{ portal }}, která bude již brzy dostupná na adrese
                         <a href="{{ absolute_url(path('portal')) }}" title="{{ portal }}" target="_blank">{{ absolute_url(path('portal')) }}</a>.
                     {% endif %}
