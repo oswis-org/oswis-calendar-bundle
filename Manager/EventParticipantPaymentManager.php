@@ -16,6 +16,7 @@ use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
@@ -156,39 +157,43 @@ class EventParticipantPaymentManager
      * @param string      $delimiter
      * @param string      $enclosure
      * @param string      $escape
-     *
      * @param string      $variableSymbolColumnName
      * @param string      $dateColumnName
      * @param string      $valueColumnName
-     *
      * @param string      $currencyColumnName
      * @param string      $currencyAllowed
      *
-     * @return void
-     * @throws OswisException
+     * @return int
      */
     final public function createFromCsv(
         Event $event,
         string $csv,
-        string $eventParticipantTypeOfType = null,
-        string $delimiter = ';',
-        string $enclosure = '"',
-        string $escape = '\\',
-        string $variableSymbolColumnName = 'VS',
-        string $dateColumnName = 'Datum',
-        string $valueColumnName = 'Objem',
-        string $currencyColumnName = 'Měna',
-        string $currencyAllowed = 'CZK'
-    ): void {
+        ?string $eventParticipantTypeOfType = EventParticipantType::TYPE_ATTENDEE,
+        ?string $delimiter = ';',
+        ?string $enclosure = '"',
+        ?string $escape = '\\',
+        ?string $variableSymbolColumnName = 'VS',
+        ?string $dateColumnName = 'Datum',
+        ?string $valueColumnName = 'Objem',
+        ?string $currencyColumnName = 'Měna',
+        ?string $currencyAllowed = 'CZK'
+    ): int {
+        $eventParticipantTypeOfType = $eventParticipantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
+        $delimiter = $delimiter ?? ';';
+        $enclosure = $enclosure ?? '"';
+        $escape = $escape ?? '\\';
+        $variableSymbolColumnName = $variableSymbolColumnName ?? 'VS';
+        $dateColumnName = $dateColumnName ?? 'Datum';
+        $valueColumnName = $valueColumnName ?? 'Objem';
+        $currencyColumnName = $currencyColumnName ?? 'Měna';
+        $currencyAllowed = $currencyAllowed ?? 'CZK';
+
         $this->logger ? $this->logger->info('CSV_PAYMENT_START') : null;
         $count = 0;
+        $failedPaymentsCount = 0;
         $csvRow = null;
         $eventParticipants = $event->getEventParticipantsByTypeOfType($eventParticipantTypeOfType);
         $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
-
-        if (count($csvPayments) < 1) {
-            throw new OswisException('V CSV nebyla nalezena žádná platba.');
-        }
 
         array_walk(
             $csvPayments,
@@ -201,14 +206,14 @@ class EventParticipantPaymentManager
         foreach ($csvPayments as $csvPayment) {
             try {
                 $csvVariableSymbol = $csvPayment[$variableSymbolColumnName];
-                $csvDate = new DateTime($csvPayment[$dateColumnName]);
-                $csvValue = (int)$csvPayment[$valueColumnName];
-                $csvCurrency = $csvPayment[$currencyColumnName];
+                $csvDate = $csvPayment[$dateColumnName] ? new DateTime($csvPayment[$dateColumnName]) : new DateTime();
+                $csvValue = (int)($csvPayment[$valueColumnName] ?? 0);
+                $csvCurrency = $csvPayment[$currencyColumnName] ?? null;
                 $csvRow = implode('; ', $csvPayment);
 
-                if ($csvCurrency !== $currencyAllowed) {
-                    $message = "CSV_PAYMENT_FAILED: ERROR: Wrong currency ($csvCurrency instead of $currencyAllowed); CSV: $csvRow;";
-                    $this->logger ? $this->logger->notice($message) : null;
+                if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
+                    $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: Wrong currency ('$csvCurrency'' instead of '$currencyAllowed'); CSV: $csvRow;");
+                    $failedPaymentsCount++;
                     continue;
                 }
 
@@ -217,31 +222,28 @@ class EventParticipantPaymentManager
                     $csvVariableSymbol = substr(trim($csvVariableSymbol), strlen(trim($csvVariableSymbol)) - 9, 9);
                 }
                 if (!$csvVariableSymbol || strlen($csvVariableSymbol) < 6) {
-                    $message = "CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) in CSV is too short; CSV: $csvRow;";
-                    $this->logger ? $this->logger->notice($message) : null;
+                    $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) in CSV is too short; CSV: $csvRow;");
+                    $failedPaymentsCount++;
                     continue;
                 }
 
                 $filteredEventParticipants = $eventParticipants->filter(
                     static function (EventParticipant $eventParticipant) use ($csvVariableSymbol) {
-                        if ($eventParticipant->isDeleted()) {
-                            return false;
-                        }
-
-                        return $eventParticipant->getVariableSymbol() === $csvVariableSymbol;
+                        return !$eventParticipant->isDeleted() && $eventParticipant->getVariableSymbol() === $csvVariableSymbol;
                     }
                 );
 
                 if ($filteredEventParticipants->count() < 1) {
-                    $message = "CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) not found; CSV: $csvRow;";
-                    $this->logger ? $this->logger->info($message) : null;
+                    $this->logger->info("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) not found; CSV: $csvRow;");
+                    $failedPaymentsCount++;
                     continue;
                 }
 
                 if ($filteredEventParticipants->count() > 1) {
-                    $message = "CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) is present in "
+                    $message = "CSV_PAYMENT_FAILED: ERROR: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in "
                         .$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
-                    $this->logger ? $this->logger->info($message) : null;
+                    $this->logger->info($message);
+                    $failedPaymentsCount++;
                     continue;
                 }
 
@@ -251,15 +253,17 @@ class EventParticipantPaymentManager
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$entity->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' '.$eventParticipant->getContact()->getContactName().', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
-                $this->logger ? $this->logger->info($infoMessage) : null;
+                $this->logger->info($infoMessage);
                 $count++;
             } catch (Exception $e) {
-                $message = 'CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage();
-                $this->logger ? $this->logger->info($message) : null;
+                $this->logger->info('CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage());
+                $failedPaymentsCount++;
             }
 
         }
-        $this->logger ? $this->logger->info('CSV_PAYMENT_END: '.$count.' from '.count($csvPayments)) : null;
+        $this->logger->info('CSV_PAYMENT_END: added '.$count.' from '.count($csvPayments)." ($failedPaymentsCount failed).");
+
+        return $count;
     }
 
     final public function create(
@@ -272,26 +276,15 @@ class EventParticipantPaymentManager
     ): EventParticipantPayment {
         try {
             $em = $this->em;
-            $entity = new EventParticipantPayment(
-                $eventParticipant,
-                $numericValue,
-                $dateTime,
-                $type,
-                $note,
-                $internalNote
-            );
+            $entity = new EventParticipantPayment($eventParticipant, $numericValue, $dateTime, $type, $note, $internalNote);
             $em->persist($entity);
             $em->flush();
-            $name = $entity->getEventParticipant()
-                ? $entity->getEventParticipant()->getContact()->getContactName()
-                : $entity->getEventParticipant()->getId();
-            $infoMessage = 'CREATE: Created event participant payment (by manager): '
-                .$entity->getId().' '.$name.'.';
-            $this->logger ? $this->logger->info($infoMessage) : null;
+            $name = $entity->getEventParticipant() ? $entity->getEventParticipant()->getContact()->getContactName() : $entity->getEventParticipant()->getId();
+            $this->logger->info('CREATE: Created event participant payment (by manager): '.$entity->getId().' '.$name.'.');
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event participant payment not created (by manager): '.$e->getMessage()) : null;
+            $this->logger->info('ERROR: Event participant payment not created (by manager): '.$e->getMessage());
 
             return null;
         }

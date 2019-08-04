@@ -5,28 +5,25 @@ namespace Zakjakub\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Swift_Mailer;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Twig\Environment;
+use Symfony\Component\Mailer\Mailer;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
+use Zakjakub\OswisCalendarBundle\Manager\EventParticipantPaymentManager;
+use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use function assert;
+use function count;
 use function in_array;
 
 final class EventParticipantPaymentActionSubscriber implements EventSubscriberInterface
 {
 
-    public const ALLOWED_ACTION_TYPES = ['send-confirmation'];
-
-    /**
-     * @var EntityRepository
-     */
-    private $reservationPaymentRepository;
+    public const ALLOWED_ACTION_TYPES = ['send-confirmation', 'csv'];
 
     /**
      * @var EntityManagerInterface
@@ -34,19 +31,18 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
     private $em;
 
     /**
-     * @var ReservationPaymentManager
+     * @var EventParticipantPaymentManager
      */
-    private $reservationPaymentManager;
+    private $eventParticipantPaymentManager;
 
     public function __construct(
         EntityManagerInterface $em,
-        Swift_Mailer $mailer,
+        Mailer $mailer,
         LoggerInterface $logger,
-        Environment $templating
+        OswisCoreSettingsProvider $oswisCoreSettings
     ) {
         $this->em = $em;
-        $this->reservationPaymentManager = new ReservationPaymentManager($em, $mailer, $logger, $templating);
-        $this->reservationPaymentRepository = $em->getRepository(ReservationPayment::class);
+        $this->eventParticipantPaymentManager = new EventParticipantPaymentManager($em, $mailer, $logger, $oswisCoreSettings);
     }
 
     /**
@@ -61,6 +57,7 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         ];
     }
 
+    /** @noinspection PhpUnused */
     /**
      * @param ViewEvent $event
      *
@@ -69,18 +66,13 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
     public function reservationPaymentAction(ViewEvent $event): void
     {
 
-        // \error_log('IN FUNCTION');
-
         $request = $event->getRequest();
 
         if ('api_event_participant_payment_action_requests_post_collection' !== $request->attributes->get('_route')) {
             return;
         }
 
-        // \error_log('MY FUNCTION');
-
         $output = null;
-
         $reservationPaymentActionRequest = $event->getControllerResult();
 
         $identifiers = $reservationPaymentActionRequest->identifiers;
@@ -92,45 +84,88 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
             return;
         }
 
-        $processedActionsCount = 0;
-        $reservations = new ArrayCollection();
-        foreach ($identifiers as $id) {
-            $payment = $this->reservationPaymentRepository->findOneBy(['id' => $id]);
-            if (!$payment) {
-                continue;
-            }
-            assert($payment instanceof ReservationPayment);
-            $reservations->add($payment);
-            switch ($type) {
-                case 'get-receipt-pdf':
-                    // $output = $this->reservationPaymentManager->createReceiptPdfString($payment);
-                    $processedActionsCount++;
-                    break;
-                case 'send-receipt-pdf-customer':
-                    // $this->reservationPaymentManager->sendReceiptPdf($payment);
-                    $processedActionsCount++;
-                    break;
-                default:
-                    $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
-
-                    return;
-                    break;
-            }
-        }
-
-        if ($processedActionsCount === 0) {
-            $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_FOUND));
+        if ('csv' === $type) {
+            $this->paymentCsvAction($reservationPaymentActionRequest);
 
             return;
         }
+        if ($identifiers && count($identifiers) > 0) {
+            $eventParticipantPaymentRepository = $this->em->getRepository(EventParticipantPayment::class);
 
-        if ($output) {
-            $data = ['data' => chunk_split(base64_encode($output))];
-            $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
+            $processedActionsCount = 0;
+            $reservations = new ArrayCollection();
+            foreach ($identifiers as $id) {
+                $payment = $eventParticipantPaymentRepository->findOneBy(['id' => $id]);
+                if (!$payment) {
+                    continue;
+                }
+                assert($payment instanceof ReservationPayment);
+                $reservations->add($payment);
+                switch ($type) {
+                    case 'get-receipt-pdf':
+                        // $output = $this->reservationPaymentManager->createReceiptPdfString($payment);
+                        $processedActionsCount++;
+                        break;
+                    case 'send-receipt-pdf-customer':
+                        // $this->reservationPaymentManager->sendReceiptPdf($payment);
+                        $processedActionsCount++;
+                        break;
+                    default:
+                        $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
 
-            return;
+                        return;
+                        break;
+                }
+            }
+
+            if ($processedActionsCount === 0) {
+                $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_FOUND));
+
+                return;
+            }
+
+            if ($output) {
+                $data = ['data' => chunk_split(base64_encode($output))];
+                $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
+
+                return;
+            }
+
+            $event->setResponse(new JsonResponse(null, Response::HTTP_NO_CONTENT));
         }
 
-        $event->setResponse(new JsonResponse(null, Response::HTTP_NO_CONTENT));
+        $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
     }
+
+    public function paymentCsvAction(mixed $reservationPaymentActionRequest): Response
+    {
+        $event = $reservationPaymentActionRequest->event ?? null;
+        $csvContent = $reservationPaymentActionRequest->csvContent ?? null;
+        $csvDelimiter = $reservationPaymentActionRequest->csvDelimiter ?? null;
+        $csvEnclosure = $reservationPaymentActionRequest->csvEnclosure ?? null;
+        $csvEscape = $reservationPaymentActionRequest->csvEscape ?? null;
+        $csvVariableSymbolColumnName = $reservationPaymentActionRequest->csvVariableSymbolColumnName ?? null;
+        $csvDateColumnName = $reservationPaymentActionRequest->csvDateColumnName ?? null;
+        $csvValueColumnName = $reservationPaymentActionRequest->csvValueColumnName ?? null;
+        $csvCurrencyColumnName = $reservationPaymentActionRequest->csvCurrencyColumnName ?? null;
+        $csvCurrencyAllowed = $reservationPaymentActionRequest->csvCurrencyAllowed ?? null;
+        $csvEventParticipantType = $reservationPaymentActionRequest->csvEventParticipantType ?? null;
+        $successPaymentsCount = $this->eventParticipantPaymentManager->createFromCsv(
+            $event,
+            $csvContent,
+            $csvEventParticipantType,
+            $csvDelimiter,
+            $csvEnclosure,
+            $csvEscape,
+            $csvVariableSymbolColumnName,
+            $csvDateColumnName,
+            $csvValueColumnName,
+            $csvCurrencyColumnName,
+            $csvCurrencyAllowed
+        );
+
+        return new JsonResponse(['data' => chunk_split(base64_encode("Vytvořeno $successPaymentsCount plateb z CSV."))], Response::HTTP_CREATED);
+    }
+
+
 }

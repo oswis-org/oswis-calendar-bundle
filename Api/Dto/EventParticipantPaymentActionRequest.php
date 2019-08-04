@@ -1,8 +1,9 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Api\Dto;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 
 /**
  * @ApiResource(
@@ -33,4 +34,58 @@ final class EventParticipantPaymentActionRequest
      */
     public $type;
 
+    /**
+     * @var string|null
+     */
+    public $csvContent;
+
+    /**
+     * @var string|null
+     */
+    public $csvDelimiter;
+
+    /**
+     * @var string|null
+     */
+    public $csvEnclosure;
+
+    /**
+     * @var string|null
+     */
+    public $csvEscape;
+
+    /**
+     * @var string|null
+     */
+    public $csvVariableSymbolColumnName;
+
+    /**
+     * @var string|null
+     */
+    public $csvDateColumnName;
+
+    /**
+     * @var string|null
+     */
+    public $csvValueColumnName;
+
+    /**
+     * @var string|null
+     */
+    public $csvCurrencyColumnName;
+
+    /**
+     * @var string|null
+     */
+    public $csvCurrencyAllowed;
+
+    /**
+     * @var string|null
+     */
+    public $csvEventParticipantType;
+
+    /**
+     * @var Event|null
+     */
+    public $event;
 }
