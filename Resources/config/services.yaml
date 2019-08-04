@@ -10,7 +10,7 @@ services:
         autowire: true
         public: true
         arguments:
-            - 'doctrine.orm.entity_manager.abstract'
+            - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
             - '@security.user_password_encoder.generic'
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
