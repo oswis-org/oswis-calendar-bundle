@@ -238,6 +238,7 @@ class EventParticipantManager
                     'isOrganization'   => $isOrganization,
                     'appUser'          => $eventParticipantContact->getAppUser(),
                     'password'         => $password,
+                    'oswis'            => $this->oswisCoreSettings->getArray(),
                 );
 
                 $archiveAddress = new NamedAddress(
@@ -428,6 +429,8 @@ class EventParticipantManager
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,
+                    'oswis'            => $this->oswisCoreSettings->getArray(),
+                    'logo'             => 'cid:logo',
                 );
 
                 $archiveAddress = new NamedAddress(
