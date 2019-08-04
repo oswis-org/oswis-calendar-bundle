@@ -16,34 +16,77 @@ use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use function assert;
 
+/**
+ * Class EventParticipantController
+ * @package Zakjakub\OswisCalendarBundle\Controller
+ */
 class EventParticipantController extends AbstractController
 {
 
     /**
-     * Process registration and appUser account activation.
+     * @var EntityManagerInterface
+     */
+    public $em;
+
+    /**
+     * @var LoggerInterface
+     */
+    public $logger;
+
+    /**
+     * @var UserPasswordEncoderInterface
+     */
+    public $encoder;
+
+    /**
+     * @var OswisCoreSettingsProvider
+     */
+    public $oswisCoreSettings;
+
+    /**
+     * @var MailerInterface
+     */
+    public $mailer;
+
+
+    /**
+     * EventParticipantController constructor.
      *
-     * @param string                       $token
-     * @param int                          $eventParticipantId
      * @param EntityManagerInterface       $em
      * @param LoggerInterface              $logger
      * @param UserPasswordEncoderInterface $encoder
      * @param OswisCoreSettingsProvider    $oswisCoreSettings
      * @param MailerInterface              $mailer
+     */
+    public function __construct(
+        EntityManagerInterface $em,
+        LoggerInterface $logger,
+        UserPasswordEncoderInterface $encoder,
+        OswisCoreSettingsProvider $oswisCoreSettings,
+        MailerInterface $mailer
+    ) {
+        $this->em = $em;
+        $this->logger = $logger;
+        $this->encoder = $encoder;
+        $this->oswisCoreSettings = $oswisCoreSettings;
+        $this->mailer = $mailer;
+    }
+
+    /**
+     * Process registration and appUser account activation.
+     *
+     * @param string $token
+     * @param int    $eventParticipantId
      *
      * @return Response
      * @throws LogicException
      */
     final public function eventParticipantRegistrationConfirmAction(
         string $token,
-        int $eventParticipantId,
-        EntityManagerInterface $em,
-        LoggerInterface $logger,
-        UserPasswordEncoderInterface $encoder,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        MailerInterface $mailer
+        int $eventParticipantId
     ): Response {
         try {
-            $eventParticipantManager = new EventParticipantManager($em, $mailer, $oswisCoreSettings, $logger);
+            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
             if (!$token || !$eventParticipantId) {
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
@@ -82,7 +125,7 @@ class EventParticipantController extends AbstractController
             $eventParticipant->getContact()->removeEmptyContactDetails();
             $eventParticipant->getContact()->removeEmptyNotes();
 
-            $eventParticipantManager->sendMail($eventParticipant, $encoder, true, $token);
+            $eventParticipantManager->sendMail($eventParticipant, $this->encoder, true, $token);
 
             return $this->render(
                 '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
@@ -94,9 +137,9 @@ class EventParticipantController extends AbstractController
             );
         } catch (Exception $e) {
             try {
-                $logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
+                $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
             } catch (Exception $exception) {
-                $logger->notice('OSWIS_CONFIRM_ERROR: PROBLEM WITH ERROR MESSAGE!!!');
+                $this->logger->notice('OSWIS_CONFIRM_ERROR: PROBLEM WITH ERROR MESSAGE!!!');
             }
 
             return $this->render(
