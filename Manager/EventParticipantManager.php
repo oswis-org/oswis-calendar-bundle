@@ -249,7 +249,7 @@ class EventParticipantManager
                     ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
                     ->bcc($archiveAddress)
                     ->subject(self::mimeEnc($title))
-                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-registration-form.html.twig')
+                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')
                     ->embed($depositPaymentQrPng, 'depositQr')
                     ->embed($restPaymentQrPng, 'restQr')
                     ->context($mailData);
@@ -439,7 +439,7 @@ class EventParticipantManager
                     ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
                     ->bcc($archiveAddress)
                     ->subject(self::mimeEnc($title))
-                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-registration-form.html.twig')
+                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig')
                     ->context($mailData);
                 $em->persist($eventParticipant);
                 try {
