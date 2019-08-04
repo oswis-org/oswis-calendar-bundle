@@ -10,9 +10,9 @@ services:
         autowire: true
         public: true
         arguments:
-            - 'doctrine.orm.entity_manager.abstract'
-            - 'monolog.logger'
-            - 'security.password_encoder'
+            - '@doctrine.orm.entity_manager.abstract'
+            - '@monolog.logger'
+            - '@security.user_password_encoder.generic'
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
-            - 'mailer'
+            - '@mailer.mailer'
 
