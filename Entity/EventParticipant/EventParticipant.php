@@ -61,11 +61,33 @@ use function assert;
  *   }
  * )
  * @ApiFilter(OrderFilter::class)
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "id": "exact",
+ *     "activeRevision.event.id": "exact",
+ *     "activeRevision.contact.id": "exact",
+ *     "activeRevision.contact.activeRevision.givenName": "partial",
+ *     "activeRevision.contact.activeRevision.additionalName": "partial",
+ *     "activeRevision.contact.activeRevision.familyName": "partial"
+ * })
+ * @ApiFilter(ExistsFilter::class, properties={"deleted"})
  * @Searchable({
  *     "id",
- *     "revisions.contact.contactDetails.content",
- *     "revisions.contact.revisions.givenName",
- *     "revisions.contact.revisions.familyName"
+ *     "activeRevision.event.activeRevision.name",
+ *     "activeRevision.event.activeRevision.shortName",
+ *     "activeRevision.event.activeRevision.slug",
+ *     "activeRevision.contact.id",
+ *     "activeRevision.contact.activeRevision.givenName",
+ *     "activeRevision.contact.activeRevision.additionalName",
+ *     "activeRevision.contact.activeRevision.familyName",
+ *     "activeRevision.contact.contactDetails.content",
+ *     "activeRevision.contact.positions.name",
+ *     "activeRevision.contact.positions.shortName",
+ *     "activeRevision.contact.positions.organization.name",
+ *     "activeRevision.contact.positions.organization.shortName",
+ *     "activeRevision.eventParticipantFlags.name",
+ *     "activeRevision.eventParticipantFlags.shortNme",
+ *     "activeRevision.eventParticipantFlags.slug",
+ *     "activeRevision.eventParticipantFlags.name",
  * })
  */
 class EventParticipant extends AbstractRevisionContainer
