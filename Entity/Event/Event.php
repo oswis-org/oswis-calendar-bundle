@@ -193,6 +193,13 @@ class Event extends AbstractRevisionContainer
     protected $revisions;
 
     /**
+     * @var EventRevision
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision")
+     * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
+     */
+    protected $activeRevision;
+
+    /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",

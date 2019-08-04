@@ -239,7 +239,7 @@ class EventParticipantManager
                     'appUser'          => $eventParticipantContact->getAppUser(),
                     'password'         => $password,
                     'oswis'            => $this->oswisCoreSettings->getArray(),
-                    'bankAccount' => $event->getBankAccountComplete(),
+                    'bankAccount'      => $event->getBankAccountComplete(),
                 );
 
                 $archiveAddress = new NamedAddress(

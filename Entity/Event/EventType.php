@@ -80,6 +80,13 @@ class EventType extends AbstractRevisionContainer
     protected $revisions;
 
     /**
+     * @var EventTypeRevision
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventTypeRevision")
+     * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
+     */
+    protected $activeRevision;
+
+    /**
      * Events of that type.
      * @var Collection|null $event
      * @Doctrine\ORM\Mapping\OneToMany(
