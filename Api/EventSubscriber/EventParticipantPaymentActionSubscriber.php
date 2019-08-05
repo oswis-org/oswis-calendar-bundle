@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\MailerInterface;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantPaymentManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -37,7 +37,7 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
 
     public function __construct(
         EntityManagerInterface $em,
-        Mailer $mailer,
+        MailerInterface $mailer,
         LoggerInterface $logger,
         OswisCoreSettingsProvider $oswisCoreSettings
     ) {
@@ -50,8 +50,6 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
      */
     public static function getSubscribedEvents(): array
     {
-        // \error_log('GET SUBSCRIBED');
-
         return [
             KernelEvents::VIEW => ['reservationPaymentAction', EventPriorities::POST_VALIDATE],
         ];
