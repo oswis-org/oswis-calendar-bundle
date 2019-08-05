@@ -6,6 +6,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
+use Zakjakub\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries;
@@ -69,4 +70,15 @@ class EventManager
             return null;
         }
     }
+
+    final public function updateActiveRevisions(): void
+    {
+        $events = $this->em->getRepository(Event::class)->findAll();
+        foreach ($events as $event) {
+            assert($event instanceof Event);
+            $event->updateActiveRevision();
+        }
+        $this->em->flush();
+    }
+
 }

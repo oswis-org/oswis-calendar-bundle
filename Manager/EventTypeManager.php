@@ -5,6 +5,7 @@ namespace Zakjakub\OswisCalendarBundle\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
+use Zakjakub\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -55,4 +56,15 @@ class EventTypeManager
             return null;
         }
     }
+
+    final public function updateActiveRevisions(): void
+    {
+        $eventTypes = $this->em->getRepository(EventType::class)->findAll();
+        foreach ($eventTypes as $eventType) {
+            assert($eventType instanceof EventType);
+            $eventType->updateActiveRevision();
+        }
+        $this->em->flush();
+    }
+
 }

@@ -15,6 +15,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\NamedAddress;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use Zakjakub\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
 use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
@@ -465,5 +466,16 @@ class EventParticipantManager
             throw new OswisException('Problém s odesláním potvrzení o zrušení přihlášky.  '.$e->getMessage());
         }
     }
+
+    final public function updateActiveRevisions(): void
+    {
+        $eventParticipants = $this->em->getRepository(EventParticipant::class)->findAll();
+        foreach ($eventParticipants as $eventParticipant) {
+            assert($eventParticipant instanceof EventParticipant);
+            $eventParticipant->updateActiveRevision();
+        }
+        $this->em->flush();
+    }
+
 
 }

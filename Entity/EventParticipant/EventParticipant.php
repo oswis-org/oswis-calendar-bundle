@@ -66,10 +66,7 @@ use function assert;
  * @ApiFilter(SearchFilter::class, properties={
  *     "id": "exact",
  *     "activeRevision.event.id": "exact",
- *     "activeRevision.contact.id": "exact",
- *     "activeRevision.contact.activeRevision.givenName": "partial",
- *     "activeRevision.contact.activeRevision.additionalName": "partial",
- *     "activeRevision.contact.activeRevision.familyName": "partial"
+ *     "activeRevision.contact.id": "exact"
  * })
  * @ApiFilter(ExistsFilter::class, properties={"deleted"})
  * @Searchable({
@@ -78,18 +75,10 @@ use function assert;
  *     "activeRevision.event.activeRevision.shortName",
  *     "activeRevision.event.activeRevision.slug",
  *     "activeRevision.contact.id",
- *     "activeRevision.contact.activeRevision.givenName",
- *     "activeRevision.contact.activeRevision.additionalName",
- *     "activeRevision.contact.activeRevision.familyName",
  *     "activeRevision.contact.contactDetails.content",
- *     "activeRevision.contact.positions.name",
- *     "activeRevision.contact.positions.shortName",
- *     "activeRevision.contact.positions.organization.name",
- *     "activeRevision.contact.positions.organization.shortName",
- *     "activeRevision.eventParticipantFlags.name",
- *     "activeRevision.eventParticipantFlags.shortNme",
- *     "activeRevision.eventParticipantFlags.slug",
- *     "activeRevision.eventParticipantFlags.name",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
  * })
  */
 class EventParticipant extends AbstractRevisionContainer
