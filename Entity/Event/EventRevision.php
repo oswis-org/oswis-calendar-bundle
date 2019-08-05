@@ -96,7 +96,8 @@ class EventRevision extends AbstractRevision
         assert($revision instanceof Event);
     }
 
-    final public function __clone()
+    /** @noinspection MethodShouldBeFinalInspection */
+    public function __clone()
     {
         foreach ($this->eventFlagConnections as $eventFlagConnection) {
             $this->addEventFlagConnection(clone $eventFlagConnection);

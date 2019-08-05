@@ -16,3 +16,12 @@ services:
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
             - '@mailer.mailer'
 
+
+    Zakjakub\OswisCalendarBundle\Api\Dto\:
+        resource: '../../Api/Dto/*'
+        public: true
+
+    Zakjakub\OswisCalendarBundle\Api\EventSubscriber\:
+        resource: '../../Api/EventSubscriber/*'
+        public: true
+
