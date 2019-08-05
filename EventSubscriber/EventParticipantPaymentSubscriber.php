@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisAccommodationBundle\EventSubscriber;
+namespace Zakjakub\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
