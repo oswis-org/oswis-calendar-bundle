@@ -15,8 +15,7 @@ use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
  *          "path"="/event_participant_payment_action",
  *      },
  *  },
- *  itemOperations={},
- *  outputClass=false
+ *  itemOperations={}
  * )
  */
 final class EventParticipantPaymentActionRequest
