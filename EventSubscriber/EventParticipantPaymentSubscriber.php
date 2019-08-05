@@ -1,4 +1,4 @@
-<?php /** @noinspection ForgottenDebugOutputInspection */
+<?php
 
 namespace Zakjakub\OswisAccommodationBundle\EventSubscriber;
 
@@ -67,9 +67,7 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::VIEW => [
-                ['sendEmail', EventPriorities::POST_WRITE],
-            ],
+            KernelEvents::VIEW => [['sendEmail', EventPriorities::POST_WRITE]],
         ];
     }
 

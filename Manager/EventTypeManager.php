@@ -5,7 +5,6 @@ namespace Zakjakub\OswisCalendarBundle\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Zakjakub\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;

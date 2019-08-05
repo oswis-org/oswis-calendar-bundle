@@ -1,4 +1,4 @@
-<?php /** @noinspection ForgottenDebugOutputInspection */
+<?php
 
 namespace Zakjakub\OswisAccommodationBundle\EventSubscriber;
 
@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Twig\Environment;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -36,11 +35,6 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      */
     private $logger;
 
-    /**
-     * @var Environment
-     */
-    private $templating;
-
     private $oswisCoreSettings;
 
     /**
@@ -52,7 +46,6 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      * @param EntityManagerInterface       $em
      * @param MailerInterface              $mailer
      * @param LoggerInterface              $logger
-     * @param Environment                  $templating
      * @param OswisCoreSettingsProvider    $oswisCoreSettings
      * @param UserPasswordEncoderInterface $encoder
      */
@@ -60,7 +53,6 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         EntityManagerInterface $em,
         MailerInterface $mailer,
         LoggerInterface $logger,
-        Environment $templating,
         OswisCoreSettingsProvider $oswisCoreSettings,
         UserPasswordEncoderInterface $encoder
     ) {

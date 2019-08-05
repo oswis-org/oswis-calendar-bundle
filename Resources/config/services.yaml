@@ -5,6 +5,22 @@ services:
         tags: ['controller.service_arguments']
         public: true
 
+    Zakjakub\OswisCalendarBundle\EventSubscriber\:
+        resource: '../../EventSubscriber/*'
+        tags: [ { name: 'kernel.view'} ]
+        # arguments:
+        #   ['@security.user_password_encoder.generic', '@doctrine.orm.entity_manager.abstract', '@swiftmailer.mailer.abstract', '@monolog.logger_prototype', '@twig', '@security.token_storage']
+        public: true
+
+    Zakjakub\OswisCalendarBundle\EventListener\:
+        resource: '../../EventListener/*'
+        # arguments:
+        #   ['@security.user_password_encoder.generic', '@doctrine.orm.entity_manager.abstract', '@swiftmailer.mailer.abstract', '@monolog.logger_prototype', '@twig', '@security.token_storage']
+        public: true
+
+
+
+
     zakjakub_oswis_calendar.event_participant_controller:
         class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantController
         autowire: true
