@@ -16,12 +16,18 @@ services:
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
             - '@mailer.mailer'
 
-
-    Zakjakub\OswisCalendarBundle\Api\Dto\:
-        resource: '../../Api/Dto/*'
+    zakjakub_oswis_calendar.event_participant_payment_action_request:
+        class: Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest
+        autowire: true
         public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
 
-    Zakjakub\OswisCalendarBundle\Api\EventSubscriber\:
-        resource: '../../Api/EventSubscriber/*'
+    zakjakub_oswis_calendar.event_participant_payment_action_subscriber:
+        class: Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber
+        autowire: true
         public: true
 
