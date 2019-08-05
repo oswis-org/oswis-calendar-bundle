@@ -84,8 +84,8 @@
                 </small>
             </li>
             <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
-                <b><span itemprop="name">{{ person.fullName }}</span></b><br>
-                <small itemprop="email">({{ person.email }})</small>
+                <b><span itemprop="name">{{ eventParticipant.contact.fullName }}</span></b><br>
+                <small itemprop="email">({{ eventParticipant.contact.person.email }})</small>
             </li>
             <li>
                 <b>Typ: </b> {{ eventParticipantType.name }}
@@ -108,7 +108,7 @@
                     do {{ event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
                 </small>
             </li>
-            {% for study in person.studies %}
+            {% for study in eventParticipant.contact.person.studies %}
                 <li>
                     {{ study.organization.name }}
                 </li>
@@ -128,8 +128,8 @@
                     {% endif %}
                 </li>
             {% endfor %}
-            {% if person.contactDetails is defined and person.contactDetails %}
-                {% for contactDetail in person.contactDetails %}
+            {% if eventParticipant.contact.person.contactDetails is defined and eventParticipant.contact.person.contactDetails %}
+                {% for contactDetail in eventParticipant.contact.person.contactDetails %}
                     {% if contactDetail.content|length > 0 %}
                         <li>
                             <p>
