@@ -1,25 +1,33 @@
 services:
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
     Zakjakub\OswisCalendarBundle\Controller\:
         resource: '../../Controller/*'
         tags: ['controller.service_arguments']
         public: true
 
-    Zakjakub\OswisCalendarBundle\EventSubscriber\:
-        resource: '../../EventSubscriber/*'
-        tags: [ { name: 'kernel.view'} ]
-        # arguments:
-        #   ['@security.user_password_encoder.generic', '@doctrine.orm.entity_manager.abstract', '@swiftmailer.mailer.abstract', '@monolog.logger_prototype', '@twig', '@security.token_storage']
+    zakjakub_oswis_calendar.event_participant_payment_subscriber:
+        class: Zakjakub\OswisCalendarBundle\EventSubscriber\EventParticipantPaymentSubscriber
+        autowire: true
         public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
 
-    Zakjakub\OswisCalendarBundle\EventListener\:
-        resource: '../../EventListener/*'
-        # arguments:
-        #   ['@security.user_password_encoder.generic', '@doctrine.orm.entity_manager.abstract', '@swiftmailer.mailer.abstract', '@monolog.logger_prototype', '@twig', '@security.token_storage']
+    zakjakub_oswis_calendar.event_participant_subscriber:
+        class: Zakjakub\OswisCalendarBundle\EventSubscriber\EventParticipantSubscriber
+        autowire: true
         public: true
-
-
-
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - '@security.user_password_encoder.generic'
 
     zakjakub_oswis_calendar.event_participant_controller:
         class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantController
@@ -36,14 +44,14 @@ services:
         class: Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest
         autowire: true
         public: true
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
-            - '@monolog.logger'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
 
     zakjakub_oswis_calendar.event_participant_payment_action_subscriber:
         class: Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber
         autowire: true
         public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
 
