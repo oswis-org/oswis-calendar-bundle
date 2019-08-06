@@ -240,6 +240,7 @@ class EventParticipantManager
                     'password'         => $password,
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                     'bankAccount'      => $event->getBankAccountComplete(),
+                    'logo'             => 'cid:logo',
                     'depositQr'        => 'cid:depositQr',
                     'restQr'           => 'cid:restQr',
                 );
