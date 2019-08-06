@@ -219,11 +219,13 @@
                     </div>
                 </div>
             {% endif %}
+            {% if eventParticipant.event.organizer is defined and eventParticipant.event.organizer.contact is defined %}
             <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
-                <meta itemprop="name" content="{{ eventParticipant.event.organizer.name }}"/>
-                <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
+                <meta itemprop="name" content="{{ eventParticipant.event.organizer.contact.name|default('') }}"/>
+                <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/>
                 <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
             </div>
+            {% endif %}
         </div>
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
