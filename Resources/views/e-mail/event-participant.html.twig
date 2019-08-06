@@ -108,7 +108,7 @@
                     do {{ event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
                 </small>
             </li>
-            {% for study in eventParticipant.contact.person.studies %}
+            {% for study in eventParticipant.contact.studies %}
                 <li>
                     {{ study.organization.name }}
                 </li>
@@ -128,8 +128,8 @@
                     {% endif %}
                 </li>
             {% endfor %}
-            {% if eventParticipant.contact.person.contactDetails is defined and eventParticipant.contact.person.contactDetails %}
-                {% for contactDetail in eventParticipant.contact.person.contactDetails %}
+            {% if eventParticipant.contact.contactDetails is defined and eventParticipant.contact.contactDetails %}
+                {% for contactDetail in eventParticipant.contact.contactDetails %}
                     {% if contactDetail.content|length > 0 %}
                         <li>
                             <p>
