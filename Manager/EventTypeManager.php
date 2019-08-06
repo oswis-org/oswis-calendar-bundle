@@ -62,6 +62,7 @@ class EventTypeManager
         foreach ($eventTypes as $eventType) {
             assert($eventType instanceof EventType);
             $eventType->updateActiveRevision();
+            $this->em->persist($eventType);
         }
         $this->em->flush();
     }

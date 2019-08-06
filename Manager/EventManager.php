@@ -76,6 +76,7 @@ class EventManager
         foreach ($events as $event) {
             assert($event instanceof Event);
             $event->updateActiveRevision();
+            $this->em->persist($event);
         }
         $this->em->flush();
     }

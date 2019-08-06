@@ -475,6 +475,7 @@ class EventParticipantManager
         foreach ($eventParticipants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
             $eventParticipant->updateActiveRevision();
+            $this->em->persist($eventParticipant);
         }
         $this->em->flush();
     }
