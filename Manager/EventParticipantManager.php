@@ -240,6 +240,8 @@ class EventParticipantManager
                     'password'         => $password,
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                     'bankAccount'      => $event->getBankAccountComplete(),
+                    'depositQr'        => 'cid:depositQr',
+                    'restQr'           => 'cid:restQr',
                 );
 
                 $archiveAddress = new NamedAddress(
