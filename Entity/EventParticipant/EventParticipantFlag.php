@@ -203,5 +203,4 @@ class EventParticipantFlag extends AbstractEventFlag
             $eventContactFlagType->addEventParticipantFlag($this);
         }
     }
-
 }

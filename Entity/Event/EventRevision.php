@@ -145,5 +145,4 @@ class EventRevision extends AbstractRevision
     {
         $this->location = $event;
     }
-
 }

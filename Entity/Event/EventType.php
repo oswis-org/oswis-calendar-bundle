@@ -169,6 +169,4 @@ class EventType extends AbstractRevisionContainer
 
         return $revision;
     }
-
-
 }

@@ -107,5 +107,4 @@ class EventParticipantPayment extends AbstractPayment
             $eventParticipant->addEventParticipantPayment($this);
         }
     }
-
 }

@@ -80,5 +80,4 @@ class EventManager
         }
         $this->em->flush();
     }
-
 }

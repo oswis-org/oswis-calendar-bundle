@@ -13,7 +13,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
  */
 class EventWebContent
 {
-
     public const HTML = 'html';
     public const CSS = 'css';
     public const JS = 'js';

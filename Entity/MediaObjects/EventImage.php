@@ -35,5 +35,4 @@ class EventImage extends AbstractImage
      * )
      */
     public $file;
-
 }

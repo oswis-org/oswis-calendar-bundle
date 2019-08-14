@@ -22,7 +22,6 @@ use function in_array;
 
 final class EventParticipantPaymentActionSubscriber implements EventSubscriberInterface
 {
-
     public const ALLOWED_ACTION_TYPES = ['send-confirmation', 'csv'];
 
     /**
@@ -63,7 +62,6 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
      */
     public function reservationPaymentAction(ViewEvent $event): void
     {
-
         $request = $event->getRequest();
 
         if ('api_event_participant_payment_action_requests_post_collection' !== $request->attributes->get('_route')) {
@@ -164,6 +162,4 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
 
         return new JsonResponse(['data' => chunk_split(base64_encode("Vytvořeno $successPaymentsCount plateb z CSV."))], Response::HTTP_CREATED);
     }
-
-
 }

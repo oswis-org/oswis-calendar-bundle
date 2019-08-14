@@ -14,7 +14,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
  */
 class EventSeries
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
 
@@ -66,5 +65,4 @@ class EventSeries
     {
         return $this->events ?? new ArrayCollection();
     }
-
 }

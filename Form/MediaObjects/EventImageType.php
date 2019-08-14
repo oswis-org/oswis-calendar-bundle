@@ -15,5 +15,4 @@ final class EventImageType extends AbstractType
     {
         return EventImage::class;
     }
-
 }

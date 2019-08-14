@@ -11,7 +11,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  */
 abstract class AbstractBundleEvent
 {
-
     use BasicEntityTrait;
 
     /**
@@ -56,5 +55,4 @@ abstract class AbstractBundleEvent
     {
         $this->event = $event;
     }
-
 }

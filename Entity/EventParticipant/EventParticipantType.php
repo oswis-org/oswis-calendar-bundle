@@ -62,7 +62,6 @@ use function in_array;
  */
 class EventParticipantType
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use EntityPublicTrait;
@@ -352,5 +351,4 @@ class EventParticipantType
             $eventRegistrationRange->setEventParticipantType(null);
         }
     }
-
 }

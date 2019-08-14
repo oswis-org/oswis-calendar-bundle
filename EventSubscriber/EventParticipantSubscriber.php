@@ -93,5 +93,4 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
         $eventParticipantManager->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
     }
-
 }

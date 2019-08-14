@@ -97,5 +97,4 @@ class EventTypeRevision extends AbstractRevision
     {
         assert($revision instanceof EventType);
     }
-
 }

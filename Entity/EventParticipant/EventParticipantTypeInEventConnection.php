@@ -124,5 +124,4 @@ class EventParticipantTypeInEventConnection
             $eventParticipantType->addEventParticipantTypeInEventConnection($this);
         }
     }
-
 }

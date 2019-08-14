@@ -16,7 +16,6 @@ use Zakjakub\OswisCalendarBundle\Entity\EventAttendee;
 
 class EventParticipantType extends AbstractType
 {
-
     final public function buildForm(
         FormBuilderInterface $builder,
         array $options
@@ -116,5 +115,4 @@ class EventParticipantType extends AbstractType
     {
         return 'job_fair_event_attendee';
     }
-
 }

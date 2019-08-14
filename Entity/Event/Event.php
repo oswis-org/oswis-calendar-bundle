@@ -1411,6 +1411,4 @@ class Event extends AbstractRevisionContainer
 
         return $output;
     }
-
-
 }

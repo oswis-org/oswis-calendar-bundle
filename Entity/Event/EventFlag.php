@@ -110,5 +110,4 @@ class EventFlag extends AbstractEventFlag
             $flagConnection->setEventFlag(null);
         }
     }
-
 }

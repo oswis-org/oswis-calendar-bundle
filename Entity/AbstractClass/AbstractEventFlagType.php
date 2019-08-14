@@ -8,7 +8,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 
 abstract class AbstractEventFlagType
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use TypeTrait;
@@ -67,5 +66,4 @@ abstract class AbstractEventFlagType
     {
         $this->maxInEventParticipant = $maxInEventParticipant;
     }
-
 }

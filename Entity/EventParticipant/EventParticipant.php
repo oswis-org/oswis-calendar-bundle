@@ -506,5 +506,4 @@ class EventParticipant extends AbstractRevisionContainer
 
         return substr(trim($phone), strlen(trim($phone)) - 9, 9);
     }
-
 }

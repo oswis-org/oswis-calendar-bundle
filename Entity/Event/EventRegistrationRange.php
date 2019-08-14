@@ -16,7 +16,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
  */
 class EventRegistrationRange
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use DateRangeTrait;
@@ -116,5 +115,4 @@ class EventRegistrationRange
             $eventParticipantType->addEventRegistrationRange($this);
         }
     }
-
 }

@@ -92,5 +92,4 @@ class EventParticipantNote
             $eventParticipant->addEventParticipantNote($this);
         }
     }
-
 }

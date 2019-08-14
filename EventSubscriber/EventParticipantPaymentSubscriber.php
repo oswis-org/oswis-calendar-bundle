@@ -94,5 +94,4 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
         $eventParticipantPaymentManager = new EventParticipantPaymentManager($this->em, $this->mailer, $this->logger, $this->oswisCoreSettings);
         $eventParticipantPaymentManager->sendConfirmation($eventParticipantPayment);
     }
-
 }

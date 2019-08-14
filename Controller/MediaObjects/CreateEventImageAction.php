@@ -21,5 +21,4 @@ final class CreateEventImageAction extends AbstractImageAction
     {
         return new EventImage();
     }
-
 }

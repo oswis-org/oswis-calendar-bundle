@@ -16,7 +16,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TaxRateTrait;
  */
 class EventPrice
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use NumericValueTrait;
@@ -109,5 +108,4 @@ class EventPrice
             $eventParticipantType->addEventPrice($this);
         }
     }
-
 }

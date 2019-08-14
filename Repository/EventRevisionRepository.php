@@ -46,6 +46,4 @@ class EventRevisionRepository extends EntityRepository
 
         throw new NonUniqueResultException('Nalezeno více událostí se zadaným identifikátorem'.($slug ? ' '.$slug : '').'.');
     }
-
-
 }

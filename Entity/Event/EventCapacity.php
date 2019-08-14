@@ -14,7 +14,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
  */
 class EventCapacity
 {
-
     use BasicEntityTrait;
     use NameableBasicTrait;
     use NumericValueTrait;
@@ -118,6 +117,4 @@ class EventCapacity
             $eventParticipantType->addEventCapacity($this);
         }
     }
-
-
 }

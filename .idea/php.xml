@@ -126,6 +126,13 @@
       <path value="$PROJECT_DIR$/vendor/symfony/templating" />
       <path value="$PROJECT_DIR$/vendor/symfony/debug" />
       <path value="$PROJECT_DIR$/vendor/symfony/process" />
+      <path value="$PROJECT_DIR$/vendor/dasprid/enum" />
+      <path value="$PROJECT_DIR$/vendor/endroid/installer" />
+      <path value="$PROJECT_DIR$/vendor/endroid/qr-code" />
+      <path value="$PROJECT_DIR$/vendor/myclabs/php-enum" />
+      <path value="$PROJECT_DIR$/vendor/league/csv" />
+      <path value="$PROJECT_DIR$/vendor/khanamiryan/qrcode-detector-decoder" />
+      <path value="$PROJECT_DIR$/vendor/bacon/bacon-qr-code" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

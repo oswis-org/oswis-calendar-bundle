@@ -152,5 +152,4 @@ class EventParticipantController extends AbstractController
             );
         }
     }
-
 }

@@ -45,6 +45,10 @@ services:
         autowire: true
         public: true
 
+    Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest:
+        alias: zakjakub_oswis_calendar.event_participant_payment_action_request
+        public: true
+
     zakjakub_oswis_calendar.event_participant_payment_action_subscriber:
         class: Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber
         autowire: true
@@ -55,3 +59,6 @@ services:
             - '@monolog.logger'
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
 
+    Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber:
+        alias: zakjakub_oswis_calendar.event_participant_payment_action_subscriber
+        public: true

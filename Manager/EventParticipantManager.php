@@ -179,7 +179,8 @@ class EventParticipantManager
             $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
 
             $depositPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountNumber(),
+                $event->getBankAccountNumber(),
+                $event->getBankAccountNumber(),
                 [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
@@ -189,7 +190,8 @@ class EventParticipantManager
                 ]
             );
             $restPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountNumber(),
+                $event->getBankAccountNumber(),
+                $event->getBankAccountNumber(),
                 [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
@@ -479,6 +481,4 @@ class EventParticipantManager
         }
         $this->em->flush();
     }
-
-
 }

@@ -83,7 +83,6 @@ class EventParticipantPaymentManager
         EventParticipantPayment $payment = null
     ): string {
         try {
-
             if (!$payment) {
                 throw new NotFoundHttpException('Platba nenalezena.');
             }
@@ -259,7 +258,6 @@ class EventParticipantPaymentManager
                 $this->logger->info('CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage());
                 $failedPaymentsCount++;
             }
-
         }
         $this->logger->info('CSV_PAYMENT_END: added '.$count.' from '.count($csvPayments)." ($failedPaymentsCount failed).");
 
@@ -289,6 +287,4 @@ class EventParticipantPaymentManager
             return null;
         }
     }
-
-
 }

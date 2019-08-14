@@ -136,5 +136,4 @@ class EventParticipantFlagInEventConnection
             $eventParticipantFlag->addEventParticipantFlagInEventConnection($this);
         }
     }
-
 }
