@@ -71,6 +71,7 @@
             {% endif %}
         {% endblock message_payment_outer %}
 
+        <!--suppress HtmlUnknownAttribute -->
         <h3 color='#006FAD' style='color:#006FAD;font-size:1.4em;font-weight:bold;margin-top:0.7em;'>
             Shrnutí {{ f ? 'Vaší' : 'Tvé' }} přihlášky
         </h3>
@@ -213,6 +214,7 @@
                             <meta itemprop="addressRegion" content="{{ event.location.city }}"/>
                         {% endif %}
                         {% if event.location.url is defined and event.location.url %}
+                            <!--suppress HtmlUnknownAttribute -->
                             <meta itemprop="url" href="{{ event.location.url }}" content="{{ event.location.url }}"/>
                         {% endif %}
                         <meta itemprop=Country" content="CZ"/>

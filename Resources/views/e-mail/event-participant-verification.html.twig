@@ -131,6 +131,7 @@
                             <meta itemprop="addressRegion" content="{{ event.location.city }}"/>
                         {% endif %}
                         {% if event.location.url is defined and event.location.url %}
+                            <!--suppress HtmlUnknownAttribute -->
                             <meta itemprop="url" href="{{ event.location.url }}" content="{{ event.location.url }}"/>
                         {% endif %}
                         <meta itemprop=Country" content="CZ"/>
