@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -67,7 +68,10 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::VIEW => [['sendEmail', EventPriorities::POST_WRITE]],
+            KernelEvents::VIEW => [
+                ['postWrite', EventPriorities::POST_WRITE],
+                ['postValidate', EventPriorities::POST_VALIDATE],
+            ],
         ];
     }
 
@@ -76,7 +80,29 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
      *
      * @throws Exception
      */
-    public function sendEmail(ViewEvent $event): void
+    public function postWrite(ViewEvent $event): void
+    {
+        $eventParticipantPayment = $event->getControllerResult();
+        $method = $event->getRequest()->getMethod();
+
+        if (!$eventParticipantPayment instanceof EventParticipantPayment) {
+            return;
+        }
+        if (Request::METHOD_POST !== $method) {
+            return;
+        }
+
+        $eventParticipantPaymentManager = new EventParticipantPaymentManager($this->em, $this->mailer, $this->logger, $this->oswisCoreSettings);
+        $eventParticipantPaymentManager->sendConfirmation($eventParticipantPayment);
+    }
+
+    /**
+     * @param ViewEvent $event
+     *
+     * @throws OswisException
+     * @throws SuspiciousOperationException
+     */
+    public function postValidate(ViewEvent $event): void
     {
         $eventParticipantPayment = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
@@ -87,11 +113,5 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
         if (Request::METHOD_PUT === $method) {
             throw new OswisException('Změna platby není povolena.');
         }
-        if (Request::METHOD_POST !== $method) {
-            return;
-        }
-
-        $eventParticipantPaymentManager = new EventParticipantPaymentManager($this->em, $this->mailer, $this->logger, $this->oswisCoreSettings);
-        $eventParticipantPaymentManager->sendConfirmation($eventParticipantPayment);
     }
 }

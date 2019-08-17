@@ -4,7 +4,9 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Exception;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
@@ -44,15 +46,58 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class)
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id": "ASC",
+ *     "dateTime",
+ *     "createdDateTime",
+ *     "numericValue",
+ *     "eventParticipant.activeRevision.event.activeRevision.name",
+ *     "eventParticipant.activeRevision.event.activeRevision.shortName",
+ *     "eventParticipant.activeRevision.event.activeRevision.slug",
+ *     "eventParticipant.activeRevision.event.activeRevision.color",
+ *     "eventParticipant.activeRevision.contact.id",
+ *     "eventParticipant.activeRevision.contact.contactName",
+ *     "eventParticipant.activeRevision.contact.contactDetails.content",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
+ * })
+ * @ApiFilter(SearchFilter::class, properties={
+ *     "id": "iexact",
+ *     "dateTime": "ipartial",
+ *     "createdDateTime": "ipartial",
+ *     "numericValue": "ipartial",
+ *     "eventParticipant.activeRevision.event.activeRevision.name": "ipartial",
+ *     "eventParticipant.activeRevision.event.activeRevision.shortName": "ipartial",
+ *     "eventParticipant.activeRevision.event.activeRevision.slug": "ipartial",
+ *     "eventParticipant.activeRevision.event.activeRevision.color": "ipartial",
+ *     "eventParticipant.activeRevision.contact.id": "ipartial",
+ *     "eventParticipant.activeRevision.contact.contactName": "ipartial",
+ *     "eventParticipant.activeRevision.contact.contactDetails.content": "ipartial",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name": "ipartial",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName": "ipartial",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug": "ipartial"
+ * })
+ * @ApiFilter(DateFilter::class, properties={"createdDtaeTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"})
  * @Searchable({
  *     "id",
- *     "numericValue"
+ *     "dateTime",
+ *     "createdDateTime",
+ *     "numericValue",
+ *     "eventParticipant.activeRevision.event.activeRevision.name",
+ *     "eventParticipant.activeRevision.event.activeRevision.shortName",
+ *     "eventParticipant.activeRevision.event.activeRevision.slug",
+ *     "eventParticipant.activeRevision.event.activeRevision.color",
+ *     "eventParticipant.activeRevision.contact.id",
+ *     "eventParticipant.activeRevision.contact.contactName",
+ *     "eventParticipant.activeRevision.contact.contactDetails.content",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
+ *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
  * })
  */
 class EventParticipantPayment extends AbstractPayment
 {
-
     /**
      * Event contact revision (connected to person or organization).
      * @var EventParticipant|null

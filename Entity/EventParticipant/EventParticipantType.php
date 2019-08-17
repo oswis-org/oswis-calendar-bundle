@@ -7,6 +7,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice;
@@ -68,17 +69,11 @@ class EventParticipantType
     use TypeTrait;
 
     public const TYPE_ATTENDEE = 'attendee';
-
     public const TYPE_ORGANIZER = 'attendee';
-
     public const TYPE_STAFF = 'attendee';
-
     public const TYPE_SPONSOR = 'attendee';
-
     public const TYPE_GUEST = 'attendee';
-
     public const TYPE_MANAGER = 'attendee';
-
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     /**
@@ -148,16 +143,26 @@ class EventParticipantType
     protected $eventParticipantFlagInEventConnections;
 
     /**
+     * Send formal or informal e-mails?
+     * @var bool
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    protected $formal;
+
+    /**
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
      * @param string|null   $type
      *
+     * @param bool|null     $formal
+     *
      * @throws InvalidArgumentException
      */
     public function __construct(
         ?Nameable $nameable = null,
-        ?string $type = null
+        ?string $type = null,
+        ?bool $formal = true
     ) {
         $this->eventParticipants = new ArrayCollection();
         $this->eventPrices = new ArrayCollection();
@@ -184,6 +189,22 @@ class EventParticipantType
     public static function getAllowedTypesCustom(): array
     {
         return [];
+    }
+
+    /**
+     * @return bool
+     */
+    final public function isFormal(): bool
+    {
+        return $this->formal ?? false;
+    }
+
+    /**
+     * @param bool $formal
+     */
+    final public function setFormal(?bool $formal): void
+    {
+        $this->formal = $formal ?? false;
     }
 
     final public function isManager(): bool

@@ -4,7 +4,6 @@
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
 
 {% block content_inner %}
-
     <div itemscope itemtype="http://schema.org/EventReservation">
         <link itemprop="reservationStatus" href="http://schema.org/Confirmed"/>
         <meta itemprop="modifiedTime" content="{{ eventParticipant.lastRevisionDateTime|date('c') }}"/>
@@ -234,10 +233,12 @@
 
         {% block message_footer %}
             <p>
+                Pokud zpráva přišla opakovaně, přihláška byla aktualizována uživatelem nebo správcem.
+            </p>
+            <p>
                 Před akcí očekávej ještě další informační e-mail s upřesněním podrobností.
             </p>
         {% endblock message_footer %}
-
     </div>
 {% endblock %}
 

@@ -22,6 +22,7 @@ use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
 use function assert;
 
@@ -62,19 +63,81 @@ use function assert;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class)
+ * @ApiFilter(OrderFilter::class, properties={
+ *     "id": "ASC",
+ *     "createdDateTime",
+ *     "activeRevision.event.id",
+ *     "activeRevision.event.activeRevision.name",
+ *     "activeRevision.event.activeRevision.shortName",
+ *     "activeRevision.event.activeRevision.slug",
+ *     "activeRevision.event.activeRevision.color",
+ *     "activeRevision.event.activeRevision.startDateTime",
+ *     "activeRevision.event.activeRevision.endDateTime",
+ *     "activeRevision.event.eventType.id",
+ *     "activeRevision.event.eventType.activeRevision.name",
+ *     "activeRevision.event.eventType.activeRevision.shortName",
+ *     "activeRevision.event.eventType.activeRevision.slug",
+ *     "activeRevision.event.eventType.activeRevision.color",
+ *     "activeRevision.event.eventSeries.id",
+ *     "activeRevision.event.eventSeries.name",
+ *     "activeRevision.event.eventSeries.shortName",
+ *     "activeRevision.event.eventSeries.slug",
+ *     "activeRevision.event.eventSeries.color",
+ *     "activeRevision.contact.id",
+ *     "activeRevision.contact.contactName",
+ *     "activeRevision.contact.contactDetails.content",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
+ * })
  * @ApiFilter(SearchFilter::class, properties={
- *     "id": "exact",
- *     "activeRevision.event.id": "exact",
- *     "activeRevision.contact.id": "exact"
+ *     "id": "iexact",
+ *     "activeRevision.event.id": "iexact",
+ *     "activeRevision.event.activeRevision.name": "ipartial",
+ *     "activeRevision.event.activeRevision.shortName": "ipartial",
+ *     "activeRevision.event.activeRevision.slug": "ipartial",
+ *     "activeRevision.event.activeRevision.color": "ipartial",
+ *     "activeRevision.event.activeRevision.startDateTime": "ipartial",
+ *     "activeRevision.event.activeRevision.endDateTime": "ipartial",
+ *     "activeRevision.event.eventType.id": "iexact",
+ *     "activeRevision.event.eventType.activeRevision.name": "ipartial",
+ *     "activeRevision.event.eventType.activeRevision.shortName": "ipartial",
+ *     "activeRevision.event.eventType.activeRevision.slug": "ipartial",
+ *     "activeRevision.event.eventType.activeRevision.color": "ipartial",
+ *     "activeRevision.event.eventSeries.id": "iexact",
+ *     "activeRevision.event.eventSeries.name": "ipartial",
+ *     "activeRevision.event.eventSeries.shortName": "ipartial",
+ *     "activeRevision.event.eventSeries.slug": "ipartial",
+ *     "activeRevision.event.eventSeries.color": "ipartial",
+ *     "activeRevision.contact.id": "iexact",
+ *     "activeRevision.contact.contactName": "ipartial",
+ *     "activeRevision.contact.contactDetails.content": "ipartial",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name": "ipartial",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName": "ipartial",
+ *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug": "ipartial"
  * })
  * @ApiFilter(ExistsFilter::class, properties={"deleted"})
  * @Searchable({
  *     "id",
+ *     "activeRevision.event.id",
  *     "activeRevision.event.activeRevision.name",
  *     "activeRevision.event.activeRevision.shortName",
  *     "activeRevision.event.activeRevision.slug",
+ *     "activeRevision.event.activeRevision.color",
+ *     "activeRevision.event.activeRevision.startDateTime",
+ *     "activeRevision.event.activeRevision.endDateTime",
+ *     "activeRevision.event.eventType.id",
+ *     "activeRevision.event.eventType.activeRevision.name",
+ *     "activeRevision.event.eventType.activeRevision.shortName",
+ *     "activeRevision.event.eventType.activeRevision.slug",
+ *     "activeRevision.event.eventType.activeRevision.color",
+ *     "activeRevision.event.eventSeries.id",
+ *     "activeRevision.event.eventSeries.name",
+ *     "activeRevision.event.eventSeries.shortName",
+ *     "activeRevision.event.eventSeries.slug",
+ *     "activeRevision.event.eventSeries.color",
  *     "activeRevision.contact.id",
+ *     "activeRevision.contact.contactName",
  *     "activeRevision.contact.contactDetails.content",
  *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
  *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
@@ -85,6 +148,7 @@ class EventParticipant extends AbstractRevisionContainer
 {
     use BasicEntityTrait;
     use EntityDeletedContainerTrait;
+    use BasicMailConfirmationTrait;
 
     /**
      * @var Collection
@@ -202,6 +266,9 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->eventParticipantNotes;
     }
 
+    /**
+     * @param Collection|null $newEventParticipantNotes
+     */
     final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
     {
         if (!$this->eventParticipantNotes) {
@@ -224,6 +291,9 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
+    /**
+     * @param EventParticipantNote|null $eventParticipantNote
+     */
     final public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if (!$eventParticipantNote) {
@@ -234,6 +304,9 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
+    /**
+     * @param EventParticipantNote|null $eventParticipantNote
+     */
     final public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
@@ -242,11 +315,17 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
+    /**
+     * @return EventParticipantType|null
+     */
     final public function getEventParticipantType(): ?EventParticipantType
     {
         return $this->eventParticipantType;
     }
 
+    /**
+     * @param EventParticipantType|null $eventParticipantType
+     */
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
         if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
@@ -320,6 +399,9 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
     }
 
+    /**
+     * @return int
+     */
     final public function getPaidPrice(): int
     {
         $paid = 0;
@@ -339,6 +421,9 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->eventParticipantPayments;
     }
 
+    /**
+     * @param Collection|null $newEventParticipantPayments
+     */
     final public function setEventParticipantPayments(?Collection $newEventParticipantPayments): void
     {
         if (!$this->eventParticipantPayments) {
@@ -361,6 +446,9 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
+    /**
+     * @param EventParticipantPayment|null $eventParticipantPayment
+     */
     final public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
         if (!$eventParticipantPayment) {
@@ -371,6 +459,9 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
+    /**
+     * @param EventParticipantPayment|null $eventParticipantPayment
+     */
     final public function addEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
         if ($eventParticipantPayment && !$this->eventParticipantPayments->contains($eventParticipantPayment)) {
@@ -471,6 +562,9 @@ class EventParticipant extends AbstractRevisionContainer
         return $this->getRevisionByDate($referenceDateTime)->getContact();
     }
 
+    /**
+     * @return bool
+     */
     final public function hasActivatedContactUser(): bool
     {
         try {
@@ -494,7 +588,10 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /** @noinspection MethodShouldBeFinalInspection */
-
+    /**
+     * Get variable symbol of this eventParticipant (default is cropped phone number).
+     * @return string|null
+     */
     public function getVariableSymbol(): ?string
     {
         try {

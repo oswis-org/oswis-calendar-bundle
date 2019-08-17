@@ -18,6 +18,9 @@ use function assert;
  */
 class EventTypeRevision extends AbstractRevision
 {
+    use BasicEntityTrait;
+    use NameableBasicTrait;
+    use ColorTrait;
     use TypeTrait;
 
     public const YEAR_OF_EVENT = 'year-of-event';
@@ -58,10 +61,6 @@ class EventTypeRevision extends AbstractRevision
         $this->setType($type);
         $this->setColor($color);
     }
-
-    use BasicEntityTrait;
-    use NameableBasicTrait;
-    use ColorTrait;
 
     public static function getAllowedTypesDefault(): array
     {

@@ -76,22 +76,27 @@ class EventParticipantPaymentManager
     /**
      * @param EventParticipantPayment $payment
      *
-     * @return string
+     * @return void
      * @throws OswisException
+     * @todo Fix case when contact is organization.
      */
     final public function sendConfirmation(
         EventParticipantPayment $payment = null
-    ): string {
+    ): void {
         try {
+            $em = $this->em;
             if (!$payment) {
                 throw new NotFoundHttpException('Platba nenalezena.');
             }
 
             assert($payment instanceof EventParticipantPayment);
-
-            $em = $this->em;
-
             $eventParticipant = $payment->getEventParticipant();
+
+            if (!$eventParticipant || $eventParticipant->isDeleted()) {
+                return;
+            }
+
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $contact = $eventParticipant ? $eventParticipant->getContact() : null;
 
             if ($payment->getNumericValue() < 0) {
@@ -122,7 +127,9 @@ class EventParticipantPaymentManager
             $mailData = array(
                 'salutationName' => $salutationName,
                 'a'              => $a,
+                'formal'         => $formal,
                 'payment'        => $payment,
+                'oswis'          => $this->oswisCoreSettings,
             );
 
             $archive = new NamedAddress(
@@ -140,12 +147,14 @@ class EventParticipantPaymentManager
             $payment->setMailConfirmationSend('event-participant-payment-manager');
             $em->persist($payment);
             $em->flush();
-
-            return true;
         } catch (Exception $e) {
-            throw new OswisException('Problém s odesláním potvrzení o platbě (při vytváření zprávy).  '.$e->getMessage());
+            $message = 'Problém s odesláním potvrzení o platbě (při vytváření zprávy). ';
+            $this->logger->error($message.$e->getMessage());
+            throw new OswisException($message);
         } catch (TransportExceptionInterface $e) {
-            throw new OswisException('Problém s odesláním potvrzení o platbě (při odeslání zprávy).  '.$e->getMessage());
+            $message = 'Problém s odesláním potvrzení o platbě (při odeslání zprávy). ';
+            $this->logger->error($message.$e->getMessage());
+            throw new OswisException($message);
         }
     }
 
@@ -188,11 +197,11 @@ class EventParticipantPaymentManager
         $currencyAllowed = $currencyAllowed ?? 'CZK';
 
         $this->logger ? $this->logger->info('CSV_PAYMENT_START') : null;
-        $count = 0;
-        $failedPaymentsCount = 0;
         $csvRow = null;
         $eventParticipants = $event->getEventParticipantsByTypeOfType($eventParticipantTypeOfType);
         $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
+        $successfulPayments = [];
+        $failedPayments = [];
 
         array_walk(
             $csvPayments,
@@ -212,7 +221,7 @@ class EventParticipantPaymentManager
 
                 if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
                     $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: Wrong currency ('$csvCurrency'' instead of '$currencyAllowed'); CSV: $csvRow;");
-                    $failedPaymentsCount++;
+                    $failedPayments[] = $csvRow.' [CURRENCY not allowed]';
                     continue;
                 }
 
@@ -222,7 +231,7 @@ class EventParticipantPaymentManager
                 }
                 if (!$csvVariableSymbol || strlen($csvVariableSymbol) < 6) {
                     $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) in CSV is too short; CSV: $csvRow;");
-                    $failedPaymentsCount++;
+                    $failedPayments[] = $csvRow.' [VS short]';
                     continue;
                 }
 
@@ -234,7 +243,7 @@ class EventParticipantPaymentManager
 
                 if ($filteredEventParticipants->count() < 1) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) not found; CSV: $csvRow;");
-                    $failedPaymentsCount++;
+                    $failedPayments[] = $csvRow.' [VS not found]';
                     continue;
                 }
 
@@ -242,7 +251,7 @@ class EventParticipantPaymentManager
                     $message = "CSV_PAYMENT_FAILED: ERROR: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in "
                         .$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
                     $this->logger->info($message);
-                    $failedPaymentsCount++;
+                    $failedPayments[] = $csvRow.' [VS not unique]';
                     continue;
                 }
 
@@ -253,15 +262,24 @@ class EventParticipantPaymentManager
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' '.$eventParticipant->getContact()->getContactName().', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
                 $this->logger->info($infoMessage);
-                $count++;
+                $successfulPayments[] = $csvRow;
             } catch (Exception $e) {
                 $this->logger->info('CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage());
-                $failedPaymentsCount++;
+                $failedPayments[] = $csvRow.' [EXC: '.$e->getMessage().']';
             }
         }
-        $this->logger->info('CSV_PAYMENT_END: added '.$count.' from '.count($csvPayments)." ($failedPaymentsCount failed).");
+        $this->logger->info(
+            'CSV_PAYMENT_END: added '.count($successfulPayments).' from '.count($csvPayments).' (+ '.count($failedPayments).' failed).'
+        );
 
-        return $count;
+        try {
+            $this->sendCsvReport($successfulPayments, $failedPayments);
+        } catch (Exception $e) {
+            $this->logger->error('CSV_PAYMENT_REPORT_FAILED: '.$e->getMessage());
+            $this->logger->error('Trace -> '.$e->getTraceAsString());
+        }
+
+        return count($successfulPayments);
     }
 
     final public function create(
@@ -285,6 +303,49 @@ class EventParticipantPaymentManager
             $this->logger->info('ERROR: Event participant payment not created (by manager): '.$e->getMessage());
 
             return null;
+        }
+    }
+
+
+    /**
+     * @param array $successfulPayments
+     * @param array $failedPayments
+     *
+     * @return string
+     * @throws OswisException
+     */
+    final public function sendCsvReport(
+        array $successfulPayments,
+        array $failedPayments
+    ): string {
+        try {
+            $title = 'Report CSV plateb';
+
+            $mailSettings = $this->oswisCoreSettings->getEmail();
+
+            $mailData = array(
+                'successfulPayments' => $successfulPayments,
+                'failedPayments'     => $failedPayments,
+                'oswis'              => $this->oswisCoreSettings,
+            );
+
+            $archive = new NamedAddress(
+                $mailSettings['archive_address'] ?? '',
+                EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+            );
+
+            $email = (new TemplatedEmail())
+                ->to($archive)
+                ->subject(EmailUtils::mime_header_encode($title))
+                ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')
+                ->context($mailData);
+            $this->mailer->send($email);
+
+            return true;
+        } catch (Exception $e) {
+            throw new OswisException('Problém s odesláním reportu o CSV platbách (při vytváření zprávy).  '.$e->getMessage());
+        } catch (TransportExceptionInterface $e) {
+            throw new OswisException('Problém s odesláním reportu o CSV platbách (při odeslání zprávy).  '.$e->getMessage());
         }
     }
 }

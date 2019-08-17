@@ -1,0 +1,22 @@
+{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+
+{% block html_title %}{{ email.subject|default('Report CSV plateb') }}{% endblock html_title %}
+{% block meta_description %}{{ block('html_title') }}{% endblock meta_description %}
+
+{% block content_inner %}
+    <div>
+        <h1>Report zpracovaných CSV plateb</h1>
+        <h2>Úspěšné</h2>
+        <ol>
+            {% for paymentRow in successfulPayments %}
+                <li>{{ paymentRow }}</li>
+            {% endfor %}
+        </ol>
+        <h2>Neúspěšné</h2>
+        <ol>
+            {% for paymentRow in failedPayments %}
+                <li>{{ paymentRow }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+{% endblock content_inner %}

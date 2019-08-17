@@ -32,7 +32,6 @@ use function assert;
 
 /**
  * Class EventParticipantManager
- * @package Zakjakub\OswisCalendarBundle\Manager
  */
 class EventParticipantManager
 {
@@ -42,7 +41,7 @@ class EventParticipantManager
     protected $em;
 
     /**
-     * @var LoggerInterface
+     * @var LoggerInterface|null
      */
     protected $logger;
 
@@ -52,7 +51,7 @@ class EventParticipantManager
     protected $oswisCoreSettings;
 
     /**
-     * @var MailerInterface|null
+     * @var MailerInterface
      */
     protected $mailer;
 
@@ -117,7 +116,6 @@ class EventParticipantManager
      *
      * @param EventParticipant|null             $eventParticipant
      * @param UserPasswordEncoderInterface|null $encoder
-     *
      * @param bool                              $new
      * @param string|null                       $token
      *
@@ -134,21 +132,123 @@ class EventParticipantManager
         if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
             return false;
         }
+
+        if ($eventParticipant->isDeleted()) {
+            if (!$eventParticipant->getEMailDeleteConfirmationDateTime()) {
+                return $this->sendCancelConfirmation($eventParticipant);
+            }
+
+            return true;
+        }
+
         if ($eventParticipant->hasActivatedContactUser()) {
-            return $this->sendSummary($eventParticipant, $encoder, $new);
+            if (!$eventParticipant->getEMailConfirmationDateTime()) {
+                return $this->sendSummary($eventParticipant, $encoder, $new);
+            }
+
+            return true;
         }
 
         if ($token) {
             foreach ($eventParticipant->getContact()->getContactPersons() as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
-                    $this->sendSummary($eventParticipant, $encoder, $new);
-                    break;
+                    return $this->sendSummary($eventParticipant, $encoder, $new);
                 }
             }
         }
 
         return $this->sendVerification($eventParticipant);
+    }
+
+    /**
+     * Send confirmation of delete.
+     *
+     * @param EventParticipant $eventParticipant
+     *
+     * @return bool
+     */
+    final public function sendCancelConfirmation(EventParticipant $eventParticipant): bool
+    {
+        try {
+            if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
+                return false;
+            }
+            assert($eventParticipant instanceof EventParticipant);
+            $event = $eventParticipant->getEvent();
+            assert($event instanceof Event);
+            $em = $this->em;
+            $mailSettings = $this->oswisCoreSettings->getEmail();
+            $eventParticipantContact = $eventParticipant->getContact();
+
+            if ($eventParticipantContact instanceof Person) {
+                $isOrganization = false;
+                $contactPersons = new ArrayCollection([$eventParticipantContact]);
+            } else {
+                assert($eventParticipantContact instanceof Organization);
+                $isOrganization = true;
+                $contactPersons = $eventParticipantContact->getContactPersons();
+            }
+
+            $title = 'Zrušení přihlášky';
+
+            $mailSuccessCount = 0;
+            foreach ($contactPersons as $contactPerson) {
+                assert($contactPerson instanceof Person);
+                $password = null;
+                $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
+                $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
+
+                $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
+
+                $mailData = array(
+                    'eventParticipant' => $eventParticipant,
+                    'event'            => $event,
+                    'contactPerson'    => $contactPerson,
+                    'formal'           => $formal,
+                    'salutationName'   => $contactPerson->getSalutationName(),
+                    'a'                => $contactPerson->getCzechSuffixA(),
+                    'isOrganization'   => $isOrganization,
+                    'oswis'            => $this->oswisCoreSettings->getArray(),
+                    'logo'             => 'cid:logo',
+                );
+
+                $archiveAddress = new NamedAddress(
+                    $mailSettings['archive_address'] ?? '',
+                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                );
+
+                $email = (new TemplatedEmail())
+                    ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
+                    ->bcc($archiveAddress)
+                    ->subject(self::mimeEnc($title))
+                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig')
+                    ->context($mailData);
+                $em->persist($eventParticipant);
+                try {
+                    $this->mailer->send($email);
+                    $mailSuccessCount++;
+                } catch (TransportExceptionInterface $e) {
+                    $this->logger->error($e->getMessage());
+                    // throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
+                }
+            }
+            $em->flush();
+            if ($mailSuccessCount < $contactPersons->count()) {
+                throw new OswisException("Část zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->logger->error('Problém s odesláním potvrzení o zrušení přihlášky. '.$e->getMessage());
+
+            return false;
+        }
+    }
+
+    private static function mimeEnc(string $content): string
+    {
+        return EmailUtils::mime_header_encode($content);
     }
 
     /**
@@ -177,6 +277,7 @@ class EventParticipantManager
             $mailSettings = $this->oswisCoreSettings->getEmail();
             $eventParticipantContact = $eventParticipant->getContact();
             $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
 
             $depositPaymentQr = new QrPayment(
                 $event->getBankAccountNumber(),
@@ -231,10 +332,12 @@ class EventParticipantManager
                     $em->flush();
                 }
 
+
                 $mailData = array(
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
                     'contactPerson'    => $contactPerson,
+                    'formal'           => $formal,
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,
@@ -281,11 +384,6 @@ class EventParticipantManager
         }
     }
 
-    private static function mimeEnc(string $content): string
-    {
-        return EmailUtils::mime_header_encode($content);
-    }
-
     /**
      * @param EventParticipant $eventParticipant
      *
@@ -301,6 +399,7 @@ class EventParticipantManager
             }
             $event = $eventParticipant->getEvent();
             $eventParticipantContact = $eventParticipant->getContact();
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $em = $this->em;
             $mailSettings = $this->oswisCoreSettings->getEmail();
             if ($eventParticipantContact instanceof Person) {
@@ -329,6 +428,7 @@ class EventParticipantManager
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
                     'contactPerson'    => $contactPerson,
+                    'formal'           => $formal,
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,
@@ -371,106 +471,11 @@ class EventParticipantManager
         }
     }
 
-    /**
-     * @param EventParticipant|null $eventParticipant
-     *
-     * @throws OswisException
-     */
-    final public function checkEventParticipantCompleteness(?EventParticipant $eventParticipant): void
-    {
-        try {
-            if ($eventParticipant && $eventParticipant->getEvent() && $eventParticipant->getContact()) {
-                return;
-            }
-        } catch (RevisionMissingException $exception) {
-            throw new OswisException('Nastal problém s přihláškou (revize nebyla nalezena).');
-        }
-
-        throw new OswisException('Přihláška není kompletní.');
-    }
+    /** @noinspection PhpUnused */
 
     /**
-     * Send confirmation of delete.
-     *
-     * @param EventParticipant $eventParticipant
-     *
-     * @return bool
-     * @throws OswisException
+     * Calls method for update of active revision in container.
      */
-    final public function sendCancelConfirmation(EventParticipant $eventParticipant): bool
-    {
-        try {
-            if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
-                return false;
-            }
-            assert($eventParticipant instanceof EventParticipant);
-            $event = $eventParticipant->getEvent();
-            assert($event instanceof Event);
-            $em = $this->em;
-            $mailSettings = $this->oswisCoreSettings->getEmail();
-            $eventParticipantContact = $eventParticipant->getContact();
-
-            if ($eventParticipantContact instanceof Person) {
-                $isOrganization = false;
-                $contactPersons = new ArrayCollection([$eventParticipantContact]);
-            } else {
-                assert($eventParticipantContact instanceof Organization);
-                $isOrganization = true;
-                $contactPersons = $eventParticipantContact->getContactPersons();
-            }
-
-            $title = 'Zrušení přihlášky';
-
-            $mailSuccessCount = 0;
-            foreach ($contactPersons as $contactPerson) {
-                assert($contactPerson instanceof Person);
-                $password = null;
-                $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
-                $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
-
-                $mailData = array(
-                    'eventParticipant' => $eventParticipant,
-                    'event'            => $event,
-                    'contactPerson'    => $contactPerson,
-                    'salutationName'   => $contactPerson->getSalutationName(),
-                    'a'                => $contactPerson->getCzechSuffixA(),
-                    'isOrganization'   => $isOrganization,
-                    'oswis'            => $this->oswisCoreSettings->getArray(),
-                    'logo'             => 'cid:logo',
-                );
-
-                $archiveAddress = new NamedAddress(
-                    $mailSettings['archive_address'] ?? '',
-                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
-                );
-
-                $email = (new TemplatedEmail())
-                    ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
-                    ->bcc($archiveAddress)
-                    ->subject(self::mimeEnc($title))
-                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig')
-                    ->context($mailData);
-                $em->persist($eventParticipant);
-                try {
-                    $this->mailer->send($email);
-                    $mailSuccessCount++;
-                } catch (TransportExceptionInterface $e) {
-                    $this->logger->error($e->getMessage());
-                    // throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
-                }
-            }
-            $em->flush();
-            if ($mailSuccessCount < $contactPersons->count()) {
-                throw new OswisException("Část zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
-            }
-
-            return true;
-        } catch (Exception $e) {
-            $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním potvrzení o zrušení přihlášky.  '.$e->getMessage());
-        }
-    }
-
     final public function updateActiveRevisions(): void
     {
         $eventParticipants = $this->em->getRepository(EventParticipant::class)->findAll();
