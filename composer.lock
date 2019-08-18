@@ -7688,16 +7688,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.115",
+      "version": "v0.0.116",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-address-book-bundle.git",
-        "reference": "c1d42d97319a8e34dd6babdf50bd2a1579547ccd"
+        "reference": "28e8f62b199d39a559f979643df09d53897b84b2"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/c1d42d97319a8e34dd6babdf50bd2a1579547ccd",
-        "reference": "c1d42d97319a8e34dd6babdf50bd2a1579547ccd",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/28e8f62b199d39a559f979643df09d53897b84b2",
+        "reference": "28e8f62b199d39a559f979643df09d53897b84b2",
         "shasum": ""
       },
       "require": {
@@ -7737,10 +7737,10 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.115",
+        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.116",
         "issues": "https://github.com/zakjakub/oswis-address-book-bundle/issues"
       },
-      "time": "2019-08-17T09:54:21+00:00"
+      "time": "2019-08-18T17:40:05+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",

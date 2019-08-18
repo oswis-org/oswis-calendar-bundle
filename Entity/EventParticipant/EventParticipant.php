@@ -85,6 +85,7 @@ use function assert;
  *     "activeRevision.event.eventSeries.color",
  *     "activeRevision.contact.id",
  *     "activeRevision.contact.contactName",
+ *     "activeRevision.contact.sortableName",
  *     "activeRevision.contact.contactDetails.content",
  *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
  *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
