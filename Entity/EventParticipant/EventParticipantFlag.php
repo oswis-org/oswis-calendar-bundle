@@ -56,7 +56,6 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventParticipantFlag extends AbstractEventFlag
 {
-
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(

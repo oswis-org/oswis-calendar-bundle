@@ -2,8 +2,10 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
+use DateTime;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\DateTimeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
 
 /**
@@ -14,11 +16,7 @@ class EventParticipantFlagConnection
 {
     use BasicEntityTrait;
     use TextValueTrait;
-
-    /**
-     * @var bool
-     */
-    public $selected;
+    use DateTimeTrait;
 
     /**
      * Event contact flag.
@@ -50,14 +48,21 @@ class EventParticipantFlagConnection
      * @param EventParticipantFlag|null     $eventContactFlag
      * @param EventParticipantRevision|null $eventContactRevision
      *
+     * @param string|null                   $textValue
+     * @param DateTime|null                 $dateTime
+     *
      * @throws EventCapacityExceededException
      */
     public function __construct(
         ?EventParticipantFlag $eventContactFlag = null,
-        ?EventParticipantRevision $eventContactRevision = null
+        ?EventParticipantRevision $eventContactRevision = null,
+        ?string $textValue = null,
+        ?DateTime $dateTime = null
     ) {
         $this->setEventParticipantFlag($eventContactFlag);
         $this->setEventContactRevision($eventContactRevision);
+        $this->setTextValue($textValue);
+        $this->setDateTime($dateTime);
     }
 
     final public function getEventContactRevision(): ?EventParticipantRevision
