@@ -227,6 +227,7 @@ class EventParticipant extends AbstractRevisionContainer
         $this->revisions = new ArrayCollection();
         $this->setEventParticipantType($eventParticipantType);
         $this->setEventParticipantNotes($eventParticipantNotes);
+        $this->setEventParticipantPayments(new ArrayCollection());
         $this->addRevision(new EventParticipantRevision($contact, $event, $eventParticipantFlagConnections));
     }
 
@@ -405,6 +406,7 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function getPaidPrice(): int
     {
+        // TODO: Use referenceDateTime.
         $paid = 0;
         foreach ($this->getEventParticipantPayments() as $eventParticipantPayment) {
             assert($eventParticipantPayment instanceof EventParticipantPayment);
@@ -445,6 +447,18 @@ class EventParticipant extends AbstractRevisionContainer
                 }
             }
         }
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return float
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
+    final public function getPaidPricePercent(?DateTime $referenceDateTime = null): float
+    {
+        return !$this->getPrice($referenceDateTime) ? 0 : $this->getPaidPrice() / $this->getPrice($referenceDateTime);
     }
 
     /**

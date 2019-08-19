@@ -5,6 +5,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
@@ -54,6 +55,13 @@ class EventParticipantNote
     use TextValueTrait;
 
     /**
+     * Note is public.
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    protected $publicNote;
+
+    /**
      * Event contact revision (connected to person or organization).
      * @var EventParticipant|null
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -75,6 +83,22 @@ class EventParticipantNote
     ) {
         $this->setEventParticipant($eventParticipant);
         $this->setTextValue($textValue);
+    }
+
+    /**
+     * @return bool
+     */
+    final public function isPublicNote(): bool
+    {
+        return $this->publicNote ?? false;
+    }
+
+    /**
+     * @param bool $publicNote
+     */
+    final public function setPublicNote(?bool $publicNote): void
+    {
+        $this->publicNote = $publicNote ?? false;
     }
 
     final public function getEventParticipant(): ?EventParticipant
