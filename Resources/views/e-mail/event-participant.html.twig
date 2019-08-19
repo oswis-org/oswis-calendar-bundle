@@ -76,12 +76,14 @@
         </h3>
         <ul>
             <li>
-                ID přihlášky: <span itemprop="reservationNumber">{{ eventParticipant.id }}</span>
+                ID přihlášky: <span itemprop="reservationNumber">{{ eventParticipant.id }}</span><br>
                 <meta itemprop="reservationId" content="{{ eventParticipant.id }}"/>
-                <br>
                 <small itemprop="bookingTime" content="{{ eventParticipant.createdDateTime|date("c") }}">
                     ({{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }})
                 </small>
+                {% if eventParticipant.createdDateTime|date("c") != eventParticipant.updatedDateTime|date("c") %}
+                    <br><small>(změna {{ eventParticipant.updatedDateTime|date("j. n. Y, H:i") }})</small>
+                {% endif %}
             </li>
             <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
                 <b><span itemprop="name">{{ eventParticipant.contact.fullName }}</span></b><br>

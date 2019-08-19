@@ -36,6 +36,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeContainerTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
+use function strcmp;
 
 /**
  * Event.
@@ -419,7 +420,6 @@ class Event extends AbstractRevisionContainer
 
     /**
      * @param EventParticipantType|null $eventParticipantType
-     *
      * @param DateTime|null             $referenceDateTime
      *
      * @return int|null
@@ -531,8 +531,10 @@ class Event extends AbstractRevisionContainer
                 }
             }
         }
+        $eventParticipantsArray = $eventParticipants->toArray();
+        self::sortEventParticipants($eventParticipantsArray);
 
-        return $eventParticipants;
+        return new ArrayCollection($eventParticipantsArray);
     }
 
     final public function getEventParticipantsByType(
@@ -542,7 +544,7 @@ class Event extends AbstractRevisionContainer
         ?bool $includeNotActivated = true
     ): Collection {
         if ($eventParticipantType) {
-            return $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
+            $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
                 static function (EventParticipant $eventParticipant) use ($eventParticipantType) {
                     if (!$eventParticipant->getEventParticipantType()) {
                         return false;
@@ -550,10 +552,13 @@ class Event extends AbstractRevisionContainer
 
                     return $eventParticipantType->getId() === $eventParticipant->getEventParticipantType()->getId();
                 }
-            );
+            )->toArray();
+        } else {
+            $eventParticipants = $this->getEventParticipants($referenceDateTime)->toArray();
         }
+        self::sortEventParticipants($eventParticipants);
 
-        return $this->getEventParticipants($referenceDateTime);
+        return new ArrayCollection($eventParticipants);
     }
 
     final public function getEventParticipants(
@@ -561,7 +566,7 @@ class Event extends AbstractRevisionContainer
         ?bool $includeDeleted = false,
         ?bool $includeNotActivatedUsers = true
     ): Collection {
-        return $this->getActiveEventParticipantRevisions($referenceDateTime)
+        $eventParticipantsArray = $this->getActiveEventParticipantRevisions($referenceDateTime)
             ->filter(
                 static function (EventParticipantRevision $eventParticipantRevision) use ($includeDeleted, $includeNotActivatedUsers) {
                     if ($includeDeleted && $includeNotActivatedUsers) {
@@ -584,7 +589,10 @@ class Event extends AbstractRevisionContainer
                 static function (EventParticipantRevision $eventParticipantRevision) {
                     return $eventParticipantRevision->getContainer();
                 }
-            );
+            )->toArray();
+        self::sortEventParticipants($eventParticipantsArray);
+
+        return new ArrayCollection($eventParticipantsArray);
     }
 
     /**
@@ -609,6 +617,22 @@ class Event extends AbstractRevisionContainer
     final public function getEventParticipantRevisions(): Collection
     {
         return $this->eventParticipantRevisions ?? new ArrayCollection();
+    }
+
+    final public static function sortEventParticipants(array &$eventParticipants): void
+    {
+        usort(
+            $eventParticipants,
+            static function (EventParticipant $arg1, EventParticipant $arg2) {
+                if (!$arg1->getContact() || !$arg2->getContact()) {
+                    $cmpResult = 0;
+                } else {
+                    $cmpResult = strcmp($arg1->getContact()->getSortableContactName(), $arg2->getContact()->getSortableContactName());
+                }
+
+                return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
+            }
+        );
     }
 
     /**
@@ -1024,7 +1048,7 @@ class Event extends AbstractRevisionContainer
         ?bool $includeNotActivated = true
     ): Collection {
         if ($eventParticipantTypeOfType) {
-            return $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
+            $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
                 static function (EventParticipant $eventParticipant) use ($eventParticipantTypeOfType) {
                     if (!$eventParticipant->getEventParticipantType()) {
                         return false;
@@ -1032,10 +1056,13 @@ class Event extends AbstractRevisionContainer
 
                     return $eventParticipantTypeOfType === $eventParticipant->getEventParticipantType()->getType();
                 }
-            );
+            )->toArray();
+        } else {
+            $eventParticipants = $this->getEventParticipants($referenceDateTime)->toArray();
         }
+        self::sortEventParticipants($eventParticipants);
 
-        return $this->getEventParticipants($referenceDateTime);
+        return new ArrayCollection($eventParticipants);
     }
 
     /**

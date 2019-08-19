@@ -472,7 +472,6 @@ class EventParticipantManager
     }
 
     /** @noinspection PhpUnused */
-
     /**
      * Calls method for update of active revision in container.
      */
