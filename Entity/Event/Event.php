@@ -1165,20 +1165,20 @@ class Event extends AbstractRevisionContainer
         }
 
         return $this->eventParticipantFlagInEventConnections->filter(
-            static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
-                if ($eventParticipantFlag
+                static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
+                    if ($eventParticipantFlag
                         && !($flagInEventConnection->getEventParticipantFlag()
                             && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId())) {
-                    return false;
-                }
-                if ($eventParticipantType
+                        return false;
+                    }
+                    if ($eventParticipantType
                         && !($flagInEventConnection->getEventParticipantType()
                             && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId())) {
-                    return false;
-                }
+                        return false;
+                    }
 
-                return true;
-            }
+                    return true;
+                }
             ) ?? new ArrayCollection();
     }
 
@@ -1194,9 +1194,9 @@ class Event extends AbstractRevisionContainer
     final public function isRegistrationsAllowed(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
     {
         return $this->getEventRegistrationRanges()->filter(
-            static function (EventRegistrationRange $eventRegistrationRange) use ($eventParticipantType, $referenceDateTime) {
-                return $eventRegistrationRange->isApplicable($eventParticipantType, $referenceDateTime);
-            }
+                static function (EventRegistrationRange $eventRegistrationRange) use ($eventParticipantType, $referenceDateTime) {
+                    return $eventRegistrationRange->isApplicable($eventParticipantType, $referenceDateTime);
+                }
             )->count() > 0;
     }
 

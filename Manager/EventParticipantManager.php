@@ -130,7 +130,7 @@ class EventParticipantManager
         ?string $token = null
     ): bool {
         if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
-            return false;
+            throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
 
         if ($eventParticipant->isDeleted()) {
