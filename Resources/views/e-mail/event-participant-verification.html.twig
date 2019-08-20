@@ -99,6 +99,8 @@
                 Tyto údaje budou zpracovány subjektem {{ eventParticipant.event.organizer.contact.contactName }}
                 a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
                 <a href="{{ absolute_url(path('zakjakub_oswis_core_gdpr_action')) }}" target="_blank">našich webových stránkách</a>.
+            {% else %}
+                Informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na<a href="{{ absolute_url(path('zakjakub_oswis_core_gdpr_action')) }}" target="_blank"> webových stránkách</a>.
             {% endif %}
         </p>
 

@@ -134,14 +134,12 @@
                 {% for contactDetail in eventParticipant.contact.contactDetails %}
                     {% if contactDetail.content|length > 0 %}
                         <li>
-                            <p>
-                                {% if contactDetail.contactType is defined and contactDetail.contactType.name is defined and contactDetail.contactType.name %}
-                                    {{ contactDetail.contactType.name }}:
-                                {% else %}
-                                    Kontakt:
-                                {% endif %}
-                                {{ contactDetail.content }}
-                            </p>
+                            {% if contactDetail.contactType is defined and contactDetail.contactType.name is defined and contactDetail.contactType.name %}
+                                {{ contactDetail.contactType.name }}:
+                            {% else %}
+                                Kontakt:
+                            {% endif %}
+                            {{ contactDetail.content }}
                         </li>
                     {% endif %}
                 {% endfor %}
