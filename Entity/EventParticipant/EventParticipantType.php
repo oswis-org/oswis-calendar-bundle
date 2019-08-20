@@ -144,7 +144,7 @@ class EventParticipantType
 
     /**
      * Send formal or informal e-mails?
-     * @var bool
+     * @var bool|null
      * @ORM\Column(type="boolean", nullable=true)
      */
     protected $formal;

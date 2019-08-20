@@ -205,7 +205,7 @@ class EventParticipantManager
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
                     'contactPerson'    => $contactPerson,
-                    'formal'           => $formal,
+                    'f'                => $formal,
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,
@@ -332,12 +332,11 @@ class EventParticipantManager
                     $em->flush();
                 }
 
-
                 $mailData = array(
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
                     'contactPerson'    => $contactPerson,
-                    'formal'           => $formal,
+                    'f'                => $formal,
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,
@@ -360,8 +359,8 @@ class EventParticipantManager
                     ->bcc($archiveAddress)
                     ->subject(self::mimeEnc($title))
                     ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')
-                    ->embed($depositPaymentQrPng, 'depositQr')
-                    ->embed($restPaymentQrPng, 'restQr')
+                    ->embed($depositPaymentQrPng, 'depositQr', 'image/png')
+                    ->embed($restPaymentQrPng, 'restQr', 'image/png')
                     ->context($mailData);
                 $em->persist($eventParticipant);
                 try {
@@ -428,7 +427,7 @@ class EventParticipantManager
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
                     'contactPerson'    => $contactPerson,
-                    'formal'           => $formal,
+                    'f'                => $formal,
                     'salutationName'   => $contactPerson->getSalutationName(),
                     'a'                => $contactPerson->getCzechSuffixA(),
                     'isOrganization'   => $isOrganization,

@@ -15,9 +15,9 @@
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
                     {% if isOrganization %}
-                        Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }} na&nbsp;akci {{ eventParticipant.event.name }}.
+                        Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ eventParticipant.event.name }}</b>.
                     {% else %}
-                        Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci {{ eventParticipant.event.name }}.
+                        Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ eventParticipant.event.name }}</b>.
                     {% endif %}
                 {% endblock message_message_inner %}
             </p>

@@ -27,7 +27,7 @@
                     {% else %}
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                     {% endif %}
-                    úspěšně přihlášen{{ a }} na&nbsp;akci {{ event.name }},
+                    úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name }}</b>,
                     {% if eventParticipant.event.organizer is defined
                         and eventParticipant.event.organizer
                         and eventParticipant.event.organizer.contact
@@ -91,7 +91,7 @@
         </div>
 
         <p>
-            Potvrzením registrace také souhlasíš se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
+            Potvrzením registrace také souhlasí{{ f ? 'te' : 'š' }} se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
             {% if eventParticipant.event.organizer is defined
                 and eventParticipant.event.organizer
                 and eventParticipant.event.organizer.contact

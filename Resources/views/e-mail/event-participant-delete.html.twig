@@ -17,11 +17,11 @@
                     {% if isOrganization %}
                         Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }}
                         {{ eventParticipant.delete|date("j. n. Y")|default('') }}
-                        úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce {{ eventParticipant.event.name }}.
+                        úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ eventParticipant.event.name }}</b>.
                     {% else %}
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                         {{ eventParticipant.delete|date("j. n. Y")|default('') }}
-                        úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce {{ eventParticipant.event.name }}.
+                        úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ eventParticipant.event.name }}</b>.
                     {% endif %}
                 {% endblock message_message_inner %}
             </p>

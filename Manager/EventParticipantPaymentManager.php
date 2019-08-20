@@ -127,7 +127,7 @@ class EventParticipantPaymentManager
             $mailData = array(
                 'salutationName' => $salutationName,
                 'a'              => $a,
-                'formal'         => $formal,
+                'f'              => $formal,
                 'payment'        => $payment,
                 'oswis'          => $this->oswisCoreSettings,
             );
