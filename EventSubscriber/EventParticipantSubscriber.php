@@ -102,22 +102,15 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
     {
         $eventParticipant = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-
         if (!$eventParticipant instanceof EventParticipantPayment || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
-
         $eventParticipantRepository = $this->em->getRepository(EventParticipant::class);
         $eventParticipant = $eventParticipantRepository->findOneBy(['id' => $eventParticipant->getId()]);
         assert($eventParticipant instanceof EventParticipant);
-
         if ($eventParticipant) {
             $eventParticipantManager = new EventParticipantManager(
-                $this->em,
-                $this->mailer,
-                $this->oswisCoreSettings,
-                $this->logger,
-                $this->templating
+                $this->em, $this->mailer, $this->oswisCoreSettings, $this->logger, $this->templating
             );
             $eventParticipantManager->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
         } else {
@@ -135,13 +128,10 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
     {
         $newEventParticipant = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-
         if (!$newEventParticipant instanceof EventParticipantPayment || $method !== Request::METHOD_PUT) {
             return;
         }
-
         $eventParticipant = $this->getExistingEventParticipant($newEventParticipant);
-
         if ($eventParticipant) {
             $newEventParticipant->setEMailConfirmationDateTime(null);
             $eventParticipant->setEMailConfirmationDateTime(null);

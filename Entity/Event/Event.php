@@ -566,30 +566,29 @@ class Event extends AbstractRevisionContainer
         ?bool $includeDeleted = false,
         ?bool $includeNotActivatedUsers = true
     ): Collection {
-        $eventParticipantsArray = $this->getActiveEventParticipantRevisions($referenceDateTime)
-            ->filter(
-                static function (EventParticipantRevision $eventParticipantRevision) use ($includeDeleted, $includeNotActivatedUsers) {
-                    if ($includeDeleted && $includeNotActivatedUsers) {
-                        return true;
-                    }
-                    if (!$includeDeleted && $eventParticipantRevision->isDeleted()) {
-                        return false;
-                    }
-                    if (!$includeNotActivatedUsers) {
-                        $person = $eventParticipantRevision->getContact();
-                        assert($person instanceof Person);
-                        if ($person instanceof Person && $person->getAppUser() && !$person->getAppUser()->getAccountActivationDateTime()) {
-                            return false;
-                        }
-                    }
-
+        $eventParticipantsArray = $this->getActiveEventParticipantRevisions($referenceDateTime)->filter(
+            static function (EventParticipantRevision $eventParticipantRevision) use ($includeDeleted, $includeNotActivatedUsers) {
+                if ($includeDeleted && $includeNotActivatedUsers) {
                     return true;
                 }
-            )->map(
-                static function (EventParticipantRevision $eventParticipantRevision) {
-                    return $eventParticipantRevision->getContainer();
+                if (!$includeDeleted && $eventParticipantRevision->isDeleted()) {
+                    return false;
                 }
-            )->toArray();
+                if (!$includeNotActivatedUsers) {
+                    $person = $eventParticipantRevision->getContact();
+                    assert($person instanceof Person);
+                    if ($person instanceof Person && $person->getAppUser() && !$person->getAppUser()->getAccountActivationDateTime()) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        )->map(
+            static function (EventParticipantRevision $eventParticipantRevision) {
+                return $eventParticipantRevision->getContainer();
+            }
+        )->toArray();
         self::sortEventParticipants($eventParticipantsArray);
 
         return new ArrayCollection($eventParticipantsArray);
@@ -892,7 +891,6 @@ class Event extends AbstractRevisionContainer
                 $hasPrice = true;
             }
         }
-
         if (!$hasPrice) {
             return null;
         }
@@ -944,7 +942,6 @@ class Event extends AbstractRevisionContainer
                 $hasDeposit = true;
             }
         }
-
         if (!$hasDeposit) {
             return null;
         }
@@ -1166,14 +1163,12 @@ class Event extends AbstractRevisionContainer
 
         return $this->eventParticipantFlagInEventConnections->filter(
                 static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
-                    if ($eventParticipantFlag
-                        && !($flagInEventConnection->getEventParticipantFlag()
-                            && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId())) {
+                    if ($eventParticipantFlag && !($flagInEventConnection->getEventParticipantFlag() && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId(
+                            ))) {
                         return false;
                     }
-                    if ($eventParticipantType
-                        && !($flagInEventConnection->getEventParticipantType()
-                            && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId())) {
+                    if ($eventParticipantType && !($flagInEventConnection->getEventParticipantType() && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId(
+                            ))) {
                         return false;
                     }
 
@@ -1211,11 +1206,7 @@ class Event extends AbstractRevisionContainer
     final public function __toString(): string
     {
         $output = ''.$this->getShortName() ?? $this->getName();
-        if ($this->getStartDate()
-            && $this->getEndDate()
-            && $this->getLengthInHours() > 24
-            && $this->getStartDate()->format('Y') === $this->getEndDate()->format('Y')
-        ) {
+        if ($this->getStartDate() && $this->getEndDate() && $this->getLengthInHours() > 24 && $this->getStartDate()->format('Y') === $this->getEndDate()->format('Y')) {
             $output .= ' ('.$this->getStartDate()->format('d. m.');
             $output .= ' až '.$this->getEndDate()->format('d. m.');
             $output .= ' '.$this->getStartDate()->format('Y').')';
@@ -1345,21 +1336,18 @@ class Event extends AbstractRevisionContainer
                         ];
                         $flagSlug = $flag->getSlug() ?? '';
                         $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
-                        if ($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] > 0) {
+                        if (isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']) && $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] > 0) {
                             $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']++;
                         } else {
                             $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] = 1;
                         }
-                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'])
-                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagTypeArray) {
+                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType']) || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagTypeArray) {
                             $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] = $flagTypeArray;
                         }
-                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'])
-                            || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flagArray) {
+                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flagArray) {
                             $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flagArray;
                         }
-                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType'])
-                            || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantTypeArray) {
+                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType']) || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantTypeArray) {
                             $output[$eventParticipantTypeSlug]['eventParticipantType'] = $eventParticipantTypeArray;
                         }
                     }

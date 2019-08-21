@@ -37,9 +37,7 @@ class EventTypeManager
         try {
             $em = $this->em;
             $entity = new EventType(
-                $nameable,
-                $type,
-                $color
+                $nameable, $type, $color
             );
             $em->persist($entity);
             $em->flush();
@@ -48,9 +46,7 @@ class EventTypeManager
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger
-                ? $this->logger->info('ERROR: Event event type not created (by manager): '.$e->getMessage())
-                : null;
+            $this->logger ? $this->logger->info('ERROR: Event event type not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

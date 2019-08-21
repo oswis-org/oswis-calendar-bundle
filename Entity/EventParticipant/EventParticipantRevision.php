@@ -235,8 +235,7 @@ class EventParticipantRevision extends AbstractRevision
                     $participant = $eventContactRevision ? $eventContactRevision->getContainer() : null;
                     assert($participant instanceof EventParticipant);
 
-                    return $participant->getEventParticipantType()
-                        && $participant->getEventParticipantType()->getId() === $eventParticipantType->getId();
+                    return $participant->getEventParticipantType() && $participant->getEventParticipantType()->getId() === $eventParticipantType->getId();
                 } catch (Exception $e) {
                     return false;
                 }

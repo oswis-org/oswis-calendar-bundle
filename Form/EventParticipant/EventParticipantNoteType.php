@@ -13,17 +13,16 @@ class EventParticipantNoteType extends AbstractType
 {
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add(
-                'textValue',
-                TextareaType::class,
-                array(
-                    'label'    => 'Poznámka',
-                    'required' => false,
-                    'help'     => 'Zde můžeš zadat svůj dotaz, poznámku nebo vzkaz pořadatelům.',
-                    'attr'     => ['placeholder' => false],
-                )
-            );
+        $builder->add(
+            'textValue',
+            TextareaType::class,
+            array(
+                'label'    => 'Poznámka',
+                'required' => false,
+                'help'     => 'Zde můžeš zadat svůj dotaz, poznámku nebo vzkaz pořadatelům.',
+                'attr'     => ['placeholder' => false],
+            )
+        );
     }
 
 

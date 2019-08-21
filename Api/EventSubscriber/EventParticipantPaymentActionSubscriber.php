@@ -63,23 +63,18 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
     public function reservationPaymentAction(ViewEvent $event): void
     {
         $request = $event->getRequest();
-
         if ('api_event_participant_payment_action_requests_post_collection' !== $request->attributes->get('_route')) {
             return;
         }
-
         $output = null;
         $reservationPaymentActionRequest = $event->getControllerResult();
-
         $identifiers = $reservationPaymentActionRequest->identifiers;
         $type = $reservationPaymentActionRequest->type;
-
         if (!in_array($type, self::ALLOWED_ACTION_TYPES, true)) {
             $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
 
             return;
         }
-
         if ('csv' === $type) {
             $this->paymentCsvAction($reservationPaymentActionRequest);
 
@@ -87,7 +82,6 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         }
         if ($identifiers && count($identifiers) > 0) {
             $eventParticipantPaymentRepository = $this->em->getRepository(EventParticipantPayment::class);
-
             $processedActionsCount = 0;
             $reservations = new ArrayCollection();
             foreach ($identifiers as $id) {
@@ -113,23 +107,19 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
                         break;
                 }
             }
-
             if ($processedActionsCount === 0) {
                 $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_FOUND));
 
                 return;
             }
-
             if ($output) {
                 $data = ['data' => chunk_split(base64_encode($output))];
                 $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
 
                 return;
             }
-
             $event->setResponse(new JsonResponse(null, Response::HTTP_NO_CONTENT));
         }
-
         $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
     }
 

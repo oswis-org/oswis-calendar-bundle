@@ -4,56 +4,63 @@
         <small>
             {{ eventParticipant.id }}
             {% if eventParticipant.deleted %}
-                <span style="color:red;"><strong>❌</strong>&nbsp;smazáno</span>{% endif %}
-            <br>
-            {{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }}<br>
+                <span style="color:red;"><strong>❌</strong>&nbsp;smazáno</span>
+            {% endif %}
+            <br>{{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }}<br>
             {% if eventParticipant.contact.appUser and eventParticipant.contact.appUser.accountActivationDateTime %}
-            <span style="color:green;"><strong>✔</strong>&nbsp;{{ eventParticipant.contact.appUser.accountActivationDateTime|date("j. n. Y, H:i") }}</span>
-        {% else %}<span style="color:red;"><strong>❌</strong>&nbsp;neov.</span>{% endif %}<br>
+                <span style="color:green;"><strong>✔</strong>&nbsp;{{ eventParticipant.contact.appUser.accountActivationDateTime|date("j. n. Y, H:i") }}</span>
+            {% else %}
+                <span style="color:red;"><strong>❌</strong>&nbsp;neov.</span>
+            {% endif %}
+            <br>
             <strong>{{ eventParticipant.contact.contactName }}</strong><br>
             <a href="call:{{ eventParticipant.contact.phone }}" target="_blank">{{ eventParticipant.contact.phone }}</a><br>
             <a href="mailto:{{ eventParticipant.contact.email }}" target="_blank">{{ eventParticipant.contact.email }}</a>
         </small>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
-        <li>
-            <strong>{{ eventParticipant.event.shortName }}</strong>
-        </li>
-        {% for study in eventParticipant.contact.studies %}
-            <li style="color: {{ study.organization.color }};">
-                {{ study.organization.shortName }}
+        <ul>
+            <li>
+                <strong>{{ eventParticipant.event.shortName }}</strong>
             </li>
-        {% endfor %}
+            {% for study in eventParticipant.contact.studies %}
+                <li style="color: {{ study.organization.color }};">
+                    {{ study.organization.shortName }}
+                </li>
+            {% endfor %}
+        </ul>
     </td>
     <td style="border:1px solid grey; padding:.3em .6em; text-align:right;">
         <strong>{{ eventParticipant.event.shortName }}</strong><br>
         {{ study.organization.shortName }}
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
-        {% for flagConnection in eventParticipant.eventParticipantFlagConnections %}
-            <li style="color:{{ flagConnection.eventParticipantFlag.color }};">
-                {{ flagConnection.eventParticipantFlag.shortName }}
-                {% if flagConnection.textValue and flagConnection.textValue|length > 0 %}
-                    ({{ flagConnection.textValue }})
-                {% endif %}
-                {% if flagConnection.eventParticipantFlag.price is defined and flagConnection.eventParticipantFlag.price and flagConnection.eventParticipantFlag.price != 0 %}
-                    <small>
-                        <strong>
-                            ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
-                        </strong>
-                    </small>
-                {% endif %}
-            </li>
-        {% endfor %}
-        {% if eventParticipant.eventParticipantNotes is defined and eventParticipant.eventParticipantNotes %}
-            {% for note in eventParticipant.eventParticipantNotes %}
-                {% if note.textValue|length > 0 %}
-                    <li>Pozn.:
-                        <small>{{ note.textValue }}</small>
-                    </li>
-                {% endif %}
+        <ul>
+            {% for flagConnection in eventParticipant.eventParticipantFlagConnections %}
+                <li style="color:{{ flagConnection.eventParticipantFlag.color }};">
+                    {{ flagConnection.eventParticipantFlag.shortName }}
+                    {% if flagConnection.textValue and flagConnection.textValue|length > 0 %}
+                        ({{ flagConnection.textValue }})
+                    {% endif %}
+                    {% if flagConnection.eventParticipantFlag.price is defined and flagConnection.eventParticipantFlag.price and flagConnection.eventParticipantFlag.price != 0 %}
+                        <small>
+                            <strong>
+                                ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
+                            </strong>
+                        </small>
+                    {% endif %}
+                </li>
             {% endfor %}
-        {% endif %}
+            {% if eventParticipant.eventParticipantNotes is defined and eventParticipant.eventParticipantNotes %}
+                {% for note in eventParticipant.eventParticipantNotes %}
+                    {% if note.textValue|length > 0 %}
+                        <li>Pozn.:
+                            <small>{{ note.textValue }}</small>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </ul>
     </td>
 </tr>
 </tbody>

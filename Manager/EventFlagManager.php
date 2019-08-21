@@ -42,9 +42,7 @@ class EventFlagManager
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger
-                ? $this->logger->info('ERROR: Event event flag not created (by manager): '.$e->getMessage())
-                : null;
+            $this->logger ? $this->logger->info('ERROR: Event event flag not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

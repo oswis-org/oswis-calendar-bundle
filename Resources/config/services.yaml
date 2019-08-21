@@ -1,13 +1,23 @@
+##
+## OswisCalendarBundle - Services configuration
+## zakjakub/oswis-calendar-bundle/Resources/config/services.yaml
+##
 services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    ##
+    ## Controllers wildcard (TODO: To be refactored. Do not use wildcards.)
+    ##
     Zakjakub\OswisCalendarBundle\Controller\:
         resource: '../../Controller/*'
         tags: ['controller.service_arguments']
         public: true
 
+    ##
+    ## EventParticipant payment subscriber (checks etc.)
+    ##
     zakjakub_oswis_calendar.event_participant_payment_subscriber:
         class: Zakjakub\OswisCalendarBundle\EventSubscriber\EventParticipantPaymentSubscriber
         autowire: true
@@ -18,6 +28,9 @@ services:
             - '@monolog.logger'
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
 
+    ##
+    ## EventParticipant subscriber (checks etc.)
+    ##
     zakjakub_oswis_calendar.event_participant_subscriber:
         class: Zakjakub\OswisCalendarBundle\EventSubscriber\EventParticipantSubscriber
         autowire: true
@@ -29,6 +42,9 @@ services:
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
             - '@security.user_password_encoder.generic'
 
+    ##
+    ## EventParticipant controller (What does this?)
+    ##
     zakjakub_oswis_calendar.event_participant_controller:
         class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantController
         autowire: true
@@ -40,15 +56,16 @@ services:
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
             - '@mailer.mailer'
 
+    ##
+    ## EventParticipant payment action (/event_participant_payment_action)
+    ##
     zakjakub_oswis_calendar.event_participant_payment_action_request:
         class: Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest
         autowire: true
         public: true
-
     Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest:
         alias: zakjakub_oswis_calendar.event_participant_payment_action_request
         public: true
-
     zakjakub_oswis_calendar.event_participant_payment_action_subscriber:
         class: Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber
         autowire: true
@@ -58,7 +75,34 @@ services:
             - '@mailer.mailer'
             - '@monolog.logger'
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
-
     Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber:
         alias: zakjakub_oswis_calendar.event_participant_payment_action_subscriber
         public: true
+
+    ##
+    ## EventParticipant list action (/event_participant_list_action)
+    ## Sends pdf with eventParticipants by e-mail.
+    ##
+    zakjakub_oswis_calendar.event_participant_list_action_request:
+        class: Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantListActionRequest
+        autowire: true
+        public: true
+    Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantListActionRequest:
+        alias: zakjakub_oswis_calendar.event_participant_list_action_request
+        public: true
+    zakjakub_oswis_calendar.event_participant_list_action_subscriber:
+        class: Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantListActionSubscriber
+        autowire: true
+        public: true
+        arguments:
+            - '@zakjakub_oswis_core.pdf_generator'
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - '@twig'
+    Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantListActionSubscriber:
+        alias: zakjakub_oswis_calendar.event_participant_list_action_subscriber
+        public: true
+
+

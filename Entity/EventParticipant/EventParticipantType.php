@@ -242,8 +242,7 @@ class EventParticipantType
     final public function addEventParticipantFlagInEventConnection(
         ?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection
     ): void {
-        if ($eventParticipantFlagInEventConnection
-            && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
+        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
             $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
             $eventParticipantFlagInEventConnection->setEventParticipantType($this);
         }

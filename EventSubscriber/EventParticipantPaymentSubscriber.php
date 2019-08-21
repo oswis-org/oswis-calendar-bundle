@@ -84,14 +84,12 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     {
         $eventParticipantPayment = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-
         if (!$eventParticipantPayment instanceof EventParticipantPayment) {
             return;
         }
         if (Request::METHOD_POST !== $method) {
             return;
         }
-
         $eventParticipantPaymentManager = new EventParticipantPaymentManager($this->em, $this->mailer, $this->logger, $this->oswisCoreSettings);
         $eventParticipantPaymentManager->sendConfirmation($eventParticipantPayment);
     }
@@ -106,7 +104,6 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     {
         $eventParticipantPayment = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-
         if (!$eventParticipantPayment instanceof EventParticipantPayment) {
             return;
         }

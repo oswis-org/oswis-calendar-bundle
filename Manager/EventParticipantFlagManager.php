@@ -41,12 +41,7 @@ class EventParticipantFlagManager
         try {
             $em = $this->em;
             $entity = new EventParticipantFlag(
-                $nameable,
-                $eventParticipantFlagType,
-                $publicInIS,
-                $publicInPortal,
-                $publicOnWeb,
-                $publicOnWebRoute
+                $nameable, $eventParticipantFlagType, $publicInIS, $publicInPortal, $publicOnWeb, $publicOnWebRoute
             );
             $em->persist($entity);
             $em->flush();
@@ -55,9 +50,7 @@ class EventParticipantFlagManager
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger
-                ? $this->logger->info('ERROR: Event event participant flag not created (by manager): '.$e->getMessage())
-                : null;
+            $this->logger ? $this->logger->info('ERROR: Event event participant flag not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

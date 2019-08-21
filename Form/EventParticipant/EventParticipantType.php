@@ -20,81 +20,74 @@ class EventParticipantType extends AbstractType
         FormBuilderInterface $builder,
         array $options
     ): void {
-        $builder
-            ->add(
-                'contact',
-                StudentPersonType::class,
-                array('label' => false, 'required' => true)
-            )
-            ->add(
-                'events',
-                CollectionType::class,
-                array(
-                    'label'         => 'Výběr akcí k přihlášení',
-                    'entry_type'    => SubEventAttendeeType::class,
-                    'entry_options' => array(
+        $builder->add(
+            'contact',
+            StudentPersonType::class,
+            array('label' => false, 'required' => true)
+        )->add(
+            'events',
+            CollectionType::class,
+            array(
+                'label'         => 'Výběr akcí k přihlášení',
+                'entry_type'    => SubEventAttendeeType::class,
+                'entry_options' => array(
+                    'label' => false,
+                    'attr'  => [
                         'label' => false,
-                        'attr'  => [
-                            'label' => false,
-                            'class' => 'event_attendee_events',
-                        ],
-                    ),
-                )
-            )
-            ->add(
-                'question',
-                TextareaType::class,
-                array(
-                    'mapped'   => false,
-                    'label'    => 'Dotaz zaměstnavatelům',
-                    'help'     => 'Položte dotaz všem zaměstnavatelům.',
-                    'required' => false,
-                )
-            )
-            ->add(
-                'agreeGDPR',
-                CheckboxType::class,
-                array(
-                    'mapped'     => false,
-                    'label'      => 'Uvedením údajů potvrzuji souhlas s evidencí těchto dat.',
-                    // 'help'     => 'Tyto slouží pouze k interním účelům pořadatele akce. Údaje nebudou zveřejňovány ani předávány třetí osobě.',
-                    'required'   => true,
-                    'attr'       => [
-                        'class' => 'custom-control-input',
+                        'class' => 'event_attendee_events',
                     ],
-                    'label_attr' => [
-                        'class' => 'custom-control-label',
-                    ],
-                )
+                ),
             )
-            ->add(
-                'verification',
-                TextType::class,
-                array(
-                    'mapped'   => false,
-                    'label'    => false,
-                    'required' => false,
-                    'attr'     => ['class' => 'form-verification'],
-                )
+        )->add(
+            'question',
+            TextareaType::class,
+            array(
+                'mapped'   => false,
+                'label'    => 'Dotaz zaměstnavatelům',
+                'help'     => 'Položte dotaz všem zaměstnavatelům.',
+                'required' => false,
             )
-            ->add(
-                'verificationCode',
-                TextType::class,
-                array(
-                    'mapped'   => false,
-                    'label'    => false,
-                    'required' => false,
-                    'attr'     => ['class' => 'form-verification-code'],
-                )
+        )->add(
+            'agreeGDPR',
+            CheckboxType::class,
+            array(
+                'mapped'     => false,
+                'label'      => 'Uvedením údajů potvrzuji souhlas s evidencí těchto dat.',
+                // 'help'     => 'Tyto slouží pouze k interním účelům pořadatele akce. Údaje nebudou zveřejňovány ani předávány třetí osobě.',
+                'required'   => true,
+                'attr'       => [
+                    'class' => 'custom-control-input',
+                ],
+                'label_attr' => [
+                    'class' => 'custom-control-label',
+                ],
             )
-            ->add(
-                'save',
-                SubmitType::class,
-                array(
-                    'label' => 'Registrovat se!',
-                    'attr'  => ['class' => 'btn-lg btn-primary btn-block'],
-                )
-            );
+        )->add(
+            'verification',
+            TextType::class,
+            array(
+                'mapped'   => false,
+                'label'    => false,
+                'required' => false,
+                'attr'     => ['class' => 'form-verification'],
+            )
+        )->add(
+            'verificationCode',
+            TextType::class,
+            array(
+                'mapped'   => false,
+                'label'    => false,
+                'required' => false,
+                'attr'     => ['class' => 'form-verification-code'],
+            )
+        )->add(
+            'save',
+            SubmitType::class,
+            array(
+                'label' => 'Registrovat se!',
+                'attr'  => ['class' => 'btn-lg btn-primary btn-block'],
+            )
+        );
     }
 
     /**

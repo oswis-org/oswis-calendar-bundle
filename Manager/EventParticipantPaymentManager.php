@@ -88,23 +88,18 @@ class EventParticipantPaymentManager
             if (!$payment) {
                 throw new NotFoundHttpException('Platba nenalezena.');
             }
-
             assert($payment instanceof EventParticipantPayment);
             $eventParticipant = $payment->getEventParticipant();
-
             if (!$eventParticipant || $eventParticipant->isDeleted()) {
                 return;
             }
-
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $contact = $eventParticipant ? $eventParticipant->getContact() : null;
-
             if ($payment->getNumericValue() < 0) {
                 $title = 'Vrácení/oprava platby';
             } else {
                 $title = 'Přijetí platby';
             }
-
             if ($contact instanceof Person) {
                 $salutationName = $contact ? $contact->getSalutationName() : '';
                 $a = $contact ? $contact->getCzechSuffixA() : '';
@@ -113,7 +108,6 @@ class EventParticipantPaymentManager
                 $salutationName = $contact ? $contact->getContactName() : '';
                 $a = '';
             }
-
             if ($contact->getAppUser()) {
                 $name = $contact->getAppUser()->getFullName();
                 $eMail = $contact->getAppUser()->getEmail();
@@ -121,9 +115,7 @@ class EventParticipantPaymentManager
                 $name = $contact->getContactName();
                 $eMail = $contact->getEmail();
             }
-
             $mailSettings = $this->oswisCoreSettings->getEmail();
-
             $mailData = array(
                 'salutationName' => $salutationName,
                 'a'              => $a,
@@ -131,18 +123,12 @@ class EventParticipantPaymentManager
                 'payment'        => $payment,
                 'oswis'          => $this->oswisCoreSettings,
             );
-
             $archive = new NamedAddress(
-                $mailSettings['archive_address'] ?? '',
-                EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
-
-            $email = (new TemplatedEmail())
-                ->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))
-                ->bcc($archive)
-                ->subject(EmailUtils::mime_header_encode($title))
-                ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')
-                ->context($mailData);
+            $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
+                EmailUtils::mime_header_encode($title)
+            )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-manager');
             $em->persist($payment);
@@ -195,14 +181,12 @@ class EventParticipantPaymentManager
         $valueColumnName = $valueColumnName ?? 'Objem';
         $currencyColumnName = $currencyColumnName ?? 'Měna';
         $currencyAllowed = $currencyAllowed ?? 'CZK';
-
         $this->logger ? $this->logger->info('CSV_PAYMENT_START') : null;
         $csvRow = null;
         $eventParticipants = $event->getEventParticipantsByTypeOfType($eventParticipantTypeOfType);
         $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
         $successfulPayments = [];
         $failedPayments = [];
-
         array_walk(
             $csvPayments,
             static function (&$a) use ($csvPayments) {
@@ -210,7 +194,6 @@ class EventParticipantPaymentManager
             }
         );
         array_shift($csvPayments); # remove column header
-
         foreach ($csvPayments as $csvPayment) {
             try {
                 $csvVariableSymbol = $csvPayment[$variableSymbolColumnName];
@@ -218,13 +201,11 @@ class EventParticipantPaymentManager
                 $csvValue = (int)($csvPayment[$valueColumnName] ?? 0);
                 $csvCurrency = $csvPayment[$currencyColumnName] ?? null;
                 $csvRow = implode('; ', $csvPayment);
-
                 if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
                     $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: Wrong currency ('$csvCurrency'' instead of '$currencyAllowed'); CSV: $csvRow;");
                     $failedPayments[] = $csvRow.' [CURRENCY not allowed]';
                     continue;
                 }
-
                 if ($csvVariableSymbol && strlen($csvVariableSymbol) > 5) {
                     $csvVariableSymbol = preg_replace('/\s/', '', $csvVariableSymbol);
                     $csvVariableSymbol = substr(trim($csvVariableSymbol), strlen(trim($csvVariableSymbol)) - 9, 9);
@@ -234,27 +215,22 @@ class EventParticipantPaymentManager
                     $failedPayments[] = $csvRow.' [VS short]';
                     continue;
                 }
-
                 $filteredEventParticipants = $eventParticipants->filter(
                     static function (EventParticipant $eventParticipant) use ($csvVariableSymbol) {
                         return !$eventParticipant->isDeleted() && $eventParticipant->getVariableSymbol() === $csvVariableSymbol;
                     }
                 );
-
                 if ($filteredEventParticipants->count() < 1) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) not found; CSV: $csvRow;");
                     $failedPayments[] = $csvRow.' [VS not found]';
                     continue;
                 }
-
                 if ($filteredEventParticipants->count() > 1) {
-                    $message = "CSV_PAYMENT_FAILED: ERROR: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in "
-                        .$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
+                    $message = "CSV_PAYMENT_FAILED: ERROR: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in ".$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
                     $this->logger->info($message);
                     $failedPayments[] = $csvRow.' [VS not unique]';
                     continue;
                 }
-
                 $eventParticipant = $eventParticipants->first();
                 assert($eventParticipant instanceof EventParticipant);
                 $entity = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
@@ -271,7 +247,6 @@ class EventParticipantPaymentManager
         $this->logger->info(
             'CSV_PAYMENT_END: added '.count($successfulPayments).' from '.count($csvPayments).' (+ '.count($failedPayments).' failed).'
         );
-
         try {
             $this->sendCsvReport($successfulPayments, $failedPayments);
         } catch (Exception $e) {
@@ -320,25 +295,18 @@ class EventParticipantPaymentManager
     ): string {
         try {
             $title = 'Report CSV plateb';
-
             $mailSettings = $this->oswisCoreSettings->getEmail();
-
             $mailData = array(
                 'successfulPayments' => $successfulPayments,
                 'failedPayments'     => $failedPayments,
                 'oswis'              => $this->oswisCoreSettings,
             );
-
             $archive = new NamedAddress(
-                $mailSettings['archive_address'] ?? '',
-                EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
-
-            $email = (new TemplatedEmail())
-                ->to($archive)
-                ->subject(EmailUtils::mime_header_encode($title))
-                ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')
-                ->context($mailData);
+            $email = (new TemplatedEmail())->to($archive)->subject(EmailUtils::mime_header_encode($title))->htmlTemplate(
+                '@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig'
+            )->context($mailData);
             $this->mailer->send($email);
 
             return true;

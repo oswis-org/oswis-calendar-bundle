@@ -95,11 +95,7 @@ class EventParticipantController extends AbstractController
     ): Response {
         try {
             $eventParticipantManager = new EventParticipantManager(
-                $this->em,
-                $this->mailer,
-                $this->oswisCoreSettings,
-                $this->logger,
-                $this->templating
+                $this->em, $this->mailer, $this->oswisCoreSettings, $this->logger, $this->templating
             );
             if (!$token || !$eventParticipantId) {
                 return $this->render(
@@ -113,10 +109,7 @@ class EventParticipantController extends AbstractController
                     )
                 );
             }
-
-            $eventParticipant = $this->getDoctrine()
-                ->getRepository(EventParticipant::class)
-                ->findOneBy(['id' => $eventParticipantId]);
+            $eventParticipant = $this->getDoctrine()->getRepository(EventParticipant::class)->findOneBy(['id' => $eventParticipantId]);
             assert($eventParticipant instanceof EventParticipant);
             $person = $eventParticipant->getContact();
             assert($person instanceof Person);
@@ -134,11 +127,9 @@ class EventParticipantController extends AbstractController
                     )
                 );
             }
-
             $eventParticipant->removeEmptyEventParticipantNotes();
             $eventParticipant->getContact()->removeEmptyContactDetails();
             $eventParticipant->getContact()->removeEmptyNotes();
-
             $eventParticipantManager->sendMail($eventParticipant, $this->encoder, true, $token);
 
             return $this->render(

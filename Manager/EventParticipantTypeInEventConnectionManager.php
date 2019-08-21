@@ -37,8 +37,7 @@ class EventParticipantTypeInEventConnectionManager
         try {
             $em = $this->em;
             $entity = new EventParticipantTypeInEventConnection(
-                $eventParticipantType,
-                $event
+                $eventParticipantType, $event
             );
             $em->persist($entity);
             $em->flush();
@@ -47,9 +46,7 @@ class EventParticipantTypeInEventConnectionManager
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger
-                ? $this->logger->info('ERROR: Event event participant type in event connection not created (by manager): '.$e->getMessage())
-                : null;
+            $this->logger ? $this->logger->info('ERROR: Event event participant type in event connection not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

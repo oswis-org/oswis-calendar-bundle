@@ -27,14 +27,12 @@ class Event extends AbstractType
                 'class'    => Organization::class,
             )
         );
-
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
             static function (FormEvent $event) {
                 $form = $event->getForm();
                 $entity = $event->getData();
                 assert($entity instanceof Organization);
-
                 $form->add(
                     'organization',
                     EntityType::class,
@@ -44,9 +42,7 @@ class Event extends AbstractType
                         'class'         => Organization::class,
                         'query_builder' => static function (EntityRepository $repo) {
                             // TODO: Not only faculties! Add parameter to school - showInForm (if can be selected in forms).
-                            return $repo->createQueryBuilder('organization')
-                                ->where('organization.type = :faculty')
-                                ->setParameter('faculty', 'faculty');
+                            return $repo->createQueryBuilder('organization')->where('organization.type = :faculty')->setParameter('faculty', 'faculty');
                         },
                     )
                 );

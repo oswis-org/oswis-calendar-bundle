@@ -44,9 +44,7 @@ class EventParticipantFlagTypeManager
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger
-                ? $this->logger->info('ERROR: Event event participant flag type not created (by manager): '.$e->getMessage())
-                : null;
+            $this->logger ? $this->logger->info('ERROR: Event event participant flag type not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

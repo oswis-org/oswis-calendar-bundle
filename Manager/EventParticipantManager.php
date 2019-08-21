@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Mpdf\MpdfException;
 use Psr\Log\LoggerInterface;
 use rikudou\CzQrPayment\QrPayment;
 use rikudou\CzQrPayment\QrPaymentOptions;
@@ -14,7 +15,6 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\NamedAddress;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Twig\Environment;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
@@ -37,6 +37,8 @@ use function assert;
  */
 class EventParticipantManager
 {
+    public const DEFAULT_LIST_TITLE = 'Přehled přihlášek';
+
     /**
      * @var EntityManagerInterface
      */
@@ -58,25 +60,18 @@ class EventParticipantManager
     protected $mailer;
 
     /**
-     * @var Environment
-     */
-    protected $templating;
-
-    /**
      * EventParticipantManager constructor.
      *
      * @param EntityManagerInterface         $em
      * @param MailerInterface                $mailer
      * @param OswisCoreSettingsProvider|null $oswisCoreSettings
      * @param LoggerInterface|null           $logger
-     * @param Environment                    $templating
      */
     public function __construct(
         EntityManagerInterface $em,
         MailerInterface $mailer,
         OswisCoreSettingsProvider $oswisCoreSettings,
-        ?LoggerInterface $logger,
-        Environment $templating
+        ?LoggerInterface $logger
     ) {
         $this->em = $em;
         $this->logger = $logger;
@@ -107,9 +102,8 @@ class EventParticipantManager
             $entity = new EventParticipant($contact, $event, $eventParticipantType, $eventContactFlagConnections, $eventParticipantNotes);
             $em->persist($entity);
             $em->flush();
-            $infoMessage = 'CREATE: Created event participant (by manager): '.$entity->getId()
-                .', '.$entity->getContact()->getContactName()
-                .', '.($entity->getEvent() ? $entity->getEvent()->getName() : '').'.';
+            $infoMessage = 'CREATE: Created event participant (by manager): '.$entity->getId().', '.$entity->getContact()->getContactName().', '.($entity->getEvent() ? $entity->getEvent()->getName(
+                ) : '').'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
@@ -141,7 +135,6 @@ class EventParticipantManager
         if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
-
         if ($eventParticipant->isDeleted()) {
             if (!$eventParticipant->getEMailDeleteConfirmationDateTime()) {
                 return $this->sendCancelConfirmation($eventParticipant);
@@ -149,7 +142,6 @@ class EventParticipantManager
 
             return true;
         }
-
         if ($eventParticipant->hasActivatedContactUser()) {
             if (!$eventParticipant->getEMailConfirmationDateTime()) {
                 return $this->sendSummary($eventParticipant, $encoder, $new);
@@ -157,7 +149,6 @@ class EventParticipantManager
 
             return true;
         }
-
         if ($token) {
             foreach ($eventParticipant->getContact()->getContactPersons() as $contactPerson) {
                 assert($contactPerson instanceof Person);
@@ -189,7 +180,6 @@ class EventParticipantManager
             $em = $this->em;
             $mailSettings = $this->oswisCoreSettings->getEmail();
             $eventParticipantContact = $eventParticipant->getContact();
-
             if ($eventParticipantContact instanceof Person) {
                 $isOrganization = false;
                 $contactPersons = new ArrayCollection([$eventParticipantContact]);
@@ -198,18 +188,14 @@ class EventParticipantManager
                 $isOrganization = true;
                 $contactPersons = $eventParticipantContact->getContactPersons();
             }
-
             $title = 'Zrušení přihlášky';
-
             $mailSuccessCount = 0;
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $password = null;
                 $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
                 $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
-
                 $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
-
                 $mailData = array(
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
@@ -221,18 +207,12 @@ class EventParticipantManager
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                     'logo'             => 'cid:logo',
                 );
-
                 $archiveAddress = new NamedAddress(
-                    $mailSettings['archive_address'] ?? '',
-                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
-
-                $email = (new TemplatedEmail())
-                    ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
-                    ->bcc($archiveAddress)
-                    ->subject(self::mimeEnc($title))
-                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig')
-                    ->context($mailData);
+                $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
+                    '@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig'
+                )->context($mailData);
                 $em->persist($eventParticipant);
                 try {
                     $this->mailer->send($email);
@@ -287,11 +267,8 @@ class EventParticipantManager
             $eventParticipantContact = $eventParticipant->getContact();
             $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
-
             $depositPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(),
-                $event->getBankAccountNumber(),
-                [
+                $event->getBankAccountNumber(), $event->getBankAccountNumber(), [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
@@ -300,9 +277,7 @@ class EventParticipantManager
                 ]
             );
             $restPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(),
-                $event->getBankAccountNumber(),
-                [
+                $event->getBankAccountNumber(), $event->getBankAccountNumber(), [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
@@ -314,7 +289,6 @@ class EventParticipantManager
             $depositPaymentQrPng = $depositPaymentQr->getQrImage(true)->writeString();
             /** @noinspection PhpUndefinedMethodInspection */
             $restPaymentQrPng = $restPaymentQr->getQrImage(true)->writeString();
-
             if ($eventParticipantContact instanceof Person) {
                 $isOrganization = false;
                 $contactPersons = new ArrayCollection([$eventParticipantContact]);
@@ -323,12 +297,10 @@ class EventParticipantManager
                 $isOrganization = true;
                 $contactPersons = $eventParticipantContact->getContactPersons();
             }
-
             $title = 'Změna přihlášky';
             if ($new) {
                 $title = 'Shrnutí nové přihlášky';
             }
-
             $mailSuccessCount = 0;
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
@@ -340,7 +312,6 @@ class EventParticipantManager
                     $contactPerson->getAppUser()->setPassword($encoder->encodePassword($contactPerson->getAppUser(), $password));
                     $em->flush();
                 }
-
                 $mailData = array(
                     'eventParticipant' => $eventParticipant,
                     'event'            => $event,
@@ -357,20 +328,12 @@ class EventParticipantManager
                     'depositQr'        => 'cid:depositQr',
                     'restQr'           => 'cid:restQr',
                 );
-
                 $archiveAddress = new NamedAddress(
-                    $mailSettings['archive_address'] ?? '',
-                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
-
-                $email = (new TemplatedEmail())
-                    ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
-                    ->bcc($archiveAddress)
-                    ->subject(self::mimeEnc($title))
-                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')
-                    ->embed($depositPaymentQrPng, 'depositQr', 'image/png')
-                    ->embed($restPaymentQrPng, 'restQr', 'image/png')
-                    ->context($mailData);
+                $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
+                    '@ZakjakubOswisCalendar/e-mail/event-participant.html.twig'
+                )->embed($depositPaymentQrPng, 'depositQr', 'image/png')->embed($restPaymentQrPng, 'restQr', 'image/png')->context($mailData);
                 $em->persist($eventParticipant);
                 try {
                     $this->mailer->send($email);
@@ -443,18 +406,11 @@ class EventParticipantManager
                     'logo'             => 'cid:logo',
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                 );
-
-                $email = (new TemplatedEmail())
-                    ->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))
-                    ->bcc(
-                        new NamedAddress(
-                            $mailSettings['archive_address'] ?? '',
-                            self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
-                        )
+                $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc(
+                    new NamedAddress(
+                        $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                     )
-                    ->subject(self::mimeEnc($title))
-                    ->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-verification.html.twig')
-                    ->context($mailData);
+                )->subject(self::mimeEnc($title))->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-verification.html.twig')->context($mailData);
                 $em->persist($eventParticipant);
                 try {
                     $this->mailer->send($email);
@@ -464,9 +420,7 @@ class EventParticipantManager
                     throw new OswisException('Odeslání ověřovacího e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
             }
-
             $em->flush();
-
             if ($mailSuccessCount < $contactPersons->count()) {
                 throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
             }
@@ -509,44 +463,47 @@ class EventParticipantManager
         Event $event,
         ?EventParticipantType $eventParticipantType = null,
         bool $detailed = false,
-        string $title = 'Přehled účastníků'
+        string $title = null
     ): void {
         $templatePdf = '@ZakjakubOswisCalendar/documents/pages/event-participant-list.html.twig';
         $templateEmail = '@ZakjakubOswisCalendar/e-mail/event-participant-list.html.twig';
-
+        if (!$title) {
+            $title = self::DEFAULT_LIST_TITLE.' ('.$event->getShortName().')';
+        }
+        $events = $event->getSubEvents();
+        $events->add($event);
         $data = [
             'title'                => $title,
             'eventParticipantType' => $eventParticipantType,
             'event'                => $event,
-            'events'               => $event->getSubEvents()->add($event),
+            'events'               => $events,
         ];
         $paper = PdfGenerator::DEFAULT_PAPER_FORMAT;
-
+        $pdfString = null;
+        $message = null;
         try {
-            $pdfString = $pdfGenerator->generatePdfAsString('Přehled přihlášek', $templatePdf, $data, $paper, !$detailed);
+            $pdfString = $pdfGenerator->generatePdfAsString('Přehled přihlášek', $templatePdf, $data, $paper, $detailed);
+        } catch (MpdfException $e) {
+            $pdfString = null;
+            $message = 'Vygenerování PDF se nezdařilo (MpdfException). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
         } catch (Exception $e) {
             $pdfString = null;
-            $message = 'Vygenerování PDF se nezdařilo.';
+            $message = 'Vygenerování PDF se nezdařilo (Exception). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
         }
-
         $mailData = [
             'data'    => $data,
-            'message' => $message ?? null,
+            'message' => $message,
             'logo'    => 'cid:logo',
             'oswis'   => $this->oswisCoreSettings->getArray(),
         ];
-
+        $mailSettings = $this->oswisCoreSettings->getEmail();
         $archive = new NamedAddress(
-            $mailSettings['archive_address'] ?? '',
-            self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+            $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
         );
-
         $mail = (new TemplatedEmail())->to($archive)->subject(self::mimeEnc($title))->htmlTemplate($templateEmail)->context($mailData);
-
         if ($pdfString) {
             $mail->attach($pdfString, $title, 'application/pdf');
         }
-
         try {
             $this->mailer->send($mail);
         } catch (TransportExceptionInterface $e) {

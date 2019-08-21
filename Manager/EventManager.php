@@ -46,14 +46,7 @@ class EventManager
         try {
             $em = $this->em;
             $entity = new Event(
-                $nameable,
-                $superEvent,
-                $location,
-                $eventType,
-                $startDateTime,
-                $endDateTime,
-                $eventSeries,
-                $priceRecursiveFromParent
+                $nameable, $superEvent, $location, $eventType, $startDateTime, $endDateTime, $eventSeries, $priceRecursiveFromParent
             );
             $em->persist($entity);
             $em->flush();
@@ -62,9 +55,7 @@ class EventManager
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger
-                ? $this->logger->info('ERROR: Event not created (by manager): '.$e->getMessage())
-                : null;
+            $this->logger ? $this->logger->info('ERROR: Event not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

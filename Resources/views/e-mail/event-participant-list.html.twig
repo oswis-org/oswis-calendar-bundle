@@ -4,9 +4,9 @@
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
 
 {% block content_inner %}
-    {% if data.message is defined and data.message %}
+    {% if message is defined and message %}
         <div style="color: red;font-weight: bold;padding: 1em; background-color: lightcoral;border: 2px solid red;">
-            <p>{{ data.message }}</p>
+            <p>{{ message }}</p>
         </div>
     {% endif %}
     {% include '@ZakjakubOswisCalendar/other/event-participant-list/event-participant-list.html.twig' %}
