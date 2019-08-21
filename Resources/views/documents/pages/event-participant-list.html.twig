@@ -1,0 +1,8 @@
+{% extends '@ZakjakubOswisCore/documents/pdf-document.html.twig' %}
+
+{% block css %}{% include '@ZakjakubOswisCalendar/documents/pages/event-participant-list.html.twig' %}{% endblock %}
+{% block title %}{{ title|default('Seznam přihlášek') }}{% endblock %}
+
+{% block content_inner %}
+    {% include '@ZakjakubOswisCalendar/other/event-participant-list/event-participant-list.html.twig' %}
+{% endblock %}

@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Twig\Environment;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
@@ -48,6 +49,10 @@ class EventParticipantController extends AbstractController
      */
     public $mailer;
 
+    /**
+     * @var Environment
+     */
+    public $templating;
 
     /**
      * EventParticipantController constructor.
@@ -57,19 +62,22 @@ class EventParticipantController extends AbstractController
      * @param UserPasswordEncoderInterface $encoder
      * @param OswisCoreSettingsProvider    $oswisCoreSettings
      * @param MailerInterface              $mailer
+     * @param Environment                  $templating
      */
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
         UserPasswordEncoderInterface $encoder,
         OswisCoreSettingsProvider $oswisCoreSettings,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        Environment $templating
     ) {
         $this->em = $em;
         $this->logger = $logger;
         $this->encoder = $encoder;
         $this->oswisCoreSettings = $oswisCoreSettings;
         $this->mailer = $mailer;
+        $this->templating = $templating;
     }
 
     /**
@@ -86,7 +94,13 @@ class EventParticipantController extends AbstractController
         int $eventParticipantId
     ): Response {
         try {
-            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
+            $eventParticipantManager = new EventParticipantManager(
+                $this->em,
+                $this->mailer,
+                $this->oswisCoreSettings,
+                $this->logger,
+                $this->templating
+            );
             if (!$token || !$eventParticipantId) {
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',

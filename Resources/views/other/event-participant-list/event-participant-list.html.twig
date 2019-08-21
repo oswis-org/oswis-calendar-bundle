@@ -1,0 +1,72 @@
+<!--suppress CheckEmptyScriptTag -->
+<div>
+    {% if data.eventParticipantType is defined and data.eventParticipantType %}
+        <div>
+            <p>Omezeno pouze na typ '{{ data.eventParticipantType.name|default('bez názvu') }}'.</p>
+        </div>
+    {% endif %}
+    {% for subEvent in data.events %}
+        <div style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 1px solid lightblue;">
+            <h2>Shrnutí - {{ subEvent.shortName }}</h2>
+            <p>
+                {% if subEvent.rootEvent %}
+                    <strong>Počet přihlášek:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, true, 1) }}
+                    <strong> -> ověřených:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, false, 1) }}
+                {% else %}
+                    <strong>Počet přihlášek:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, true, 0) }}
+                    <strong> -> ověřených:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, false, 0) }}
+                {% endif %}
+            </p>
+            <h3>Agregace dle příznaků (jen ověřené přihlášky)</h3>
+            {% for flagType in subEvent.getActiveEventParticipantsAggregatedByFlags(null, data.eventParticipantType, false, false, 1) %}
+                <h4>{{ flagType.flagType.shortName }}</h4>
+                <ul>
+                    {% for flag in flagType.flags %}
+                        <li style="color: {{ flag.flag.color }};">
+                            <strong>{{ flag.flag.shortName }}:</strong>
+                            {{ flag.eventParticipants|length }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+            <h3>Agregace dle fakulty (jen ověřené přihlášky)</h3>
+            <ul>
+                {% for school in subEvent.getActiveEventParticipantsAggregatedBySchool(null, data.eventParticipantType, false, false, 1) %}
+                    <li style="color: {{ school.school.color }};">
+                        <strong>{{ school.school.shortName }}:</strong>
+                        {{ school.eventParticipants|length }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
+<pagebreak/>
+
+<div>
+    <h2>Přehled přihlášek</h2>
+    <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
+        {% include '@ZakjakubOswisCalendar/other/event-participant-list/parts/event-participant-list-head.html.twig' %}
+        {% for eventParticipant in data.event.getActiveEventParticipants(null, data.eventParticipantType, true, true, 1) %}
+            {% if not eventParticipant.deleted %}
+                {% include '@ZakjakubOswisCalendar/other/event-participant-list/parts/event-participant-list-inner.html.twig' %}
+            {% endif %}
+        {% endfor %}
+    </table>
+</div>
+
+<pagebreak/>
+
+<div>
+    <h2>Přehled zrušených přihlášek</h2>
+    <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
+        {% include '@ZakjakubOswisCalendar/other/event-participant-list/parts/event-participant-list-head.html.twig' %}
+        {% for eventParticipant in data.event.getActiveEventParticipants(null, data.eventParticipantType, true, true, 1) %}
+            {% if eventParticipant.deleted %}
+                {% include '@ZakjakubOswisCalendar/other/event-participant-list/parts/event-participant-list-inner.html.twig' %}
+            {% endif %}
+        {% endfor %}
+    </table>
+</div>
+

@@ -14,6 +14,7 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\NamedAddress;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Twig\Environment;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
@@ -26,6 +27,7 @@ use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
 use Zakjakub\OswisCoreBundle\Utils\StringUtils;
 use function assert;
@@ -56,18 +58,25 @@ class EventParticipantManager
     protected $mailer;
 
     /**
+     * @var Environment
+     */
+    protected $templating;
+
+    /**
      * EventParticipantManager constructor.
      *
      * @param EntityManagerInterface         $em
      * @param MailerInterface                $mailer
      * @param OswisCoreSettingsProvider|null $oswisCoreSettings
      * @param LoggerInterface|null           $logger
+     * @param Environment                    $templating
      */
     public function __construct(
         EntityManagerInterface $em,
         MailerInterface $mailer,
         OswisCoreSettingsProvider $oswisCoreSettings,
-        ?LoggerInterface $logger = null
+        ?LoggerInterface $logger,
+        Environment $templating
     ) {
         $this->em = $em;
         $this->logger = $logger;
@@ -483,5 +492,66 @@ class EventParticipantManager
             $this->em->persist($eventParticipant);
         }
         $this->em->flush();
+    }
+
+    /** @noinspection MethodShouldBeFinalInspection */
+    /**
+     * @param PdfGenerator              $pdfGenerator
+     * @param Event|null                $event
+     * @param EventParticipantType|null $eventParticipantType
+     * @param bool                      $detailed
+     * @param string                    $title
+     *
+     * @throws OswisException
+     */
+    public function sendEventParticipantList(
+        PdfGenerator $pdfGenerator,
+        Event $event,
+        ?EventParticipantType $eventParticipantType = null,
+        bool $detailed = false,
+        string $title = 'Přehled účastníků'
+    ): void {
+        $templatePdf = '@ZakjakubOswisCalendar/documents/pages/event-participant-list.html.twig';
+        $templateEmail = '@ZakjakubOswisCalendar/e-mail/event-participant-list.html.twig';
+
+        $data = [
+            'title'                => $title,
+            'eventParticipantType' => $eventParticipantType,
+            'event'                => $event,
+            'events'               => $event->getSubEvents()->add($event),
+        ];
+        $paper = PdfGenerator::DEFAULT_PAPER_FORMAT;
+
+        try {
+            $pdfString = $pdfGenerator->generatePdfAsString('Přehled přihlášek', $templatePdf, $data, $paper, !$detailed);
+        } catch (Exception $e) {
+            $pdfString = null;
+            $message = 'Vygenerování PDF se nezdařilo.';
+        }
+
+        $mailData = [
+            'data'    => $data,
+            'message' => $message ?? null,
+            'logo'    => 'cid:logo',
+            'oswis'   => $this->oswisCoreSettings->getArray(),
+        ];
+
+        $archive = new NamedAddress(
+            $mailSettings['archive_address'] ?? '',
+            self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+        );
+
+        $mail = (new TemplatedEmail())->to($archive)->subject(self::mimeEnc($title))->htmlTemplate($templateEmail)->context($mailData);
+
+        if ($pdfString) {
+            $mail->attach($pdfString, $title, 'application/pdf');
+        }
+
+        try {
+            $this->mailer->send($mail);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error($e->getMessage());
+            throw new OswisException('Odeslání e-mailu s přehledem přihlášek se nezdařilo. '.$e->getMessage().' ');
+        }
     }
 }

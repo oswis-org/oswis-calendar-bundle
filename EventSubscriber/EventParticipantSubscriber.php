@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Twig\Environment;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
 use Zakjakub\OswisCalendarBundle\Exceptions\OswisEventParticipantNotFoundException;
@@ -52,25 +53,30 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      */
     private $encoder;
 
+    private $templating;
+
     /**
      * @param EntityManagerInterface       $em
      * @param MailerInterface              $mailer
      * @param LoggerInterface              $logger
      * @param OswisCoreSettingsProvider    $oswisCoreSettings
      * @param UserPasswordEncoderInterface $encoder
+     * @param Environment                  $templating
      */
     public function __construct(
         EntityManagerInterface $em,
         MailerInterface $mailer,
         LoggerInterface $logger,
         OswisCoreSettingsProvider $oswisCoreSettings,
-        UserPasswordEncoderInterface $encoder
+        UserPasswordEncoderInterface $encoder,
+        Environment $templating
     ) {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
         $this->oswisCoreSettings = $oswisCoreSettings;
         $this->encoder = $encoder;
+        $this->templating = $templating;
     }
 
     /**
@@ -106,7 +112,13 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         assert($eventParticipant instanceof EventParticipant);
 
         if ($eventParticipant) {
-            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
+            $eventParticipantManager = new EventParticipantManager(
+                $this->em,
+                $this->mailer,
+                $this->oswisCoreSettings,
+                $this->logger,
+                $this->templating
+            );
             $eventParticipantManager->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
         } else {
             throw new OswisEventParticipantNotFoundException();
