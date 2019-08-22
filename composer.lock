@@ -7687,16 +7687,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.116",
+      "version": "v0.0.117",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-address-book-bundle.git",
-        "reference": "28e8f62b199d39a559f979643df09d53897b84b2"
+        "reference": "ba2f2af558e599858b8bc736e87747aff87af50f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/28e8f62b199d39a559f979643df09d53897b84b2",
-        "reference": "28e8f62b199d39a559f979643df09d53897b84b2",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/ba2f2af558e599858b8bc736e87747aff87af50f",
+        "reference": "ba2f2af558e599858b8bc736e87747aff87af50f",
         "shasum": ""
       },
       "require": {
@@ -7736,23 +7736,23 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.116",
+        "source": "https://github.com/zakjakub/oswis-address-book-bundle/tree/v0.0.117",
         "issues": "https://github.com/zakjakub/oswis-address-book-bundle/issues"
       },
-      "time": "2019-08-18T17:40:05+00:00"
+      "time": "2019-08-22T16:40:22+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.294",
+      "version": "v0.0.295",
       "source": {
         "type": "git",
         "url": "git@github.com:zakjakub/oswis-core-bundle.git",
-        "reference": "67a3bc5c55a675afdd65070b89c91ca8bc084a13"
+        "reference": "a6e5c100533761a0b91d65114504b9d2c90aa569"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/67a3bc5c55a675afdd65070b89c91ca8bc084a13",
-        "reference": "67a3bc5c55a675afdd65070b89c91ca8bc084a13",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/a6e5c100533761a0b91d65114504b9d2c90aa569",
+        "reference": "a6e5c100533761a0b91d65114504b9d2c90aa569",
         "shasum": ""
       },
       "require": {
@@ -7827,10 +7827,10 @@
         "zakjakub"
       ],
       "support": {
-        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.294",
+        "source": "https://github.com/zakjakub/oswis-core-bundle/tree/v0.0.295",
         "issues": "https://github.com/zakjakub/oswis-core-bundle/issues"
       },
-      "time": "2019-08-21T20:49:03+00:00"
+      "time": "2019-08-22T15:14:16+00:00"
     },
     {
       "name": "zendframework/zend-code",

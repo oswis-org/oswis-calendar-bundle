@@ -31,8 +31,9 @@
         </ul>
     </td>
     <td style="border:1px solid grey; padding:.3em .6em; text-align:right;">
-        <strong>{{ eventParticipant.event.shortName }}</strong><br>
-        {{ study.organization.shortName }}
+        <strong>{{ eventParticipant.paidPrice|default(0) }},-&nbsp;Kč</strong><br>
+        z&nbsp;{{ study.price|default(0) }},-&nbsp;Kč<br>
+        <small>({{ study.remainingPrice|default(0) }},-&nbsp;Kč)</small>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>
