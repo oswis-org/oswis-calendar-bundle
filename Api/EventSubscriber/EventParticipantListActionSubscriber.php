@@ -17,6 +17,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
+use function assert;
 
 final class EventParticipantListActionSubscriber implements EventSubscriberInterface
 {
@@ -47,7 +48,7 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
     ) {
         $this->em = $em;
         $this->pdfGenerator = $pdfGenerator;
-        $this->eventParticipantManager = new EventParticipantManager($em, $mailer, $oswisCoreSettings, $logger, $templating);
+        $this->eventParticipantManager = new EventParticipantManager($em, $mailer, $oswisCoreSettings, $logger);
     }
 
     /**
@@ -77,7 +78,7 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
             $eventParticipantType = $eventParticipantTypeRepository->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG]);
         }
         try {
-            \assert($eventParticipantType instanceof EventParticipantType);
+            assert($eventParticipantType instanceof EventParticipantType);
             $this->eventParticipantManager->sendEventParticipantList(
                 $this->pdfGenerator,
                 $request->event,

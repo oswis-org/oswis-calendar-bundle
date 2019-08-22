@@ -94,9 +94,7 @@ class EventParticipantController extends AbstractController
         int $eventParticipantId
     ): Response {
         try {
-            $eventParticipantManager = new EventParticipantManager(
-                $this->em, $this->mailer, $this->oswisCoreSettings, $this->logger, $this->templating
-            );
+            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
             if (!$token || !$eventParticipantId) {
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',

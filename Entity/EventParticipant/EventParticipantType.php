@@ -172,6 +172,15 @@ class EventParticipantType
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
+        $this->setFormal($formal);
+    }
+
+    /**
+     * @param bool $formal
+     */
+    final public function setFormal(?bool $formal): void
+    {
+        $this->formal = $formal ?? false;
     }
 
     public static function getAllowedTypesDefault(): array
@@ -197,14 +206,6 @@ class EventParticipantType
     final public function isFormal(): bool
     {
         return $this->formal ?? false;
-    }
-
-    /**
-     * @param bool $formal
-     */
-    final public function setFormal(?bool $formal): void
-    {
-        $this->formal = $formal ?? false;
     }
 
     final public function isManager(): bool

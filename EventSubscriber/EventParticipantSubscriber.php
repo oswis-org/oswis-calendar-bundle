@@ -109,9 +109,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         $eventParticipant = $eventParticipantRepository->findOneBy(['id' => $eventParticipant->getId()]);
         assert($eventParticipant instanceof EventParticipant);
         if ($eventParticipant) {
-            $eventParticipantManager = new EventParticipantManager(
-                $this->em, $this->mailer, $this->oswisCoreSettings, $this->logger, $this->templating
-            );
+            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
             $eventParticipantManager->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
         } else {
             throw new OswisEventParticipantNotFoundException();
