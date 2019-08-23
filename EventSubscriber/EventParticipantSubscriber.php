@@ -14,7 +14,6 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Twig\Environment;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
 use Zakjakub\OswisCalendarBundle\Exceptions\OswisEventParticipantNotFoundException;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -53,8 +52,6 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      */
     private $encoder;
 
-    private $templating;
-
     /**
      * @param EntityManagerInterface       $em
      * @param MailerInterface              $mailer
@@ -68,15 +65,13 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         MailerInterface $mailer,
         LoggerInterface $logger,
         OswisCoreSettingsProvider $oswisCoreSettings,
-        UserPasswordEncoderInterface $encoder,
-        Environment $templating
+        UserPasswordEncoderInterface $encoder
     ) {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
         $this->oswisCoreSettings = $oswisCoreSettings;
         $this->encoder = $encoder;
-        $this->templating = $templating;
     }
 
     /**
