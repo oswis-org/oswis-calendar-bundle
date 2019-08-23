@@ -21,16 +21,6 @@
       "role": "author"
     }
   ],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/zakjakub/oswis-core-bundle"
-    },
-    {
-      "type": "vcs",
-      "url": "https://github.com/zakjakub/oswis-address-book-bundle"
-    }
-  ],
   "require": {
     "bigit/vokativ": "dev-master",
     "endroid/qr-code": "^3.6",

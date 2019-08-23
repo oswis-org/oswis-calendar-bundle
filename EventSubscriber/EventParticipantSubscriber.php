@@ -102,7 +102,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
     {
         $eventParticipant = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-        if (!$eventParticipant instanceof EventParticipantPayment || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
+        if (!$eventParticipant instanceof EventParticipant || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
         $eventParticipantRepository = $this->em->getRepository(EventParticipant::class);
@@ -126,7 +126,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
     {
         $newEventParticipant = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-        if (!$newEventParticipant instanceof EventParticipantPayment || $method !== Request::METHOD_PUT) {
+        if (!$newEventParticipant instanceof EventParticipant || $method !== Request::METHOD_PUT) {
             return;
         }
         $eventParticipant = $this->getExistingEventParticipant($newEventParticipant);
