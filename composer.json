@@ -3,7 +3,7 @@
   "description": "Calendar module for One Simple Web IS.",
   "homepage": "https://github.com/zakjakub/oswis-calendar-bundle",
   "type": "symfony-bundle",
-  "minimum-stability": "rc",
+  "minimum-stability": "RC",
   "keywords": [
     "php",
     "information-system",
