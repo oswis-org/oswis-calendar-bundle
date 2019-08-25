@@ -6,14 +6,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
             groups: ['calendar_event_participant_get']
         updatedDateTime:
             groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_get']
-        createdIp:
-            groups: ['calendar_event_participant_get']
-        updatedIp:
-            groups: ['calendar_event_participant_get']
         deleted:
             groups: ['calendar_event_participants_get', 'calendar_event_participant_get', 'calendar_event_participant_put']
         eventParticipantType:
@@ -49,10 +41,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnect
         createdDateTime:
             groups: ['calendar_event_participant_get']
         updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
             groups: ['calendar_event_participant_get']
         textValue:
             groups:
@@ -149,7 +137,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
                 - 'calendar_event_participant_get'
 
 
-
 Zakjakub\OswisCalendarBundle\Entity\Event\Event:
     attributes:
         id:
@@ -180,7 +167,6 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_event_participants_get'
                 - 'calendar_event_participant_get'
 
-
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
     attributes:
         id:
@@ -192,10 +178,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
         createdDateTime:
             groups: ['calendar_event_participant_get']
         updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
             groups: ['calendar_event_participant_get']
         textValue:
             groups:
@@ -212,10 +194,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
         createdDateTime:
             groups: ['calendar_event_participant_get']
         updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
             groups: ['calendar_event_participant_get']
         numericValue:
             groups:
@@ -253,10 +231,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
         createdDateTime:
             groups: ['calendar_event_participant_get']
         updatedDateTime:
-            groups: ['calendar_event_participant_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_get']
-        updatedAuthor:
             groups: ['calendar_event_participant_get']
         textValue:
             groups:

@@ -29,7 +29,7 @@
 
         <!--suppress HtmlUnknownAttribute -->
         <h3 color='#006FAD' style='color:#006FAD;font-size:1.4em;font-weight:bold;margin-top:0.7em;'>
-            Shrnutí zrušené {{ f ? 'Vaší' : 'Tvé' }} přihlášky
+            Shrnutí {{ f ? 'Vaší' : 'Tvé' }} zrušené přihlášky
         </h3>
         <ul>
             <li>
@@ -43,10 +43,10 @@
                 {% endif %}
             </li>
             <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
-                <b><span itemprop="name">{{ person.fullName }}</span></b><br>
-                <small itemprop="email">({{ person.email }})</small>
+                <b><span itemprop="name">{{ eventParticipant.contact.fullName }}</span></b><br>
+                <small itemprop="email">({{ eventParticipant.contact.email }})</small>
             </li>
-            <li><b>Typ: </b> {{ eventParticipantType.name }}</li>
+            <li><b>Typ: </b> {{ eventParticipant.eventParticipantType.name }}</li>
             <li>
                 <b>{{ event.name }}</b><br>
                 <small>
@@ -90,11 +90,13 @@
                     </div>
                 </div>
             {% endif %}
-            <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
-                <meta itemprop="name" content="{{ eventParticipant.event.organizer.name }}"/>
-                <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
-                <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
-            </div>
+            {% if eventParticipant.event.organizer is defined and eventParticipant.event.organizer.contact is defined %}
+                <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
+                    <meta itemprop="name" content="{{ eventParticipant.event.organizer.contact.name }}"/>
+                    <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
+                    <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
+                </div>
+            {% endif %}
         </div>
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>

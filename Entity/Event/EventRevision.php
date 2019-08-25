@@ -5,6 +5,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
@@ -45,6 +46,7 @@ class EventRevision extends AbstractRevision
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @MaxDepth(1)
      */
     protected $location;
 
@@ -56,6 +58,7 @@ class EventRevision extends AbstractRevision
      *     mappedBy="eventRevision",
      *     fetch="EAGER"
      * )
+     * @MaxDepth(1)
      */
     protected $eventFlagConnections;
 

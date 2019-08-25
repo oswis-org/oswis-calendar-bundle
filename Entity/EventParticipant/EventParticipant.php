@@ -11,6 +11,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
@@ -41,25 +42,25 @@ use function assert;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_participants_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participants_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_participants_post"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participants_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_participant_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_participant_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_put"}, "enable_max_depth"=true}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_participant_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_delete"}, "enable_max_depth"=true}
  *     }
  *   }
  * )
@@ -160,12 +161,16 @@ class EventParticipant extends AbstractRevisionContainer
      *     orphanRemoval=true,
      *     fetch="EAGER"
      * )
+     * @MaxDepth(1)
      */
     protected $revisions;
 
     /**
      * @var EventParticipantRevision
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision")
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
+     *     fetch="EAGER"
+     * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
     protected $activeRevision;
@@ -180,6 +185,7 @@ class EventParticipant extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @MaxDepth(1)
      */
     protected $eventParticipantType;
 
@@ -191,6 +197,7 @@ class EventParticipant extends AbstractRevisionContainer
      *     mappedBy="eventParticipant",
      *     fetch="EAGER"
      * )
+     * @MaxDepth(1)
      */
     protected $eventParticipantNotes;
 
@@ -202,6 +209,7 @@ class EventParticipant extends AbstractRevisionContainer
      *     mappedBy="eventParticipant",
      *     fetch="EAGER"
      * )
+     * @MaxDepth(1)
      */
     protected $eventParticipantPayments;
 

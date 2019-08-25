@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use InvalidArgumentException;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
@@ -51,25 +52,25 @@ use function strcmp;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_events_get"}},
+ *       "normalization_context"={"groups"={"calendar_events_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_events_post"}}
+ *       "denormalization_context"={"groups"={"calendar_events_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_put"}, "enable_max_depth"=true}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_delete"}, "enable_max_depth"=true}
  *     }
  *   }
  * )
@@ -99,6 +100,7 @@ class Event extends AbstractRevisionContainer
      *     inversedBy="subEvents",
      *     fetch="EAGER"
      * )
+     * @MaxDepth(2)
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected $superEvent;
@@ -111,6 +113,7 @@ class Event extends AbstractRevisionContainer
      *     mappedBy="superEvent",
      *     fetch="EAGER"
      * )
+     * @MaxDepth(2)
      */
     protected $subEvents;
 
@@ -123,6 +126,7 @@ class Event extends AbstractRevisionContainer
      *     orphanRemoval=true,
      *     mappedBy="event"
      * )
+     * @MaxDepth(2)
      */
     protected $eventParticipantRevisions;
 
@@ -227,10 +231,10 @@ class Event extends AbstractRevisionContainer
      * @var EventSeries|null $eventSeries
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
-     *     inversedBy="events",
-     *     fetch="EAGER"
+     *     inversedBy="events"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
+     * @MaxDepth(1)
      */
     private $eventSeries;
 

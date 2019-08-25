@@ -15,11 +15,6 @@ class EventFlagConnection
     use TextValueTrait;
 
     /**
-     * @var bool
-     */
-    public $selected;
-
-    /**
      * Event flag.
      * @var EventFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(

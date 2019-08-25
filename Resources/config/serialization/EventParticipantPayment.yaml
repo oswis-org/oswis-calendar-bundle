@@ -6,14 +6,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
             groups: ['calendar_event_participant_payment_get']
         updatedDateTime:
             groups: ['calendar_event_participant_payment_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_payment_get']
-        updatedAuthor:
-            groups: ['calendar_event_participant_payment_get']
-        createdIp:
-            groups: ['calendar_event_participant_payment_get']
-        updatedIp:
-            groups: ['calendar_event_participant_payment_get']
         dateTime:
             groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
         eventParticipant:
@@ -43,10 +35,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
         createdDateTime:
             groups: ['calendar_event_participant_payment_get']
         updatedDateTime:
-            groups: ['calendar_event_participant_payment_get']
-        createdAuthor:
-            groups: ['calendar_event_participant_payment_get']
-        updatedAuthor:
             groups: ['calendar_event_participant_payment_get']
         event:
             groups:

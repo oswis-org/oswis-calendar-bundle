@@ -9,6 +9,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Exception;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
@@ -24,25 +25,25 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_participant_payments_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_payments_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_participant_payments_post"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_payments_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_participant_payment_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_participant_payment_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_participant_payment_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_payment_put"}, "enable_max_depth"=true}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_participant_payment_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_participant_payment_delete"}, "enable_max_depth"=true}
  *     }
  *   }
  * )
@@ -107,6 +108,7 @@ class EventParticipantPayment extends AbstractPayment
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @MaxDepth(1)
      */
     protected $eventParticipant;
 

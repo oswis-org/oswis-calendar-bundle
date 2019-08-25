@@ -10,10 +10,6 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
             groups: ['calendar_event_get']
         updatedDateTime:
             groups: ['calendar_event_get']
-        createdAuthor:
-            groups: ['calendar_event_get']
-        updatedAuthor:
-            groups: ['calendar_event_get']
         name:
             groups:
                 - 'calendar_events_get'
@@ -100,10 +96,6 @@ Zakjakub\OswisCalendarBundle\Entity\Event\EventType:
             groups: ['calendar_event_get']
         updatedDateTime:
             groups: ['calendar_event_get']
-        createdAuthor:
-            groups: ['calendar_event_get']
-        updatedAuthor:
-            groups: ['calendar_event_get']
         name:
             groups:
                 - 'calendar_events_get'
@@ -125,10 +117,6 @@ Zakjakub\OswisAddressBookBundle\Entity\Place:
         createdDateTime:
             groups: ['calendar_event_get']
         updatedDateTime:
-            groups: ['calendar_event_get']
-        createdAuthor:
-            groups: ['calendar_event_get']
-        updatedAuthor:
             groups: ['calendar_event_get']
         name:
             groups:

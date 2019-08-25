@@ -63,8 +63,7 @@
                 {% if eventParticipant.priceDeposit > 0 and eventParticipant.priceRest > 0 %}
                     <p>
                         Zálohu i doplatek můžeš zaplatit i v&nbsp;jedné společné platbě, potom jde o&nbsp;částku
-                        <span itemprop="totalPrice">{{ eventParticipant.price }}</span>,-&nbsp;
-                        <span itemprop="priceCurrency" content="CZK">Kč</span>.
+                        <span itemprop="totalPrice">{{ eventParticipant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
                     </p>
                 {% endif %}
             {% endif %}

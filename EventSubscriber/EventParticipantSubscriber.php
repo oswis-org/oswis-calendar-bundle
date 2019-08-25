@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Twig\Environment;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Exceptions\OswisEventParticipantNotFoundException;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
@@ -58,7 +57,6 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      * @param LoggerInterface              $logger
      * @param OswisCoreSettingsProvider    $oswisCoreSettings
      * @param UserPasswordEncoderInterface $encoder
-     * @param Environment                  $templating
      */
     public function __construct(
         EntityManagerInterface $em,
