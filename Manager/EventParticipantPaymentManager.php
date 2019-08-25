@@ -124,8 +124,7 @@ class EventParticipantPaymentManager
                 'oswis'          => $this->oswisCoreSettings,
             );
             $archive = new NamedAddress(
-                $mailSettings['archive_address'] ?? '',
-                EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
             $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
                 EmailUtils::mime_header_encode($title)
@@ -303,8 +302,7 @@ class EventParticipantPaymentManager
                 'oswis'              => $this->oswisCoreSettings,
             );
             $archive = new NamedAddress(
-                $mailSettings['archive_address'] ?? '',
-                EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
             $email = (new TemplatedEmail())->to($archive)->subject(EmailUtils::mime_header_encode($title))->htmlTemplate(
                 '@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig'

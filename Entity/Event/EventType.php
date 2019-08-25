@@ -60,6 +60,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
  *     "description",
  *     "note"
  * })
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
 class EventType extends AbstractRevisionContainer
 {

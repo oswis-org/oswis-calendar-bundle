@@ -50,6 +50,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  *     "note",
  *     "textValue"
  * })
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
 class EventParticipantTypeInEventConnection
 {

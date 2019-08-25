@@ -11,6 +11,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_capacity")
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
 class EventCapacity
 {

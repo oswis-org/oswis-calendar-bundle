@@ -96,6 +96,7 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
  *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
  * })
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
 class EventParticipantPayment extends AbstractPayment
 {

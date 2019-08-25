@@ -145,6 +145,7 @@ use function assert;
  *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
  *     "activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
  * })
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
 class EventParticipant extends AbstractRevisionContainer
 {

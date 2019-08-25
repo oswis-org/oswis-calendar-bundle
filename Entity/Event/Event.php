@@ -83,6 +83,7 @@ use function strcmp;
  *     "shortName",
  *     "slug"
  * })
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
 class Event extends AbstractRevisionContainer
 {

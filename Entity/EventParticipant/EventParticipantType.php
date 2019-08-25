@@ -60,6 +60,7 @@ use function in_array;
  *     "description",
  *     "note"
  * })
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
 class EventParticipantType
 {
