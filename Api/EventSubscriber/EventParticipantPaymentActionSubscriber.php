@@ -77,7 +77,7 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
             return;
         }
         if ('csv' === $type) {
-            $this->paymentCsvAction($reservationPaymentActionRequest);
+            $event->setResponse($this->paymentCsvAction($reservationPaymentActionRequest));
 
             return;
         }
@@ -151,6 +151,6 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
             $csvCurrencyAllowed
         );
 
-        return new JsonResponse(['data' => chunk_split(base64_encode("Vytvořeno $successPaymentsCount plateb z CSV."))], Response::HTTP_CREATED);
+        return new JsonResponse("Vytvořeno $successPaymentsCount plateb z CSV.", Response::HTTP_CREATED);
     }
 }

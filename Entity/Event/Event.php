@@ -1047,10 +1047,22 @@ class Event extends AbstractRevisionContainer
         ?string $eventParticipantTypeOfType = null,
         ?DateTime $referenceDateTime = null,
         ?bool $includeDeleted = false,
-        ?bool $includeNotActivated = true
+        ?bool $includeNotActivated = true,
+        int $recursiveDepth = 0
     ): Collection {
         if ($eventParticipantTypeOfType) {
-            $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
+            if ($recursiveDepth && $recursiveDepth > 0) {
+                $eventParticipants = $this->getActiveEventParticipants(
+                    $referenceDateTime,
+                    null,
+                    $includeDeleted,
+                    $includeNotActivated,
+                    $recursiveDepth
+                );
+            } else {
+                $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated);
+            }
+            $eventParticipants = $eventParticipants->filter(
                 static function (EventParticipant $eventParticipant) use ($eventParticipantTypeOfType) {
                     if (!$eventParticipant->getEventParticipantType()) {
                         return false;

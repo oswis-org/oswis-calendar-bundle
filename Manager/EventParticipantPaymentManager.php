@@ -20,6 +20,8 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
+use function array_key_exists;
+use function array_map;
 use function assert;
 use function count;
 use function implode;
@@ -122,7 +124,6 @@ class EventParticipantPaymentManager
                 'f'              => $formal,
                 'payment'        => $payment,
                 'oswis'          => $this->oswisCoreSettings,
-                'logo'           => 'cid:logo',
             );
             $archive = new NamedAddress(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
@@ -184,11 +185,20 @@ class EventParticipantPaymentManager
         $currencyAllowed = $currencyAllowed ?? 'CZK';
         $this->logger ? $this->logger->info('CSV_PAYMENT_START') : null;
         // $csvRow = null;
-        $eventParticipants = $event->getEventParticipantsByTypeOfType($eventParticipantTypeOfType);
+        $eventParticipants = $event->getEventParticipantsByTypeOfType(
+            $eventParticipantTypeOfType,
+            null,
+            false,
+            true,
+            1
+        );
         // $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
         // $csvArray = array_map('str_getcsv', file($file));
-        $csvPayments = \array_map(
-            function ($row) use ($delimiter, $enclosure, $escape) {
+        $eventParticipantsCount = $eventParticipants->count();
+        $eventName = $event->getSlug();
+        $this->logger->info("Creating payments from CSV. Searching in $eventParticipantsCount participants of event $eventName.");
+        $csvPayments = array_map(
+            static function ($row) use ($delimiter, $enclosure, $escape) {
                 return str_getcsv($row, $delimiter, $enclosure, $escape);
             },
             str_getcsv($csv, "\n")
@@ -206,7 +216,13 @@ class EventParticipantPaymentManager
             $csvRow = null;
             try {
                 $csvVariableSymbol = $csvPayment[$variableSymbolColumnName];
-                $csvDate = $csvPayment[$dateColumnName] ? new DateTime($csvPayment[$dateColumnName]) : new DateTime();
+                if (array_key_exists($dateColumnName, $csvPayment)) {
+                    $csvDate = new DateTime($csvPayment[$dateColumnName]);
+                } elseif (array_key_exists('"'.$dateColumnName.'"', $csvPayment)) {
+                    $csvDate = new DateTime($csvPayment['"'.$dateColumnName.'"']);
+                } else {
+                    $csvDate = new DateTime();
+                }
                 $csvValue = (int)($csvPayment[$valueColumnName] ?? 0);
                 $csvCurrency = $csvPayment[$currencyColumnName] ?? null;
                 $csvRow = implode('; ', $csvPayment);
