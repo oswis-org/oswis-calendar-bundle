@@ -10,7 +10,7 @@
             {% if eventParticipant.contact.appUser and eventParticipant.contact.appUser.accountActivationDateTime %}
                 <span style="color:green;"><strong>✔</strong>&nbsp;{{ eventParticipant.contact.appUser.accountActivationDateTime|date("j. n. Y, H:i") }}</span>
             {% else %}
-                <span style="color:red;"><strong>❌</strong>&nbsp;neov.</span>
+                <span style="color:red;"><strong>❌</strong>&nbsp;neověřeno</span>
             {% endif %}
             <br>
             <strong>{{ eventParticipant.contact.contactName }}</strong><br>
@@ -32,8 +32,10 @@
     </td>
     <td style="border:1px solid grey; padding:.3em .6em; text-align:right;">
         <strong>{{ eventParticipant.paidPrice|default(0) }},-&nbsp;Kč</strong><br>
-        z&nbsp;{{ study.price|default(0) }},-&nbsp;Kč<br>
-        <small>({{ study.remainingPrice|default(0) }},-&nbsp;Kč)</small>
+        z&nbsp;{{ eventParticipant.price|default(0) }},-&nbsp;Kč<br>
+        <small style="color:{{ eventParticipant.remainingPrice|default(0) === 0 ? 'green' : 'red' }}">
+            ({{ eventParticipant.remainingPrice|default(0) }},-&nbsp;Kč)
+        </small>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>
