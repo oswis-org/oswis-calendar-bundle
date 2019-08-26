@@ -122,6 +122,7 @@ class EventParticipantPaymentManager
                 'f'              => $formal,
                 'payment'        => $payment,
                 'oswis'          => $this->oswisCoreSettings,
+                'logo'           => 'cid:logo',
             );
             $archive = new NamedAddress(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
@@ -308,6 +309,7 @@ class EventParticipantPaymentManager
                 'successfulPayments' => $successfulPayments,
                 'failedPayments'     => $failedPayments,
                 'oswis'              => $this->oswisCoreSettings,
+                'logo'               => 'cid:logo',
             );
             $archive = new NamedAddress(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
