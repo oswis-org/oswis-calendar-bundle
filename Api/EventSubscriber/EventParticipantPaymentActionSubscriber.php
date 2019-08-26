@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
+use Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantPaymentManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -123,7 +124,7 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
     }
 
-    public function paymentCsvAction(mixed $reservationPaymentActionRequest): Response
+    public function paymentCsvAction(EventParticipantPaymentActionRequest $reservationPaymentActionRequest): Response
     {
         $event = $reservationPaymentActionRequest->event ?? null;
         $csvContent = $reservationPaymentActionRequest->csvContent ?? null;

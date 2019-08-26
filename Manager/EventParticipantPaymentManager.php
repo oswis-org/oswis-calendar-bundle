@@ -182,9 +182,16 @@ class EventParticipantPaymentManager
         $currencyColumnName = $currencyColumnName ?? 'Měna';
         $currencyAllowed = $currencyAllowed ?? 'CZK';
         $this->logger ? $this->logger->info('CSV_PAYMENT_START') : null;
-        $csvRow = null;
+        // $csvRow = null;
         $eventParticipants = $event->getEventParticipantsByTypeOfType($eventParticipantTypeOfType);
-        $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
+        // $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
+        // $csvArray = array_map('str_getcsv', file($file));
+        $csvPayments = \array_map(
+            function ($row) use ($delimiter, $enclosure, $escape) {
+                return str_getcsv($row, $delimiter, $enclosure, $escape);
+            },
+            str_getcsv($csv, "\n")
+        );
         $successfulPayments = [];
         $failedPayments = [];
         array_walk(
@@ -195,6 +202,7 @@ class EventParticipantPaymentManager
         );
         array_shift($csvPayments); # remove column header
         foreach ($csvPayments as $csvPayment) {
+            $csvRow = null;
             try {
                 $csvVariableSymbol = $csvPayment[$variableSymbolColumnName];
                 $csvDate = $csvPayment[$dateColumnName] ? new DateTime($csvPayment[$dateColumnName]) : new DateTime();
