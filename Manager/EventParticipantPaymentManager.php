@@ -306,14 +306,15 @@ class EventParticipantPaymentManager
                 'a'              => $a,
                 'f'              => $formal,
                 'payment'        => $payment,
+                'eventParticipant' => $payment->getEventParticipant(),
                 'oswis'          => $this->oswisCoreSettings,
             );
             $archive = new NamedAddress(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
             $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
-                EmailUtils::mime_header_encode($title)
-            )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+                    EmailUtils::mime_header_encode($title)
+                )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-manager');
             $em->persist($payment);
@@ -321,10 +322,12 @@ class EventParticipantPaymentManager
         } catch (Exception $e) {
             $message = 'Problém s odesláním potvrzení o platbě (při vytváření zprávy). ';
             $this->logger->error($message.$e->getMessage());
+            $this->logger->error($e->getTraceAsString());
             throw new OswisException($message);
         } catch (TransportExceptionInterface $e) {
             $message = 'Problém s odesláním potvrzení o platbě (při odeslání zprávy). ';
             $this->logger->error($message.$e->getMessage());
+            $this->logger->error($e->getTraceAsString());
             throw new OswisException($message);
         }
     }
