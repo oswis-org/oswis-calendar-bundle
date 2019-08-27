@@ -559,7 +559,7 @@ class Event extends AbstractRevisionContainer
                 }
             )->toArray();
         } else {
-            $eventParticipants = $this->getEventParticipants($referenceDateTime)->toArray();
+            $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->toArray();
         }
         self::sortEventParticipants($eventParticipants);
 
