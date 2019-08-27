@@ -7,7 +7,7 @@
     {% endif %}
     <div>
         <p>
-            Počet akcí: {{ data.events is defined ? data.events|length : 'nic' }}
+            Počet akcí: {{ data.events is defined ? data.events|length : 'žádná akce' }}
         </p>
     </div>
     {% for subEvent in data.events %}
