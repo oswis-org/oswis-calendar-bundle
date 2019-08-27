@@ -470,8 +470,18 @@ class EventParticipantManager
         if (!$title) {
             $title = self::DEFAULT_LIST_TITLE.' ('.$event->getShortName().')';
         }
-        $events = $event->getSubEvents();
-        $events->add($event);
+        $events = new ArrayCollection([$event]);
+        foreach ($event->getSubEvents() as $subEvent) {
+            if (!$events->contains($subEvent)) {
+                $events->add($subEvent);
+            }
+        }
+        // $events->add($event);
+        // $error = '';
+        // foreach ($events as $oneEvent) {
+        //     $error .= ' (' . $oneEvent->getName() . ') ';
+        // }
+        // error_log($error);
         $data = [
             'title'                => $title,
             'eventParticipantType' => $eventParticipantType,
