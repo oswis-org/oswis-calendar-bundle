@@ -188,7 +188,7 @@ class EventParticipantPaymentManager
         $eventParticipants = $event->getEventParticipantsByTypeOfType(
             $eventParticipantTypeOfType,
             null,
-            false,
+            true,
             true,
             1
         );
@@ -246,18 +246,37 @@ class EventParticipantPaymentManager
                     }
                 );
                 if ($filteredEventParticipants->count() < 1) {
+                    $filteredEventParticipants = $eventParticipants->filter(
+                        static function (EventParticipant $eventParticipant) use ($csvVariableSymbol) {
+                            return $eventParticipant->getVariableSymbol() === $csvVariableSymbol;
+                        }
+                    );
+                }
+                if ($filteredEventParticipants->count() < 1) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) not found; CSV: $csvRow;");
                     $failedPayments[] = $csvRow.' [VS not found]';
                     continue;
                 }
                 if ($filteredEventParticipants->count() > 1) {
-                    $message = "CSV_PAYMENT_FAILED: ERROR: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in ".$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
+                    $message = "CSV_PAYMENT_NOTICE: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in ".$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
                     $this->logger->info($message);
-                    $failedPayments[] = $csvRow.' [VS not unique]';
+                    $eventParticipant = $filteredEventParticipants->filter(
+                        static function (EventParticipant $oneEventParticipant) {
+                            return $oneEventParticipant->hasActivatedContactUser();
+                        }
+                    )->first();
+                    if (!$eventParticipant) {
+                        $eventParticipant = $filteredEventParticipants->first();
+                    }
+                } else {
+                    $eventParticipant = $eventParticipants->first();
+                }
+                assert($eventParticipant instanceof EventParticipant);
+                if (!$eventParticipant) {
+                    $this->logger->info("CSV_PAYMENT_FAILED: ERROR: EventParticipant with VS ($csvVariableSymbol) not found; CSV: $csvRow;");
+                    $failedPayments[] = $csvRow.' [VS not found]';
                     continue;
                 }
-                $eventParticipant = $eventParticipants->first();
-                assert($eventParticipant instanceof EventParticipant);
                 $oneNewPayment = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
                 $this->sendConfirmation($oneNewPayment);
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
