@@ -211,6 +211,9 @@ class EventParticipantPaymentManager
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' '.$eventParticipant->getContact()->getContactName().', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
+                if ($eventParticipant->isDeleted()) {
+                    $infoMessage .= ' [DELETED PARTICIPANT] ';
+                }
                 $this->logger->info($infoMessage);
                 $successfulPayments[] = $csvRow;
             } catch (Exception $e) {
