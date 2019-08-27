@@ -258,15 +258,16 @@ class EventParticipantPaymentManager
                 }
                 $eventParticipant = $eventParticipants->first();
                 assert($eventParticipant instanceof EventParticipant);
-                $entity = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
-                $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$entity->getId().', ';
+                $oneNewPayment = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
+                $this->sendConfirmation($oneNewPayment);
+                $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' '.$eventParticipant->getContact()->getContactName().', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
                 $this->logger->info($infoMessage);
                 $successfulPayments[] = $csvRow;
             } catch (Exception $e) {
                 $this->logger->info('CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage());
-                $failedPayments[] = $csvRow.' [EXC: '.$e->getMessage().']';
+                $failedPayments[] = $csvRow.' [EXCEPTION: '.$e->getMessage().']';
             }
         }
         $this->logger->info(
