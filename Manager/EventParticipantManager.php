@@ -268,7 +268,7 @@ class EventParticipantManager
             $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $depositPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountNumber(), [
+                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
@@ -277,7 +277,7 @@ class EventParticipantManager
                 ]
             );
             $restPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountNumber(), [
+                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
                     QrPaymentOptions::CURRENCY        => 'CZK',

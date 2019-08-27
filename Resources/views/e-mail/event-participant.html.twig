@@ -45,8 +45,8 @@
                 <p>
                     Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ eventParticipant.priceDeposit }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
-                    {% if bankAccount %}
-                        na&nbsp;účet&nbsp;<b>{{ bankAccount }}</b> s&nbsp;variabilním symbolem <b>{{ eventParticipant.variableSymbol }}</b>.
+                    {% if event.bankAccountComplete %}
+                        na&nbsp;účet&nbsp;<b>{{ event.bankAccountComplete }}</b> s&nbsp;variabilním symbolem <b>{{ eventParticipant.variableSymbol }}</b>.
                         Samozřejmě počítáme s&nbsp;tím, že&nbsp;převod může pár dní trvat. :)
                     {% else %}
                         dle údajů uvedených na webových stránkách.
