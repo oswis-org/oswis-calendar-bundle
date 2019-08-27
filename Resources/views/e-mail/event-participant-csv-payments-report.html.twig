@@ -9,13 +9,13 @@
         <h2>Úspěšné</h2>
         <ol>
             {% for paymentRow in successfulPayments %}
-                <li>{{ paymentRow }}</li>
+                <li><small>{{ paymentRow }}</small></li>
             {% endfor %}
         </ol>
         <h2>Neúspěšné</h2>
         <ol>
             {% for paymentRow in failedPayments %}
-                <li>{{ paymentRow }}</li>
+                <li><small>{{ paymentRow }}</small></li>
             {% endfor %}
         </ol>
     </div>
