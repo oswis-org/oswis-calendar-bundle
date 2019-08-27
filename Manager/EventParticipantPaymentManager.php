@@ -218,7 +218,7 @@ class EventParticipantPaymentManager
                 $failedPayments[] = $csvRow.' [EXCEPTION: '.$e->getMessage().']';
             }
         }
-        $this->logger->info(
+        $this->logger->error(
             'CSV_PAYMENT_END: added '.count($successfulPayments).' from '.count($csvPayments).' (+ '.count($failedPayments).' failed).'
         );
         try {
