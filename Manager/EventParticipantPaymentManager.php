@@ -76,77 +76,6 @@ class EventParticipantPaymentManager
     }
 
     /**
-     * @param EventParticipantPayment $payment
-     *
-     * @return void
-     * @throws OswisException
-     * @todo Fix case when contact is organization.
-     */
-    final public function sendConfirmation(
-        EventParticipantPayment $payment = null
-    ): void {
-        try {
-            $em = $this->em;
-            if (!$payment) {
-                throw new NotFoundHttpException('Platba nenalezena.');
-            }
-            assert($payment instanceof EventParticipantPayment);
-            $eventParticipant = $payment->getEventParticipant();
-            if (!$eventParticipant || $eventParticipant->isDeleted()) {
-                return;
-            }
-            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
-            $contact = $eventParticipant ? $eventParticipant->getContact() : null;
-            if ($payment->getNumericValue() < 0) {
-                $title = 'Vrácení/oprava platby';
-            } else {
-                $title = 'Přijetí platby';
-            }
-            if ($contact instanceof Person) {
-                $salutationName = $contact ? $contact->getSalutationName() : '';
-                $a = $contact ? $contact->getCzechSuffixA() : '';
-            } else {
-                // TODO: Correct salutation (contact of organization).
-                $salutationName = $contact ? $contact->getContactName() : '';
-                $a = '';
-            }
-            if ($contact->getAppUser()) {
-                $name = $contact->getAppUser()->getFullName();
-                $eMail = $contact->getAppUser()->getEmail();
-            } else {
-                $name = $contact->getContactName();
-                $eMail = $contact->getEmail();
-            }
-            $mailSettings = $this->oswisCoreSettings->getEmail();
-            $mailData = array(
-                'salutationName' => $salutationName,
-                'a'              => $a,
-                'f'              => $formal,
-                'payment'        => $payment,
-                'oswis'          => $this->oswisCoreSettings,
-            );
-            $archive = new NamedAddress(
-                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
-            );
-            $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
-                EmailUtils::mime_header_encode($title)
-            )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
-            $this->mailer->send($email);
-            $payment->setMailConfirmationSend('event-participant-payment-manager');
-            $em->persist($payment);
-            $em->flush();
-        } catch (Exception $e) {
-            $message = 'Problém s odesláním potvrzení o platbě (při vytváření zprávy). ';
-            $this->logger->error($message.$e->getMessage());
-            throw new OswisException($message);
-        } catch (TransportExceptionInterface $e) {
-            $message = 'Problém s odesláním potvrzení o platbě (při odeslání zprávy). ';
-            $this->logger->error($message.$e->getMessage());
-            throw new OswisException($message);
-        }
-    }
-
-    /**
      * @param Event       $event
      * @param string      $csv
      * @param string|null $eventParticipantTypeOfType
@@ -326,6 +255,76 @@ class EventParticipantPaymentManager
         }
     }
 
+    /**
+     * @param EventParticipantPayment $payment
+     *
+     * @return void
+     * @throws OswisException
+     * @todo Fix case when contact is organization.
+     */
+    final public function sendConfirmation(
+        EventParticipantPayment $payment = null
+    ): void {
+        try {
+            $em = $this->em;
+            if (!$payment) {
+                throw new NotFoundHttpException('Platba nenalezena.');
+            }
+            assert($payment instanceof EventParticipantPayment);
+            $eventParticipant = $payment->getEventParticipant();
+            if (!$eventParticipant || $eventParticipant->isDeleted()) {
+                return;
+            }
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
+            $contact = $eventParticipant ? $eventParticipant->getContact() : null;
+            if ($payment->getNumericValue() < 0) {
+                $title = 'Vrácení/oprava platby';
+            } else {
+                $title = 'Přijetí platby';
+            }
+            if ($contact instanceof Person) {
+                $salutationName = $contact ? $contact->getSalutationName() : '';
+                $a = $contact ? $contact->getCzechSuffixA() : '';
+            } else {
+                // TODO: Correct salutation (contact of organization).
+                $salutationName = $contact ? $contact->getContactName() : '';
+                $a = '';
+            }
+            if ($contact->getAppUser()) {
+                $name = $contact->getAppUser()->getFullName();
+                $eMail = $contact->getAppUser()->getEmail();
+            } else {
+                $name = $contact->getContactName();
+                $eMail = $contact->getEmail();
+            }
+            $mailSettings = $this->oswisCoreSettings->getEmail();
+            $mailData = array(
+                'salutationName' => $salutationName,
+                'a'              => $a,
+                'f'              => $formal,
+                'payment'        => $payment,
+                'oswis'          => $this->oswisCoreSettings,
+            );
+            $archive = new NamedAddress(
+                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+            );
+            $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
+                EmailUtils::mime_header_encode($title)
+            )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+            $this->mailer->send($email);
+            $payment->setMailConfirmationSend('event-participant-payment-manager');
+            $em->persist($payment);
+            $em->flush();
+        } catch (Exception $e) {
+            $message = 'Problém s odesláním potvrzení o platbě (při vytváření zprávy). ';
+            $this->logger->error($message.$e->getMessage());
+            throw new OswisException($message);
+        } catch (TransportExceptionInterface $e) {
+            $message = 'Problém s odesláním potvrzení o platbě (při odeslání zprávy). ';
+            $this->logger->error($message.$e->getMessage());
+            throw new OswisException($message);
+        }
+    }
 
     /**
      * @param array $successfulPayments
