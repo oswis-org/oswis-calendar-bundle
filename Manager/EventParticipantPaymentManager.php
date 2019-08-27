@@ -274,7 +274,7 @@ class EventParticipantPaymentManager
                 assert($eventParticipant instanceof EventParticipant);
                 if (!$eventParticipant) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: EventParticipant with VS ($csvVariableSymbol) not found; CSV: $csvRow;");
-                    $failedPayments[] = $csvRow.' [VS not found]';
+                    $failedPayments[] = $csvRow.' [VS not found (2. step)]';
                     continue;
                 }
                 $oneNewPayment = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
