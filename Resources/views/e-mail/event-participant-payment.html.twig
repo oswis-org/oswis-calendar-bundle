@@ -11,7 +11,7 @@
         {% else %}
             {{ f ? 'Vaši' : 'Tvou' }} platbu
         {% endif %}
-        ve výši <strong>{{ payment.numericValue }},- Kč</strong> ze dne {{ payment.date|dateTime("j. n. Y") }}
+        ve výši <strong>{{ payment.numericValue }},- Kč</strong> ze dne {{ payment.dateTime|date("j. n. Y") }}
         u události {{ payment.eventParticipant.event.name }}.
     </p>
 
