@@ -195,15 +195,15 @@ class EventParticipantPaymentManager
                     $message = "CSV_PAYMENT_NOTICE: NOT_UNIQUE_VS: VS ($csvVariableSymbol) is present in ".$filteredEventParticipants->count()." eventParticipants; CSV: $csvRow;";
                     $this->logger->info($message);
                     $eventParticipant = $filteredEventParticipants->filter(
-                        static function (EventParticipant $oneEventParticipant) {
-                            return $oneEventParticipant->hasActivatedContactUser();
+                        static function (EventParticipant $oneEventParticipant) use ($csvVariableSymbol) {
+                            return $oneEventParticipant->getVariableSymbol() === $csvVariableSymbol && $oneEventParticipant->hasActivatedContactUser();
                         }
                     )->first();
                     if (!$eventParticipant) {
                         $eventParticipant = $filteredEventParticipants->first();
                     }
                 } else {
-                    $eventParticipant = $eventParticipants->first();
+                    $eventParticipant = $filteredEventParticipants->first();
                 }
                 assert($eventParticipant instanceof EventParticipant);
                 if (!$eventParticipant) {
@@ -220,7 +220,7 @@ class EventParticipantPaymentManager
                     $infoMessage .= ' [DELETED PARTICIPANT] ';
                 }
                 $this->logger->info($infoMessage);
-                $successfulPayments[] = $csvRow;
+                $successfulPayments[] = $csvRow.' [DELETED PARTICIPANT] ';
             } catch (Exception $e) {
                 $this->logger->info('CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage());
                 $failedPayments[] = $csvRow.' [EXCEPTION: '.$e->getMessage().']';
@@ -281,6 +281,8 @@ class EventParticipantPaymentManager
             assert($payment instanceof EventParticipantPayment);
             $eventParticipant = $payment->getEventParticipant();
             if (!$eventParticipant || $eventParticipant->isDeleted()) {
+                $this->logger->notice('Not sending payment confirmation - eventParticipant is deleted.');
+
                 return;
             }
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;

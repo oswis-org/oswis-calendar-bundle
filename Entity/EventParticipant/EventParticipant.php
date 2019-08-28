@@ -340,6 +340,18 @@ class EventParticipant extends AbstractRevisionContainer
      * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
      */
+    final public function getRemainingRest(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getPriceRest($referenceDateTime) - $this->getPaidPrice();
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
     final public function getPriceRest(?DateTime $referenceDateTime = null): int
     {
         return $this->getPrice($referenceDateTime) - $this->getPriceDeposit($referenceDateTime);
@@ -381,30 +393,6 @@ class EventParticipant extends AbstractRevisionContainer
     final public function getPriceDeposit(?DateTime $referenceDateTime = null): int
     {
         return $this->getRevisionByDate($referenceDateTime)->getDeposit();
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
-     */
-    final public function getRemainingRest(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getRemainingPrice($referenceDateTime) - $this->getRemainingDeposit($referenceDateTime);
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
-     */
-    final public function getRemainingPrice(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
     }
 
     /**
@@ -453,6 +441,18 @@ class EventParticipant extends AbstractRevisionContainer
                 }
             }
         }
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
+    final public function getRemainingPrice(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
     }
 
     /**
