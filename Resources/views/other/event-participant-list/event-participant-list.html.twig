@@ -2,7 +2,7 @@
 <div>
     {% if data.eventParticipantType is defined and data.eventParticipantType %}
         <div>
-            <p>Omezeno pouze na typ '{{ data.eventParticipantType.name|default('bez názvu') }}'.</p>
+            <p>Omezeno pouze na typ účastníka '<strong>{{ data.eventParticipantType.name|default('bez názvu') }}</strong>'.</p>
         </div>
     {% endif %}
     <div>
@@ -13,7 +13,7 @@
     {% for subEvent in data.events %}
         <pagebreak/>
         <div style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 1px solid lightblue;">
-            <h2>Shrnutí - {{ subEvent.shortName }}</h2>
+            <h2>{{ subEvent.shortName }}</h2>
             <p>
                 {% if subEvent.rootEvent %}
                     <strong>Počet přihlášek:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, true, 1) }}

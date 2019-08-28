@@ -390,6 +390,18 @@ class EventParticipant extends AbstractRevisionContainer
      * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
      */
+    final public function getRemainingRest(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getRemainingPrice($referenceDateTime) - $this->getRemainingDeposit($referenceDateTime);
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return int
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
     final public function getRemainingPrice(?DateTime $referenceDateTime = null): int
     {
         return $this->getPrice($referenceDateTime) - $this->getPaidPrice();
@@ -446,6 +458,18 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @param DateTime|null $referenceDateTime
      *
+     * @return int
+     * @throws PriceInvalidArgumentException
+     * @throws RevisionMissingException
+     */
+    final public function getRemainingDeposit(?DateTime $referenceDateTime = null): int
+    {
+        return $this->getPriceDeposit($referenceDateTime) - $this->getPaidPrice();
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
      * @return float
      * @throws PriceInvalidArgumentException
      * @throws RevisionMissingException
@@ -477,18 +501,6 @@ class EventParticipant extends AbstractRevisionContainer
             $this->eventParticipantPayments->add($eventParticipantPayment);
             $eventParticipantPayment->setEventParticipant($this);
         }
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return int
-     * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
-     */
-    final public function getRemainingDeposit(?DateTime $referenceDateTime = null): int
-    {
-        return $this->getPriceDeposit($referenceDateTime) - $this->getPaidPrice();
     }
 
     /**

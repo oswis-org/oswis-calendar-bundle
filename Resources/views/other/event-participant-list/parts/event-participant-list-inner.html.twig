@@ -2,11 +2,11 @@
 <tr {{ eventParticipant.deleted ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
     <td style="border: 1px solid grey; padding: .3em .6em; text-align: right;">
         <small>
-            {{ eventParticipant.id }}
             {% if eventParticipant.deleted %}
-                <span style="color:red;"><strong>❌</strong>&nbsp;smazáno</span>
+                <span style="color:red;"><strong>❌</strong>&nbsp;smazáno</span><br>
             {% endif %}
-            <br>{{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }}<br>
+            <strong>{{ eventParticipant.id }}</strong>:
+            {{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }}<br>
             {% if eventParticipant.contact.appUser and eventParticipant.contact.appUser.accountActivationDateTime %}
                 <span style="color:green;"><strong>✔</strong>&nbsp;{{ eventParticipant.contact.appUser.accountActivationDateTime|date("j. n. Y, H:i") }}</span>
             {% else %}
@@ -21,7 +21,7 @@
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>
             <li>
-                <strong>{{ eventParticipant.event.shortName }}</strong>
+                <small><strong>{{ eventParticipant.event.shortName }}</strong></small>
             </li>
             {% for study in eventParticipant.contact.studies %}
                 <li style="color: {{ study.organization.color }};">
