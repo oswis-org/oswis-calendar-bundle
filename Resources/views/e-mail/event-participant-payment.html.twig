@@ -13,7 +13,7 @@
         {% endif %}
         ve výši <b>{{ payment.numericValue|default(0) }},- Kč</b>
         ze dne <b>{{ payment.dateTime|date("j. n. Y") }}</b>
-        u události <b>{{ payment.eventParticipant.event.name }}</b>>.
+        u události <b>{{ payment.eventParticipant.event.name }}</b>.
     </p>
 
     {% block message_payment_outer %}
