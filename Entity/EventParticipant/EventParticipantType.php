@@ -171,6 +171,14 @@ class EventParticipantType
         $this->setFormal($formal);
     }
 
+    /**
+     * @param bool $formal
+     */
+    final public function setFormal(?bool $formal): void
+    {
+        $this->formal = $formal ?? false;
+    }
+
     public static function getAllowedTypesDefault(): array
     {
         return [
@@ -186,14 +194,6 @@ class EventParticipantType
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    /**
-     * @param bool $formal
-     */
-    final public function setFormal(?bool $formal): void
-    {
-        $this->formal = $formal ?? false;
     }
 
     /**

@@ -37,9 +37,7 @@ class EventTypeManager
         try {
             $em = $this->em;
             $entity = new EventType(
-                $nameable,
-                $type,
-                $color
+                $nameable, $type, $color
             );
             $em->persist($entity);
             $em->flush();

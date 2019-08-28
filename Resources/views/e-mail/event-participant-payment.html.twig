@@ -4,36 +4,36 @@
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
 
 {% block content_inner %}
-<p>
-    Právě jsme úspěšně zpracovali
-    {% if payment.numericValue < 0 %}
-        navrácení/zrušení/opravu {{ f ? 'Vaší' : 'Tvé' }} platby
-    {% else %}
-        {{ f ? 'Vaši' : 'Tvou' }} platbu
-    {% endif %}
-    ve výši <b>{{ payment.numericValue|default(0) }},- Kč</b>
-    ze dne <b>{{ payment.dateTime|date("j. n. Y") }}</b>
-    u události <b>{{ payment.eventParticipant.event.name }}</b>>.
-</p>
+    <p>
+        Právě jsme úspěšně zpracovali
+        {% if payment.numericValue < 0 %}
+            navrácení/zrušení/opravu {{ f ? 'Vaší' : 'Tvé' }} platby
+        {% else %}
+            {{ f ? 'Vaši' : 'Tvou' }} platbu
+        {% endif %}
+        ve výši <b>{{ payment.numericValue|default(0) }},- Kč</b>
+        ze dne <b>{{ payment.dateTime|date("j. n. Y") }}</b>
+        u události <b>{{ payment.eventParticipant.event.name }}</b>>.
+    </p>
 
-{% block message_payment_outer %}
+    {% block message_payment_outer %}
         {% if payment.eventParticipant.remainingPrice > 0 %}
-<p>
-    Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ payment.eventParticipant.remainingPrice }},-&nbsp;Kč</b>, a&nbsp;to
-    {% if payment.eventParticipant.event.bankAccountComplete %}
-        na&nbsp;účet&nbsp;<b>{{ payment.eventParticipant.event.bankAccountComplete|default('') }}</b>
-        s&nbsp;variabilním symbolem <b>{{ payment.eventParticipant.variableSymbol|default('') }}</b>.
-    {% else %}
-        dle údajů uvedených na webových stránkách.
-    {% endif %}
-</p>
+            <p>
+                Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ payment.eventParticipant.remainingPrice }},-&nbsp;Kč</b>, a&nbsp;to
+                {% if payment.eventParticipant.event.bankAccountComplete %}
+                    na&nbsp;účet&nbsp;<b>{{ payment.eventParticipant.event.bankAccountComplete|default('') }}</b>
+                    s&nbsp;variabilním symbolem <b>{{ payment.eventParticipant.variableSymbol|default('') }}</b>.
+                {% else %}
+                    dle údajů uvedených na webových stránkách.
+                {% endif %}
+            </p>
 
-{% if payment.eventParticipant.remainingDeposit > 0 %}
-<p>
-    Pro plné uhrazení <b>zálohy</b> zbývá doplatit ještě
-    <b>{{ payment.eventParticipant.remainingDeposit }},-&nbsp;Kč</b>{% block message_payment_deposit_date %}{% endblockblock message_payment_deposit_date %}.
-</p>
-{% endif %}
+            {% if payment.eventParticipant.remainingDeposit > 0 %}
+                <p>
+                    Pro plné uhrazení <b>zálohy</b> zbývá doplatit ještě
+                    <b>{{ payment.eventParticipant.remainingDeposit }},-&nbsp;Kč</b>{% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}.
+                </p>
+            {% endif %}
 
             {% if payment.eventParticipant.remainingRest > 0 %}
                 <p>
