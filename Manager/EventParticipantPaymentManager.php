@@ -302,19 +302,20 @@ class EventParticipantPaymentManager
             }
             $mailSettings = $this->oswisCoreSettings->getEmail();
             $mailData = array(
-                'salutationName' => $salutationName,
-                'a'              => $a,
-                'f'              => $formal,
-                'payment'        => $payment,
+                'salutationName'   => $salutationName,
+                'a'                => $a,
+                'f'                => $formal,
+                'payment'          => $payment,
                 'eventParticipant' => $payment->getEventParticipant(),
-                'oswis'          => $this->oswisCoreSettings,
+                'oswis'            => $this->oswisCoreSettings,
+                'logo'             => 'cid:logo',
             );
             $archive = new NamedAddress(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
             $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
-                    EmailUtils::mime_header_encode($title)
-                )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+                EmailUtils::mime_header_encode($title)
+            )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-manager');
             $em->persist($payment);
