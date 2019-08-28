@@ -28,16 +28,16 @@
                 {% endif %}
             </p>
 
-            {% if payment.eventParticipant.priceDeposit > 0 %}
+            {% if payment.eventParticipant.remainingDeposit > 0 %}
                 <p>
-                    <b>Zbytek zálohy</b> ve&nbsp;výši <b>{{ payment.eventParticipant.priceDeposit }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                    <b>Zbytek zálohy</b> ve&nbsp;výši <b>{{ payment.eventParticipant.remainingDeposit }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
                     úplně stejným způsobem{% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}.
                 </p>
             {% endif %}
 
             {% if payment.eventParticipant.priceRest > 0 %}
                 <p>
-                    <b>Doplatek</b> ve&nbsp;výši <b>{{ payment.eventParticipant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                    <b>Doplatek</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
                     úplně stejným způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
                 </p>
             {% endif %}
