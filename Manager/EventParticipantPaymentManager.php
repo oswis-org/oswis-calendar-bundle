@@ -141,6 +141,7 @@ class EventParticipantPaymentManager
             }
         );
         array_shift($csvPayments); # remove column header
+        $dateKey = preg_grep("/.*Datum.*/", array_keys($csvPayments[0]))[0] ?? null;
         foreach ($csvPayments as $csvPayment) {
             $csvRow = null;
             try {
@@ -149,6 +150,10 @@ class EventParticipantPaymentManager
                     $csvDate = new DateTime($csvPayment[$dateColumnName]);
                 } elseif (array_key_exists('"'.$dateColumnName.'"', $csvPayment)) {
                     $csvDate = new DateTime($csvPayment['"'.$dateColumnName.'"']);
+                } elseif (array_key_exists('\"'.$dateColumnName.'\"', $csvPayment)) {
+                    $csvDate = new DateTime($csvPayment['\"'.$dateColumnName.'\"']);
+                } elseif (array_key_exists($dateKey, $csvPayment)) {
+                    $csvDate = new DateTime($csvPayment[$dateKey]);
                 } else {
                     $csvDate = new DateTime();
                 }
