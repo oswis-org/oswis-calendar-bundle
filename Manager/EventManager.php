@@ -46,7 +46,14 @@ class EventManager
         try {
             $em = $this->em;
             $entity = new Event(
-                $nameable, $superEvent, $location, $eventType, $startDateTime, $endDateTime, $eventSeries, $priceRecursiveFromParent
+                $nameable,
+                $superEvent,
+                $location,
+                $eventType,
+                $startDateTime,
+                $endDateTime,
+                $eventSeries,
+                $priceRecursiveFromParent
             );
             $em->persist($entity);
             $em->flush();

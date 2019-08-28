@@ -37,7 +37,8 @@ class EventParticipantTypeInEventConnectionManager
         try {
             $em = $this->em;
             $entity = new EventParticipantTypeInEventConnection(
-                $eventParticipantType, $event
+                $eventParticipantType,
+                $event
             );
             $em->persist($entity);
             $em->flush();

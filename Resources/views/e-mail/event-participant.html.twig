@@ -99,8 +99,9 @@
                 <small><b>Doplatek:</b> {{ eventParticipant.priceRest }},- Kč</small>
                 {% if eventParticipant.variableSymbol %}<br>
                     <small><b>Variabilní symbol:</b> {{ eventParticipant.variableSymbol }}</small>{% endif %}
-                {% if bankAccount %}<br>
-                    <small><b>Číslo účtu:</b> {{ bankAccount }}</small>{% endif %}
+                {% if eventParticipant.event.bankAccountComplete %}<br>
+                    <small><b>Číslo účtu:</b> {{ eventParticipant.event.bankAccountComplete }}</small>
+                {% endif %}
             </li>
             <li>
                 <b>{{ event.name }}</b><br>

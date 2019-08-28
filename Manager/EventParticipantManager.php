@@ -81,6 +81,11 @@ class EventParticipantManager
         /// TODO: Throw exceptions!
     }
 
+    private static function mimeEnc(string $content): string
+    {
+        return EmailUtils::mime_header_encode($content);
+    }
+
     /**
      * @param AbstractContact|null      $contact
      * @param Event|null                $event
@@ -208,7 +213,8 @@ class EventParticipantManager
                     'logo'             => 'cid:logo',
                 );
                 $archiveAddress = new NamedAddress(
-                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                    $mailSettings['archive_address'] ?? '',
+                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
                 $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
                     '@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig'
@@ -233,11 +239,6 @@ class EventParticipantManager
 
             return false;
         }
-    }
-
-    private static function mimeEnc(string $content): string
-    {
-        return EmailUtils::mime_header_encode($content);
     }
 
     /**
@@ -268,7 +269,9 @@ class EventParticipantManager
             $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $depositPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
+                $event->getBankAccountNumber(),
+                $event->getBankAccountBank(),
+                [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
@@ -277,7 +280,9 @@ class EventParticipantManager
                 ]
             );
             $restPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
+                $event->getBankAccountNumber(),
+                $event->getBankAccountBank(),
+                [
                     QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
                     QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
@@ -329,7 +334,8 @@ class EventParticipantManager
                     'restQr'           => 'cid:restQr',
                 );
                 $archiveAddress = new NamedAddress(
-                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                    $mailSettings['archive_address'] ?? '',
+                    self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
                 $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
                     '@ZakjakubOswisCalendar/e-mail/event-participant.html.twig'
@@ -408,7 +414,8 @@ class EventParticipantManager
                 );
                 $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc(
                     new NamedAddress(
-                        $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                        $mailSettings['archive_address'] ?? '',
+                        self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                     )
                 )->subject(self::mimeEnc($title))->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-verification.html.twig')->context($mailData);
                 $em->persist($eventParticipant);
@@ -508,7 +515,8 @@ class EventParticipantManager
         ];
         $mailSettings = $this->oswisCoreSettings->getEmail();
         $archive = new NamedAddress(
-            $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+            $mailSettings['archive_address'] ?? '',
+            self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
         );
         $mail = (new TemplatedEmail())->to($archive)->subject(self::mimeEnc($title))->htmlTemplate($templateEmail)->context($mailData);
         if ($pdfString) {
