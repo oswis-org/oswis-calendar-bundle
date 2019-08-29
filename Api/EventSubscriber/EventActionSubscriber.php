@@ -79,7 +79,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
 
             return;
         }
-        if ('infomail-25' === $type) {
+        if (self::TYPE_INFOMAIL === $type) {
             $event->setResponse($this->sendInfoMailAction($eventActionRequest));
 
             return;

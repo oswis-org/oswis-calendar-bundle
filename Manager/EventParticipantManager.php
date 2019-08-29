@@ -544,11 +544,15 @@ class EventParticipantManager
                 return $eventParticipant->getInfoMailSentCount() < 1;
             }
         );
-        for ($i = $count; $i > 0; $i--) {
-            $eventParticipant = $eventParticipants->first();
+        $i = 0;
+        foreach ($eventParticipants as $eventParticipant) {
             $eventParticipants->removeElement($eventParticipant);
             if ($this->sendInfoMail($pdfGenerator, $eventParticipant, $source, $force)) {
                 $successCount++;
+            }
+            $i++;
+            if ($i >= $count) {
+                break;
             }
         }
 

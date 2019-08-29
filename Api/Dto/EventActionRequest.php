@@ -37,4 +37,9 @@ final class EventActionRequest
      * @var int|null
      */
     public $count;
+
+    /**
+     * @var int|null
+     */
+    public $recursiveDepth;
 }
