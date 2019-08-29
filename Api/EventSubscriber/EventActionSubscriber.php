@@ -13,10 +13,16 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Mailer\MailerInterface;
 use Zakjakub\OswisCalendarBundle\Api\Dto\EventActionRequest;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use function in_array;
 
+/**
+ * Class EventActionSubscriber
+ * @package Zakjakub\OswisCalendarBundle\Api\EventSubscriber
+ */
 final class EventActionSubscriber implements EventSubscriberInterface
 {
     public const TYPE_INFOMAIL = 'infomail';
@@ -27,12 +33,19 @@ final class EventActionSubscriber implements EventSubscriberInterface
      */
     private $eventParticipantManager;
 
+    /**
+     * @var PdfGenerator
+     */
+    private $pdfGenerator;
+
     public function __construct(
         EntityManagerInterface $em,
         MailerInterface $mailer,
         LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings
+        OswisCoreSettingsProvider $oswisCoreSettings,
+        PdfGenerator $pdfGenerator
     ) {
+        $this->pdfGenerator = $pdfGenerator;
         $this->eventParticipantManager = new EventParticipantManager($em, $mailer, $oswisCoreSettings, $logger);
     }
 
@@ -84,10 +97,19 @@ final class EventActionSubscriber implements EventSubscriberInterface
     {
         $event = $eventActionRequest->event ?? null;
         $count = $eventActionRequest->count ?? 0;
+        $recursiveDepth = $eventActionRequest->recursiveDepth ?? 0;
+        $eventParticipantTypeOfType = $eventActionRequest->eventParticipantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
-        $successCount = $this->eventParticipantManager->sendInfoMails($event, $count);
+        $successCount = $this->eventParticipantManager->sendInfoMails(
+            $this->pdfGenerator,
+            $event,
+            $eventParticipantTypeOfType,
+            $recursiveDepth,
+            $count,
+            'event-action-api-multiple'
+        );
 
         return new JsonResponse("Zasláno $successCount zpráv z $count vyžádaných.", Response::HTTP_CREATED);
     }

@@ -7742,16 +7742,16 @@
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.305",
+      "version": "v0.0.309",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "d2115634c6492ef072ada23ccbb8b3bfb398beef"
+        "reference": "b32e7f6e3235623a39e540653e26d4b713962d33"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/d2115634c6492ef072ada23ccbb8b3bfb398beef",
-        "reference": "d2115634c6492ef072ada23ccbb8b3bfb398beef",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/b32e7f6e3235623a39e540653e26d4b713962d33",
+        "reference": "b32e7f6e3235623a39e540653e26d4b713962d33",
         "shasum": ""
       },
       "require": {
@@ -7826,7 +7826,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-08-28T13:07:48+00:00"
+      "time": "2019-08-29T18:24:11+00:00"
     },
     {
       "name": "zendframework/zend-code",

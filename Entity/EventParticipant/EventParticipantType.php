@@ -70,11 +70,11 @@ class EventParticipantType
     use TypeTrait;
 
     public const TYPE_ATTENDEE = 'attendee';
-    public const TYPE_ORGANIZER = 'attendee';
-    public const TYPE_STAFF = 'attendee';
-    public const TYPE_SPONSOR = 'attendee';
-    public const TYPE_GUEST = 'attendee';
-    public const TYPE_MANAGER = 'attendee';
+    public const TYPE_ORGANIZER = 'organizer';
+    public const TYPE_STAFF = 'staff';
+    public const TYPE_SPONSOR = 'sponsor';
+    public const TYPE_GUEST = 'guest';
+    public const TYPE_MANAGER = 'manager';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     /**

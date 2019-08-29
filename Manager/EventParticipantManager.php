@@ -31,6 +31,7 @@ use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
 use Zakjakub\OswisCoreBundle\Utils\StringUtils;
 use function assert;
+use function ucfirst;
 
 /**
  * Class EventParticipantManager
@@ -522,8 +523,15 @@ class EventParticipantManager
         }
     }
 
-    final public function sendInfoMails(Event $event, ?string $eventParticipantTypeOfType = null, int $recursiveDepth = 0, ?int $count = 0): int
-    {
+    final public function sendInfoMails(
+        PdfGenerator $pdfGenerator,
+        Event $event,
+        ?string $eventParticipantTypeOfType = null,
+        int $recursiveDepth = 0,
+        ?int $count = 0,
+        ?string $source = null,
+        ?bool $force = false
+    ): int {
         $successCount = 0;
         $eventParticipants = $event->getEventParticipantsByTypeOfType(
             $eventParticipantTypeOfType,
@@ -539,7 +547,7 @@ class EventParticipantManager
         for ($i = $count; $i > 0; $i--) {
             $eventParticipant = $eventParticipants->first();
             $eventParticipants->removeElement($eventParticipant);
-            if ($this->sendInfoMail($eventParticipant)) {
+            if ($this->sendInfoMail($pdfGenerator, $eventParticipant, $source, $force)) {
                 $successCount++;
             }
         }
@@ -547,8 +555,12 @@ class EventParticipantManager
         return $successCount;
     }
 
-    final public function sendInfoMail(EventParticipant $eventParticipant, ?string $source = null, ?bool $force = false): bool
-    {
+    final public function sendInfoMail(
+        PdfGenerator $pdfGenerator,
+        EventParticipant $eventParticipant,
+        ?string $source = null,
+        ?bool $force = false
+    ): bool {
         try {
             $em = $this->em;
             $event = $eventParticipant->getEvent();
@@ -570,6 +582,38 @@ class EventParticipantManager
                 $contactPersons = $eventParticipantContact->getContactPersons();
             }
             $title = 'Než vyrazíš na '.($event->getName() ?? 'akci');
+            $pdfData = [
+                'title'            => $title,
+                'eventParticipant' => $eventParticipant,
+                'event'            => $event,
+            ];
+            $pdfString = null;
+            $message = null;
+            try {
+                $pdfTitle = 'Shrnutí přihlášky';
+                $pdfTitle .= $eventParticipant->getContact()->getContactName() ? ' - '.$eventParticipant->getContact()->getContactName() : null;
+                $pdfTitle .= $eventParticipant->getEvent() && $eventParticipant->getEvent()->getName() ? ' ('.$eventParticipant->getEvent()->getName().')' : null;
+                $pdfString = $pdfGenerator->generatePdfAsString(
+                    $pdfTitle,
+                    '@ZakjakubOswisCalendar/documents/pages/event-participant-info-before-event.html.twig',
+                    $pdfData,
+                    PdfGenerator::DEFAULT_PAPER_FORMAT,
+                    false,
+                    null,
+                    null
+                );
+            } catch (MpdfException $e) {
+                $pdfString = null;
+                $message = 'Vygenerování PDF se nezdařilo (MpdfException). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
+                $this->logger->error($message);
+            } catch (Exception $e) {
+                $pdfString = null;
+                $message = 'Vygenerování PDF se nezdařilo (Exception). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
+                $this->logger->error($message);
+            }
+            $fileName = 'Shrnuti_';
+            $fileName .= ucfirst(iconv('utf-8', 'us-ascii//TRANSLIT', StringUtils::removeAccents($eventParticipantContact->getFamilyName())));
+            $fileName .= ucfirst(iconv('utf-8', 'us-ascii//TRANSLIT', StringUtils::removeAccents($eventParticipantContact->getGivenName()))).'.pdf';
             $mailSuccessCount = 0;
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
@@ -593,6 +637,9 @@ class EventParticipantManager
                 $email = (new TemplatedEmail())->to($to)->bcc($archive)->subject(self::mimeEnc($title))->htmlTemplate(
                     '@ZakjakubOswisCalendar/e-mail/event-participant-info-before-event.html.twig'
                 )->context($mailData);
+                if ($pdfString) {
+                    $email->attach($pdfString, $fileName, 'application/pdf');
+                }
                 try {
                     $this->mailer->send($email);
                     $mailSuccessCount++;
