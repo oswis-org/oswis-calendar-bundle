@@ -1,0 +1,36 @@
+{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+
+{% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
+{% block meta_description %}{{ block('html_title') }}{% endblock %}
+
+{% block content_inner %}
+    <div itemscope itemtype="http://schema.org/EventReservation">
+        <link itemprop="reservationStatus" href="http://schema.org/Confirmed"/>
+        <meta itemprop="modifiedTime" content="{{ eventParticipant.lastRevisionDateTime|date('c') }}"/>
+        <meta itemprop="ticketToken" content="qrCode:{{ eventParticipant.id }}"/>{# TODO #}
+        <meta itemprop="ticketNumber" content="{{ eventParticipant.id }}"/>
+        <meta itemprop="numSeats" content="1"/>
+
+        {% block message_message_outer %}
+            <p itemprop="additionalTicketText">
+                {% block message_message_inner %}
+                    {{ eventParticipant.event.name|default('Akce') }} se neúprosně blíží a s tím přichází i očekávané informace k jejímu průběhu.
+                {% endblock message_message_inner %}
+            </p>
+        {% endblock message_message_outer %}
+
+        {% block event_participant_summary %}
+            {% include '@ZakjakubOswisCalendar/other/event-participant-summary/event-participant-summary.html.twig' %}
+        {% endblock event_participant_summary %}
+        {% block event_participant_event_summary %}
+            {% include '@ZakjakubOswisCalendar/other/event-participant-summary/event-participant-event-summary.html.twig' %}
+        {% endblock event_participant_event_summary %}
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
+        {% block message_footer %}{% endblock message_footer %}
+    </div>
+{% endblock %}
+
+
+
+

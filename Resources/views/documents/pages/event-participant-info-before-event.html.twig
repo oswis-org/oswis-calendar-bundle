@@ -1,0 +1,70 @@
+{% extends '@ZakjakubOswisCore/documents/pdf-document.html.twig' %}
+
+{% block css %}{% include '@ZakjakubOswisCalendar/documents/pages/event-participant-info-before-event.css.twig' %}{% endblock %}
+{% block title %}{{ title|default('Shrnutí přihlášky') }}{% endblock %}
+
+{% block content_header %}{# We don't want content header. #}{% endblock content_header %}
+
+{% block content_inner %}
+<div id="two-columns" style='width:100%;height:600px;margin:0;padding:0;vertical-align:top;'>
+    <div id="first-column" style='width:50%;height:550px;padding-left:0;padding-right:0;float:left;margin:0;'>
+        <h1>{{ eventParticipant.contact.contactName|default('Účastník') }} ({{ eventParticipant.id }})</h1>
+        <ul>{% include '@ZakjakubOswisCalendar/other/event-participant-summary/event-participant-summary-inner.html.twig' %}</ul>
+        {% block first_column_additional %}{% endblock first_column_additional %}
+    </div>
+    <div id="second-column" style='width:49%;height:550px;padding-left:1%;padding-right:0;float:left;margin:0;'>
+        <h1>
+            {% if eventParticipant.event.parent is defined and eventParticipant.event.parent.name %}
+                {{ eventParticipant.event.parent.name }}
+            {% else %}
+                {{ eventParticipant.event.name|default('Informace o akci') }}
+            {% endif %}
+        </h1>
+
+        {% if event.location is defined and event.location %}
+            <h2>Místo&nbsp;konání</h2>
+            <ul>
+                {% if event.location.name is defined and event.location.name %}
+                    <li>{{ event.location.name }}</li>{% endif %}
+                {% if event.location.streetAddress is defined and event.location.streetAddress %}
+                    <li>{{ event.location.streetAddress }}</li>
+                {% endif %}
+                {% if event.location.city is defined or event.location.postalCode is defined %}
+                    <li>
+                        {% if event.location.postalCode is defined and event.location.postalCode %}{{ event.location.postalCode }},{% endif %}
+                        {% if event.location.city is defined and event.location.city %}{{ event.location.city }}{% endif %}
+                    </li>
+                {% endif %}
+                {% if event.location.url is defined and event.location.url %}
+                    <li>
+                        <a href="{{ event.location.url }}" title="{{ event.location.name|default() }}" target="_blank">{{ event.location.url }}</a>
+                    </li>
+                {% endif %}
+                {% if event.location.geoLon and event.location.geoLat %}
+                    <li>
+                        {{ event.location.geoLon }},
+                        {{ event.location.geoLat }}{% if event.location.geoEle %}, {{ event.location.geoEle }}{% endif %}
+                    </li>
+                    <li>
+                        <a target="_blank" title="Mapa"
+                           href="https://mapy.cz?x={{ event.location.geoLon }}&y={{ event.location.geoLat }}&z={{ event.location.geoEle|default() }}">
+                            www.mapy.cz?x={{ event.location.geoLon }}&y={{ event.location.geoLat }}&z={{ event.location.geoEle|default() }}
+                        </a>
+                    </li>
+                {% endif %}
+                {% block location_inner_additional %}{% endblock location_inner_additional %}
+            </ul>
+        {% endif %}
+        {% block second_column_additional %}{% endblock second_column_additional %}
+    </div>
+</div>
+<div id="full-width-column">
+    {% block third_column_outer %}
+    {% block third_column_inner %}
+    {% endblock third_column_inner %}
+    {% block third_column_additional %}
+    {% endblock third_column_additional %}
+    {% endbloc third_column_outer %}
+</div>
+
+{% endblock %}

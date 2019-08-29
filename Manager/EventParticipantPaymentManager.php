@@ -141,7 +141,7 @@ class EventParticipantPaymentManager
             }
         );
         array_shift($csvPayments); # remove column header
-        $dateKey = preg_grep("/.*Datum.*/", array_keys($csvPayments[0]))[0] ?? null;
+        $dateKey = preg_grep('/.*Datum.*/', array_keys($csvPayments[0]))[0] ?? null;
         foreach ($csvPayments as $csvPayment) {
             $csvRow = null;
             try {

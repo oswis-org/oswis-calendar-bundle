@@ -7742,16 +7742,16 @@
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.304",
+      "version": "v0.0.305",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "7e8d37c5266629656ae4d999f552f3b06d3e8b9d"
+        "reference": "d2115634c6492ef072ada23ccbb8b3bfb398beef"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/7e8d37c5266629656ae4d999f552f3b06d3e8b9d",
-        "reference": "7e8d37c5266629656ae4d999f552f3b06d3e8b9d",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/d2115634c6492ef072ada23ccbb8b3bfb398beef",
+        "reference": "d2115634c6492ef072ada23ccbb8b3bfb398beef",
         "shasum": ""
       },
       "require": {
@@ -7812,9 +7812,9 @@
       "authors": [
         {
           "name": "zakjakub",
-          "role": "author",
           "email": "mail@jakubzak.eu",
-          "homepage": "https://jakubzak.cz"
+          "homepage": "https://jakubzak.cz",
+          "role": "author"
         }
       ],
       "description": "Core module for One Simple Web IS.",
@@ -7826,7 +7826,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-08-26T18:45:32+00:00"
+      "time": "2019-08-28T13:07:48+00:00"
     },
     {
       "name": "zendframework/zend-code",
