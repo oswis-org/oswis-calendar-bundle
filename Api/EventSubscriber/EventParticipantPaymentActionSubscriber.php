@@ -137,6 +137,9 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         $csvCurrencyColumnName = $reservationPaymentActionRequest->csvCurrencyColumnName ?? null;
         $csvCurrencyAllowed = $reservationPaymentActionRequest->csvCurrencyAllowed ?? null;
         $csvEventParticipantType = $reservationPaymentActionRequest->csvEventParticipantType ?? null;
+        if (!$event) {
+            return new JsonResponse('Vytvořeno 0 plateb z CSV. Událost nenalezena.', Response::HTTP_NOT_FOUND);
+        }
         $successPaymentsCount = $this->eventParticipantPaymentManager->createFromCsv(
             $event,
             $csvContent,

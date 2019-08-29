@@ -105,4 +105,27 @@ services:
         alias: zakjakub_oswis_calendar.event_participant_list_action_subscriber
         public: true
 
+    ##
+    ## Event action (/event_action)
+    ##
+    zakjakub_oswis_calendar.event_action_request:
+        class: Zakjakub\OswisCalendarBundle\Api\Dto\EventActionRequest
+        autowire: true
+        public: true
+    Zakjakub\OswisCalendarBundle\Api\Dto\EventActionRequest:
+        alias: zakjakub_oswis_calendar.event_action_request
+        public: true
+    zakjakub_oswis_calendar.event_action_subscriber:
+        class: Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+    Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber:
+        alias: zakjakub_oswis_calendar.event_action_subscriber
+        public: true
+
 

@@ -521,4 +521,99 @@ class EventParticipantManager
             throw new OswisException('Odeslání e-mailu s přehledem přihlášek se nezdařilo. '.$e->getMessage().' ');
         }
     }
+
+    final public function sendInfoMails(Event $event, ?string $eventParticipantTypeOfType = null, int $recursiveDepth = 0, ?int $count = 0): int
+    {
+        $successCount = 0;
+        $eventParticipants = $event->getEventParticipantsByTypeOfType(
+            $eventParticipantTypeOfType,
+            null,
+            false,
+            false,
+            $recursiveDepth
+        )->filter(
+            static function (EventParticipant $eventParticipant) {
+                return $eventParticipant->getInfoMailSentCount() < 1;
+            }
+        );
+        for ($i = $count; $i > 0; $i--) {
+            $eventParticipant = $eventParticipants->first();
+            $eventParticipants->removeElement($eventParticipant);
+            if ($this->sendInfoMail($eventParticipant)) {
+                $successCount++;
+            }
+        }
+
+        return $successCount;
+    }
+
+    final public function sendInfoMail(EventParticipant $eventParticipant, ?string $source = null, ?bool $force = false): bool
+    {
+        try {
+            $em = $this->em;
+            $event = $eventParticipant->getEvent();
+            $eventParticipantContact = $eventParticipant->getContact();
+            if (!$eventParticipant || !$event || !$eventParticipantContact) {
+                return false;
+            }
+            if (!$force && $eventParticipant->getInfoMailSentCount() > 0) {
+                return false;
+            }
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
+            $mailSettings = $this->oswisCoreSettings->getEmail();
+            if ($eventParticipantContact instanceof Person) {
+                $isOrganization = false;
+                $contactPersons = new ArrayCollection([$eventParticipantContact]);
+            } else {
+                assert($eventParticipantContact instanceof Organization);
+                $isOrganization = true;
+                $contactPersons = $eventParticipantContact->getContactPersons();
+            }
+            $title = 'Než vyrazíš na '.($event->getName() ?? 'akci');
+            $mailSuccessCount = 0;
+            foreach ($contactPersons as $contactPerson) {
+                assert($contactPerson instanceof Person);
+                $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
+                $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
+                $mailData = array(
+                    'eventParticipant' => $eventParticipant,
+                    'event'            => $event,
+                    'contactPerson'    => $contactPerson,
+                    'f'                => $formal,
+                    'salutationName'   => $contactPerson->getSalutationName(),
+                    'a'                => $contactPerson->getCzechSuffixA(),
+                    'isOrganization'   => $isOrganization,
+                    'logo'             => 'cid:logo',
+                    'oswis'            => $this->oswisCoreSettings->getArray(),
+                );
+                $archive = new NamedAddress(
+                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                );
+                $to = new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? '');
+                $email = (new TemplatedEmail())->to($to)->bcc($archive)->subject(self::mimeEnc($title))->htmlTemplate(
+                    '@ZakjakubOswisCalendar/e-mail/event-participant-info-before-event.html.twig'
+                )->context($mailData);
+                try {
+                    $this->mailer->send($email);
+                    $mailSuccessCount++;
+                    $eventParticipant->setInfoMailSent($source);
+                    $em->persist($eventParticipant);
+                } catch (TransportExceptionInterface $e) {
+                    $this->logger->error($e->getMessage());
+                    throw new OswisException('Odeslání ověřovacího e-mailu se nezdařilo ('.$e->getMessage().').');
+                }
+            }
+            $em->flush();
+            if ($mailSuccessCount < $contactPersons->count()) {
+                throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->error($e->getTraceAsString());
+
+            return false;
+        }
+    }
 }

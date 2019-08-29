@@ -25,6 +25,7 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\InfoMailSentTrait;
 use function assert;
 
 /**
@@ -137,6 +138,7 @@ class EventParticipant extends AbstractRevisionContainer
     use BasicEntityTrait;
     use EntityDeletedContainerTrait;
     use BasicMailConfirmationTrait;
+    use InfoMailSentTrait;
 
     /**
      * @var Collection
