@@ -216,11 +216,13 @@ class EventParticipantPaymentManager
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' '.$eventParticipant->getContact()->getContactName().', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
+                $deletedString = '';
                 if ($eventParticipant->isDeleted()) {
-                    $infoMessage .= ' [DELETED PARTICIPANT] ';
+                    $deletedString = ' [DELETED PARTICIPANT] ';
+                    $infoMessage .= $deletedString;
                 }
                 $this->logger->info($infoMessage);
-                $successfulPayments[] = $csvRow.' [DELETED PARTICIPANT] ';
+                $successfulPayments[] = $csvRow.$deletedString;
             } catch (Exception $e) {
                 $this->logger->info('CSV_PAYMENT_FAILED: CSV: '.$csvRow.'; EXCEPTION: '.$e->getMessage());
                 $failedPayments[] = $csvRow.' [EXCEPTION: '.$e->getMessage().']';

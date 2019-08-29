@@ -342,7 +342,7 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function getRemainingRest(?DateTime $referenceDateTime = null): int
     {
-        return $this->getPriceRest($referenceDateTime) - $this->getPaidPrice();
+        return $this->getPriceRest($referenceDateTime) - $this->getPaidPrice() + $this->getPriceDeposit();
     }
 
     /**
