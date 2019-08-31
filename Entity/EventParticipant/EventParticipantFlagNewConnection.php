@@ -24,7 +24,7 @@ class EventParticipantFlagNewConnection
      * @var EventParticipantFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
-     *     inversedBy="eventParticipantFlagConnections",
+     *     inversedBy="eventParticipantFlagNewConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
