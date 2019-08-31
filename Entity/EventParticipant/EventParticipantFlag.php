@@ -66,7 +66,7 @@ class EventParticipantFlag extends AbstractEventFlag
      *     fetch="EAGER"
      * )
      */
-    protected $eventParticipantFlagNewConnections;
+    protected $eventParticipantFlagConnections;
 
     /**
      * @var Collection|null
@@ -115,7 +115,7 @@ class EventParticipantFlag extends AbstractEventFlag
         ?bool $publicOnWeb = null,
         ?string $publicOnWebRoute = null
     ) {
-        $this->eventParticipantFlagNewConnections = new ArrayCollection();
+        $this->eventParticipantFlagConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEventParticipantFlagType($eventParticipantFlagType);
@@ -141,23 +141,23 @@ class EventParticipantFlag extends AbstractEventFlag
         $this->price = $price;
     }
 
-    final public function getEventParticipantFlagNewConnections(): Collection
+    final public function getEventParticipantFlagConnections(): Collection
     {
-        return $this->eventParticipantFlagNewConnections;
+        return $this->eventParticipantFlagConnections;
     }
 
 
-    final public function addEventParticipantFlagNewConnection(?EventParticipantFlagNewConnection $flagConnection): void
+    final public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $flagConnection): void
     {
-        if ($flagConnection && !$this->eventParticipantFlagNewConnections->contains($flagConnection)) {
-            $this->eventParticipantFlagNewConnections->add($flagConnection);
+        if ($flagConnection && !$this->eventParticipantFlagConnections->contains($flagConnection)) {
+            $this->eventParticipantFlagConnections->add($flagConnection);
             $flagConnection->setEventParticipantFlag($this);
         }
     }
 
-    final public function removeEventParticipantFlagNewConnection(?EventParticipantFlagNewConnection $flagConnection): void
+    final public function removeEventParticipantFlagConnection(?EventParticipantFlagNewConnection $flagConnection): void
     {
-        if ($flagConnection && $this->eventParticipantFlagNewConnections->removeElement($flagConnection)) {
+        if ($flagConnection && $this->eventParticipantFlagConnections->removeElement($flagConnection)) {
             $flagConnection->setEventParticipantFlag(null);
         }
     }

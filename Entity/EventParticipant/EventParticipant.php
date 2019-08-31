@@ -199,7 +199,6 @@ class EventParticipant extends AbstractRevisionContainer
      */
     protected $eventParticipantPayments;
 
-
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
@@ -210,7 +209,6 @@ class EventParticipant extends AbstractRevisionContainer
      * )
      */
     protected $eventParticipantFlagConnections;
-
 
     /**
      * EventAttendee constructor.

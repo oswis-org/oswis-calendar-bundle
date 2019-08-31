@@ -24,7 +24,7 @@ class EventParticipantFlagNewConnection
      * @var EventParticipantFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
-     *     inversedBy="eventParticipantFlagNewConnections",
+     *     inversedBy="eventParticipantFlagConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -93,11 +93,11 @@ class EventParticipantFlagNewConnection
     final public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
     {
         if ($this->eventParticipantFlag && $eventParticipantFlag !== $this->eventParticipantFlag) {
-            $this->eventParticipantFlag->removeEventParticipantFlagNewConnection($this);
+            $this->eventParticipantFlag->removeEventParticipantFlagConnection($this);
         }
         if ($eventParticipantFlag && $this->eventParticipantFlag !== $eventParticipantFlag) {
             $this->eventParticipantFlag = $eventParticipantFlag;
-            $eventParticipantFlag->addEventParticipantFlagNewConnection($this);
+            $eventParticipantFlag->addEventParticipantFlagConnection($this);
         }
     }
 }
