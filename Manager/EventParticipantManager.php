@@ -452,6 +452,27 @@ class EventParticipantManager
         $this->em->flush();
     }
 
+    /** @noinspection PhpUnused */
+    /**
+     * Calls method for update of flags - MIGRATION ONLY!
+     */
+    final public function updateFlagConnections(): void
+    {
+        $eventParticipants = $this->em->getRepository(EventParticipant::class)->findAll();
+        foreach ($eventParticipants as $eventParticipant) {
+            assert($eventParticipant instanceof EventParticipant);
+            try {
+                $eventParticipant->updateFlags();
+            } catch (Exception $e) {
+                $this->logger->error('Update of flags failed. EventParticipant id '.$eventParticipant->getId());
+                $this->logger->error($e->getMessage());
+                $this->logger->error($e->getTraceAsString());
+            }
+            $this->em->persist($eventParticipant);
+        }
+        $this->em->flush();
+    }
+
     /** @noinspection MethodShouldBeFinalInspection */
     /**
      * @param PdfGenerator              $pdfGenerator
