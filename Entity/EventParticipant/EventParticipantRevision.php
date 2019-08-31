@@ -2,15 +2,11 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Exception;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
-use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
 use function assert;
@@ -61,31 +57,17 @@ class EventParticipantRevision extends AbstractRevision
     protected $event;
 
     /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantRevision",
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventParticipantFlagConnections;
-
-    /**
      * EventAttendee constructor.
      *
      * @param AbstractContact|null $contact
      * @param Event|null           $event
-     * @param Collection|null      $eventContactFlagConnections
      *
      * @throws EventCapacityExceededException
      */
     public function __construct(
         ?AbstractContact $contact = null,
-        ?Event $event = null,
-        ?Collection $eventContactFlagConnections = null
+        ?Event $event = null
     ) {
-        $this->setEventParticipantFlagConnections($eventContactFlagConnections);
         $this->setContact($contact);
         $this->setEvent($event);
     }
@@ -104,45 +86,6 @@ class EventParticipantRevision extends AbstractRevision
     public static function checkRevisionContainer(?AbstractRevisionContainer $revision): void
     {
         assert($revision instanceof EventParticipant);
-    }
-
-    /** @noinspection MethodShouldBeFinalInspection */
-    /**
-     * @throws EventCapacityExceededException
-     */
-    public function __clone()
-    {
-        $newConnections = $this->eventParticipantFlagConnections->map(
-            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) {
-                return clone $eventParticipantFlagConnection;
-            }
-        );
-        $this->setEventParticipantFlagConnections($newConnections);
-    }
-
-    /**
-     * @param EventParticipantFlagConnection|null $eventContactFlagConnection
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
-    {
-        if (!$eventContactFlagConnection) {
-            return;
-        }
-        $eventParticipantFlag = $eventContactFlagConnection->getEventParticipantFlag();
-        $eventParticipant = $this->getContainer();
-        assert($eventParticipant instanceof EventParticipant);
-        $eventParticipantType = $eventParticipant->getEventParticipantType();
-        if ($this->getEvent() && $this->getEvent()->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
-            throw new EventCapacityExceededException(
-                'Byla překročena kapacita pro přihlášky s příznakem'.($eventParticipantFlag ? $eventParticipantFlag->getName() : '').'.'
-            );
-        }
-        if ($eventContactFlagConnection && !$this->eventParticipantFlagConnections->contains($eventContactFlagConnection)) {
-            $this->eventParticipantFlagConnections->add($eventContactFlagConnection);
-            $eventContactFlagConnection->setEventParticipantRevision($this);
-        }
     }
 
     final public function getEvent(): ?Event
@@ -166,21 +109,6 @@ class EventParticipantRevision extends AbstractRevision
         }
     }
 
-    /**
-     * @param EventParticipantFlagConnection|null $eventContactFlagConnection
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function removeEventParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
-    {
-        if (!$eventContactFlagConnection) {
-            return;
-        }
-        if ($this->eventParticipantFlagConnections->removeElement($eventContactFlagConnection)) {
-            $eventContactFlagConnection->setEventParticipantRevision(null);
-        }
-    }
-
     final public function getContact(): ?AbstractContact
     {
         return $this->contact;
@@ -189,101 +117,5 @@ class EventParticipantRevision extends AbstractRevision
     final public function setContact(?AbstractContact $contact): void
     {
         $this->contact = $contact;
-    }
-
-    /**
-     * @return int
-     * @throws PriceInvalidArgumentException
-     */
-    final public function getPrice(): int
-    {
-        $participant = $this->getContainer();
-        assert($participant instanceof EventParticipant);
-        if (!$participant || !$this->getEvent() || !$participant->getEventParticipantType()) {
-            throw new PriceInvalidArgumentException();
-        }
-        $price = $this->getEvent()->getPrice($participant->getEventParticipantType());
-        $price += $this->getFlagsPrice();
-
-        return $price < 0 ? 0 : $price;
-    }
-
-    final public function getFlagsPrice(): int
-    {
-        $price = 0;
-        foreach ($this->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
-            assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
-            $eventParticipantFlag = $eventParticipantFlagConnection->getEventParticipantFlag();
-            if (!$eventParticipantFlag) {
-                continue;
-            }
-            $price += $eventParticipantFlag->getPrice();
-        }
-
-        return $price;
-    }
-
-    final public function getEventParticipantFlagConnections(?EventParticipantType $eventParticipantType = null): Collection
-    {
-        if (!$eventParticipantType) {
-            return $this->eventParticipantFlagConnections ?? new ArrayCollection();
-        }
-
-        return $this->eventParticipantFlagConnections->filter(
-            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantType) {
-                try {
-                    $eventContactRevision = $eventParticipantFlagConnection->getEventParticipantRevision();
-                    $participant = $eventContactRevision ? $eventContactRevision->getContainer() : null;
-                    assert($participant instanceof EventParticipant);
-
-                    return $participant->getEventParticipantType() && $participant->getEventParticipantType()->getId() === $eventParticipantType->getId();
-                } catch (Exception $e) {
-                    return false;
-                }
-            }
-        );
-    }
-
-    /**
-     * @param Collection|null $newEventContactFlagConnections
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function setEventParticipantFlagConnections(?Collection $newEventContactFlagConnections): void
-    {
-        if (!$this->eventParticipantFlagConnections) {
-            $this->eventParticipantFlagConnections = new ArrayCollection();
-        }
-        if (!$newEventContactFlagConnections) {
-            $newEventContactFlagConnections = new ArrayCollection();
-        }
-        foreach ($this->eventParticipantFlagConnections as $oldEventContactFlagConnection) {
-            if (!$newEventContactFlagConnections->contains($oldEventContactFlagConnection)) {
-                $this->removeEventParticipantFlagConnection($oldEventContactFlagConnection);
-            }
-        }
-        if ($newEventContactFlagConnections) {
-            foreach ($newEventContactFlagConnections as $newEventContactFlagConnection) {
-                if (!$this->eventParticipantFlagConnections->contains($newEventContactFlagConnection)) {
-                    $this->addEventParticipantFlagConnection($newEventContactFlagConnection);
-                }
-            }
-        }
-    }
-
-    /**
-     * @return int
-     * @throws PriceInvalidArgumentException
-     */
-    final public function getDeposit(): int
-    {
-        $participant = $this->getContainer();
-        assert($participant instanceof EventParticipant);
-        if (!$participant || !$this->getEvent() || !$participant->getEventParticipantType()) {
-            throw new PriceInvalidArgumentException();
-        }
-        $price = $this->getEvent()->getDeposit($participant->getEventParticipantType());
-
-        return $price < 0 ? 0 : $price;
     }
 }

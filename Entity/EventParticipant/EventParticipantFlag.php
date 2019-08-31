@@ -60,17 +60,6 @@ class EventParticipantFlag extends AbstractEventFlag
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection",
-     *     mappedBy="eventParticipantFlag",
-     *     cascade={"all"},
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventParticipantFlagConnections;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
      *     mappedBy="eventParticipantFlag",
      *     cascade={"all"},
@@ -126,7 +115,6 @@ class EventParticipantFlag extends AbstractEventFlag
         ?bool $publicOnWeb = null,
         ?string $publicOnWebRoute = null
     ) {
-        $this->eventParticipantFlagConnections = new ArrayCollection();
         $this->eventParticipantFlagNewConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
@@ -153,32 +141,9 @@ class EventParticipantFlag extends AbstractEventFlag
         $this->price = $price;
     }
 
-    final public function getEventParticipantFlagConnections(): Collection
-    {
-        return $this->eventParticipantFlagConnections;
-    }
-
     final public function getEventParticipantFlagNewConnections(): Collection
     {
         return $this->eventParticipantFlagNewConnections;
-    }
-
-    final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $flagConnection): void
-    {
-        if ($flagConnection && !$this->eventParticipantFlagConnections->contains($flagConnection)) {
-            $this->eventParticipantFlagConnections->add($flagConnection);
-            $flagConnection->setEventParticipantFlag($this);
-        }
-    }
-
-    final public function removeEventParticipantFlagConnection(?EventParticipantFlagConnection $flagConnection): void
-    {
-        if (!$flagConnection) {
-            return;
-        }
-        if ($this->eventParticipantFlagConnections->removeElement($flagConnection)) {
-            $flagConnection->setEventParticipantFlag(null);
-        }
     }
 
 
