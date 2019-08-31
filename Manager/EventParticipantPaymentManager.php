@@ -214,7 +214,8 @@ class EventParticipantPaymentManager
                 $oneNewPayment = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
                 $this->sendConfirmation($oneNewPayment);
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
-                $infoMessage .= 'participant: '.$eventParticipant->getId().' '.$eventParticipant->getContact()->getContactName().', ';
+                $infoMessage .= 'participant: '.$eventParticipant->getId().' ';
+                $infoMessage .= $eventParticipant->getContact() ? $eventParticipant->getContact()->getContactName() : ''.', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
                 $deletedString = '';
                 if ($eventParticipant->isDeleted()) {
@@ -242,7 +243,7 @@ class EventParticipantPaymentManager
     }
 
     final public function create(
-        EventParticipant $eventParticipant = null,
+        EventParticipant $eventParticipant,
         int $numericValue = 0,
         DateTime $dateTime = null,
         string $type = null,
@@ -254,7 +255,11 @@ class EventParticipantPaymentManager
             $entity = new EventParticipantPayment($eventParticipant, $numericValue, $dateTime, $type, $note, $internalNote);
             $em->persist($entity);
             $em->flush();
-            $name = $entity->getEventParticipant() ? $entity->getEventParticipant()->getContact()->getContactName() : $entity->getEventParticipant()->getId();
+            if ($entity->getEventParticipant() && $entity->getEventParticipant()->getContact()) {
+                $name = $entity->getEventParticipant()->getContact()->getContactName();
+            } else {
+                $name = $entity->getEventParticipant()->getId();
+            }
             $this->logger->info('CREATE: Created event participant payment (by manager): '.$entity->getId().' '.$name.'.');
 
             return $entity;

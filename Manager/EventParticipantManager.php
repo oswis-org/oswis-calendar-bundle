@@ -103,8 +103,10 @@ class EventParticipantManager
             $entity = new EventParticipant($contact, $event, $eventParticipantType, $eventContactFlagConnections, $eventParticipantNotes);
             $em->persist($entity);
             $em->flush();
-            $infoMessage = 'CREATE: Created event participant (by manager): '.$entity->getId().', '.$entity->getContact()->getContactName().', '.($entity->getEvent() ? $entity->getEvent()->getName(
-                ) : '').'.';
+            $infoMessage = 'CREATE: Created event participant (by manager): ';
+            $infoMessage .= $entity->getId().', ';
+            $infoMessage .= ($entity->getContact() ? $entity->getContact()->getContactName() : '').', ';
+            $infoMessage .= ($entity->getEvent() ? $entity->getEvent()->getName() : '').'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
@@ -266,7 +268,8 @@ class EventParticipantManager
             $em = $this->em;
             $mailSettings = $this->oswisCoreSettings->getEmail();
             $eventParticipantContact = $eventParticipant->getContact();
-            $qrPaymentComment = $eventParticipantContact->getContactName().', ID '.$eventParticipant->getId().', '.$event->getName();
+            $qrContactName = $eventParticipantContact ? $eventParticipantContact->getContactName() : '';
+            $qrPaymentComment = $qrContactName.', ID '.$eventParticipant->getId().', '.$event->getName();
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $depositPaymentQr = new QrPayment(
                 $event->getBankAccountNumber(), $event->getBankAccountBank(), [
@@ -595,7 +598,8 @@ class EventParticipantManager
             $message = null;
             try {
                 $pdfTitle = 'Shrnutí přihlášky';
-                $pdfTitle .= $eventParticipant->getContact()->getContactName() ? ' - '.$eventParticipant->getContact()->getContactName() : null;
+                $contactName = $eventParticipant->getContact() ? $eventParticipant->getContact()->getContactName() : 'Nepojmenovaný účastník';
+                $pdfTitle .= $contactName ? ' - '.$contactName : null;
                 $pdfTitle .= $eventParticipant->getEvent() && $eventParticipant->getEvent()->getName() ? ' ('.$eventParticipant->getEvent()->getName().')' : null;
                 $pdfString = $pdfGenerator->generatePdfAsString(
                     $pdfTitle,

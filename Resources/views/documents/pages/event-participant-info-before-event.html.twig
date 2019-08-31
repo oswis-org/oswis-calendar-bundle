@@ -6,65 +6,159 @@
 {% block content_header %}{# We don't want content header. #}{% endblock content_header %}
 
 {% block content_inner %}
-<div id="two-columns" style='width:100%;height:600px;margin:0;padding:0;vertical-align:top;'>
-    <div id="first-column" style='width:50%;height:550px;padding-left:0;padding-right:0;float:left;margin:0;'>
-        <h1>{{ eventParticipant.contact.contactName|default('Účastník') }} ({{ eventParticipant.id }})</h1>
-        <ul>{% include '@ZakjakubOswisCalendar/other/event-participant-summary/event-participant-summary-inner.html.twig' %}</ul>
-        {% block first_column_additional %}{% endblock first_column_additional %}
-    </div>
-    <div id="second-column" style='width:49%;height:550px;padding-left:1%;padding-right:0;float:left;margin:0;'>
-        <h1>
-            {% if eventParticipant.event.parent is defined and eventParticipant.event.parent.name %}
-                {{ eventParticipant.event.parent.name }}
-            {% else %}
-                {{ eventParticipant.event.name|default('Informace o akci') }}
-            {% endif %}
-        </h1>
-
-        {% if event.location is defined and event.location %}
-            <h2>Místo&nbsp;konání</h2>
+    <div id="two-columns" style='width:100%;height:600px;margin:0;padding:0;vertical-align:top;'>
+        <div id="first-column" style='width:50%;height:550px;padding-left:0;padding-right:0;float:left;margin:0;'>
+            <h1>{{ data.eventParticipant.contact.contactName|default('Účastník') }} ({{ data.eventParticipant.id }})</h1>
             <ul>
-                {% if event.location.name is defined and event.location.name %}
-                    <li>{{ event.location.name }}</li>{% endif %}
-                {% if event.location.streetAddress is defined and event.location.streetAddress %}
-                    <li>{{ event.location.streetAddress }}</li>
-                {% endif %}
-                {% if event.location.city is defined or event.location.postalCode is defined %}
+
+                <li>
+                    ID přihlášky: <span itemprop="reservationNumber">{{ data.eventParticipant.id }}</span><br>
+                    <meta itemprop="reservationId" content="{{ data.eventParticipant.id }}"/>
+                    <small itemprop="bookingTime" content="{{ data.eventParticipant.createdDateTime|date("c") }}">
+                        ({{ data.eventParticipant.createdDateTime|date("j. n. Y, H:i") }})
+                    </small>
+                    {% if data.eventParticipant.createdDateTime|date("c") != data.eventParticipant.updatedDateTime|date("c") %}
+                        <br><small>(změna {{ data.eventParticipant.updatedDateTime|date("j. n. Y, H:i") }})</small>
+                    {% endif %}
+                </li>
+                <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
+                    <b><span itemprop="name">{{ data.eventParticipant.contact.fullName }}</span></b><br>
+                    <small itemprop="email">({{ data.eventParticipant.contact.email }})</small>
+                </li>
+                <li>
+                    <b>Typ: </b> {{ data.eventParticipant.eventParticipantType.name }}
+                </li>
+                <li>
+                    <b>Cena celkem: </b> {{ data.eventParticipant.price }},- Kč
+                    <br>
+                    <small><b>Záloha:</b> {{ data.eventParticipant.priceDeposit }},- Kč</small>
+                    <br>
+                    <small><b>Doplatek:</b> {{ data.eventParticipant.priceRest }},- Kč</small>
+                    {% if data.eventParticipant.variableSymbol %}<br>
+                        <small><b>Variabilní symbol:</b> {{ data.eventParticipant.variableSymbol }}</small>{% endif %}
+                    {% if data.eventParticipant.event.bankAccountComplete %}<br>
+                        <small><b>Číslo účtu:</b> {{ data.eventParticipant.event.bankAccountComplete }}</small>
+                    {% endif %}
+                </li>
+                <li>
+                    <b>Zaplaceno:</b>&nbsp;{{ data.eventParticipant.paidPrice }},-&nbsp;Kč<br>
+                    <small><b>Zbývá:</b>&nbsp;{{ data.eventParticipant.remainingPrice }},-&nbsp;Kč</small>
+                </li>
+                <li>
+                    <b>{{ data.eventParticipant.event.name }}</b><br>
+                    <small>
+                        (od {{ data.eventParticipant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
+                        do {{ data.eventParticipant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
+                    </small>
+                </li>
+                {% for study in data.eventParticipant.contact.studies %}
                     <li>
-                        {% if event.location.postalCode is defined and event.location.postalCode %}{{ event.location.postalCode }},{% endif %}
-                        {% if event.location.city is defined and event.location.city %}{{ event.location.city }}{% endif %}
+                        {{ study.organization.name }}
                     </li>
-                {% endif %}
-                {% if event.location.url is defined and event.location.url %}
+                {% endfor %}
+                {% for flagConnection in data.eventParticipant.eventParticipantFlagConnections %}
                     <li>
-                        <a href="{{ event.location.url }}" title="{{ event.location.name|default() }}" target="_blank">{{ event.location.url }}</a>
+                        {{ flagConnection.eventParticipantFlag.name }}
+                        {% if flagConnection.textValue and flagConnection.textValue|length > 0 %}
+                            ({{ flagConnection.textValue }})
+                        {% endif %}
+                        {% if flagConnection.eventParticipantFlag.price is defined and flagConnection.eventParticipantFlag.price and flagConnection.eventParticipantFlag.price != 0 %}
+                            <small>
+                                <b>
+                                    ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
+                                </b>
+                            </small>
+                        {% endif %}
                     </li>
+                {% endfor %}
+                {% if data.eventParticipant.contact.contactDetails is defined and data.eventParticipant.contact.contactDetails %}
+                    {% for contactDetail in data.eventParticipant.contact.contactDetails %}
+                        {% if contactDetail.content|length > 0 %}
+                            <li>
+                                {% if contactDetail.contactType is defined and contactDetail.contactType.name is defined and contactDetail.contactType.name %}
+                                    {{ contactDetail.contactType.name }}:
+                                {% else %}
+                                    Kontakt:
+                                {% endif %}
+                                {{ contactDetail.content }}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
-                {% if event.location.geoLon and event.location.geoLat %}
-                    <li>
-                        {{ event.location.geoLon }},
-                        {{ event.location.geoLat }}{% if event.location.geoEle %}, {{ event.location.geoEle }}{% endif %}
-                    </li>
-                    <li>
-                        <a target="_blank" title="Mapa"
-                           href="https://mapy.cz?x={{ event.location.geoLon }}&y={{ event.location.geoLat }}&z={{ event.location.geoEle|default() }}">
-                            www.mapy.cz?x={{ event.location.geoLon }}&y={{ event.location.geoLat }}&z={{ event.location.geoEle|default() }}
-                        </a>
-                    </li>
+                {% if data.eventParticipant.eventParticipantNotes is defined and data.eventParticipant.eventParticipantNotes %}
+                    {% for note in data.eventParticipant.eventParticipantNotes %}
+                        {% if note.textValue|length > 0 %}
+                            <li>
+                                <b>Poznámka:</b>
+                                <p>
+                                    <small>{{ note.textValue }}</small>
+                                </p>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
-                {% block location_inner_additional %}{% endblock location_inner_additional %}
+
+
             </ul>
-        {% endif %}
-        {% block second_column_additional %}{% endblock second_column_additional %}
+            {% block first_column_additional %}{% endblock first_column_additional %}
+        </div>
+        <div id="second-column" style='width:49%;height:550px;padding-left:1%;padding-right:0;float:left;margin:0;'>
+            <h1>
+                <small>
+                    {% if data.eventParticipant.event.parent is defined and data.eventParticipant.event.parent.name %}
+                        {{ data.eventParticipant.event.parent.name }}
+                    {% else %}
+                        {{ data.eventParticipant.event.name|default('Informace o akci') }}
+                    {% endif %}
+                </small>
+            </h1>
+
+            {% if data.eventParticipant.event.location is defined and data.eventParticipant.event.location %}
+                <h2>Místo&nbsp;konání</h2>
+                <ul>
+                    {% if data.eventParticipant.event.location.name is defined and data.eventParticipant.event.location.name %}
+                        <li>{{ data.eventParticipant.event.location.name }}</li>{% endif %}
+                    {% if data.eventParticipant.event.location.streetAddress is defined and data.eventParticipant.event.location.streetAddress %}
+                        <li>{{ data.eventParticipant.event.location.streetAddress }}</li>
+                    {% endif %}
+                    {% if data.eventParticipant.event.location.city is defined or data.eventParticipant.event.location.postalCode is defined %}
+                        <li>
+                            {% if data.eventParticipant.event.location.postalCode is defined and data.eventParticipant.event.location.postalCode %}{{ data.eventParticipant.event.location.postalCode }},{% endif %}
+                            {% if data.eventParticipant.event.location.city is defined and data.eventParticipant.event.location.city %}{{ data.eventParticipant.event.location.city }}{% endif %}
+                        </li>
+                    {% endif %}
+                    {% if data.eventParticipant.event.location.url is defined and data.eventParticipant.event.location.url %}
+                        <li>
+                            <a href="{{ data.eventParticipant.event.location.url }}" title="{{ data.eventParticipant.event.location.name|default() }}"
+                               target="_blank">{{ data.eventParticipant.event.location.url }}</a>
+                        </li>
+                    {% endif %}
+                    {% if data.eventParticipant.event.location.geoLon and data.eventParticipant.event.location.geoLat %}
+                        <li>
+                            {{ data.eventParticipant.event.location.geoLon }},
+                            {{ data.eventParticipant.event.location.geoLat }}{% if data.eventParticipant.event.location.geoEle %}, {{ data.eventParticipant.event.location.geoEle }}{% endif %}
+                        </li>
+                        <li>
+                            <a target="_blank" title="Mapa"
+                               href="https://mapy.cz?x={{ data.eventParticipant.event.location.geoLon }}&y={{ data.eventParticipant.event.location.geoLat }}&z={{ data.eventParticipant.event.location.geoEle|default() }}">
+                                www.mapy.cz?x={{ data.eventParticipant.event.location.geoLon }}&y={{ data.eventParticipant.event.location.geoLat }}
+                                &z={{ data.eventParticipant.event.location.geoEle|default() }}
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% block location_inner_additional %}{% endblock location_inner_additional %}
+                </ul>
+            {% endif %}
+            {% block second_column_additional %}{% endblock second_column_additional %}
+        </div>
     </div>
-</div>
-<div id="full-width-column">
-    {% block third_column_outer %}
-    {% block third_column_inner %}
-    {% endblock third_column_inner %}
-    {% block third_column_additional %}
-    {% endblock third_column_additional %}
-    {% endbloc third_column_outer %}
-</div>
+    <div id="full-width-column">
+        {% block third_column_outer %}
+            {% block third_column_inner %}
+            {% endblock third_column_inner %}
+            {% block third_column_additional %}
+            {% endblock third_column_additional %}
+        {% endblock third_column_outer %}
+    </div>
 
 {% endblock %}

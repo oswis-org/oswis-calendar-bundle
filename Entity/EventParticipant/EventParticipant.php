@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -13,8 +13,6 @@ use Doctrine\Common\Collections\Collection;
 use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisAddressBookBundle\Entity\Organization;
-use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
@@ -201,6 +199,19 @@ class EventParticipant extends AbstractRevisionContainer
      */
     protected $eventParticipantPayments;
 
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
+     *     cascade={"all"},
+     *     mappedBy="eventParticipant",
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantFlagConnections;
+
+
     /**
      * EventAttendee constructor.
      *
@@ -244,6 +255,179 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
+     * @throws EventCapacityExceededException
+     */
+    final public function updateFlags(): void
+    {
+        try {
+            $revision = $this->getRevisionByDate();
+            if (!$revision) {
+                return;
+            }
+        } catch (RevisionMissingException $e) {
+            return;
+        }
+        foreach ($revision->getEventParticipantFlagConnections() as $flagConnection) {
+            assert($flagConnection instanceof EventParticipantFlagConnection);
+            $this->addEventParticipantFlagConnection(
+                new EventParticipantFlagNewConnection(
+                    $flagConnection->getEventParticipantFlag(), null, $flagConnection->getTextValue(), $flagConnection->getDateTime()
+                )
+            );
+        }
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @return EventParticipantRevision
+     * @throws RevisionMissingException
+     */
+    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
+    {
+        $revision = $this->getRevision($dateTime);
+        assert($revision instanceof EventParticipantRevision);
+
+        return $revision;
+    }
+
+    /**
+     * @param EventParticipantFlagNewConnection|null $newConnection
+     *
+     * @throws EventCapacityExceededException
+     */
+    final public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
+    {
+        if (!$newConnection) {
+            return;
+        }
+        $eventParticipantFlag = $newConnection->getEventParticipantFlag();
+        $eventParticipantType = $this->getEventParticipantType();
+        try {
+            $event = $this->getEvent();
+        } catch (RevisionMissingException $e) {
+            $event = null;
+        }
+        if ($event && $event->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
+            throw new EventCapacityExceededException(
+                'Byla překročena kapacita pro přihlášky s příznakem'.($eventParticipantFlag ? $eventParticipantFlag->getName() : '').'.'
+            );
+        }
+        if ($newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
+            $this->eventParticipantFlagConnections->add($newConnection);
+            $newConnection->setEventParticipant($this);
+        }
+    }
+
+    /**
+     * @return EventParticipantType|null
+     */
+    final public function getEventParticipantType(): ?EventParticipantType
+    {
+        return $this->eventParticipantType;
+    }
+
+    /**
+     * @param EventParticipantType|null $eventParticipantType
+     */
+    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    {
+        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
+            $this->eventParticipantType->removeEventParticipant($this);
+        }
+        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
+            $this->eventParticipantType = $eventParticipantType;
+            $eventParticipantType->addEventParticipant($this);
+        }
+    }
+
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return Event|null
+     * @throws RevisionMissingException
+     */
+    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getEvent();
+    }
+
+    final public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int
+    {
+        $price = 0;
+        foreach ($this->getEventParticipantFlags($eventParticipantFlagType) as $flag) {
+            assert($flag instanceof EventParticipantFlag);
+            $price += $flag->getPrice();
+        }
+
+        return $price;
+    }
+
+    final public function getEventParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    {
+        return $this->getEventParticipantFlagConnections($eventParticipantFlagType)->map(
+            static function (EventParticipantFlagNewConnection $connection) {
+                return $connection->getEventParticipantFlag();
+            }
+        );
+    }
+
+    final public function getEventParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    {
+        if (!$eventParticipantFlagType) {
+            return $this->eventParticipantFlagConnections ?? new ArrayCollection();
+        }
+
+        return $this->eventParticipantFlagConnections->filter(
+            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
+                try {
+                    $flag = $eventParticipantFlagConnection->getEventParticipantFlag();
+                    $type = $flag ? $flag->getEventParticipantFlagType() : null;
+
+                    return $type && $type->getId() === $eventParticipantFlagType->getId();
+                } catch (Exception $e) {
+                    return false;
+                }
+            }
+        );
+    }
+
+    /**
+     * @param Collection|null $newConnections
+     *
+     * @throws EventCapacityExceededException
+     */
+    final public function setEventParticipantFlagConnections(?Collection $newConnections): void
+    {
+        $this->eventParticipantFlagConnections = $this->eventParticipantFlagConnections ?? new ArrayCollection();
+        $newConnections = $newConnections ?? new ArrayCollection();
+        foreach ($this->eventParticipantFlagConnections as $oldConnection) {
+            if (!$newConnections->contains($oldConnection)) {
+                $this->removeEventParticipantFlagConnection($oldConnection);
+            }
+        }
+        if ($newConnections) {
+            foreach ($newConnections as $newConnection) {
+                if (!$this->eventParticipantFlagConnections->contains($newConnection)) {
+                    $this->addEventParticipantFlagConnection($newConnection);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param EventParticipantFlagNewConnection|null $eventContactFlagConnection
+     *
+     * @throws EventCapacityExceededException
+     */
+    final public function removeEventParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
+    {
+        if ($eventContactFlagConnection && $this->eventParticipantFlagConnections->removeElement($eventContactFlagConnection)) {
+            $eventContactFlagConnection->setEventParticipant(null);
+        }
+    }
+
+    /**
      * Remove notes where no content is present.
      */
     final public function removeEmptyEventParticipantNotes(): void
@@ -257,11 +441,11 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
-     * @return Collection|null
+     * @return Collection
      */
-    final public function getEventParticipantNotes(): ?Collection
+    final public function getEventParticipantNotes(): Collection
     {
-        return $this->eventParticipantNotes;
+        return $this->eventParticipantNotes ?? new ArrayCollection();
     }
 
     /**
@@ -269,22 +453,16 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
     {
-        if (!$this->eventParticipantNotes) {
-            $this->eventParticipantNotes = new ArrayCollection();
-        }
-        if (!$newEventParticipantNotes) {
-            $newEventParticipantNotes = new ArrayCollection();
-        }
-        foreach ($this->eventParticipantNotes as $oldEventParticipantNote) {
-            if (!$newEventParticipantNotes->contains($oldEventParticipantNote)) {
-                $this->removeEventParticipantNote($oldEventParticipantNote);
+        $this->eventParticipantNotes = $this->eventParticipantNotes ?? new ArrayCollection();
+        $newEventParticipantNotes = $newEventParticipantNotes ?? new ArrayCollection();
+        foreach ($this->eventParticipantNotes as $oldNote) {
+            if (!$newEventParticipantNotes->contains($oldNote)) {
+                $this->removeEventParticipantNote($oldNote);
             }
         }
-        if ($newEventParticipantNotes) {
-            foreach ($newEventParticipantNotes as $newEventParticipantNote) {
-                if (!$this->eventParticipantNotes->contains($newEventParticipantNote)) {
-                    $this->addEventParticipantNote($newEventParticipantNote);
-                }
+        foreach ($newEventParticipantNotes as $newNote) {
+            if (!$this->eventParticipantNotes->contains($newNote)) {
+                $this->addEventParticipantNote($newNote);
             }
         }
     }
@@ -310,28 +488,6 @@ class EventParticipant extends AbstractRevisionContainer
         if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
             $this->eventParticipantNotes->add($eventParticipantNote);
             $eventParticipantNote->setEventParticipant($this);
-        }
-    }
-
-    /**
-     * @return EventParticipantType|null
-     */
-    final public function getEventParticipantType(): ?EventParticipantType
-    {
-        return $this->eventParticipantType;
-    }
-
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     */
-    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
-    {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventParticipant($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventParticipant($this);
         }
     }
 
@@ -372,20 +528,6 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventParticipantRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventParticipantRevision);
-
-        return $revision;
-    }
-
-    /**
      * @param DateTime|null $referenceDateTime
      *
      * @return int
@@ -417,7 +559,7 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function getEventParticipantPayments(): ?Collection
     {
-        return $this->eventParticipantPayments;
+        return $this->eventParticipantPayments ?? new ArrayCollection();
     }
 
     /**
@@ -425,22 +567,16 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function setEventParticipantPayments(?Collection $newEventParticipantPayments): void
     {
-        if (!$this->eventParticipantPayments) {
-            $this->eventParticipantPayments = new ArrayCollection();
-        }
-        if (!$newEventParticipantPayments) {
-            $newEventParticipantPayments = new ArrayCollection();
-        }
-        foreach ($this->eventParticipantPayments as $oldEventParticipantPayment) {
-            if (!$newEventParticipantPayments->contains($oldEventParticipantPayment)) {
-                $this->removeEventParticipantPayment($oldEventParticipantPayment);
+        $this->eventParticipantPayments = $this->eventParticipantPayments ?? new ArrayCollection();
+        $newEventParticipantPayments = $newEventParticipantPayments ?? new ArrayCollection();
+        foreach ($this->eventParticipantPayments as $oldPayment) {
+            if (!$newEventParticipantPayments->contains($oldPayment)) {
+                $this->removeEventParticipantPayment($oldPayment);
             }
         }
-        if ($newEventParticipantPayments) {
-            foreach ($newEventParticipantPayments as $newEventParticipantPayment) {
-                if (!$this->eventParticipantPayments->contains($newEventParticipantPayment)) {
-                    $this->addEventParticipantPayment($newEventParticipantPayment);
-                }
+        foreach ($newEventParticipantPayments as $newPayment) {
+            if (!$this->eventParticipantPayments->contains($newPayment)) {
+                $this->addEventParticipantPayment($newPayment);
             }
         }
     }
@@ -486,10 +622,7 @@ class EventParticipant extends AbstractRevisionContainer
      */
     final public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
-        if (!$eventParticipantPayment) {
-            return;
-        }
-        if ($this->eventParticipantPayments->removeElement($eventParticipantPayment)) {
+        if ($eventParticipantPayment && $this->eventParticipantPayments->removeElement($eventParticipantPayment)) {
             $eventParticipantPayment->setEventParticipant(null);
         }
     }
@@ -521,46 +654,6 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Event|null
-     * @throws RevisionMissingException
-     */
-    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getEvent();
-    }
-
-    /**
-     * @param EventParticipantFlagConnection|null $eventParticipantFlagConnection
-     *
-     * @throws RevisionMissingException
-     * @throws EventCapacityExceededException
-     */
-    final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $eventParticipantFlagConnection): void
-    {
-        if ($eventParticipantFlagConnection && !$this->getEventParticipantFlagConnections()->contains($eventParticipantFlagConnection)) {
-            $newRevision = clone $this->getRevisionByDate();
-            $newRevision->addEventParticipantFlagConnection($eventParticipantFlagConnection);
-            $this->addRevision($newRevision);
-        }
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Collection
-     */
-    final public function getEventParticipantFlagConnections(?DateTime $referenceDateTime = null): Collection
-    {
-        try {
-            return $this->getRevisionByDate($referenceDateTime)->getEventParticipantFlagConnections() ?? new ArrayCollection();
-        } catch (Exception $e) {
-            return new ArrayCollection();
-        }
-    }
-
-    /**
      * @param AbstractContact|null $contact
      *
      * @throws RevisionMissingException
@@ -580,31 +673,20 @@ class EventParticipant extends AbstractRevisionContainer
      * @return AbstractContact
      * @throws RevisionMissingException
      */
-    final public function getContact(?DateTime $referenceDateTime = null): AbstractContact
+    final public function getContact(?DateTime $referenceDateTime = null): ?AbstractContact
     {
         return $this->getRevisionByDate($referenceDateTime)->getContact();
     }
 
     /**
+     * @param DateTime|null $referenceDateTime
+     *
      * @return bool
      */
-    final public function hasActivatedContactUser(): bool
+    final public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
     {
         try {
-            $contact = $this->getContact();
-            if ($contact && $contact->getAppUser() && $contact->getAppUser()->getAccountActivationDateTime()) {
-                return true;
-            }
-            if ($contact instanceof Organization) {
-                foreach ($contact->getContactPersons() as $contactPerson) {
-                    assert($contactPerson instanceof Person);
-                    if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->getAccountActivationDateTime()) {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true);
         } catch (Exception $e) {
             return false;
         }
@@ -618,7 +700,7 @@ class EventParticipant extends AbstractRevisionContainer
     public function getVariableSymbol(): ?string
     {
         try {
-            $phone = $this->getContact()->getPhone();
+            $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
         } catch (RevisionMissingException $e) {
             return null;
         }

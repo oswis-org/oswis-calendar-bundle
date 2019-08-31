@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Controller;
 
@@ -126,8 +126,10 @@ class EventParticipantController extends AbstractController
                 );
             }
             $eventParticipant->removeEmptyEventParticipantNotes();
-            $eventParticipant->getContact()->removeEmptyContactDetails();
-            $eventParticipant->getContact()->removeEmptyNotes();
+            if ($eventParticipant->getContact()) {
+                $eventParticipant->getContact()->removeEmptyContactDetails();
+                $eventParticipant->getContact()->removeEmptyNotes();
+            }
             $eventParticipantManager->sendMail($eventParticipant, $this->encoder, true, $token);
 
             return $this->render(

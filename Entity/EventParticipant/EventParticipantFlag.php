@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -71,6 +71,17 @@ class EventParticipantFlag extends AbstractEventFlag
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
+     *     mappedBy="eventParticipantFlag",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     */
+    protected $eventParticipantFlagNewConnections;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
      *     mappedBy="eventParticipantFlag",
      *     cascade={"all"}
@@ -116,6 +127,7 @@ class EventParticipantFlag extends AbstractEventFlag
         ?string $publicOnWebRoute = null
     ) {
         $this->eventParticipantFlagConnections = new ArrayCollection();
+        $this->eventParticipantFlagNewConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEventParticipantFlagType($eventParticipantFlagType);
@@ -146,6 +158,11 @@ class EventParticipantFlag extends AbstractEventFlag
         return $this->eventParticipantFlagConnections;
     }
 
+    final public function getEventParticipantFlagNewConnections(): Collection
+    {
+        return $this->eventParticipantFlagNewConnections;
+    }
+
     final public function addEventParticipantFlagConnection(?EventParticipantFlagConnection $flagConnection): void
     {
         if ($flagConnection && !$this->eventParticipantFlagConnections->contains($flagConnection)) {
@@ -164,9 +181,25 @@ class EventParticipantFlag extends AbstractEventFlag
         }
     }
 
+
+    final public function addEventParticipantFlagNewConnection(?EventParticipantFlagNewConnection $flagConnection): void
+    {
+        if ($flagConnection && !$this->eventParticipantFlagNewConnections->contains($flagConnection)) {
+            $this->eventParticipantFlagNewConnections->add($flagConnection);
+            $flagConnection->setEventParticipantFlag($this);
+        }
+    }
+
+    final public function removeEventParticipantFlagNewConnection(?EventParticipantFlagNewConnection $flagConnection): void
+    {
+        if ($flagConnection && $this->eventParticipantFlagNewConnections->removeElement($flagConnection)) {
+            $flagConnection->setEventParticipantFlag(null);
+        }
+    }
+
     final public function getEventParticipantFlagInEventConnections(): Collection
     {
-        return $this->eventParticipantFlagInEventConnections;
+        return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
     }
 
     final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void

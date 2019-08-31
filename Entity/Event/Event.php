@@ -1305,7 +1305,7 @@ class Event extends AbstractRevisionContainer
         if ($eventParticipantType) {
             foreach ($eventParticipants as $eventParticipant) {
                 assert($eventParticipant instanceof EventParticipant);
-                foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
+                foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagInEventConnection) {
                     assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
                     $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
                     if ($flag) {
@@ -1332,7 +1332,7 @@ class Event extends AbstractRevisionContainer
                     'name'      => $eventParticipantType->getName(),
                     'shortName' => $eventParticipantType->getShortName(),
                 ];
-                foreach ($eventParticipant->getEventParticipantFlagConnections($referenceDateTime) as $eventParticipantFlagInEventConnection) {
+                foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagInEventConnection) {
                     assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
                     $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
                     if ($flag) {

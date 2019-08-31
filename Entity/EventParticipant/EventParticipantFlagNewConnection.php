@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -10,10 +10,10 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_connection")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantFlagConnection
+class EventParticipantFlagNewConnection
 {
     use BasicEntityTrait;
     use TextValueTrait;
@@ -32,58 +32,56 @@ class EventParticipantFlagConnection
     protected $eventParticipantFlag;
 
     /**
-     * Event contact revision (connected to person or organization).
-     * @var EventParticipantRevision|null
+     * @var EventParticipant|null
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     inversedBy="eventParticipantFlagConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantRevision;
+    protected $eventParticipant;
 
     /**
      * FlagInEmployerInEvent constructor.
      *
-     * @param EventParticipantFlag|null     $eventContactFlag
-     * @param EventParticipantRevision|null $eventContactRevision
-     *
-     * @param string|null                   $textValue
-     * @param DateTime|null                 $dateTime
+     * @param EventParticipantFlag|null $eventParticipantFlag
+     * @param EventParticipant|null     $eventParticipant
+     * @param string|null               $textValue
+     * @param DateTime|null             $dateTime
      *
      * @throws EventCapacityExceededException
      */
     public function __construct(
-        ?EventParticipantFlag $eventContactFlag = null,
-        ?EventParticipantRevision $eventContactRevision = null,
+        ?EventParticipantFlag $eventParticipantFlag = null,
+        ?EventParticipant $eventParticipant = null,
         ?string $textValue = null,
         ?DateTime $dateTime = null
     ) {
-        $this->setEventParticipantFlag($eventContactFlag);
-        $this->setEventParticipantRevision($eventContactRevision);
+        $this->setEventParticipantFlag($eventParticipantFlag);
+        $this->setEventParticipant($eventParticipant);
         $this->setTextValue($textValue);
         $this->setDateTime($dateTime);
     }
 
-    final public function getEventParticipantRevision(): ?EventParticipantRevision
+    final public function getEventParticipant(): ?EventParticipant
     {
-        return $this->eventParticipantRevision;
+        return $this->eventParticipant;
     }
 
     /**
-     * @param EventParticipantRevision|null $eventParticipantRevision
+     * @param EventParticipant|null $eventParticipant
      *
      * @throws EventCapacityExceededException
      */
-    final public function setEventParticipantRevision(?EventParticipantRevision $eventParticipantRevision): void
+    final public function setEventParticipant(?EventParticipant $eventParticipant): void
     {
-        if ($this->eventParticipantRevision && $eventParticipantRevision !== $this->eventParticipantRevision) {
-            $this->eventParticipantRevision->removeEventParticipantFlagConnection($this);
+        if ($this->eventParticipant && $eventParticipant !== $this->eventParticipant) {
+            $this->eventParticipant->removeEventParticipantFlagConnection($this);
         }
-        if ($eventParticipantRevision && $this->eventParticipantRevision !== $eventParticipantRevision) {
-            $this->eventParticipantRevision = $eventParticipantRevision;
-            $eventParticipantRevision->addEventParticipantFlagConnection($this);
+        if ($eventParticipant && $this->eventParticipant !== $eventParticipant) {
+            $this->eventParticipant = $eventParticipant;
+            $eventParticipant->addEventParticipantFlagConnection($this);
         }
     }
 
@@ -95,11 +93,11 @@ class EventParticipantFlagConnection
     final public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
     {
         if ($this->eventParticipantFlag && $eventParticipantFlag !== $this->eventParticipantFlag) {
-            $this->eventParticipantFlag->removeEventParticipantFlagConnection($this);
+            $this->eventParticipantFlag->removeEventParticipantFlagNewConnection($this);
         }
         if ($eventParticipantFlag && $this->eventParticipantFlag !== $eventParticipantFlag) {
             $this->eventParticipantFlag = $eventParticipantFlag;
-            $eventParticipantFlag->addEventParticipantFlagConnection($this);
+            $eventParticipantFlag->addEventParticipantFlagNewConnection($this);
         }
     }
 }

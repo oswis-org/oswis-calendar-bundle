@@ -65,7 +65,7 @@ class EventParticipantRevision extends AbstractRevision
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection",
      *     cascade={"all"},
-     *     mappedBy="eventContactRevision",
+     *     mappedBy="eventParticipantRevision",
      *     fetch="EAGER"
      * )
      */
@@ -141,7 +141,7 @@ class EventParticipantRevision extends AbstractRevision
         }
         if ($eventContactFlagConnection && !$this->eventParticipantFlagConnections->contains($eventContactFlagConnection)) {
             $this->eventParticipantFlagConnections->add($eventContactFlagConnection);
-            $eventContactFlagConnection->setEventContactRevision($this);
+            $eventContactFlagConnection->setEventParticipantRevision($this);
         }
     }
 
@@ -177,7 +177,7 @@ class EventParticipantRevision extends AbstractRevision
             return;
         }
         if ($this->eventParticipantFlagConnections->removeElement($eventContactFlagConnection)) {
-            $eventContactFlagConnection->setEventContactRevision(null);
+            $eventContactFlagConnection->setEventParticipantRevision(null);
         }
     }
 
@@ -232,7 +232,7 @@ class EventParticipantRevision extends AbstractRevision
         return $this->eventParticipantFlagConnections->filter(
             static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantType) {
                 try {
-                    $eventContactRevision = $eventParticipantFlagConnection->getEventContactRevision();
+                    $eventContactRevision = $eventParticipantFlagConnection->getEventParticipantRevision();
                     $participant = $eventContactRevision ? $eventContactRevision->getContainer() : null;
                     assert($participant instanceof EventParticipant);
 
