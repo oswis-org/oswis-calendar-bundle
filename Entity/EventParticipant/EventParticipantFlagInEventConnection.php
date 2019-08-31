@@ -4,6 +4,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
+use Zakjakub\OswisCoreBundle\Traits\Entity\ActiveTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
 /**
@@ -14,6 +15,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 class EventParticipantFlagInEventConnection
 {
     use BasicEntityTrait;
+    use ActiveTrait;
 
     /**
      * @var int|null

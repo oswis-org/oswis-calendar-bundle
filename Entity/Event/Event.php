@@ -1179,18 +1179,18 @@ class Event extends AbstractRevisionContainer
         }
 
         return $this->eventParticipantFlagInEventConnections->filter(
-                static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
-                    if ($eventParticipantFlag && !($flagInEventConnection->getEventParticipantFlag() && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId(
+            static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
+                if ($eventParticipantFlag && !($flagInEventConnection->getEventParticipantFlag() && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId(
                             ))) {
-                        return false;
-                    }
-                    if ($eventParticipantType && !($flagInEventConnection->getEventParticipantType() && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId(
-                            ))) {
-                        return false;
-                    }
-
-                    return true;
+                    return false;
                 }
+                if ($eventParticipantType && !($flagInEventConnection->getEventParticipantType() && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId(
+                            ))) {
+                    return false;
+                }
+
+                return true;
+            }
             ) ?? new ArrayCollection();
     }
 
@@ -1206,9 +1206,9 @@ class Event extends AbstractRevisionContainer
     final public function isRegistrationsAllowed(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
     {
         return $this->getEventRegistrationRanges()->filter(
-                static function (EventRegistrationRange $eventRegistrationRange) use ($eventParticipantType, $referenceDateTime) {
-                    return $eventRegistrationRange->isApplicable($eventParticipantType, $referenceDateTime);
-                }
+            static function (EventRegistrationRange $eventRegistrationRange) use ($eventParticipantType, $referenceDateTime) {
+                return $eventRegistrationRange->isApplicable($eventParticipantType, $referenceDateTime);
+            }
             )->count() > 0;
     }
 
@@ -1268,7 +1268,9 @@ class Event extends AbstractRevisionContainer
         $allowedAmount = 0;
         foreach ($this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag) as $flagInEventConnection) {
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
-            $allowedAmount += $flagInEventConnection->getMaxAmountInEvent();
+            if ($flagInEventConnection->getActive()) {
+                $allowedAmount += $flagInEventConnection->getMaxAmountInEvent();
+            }
         }
 
         return $allowedAmount;

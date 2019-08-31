@@ -147,7 +147,7 @@ class EventParticipant extends AbstractRevisionContainer
      *     orphanRemoval=true,
      *     fetch="EAGER"
      * )
-     * @MaxDepth(1)
+     * @MaxDepth(2)
      */
     protected $revisions;
 
@@ -271,7 +271,10 @@ class EventParticipant extends AbstractRevisionContainer
             assert($flagConnection instanceof EventParticipantFlagConnection);
             $this->addEventParticipantFlagConnection(
                 new EventParticipantFlagNewConnection(
-                    $flagConnection->getEventParticipantFlag(), null, $flagConnection->getTextValue(), $flagConnection->getDateTime()
+                    $flagConnection->getEventParticipantFlag(),
+                    null,
+                    $flagConnection->getTextValue(),
+                    $flagConnection->getDateTime()
                 )
             );
         }
@@ -305,13 +308,12 @@ class EventParticipant extends AbstractRevisionContainer
         $eventParticipantType = $this->getEventParticipantType();
         try {
             $event = $this->getEvent();
+            if ($event && $event->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
+                throw new EventCapacityExceededException(
+                    'Byla překročena kapacita u příznaku'.($eventParticipantFlag ? ' '.$eventParticipantFlag->getName() : '').'.'
+                );
+            }
         } catch (RevisionMissingException $e) {
-            $event = null;
-        }
-        if ($event && $event->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
-            throw new EventCapacityExceededException(
-                'Byla překročena kapacita pro přihlášky s příznakem'.($eventParticipantFlag ? $eventParticipantFlag->getName() : '').'.'
-            );
         }
         if ($newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
             $this->eventParticipantFlagConnections->add($newConnection);

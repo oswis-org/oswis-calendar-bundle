@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -225,10 +225,7 @@ class EventParticipantType
      */
     final public function removeEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $eventContactRevision): void
     {
-        if (!$eventContactRevision) {
-            return;
-        }
-        if ($this->eventParticipantTypeInEventConnections->removeElement($eventContactRevision)) {
+        if ($eventContactRevision && $this->eventParticipantTypeInEventConnections->removeElement($eventContactRevision)) {
             $eventContactRevision->setEventParticipantType(null);
         }
     }
@@ -236,9 +233,8 @@ class EventParticipantType
     /**
      * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
      */
-    final public function addEventParticipantFlagInEventConnection(
-        ?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection
-    ): void {
+    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    {
         if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
             $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
             $eventParticipantFlagInEventConnection->setEventParticipantType($this);
@@ -251,10 +247,7 @@ class EventParticipantType
     final public function removeEventParticipantFlagInEventConnection(
         ?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection
     ): void {
-        if (!$eventParticipantFlagInEventConnection) {
-            return;
-        }
-        if ($this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
+        if ($eventParticipantFlagInEventConnection && $this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
             $eventParticipantFlagInEventConnection->setEventParticipantType(null);
         }
     }
