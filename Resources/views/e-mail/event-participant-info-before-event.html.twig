@@ -17,6 +17,9 @@
                     {{ eventParticipant.event.name|default('Akce') }} se neúprosně blíží a s tím přichází i očekávané informace k jejímu průběhu.
                 {% endblock message_message_inner %}
             </p>
+            <p style="color:red;font-size:small;font-weight:bold;border:1px solid red;margin:.5em;padding:.5em;background-color:lightyellow;">
+                Pokud {{ f ? 'Vám' : 'Ti' }} e-mail přišel opakovaně, slouží pro ověření (např. po změně přihlášky).
+            </p>
         {% endblock message_message_outer %}
 
         {% block event_participant_summary %}

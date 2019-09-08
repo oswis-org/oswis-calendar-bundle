@@ -41,5 +41,15 @@ final class EventActionRequest
     /**
      * @var int|null
      */
+    public $startId;
+
+    /**
+     * @var int|null
+     */
+    public $endId;
+
+    /**
+     * @var int|null
+     */
     public $recursiveDepth;
 }

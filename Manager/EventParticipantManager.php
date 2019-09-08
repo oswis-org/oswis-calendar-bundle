@@ -271,28 +271,38 @@ class EventParticipantManager
             $qrContactName = $eventParticipantContact ? $eventParticipantContact->getContactName() : '';
             $qrPaymentComment = $qrContactName.', ID '.$eventParticipant->getId().', '.$event->getName();
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
-            $depositPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
-                    QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
-                    QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
-                    QrPaymentOptions::CURRENCY        => 'CZK',
-                    // QrPaymentOptions::DUE_DATE        => date('Y-m-d', strtotime('+5 days')),
-                    QrPaymentOptions::COMMENT         => $qrPaymentComment.', záloha',
-                ]
-            );
-            $restPaymentQr = new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
-                    QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
-                    QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
-                    QrPaymentOptions::CURRENCY        => 'CZK',
-                    // QrPaymentOptions::DUE_DATE        => new DateTime('2019-07-31 23:59:59'),
-                    QrPaymentOptions::COMMENT         => $qrPaymentComment.', doplatek',
-                ]
-            );
-            /** @noinspection PhpUndefinedMethodInspection */
-            $depositPaymentQrPng = $depositPaymentQr->getQrImage(true)->writeString();
-            /** @noinspection PhpUndefinedMethodInspection */
-            $restPaymentQrPng = $restPaymentQr->getQrImage(true)->writeString();
+            try {
+                $depositPaymentQr = new QrPayment(
+                    $event->getBankAccountNumber(), $event->getBankAccountBank(), [
+                        QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
+                        QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceDeposit(),
+                        QrPaymentOptions::CURRENCY        => 'CZK',
+                        // QrPaymentOptions::DUE_DATE        => date('Y-m-d', strtotime('+5 days')),
+                        QrPaymentOptions::COMMENT         => $qrPaymentComment.', záloha',
+                    ]
+                );
+                /** @noinspection PhpUndefinedMethodInspection */
+                $depositPaymentQrPng = $depositPaymentQr->getQrImage(true)->writeString();
+            } catch (Exception $e) {
+                $depositPaymentQr = null;
+                $depositPaymentQrPng = null;
+            }
+            try {
+                $restPaymentQr = new QrPayment(
+                    $event->getBankAccountNumber(), $event->getBankAccountBank(), [
+                        QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
+                        QrPaymentOptions::AMOUNT          => $eventParticipant->getPriceRest(),
+                        QrPaymentOptions::CURRENCY        => 'CZK',
+                        // QrPaymentOptions::DUE_DATE        => new DateTime('2019-07-31 23:59:59'),
+                        QrPaymentOptions::COMMENT         => $qrPaymentComment.', doplatek',
+                    ]
+                );
+                /** @noinspection PhpUndefinedMethodInspection */
+                $restPaymentQrPng = $restPaymentQr->getQrImage(true)->writeString();
+            } catch (Exception $e) {
+                $restPaymentQr = null;
+                $restPaymentQrPng = null;
+            }
             if ($eventParticipantContact instanceof Person) {
                 $isOrganization = false;
                 $contactPersons = new ArrayCollection([$eventParticipantContact]);
@@ -335,15 +345,25 @@ class EventParticipantManager
                 $archiveAddress = new NamedAddress(
                     $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
-                $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
-                    '@ZakjakubOswisCalendar/e-mail/event-participant.html.twig'
-                )->embed($depositPaymentQrPng, 'depositQr', 'image/png')->embed($restPaymentQrPng, 'restQr', 'image/png')->context($mailData);
-                $em->persist($eventParticipant);
+                $email = new TemplatedEmail();
+                $email->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
+                $email->bcc($archiveAddress);
+                $email->subject(self::mimeEnc($title));
+                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig');
+                $email->context($mailData);
+                if ($depositPaymentQrPng) {
+                    $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
+                }
+                if ($restPaymentQrPng) {
+                    $email->embed($restPaymentQrPng, 'restQr', 'image/png');
+                }
                 try {
                     $this->mailer->send($email);
+                    $em->persist($eventParticipant);
                     $mailSuccessCount++;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
+                    $this->logger->error($e->getTraceAsString());
                     throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
             }
@@ -355,6 +375,7 @@ class EventParticipantManager
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
+            $this->logger->error($e->getTraceAsString());
             throw new OswisException('Problém s odesláním shrnutí přihlášky.  '.$e->getMessage());
         }
     }
@@ -682,6 +703,102 @@ class EventParticipantManager
             $em->flush();
             if ($mailSuccessCount < $contactPersons->count()) {
                 throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->logger->error($e->getMessage());
+            $this->logger->error($e->getTraceAsString());
+
+            return false;
+        }
+    }
+
+    final public function sendFeedBackMails(
+        Event $event,
+        ?string $eventParticipantTypeOfType = null,
+        int $recursiveDepth = 0,
+        ?int $startId = 0,
+        ?int $endId = 0
+    ): int {
+        $successCount = 0;
+        $eventParticipants = $event->getEventParticipantsByTypeOfType(
+            $eventParticipantTypeOfType,
+            null,
+            false,
+            false,
+            $recursiveDepth
+        )->filter(
+            static function (EventParticipant $eventParticipant) use ($startId, $endId) {
+                return $eventParticipant->getId() > $startId && $eventParticipant->getId() < $endId;
+            }
+        );
+        foreach ($eventParticipants as $eventParticipant) {
+            $eventParticipants->removeElement($eventParticipant);
+            if ($this->sendFeedBackMail($eventParticipant)) {
+                $successCount++;
+            }
+        }
+
+        return $successCount;
+    }
+
+    final public function sendFeedBackMail(EventParticipant $eventParticipant): bool
+    {
+        try {
+            $em = $this->em;
+            $event = $eventParticipant->getEvent();
+            $eventParticipantContact = $eventParticipant->getContact();
+            if (!$eventParticipant || !$event || !$eventParticipantContact) {
+                return false;
+            }
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
+            $mailSettings = $this->oswisCoreSettings->getEmail();
+            if ($eventParticipantContact instanceof Person) {
+                $isOrganization = false;
+                $contactPersons = new ArrayCollection([$eventParticipantContact]);
+            } else {
+                assert($eventParticipantContact instanceof Organization);
+                $isOrganization = true;
+                $contactPersons = $eventParticipantContact->getContactPersons();
+            }
+            $title = 'Zpětná vazba';
+            $message = null;
+            $mailSuccessCount = 0;
+            foreach ($contactPersons as $contactPerson) {
+                assert($contactPerson instanceof Person);
+                $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
+                $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
+                $mailData = array(
+                    'eventParticipant' => $eventParticipant,
+                    'event'            => $event,
+                    'contactPerson'    => $contactPerson,
+                    'f'                => $formal,
+                    'salutationName'   => $contactPerson->getSalutationName(),
+                    'a'                => $contactPerson->getCzechSuffixA(),
+                    'isOrganization'   => $isOrganization,
+                    'logo'             => 'cid:logo',
+                    'oswis'            => $this->oswisCoreSettings->getArray(),
+                );
+                $archive = new NamedAddress(
+                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
+                );
+                $to = new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? '');
+                $email = (new TemplatedEmail())->to($to)->bcc($archive)->subject(self::mimeEnc($title))->htmlTemplate(
+                    '@ZakjakubOswisCalendar/e-mail/event-participant-feedback.html.twig'
+                )->context($mailData);
+                try {
+                    $email->attachFromPath('../assets/assets/le.pdf', 'le-voucher.pdf', 'application/pdf');
+                    $this->mailer->send($email);
+                    $mailSuccessCount++;
+                } catch (TransportExceptionInterface $e) {
+                    $this->logger->error($e->getMessage());
+                    throw new OswisException('Odeslání zpětné vazby se nezdařilo ('.$e->getMessage().').');
+                }
+            }
+            $em->flush();
+            if ($mailSuccessCount < $contactPersons->count()) {
+                throw new OswisException("Část zpětných vazeb se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
             }
 
             return true;

@@ -1,0 +1,36 @@
+{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+
+{% block html_title %}{{ email.subject|default('Zpětná vazba') }}{% endblock %}
+{% block meta_description %}{{ block('html_title') }}{% endblock %}
+
+{% block content_inner %}
+
+    <p>Naši milovaní seznamováci!</p>
+
+    <p>Díky za krásných společně strávených 5 dní v Kempu Morava.</p>
+
+    <p>Než se rozloučíme, rádi bychom vás poprosili o vyplnění krátké zpětné vazby, která nám pomáhá dělat tuhle akci lepší a lepší.</p>
+
+    <div style="width:100%;">
+        <div style="width:33%;"></div>
+        <div style="width:33%;">
+            <a href="https://forms.gle/kBps6mV2ctaESsNu7" target="_blank" title="Zpětná vazba"
+               style="display:block;text-align:center;margin:auto;padding:1em;background-color:#006FAD;color:white;">
+                DOTAZNÍK<br>ZDE
+            </a>
+            <span>https://forms.gle/kBps6mV2ctaESsNu7</span>
+        </div>
+        <div style="width:30%;"></div>
+    </div>
+
+    <p>Doufáme, že se uvidíme 22. 9. na „Posezení s instruktory“ v hospůdce U Krbu a 24. 9. na „Afterparty Seznamováku UP“ v klubu Varna!</p>
+
+    <p>V příloze nalezneš ještě slibovaný voucher od jednoho z naších partnerů - dopravce LEO Express.</p>
+
+    <p>Hodně sil, vytrvalosti a dobré nálady do studia, loučí se Tým Seznamováku UP!</p>
+
+{% endblock %}
+
+
+
+

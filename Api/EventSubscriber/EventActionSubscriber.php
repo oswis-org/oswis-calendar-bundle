@@ -26,7 +26,8 @@ use function in_array;
 final class EventActionSubscriber implements EventSubscriberInterface
 {
     public const TYPE_INFOMAIL = 'infomail';
-    public const ALLOWED_ACTION_TYPES = [self::TYPE_INFOMAIL];
+    public const TYPE_FEEDBACK = 'feedback';
+    public const ALLOWED_ACTION_TYPES = [self::TYPE_INFOMAIL, self::TYPE_FEEDBACK];
 
     /**
      * @var EventParticipantManager
@@ -84,6 +85,11 @@ final class EventActionSubscriber implements EventSubscriberInterface
 
             return;
         }
+        if (self::TYPE_FEEDBACK === $type) {
+            $event->setResponse($this->sendFeedbackMailAction($eventActionRequest));
+
+            return;
+        }
         if ($output) {
             $data = ['data' => chunk_split(base64_encode($output))];
             $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
@@ -109,6 +115,28 @@ final class EventActionSubscriber implements EventSubscriberInterface
             $recursiveDepth,
             $count,
             'event-action-api-multiple'
+        );
+
+        return new JsonResponse("Zasláno $successCount zpráv z $count vyžádaných.", Response::HTTP_CREATED);
+    }
+
+    public function sendFeedbackMailAction(EventActionRequest $eventActionRequest): Response
+    {
+        $event = $eventActionRequest->event ?? null;
+        $count = $eventActionRequest->count ?? 0;
+        $startId = $eventActionRequest->startId ?? 0;
+        $endId = $eventActionRequest->endId ?? 0;
+        $recursiveDepth = $eventActionRequest->recursiveDepth ?? 0;
+        $eventParticipantTypeOfType = $eventActionRequest->eventParticipantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
+        if (!$event) {
+            return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
+        }
+        $successCount = $this->eventParticipantManager->sendFeedBackMails(
+            $event,
+            $eventParticipantTypeOfType,
+            $recursiveDepth,
+            $startId,
+            $endId
         );
 
         return new JsonResponse("Zasláno $successCount zpráv z $count vyžádaných.", Response::HTTP_CREATED);

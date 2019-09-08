@@ -263,68 +263,21 @@ class EventParticipant extends AbstractRevisionContainer
         if (!$newConnection) {
             return;
         }
-        $eventParticipantFlag = $newConnection->getEventParticipantFlag();
-        $eventParticipantType = $this->getEventParticipantType();
-        try {
-            $event = $this->getEvent();
-            if ($event && $event->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
-                throw new EventCapacityExceededException(
-                    'Byla překročena kapacita u příznaku'.($eventParticipantFlag ? ' '.$eventParticipantFlag->getName() : '').'.'
-                );
-            }
-        } catch (RevisionMissingException $e) {
-        }
+//        $eventParticipantFlag = $newConnection->getEventParticipantFlag();
+//        $eventParticipantType = $this->getEventParticipantType();
+//        try {
+//            $event = $this->getEvent();
+//            if ($event && $event->getAllowedEventParticipantFlagRemainingAmount($eventParticipantFlag, $eventParticipantType) === 0) {
+//                throw new EventCapacityExceededException(
+//                    'Byla překročena kapacita u příznaku'.($eventParticipantFlag ? ' '.$eventParticipantFlag->getName() : '').'.'
+//                );
+//            }
+//        } catch (RevisionMissingException $e) {
+//        }
         if ($newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
             $this->eventParticipantFlagConnections->add($newConnection);
             $newConnection->setEventParticipant($this);
         }
-    }
-
-    /**
-     * @return EventParticipantType|null
-     */
-    final public function getEventParticipantType(): ?EventParticipantType
-    {
-        return $this->eventParticipantType;
-    }
-
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     */
-    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
-    {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventParticipant($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventParticipant($this);
-        }
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Event|null
-     * @throws RevisionMissingException
-     */
-    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getEvent();
-    }
-
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventParticipantRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventParticipantRevision);
-
-        return $revision;
     }
 
     /**
@@ -436,6 +389,53 @@ class EventParticipant extends AbstractRevisionContainer
         return $price < 0 ? 0 : $price;
     }
 
+    /**
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return Event|null
+     * @throws RevisionMissingException
+     */
+    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
+    {
+        return $this->getRevisionByDate($referenceDateTime)->getEvent();
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @return EventParticipantRevision
+     * @throws RevisionMissingException
+     */
+    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
+    {
+        $revision = $this->getRevision($dateTime);
+        assert($revision instanceof EventParticipantRevision);
+
+        return $revision;
+    }
+
+    /**
+     * @return EventParticipantType|null
+     */
+    final public function getEventParticipantType(): ?EventParticipantType
+    {
+        return $this->eventParticipantType;
+    }
+
+    /**
+     * @param EventParticipantType|null $eventParticipantType
+     */
+    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    {
+        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
+            $this->eventParticipantType->removeEventParticipant($this);
+        }
+        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
+            $this->eventParticipantType = $eventParticipantType;
+            $eventParticipantType->addEventParticipant($this);
+        }
+    }
+
     final public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int
     {
         $price = 0;
@@ -463,7 +463,7 @@ class EventParticipant extends AbstractRevisionContainer
         }
 
         return $this->eventParticipantFlagConnections->filter(
-            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
+            static function (EventParticipantFlagNewConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
                 try {
                     $flag = $eventParticipantFlagConnection->getEventParticipantFlag();
                     $type = $flag ? $flag->getEventParticipantFlagType() : null;
@@ -653,12 +653,13 @@ class EventParticipant extends AbstractRevisionContainer
     final public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
     {
         try {
-            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true);
+            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
         } catch (Exception $e) {
             return false;
         }
     }
 
+    /** @noinspection MethodShouldBeFinalInspection */
     /**
      * Get variable symbol of this eventParticipant (default is cropped phone number).
      * @return string|null

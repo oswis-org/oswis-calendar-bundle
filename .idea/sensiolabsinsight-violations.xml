@@ -16,8 +16,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>34</line>
       <resource><![CDATA[DependencyInjection/ZakjakubOswisAccommodationExtension.php]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="29" end-line="34"><![CDATA[    final public function prepend(ContainerBuilder $container): void
     {
         /// TODO: Implement.
@@ -29,8 +29,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>5</line>
       <resource><![CDATA[.idea/codeStyles/codeStyleConfig.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="1" end-line="5"><![CDATA[<component name="ProjectCodeStyleConfiguration">
   <state>
     <option name="PREFERRED_PROJECT_CODE_STYLE" value="Default" />
@@ -41,8 +41,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>24</line>
       <resource><![CDATA[.idea/codeStyles/Project.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="19" end-line="24"><![CDATA[      <option name="DOWHILE_BRACE_FORCE" value="3" />
       <option name="WHILE_BRACE_FORCE" value="3" />
       <option name="FOR_BRACE_FORCE" value="3" />
@@ -54,8 +54,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>7</line>
       <resource><![CDATA[.idea/compiler.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="2" end-line="7"><![CDATA[<project version="4">
   <component name="TypeScriptCompiler">
     <option name="isCompilerEnabled" value="true" />
@@ -67,8 +67,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>10</line>
       <resource><![CDATA[.idea/composerJson.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="5" end-line="10"><![CDATA[      <excludedPackages />
     </unboundedVersionInspectionSettings>
     <customRepositories />
@@ -80,8 +80,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>3</line>
       <resource><![CDATA[.idea/dictionaries/Uzivatel.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="1" end-line="3"><![CDATA[<component name="ProjectDictionaryState">
   <dictionary name="Uzivatel" />
 </component>]]></context>
@@ -90,8 +90,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>16</line>
       <resource><![CDATA[.idea/dictionaries/zakj.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="11" end-line="16"><![CDATA[      <w>timestampable</w>
       <w>unserialize</w>
       <w>zakjakub</w>
@@ -103,8 +103,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>6</line>
       <resource><![CDATA[.idea/encodings.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="1" end-line="6"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8" addBOMForNewFiles="with NO BOM">
@@ -116,8 +116,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>123</line>
       <resource><![CDATA[.idea/inspectionProfiles/Project_Default.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="118" end-line="123"><![CDATA[          <option value="zendframework/zend-test" />
         </list>
       </option>
@@ -129,8 +129,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>6</line>
       <resource><![CDATA[.idea/jsLibraryMappings.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="1" end-line="6"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
@@ -142,8 +142,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>25</line>
       <resource><![CDATA[.idea/misc.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="20" end-line="25"><![CDATA[    </entry>
   </component>
   <component name="ProjectResources">
@@ -155,8 +155,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>8</line>
       <resource><![CDATA[.idea/modules.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="3" end-line="8"><![CDATA[  <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../oswis-accommodation-bundle/.idea/oswis-accommodation-bundle.iml" filepath="$PROJECT_DIR$/../oswis-accommodation-bundle/.idea/oswis-accommodation-bundle.iml" />
@@ -168,8 +168,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>103</line>
       <resource><![CDATA[.idea/php.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="98" end-line="103"><![CDATA[    <interpreters>
       <interpreter home="$USER_HOME$/.PhpStorm2018.3/system/plugins/idea-php-latest-plugin/php-v7.2.12/php.sh" id="7d9c9d5a-7067-4a72-aa4e-5ba94994782a" name="PHP latest" debugger_id="php.debugger.XDebug" />
     </interpreters>
@@ -181,8 +181,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>11</line>
       <resource><![CDATA[.idea/vcs.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="6" end-line="11"><![CDATA[    </profile>
   </component>
   <component name="VcsDirectoryMappings">
@@ -194,8 +194,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>14</line>
       <resource><![CDATA[.idea/webResources.xml]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="9" end-line="14"><![CDATA[          </resourceRoots>
         </entryData>
       </entry>
@@ -207,8 +207,8 @@
     <violation severity="info" category="codestyle" ignored="false">
       <line>10</line>
       <resource><![CDATA[ZakjakubOswisAccommodationBundle.php]]></resource>
-      <title>Text files should end with a newline character</title>
-      <message><![CDATA[This file ends with no newline character. It won't render properly on a terminal, and it's considered a bad practice. Add a simple line feed as the last character to fix it.]]></message>
+      <title>Text files should end with a valid new line character.</title>
+      <message><![CDATA[This file ends with no newline character, or with a different newline character than other files in your project. It won't render properly on a terminal, and it's considered a bad practice.]]></message>
       <context start-line="5" end-line="10"><![CDATA[use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class ZakjakubOswisAccommodationBundle extends Bundle
