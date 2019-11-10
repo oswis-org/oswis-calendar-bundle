@@ -1009,16 +1009,16 @@
     },
     {
       "name": "doctrine/event-manager",
-      "version": "v1.0.0",
+      "version": "1.1.0",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/event-manager.git",
-        "reference": "a520bc093a0170feeb6b14e9d83f3a14452e64b3"
+        "reference": "629572819973f13486371cb611386eb17851e85c"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/event-manager/zipball/a520bc093a0170feeb6b14e9d83f3a14452e64b3",
-        "reference": "a520bc093a0170feeb6b14e9d83f3a14452e64b3",
+        "url": "https://api.github.com/repos/doctrine/event-manager/zipball/629572819973f13486371cb611386eb17851e85c",
+        "reference": "629572819973f13486371cb611386eb17851e85c",
         "shasum": ""
       },
       "require": {
@@ -1028,7 +1028,7 @@
         "doctrine/common": "<2.9@dev"
       },
       "require-dev": {
-        "doctrine/coding-standard": "^4.0",
+        "doctrine/coding-standard": "^6.0",
         "phpunit/phpunit": "^7.0"
       },
       "type": "library",
@@ -1048,16 +1048,16 @@
       ],
       "authors": [
         {
+          "name": "Guilherme Blanco",
+          "email": "guilhermeblanco@gmail.com"
+        },
+        {
           "name": "Roman Borschel",
           "email": "roman@code-factory.org"
         },
         {
           "name": "Benjamin Eberlei",
           "email": "kontakt@beberlei.de"
-        },
-        {
-          "name": "Guilherme Blanco",
-          "email": "guilhermeblanco@gmail.com"
         },
         {
           "name": "Jonathan Wage",
@@ -1072,14 +1072,16 @@
           "email": "ocramius@gmail.com"
         }
       ],
-      "description": "Doctrine Event Manager component",
+      "description": "The Doctrine Event Manager is a simple PHP event system that was built to be used with the various Doctrine projects.",
       "homepage": "https://www.doctrine-project.org/projects/event-manager.html",
       "keywords": [
         "event",
-        "eventdispatcher",
-        "eventmanager"
+        "event dispatcher",
+        "event manager",
+        "event system",
+        "events"
       ],
-      "time": "2018-06-11T11:59:03+00:00"
+      "time": "2019-11-10T09:48:07+00:00"
     },
     {
       "name": "doctrine/inflector",
@@ -7674,16 +7676,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.123",
+      "version": "v0.0.124",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "a2e48d0591fa133b277c8c0a0b252fcba5d97a69"
+        "reference": "4efdbd6d19098b0c891faccff82b338b2e5c1516"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/a2e48d0591fa133b277c8c0a0b252fcba5d97a69",
-        "reference": "a2e48d0591fa133b277c8c0a0b252fcba5d97a69",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/4efdbd6d19098b0c891faccff82b338b2e5c1516",
+        "reference": "4efdbd6d19098b0c891faccff82b338b2e5c1516",
         "shasum": ""
       },
       "require": {
@@ -7709,9 +7711,9 @@
       "authors": [
         {
           "name": "zakjakub",
-          "role": "author",
           "email": "mail@jakubzak.eu",
-          "homepage": "https://jakubzak.cz"
+          "homepage": "https://jakubzak.cz",
+          "role": "author"
         }
       ],
       "description": "Address book module for One Simple Web IS (OSWIS).",
@@ -7723,7 +7725,7 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2019-08-26T18:59:37+00:00"
+      "time": "2019-11-10T21:10:47+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
