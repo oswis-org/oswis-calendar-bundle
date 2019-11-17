@@ -52,6 +52,7 @@ class EventRevision extends AbstractRevision
     protected $location;
 
     /**
+     * MOVE!!!!!!!!!
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",

@@ -23,7 +23,7 @@
   ],
   "require": {
     "bigit/vokativ": "dev-master",
-    "endroid/qr-code": "^3.6",
+    "endroid/qr-code": "^3.7",
     "rikudou/czqrpayment": "^4.0",
     "zakjakub/oswis-core-bundle": "^0.0",
     "zakjakub/oswis-address-book-bundle": "^0.0"

@@ -32,7 +32,7 @@ class EventParticipantRevision extends AbstractRevision
     protected $container;
 
     /**
-     * Related contact (person or organization).
+     * Related contact (person or organization). MOVE?????
      * @var AbstractContact|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
@@ -44,7 +44,7 @@ class EventParticipantRevision extends AbstractRevision
     protected $contact;
 
     /**
-     * Related event.
+     * Related event. MOVE???????
      * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
