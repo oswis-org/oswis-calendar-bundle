@@ -1364,16 +1364,16 @@
     },
     {
       "name": "doctrine/orm",
-      "version": "v2.6.4",
+      "version": "v2.6.5",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/orm.git",
-        "reference": "b52ef5a1002f99ab506a5a2d6dba5a2c236c5f43"
+        "reference": "16751d210fb806cc6f1b868a2b9dde6fab6866ed"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/orm/zipball/b52ef5a1002f99ab506a5a2d6dba5a2c236c5f43",
-        "reference": "b52ef5a1002f99ab506a5a2d6dba5a2c236c5f43",
+        "url": "https://api.github.com/repos/doctrine/orm/zipball/16751d210fb806cc6f1b868a2b9dde6fab6866ed",
+        "reference": "16751d210fb806cc6f1b868a2b9dde6fab6866ed",
         "shasum": ""
       },
       "require": {
@@ -1441,7 +1441,7 @@
         "database",
         "orm"
       ],
-      "time": "2019-09-20T14:30:26+00:00"
+      "time": "2019-11-18T11:06:51+00:00"
     },
     {
       "name": "doctrine/persistence",
@@ -7847,16 +7847,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.126",
+      "version": "v0.0.127",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "5ba48505df4540887bef3278c576fed60e29ddd8"
+        "reference": "2118ecf3e0fb2c4039fcfdc3cd13618a46567397"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/5ba48505df4540887bef3278c576fed60e29ddd8",
-        "reference": "5ba48505df4540887bef3278c576fed60e29ddd8",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/2118ecf3e0fb2c4039fcfdc3cd13618a46567397",
+        "reference": "2118ecf3e0fb2c4039fcfdc3cd13618a46567397",
         "shasum": ""
       },
       "require": {
@@ -7896,20 +7896,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2019-11-17T20:19:33+00:00"
+      "time": "2019-11-18T20:16:07+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.315",
+      "version": "v0.0.316",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "7a6f17859efe4e5f2a013099f82acbb0df3b7976"
+        "reference": "3d161f3fafe7e7794368cd4987d2d6acaceb9d37"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/7a6f17859efe4e5f2a013099f82acbb0df3b7976",
-        "reference": "7a6f17859efe4e5f2a013099f82acbb0df3b7976",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/3d161f3fafe7e7794368cd4987d2d6acaceb9d37",
+        "reference": "3d161f3fafe7e7794368cd4987d2d6acaceb9d37",
         "shasum": ""
       },
       "require": {
@@ -7984,7 +7984,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-11-17T19:46:08+00:00"
+      "time": "2019-11-18T20:08:02+00:00"
     },
     {
       "name": "zendframework/zend-code",
