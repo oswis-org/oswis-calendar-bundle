@@ -82,11 +82,6 @@ class EventParticipantManager
         /// TODO: Throw exceptions!
     }
 
-    private static function mimeEnc(string $content): string
-    {
-        return EmailUtils::mime_header_encode($content);
-    }
-
     /**
      * @param AbstractContact|null      $contact
      * @param Event|null                $event
@@ -241,6 +236,11 @@ class EventParticipantManager
 
             return false;
         }
+    }
+
+    private static function mimeEnc(string $content): string
+    {
+        return EmailUtils::mime_header_encode($content);
     }
 
     /**
