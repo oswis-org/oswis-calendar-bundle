@@ -830,8 +830,6 @@ class Event extends AbstractRevisionContainer
         return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->exists(
             static function (EventParticipant $eventParticipant) use ($appUser, $referenceDateTime) {
                 try {
-                    /** @noinspection PhpUndefinedMethodInspection */
-                    /** @noinspection NullPointerExceptionInspection */
                     $participantAppUser = $eventParticipant->getRevisionByDate($referenceDateTime)->getContact()->getAppUser();
                     assert($participantAppUser instanceof AppUser);
 

@@ -281,7 +281,6 @@ class EventParticipantManager
                         QrPaymentOptions::COMMENT         => $qrPaymentComment.', záloha',
                     ]
                 );
-                /** @noinspection PhpUndefinedMethodInspection */
                 $depositPaymentQrPng = $depositPaymentQr->getQrImage(true)->writeString();
             } catch (Exception $e) {
                 $depositPaymentQr = null;
@@ -297,7 +296,6 @@ class EventParticipantManager
                         QrPaymentOptions::COMMENT         => $qrPaymentComment.', doplatek',
                     ]
                 );
-                /** @noinspection PhpUndefinedMethodInspection */
                 $restPaymentQrPng = $restPaymentQr->getQrImage(true)->writeString();
             } catch (Exception $e) {
                 $restPaymentQr = null;

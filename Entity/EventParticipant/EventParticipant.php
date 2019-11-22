@@ -619,7 +619,6 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
-    /** @noinspection MethodShouldBeFinalInspection */
     /**
      * @param AbstractContact|null $contact
      *
