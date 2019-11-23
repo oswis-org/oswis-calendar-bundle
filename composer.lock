@@ -7375,36 +7375,36 @@
       "time": "2019-10-17T07:27:07+00:00"
     },
     {
-      "name": "twig/inky-extension",
-      "version": "v2.0.2",
+      "name": "twig/inky-extra",
+      "version": "v3.0.0",
       "source": {
         "type": "git",
-        "url": "https://github.com/twigphp/inky-extension.git",
-        "reference": "dbb0833049727ca8e5c36e976957652967c1368b"
+        "url": "https://github.com/twigphp/inky-extra.git",
+        "reference": "7e33cb931f29e8cbc1f68eafa30e0ca7f7c6ad3b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/twigphp/inky-extension/zipball/dbb0833049727ca8e5c36e976957652967c1368b",
-        "reference": "dbb0833049727ca8e5c36e976957652967c1368b",
+        "url": "https://api.github.com/repos/twigphp/inky-extra/zipball/7e33cb931f29e8cbc1f68eafa30e0ca7f7c6ad3b",
+        "reference": "7e33cb931f29e8cbc1f68eafa30e0ca7f7c6ad3b",
         "shasum": ""
       },
       "require": {
         "lorenzo/pinky": "^1.0.5",
-        "php": "^7.0",
-        "twig/twig": "^1.34 || ^2.4"
+        "php": "^7.1.3",
+        "twig/twig": "^2.4|^3.0"
       },
       "require-dev": {
-        "symfony/phpunit-bridge": "^4.1.8"
+        "symfony/phpunit-bridge": "^4.4@dev"
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "1.0-dev"
+          "dev-master": "2.12-dev"
         }
       },
       "autoload": {
         "psr-4": {
-          "Twig\\Inky\\": "src/"
+          "Twig\\Extra\\Inky\\": "src/"
         }
       },
       "notification-url": "https://packagist.org/downloads/",
@@ -7427,8 +7427,7 @@
         "inky",
         "twig"
       ],
-      "abandoned": "twig/inky-extra",
-      "time": "2019-09-22T19:16:32+00:00"
+      "time": "2019-10-17T07:27:12+00:00"
     },
     {
       "name": "twig/markdown-extra",
@@ -7489,38 +7488,35 @@
     },
     {
       "name": "twig/twig",
-      "version": "v2.12.2",
+      "version": "v3.0.0",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/Twig.git",
-        "reference": "d761fd1f1c6b867ae09a7d8119a6d95d06dc44ed"
+        "reference": "9b58bb8ac7a41d72fbb5a7dc643e07923e5ccc26"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/twigphp/Twig/zipball/d761fd1f1c6b867ae09a7d8119a6d95d06dc44ed",
-        "reference": "d761fd1f1c6b867ae09a7d8119a6d95d06dc44ed",
+        "url": "https://api.github.com/repos/twigphp/Twig/zipball/9b58bb8ac7a41d72fbb5a7dc643e07923e5ccc26",
+        "reference": "9b58bb8ac7a41d72fbb5a7dc643e07923e5ccc26",
         "shasum": ""
       },
       "require": {
-        "php": "^7.0",
+        "php": "^7.2.9",
         "symfony/polyfill-ctype": "^1.8",
         "symfony/polyfill-mbstring": "^1.3"
       },
       "require-dev": {
         "psr/container": "^1.0",
-        "symfony/debug": "^3.4|^4.2",
+        "symfony/debug": "^3.4|^4.2|^5.0",
         "symfony/phpunit-bridge": "^4.4@dev|^5.0"
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "2.12-dev"
+          "dev-master": "3.0-dev"
         }
       },
       "autoload": {
-        "psr-0": {
-          "Twig_": "lib/"
-        },
         "psr-4": {
           "Twig\\": "src/"
         }
@@ -7552,7 +7548,7 @@
       "keywords": [
         "templating"
       ],
-      "time": "2019-11-11T16:52:09+00:00"
+      "time": "2019-11-15T20:38:32+00:00"
     },
     {
       "name": "vich/uploader-bundle",
@@ -7754,16 +7750,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.133",
+      "version": "v0.0.134",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "061a74db5f25ed6ea32a00020824aaca581d64cc"
+        "reference": "d6a0c894db641454fb9b1ce5f89dfef78c392c09"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/061a74db5f25ed6ea32a00020824aaca581d64cc",
-        "reference": "061a74db5f25ed6ea32a00020824aaca581d64cc",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/d6a0c894db641454fb9b1ce5f89dfef78c392c09",
+        "reference": "d6a0c894db641454fb9b1ce5f89dfef78c392c09",
         "shasum": ""
       },
       "require": {
@@ -7803,20 +7799,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2019-11-20T19:08:02+00:00"
+      "time": "2019-11-22T20:30:39+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.321",
+      "version": "v0.0.323",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "aa24e5c049aed1e1a23eb9b0780f13e8d4b038a7"
+        "reference": "40e92fadc06cf87573e274cb684525f95a594214"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/aa24e5c049aed1e1a23eb9b0780f13e8d4b038a7",
-        "reference": "aa24e5c049aed1e1a23eb9b0780f13e8d4b038a7",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/40e92fadc06cf87573e274cb684525f95a594214",
+        "reference": "40e92fadc06cf87573e274cb684525f95a594214",
         "shasum": ""
       },
       "require": {
@@ -7838,7 +7834,7 @@
         "league/html-to-markdown": "^4.9",
         "lexik/jwt-authentication-bundle": "^2.6",
         "mpdf/mpdf": "^8.0",
-        "php": "^7.1.3",
+        "php": "^7.2.9",
         "sensio/framework-extra-bundle": "^5.5",
         "stof/doctrine-extensions-bundle": "^1.3",
         "symfony/dependency-injection": "^4.4",
@@ -7853,7 +7849,7 @@
         "symfony/twig-bundle": "^4.4",
         "symfony/web-link": "^4.4",
         "twig/cssinliner-extra": "^3.0",
-        "twig/inky-extension": "^2.0",
+        "twig/inky-extra": "^3.0",
         "twig/markdown-extra": "^3.0",
         "vich/uploader-bundle": "^1.11"
       },
@@ -7891,7 +7887,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-11-22T20:09:55+00:00"
+      "time": "2019-11-23T00:00:00+00:00"
     },
     {
       "name": "zendframework/zend-code",
