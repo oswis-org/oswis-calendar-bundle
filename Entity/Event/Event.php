@@ -299,22 +299,6 @@ class Event extends AbstractRevisionContainer
         assert($revision instanceof EventRevision);
     }
 
-    final public static function sortEventParticipants(array &$eventParticipants): void
-    {
-        usort(
-            $eventParticipants,
-            static function (EventParticipant $arg1, EventParticipant $arg2) {
-                if (!$arg1->getContact() || !$arg2->getContact()) {
-                    $cmpResult = 0;
-                } else {
-                    $cmpResult = strcmp($arg1->getContact()->getSortableContactName(), $arg2->getContact()->getSortableContactName());
-                }
-
-                return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
-            }
-        );
-    }
-
     /**
      * @return EventType|null
      */
@@ -639,6 +623,22 @@ class Event extends AbstractRevisionContainer
         return $this->eventParticipantRevisions ?? new ArrayCollection();
     }
 
+    final public static function sortEventParticipants(array &$eventParticipants): void
+    {
+        usort(
+            $eventParticipants,
+            static function (EventParticipant $arg1, EventParticipant $arg2) {
+                if (!$arg1->getContact() || !$arg2->getContact()) {
+                    $cmpResult = 0;
+                } else {
+                    $cmpResult = strcmp($arg1->getContact()->getSortableContactName(), $arg2->getContact()->getSortableContactName());
+                }
+
+                return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
+            }
+        );
+    }
+
     /**
      * @return Collection
      */
@@ -830,6 +830,9 @@ class Event extends AbstractRevisionContainer
         return $this->getEventParticipantsByType($eventParticipantType, $referenceDateTime)->exists(
             static function (EventParticipant $eventParticipant) use ($appUser, $referenceDateTime) {
                 try {
+                    if ($eventParticipant->getRevisionByDate($referenceDateTime)->getContact()) {
+                        return false;
+                    }
                     $participantAppUser = $eventParticipant->getRevisionByDate($referenceDateTime)->getContact()->getAppUser();
                     assert($participantAppUser instanceof AppUser);
 
