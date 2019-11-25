@@ -13,7 +13,7 @@ use rikudou\CzQrPayment\QrPaymentOptions;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\NamedAddress;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Organization;
@@ -210,10 +210,10 @@ class EventParticipantManager
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                     'logo'             => 'cid:logo',
                 );
-                $archiveAddress = new NamedAddress(
+                $archiveAddress = new Address(
                     $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
-                $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
+                $email = (new TemplatedEmail())->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
                     '@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig'
                 )->context($mailData);
                 $em->persist($eventParticipant);
@@ -340,11 +340,11 @@ class EventParticipantManager
                     'depositQr'        => 'cid:depositQr',
                     'restQr'           => 'cid:restQr',
                 );
-                $archiveAddress = new NamedAddress(
+                $archiveAddress = new Address(
                     $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
                 $email = new TemplatedEmail();
-                $email->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
+                $email->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
                 $email->bcc($archiveAddress);
                 $email->subject(self::mimeEnc($title));
                 $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig');
@@ -429,8 +429,8 @@ class EventParticipantManager
                     'logo'             => 'cid:logo',
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                 );
-                $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc(
-                    new NamedAddress(
+                $email = (new TemplatedEmail())->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc(
+                    new Address(
                         $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                     )
                 )->subject(self::mimeEnc($title))->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-verification.html.twig')->context($mailData);
@@ -551,7 +551,7 @@ class EventParticipantManager
             'oswis'   => $this->oswisCoreSettings->getArray(),
         ];
         $mailSettings = $this->oswisCoreSettings->getEmail();
-        $archive = new NamedAddress(
+        $archive = new Address(
             $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
         );
         $mail = (new TemplatedEmail())->to($archive)->subject(self::mimeEnc($title))->htmlTemplate($templateEmail)->context($mailData);
@@ -678,10 +678,10 @@ class EventParticipantManager
                     'logo'             => 'cid:logo',
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                 );
-                $archive = new NamedAddress(
+                $archive = new Address(
                     $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
-                $to = new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? '');
+                $to = new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? '');
                 $email = (new TemplatedEmail())->to($to)->bcc($archive)->subject(self::mimeEnc($title))->htmlTemplate(
                     '@ZakjakubOswisCalendar/e-mail/event-participant-info-before-event.html.twig'
                 )->context($mailData);
@@ -778,10 +778,10 @@ class EventParticipantManager
                     'logo'             => 'cid:logo',
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                 );
-                $archive = new NamedAddress(
+                $archive = new Address(
                     $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
                 );
-                $to = new NamedAddress($eMail ?? '', self::mimeEnc($name ?? '') ?? '');
+                $to = new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? '');
                 $email = (new TemplatedEmail())->to($to)->bcc($archive)->subject(self::mimeEnc($title))->htmlTemplate(
                     '@ZakjakubOswisCalendar/e-mail/event-participant-feedback.html.twig'
                 )->context($mailData);

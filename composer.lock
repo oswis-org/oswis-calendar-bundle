@@ -9594,16 +9594,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.135",
+      "version": "v0.0.136",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "2a6cbd5a5a8af5430e71d87d4f720d7570268777"
+        "reference": "a1b8050d9d2606b65abb148eef4aa4a681e4936e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/2a6cbd5a5a8af5430e71d87d4f720d7570268777",
-        "reference": "2a6cbd5a5a8af5430e71d87d4f720d7570268777",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/a1b8050d9d2606b65abb148eef4aa4a681e4936e",
+        "reference": "a1b8050d9d2606b65abb148eef4aa4a681e4936e",
         "shasum": ""
       },
       "require": {
@@ -9643,20 +9643,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2019-11-23T00:16:47+00:00"
+      "time": "2019-11-24T20:04:03+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.325",
+      "version": "v0.0.328",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "a5804fa2e246deedb4f6174bce0d910dfeeb6935"
+        "reference": "0ff6af20d0ce5393caf599f4950061c334bd1256"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/a5804fa2e246deedb4f6174bce0d910dfeeb6935",
-        "reference": "a5804fa2e246deedb4f6174bce0d910dfeeb6935",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/0ff6af20d0ce5393caf599f4950061c334bd1256",
+        "reference": "0ff6af20d0ce5393caf599f4950061c334bd1256",
         "shasum": ""
       },
       "require": {
@@ -9737,7 +9737,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-11-24T19:43:56+00:00"
+      "time": "2019-11-25T22:02:59+00:00"
     },
     {
       "name": "zendframework/zend-code",

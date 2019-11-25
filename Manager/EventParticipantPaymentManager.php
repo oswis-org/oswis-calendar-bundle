@@ -11,7 +11,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\NamedAddress;
+use Symfony\Component\Mime\Address;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
@@ -324,10 +324,10 @@ class EventParticipantPaymentManager
                 'oswis'            => $this->oswisCoreSettings,
                 'logo'             => 'cid:logo',
             );
-            $archive = new NamedAddress(
+            $archive = new Address(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
-            $email = (new TemplatedEmail())->to(new NamedAddress($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
+            $email = (new TemplatedEmail())->to(new Address($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
                 EmailUtils::mime_header_encode($title)
             )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
@@ -367,7 +367,7 @@ class EventParticipantPaymentManager
                 'oswis'              => $this->oswisCoreSettings,
                 'logo'               => 'cid:logo',
             );
-            $archive = new NamedAddress(
+            $archive = new Address(
                 $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
             );
             $email = (new TemplatedEmail())->to($archive)->subject(EmailUtils::mime_header_encode($title))->htmlTemplate(
