@@ -152,14 +152,14 @@ class EventParticipant extends AbstractRevisionContainer
     protected Collection $revisions;
 
     /**
-     * @var EventParticipantRevision
+     * @var AbstractRevision|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
-    protected EventParticipantRevision $activeRevision;
+    protected ?AbstractRevision $activeRevision;
 
     /**
      * Type of relation between contact and event - attendee, staff....

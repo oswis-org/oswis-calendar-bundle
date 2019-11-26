@@ -35,7 +35,7 @@ class EventTypeRevision extends AbstractRevision
     public const TEAM_BUILDING = 'team-building';
 
     /**
-     * @var EventParticipant
+     * @var AbstractRevisionContainer|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
      *     fetch="EAGER",
@@ -43,7 +43,7 @@ class EventTypeRevision extends AbstractRevision
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
      */
-    protected EventParticipant $container;
+    protected ?AbstractRevisionContainer $container;
 
     /**
      * EventRevision constructor.

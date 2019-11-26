@@ -22,14 +22,14 @@ class EventParticipantRevision extends AbstractRevision
     use DeletedTrait;
 
     /**
-     * @var EventParticipant
+     * @var AbstractRevisionContainer|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     inversedBy="revisions"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
      */
-    protected EventParticipant $container;
+    protected ?AbstractRevisionContainer $container;
 
     /**
      * Related contact (person or organization). MOVE?????

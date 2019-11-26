@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "79ca30379ff35744df39206da07b25bc",
+  "content-hash": "a7bd7b1ddefbabebddcf5ad770dcc58a",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -331,7 +331,7 @@
         }
       ],
       "description": "Knihovna pro skloňování českých jmen do 5. pádu pro účely generování oslovení.",
-      "time": "2016-07-11T14:04:26+00:00"
+      "time": "2016-07-11T12:04:26+00:00"
     },
     {
       "name": "dasprid/enum",
@@ -2174,9 +2174,9 @@
       "authors": [
         {
           "name": "Ashot Khanamiryan",
-          "role": "Developer",
           "email": "a.khanamiryan@gmail.com",
-          "homepage": "https://github.com/khanamiryan"
+          "homepage": "https://github.com/khanamiryan",
+          "role": "Developer"
         }
       ],
       "description": "QR code decoder / reader",
@@ -8546,20 +8546,21 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.137",
+      "version": "v0.0.141",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "8994a64252ee7b625dc74f73fce6f4f8de35e4bf"
+        "reference": "aaad510b07bae2a38681b233b969ad38767236d8"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/8994a64252ee7b625dc74f73fce6f4f8de35e4bf",
-        "reference": "8994a64252ee7b625dc74f73fce6f4f8de35e4bf",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/aaad510b07bae2a38681b233b969ad38767236d8",
+        "reference": "aaad510b07bae2a38681b233b969ad38767236d8",
         "shasum": ""
       },
       "require": {
         "bigit/vokativ": "dev-master",
+        "php": "^7.4",
         "zakjakub/oswis-core-bundle": "^0.0"
       },
       "require-dev": {
@@ -8595,7 +8596,7 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2019-11-25T23:20:41+00:00"
+      "time": "2019-11-26T20:56:38+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
@@ -9026,6 +9027,8 @@
   },
   "prefer-stable": false,
   "prefer-lowest": false,
-  "platform": [],
+  "platform": {
+    "php": "^7.4"
+  },
   "platform-dev": []
 }

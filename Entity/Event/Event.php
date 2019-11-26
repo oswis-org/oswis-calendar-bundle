@@ -199,11 +199,11 @@ class Event extends AbstractRevisionContainer
     protected Collection $revisions;
 
     /**
-     * @var EventParticipantRevision
+     * @var AbstractRevision|null
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision")
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
-    protected EventParticipantRevision $activeRevision;
+    protected ?AbstractRevision $activeRevision;
 
     /**
      * @var Collection|null
