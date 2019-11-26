@@ -14,6 +14,8 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Exception\LogicException;
+use Symfony\Component\Mime\Exception\RfcComplianceException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Organization;
@@ -43,22 +45,22 @@ class EventParticipantManager
     /**
      * @var EntityManagerInterface
      */
-    protected $em;
+    protected EntityManagerInterface $em;
 
     /**
      * @var LoggerInterface|null
      */
-    protected $logger;
+    protected ?LoggerInterface $logger;
 
     /**
      * @var OswisCoreSettingsProvider
      */
-    protected $oswisCoreSettings;
+    protected ?OswisCoreSettingsProvider $oswisCoreSettings;
 
     /**
      * @var MailerInterface
      */
-    protected $mailer;
+    protected MailerInterface $mailer;
 
     /**
      * EventParticipantManager constructor.
@@ -492,7 +494,6 @@ class EventParticipantManager
         $this->em->flush();
     }
 
-    /** @noinspection MethodShouldBeFinalInspection */
     /**
      * @param PdfGenerator              $pdfGenerator
      * @param Event|null                $event
@@ -501,7 +502,10 @@ class EventParticipantManager
      * @param string                    $title
      *
      * @throws OswisException
+     * @throws LogicException
+     * @throws RfcComplianceException
      */
+    /** @noinspection MethodShouldBeFinalInspection */
     public function sendEventParticipantList(
         PdfGenerator $pdfGenerator,
         Event $event,

@@ -60,7 +60,7 @@ class EventParticipantNote
      * @var boolean
      * @ORM\Column(type="boolean", nullable=true)
      */
-    protected $publicNote;
+    protected bool $publicNote;
 
     /**
      * Event contact revision (connected to person or organization).
@@ -71,7 +71,7 @@ class EventParticipantNote
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipant;
+    protected ?EventParticipant $eventParticipant;
 
     /**
      * @param EventParticipant|null $eventParticipant

@@ -27,22 +27,22 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     /**
      * @var EntityManagerInterface
      */
-    private $em;
+    private EntityManagerInterface $em;
 
     /**
      * @var MailerInterface
      */
-    private $mailer;
+    private MailerInterface $mailer;
 
     /**
      * @var LoggerInterface
      */
-    private $logger;
+    private LoggerInterface $logger;
 
     /**
      * @var OswisCoreSettingsProvider
      */
-    private $oswisCoreSettings;
+    private OswisCoreSettingsProvider $oswisCoreSettings;
 
     /**
      * @param EntityManagerInterface    $em

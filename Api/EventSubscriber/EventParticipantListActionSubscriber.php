@@ -26,17 +26,17 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
     /**
      * @var EntityManagerInterface
      */
-    protected $em;
+    protected EntityManagerInterface $em;
 
     /**
      * @var PdfGenerator
      */
-    protected $pdfGenerator;
+    protected PdfGenerator $pdfGenerator;
 
     /**
      * @var EventParticipantManager
      */
-    private $eventParticipantManager;
+    private EventParticipantManager $eventParticipantManager;
 
     public function __construct(
         PdfGenerator $pdfGenerator,

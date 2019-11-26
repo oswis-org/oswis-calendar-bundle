@@ -3,6 +3,7 @@
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
 use InvalidArgumentException;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -34,7 +35,7 @@ class EventTypeRevision extends AbstractRevision
     public const TEAM_BUILDING = 'team-building';
 
     /**
-     * @var Event
+     * @var EventParticipant
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
      *     fetch="EAGER",
@@ -42,7 +43,7 @@ class EventTypeRevision extends AbstractRevision
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
      */
-    protected $container;
+    protected EventParticipant $container;
 
     /**
      * EventRevision constructor.

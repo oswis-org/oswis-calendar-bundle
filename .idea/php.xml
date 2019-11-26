@@ -133,8 +133,6 @@
       <path value="$PROJECT_DIR$/vendor/twig/markdown-extra" />
       <path value="$PROJECT_DIR$/vendor/twig/inky-extra" />
       <path value="$PROJECT_DIR$/vendor/psr/event-dispatcher" />
-      <path value="$PROJECT_DIR$/vendor/fgrosse/phpasn1" />
-      <path value="$PROJECT_DIR$/vendor/thecodingmachine/safe" />
       <path value="$PROJECT_DIR$/vendor/league/commonmark-ext-autolink" />
       <path value="$PROJECT_DIR$/vendor/league/commonmark-ext-strikethrough" />
       <path value="$PROJECT_DIR$/vendor/league/commonmark-ext-table" />
@@ -149,18 +147,6 @@
       <path value="$PROJECT_DIR$/vendor/symfony/yaml" />
       <path value="$PROJECT_DIR$/vendor/guzzlehttp/streams" />
       <path value="$PROJECT_DIR$/vendor/guzzlehttp/ringphp" />
-      <path value="$PROJECT_DIR$/vendor/spomky-labs/base64url" />
-      <path value="$PROJECT_DIR$/vendor/spomky-labs/lexik-jose-bridge" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-bundle" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-checker" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-core" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-encryption" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-signature" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-key-mgmt" />
-      <path value="$PROJECT_DIR$/vendor/web-token/jwt-signature-algorithm-rsa" />
-      <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
-      <path value="$PROJECT_DIR$/vendor/psr/http-message" />
-      <path value="$PROJECT_DIR$/vendor/psr/http-client" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -168,5 +154,5 @@
       <interpreter id="e7b522c1-ad30-4284-b156-75f5db340250" name="PHP latest" home="$USER_HOME$/.PhpStorm2019.3/system/plugins/idea-php-latest-plugin/php-v7.3.1/php.sh" debugger_id="php.debugger.XDebug" />
     </interpreters>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7.1" />
+  <component name="PhpProjectSharedConfiguration" php_language_level="7.4" />
 </project>

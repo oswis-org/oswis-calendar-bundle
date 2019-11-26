@@ -104,7 +104,7 @@ class Event extends AbstractRevisionContainer
      * @MaxDepth(2)
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $superEvent;
+    protected ?Event $superEvent;
 
     /**
      * Sub events.
@@ -196,14 +196,14 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $revisions;
+    protected Collection $revisions;
 
     /**
-     * @var EventRevision
+     * @var EventParticipantRevision
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision")
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
-    protected $activeRevision;
+    protected EventParticipantRevision $activeRevision;
 
     /**
      * @var Collection|null
@@ -226,7 +226,7 @@ class Event extends AbstractRevisionContainer
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
      */
-    private $eventType;
+    private ?EventType $eventType;
 
     /**
      * @var EventSeries|null $eventSeries
@@ -237,13 +237,13 @@ class Event extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      * @MaxDepth(1)
      */
-    private $eventSeries;
+    private ?EventSeries $eventSeries;
 
     /**
      * @var bool
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $priceRecursiveFromParent;
+    private bool $priceRecursiveFromParent;
 
     /**
      * Event constructor.

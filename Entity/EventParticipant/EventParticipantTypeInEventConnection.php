@@ -66,7 +66,7 @@ class EventParticipantTypeInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType;
 
     /**
      * Event contact (connected to person or organization).
@@ -78,7 +78,7 @@ class EventParticipantTypeInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * FlagInEmployerInEvent constructor.

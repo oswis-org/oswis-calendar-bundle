@@ -27,32 +27,32 @@ class EventParticipantController extends AbstractController
     /**
      * @var EntityManagerInterface
      */
-    public $em;
+    public EntityManagerInterface $em;
 
     /**
      * @var LoggerInterface
      */
-    public $logger;
+    public LoggerInterface $logger;
 
     /**
      * @var UserPasswordEncoderInterface
      */
-    public $encoder;
+    public UserPasswordEncoderInterface $encoder;
 
     /**
      * @var OswisCoreSettingsProvider
      */
-    public $oswisCoreSettings;
+    public OswisCoreSettingsProvider $oswisCoreSettings;
 
     /**
      * @var MailerInterface
      */
-    public $mailer;
+    public MailerInterface $mailer;
 
     /**
      * @var Environment
      */
-    public $templating;
+    public Environment $templating;
 
     /**
      * EventParticipantController constructor.

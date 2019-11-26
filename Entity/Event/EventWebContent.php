@@ -30,7 +30,7 @@ class EventWebContent
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * EventWebContent constructor.

@@ -26,20 +26,20 @@ final class EventParticipantListActionRequest
      * @Symfony\Component\Validator\Constraints\NotNull()
      * @Symfony\Component\Validator\Constraints\NotBlank()
      */
-    public $event;
+    public ?Event $event;
 
     /**
      * @var EventParticipantType|null
      */
-    public $eventParticipantType;
+    public ?EventParticipantType $eventParticipantType;
 
     /**
      * @var string|null
      */
-    public $title;
+    public ?string $title;
 
     /**
      * @var bool|null
      */
-    public $detailed;
+    public ?bool $detailed;
 }

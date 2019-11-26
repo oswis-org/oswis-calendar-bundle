@@ -21,7 +21,7 @@ class EventParticipantFlagInEventConnection
      * @var int|null
      * @ORM\Column(type="integer", nullable=true)
      */
-    protected $maxAmountInEvent;
+    protected ?int $maxAmountInEvent;
 
     /**
      * @var EventParticipantFlag|null
@@ -32,7 +32,7 @@ class EventParticipantFlagInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantFlag;
+    protected ?EventParticipantFlag $eventParticipantFlag;
 
     /**
      * Event contact (connected to person or organization).
@@ -44,7 +44,7 @@ class EventParticipantFlagInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * Event contact type.
@@ -56,7 +56,7 @@ class EventParticipantFlagInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType;
 
     /**
      * @param EventParticipantFlag|null $eventParticipantFlag

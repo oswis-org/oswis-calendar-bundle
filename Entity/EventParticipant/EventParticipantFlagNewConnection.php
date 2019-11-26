@@ -29,7 +29,7 @@ class EventParticipantFlagNewConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantFlag;
+    protected ?EventParticipantFlag $eventParticipantFlag;
 
     /**
      * @var EventParticipant|null
@@ -40,7 +40,7 @@ class EventParticipantFlagNewConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipant;
+    protected ?EventParticipant $eventParticipant;
 
     /**
      * FlagInEmployerInEvent constructor.

@@ -32,12 +32,12 @@ final class EventActionSubscriber implements EventSubscriberInterface
     /**
      * @var EventParticipantManager
      */
-    private $eventParticipantManager;
+    private EventParticipantManager $eventParticipantManager;
 
     /**
      * @var PdfGenerator
      */
-    private $pdfGenerator;
+    private PdfGenerator $pdfGenerator;
 
     public function __construct(
         EntityManagerInterface $em,

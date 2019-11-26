@@ -28,12 +28,12 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
     /**
      * @var EntityManagerInterface
      */
-    private $em;
+    private EntityManagerInterface $em;
 
     /**
      * @var EventParticipantPaymentManager
      */
-    private $eventParticipantPaymentManager;
+    private EventParticipantPaymentManager $eventParticipantPaymentManager;
 
     public function __construct(
         EntityManagerInterface $em,

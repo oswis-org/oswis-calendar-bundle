@@ -18,7 +18,7 @@ abstract class AbstractBundleEvent
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * AbstractBundleEvent constructor.

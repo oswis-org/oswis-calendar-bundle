@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -31,14 +32,14 @@ class EventRevision extends AbstractRevision
     use BankAccountTrait;
 
     /**
-     * @var Event
+     * @var EventParticipant
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="revisions"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
      */
-    protected $container;
+    protected EventParticipant $container;
 
     /**
      * @var Place|null $location
@@ -49,7 +50,7 @@ class EventRevision extends AbstractRevision
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @MaxDepth(1)
      */
-    protected $location;
+    protected ?Place $location;
 
     /**
      * MOVE!!!!!!!!!

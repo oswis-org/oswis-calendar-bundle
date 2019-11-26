@@ -30,7 +30,7 @@ class EventRegistrationRange
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * @var EventParticipantType|null
@@ -41,7 +41,7 @@ class EventRegistrationRange
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType;
 
     /**
      * EmployerFlag constructor.

@@ -9,6 +9,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use InvalidArgumentException;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -78,17 +79,17 @@ class EventType extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $revisions;
+    protected Collection $revisions;
 
     /**
-     * @var EventTypeRevision
+     * @var EventParticipantRevision
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventTypeRevision",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
-    protected $activeRevision;
+    protected EventParticipantRevision $activeRevision;
 
     /**
      * Events of that type.

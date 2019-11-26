@@ -22,6 +22,7 @@
     }
   ],
   "require": {
+    "php": "^7.4",
     "bigit/vokativ": "dev-master",
     "endroid/qr-code": "^3.7",
     "rikudou/czqrpayment": "^4.0",

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
@@ -25,7 +25,7 @@ class EventFlagConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventFlag;
+    protected ?EventFlag $eventFlag;
 
     /**
      * Event.
@@ -37,7 +37,7 @@ class EventFlagConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventRevision;
+    protected ?EventRevision $eventRevision;
 
     /**
      * FlagInEmployerInEvent constructor.

@@ -26,30 +26,30 @@ final class EventActionRequest
      * @Symfony\Component\Validator\Constraints\NotNull()
      * @Symfony\Component\Validator\Constraints\NotBlank()
      */
-    public $type;
+    public ?string $type;
 
     /**
      * @var Event|null
      */
-    public $event;
+    public ?Event $event;
 
     /**
      * @var int|null
      */
-    public $count;
+    public ?int $count;
 
     /**
      * @var int|null
      */
-    public $startId;
+    public ?int $startId;
 
     /**
      * @var int|null
      */
-    public $endId;
+    public ?int $endId;
 
     /**
      * @var int|null
      */
-    public $recursiveDepth;
+    public ?int $recursiveDepth;
 }

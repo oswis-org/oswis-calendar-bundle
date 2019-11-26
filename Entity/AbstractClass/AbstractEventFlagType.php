@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
 
@@ -17,14 +17,14 @@ abstract class AbstractEventFlagType
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected $minInEventParticipant;
+    protected ?int $minInEventParticipant;
 
     /**
      * Maximal amount of flags used.
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected $maxInEventParticipant;
+    protected ?int $maxInEventParticipant;
 
     abstract public static function getAllowedTypesDefault(): array;
 

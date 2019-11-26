@@ -38,7 +38,7 @@ class EventParticipantPaymentManager
     /**
      * @var EntityManagerInterface
      */
-    protected $em;
+    protected EntityManagerInterface $em;
 
     /**
      * @var Mailer
@@ -48,12 +48,12 @@ class EventParticipantPaymentManager
     /**
      * @var LoggerInterface
      */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /**
      * @var OswisCoreSettingsProvider
      */
-    protected $oswisCoreSettings;
+    protected OswisCoreSettingsProvider $oswisCoreSettings;
 
     /**
      * EventParticipantPaymentManager constructor.

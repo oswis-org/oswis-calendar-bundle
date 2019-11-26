@@ -33,7 +33,7 @@ class EventPrice
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * @var EventParticipantType|null
@@ -43,7 +43,7 @@ class EventPrice
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType;
 
     /**
      * @param Nameable|null             $nameable

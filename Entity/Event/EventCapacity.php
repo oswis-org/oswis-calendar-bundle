@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
@@ -28,7 +28,7 @@ class EventCapacity
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $event;
+    protected ?Event $event;
 
     /**
      * Type of participants allowed by this capacity limit.
@@ -39,14 +39,14 @@ class EventCapacity
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType;
 
     /**
      * Allow participants overflow (manually by manager).
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer")
      */
-    protected $overflowAllowedAmount;
+    protected ?int $overflowAllowedAmount;
 
     /**
      * EmployerFlag constructor.

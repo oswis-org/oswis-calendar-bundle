@@ -143,7 +143,7 @@ class EventParticipantType
      * @var bool|null
      * @ORM\Column(type="boolean", nullable=true)
      */
-    protected $formal;
+    protected ?bool $formal;
 
     /**
      * EmployerFlag constructor.
