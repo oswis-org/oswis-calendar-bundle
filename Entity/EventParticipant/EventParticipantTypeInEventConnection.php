@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -66,7 +66,7 @@ class EventParticipantTypeInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventParticipantType $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType = null;
 
     /**
      * Event contact (connected to person or organization).
@@ -78,7 +78,7 @@ class EventParticipantTypeInEventConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Event $event;
+    protected ?Event $event = null;
 
     /**
      * FlagInEmployerInEvent constructor.

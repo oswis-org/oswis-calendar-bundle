@@ -104,7 +104,7 @@ class Event extends AbstractRevisionContainer
      * @MaxDepth(2)
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Event $superEvent;
+    protected ?Event $superEvent = null;
 
     /**
      * Sub events.
@@ -116,7 +116,7 @@ class Event extends AbstractRevisionContainer
      * )
      * @MaxDepth(2)
      */
-    protected $subEvents;
+    protected $subEvents = null;
 
     /**
      * People and organizations who attend at the event.
@@ -129,7 +129,7 @@ class Event extends AbstractRevisionContainer
      * )
      * @MaxDepth(2)
      */
-    protected $eventParticipantRevisions;
+    protected $eventParticipantRevisions = null;
 
     /**
      * @var Collection
@@ -140,7 +140,7 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $eventCapacities;
+    protected $eventCapacities = null;
 
     /**
      * @var Collection
@@ -151,7 +151,7 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $eventPrices;
+    protected $eventPrices = null;
 
     /**
      * @var Collection
@@ -162,7 +162,7 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $eventRegistrationRanges;
+    protected $eventRegistrationRanges = null;
 
     /**
      * @var Collection|null
@@ -173,7 +173,7 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $eventParticipantTypeInEventConnections;
+    protected $eventParticipantTypeInEventConnections = null;
 
     /**
      * @var Collection|null
@@ -184,10 +184,10 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $eventParticipantFlagInEventConnections;
+    protected $eventParticipantFlagInEventConnections = null;
 
     /**
-     * @var Collection
+     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision",
      *     mappedBy="container",
@@ -203,7 +203,7 @@ class Event extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision")
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
-    protected ?AbstractRevision $activeRevision;
+    protected ?AbstractRevision $activeRevision = null;
 
     /**
      * @var Collection|null
@@ -214,7 +214,7 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected $eventWebContents;
+    protected $eventWebContents = null;
 
     /**
      * Type of this event.
@@ -226,7 +226,7 @@ class Event extends AbstractRevisionContainer
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
      */
-    private ?EventType $eventType;
+    private ?EventType $eventType = null;
 
     /**
      * @var EventSeries|null $eventSeries
@@ -237,13 +237,13 @@ class Event extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      * @MaxDepth(1)
      */
-    private ?EventSeries $eventSeries;
+    private ?EventSeries $eventSeries = null;
 
     /**
-     * @var bool
+     * @var bool|null
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private bool $priceRecursiveFromParent;
+    private ?bool $priceRecursiveFromParent = null;
 
     /**
      * Event constructor.

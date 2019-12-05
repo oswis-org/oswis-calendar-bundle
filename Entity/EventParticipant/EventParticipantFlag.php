@@ -88,14 +88,14 @@ class EventParticipantFlag extends AbstractEventFlag
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventParticipantFlagType $eventParticipantFlagType;
+    protected ?EventParticipantFlagType $eventParticipantFlagType = null;
 
     /**
      * Price adjust (positive, negative or zero).
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected ?int $price;
+    protected ?int $price = null;
 
     /**
      * EmployerFlag constructor.

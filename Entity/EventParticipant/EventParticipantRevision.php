@@ -29,7 +29,7 @@ class EventParticipantRevision extends AbstractRevision
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
      */
-    protected ?AbstractRevisionContainer $container;
+    protected ?AbstractRevisionContainer $container = null;
 
     /**
      * Related contact (person or organization). MOVE?????
@@ -41,7 +41,7 @@ class EventParticipantRevision extends AbstractRevision
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?AbstractContact $contact;
+    protected ?AbstractContact $contact = null;
 
     /**
      * Related event. MOVE???????
@@ -54,7 +54,7 @@ class EventParticipantRevision extends AbstractRevision
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Event $event;
+    protected ?Event $event = null;
 
     /**
      * EventAttendee constructor.

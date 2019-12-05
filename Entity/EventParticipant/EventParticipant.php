@@ -159,7 +159,7 @@ class EventParticipant extends AbstractRevisionContainer
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
      */
-    protected ?AbstractRevision $activeRevision;
+    protected ?AbstractRevision $activeRevision = null;
 
     /**
      * Type of relation between contact and event - attendee, staff....
@@ -173,7 +173,7 @@ class EventParticipant extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @MaxDepth(1)
      */
-    protected ?EventParticipantType $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType = null;
 
     /**
      * @var Collection|null
@@ -185,7 +185,7 @@ class EventParticipant extends AbstractRevisionContainer
      * )
      * @MaxDepth(1)
      */
-    protected ?Collection $eventParticipantNotes;
+    protected ?Collection $eventParticipantNotes = null;
 
     /**
      * @var Collection|null
@@ -197,7 +197,7 @@ class EventParticipant extends AbstractRevisionContainer
      * )
      * @MaxDepth(1)
      */
-    protected ?Collection $eventParticipantPayments;
+    protected ?Collection $eventParticipantPayments = null;
 
     /**
      * @var Collection|null
@@ -208,7 +208,7 @@ class EventParticipant extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected ?Collection $eventParticipantFlagConnections;
+    protected ?Collection $eventParticipantFlagConnections = null;
 
     /**
      * EventAttendee constructor.

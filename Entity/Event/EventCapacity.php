@@ -28,7 +28,7 @@ class EventCapacity
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Event $event;
+    protected ?Event $event = null;
 
     /**
      * Type of participants allowed by this capacity limit.
@@ -39,14 +39,14 @@ class EventCapacity
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventParticipantType $eventParticipantType;
+    protected ?EventParticipantType $eventParticipantType = null;
 
     /**
      * Allow participants overflow (manually by manager).
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer")
      */
-    protected ?int $overflowAllowedAmount;
+    protected ?int $overflowAllowedAmount = null;
 
     /**
      * EmployerFlag constructor.

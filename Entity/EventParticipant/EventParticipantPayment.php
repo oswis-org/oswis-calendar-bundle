@@ -111,7 +111,7 @@ class EventParticipantPayment extends AbstractPayment
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @MaxDepth(1)
      */
-    protected ?EventParticipant $eventParticipant;
+    protected ?EventParticipant $eventParticipant = null;
 
     /**
      * @param EventParticipant|null $eventParticipant

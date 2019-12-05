@@ -38,7 +38,7 @@ class EventRevision extends AbstractRevision
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="container_id", referencedColumnName="id")
      */
-    protected ?AbstractRevisionContainer $container;
+    protected ?AbstractRevisionContainer $container = null;
 
     /**
      * @var Place|null $location
@@ -49,7 +49,7 @@ class EventRevision extends AbstractRevision
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @MaxDepth(1)
      */
-    protected ?Place $location;
+    protected ?Place $location = null;
 
     /**
      * MOVE!!!!!!!!!
@@ -62,7 +62,7 @@ class EventRevision extends AbstractRevision
      * )
      * @MaxDepth(1)
      */
-    protected $eventFlagConnections;
+    protected $eventFlagConnections = null;
 
     /**
      * EventRevision constructor.

@@ -25,7 +25,7 @@ class EventFlagConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventFlag $eventFlag;
+    protected ?EventFlag $eventFlag = null;
 
     /**
      * Event.
@@ -37,7 +37,7 @@ class EventFlagConnection
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventRevision $eventRevision;
+    protected ?EventRevision $eventRevision = null;
 
     /**
      * FlagInEmployerInEvent constructor.

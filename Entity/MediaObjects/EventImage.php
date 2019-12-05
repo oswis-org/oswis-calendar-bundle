@@ -34,5 +34,5 @@ class EventImage extends AbstractImage
      *     mimeType="contentDimensionsMimeType"
      * )
      */
-    public ?File $file;
+    public ?File $file = null;
 }

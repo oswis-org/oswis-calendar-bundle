@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -57,10 +57,10 @@ class EventParticipantNote
 
     /**
      * Note is public.
-     * @var boolean
+     * @var boolean|null
      * @ORM\Column(type="boolean", nullable=true)
      */
-    protected bool $publicNote;
+    protected ?bool $publicNote = null;
 
     /**
      * Event contact revision (connected to person or organization).
@@ -71,7 +71,7 @@ class EventParticipantNote
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventParticipant $eventParticipant;
+    protected ?EventParticipant $eventParticipant = null;
 
     /**
      * @param EventParticipant|null $eventParticipant

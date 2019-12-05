@@ -25,67 +25,67 @@ final class EventParticipantPaymentActionRequest
     /**
      * @var int[]|null
      */
-    public ?array $identifiers;
+    public ?array $identifiers = null;
 
     /**
      * @var string|null
      * @Symfony\Component\Validator\Constraints\NotNull()
      * @Symfony\Component\Validator\Constraints\NotBlank()
      */
-    public ?string $type;
+    public ?string $type = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvContent;
+    public ?string $csvContent = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvDelimiter;
+    public ?string $csvDelimiter = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvEnclosure;
+    public ?string $csvEnclosure = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvEscape;
+    public ?string $csvEscape = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvVariableSymbolColumnName;
+    public ?string $csvVariableSymbolColumnName = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvDateColumnName;
+    public ?string $csvDateColumnName = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvValueColumnName;
+    public ?string $csvValueColumnName = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvCurrencyColumnName;
+    public ?string $csvCurrencyColumnName = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvCurrencyAllowed;
+    public ?string $csvCurrencyAllowed = null;
 
     /**
      * @var string|null
      */
-    public ?string $csvEventParticipantType;
+    public ?string $csvEventParticipantType = null;
 
     /**
      * @var Event|null
      */
-    public ?Event $event;
+    public ?Event $event = null;
 }
