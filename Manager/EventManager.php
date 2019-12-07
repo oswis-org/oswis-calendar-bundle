@@ -61,6 +61,9 @@ class EventManager
         }
     }
 
+    /**
+     * @noinspection PhpUnused
+     */
     final public function updateActiveRevisions(): void
     {
         $events = $this->em->getRepository(Event::class)->findAll();

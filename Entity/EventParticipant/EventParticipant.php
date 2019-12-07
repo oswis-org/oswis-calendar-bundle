@@ -149,7 +149,7 @@ class EventParticipant extends AbstractRevisionContainer
      * )
      * @MaxDepth(2)
      */
-    protected Collection $revisions;
+    protected ?Collection $revisions = null;
 
     /**
      * @var AbstractRevision|null

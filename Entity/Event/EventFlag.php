@@ -65,7 +65,7 @@ class EventFlag extends AbstractEventFlag
      *     fetch="EAGER"
      * )
      */
-    protected $eventFlagConnections;
+    protected ?Collection $eventFlagConnections = null;
 
     /**
      * EmployerFlag constructor.

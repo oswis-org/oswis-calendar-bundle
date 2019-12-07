@@ -196,7 +196,7 @@ class Event extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected Collection $revisions;
+    protected ?Collection $revisions = null;
 
     /**
      * @var AbstractRevision|null
@@ -281,6 +281,14 @@ class Event extends AbstractRevisionContainer
         $this->setEventSeries($eventSeries);
         $this->setPriceRecursiveFromParent($priceRecursiveFromParent);
         $this->addRevision(new EventRevision($nameable, $location, $startDateTime, $endDateTime));
+    }
+
+    /**
+     * @param bool $priceRecursiveFromParent
+     */
+    final public function setPriceRecursiveFromParent(?bool $priceRecursiveFromParent): void
+    {
+        $this->priceRecursiveFromParent = $priceRecursiveFromParent;
     }
 
     /**
@@ -918,14 +926,6 @@ class Event extends AbstractRevisionContainer
     final public function isPriceRecursiveFromParent(): bool
     {
         return $this->priceRecursiveFromParent ?? false;
-    }
-
-    /**
-     * @param bool $priceRecursiveFromParent
-     */
-    final public function setPriceRecursiveFromParent(?bool $priceRecursiveFromParent): void
-    {
-        $this->priceRecursiveFromParent = $priceRecursiveFromParent;
     }
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int

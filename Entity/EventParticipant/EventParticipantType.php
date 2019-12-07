@@ -86,7 +86,7 @@ class EventParticipantType
      *     fetch="EAGER"
      * )
      */
-    protected $eventParticipants;
+    protected ?Collection $eventParticipants = null;
 
     /**
      * @var Collection|null
@@ -96,7 +96,7 @@ class EventParticipantType
      *     mappedBy="eventParticipantType"
      * )
      */
-    protected $eventPrices;
+    protected ?Collection $eventPrices = null;
 
     /**
      * @var Collection|null
@@ -106,7 +106,7 @@ class EventParticipantType
      *     mappedBy="eventParticipantType"
      * )
      */
-    protected $eventCapacities;
+    protected ?Collection $eventCapacities = null;
 
     /**
      * @var Collection|null
@@ -116,7 +116,7 @@ class EventParticipantType
      *     mappedBy="eventParticipantType"
      * )
      */
-    protected $eventRegistrationRanges;
+    protected ?Collection $eventRegistrationRanges = null;
 
     /**
      * @var Collection|null
@@ -126,7 +126,7 @@ class EventParticipantType
      *     mappedBy="eventParticipantType"
      * )
      */
-    protected $eventParticipantTypeInEventConnections;
+    protected ?Collection $eventParticipantTypeInEventConnections = null;
 
     /**
      * @var Collection|null
@@ -136,21 +136,20 @@ class EventParticipantType
      *     mappedBy="eventParticipantType"
      * )
      */
-    protected $eventParticipantFlagInEventConnections;
+    protected ?Collection $eventParticipantFlagInEventConnections = null;
 
     /**
      * Send formal or informal e-mails?
      * @var bool|null
      * @ORM\Column(type="boolean", nullable=true)
      */
-    protected ?bool $formal;
+    protected ?bool $formal = null;
 
     /**
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
      * @param string|null   $type
-     *
      * @param bool|null     $formal
      *
      * @throws InvalidArgumentException

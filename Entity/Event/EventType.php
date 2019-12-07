@@ -78,7 +78,7 @@ class EventType extends AbstractRevisionContainer
      *     fetch="EAGER"
      * )
      */
-    protected Collection $revisions;
+    protected ?Collection $revisions = null;
 
     /**
      * @var AbstractRevision|null
@@ -100,7 +100,7 @@ class EventType extends AbstractRevisionContainer
      *     cascade={"all"}
      * )
      */
-    protected $events;
+    protected ?Collection $events = null;
 
     /**
      * ContactDetailType constructor.

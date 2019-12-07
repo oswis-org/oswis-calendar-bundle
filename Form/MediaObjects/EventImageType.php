@@ -10,6 +10,7 @@ final class EventImageType extends AbstractType
 
     /**
      * @return string
+     * @noinspection PhpUnused
      */
     public static function getImageClassName(): string
     {

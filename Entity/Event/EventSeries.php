@@ -26,7 +26,7 @@ class EventSeries
      *     cascade={"all"}
      * )
      */
-    protected $events;
+    protected ?Collection $events = null;
 
     /**
      * @param Nameable|null $nameable

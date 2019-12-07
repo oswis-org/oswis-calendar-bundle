@@ -64,7 +64,7 @@ class EventParticipantFlagType extends AbstractEventFlagType
      *     cascade={"all"}
      * )
      */
-    protected $eventParticipantFlags;
+    protected ?Collection $eventParticipantFlags = null;
 
     /**
      * EmployerFlag constructor.

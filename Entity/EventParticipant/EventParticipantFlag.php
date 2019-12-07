@@ -66,7 +66,7 @@ class EventParticipantFlag extends AbstractEventFlag
      *     fetch="EAGER"
      * )
      */
-    protected $eventParticipantFlagNewConnections;
+    protected ?Collection $eventParticipantFlagNewConnections = null;
 
     /**
      * @var Collection|null
@@ -76,7 +76,7 @@ class EventParticipantFlag extends AbstractEventFlag
      *     cascade={"all"}
      * )
      */
-    protected $eventParticipantFlagInEventConnections;
+    protected ?Collection $eventParticipantFlagInEventConnections = null;
 
     /**
      * Event contact flag type.
