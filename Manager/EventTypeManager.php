@@ -36,9 +36,7 @@ class EventTypeManager
     ): EventType {
         try {
             $em = $this->em;
-            $entity = new EventType(
-                $nameable, $type, $color
-            );
+            $entity = new EventType($nameable, $type, $color);
             $em->persist($entity);
             $em->flush();
             $infoMessage = 'CREATE: Created event type (by manager): '.$entity->getId().' '.$entity->getName().'.';

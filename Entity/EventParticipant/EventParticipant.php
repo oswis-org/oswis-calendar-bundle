@@ -450,9 +450,7 @@ class EventParticipant extends AbstractRevisionContainer
     final public function getEventParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
         return $this->getEventParticipantFlagConnections($eventParticipantFlagType)->map(
-            static function (EventParticipantFlagNewConnection $connection) {
-                return $connection->getEventParticipantFlag();
-            }
+            fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
         );
     }
 

@@ -34,11 +34,7 @@ class EventRepository extends EntityRepository
         $subEventsAsArray = $this->createQueryBuilder('event')->where('event.superEvent = :parent_id')->setParameter('parent_id', $parentEvent->getId())->getQuery()->getResult(Query::HYDRATE_OBJECT);
         $subEvents = new ArrayCollection($subEventsAsArray);
         if ($onlyWithRegistrationAllowed) {
-            $subEvents->filter(
-                static function (Event $subEvent) use ($registrationsEventParticipantType, $referenceDateTime) {
-                    return $subEvent->isRegistrationsAllowed($registrationsEventParticipantType, $referenceDateTime);
-                }
-            );
+            return $subEvents->filter(fn(Event $subEvent) => $subEvent->isRegistrationsAllowed($registrationsEventParticipantType, $referenceDateTime));
         }
 
         return $subEvents ?? new ArrayCollection();

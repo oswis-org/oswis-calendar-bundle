@@ -558,13 +558,8 @@ class Event extends AbstractRevisionContainer
     ): Collection {
         if ($eventParticipantType) {
             $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->filter(
-                static function (EventParticipant $eventParticipant) use ($eventParticipantType) {
-                    if (!$eventParticipant->getEventParticipantType()) {
-                        return false;
-                    }
-
-                    return $eventParticipantType->getId() === $eventParticipant->getEventParticipantType()->getId();
-                }
+                fn(EventParticipant $eventParticipant) => !$eventParticipant->getEventParticipantType() ? false : $eventParticipantType->getId() === $eventParticipant->getEventParticipantType(
+                    )->getId()
             )->toArray();
         } else {
             $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->toArray();
@@ -598,9 +593,7 @@ class Event extends AbstractRevisionContainer
                 return true;
             }
         )->map(
-            static function (EventParticipantRevision $eventParticipantRevision) {
-                return $eventParticipantRevision->getContainer();
-            }
+            fn(EventParticipantRevision $eventParticipantRevision) => $eventParticipantRevision->getContainer()
         )->toArray();
         self::sortEventParticipants($eventParticipantsArray);
 
@@ -617,9 +610,7 @@ class Event extends AbstractRevisionContainer
     final public function getActiveEventParticipantRevisions(?DateTime $referenceDateTime = null): Collection
     {
         return $this->getEventParticipantRevisions()->filter(
-            static function (EventParticipantRevision $eventParticipantRevision) use ($referenceDateTime) {
-                return $eventParticipantRevision->isActive($referenceDateTime);
-            }
+            fn(EventParticipantRevision $eventParticipantRevision) => $eventParticipantRevision->isActive($referenceDateTime)
         );
     }
 
@@ -652,7 +643,7 @@ class Event extends AbstractRevisionContainer
      */
     final public function getSubEvents(): Collection
     {
-        return $this->subEvents;
+        return $this->subEvents ?? new ArrayCollection();
     }
 
     /**
@@ -879,9 +870,8 @@ class Event extends AbstractRevisionContainer
         return false;
     }
 
-    final public function getActiveEventParticipantsAmount(
-        ?EventParticipantType $eventParticipantType = null
-    ): int {
+    final public function getActiveEventParticipantsAmount(?EventParticipantType $eventParticipantType = null): int
+    {
         return $this->getEventParticipantsByType($eventParticipantType)->count();
     }
 
@@ -917,7 +907,7 @@ class Event extends AbstractRevisionContainer
      */
     final public function getEventPrices(): Collection
     {
-        return $this->eventPrices;
+        return $this->eventPrices ?? new ArrayCollection();
     }
 
     /**
@@ -1039,9 +1029,7 @@ class Event extends AbstractRevisionContainer
 
     final public function getOrganizer(): ?AbstractContact
     {
-        $this->getEventParticipantsByTypeOfType(EventParticipantType::TYPE_ORGANIZER)->first();
-
-        return null;
+        return $this->getEventParticipantsByTypeOfType(EventParticipantType::TYPE_ORGANIZER)->first();
     }
 
     final public function getEventParticipantsByTypeOfType(
@@ -1064,13 +1052,7 @@ class Event extends AbstractRevisionContainer
                 $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated);
             }
             $eventParticipants = $eventParticipants->filter(
-                static function (EventParticipant $eventParticipant) use ($eventParticipantTypeOfType) {
-                    if (!$eventParticipant->getEventParticipantType()) {
-                        return false;
-                    }
-
-                    return $eventParticipantTypeOfType === $eventParticipant->getEventParticipantType()->getType();
-                }
+                fn(EventParticipant $participant) => !$participant->getEventParticipantType() ? false : $eventParticipantTypeOfType === $participant->getEventParticipantType()->getType()
             )->toArray();
         } else {
             $eventParticipants = $this->getEventParticipants($referenceDateTime, $includeDeleted, $includeNotActivated)->toArray();
@@ -1180,13 +1162,11 @@ class Event extends AbstractRevisionContainer
         }
 
         return $this->eventParticipantFlagInEventConnections->filter(
-                static function (EventParticipantFlagInEventConnection $flagInEventConnection) use ($eventParticipantType, $eventParticipantFlag) {
-                    if ($eventParticipantFlag && !($flagInEventConnection->getEventParticipantFlag() && $flagInEventConnection->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId(
-                            ))) {
+                static function (EventParticipantFlagInEventConnection $flagConn) use ($eventParticipantType, $eventParticipantFlag) {
+                    if ($eventParticipantFlag && !($flagConn->getEventParticipantFlag() && $flagConn->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId())) {
                         return false;
                     }
-                    if ($eventParticipantType && !($flagInEventConnection->getEventParticipantType() && $flagInEventConnection->getEventParticipantType()->getId() === $eventParticipantType->getId(
-                            ))) {
+                    if ($eventParticipantType && !($flagConn->getEventParticipantType() && $flagConn->getEventParticipantType()->getId() === $eventParticipantType->getId())) {
                         return false;
                     }
 
@@ -1207,9 +1187,7 @@ class Event extends AbstractRevisionContainer
     final public function isRegistrationsAllowed(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
     {
         return $this->getEventRegistrationRanges()->filter(
-                static function (EventRegistrationRange $eventRegistrationRange) use ($eventParticipantType, $referenceDateTime) {
-                    return $eventRegistrationRange->isApplicable($eventParticipantType, $referenceDateTime);
-                }
+                fn(EventRegistrationRange $registrationRange) => $registrationRange->isApplicable($eventParticipantType, $referenceDateTime)
             )->count() > 0;
     }
 
@@ -1276,7 +1254,6 @@ class Event extends AbstractRevisionContainer
 
         return $allowedAmount;
     }
-
 
     /**
      * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
