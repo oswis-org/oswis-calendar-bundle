@@ -30,11 +30,11 @@ use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountContainerTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\ColorContainerTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeContainerTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
 use function strcmp;
@@ -88,10 +88,33 @@ use function strcmp;
 class Event extends AbstractRevisionContainer
 {
     use BasicEntityTrait;
-    use NameableBasicContainerTrait;
-    use DateRangeContainerTrait;
-    use ColorContainerTrait;
-    use BankAccountContainerTrait;
+    use NameableBasicTrait;
+    use DateRangeTrait;
+    use ColorTrait;
+    use BankAccountTrait;
+
+    /**
+     * @var Place|null $location
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place",
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @MaxDepth(1)
+     */
+    protected ?Place $location = null;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagNewConnection",
+     *     cascade={"all"},
+     *     mappedBy="event",
+     *     fetch="EAGER"
+     * )
+     * @MaxDepth(1)
+     */
+    protected ?Collection $eventFlagConnections = null;
 
     /**
      * Parent event (if this is not top level event).
@@ -305,6 +328,56 @@ class Event extends AbstractRevisionContainer
     public static function checkRevision(?AbstractRevision $revision): void
     {
         assert($revision instanceof EventRevision);
+    }
+
+    final public function destroyRevisions(): void
+    {
+        try {
+            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
+            $this->setStartDateTime($this->getRevisionByDate()->getStartDateTime());
+            $this->setEndDateTime($this->getRevisionByDate()->getEndDateTime());
+            $this->setColor($this->getRevisionByDate()->getColor());
+            $this->setBankAccountNumber($this->getRevisionByDate()->getBankAccountNumber());
+            $this->setBankAccountBank($this->getRevisionByDate()->getBankAccountBank());
+            $this->setLocation($this->getRevisionByDate()->getLocation());
+            foreach ($this->getRevisionByDate()->getEventFlagConnections() as $eventFlagConnection) {
+                assert($eventFlagConnection instanceof EventFlagConnection);
+                $this->addEventFlagConnection(
+                    new EventFlagNewConnection($eventFlagConnection->getEventFlag(), null, $eventFlagConnection->getTextValue())
+                );
+            }
+            foreach ($this->getRevisions() as $revision) {
+                assert($revision instanceof EventRevision);
+                $this->removeRevision($revision);
+                foreach ($revision->getEventFlagConnections() as $eventFlagConnection) {
+                    $revision->removeEventFlagConnection($eventFlagConnection);
+                }
+            }
+            $this->setActiveRevision(null);
+        } catch (RevisionMissingException $e) {
+        }
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @return EventRevision
+     * @throws RevisionMissingException
+     */
+    final public function getRevisionByDate(?DateTime $dateTime = null): EventRevision
+    {
+        $revision = $this->getRevision($dateTime);
+        assert($revision instanceof EventRevision);
+
+        return $revision;
+    }
+
+    final public function addEventFlagConnection(?EventFlagNewConnection $eventContactFlagConnection): void
+    {
+        if ($eventContactFlagConnection && !$this->eventFlagConnections->contains($eventContactFlagConnection)) {
+            $this->eventFlagConnections->add($eventContactFlagConnection);
+            $eventContactFlagConnection->setEvent($this);
+        }
     }
 
     /**
@@ -1063,52 +1136,34 @@ class Event extends AbstractRevisionContainer
     }
 
     /**
-     * @param DateTime|null $referenceDateTime
+     * @param bool|null $recursive Get recursively from parents?
      *
      * @return Place|null
-     * @throws RevisionMissingException
      */
-    final public function getLocationRecursive(?DateTime $referenceDateTime = null): ?Place
+    final public function getLocation(?bool $recursive = false): ?Place
     {
-        if ($this->getLocation($referenceDateTime)) {
-            return $this->getLocation($referenceDateTime);
+        if ($this->getLocation(false)) {
+            return $this->getLocation();
         }
 
-        return $this->getSuperEvent() ? $this->getSuperEvent()->getLocationRecursive($referenceDateTime) : null; //// TODO
+        return $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getLocation() : null; //// TODO
     }
 
     /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Place|null
-     * @throws RevisionMissingException
+     * @param Place|null $event
      */
-    final public function getLocation(?DateTime $referenceDateTime = null): ?Place
+    final public function setLocation(?Place $event): void
     {
-        return $this->getRevisionByDate($referenceDateTime)->getLocation();
+        $this->location = $event;
     }
 
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventRevision);
-
-        return $revision;
-    }
-
-    final public function getStartDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
+    final public function getStartDateTimeRecursive(): ?DateTime
     {
         $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
-        $startDateTime = $this->getStartDateTime($referenceDateTime) ?? $maxDateTime;
+        $startDateTime = $this->getStartDateTime() ?? $maxDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
-            $dateTime = $subEvent->getStartDateTimeRecursive($referenceDateTime);
+            $dateTime = $subEvent->getStartDateTimeRecursive();
             if ($dateTime && $dateTime < $startDateTime) {
                 $startDateTime = $dateTime;
             }
@@ -1117,13 +1172,13 @@ class Event extends AbstractRevisionContainer
         return $startDateTime === $maxDateTime ? null : $startDateTime;
     }
 
-    final public function getEndDateTimeRecursive(?DateTime $referenceDateTime = null): ?DateTime
+    final public function getEndDateTimeRecursive(): ?DateTime
     {
         $minDateTime = new DateTime(DateTimeUtils::MIN_DATE_TIME_STRING);
-        $endDateTime = $this->getEndDateTime($referenceDateTime) ?? $minDateTime;
+        $endDateTime = $this->getEndDateTime() ?? $minDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
-            $dateTime = $subEvent->getEndDateTimeRecursive($referenceDateTime);
+            $dateTime = $subEvent->getEndDateTimeRecursive();
             if ($dateTime && $dateTime > $endDateTime) {
                 $endDateTime = $dateTime;
             }
@@ -1423,4 +1478,21 @@ class Event extends AbstractRevisionContainer
 
         return $output;
     }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventFlagConnections(): ?Collection
+    {
+        return $this->eventFlagConnections;
+    }
+
+    final public function removeEventFlagConnection(?EventFlagNewConnection $eventContactFlagConnection): void
+    {
+        if ($eventContactFlagConnection && $this->eventFlagConnections->removeElement($eventContactFlagConnection)) {
+            $eventContactFlagConnection->setEvent(null);
+        }
+    }
+
+
 }

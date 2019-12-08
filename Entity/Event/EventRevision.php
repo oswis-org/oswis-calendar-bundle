@@ -25,10 +25,13 @@ use function assert;
 class EventRevision extends AbstractRevision
 {
     use BasicEntityTrait;
-    use NameableBasicTrait;
-    use DateRangeTrait;
-    use ColorTrait;
-    use BankAccountTrait;
+    use NameableBasicTrait; //  solved
+
+    use DateRangeTrait; // solved
+
+    use ColorTrait; // solved
+
+    use BankAccountTrait; //solved
 
     /**
      * @var AbstractRevisionContainer|null
@@ -52,7 +55,7 @@ class EventRevision extends AbstractRevision
     protected ?Place $location = null;
 
     /**
-     * MOVE!!!!!!!!!
+     * MOVE!!!!!!!!! MOVED???
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",
