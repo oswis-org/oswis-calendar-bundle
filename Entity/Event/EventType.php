@@ -15,8 +15,9 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\ColorContainerTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 
 /**
  * Type of Event.
@@ -65,8 +66,18 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicContainerTrait;
 class EventType extends AbstractRevisionContainer
 {
     use BasicEntityTrait;
-    use NameableBasicContainerTrait;
-    use ColorContainerTrait;
+    use NameableBasicTrait;
+    use ColorTrait;
+    use TypeTrait;
+
+    public const YEAR_OF_EVENT = 'year-of-event';
+    public const BATCH_OF_EVENT = 'batch-of-event';
+    public const LECTURE = 'lecture';
+    public const WORKSHOP = 'workshop';
+    public const MODERATED_DISCUSSION = 'moderated-discussion';
+    public const TRANSPORT = 'transport';
+    public const TEAM_BUILDING_STAY = 'team-building-stay';
+    public const TEAM_BUILDING = 'team-building';
 
     /**
      * @var Collection
@@ -121,6 +132,25 @@ class EventType extends AbstractRevisionContainer
         $this->addRevision(new EventTypeRevision($nameable, $type, $color));
     }
 
+    public static function getAllowedTypesDefault(): array
+    {
+        return [
+            self::YEAR_OF_EVENT,
+            self::BATCH_OF_EVENT,
+            self::LECTURE,
+            self::WORKSHOP,
+            self::MODERATED_DISCUSSION,
+            self::TRANSPORT,
+            self::TEAM_BUILDING_STAY,
+            self::TEAM_BUILDING,
+        ];
+    }
+
+    public static function getAllowedTypesCustom(): array
+    {
+        return [];
+    }
+
     /**
      * @return string
      */
@@ -160,6 +190,25 @@ class EventType extends AbstractRevisionContainer
         return $this->events;
     }
 
+    final public function destroyRevisions(): void
+    {
+        try {
+            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
+            $this->setColor($this->getRevisionByDate()->getColor());
+            $this->setType($this->getRevisionByDate()->getType());
+            foreach ($this->getRevisions() as $revision) {
+                assert($revision instanceof EventRevision);
+                $this->removeRevision($revision);
+                foreach ($revision->getEventFlagConnections() as $eventFlagConnection) {
+                    $revision->removeEventFlagConnection($eventFlagConnection);
+                }
+            }
+            $this->setActiveRevision(null);
+        } catch (RevisionMissingException $e) {
+        } catch (InvalidArgumentException $e) {
+        }
+    }
+
     /**
      * @param DateTime|null $dateTime
      *
@@ -173,4 +222,6 @@ class EventType extends AbstractRevisionContainer
 
         return $revision;
     }
+
+
 }
