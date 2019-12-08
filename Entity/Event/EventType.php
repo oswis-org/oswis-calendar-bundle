@@ -197,7 +197,7 @@ class EventType extends AbstractRevisionContainer
             $this->setColor($this->getRevisionByDate()->getColor());
             $this->setType($this->getRevisionByDate()->getType());
             foreach ($this->getRevisions() as $revision) {
-                assert($revision instanceof EventRevision);
+                assert($revision instanceof EventTypeRevision);
                 $this->removeRevision($revision);
             }
             $this->setActiveRevision(null);
