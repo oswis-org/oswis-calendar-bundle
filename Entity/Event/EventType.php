@@ -199,9 +199,6 @@ class EventType extends AbstractRevisionContainer
             foreach ($this->getRevisions() as $revision) {
                 assert($revision instanceof EventRevision);
                 $this->removeRevision($revision);
-                foreach ($revision->getEventFlagConnections() as $eventFlagConnection) {
-                    $revision->removeEventFlagConnection($eventFlagConnection);
-                }
             }
             $this->setActiveRevision(null);
         } catch (RevisionMissingException $e) {
