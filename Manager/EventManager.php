@@ -69,7 +69,8 @@ class EventManager
         $events = $this->em->getRepository(Event::class)->findAll();
         foreach ($events as $event) {
             assert($event instanceof Event);
-            $event->updateActiveRevision();
+            // $event->updateActiveRevision();
+            $event->destroyRevisions();
             $this->em->persist($event);
         }
         $this->em->flush();

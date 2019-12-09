@@ -58,7 +58,8 @@ class EventTypeManager
         $eventTypes = $this->em->getRepository(EventType::class)->findAll();
         foreach ($eventTypes as $eventType) {
             assert($eventType instanceof EventType);
-            $eventType->updateActiveRevision();
+            // $eventType->updateActiveRevision();
+            $eventType->destroyRevisions();
             $this->em->persist($eventType);
         }
         $this->em->flush();
