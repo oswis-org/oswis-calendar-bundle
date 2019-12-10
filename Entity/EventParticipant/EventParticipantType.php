@@ -5,8 +5,6 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
@@ -75,26 +73,6 @@ class EventParticipantType
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantType"
-     * )
-     */
-    protected ?Collection $eventParticipantTypeInEventConnections = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantType"
-     * )
-     */
-    protected ?Collection $eventParticipantFlagInEventConnections = null;
-
-    /**
      * Send formal or informal e-mails?
      * @var bool|null
      * @ORM\Column(type="boolean", nullable=true)
@@ -115,8 +93,6 @@ class EventParticipantType
         ?string $type = null,
         ?bool $formal = true
     ) {
-        $this->eventParticipantTypeInEventConnections = new ArrayCollection();
-        $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
         $this->setFormal($formal);
@@ -158,64 +134,5 @@ class EventParticipantType
     final public function isManager(): bool
     {
         return in_array($this->getType(), self::MANAGEMENT_TYPES, true);
-    }
-
-    /**
-     * @param EventParticipantTypeInEventConnection|null $eventParticipantTypeInEventConnection
-     */
-    final public function addEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $eventParticipantTypeInEventConnection): void
-    {
-        if ($eventParticipantTypeInEventConnection && !$this->eventParticipantTypeInEventConnections->contains($eventParticipantTypeInEventConnection)) {
-            $this->eventParticipantTypeInEventConnections->add($eventParticipantTypeInEventConnection);
-            $eventParticipantTypeInEventConnection->setEventParticipantType($this);
-        }
-    }
-
-    /**
-     * @param EventParticipantTypeInEventConnection|null $eventContactRevision
-     */
-    final public function removeEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $eventContactRevision): void
-    {
-        if ($eventContactRevision && $this->eventParticipantTypeInEventConnections->removeElement($eventContactRevision)) {
-            $eventContactRevision->setEventParticipantType(null);
-        }
-    }
-
-    /**
-     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
-     */
-    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
-    {
-        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
-            $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
-            $eventParticipantFlagInEventConnection->setEventParticipantType($this);
-        }
-    }
-
-    /**
-     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
-     */
-    final public function removeEventParticipantFlagInEventConnection(
-        ?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection
-    ): void {
-        if ($eventParticipantFlagInEventConnection && $this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
-            $eventParticipantFlagInEventConnection->setEventParticipantType(null);
-        }
-    }
-
-    /**
-     * @return Collection|null
-     */
-    final public function getEventParticipantTypeInEventConnections(): ?Collection
-    {
-        return $this->eventParticipantTypeInEventConnections ?? new ArrayCollection();
-    }
-
-    /**
-     * @return Collection|null
-     */
-    final public function getEventParticipantFlagInEventConnections(): ?Collection
-    {
-        return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
     }
 }

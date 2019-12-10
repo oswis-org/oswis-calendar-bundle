@@ -51,7 +51,6 @@ class EventParticipantFlagInEventConnection
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventParticipantFlagInEventConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -83,13 +82,7 @@ class EventParticipantFlagInEventConnection
 
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventParticipantFlagInEventConnection($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventParticipantFlagInEventConnection($this);
-        }
+        $this->eventParticipantType = $eventParticipantType;
     }
 
     /**
