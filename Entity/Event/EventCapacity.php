@@ -20,17 +20,6 @@ class EventCapacity
     use NumericValueTrait;
 
     /**
-     * Event that is affected by this capacity.
-     * @var Event|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventCapacities"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?Event $event = null;
-
-    /**
      * Type of participants allowed by this capacity limit.
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -52,19 +41,16 @@ class EventCapacity
      * EmployerFlag constructor.
      *
      * @param Nameable|null             $nameable
-     * @param Event|null                $event
      * @param EventParticipantType|null $eventParticipantType
      * @param int|null                  $numericValue
      * @param int|null                  $overflowAllowedAmount
      */
     public function __construct(
         ?Nameable $nameable = null,
-        ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
         ?int $numericValue = null,
         ?int $overflowAllowedAmount = null
     ) {
-        $this->setEvent($event);
         $this->setEventParticipantType($eventParticipantType);
         $this->setNumericValue($numericValue);
         $this->setFieldsFromNameable($nameable);
@@ -85,22 +71,6 @@ class EventCapacity
     final public function setOverflowAllowedAmount(?int $overflowAllowedAmount): void
     {
         $this->overflowAllowedAmount = $overflowAllowedAmount ?? 0;
-    }
-
-    final public function getEvent(): ?Event
-    {
-        return $this->event;
-    }
-
-    final public function setEvent(?Event $event): void
-    {
-        if ($this->event && $event !== $this->event) {
-            $this->event->removeEventCapacity($this);
-        }
-        if ($event && $this->event !== $event) {
-            $this->event = $event;
-            $event->addEventCapacity($this);
-        }
     }
 
     final public function getEventParticipantType(): ?EventParticipantType

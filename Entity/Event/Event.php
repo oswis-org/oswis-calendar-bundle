@@ -152,17 +152,6 @@ class Event
     protected ?Collection $eventParticipants = null;
 
     /**
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
-     *     cascade={"all"},
-     *     mappedBy="event",
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventCapacities = null;
-
-    /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
@@ -206,28 +195,6 @@ class Event
      * )
      */
     protected ?Collection $eventNewRegistrationRanges = null;
-
-    /**
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
-     *     cascade={"all"},
-     *     mappedBy="event",
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventPrices = null;
-
-    /**
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
-     *     cascade={"all"},
-     *     mappedBy="event",
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventRegistrationRanges = null;
 
     /**
      * @var Collection|null
@@ -321,9 +288,6 @@ class Event
     ) {
         $this->subEvents = new ArrayCollection();
         $this->eventParticipants = new ArrayCollection();
-        $this->eventPrices = new ArrayCollection();
-        $this->eventCapacities = new ArrayCollection();
-        $this->eventRegistrationRanges = new ArrayCollection();
         $this->eventNewPrices = new ArrayCollection();
         $this->eventNewCapacities = new ArrayCollection();
         $this->eventNewRegistrationRanges = new ArrayCollection();
@@ -396,7 +360,7 @@ class Event
      */
     final public function getEventPrices(): Collection
     {
-        return $this->eventPrices ?? new ArrayCollection();
+        return $this->eventNewPrices ?? new ArrayCollection();
     }
 
     /**
@@ -414,7 +378,7 @@ class Event
      */
     final public function getEventCapacities(): Collection
     {
-        return $this->eventCapacities ?? new ArrayCollection();
+        return $this->eventNewCapacities ?? new ArrayCollection();
     }
 
     /**
@@ -432,7 +396,7 @@ class Event
      */
     final public function getEventRegistrationRanges(): Collection
     {
-        return $this->eventRegistrationRanges ?? new ArrayCollection();
+        return $this->eventNewRegistrationRanges ?? new ArrayCollection();
     }
 
     /**
@@ -800,30 +764,6 @@ class Event
     /**
      * @param EventPrice|null $eventPrice
      */
-    final public function addEventPrice(?EventPrice $eventPrice): void
-    {
-        if ($eventPrice && !$this->eventPrices->contains($eventPrice)) {
-            $this->eventPrices->add($eventPrice);
-            $eventPrice->setEvent($this);
-        }
-    }
-
-    /**
-     * @param EventPrice|null $eventPrice
-     */
-    final public function removeEventPrice(?EventPrice $eventPrice): void
-    {
-        if (!$eventPrice) {
-            return;
-        }
-        if ($this->eventPrices->removeElement($eventPrice)) {
-            $eventPrice->setEvent(null);
-        }
-    }
-
-    /**
-     * @param EventPrice|null $eventPrice
-     */
     final public function removeEventNewPrice(?EventPrice $eventPrice): void
     {
         if ($eventPrice) {
@@ -848,54 +788,6 @@ class Event
     {
         if ($eventRegistrationRange) {
             $this->eventNewRegistrationRanges->removeElement($eventRegistrationRange);
-        }
-    }
-
-    /**
-     * @param EventCapacity|null $eventCapacity
-     */
-    final public function addEventCapacity(?EventCapacity $eventCapacity): void
-    {
-        if ($eventCapacity && !$this->eventCapacities->contains($eventCapacity)) {
-            $this->eventCapacities->add($eventCapacity);
-            $eventCapacity->setEvent($this);
-        }
-    }
-
-    /**
-     * @param EventCapacity|null $eventCapacity
-     */
-    final public function removeEventCapacity(?EventCapacity $eventCapacity): void
-    {
-        if (!$eventCapacity) {
-            return;
-        }
-        if ($this->eventCapacities->removeElement($eventCapacity)) {
-            $eventCapacity->setEvent(null);
-        }
-    }
-
-    /**
-     * @param EventRegistrationRange|null $eventRegistrationRange
-     */
-    final public function addEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
-    {
-        if ($eventRegistrationRange && !$this->eventRegistrationRanges->contains($eventRegistrationRange)) {
-            $this->eventRegistrationRanges->add($eventRegistrationRange);
-            $eventRegistrationRange->setEvent($this);
-        }
-    }
-
-    /**
-     * @param EventRegistrationRange|null $eventRegistrationRange
-     */
-    final public function removeEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
-    {
-        if (!$eventRegistrationRange) {
-            return;
-        }
-        if ($this->eventRegistrationRanges->removeElement($eventRegistrationRange)) {
-            $eventRegistrationRange->setEvent(null);
         }
     }
 

@@ -26,16 +26,6 @@ class EventPrice
     // TODO: Dates missing!
 
     /**
-     * @var Event|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventPrices"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?Event $event = null;
-
-    /**
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
@@ -47,7 +37,6 @@ class EventPrice
 
     /**
      * @param Nameable|null             $nameable
-     * @param Event|null                $event
      * @param EventParticipantType|null $eventParticipantType
      * @param int|null                  $numericValue
      * @param int|null                  $taxRate
@@ -55,34 +44,16 @@ class EventPrice
      */
     public function __construct(
         ?Nameable $nameable = null,
-        ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
         ?int $numericValue = null,
         ?int $taxRate = null,
         ?int $depositValue = null
     ) {
-        $this->setEvent($event);
         $this->setEventParticipantType($eventParticipantType);
         $this->setNumericValue($numericValue);
         $this->setTaxRate($taxRate);
         $this->setFieldsFromNameable($nameable);
         $this->setDepositValue($depositValue);
-    }
-
-    final public function getEvent(): ?Event
-    {
-        return $this->event;
-    }
-
-    final public function setEvent(?Event $event): void
-    {
-        if ($this->event && $event !== $this->event) {
-            $this->event->removeEventPrice($this);
-        }
-        if ($event && $this->event !== $event) {
-            $this->event = $event;
-            $event->addEventPrice($this);
-        }
     }
 
     final public function isApplicableForEventParticipantType(EventParticipantType $eventParticipantType): bool

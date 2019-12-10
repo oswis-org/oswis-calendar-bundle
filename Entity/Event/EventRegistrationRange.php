@@ -22,17 +22,6 @@ class EventRegistrationRange
     use DateRangeTrait;
 
     /**
-     * @var Event|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventRegistrationRanges",
-     *     fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?Event $event = null;
-
-    /**
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
@@ -46,39 +35,20 @@ class EventRegistrationRange
      * EmployerFlag constructor.
      *
      * @param Nameable|null             $nameable
-     * @param Event|null                $event
      * @param EventParticipantType|null $eventParticipantType
      * @param DateTime|null             $startDateTime
      * @param DateTime|null             $endDateTime
      */
     public function __construct(
         ?Nameable $nameable = null,
-        ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null
     ) {
-        $this->setEvent($event);
         $this->setFieldsFromNameable($nameable);
         $this->setEventParticipantType($eventParticipantType);
         $this->setStartDateTime($startDateTime);
         $this->setEndDateTime($endDateTime);
-    }
-
-    final public function getEvent(): Event
-    {
-        return $this->event;
-    }
-
-    final public function setEvent(?Event $event): void
-    {
-        if ($this->event && $event !== $this->event) {
-            $this->event->removeEventRegistrationRange($this);
-        }
-        if ($event && $this->event !== $event) {
-            $this->event = $event;
-            $event->addEventRegistrationRange($this);
-        }
     }
 
     final public function isApplicable(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
