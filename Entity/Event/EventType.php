@@ -8,7 +8,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use InvalidArgumentException;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -125,22 +124,6 @@ class EventType
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    /**
-     * @return string
-     */
-    public static function getRevisionClassName(): string
-    {
-        return EventTypeRevision::class;
-    }
-
-    /**
-     * @param AbstractRevision|null $revision
-     */
-    public static function checkRevision(?AbstractRevision $revision): void
-    {
-        assert($revision instanceof EventTypeRevision);
     }
 
     final public function addEvent(?Event $event): void

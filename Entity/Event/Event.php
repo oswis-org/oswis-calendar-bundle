@@ -163,6 +163,51 @@ class Event
     protected $eventCapacities = null;
 
     /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\ManyToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinTable(
+     *     name="calendar_event_capacity_connection",
+     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_capacity_id", referencedColumnName="id", unique=true)}
+     * )
+     */
+    protected ?Collection $eventNewCapacities = null;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\ManyToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinTable(
+     *     name="calendar_event_price_connection",
+     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_price_id", referencedColumnName="id", unique=true)}
+     * )
+     */
+    protected ?Collection $eventNewPrices = null;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\ManyToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinTable(
+     *     name="calendar_event_registration_range_connection",
+     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_registration_range_id", referencedColumnName="id", unique=true)}
+     * )
+     */
+    protected ?Collection $eventNewRegistrationRanges = null;
+
+    /**
      * @var Collection
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
@@ -279,6 +324,9 @@ class Event
         $this->eventPrices = new ArrayCollection();
         $this->eventCapacities = new ArrayCollection();
         $this->eventRegistrationRanges = new ArrayCollection();
+        $this->eventNewPrices = new ArrayCollection();
+        $this->eventNewCapacities = new ArrayCollection();
+        $this->eventNewRegistrationRanges = new ArrayCollection();
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->eventWebContents = new ArrayCollection();
@@ -305,6 +353,15 @@ class Event
 
     final public function destroyRevisions(): void
     {
+        foreach ($this->getEventPrices() as $eventPrice) {
+            $this->addEventNewPrice($eventPrice);
+        }
+        foreach ($this->getEventCapacities() as $eventCapacity) {
+            $this->addEventNewCapacity($eventCapacity);
+        }
+        foreach ($this->getEventRegistrationRanges() as $eventRegistrationRange) {
+            $this->addEventNewRegistrationRange($eventRegistrationRange);
+        }
 //        try {
 //            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
 //            $this->setStartDateTime($this->getRevisionByDate()->getStartDateTime());
@@ -329,6 +386,60 @@ class Event
 //            $this->setActiveRevision(null);
 //        } catch (RevisionMissingException $e) {
 //        }
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventPrices(): Collection
+    {
+        return $this->eventPrices ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventPrice|null $eventPrice
+     */
+    final public function addEventNewPrice(?EventPrice $eventPrice): void
+    {
+        if ($eventPrice && !$this->eventPrices->contains($eventPrice)) {
+            $this->eventPrices->add($eventPrice);
+        }
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventCapacities(): Collection
+    {
+        return $this->eventCapacities ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventCapacity|null $eventCapacity
+     */
+    final public function addEventNewCapacity(?EventCapacity $eventCapacity): void
+    {
+        if ($eventCapacity && !$this->eventCapacities->contains($eventCapacity)) {
+            $this->eventCapacities->add($eventCapacity);
+        }
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventRegistrationRanges(): Collection
+    {
+        return $this->eventRegistrationRanges ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventRegistrationRange|null $eventRegistrationRange
+     */
+    final public function addEventNewRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
+    {
+        if ($eventRegistrationRange && !$this->eventRegistrationRanges->contains($eventRegistrationRange)) {
+            $this->eventRegistrationRanges->add($eventRegistrationRange);
+        }
     }
 
     final public function addEventFlagConnection(?EventFlagNewConnection $eventContactFlagConnection): void
@@ -492,14 +603,6 @@ class Event
         }
 
         return $capacity;
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventCapacities(): Collection
-    {
-        return $this->eventCapacities ?? new ArrayCollection();
     }
 
     /**
@@ -716,6 +819,36 @@ class Event
     }
 
     /**
+     * @param EventPrice|null $eventPrice
+     */
+    final public function removeEventNewPrice(?EventPrice $eventPrice): void
+    {
+        if ($eventPrice) {
+            $this->eventPrices->removeElement($eventPrice);
+        }
+    }
+
+    /**
+     * @param EventCapacity|null $eventCapacity
+     */
+    final public function removeEventNewCapacity(?EventCapacity $eventCapacity): void
+    {
+        if ($eventCapacity) {
+            $this->eventCapacities->removeElement($eventCapacity);
+        }
+    }
+
+    /**
+     * @param EventRegistrationRange|null $eventRegistrationRange
+     */
+    final public function removeEventNewRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
+    {
+        if ($eventRegistrationRange) {
+            $this->eventRegistrationRanges->removeElement($eventRegistrationRange);
+        }
+    }
+
+    /**
      * @param EventCapacity|null $eventCapacity
      */
     final public function addEventCapacity(?EventCapacity $eventCapacity): void
@@ -856,19 +989,35 @@ class Event
     }
 
     /**
-     * @return Collection
-     */
-    final public function getEventPrices(): Collection
-    {
-        return $this->eventPrices ?? new ArrayCollection();
-    }
-
-    /**
      * @return bool
      */
     final public function isPriceRecursiveFromParent(): bool
     {
         return $this->priceRecursiveFromParent ?? false;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getNewEventPrices(): Collection
+    {
+        return $this->eventNewPrices ?? new ArrayCollection();
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getNewEventCapacities(): Collection
+    {
+        return $this->eventNewCapacities ?? new ArrayCollection();
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getNewEventRegistrationRanges(): Collection
+    {
+        return $this->eventNewRegistrationRanges ?? new ArrayCollection();
     }
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int
@@ -1125,14 +1274,6 @@ class Event
         return $this->getEventRegistrationRanges()->filter(
                 fn(EventRegistrationRange $registrationRange) => $registrationRange->isApplicable($eventParticipantType, $referenceDateTime)
             )->count() > 0;
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventRegistrationRanges(): Collection
-    {
-        return $this->eventRegistrationRanges ?? new ArrayCollection();
     }
 
     final public function __toString(): string
