@@ -116,7 +116,6 @@ class EventParticipantPaymentManager
         // $csvRow = null;
         $eventParticipants = $event->getEventParticipantsByTypeOfType(
             $eventParticipantTypeOfType,
-            null,
             true,
             true,
             1

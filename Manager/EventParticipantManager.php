@@ -27,7 +27,6 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
-use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
@@ -129,7 +128,6 @@ class EventParticipantManager
      *
      * @return bool
      * @throws OswisException
-     * @throws RevisionMissingException
      */
     final public function sendMail(
         EventParticipant $eventParticipant = null,
@@ -467,7 +465,8 @@ class EventParticipantManager
         $eventParticipants = $this->em->getRepository(EventParticipant::class)->findAll();
         foreach ($eventParticipants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
-            $eventParticipant->updateActiveRevision();
+            // $eventParticipant->updateActiveRevision();
+            $eventParticipant->destroyRevisions();
             $this->em->persist($eventParticipant);
         }
         $this->em->flush();
@@ -561,7 +560,6 @@ class EventParticipantManager
         $successCount = 0;
         $eventParticipants = $event->getEventParticipantsByTypeOfType(
             $eventParticipantTypeOfType,
-            null,
             false,
             false,
             $recursiveDepth
@@ -705,7 +703,6 @@ class EventParticipantManager
         $successCount = 0;
         $eventParticipants = $event->getEventParticipantsByTypeOfType(
             $eventParticipantTypeOfType,
-            null,
             false,
             false,
             $recursiveDepth

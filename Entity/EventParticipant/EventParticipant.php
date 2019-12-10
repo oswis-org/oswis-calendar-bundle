@@ -22,7 +22,7 @@ use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\EntityDeletedContainerTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\InfoMailSentTrait;
 use function assert;
 
@@ -134,7 +134,7 @@ use function assert;
 class EventParticipant extends AbstractRevisionContainer
 {
     use BasicEntityTrait;
-    use EntityDeletedContainerTrait;
+    use DeletedTrait;
     use BasicMailConfirmationTrait;
     use InfoMailSentTrait;
 
@@ -211,14 +211,39 @@ class EventParticipant extends AbstractRevisionContainer
     protected ?Collection $eventParticipantFlagConnections = null;
 
     /**
+     * Related contact (person or organization).
+     * @var AbstractContact|null
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?AbstractContact $contact = null;
+
+    /**
+     * Related event.
+     * @var Event|null
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
+     *     inversedBy="eventParticipants",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Event $event = null;
+
+    /**
      * EventAttendee constructor.
      *
      * @param AbstractContact|null      $contact
      * @param Event|null                $event
      * @param EventParticipantType|null $eventParticipantType
      * @param Collection|null           $eventParticipantFlagConnections
-     *
      * @param Collection|null           $eventParticipantNotes
+     * @param DateTime|null             $deleted
      *
      * @throws EventCapacityExceededException
      */
@@ -227,7 +252,8 @@ class EventParticipant extends AbstractRevisionContainer
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
         ?Collection $eventParticipantFlagConnections = null,
-        ?Collection $eventParticipantNotes = null
+        ?Collection $eventParticipantNotes = null,
+        ?DateTime $deleted = null
     ) {
         $this->revisions = new ArrayCollection();
         $this->setEventParticipantType($eventParticipantType);
@@ -235,6 +261,7 @@ class EventParticipant extends AbstractRevisionContainer
         $this->setEventParticipantPayments(new ArrayCollection());
         $this->setEventParticipantFlagConnections($eventParticipantFlagConnections);
         $this->addRevision(new EventParticipantRevision($contact, $event));
+        $this->setDeleted($deleted);
     }
 
     /**
@@ -356,7 +383,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return int
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getRemainingRest(): int
     {
@@ -366,7 +392,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return int
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getPriceRest(): int
     {
@@ -376,7 +401,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return int
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getPrice(): int
     {
@@ -389,29 +413,25 @@ class EventParticipant extends AbstractRevisionContainer
         return $price < 0 ? 0 : $price;
     }
 
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return Event|null
-     * @throws RevisionMissingException
-     */
-    final public function getEvent(?DateTime $referenceDateTime = null): ?Event
+    final public function getEvent(): ?Event
     {
-        return $this->getRevisionByDate($referenceDateTime)->getEvent();
+        return $this->event;
     }
 
     /**
-     * @param DateTime|null $dateTime
+     * @param Event|null $event
      *
-     * @return EventParticipantRevision
-     * @throws RevisionMissingException
+     * @throws EventCapacityExceededException
      */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
+    final public function setEvent(?Event $event): void
     {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventParticipantRevision);
-
-        return $revision;
+        if ($this->event && $event !== $this->event) {
+            $this->event->removeEventParticipant($this);
+        }
+        if ($event && $this->event !== $event) {
+            $this->event = $event;
+            $event->addEventParticipant($this);
+        }
     }
 
     /**
@@ -498,7 +518,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return int
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getPriceDeposit(): int
     {
@@ -554,7 +573,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return int
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getRemainingPrice(): int
     {
@@ -564,7 +582,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return int
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getRemainingDeposit(): int
     {
@@ -574,7 +591,6 @@ class EventParticipant extends AbstractRevisionContainer
     /**
      * @return float
      * @throws PriceInvalidArgumentException
-     * @throws RevisionMissingException
      */
     final public function getPaidPricePercent(): float
     {
@@ -603,46 +619,6 @@ class EventParticipant extends AbstractRevisionContainer
     }
 
     /**
-     * @param Event|null $event
-     *
-     * @throws EventCapacityExceededException
-     * @throws RevisionMissingException
-     */
-    final public function setEvent(?Event $event): void
-    {
-        if ($this->getEvent() !== $event) {
-            $newRevision = clone $this->getRevisionByDate();
-            $newRevision->setEvent($event);
-            $this->addRevision($newRevision);
-        }
-    }
-
-    /**
-     * @param AbstractContact|null $contact
-     *
-     * @throws RevisionMissingException
-     */
-    final public function setContact(?AbstractContact $contact): void
-    {
-        if ($this->getContact() !== $contact) {
-            $newRevision = clone $this->getRevisionByDate();
-            $newRevision->setContact($contact);
-            $this->addRevision($newRevision);
-        }
-    }
-
-    /**
-     * @param DateTime|null $referenceDateTime
-     *
-     * @return AbstractContact
-     * @throws RevisionMissingException
-     */
-    final public function getContact(?DateTime $referenceDateTime = null): ?AbstractContact
-    {
-        return $this->getRevisionByDate($referenceDateTime)->getContact();
-    }
-
-    /**
      * @param DateTime|null $referenceDateTime
      *
      * @return bool
@@ -656,20 +632,58 @@ class EventParticipant extends AbstractRevisionContainer
         }
     }
 
-    /** @noinspection MethodShouldBeFinalInspection */
+    final public function getContact(): ?AbstractContact
+    {
+        return $this->contact;
+    }
+
+    final public function setContact(?AbstractContact $contact): void
+    {
+        $this->contact = $contact;
+    }
+
     /**
      * Get variable symbol of this eventParticipant (default is cropped phone number).
      * @return string|null
+     * @noinspection MethodShouldBeFinalInspection
      */
     public function getVariableSymbol(): ?string
     {
-        try {
-            $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
-        } catch (RevisionMissingException $e) {
-            return null;
-        }
+        $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
         $phone = preg_replace('/\s/', '', $phone);
 
         return substr(trim($phone), strlen(trim($phone)) - 9, 9);
     }
+
+    final public function destroyRevisions(): void
+    {
+        try {
+            $this->setContact($this->getRevisionByDate()->getContact());
+            $this->setEvent($this->getRevisionByDate()->getEvent());
+            $this->setDeleted($this->getRevisionByDate()->getDeleted());
+            foreach ($this->getRevisions() as $revision) {
+                assert($revision instanceof EventParticipantRevision);
+                $this->removeRevision($revision);
+            }
+            $this->setActiveRevision(null);
+        } catch (RevisionMissingException $e) {
+        } catch (InvalidArgumentException $e) {
+        } catch (EventCapacityExceededException $e) {
+        }
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @return EventParticipantRevision
+     * @throws RevisionMissingException
+     */
+    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
+    {
+        $revision = $this->getRevision($dateTime);
+        assert($revision instanceof EventParticipantRevision);
+
+        return $revision;
+    }
+
 }
