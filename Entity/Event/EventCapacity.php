@@ -35,7 +35,7 @@ class EventCapacity
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventCapacities"
+     *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -110,12 +110,6 @@ class EventCapacity
 
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventCapacity($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventCapacity($this);
-        }
+        $this->eventParticipantType = $eventParticipantType;
     }
 }

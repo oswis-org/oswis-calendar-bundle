@@ -36,7 +36,6 @@ class EventRegistrationRange
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventRegistrationRanges",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -108,12 +107,6 @@ class EventRegistrationRange
 
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventRegistrationRange($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventRegistrationRange($this);
-        }
+        $this->eventParticipantType = $eventParticipantType;
     }
 }

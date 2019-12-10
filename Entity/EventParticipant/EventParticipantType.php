@@ -9,9 +9,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -91,36 +88,6 @@ class EventParticipantType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantType"
-     * )
-     */
-    protected ?Collection $eventPrices = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantType"
-     * )
-     */
-    protected ?Collection $eventCapacities = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantType"
-     * )
-     */
-    protected ?Collection $eventRegistrationRanges = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
      *     cascade={"all"},
      *     mappedBy="eventParticipantType"
@@ -160,9 +127,6 @@ class EventParticipantType
         ?bool $formal = true
     ) {
         $this->eventParticipants = new ArrayCollection();
-        $this->eventPrices = new ArrayCollection();
-        $this->eventCapacities = new ArrayCollection();
-        $this->eventRegistrationRanges = new ArrayCollection();
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
@@ -287,77 +251,6 @@ class EventParticipantType
         }
         if ($this->eventParticipants->removeElement($flagConnection)) {
             $flagConnection->setEventParticipantType(null);
-        }
-    }
-
-    final public function getEventPrices(): Collection
-    {
-        return $this->eventPrices ?? new ArrayCollection();
-    }
-
-    final public function addEventPrice(?EventPrice $eventPrice): void
-    {
-        if ($eventPrice && !$this->eventPrices->contains($eventPrice)) {
-            $this->eventPrices->add($eventPrice);
-            $eventPrice->setEventParticipantType($this);
-        }
-    }
-
-    final public function removeEventPrice(?EventPrice $eventPrice): void
-    {
-        if (!$eventPrice) {
-            return;
-        }
-        if ($this->eventPrices->removeElement($eventPrice)) {
-            $eventPrice->setEventParticipantType(null);
-        }
-    }
-
-
-    final public function getEventCapacities(): Collection
-    {
-        return $this->eventCapacities ?? new ArrayCollection();
-    }
-
-    final public function addEventCapacity(?EventCapacity $eventCapacity): void
-    {
-        if ($eventCapacity && !$this->eventCapacities->contains($eventCapacity)) {
-            $this->eventCapacities->add($eventCapacity);
-            $eventCapacity->setEventParticipantType($this);
-        }
-    }
-
-    final public function removeEventCapacity(?EventCapacity $eventCapacity): void
-    {
-        if (!$eventCapacity) {
-            return;
-        }
-        if ($this->eventCapacities->removeElement($eventCapacity)) {
-            $eventCapacity->setEventParticipantType(null);
-        }
-    }
-
-
-    final public function getEventRegistrationRanges(): Collection
-    {
-        return $this->eventRegistrationRanges ?? new ArrayCollection();
-    }
-
-    final public function addEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
-    {
-        if ($eventRegistrationRange && !$this->eventRegistrationRanges->contains($eventRegistrationRange)) {
-            $this->eventRegistrationRanges->add($eventRegistrationRange);
-            $eventRegistrationRange->setEventParticipantType($this);
-        }
-    }
-
-    final public function removeEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
-    {
-        if (!$eventRegistrationRange) {
-            return;
-        }
-        if ($this->eventRegistrationRanges->removeElement($eventRegistrationRange)) {
-            $eventRegistrationRange->setEventParticipantType(null);
         }
     }
 }

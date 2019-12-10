@@ -39,7 +39,7 @@ class EventPrice
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventPrices"
+     *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -101,12 +101,6 @@ class EventPrice
 
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventPrice($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventPrice($this);
-        }
+        $this->eventParticipantType = $eventParticipantType;
     }
 }
