@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
+use Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries;
+use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 
 class EventRepository extends EntityRepository
@@ -38,5 +40,35 @@ class EventRepository extends EntityRepository
         }
 
         return $subEvents ?? new ArrayCollection();
+    }
+
+    /**
+     * Get sub events of event. Works only for depth == 0 (direct sub event).
+     *
+     * @param EventType $type
+     *
+     * @return Collection
+     */
+    final public function findEventsByType(
+        EventType $type
+    ): Collection {
+        return new ArrayCollection(
+            $this->createQueryBuilder('e')->where('e.eventType = :type')->setParameter('type', $type->getId())->getQuery()->getResult(Query::HYDRATE_OBJECT)
+        );
+    }
+
+    /**
+     * Get sub events of event. Works only for depth == 0 (direct sub event).
+     *
+     * @param EventSeries $series
+     *
+     * @return Collection
+     */
+    final public function findEventsBySeries(
+        EventSeries $series
+    ): Collection {
+        return new ArrayCollection(
+            $this->createQueryBuilder('e')->where('e.eventSeries = :series')->setParameter('series', $series->getId())->getQuery()->getResult(Query::HYDRATE_OBJECT)
+        );
     }
 }
