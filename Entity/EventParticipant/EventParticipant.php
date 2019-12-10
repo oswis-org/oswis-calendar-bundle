@@ -228,7 +228,6 @@ class EventParticipant extends AbstractRevisionContainer
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventParticipants",
-     *     cascade={"all"},
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
