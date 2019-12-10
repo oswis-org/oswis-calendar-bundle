@@ -15,10 +15,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
-use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
@@ -131,35 +128,12 @@ use function assert;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipant extends AbstractRevisionContainer
+class EventParticipant
 {
     use BasicEntityTrait;
     use DeletedTrait;
     use BasicMailConfirmationTrait;
     use InfoMailSentTrait;
-
-    /**
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
-     *     mappedBy="container",
-     *     cascade={"all"},
-     *     orphanRemoval=true,
-     *     fetch="EAGER"
-     * )
-     * @MaxDepth(2)
-     */
-    protected ?Collection $revisions = null;
-
-    /**
-     * @var AbstractRevision|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
-     *     fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
-     */
-    protected ?AbstractRevision $activeRevision = null;
 
     /**
      * Type of relation between contact and event - attendee, staff....
@@ -254,29 +228,13 @@ class EventParticipant extends AbstractRevisionContainer
         ?Collection $eventParticipantNotes = null,
         ?DateTime $deleted = null
     ) {
-        $this->revisions = new ArrayCollection();
+        $this->setContact($contact);
+        $this->setEvent($event);
         $this->setEventParticipantType($eventParticipantType);
         $this->setEventParticipantNotes($eventParticipantNotes);
         $this->setEventParticipantPayments(new ArrayCollection());
         $this->setEventParticipantFlagConnections($eventParticipantFlagConnections);
-        $this->addRevision(new EventParticipantRevision($contact, $event));
         $this->setDeleted($deleted);
-    }
-
-    /**
-     * @return string
-     */
-    public static function getRevisionClassName(): string
-    {
-        return EventParticipantRevision::class;
-    }
-
-    /**
-     * @param AbstractRevision|null $revision
-     */
-    public static function checkRevision(?AbstractRevision $revision): void
-    {
-        assert($revision instanceof EventParticipantRevision);
     }
 
     /**
@@ -656,33 +614,19 @@ class EventParticipant extends AbstractRevisionContainer
 
     final public function destroyRevisions(): void
     {
-        try {
-            $this->setContact($this->getRevisionByDate()->getContact());
-            $this->setEvent($this->getRevisionByDate()->getEvent());
-            $this->setDeleted($this->getRevisionByDate()->getDeleted());
-            foreach ($this->getRevisions() as $revision) {
-                assert($revision instanceof EventParticipantRevision);
-                $this->removeRevision($revision);
-            }
-            $this->setActiveRevision(null);
-        } catch (RevisionMissingException $e) {
-        } catch (InvalidArgumentException $e) {
-        } catch (EventCapacityExceededException $e) {
-        }
-    }
-
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventParticipantRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventParticipantRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventParticipantRevision);
-
-        return $revision;
+//        try {
+//            $this->setContact($this->getRevisionByDate()->getContact());
+//            $this->setEvent($this->getRevisionByDate()->getEvent());
+//            $this->setDeleted($this->getRevisionByDate()->getDeleted());
+//            foreach ($this->getRevisions() as $revision) {
+//                assert($revision instanceof EventParticipantRevision);
+//                $this->removeRevision($revision);
+//            }
+//            $this->setActiveRevision(null);
+//        } catch (RevisionMissingException $e) {
+//        } catch (InvalidArgumentException $e) {
+//        } catch (EventCapacityExceededException $e) {
+//        }
     }
 
 }

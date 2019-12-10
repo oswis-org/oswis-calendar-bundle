@@ -5,8 +5,6 @@ namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
@@ -55,18 +53,6 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventFlag extends AbstractEventFlag
 {
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",
-     *     mappedBy="eventFlag",
-     *     cascade={"all"},
-     *     fetch="EAGER"
-     * )
-     */
-    protected ?Collection $eventFlagConnections = null;
-
     /**
      * EmployerFlag constructor.
      *
@@ -75,7 +61,6 @@ class EventFlag extends AbstractEventFlag
     public function __construct(
         ?Nameable $nameable = null
     ) {
-        $this->eventFlagConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
     }
 
@@ -87,28 +72,5 @@ class EventFlag extends AbstractEventFlag
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    final public function getEventFlagConnections(): Collection
-    {
-        return $this->eventFlagConnections;
-    }
-
-    final public function addEventFlagConnection(?EventFlagConnection $flagConnection): void
-    {
-        if ($flagConnection && !$this->eventFlagConnections->contains($flagConnection)) {
-            $this->eventFlagConnections->add($flagConnection);
-            $flagConnection->setEventFlag($this);
-        }
-    }
-
-    final public function removeEventFlagConnection(?EventFlagConnection $flagConnection): void
-    {
-        if (!$flagConnection) {
-            return;
-        }
-        if ($this->eventFlagConnections->removeElement($flagConnection)) {
-            $flagConnection->setEventFlag(null);
-        }
     }
 }

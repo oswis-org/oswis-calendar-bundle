@@ -20,15 +20,12 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -85,7 +82,7 @@ use function strcmp;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class Event extends AbstractRevisionContainer
+class Event
 {
     use BasicEntityTrait;
     use NameableBasicTrait;
@@ -140,19 +137,6 @@ class Event extends AbstractRevisionContainer
      * @MaxDepth(2)
      */
     protected $subEvents = null;
-
-    /**
-     * People and organizations who attend at the event.
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantRevision",
-     *     cascade={"all"},
-     *     orphanRemoval=true,
-     *     mappedBy="event"
-     * )
-     * @MaxDepth(2)
-     */
-    protected $eventParticipantRevisions = null;
 
     /**
      * People and organizations who attend at the event.
@@ -225,25 +209,6 @@ class Event extends AbstractRevisionContainer
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision",
-     *     mappedBy="container",
-     *     cascade={"all"},
-     *     orphanRemoval=true,
-     *     fetch="EAGER"
-     * )
-     */
-    protected ?Collection $revisions = null;
-
-    /**
-     * @var AbstractRevision|null
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRevision")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
-     */
-    protected ?AbstractRevision $activeRevision = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",
      *     cascade={"all"},
      *     mappedBy="event",
@@ -292,6 +257,9 @@ class Event extends AbstractRevisionContainer
      * @param DateTime|null    $endDateTime
      * @param EventSeries|null $eventSeries
      * @param bool|null        $priceRecursiveFromParent
+     * @param string|null      $color
+     * @param string|null      $bankAccountNumber
+     * @param string|null      $bankAccountBank
      */
     public function __construct(
         ?Nameable $nameable = null,
@@ -301,11 +269,12 @@ class Event extends AbstractRevisionContainer
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null,
         ?EventSeries $eventSeries = null,
-        ?bool $priceRecursiveFromParent = null
+        ?bool $priceRecursiveFromParent = null,
+        ?string $color = null,
+        ?string $bankAccountNumber = null,
+        ?string $bankAccountBank = null
     ) {
-        $this->revisions = new ArrayCollection();
         $this->subEvents = new ArrayCollection();
-        $this->eventParticipantRevisions = new ArrayCollection();
         $this->eventParticipants = new ArrayCollection();
         $this->eventPrices = new ArrayCollection();
         $this->eventCapacities = new ArrayCollection();
@@ -317,7 +286,13 @@ class Event extends AbstractRevisionContainer
         $this->setSuperEvent($superEvent);
         $this->setEventSeries($eventSeries);
         $this->setPriceRecursiveFromParent($priceRecursiveFromParent);
-        $this->addRevision(new EventRevision($nameable, $location, $startDateTime, $endDateTime));
+        $this->setFieldsFromNameable($nameable);
+        $this->setLocation($location);
+        $this->setStartDateTime($startDateTime);
+        $this->setEndDateTime($endDateTime);
+        $this->setColor($color);
+        $this->setBankAccountNumber($bankAccountNumber);
+        $this->setBankAccountBank($bankAccountBank);
     }
 
     /**
@@ -328,62 +303,32 @@ class Event extends AbstractRevisionContainer
         $this->priceRecursiveFromParent = $priceRecursiveFromParent;
     }
 
-    /**
-     * @return string
-     */
-    public static function getRevisionClassName(): string
-    {
-        return EventRev::class;
-    }
-
-    /**
-     * @param AbstractRevision|null $revision
-     */
-    public static function checkRevision(?AbstractRevision $revision): void
-    {
-        assert($revision instanceof EventRevision);
-    }
-
     final public function destroyRevisions(): void
     {
-        try {
-            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
-            $this->setStartDateTime($this->getRevisionByDate()->getStartDateTime());
-            $this->setEndDateTime($this->getRevisionByDate()->getEndDateTime());
-            $this->setColor($this->getRevisionByDate()->getColor());
-            $this->setBankAccountNumber($this->getRevisionByDate()->getBankAccountNumber());
-            $this->setBankAccountBank($this->getRevisionByDate()->getBankAccountBank());
-            $this->setLocation($this->getRevisionByDate()->getLocation());
-            foreach ($this->getRevisionByDate()->getEventFlagConnections() as $eventFlagConnection) {
-                assert($eventFlagConnection instanceof EventFlagConnection);
-                $this->addEventFlagConnection(
-                    new EventFlagNewConnection($eventFlagConnection->getEventFlag(), null, $eventFlagConnection->getTextValue())
-                );
-            }
-            foreach ($this->getRevisions() as $revision) {
-                assert($revision instanceof EventRevision);
-                $this->removeRevision($revision);
-                foreach ($revision->getEventFlagConnections() as $eventFlagConnection) {
-                    $revision->removeEventFlagConnection($eventFlagConnection);
-                }
-            }
-            $this->setActiveRevision(null);
-        } catch (RevisionMissingException $e) {
-        }
-    }
-
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventRevision);
-
-        return $revision;
+//        try {
+//            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
+//            $this->setStartDateTime($this->getRevisionByDate()->getStartDateTime());
+//            $this->setEndDateTime($this->getRevisionByDate()->getEndDateTime());
+//            $this->setColor($this->getRevisionByDate()->getColor());
+//            $this->setBankAccountNumber($this->getRevisionByDate()->getBankAccountNumber());
+//            $this->setBankAccountBank($this->getRevisionByDate()->getBankAccountBank());
+//            $this->setLocation($this->getRevisionByDate()->getLocation());
+//            foreach ($this->getRevisionByDate()->getEventFlagConnections() as $eventFlagConnection) {
+//                assert($eventFlagConnection instanceof EventFlagConnection);
+//                $this->addEventFlagConnection(
+//                    new EventFlagNewConnection($eventFlagConnection->getEventFlag(), null, $eventFlagConnection->getTextValue())
+//                );
+//            }
+//            foreach ($this->getRevisions() as $revision) {
+//                assert($revision instanceof EventRevision);
+//                $this->removeRevision($revision);
+//                foreach ($revision->getEventFlagConnections() as $eventFlagConnection) {
+//                    $revision->removeEventFlagConnection($eventFlagConnection);
+//                }
+//            }
+//            $this->setActiveRevision(null);
+//        } catch (RevisionMissingException $e) {
+//        }
     }
 
     final public function addEventFlagConnection(?EventFlagNewConnection $eventContactFlagConnection): void
@@ -479,26 +424,27 @@ class Event extends AbstractRevisionContainer
     }
 
     /**
-     * @param EventParticipantRevision|null $eventParticipantRevision
+     * @param EventParticipant|null $eventParticipant
+     *
+     * @param bool|null             $force
      *
      * @throws EventCapacityExceededException
      */
-    final public function addEventParticipantRevision(?EventParticipantRevision $eventParticipantRevision): void
-    {
-        if (!$this->eventParticipantRevisions) {
-            $this->eventParticipantRevisions = new ArrayCollection();
+    final public function addEventParticipant(
+        ?EventParticipant $eventParticipant,
+        ?bool $force = false
+    ): void {
+        if (!$this->eventParticipants) {
+            $this->eventParticipants = new ArrayCollection();
         }
-        if ($eventParticipantRevision && !$this->eventParticipantRevisions->contains($eventParticipantRevision)) {
+        if ($eventParticipant && !$this->eventParticipants->contains($eventParticipant)) {
             // Check capacity.
-            assert($eventParticipantRevision instanceof EventParticipantRevision);
-            $eventParticipant = $eventParticipantRevision->getContainer();
-            assert($eventParticipant instanceof EventParticipant);
             $eventParticipantType = $eventParticipant->getEventParticipantType();
-            if ($this->getRemainingCapacity($eventParticipantType) === 0) {
+            if (!$force && $this->getRemainingCapacity($eventParticipantType) === 0) {
                 throw new EventCapacityExceededException();
             }
-            $this->eventParticipantRevisions->add($eventParticipantRevision);
-            $eventParticipantRevision->setEvent($this);
+            $this->eventParticipants->add($eventParticipant);
+            $eventParticipant->setEvent($this);
         }
     }
 
@@ -685,31 +631,6 @@ class Event extends AbstractRevisionContainer
     /**
      * @param EventParticipant|null $eventParticipant
      *
-     * @param bool|null             $force
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function addEventParticipant(
-        ?EventParticipant $eventParticipant,
-        ?bool $force = false
-    ): void {
-        if (!$this->eventParticipants) {
-            $this->eventParticipants = new ArrayCollection();
-        }
-        if ($eventParticipant && !$this->eventParticipants->contains($eventParticipant)) {
-            // Check capacity.
-            $eventParticipantType = $eventParticipant->getEventParticipantType();
-            if (!$force && $this->getRemainingCapacity($eventParticipantType) === 0) {
-                throw new EventCapacityExceededException();
-            }
-            $this->eventParticipants->add($eventParticipant);
-            $eventParticipant->setEvent($this);
-        }
-    }
-
-    /**
-     * @param EventParticipant|null $eventParticipant
-     *
      * @throws EventCapacityExceededException
      */
     final public function removeEventParticipant(?EventParticipant $eventParticipant): void
@@ -719,21 +640,6 @@ class Event extends AbstractRevisionContainer
         }
         if ($this->eventParticipants->removeElement($eventParticipant)) {
             $eventParticipant->setEvent(null);
-        }
-    }
-
-    /**
-     * @param EventParticipantRevision|null $eventParticipantRevision
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function removeEventParticipantRevision(?EventParticipantRevision $eventParticipantRevision): void
-    {
-        if (!$eventParticipantRevision) {
-            return;
-        }
-        if ($this->eventParticipantRevisions->removeElement($eventParticipantRevision)) {
-            $eventParticipantRevision->setEvent(null);
         }
     }
 
@@ -786,74 +692,74 @@ class Event extends AbstractRevisionContainer
     }
 
     /**
-     * @param EventPrice|null $eventContactRevision
+     * @param EventPrice|null $eventPrice
      */
-    final public function addEventPrice(?EventPrice $eventContactRevision): void
+    final public function addEventPrice(?EventPrice $eventPrice): void
     {
-        if ($eventContactRevision && !$this->eventPrices->contains($eventContactRevision)) {
-            $this->eventPrices->add($eventContactRevision);
-            $eventContactRevision->setEvent($this);
+        if ($eventPrice && !$this->eventPrices->contains($eventPrice)) {
+            $this->eventPrices->add($eventPrice);
+            $eventPrice->setEvent($this);
         }
     }
 
     /**
-     * @param EventPrice|null $eventContactRevision
+     * @param EventPrice|null $eventPrice
      */
-    final public function removeEventPrice(?EventPrice $eventContactRevision): void
+    final public function removeEventPrice(?EventPrice $eventPrice): void
     {
-        if (!$eventContactRevision) {
+        if (!$eventPrice) {
             return;
         }
-        if ($this->eventPrices->removeElement($eventContactRevision)) {
-            $eventContactRevision->setEvent(null);
+        if ($this->eventPrices->removeElement($eventPrice)) {
+            $eventPrice->setEvent(null);
         }
     }
 
     /**
-     * @param EventCapacity|null $eventContactRevision
+     * @param EventCapacity|null $eventCapacity
      */
-    final public function addEventCapacity(?EventCapacity $eventContactRevision): void
+    final public function addEventCapacity(?EventCapacity $eventCapacity): void
     {
-        if ($eventContactRevision && !$this->eventCapacities->contains($eventContactRevision)) {
-            $this->eventCapacities->add($eventContactRevision);
-            $eventContactRevision->setEvent($this);
+        if ($eventCapacity && !$this->eventCapacities->contains($eventCapacity)) {
+            $this->eventCapacities->add($eventCapacity);
+            $eventCapacity->setEvent($this);
         }
     }
 
     /**
-     * @param EventCapacity|null $eventContactRevision
+     * @param EventCapacity|null $eventCapacity
      */
-    final public function removeEventCapacity(?EventCapacity $eventContactRevision): void
+    final public function removeEventCapacity(?EventCapacity $eventCapacity): void
     {
-        if (!$eventContactRevision) {
+        if (!$eventCapacity) {
             return;
         }
-        if ($this->eventCapacities->removeElement($eventContactRevision)) {
-            $eventContactRevision->setEvent(null);
+        if ($this->eventCapacities->removeElement($eventCapacity)) {
+            $eventCapacity->setEvent(null);
         }
     }
 
     /**
-     * @param EventRegistrationRange|null $eventContactRevision
+     * @param EventRegistrationRange|null $eventRegistrationRange
      */
-    final public function addEventRegistrationRange(?EventRegistrationRange $eventContactRevision): void
+    final public function addEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if ($eventContactRevision && !$this->eventRegistrationRanges->contains($eventContactRevision)) {
-            $this->eventRegistrationRanges->add($eventContactRevision);
-            $eventContactRevision->setEvent($this);
+        if ($eventRegistrationRange && !$this->eventRegistrationRanges->contains($eventRegistrationRange)) {
+            $this->eventRegistrationRanges->add($eventRegistrationRange);
+            $eventRegistrationRange->setEvent($this);
         }
     }
 
     /**
-     * @param EventRegistrationRange|null $eventContactRevision
+     * @param EventRegistrationRange|null $eventRegistrationRange
      */
-    final public function removeEventRegistrationRange(?EventRegistrationRange $eventContactRevision): void
+    final public function removeEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if (!$eventContactRevision) {
+        if (!$eventRegistrationRange) {
             return;
         }
-        if ($this->eventRegistrationRanges->removeElement($eventContactRevision)) {
-            $eventContactRevision->setEvent(null);
+        if ($this->eventRegistrationRanges->removeElement($eventRegistrationRange)) {
+            $eventRegistrationRange->setEvent(null);
         }
     }
 
