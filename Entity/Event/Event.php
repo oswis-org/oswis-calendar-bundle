@@ -354,12 +354,15 @@ class Event
     final public function destroyRevisions(): void
     {
         foreach ($this->getEventPrices() as $eventPrice) {
+            assert($eventPrice instanceof EventPrice);
             $this->addEventNewPrice($eventPrice);
         }
         foreach ($this->getEventCapacities() as $eventCapacity) {
+            assert($eventCapacity instanceof EventCapacity);
             $this->addEventNewCapacity($eventCapacity);
         }
         foreach ($this->getEventRegistrationRanges() as $eventRegistrationRange) {
+            assert($eventRegistrationRange instanceof EventRegistrationRange);
             $this->addEventNewRegistrationRange($eventRegistrationRange);
         }
 //        try {
@@ -401,8 +404,8 @@ class Event
      */
     final public function addEventNewPrice(?EventPrice $eventPrice): void
     {
-        if ($eventPrice && !$this->eventPrices->contains($eventPrice)) {
-            $this->eventPrices->add($eventPrice);
+        if ($eventPrice && !$this->eventNewPrices->contains($eventPrice)) {
+            $this->eventNewPrices->add($eventPrice);
         }
     }
 
@@ -419,8 +422,8 @@ class Event
      */
     final public function addEventNewCapacity(?EventCapacity $eventCapacity): void
     {
-        if ($eventCapacity && !$this->eventCapacities->contains($eventCapacity)) {
-            $this->eventCapacities->add($eventCapacity);
+        if ($eventCapacity && !$this->eventNewCapacities->contains($eventCapacity)) {
+            $this->eventNewCapacities->add($eventCapacity);
         }
     }
 
@@ -437,8 +440,8 @@ class Event
      */
     final public function addEventNewRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if ($eventRegistrationRange && !$this->eventRegistrationRanges->contains($eventRegistrationRange)) {
-            $this->eventRegistrationRanges->add($eventRegistrationRange);
+        if ($eventRegistrationRange && !$this->eventNewRegistrationRanges->contains($eventRegistrationRange)) {
+            $this->eventNewRegistrationRanges->add($eventRegistrationRange);
         }
     }
 
@@ -824,7 +827,7 @@ class Event
     final public function removeEventNewPrice(?EventPrice $eventPrice): void
     {
         if ($eventPrice) {
-            $this->eventPrices->removeElement($eventPrice);
+            $this->eventNewPrices->removeElement($eventPrice);
         }
     }
 
@@ -834,7 +837,7 @@ class Event
     final public function removeEventNewCapacity(?EventCapacity $eventCapacity): void
     {
         if ($eventCapacity) {
-            $this->eventCapacities->removeElement($eventCapacity);
+            $this->eventNewCapacities->removeElement($eventCapacity);
         }
     }
 
@@ -844,7 +847,7 @@ class Event
     final public function removeEventNewRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
         if ($eventRegistrationRange) {
-            $this->eventRegistrationRanges->removeElement($eventRegistrationRange);
+            $this->eventNewRegistrationRanges->removeElement($eventRegistrationRange);
         }
     }
 
@@ -999,7 +1002,7 @@ class Event
     /**
      * @return Collection
      */
-    final public function getNewEventPrices(): Collection
+    final public function getEventNewPrices(): Collection
     {
         return $this->eventNewPrices ?? new ArrayCollection();
     }
@@ -1007,7 +1010,7 @@ class Event
     /**
      * @return Collection
      */
-    final public function getNewEventCapacities(): Collection
+    final public function getEventNewCapacities(): Collection
     {
         return $this->eventNewCapacities ?? new ArrayCollection();
     }
@@ -1015,7 +1018,7 @@ class Event
     /**
      * @return Collection
      */
-    final public function getNewEventRegistrationRanges(): Collection
+    final public function getEventNewRegistrationRanges(): Collection
     {
         return $this->eventNewRegistrationRanges ?? new ArrayCollection();
     }
