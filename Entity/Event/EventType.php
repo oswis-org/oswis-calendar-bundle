@@ -5,8 +5,6 @@ namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
@@ -76,18 +74,6 @@ class EventType
     public const TEAM_BUILDING = 'team-building';
 
     /**
-     * Events of that type.
-     * @var Collection|null $event
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     mappedBy="eventType",
-     *     fetch="EAGER",
-     *     cascade={"all"}
-     * )
-     */
-    protected ?Collection $events = null;
-
-    /**
      * ContactDetailType constructor.
      *
      * @param Nameable|null $nameable
@@ -101,7 +87,6 @@ class EventType
         ?string $type = null,
         ?string $color = null
     ) {
-        $this->events = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
         $this->setColor($color);
@@ -124,29 +109,6 @@ class EventType
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    final public function addEvent(?Event $event): void
-    {
-        if ($event && !$this->events->contains($event)) {
-            $this->events->add($event);
-            $event->setEventType($this);
-        }
-    }
-
-    final public function removeEvent(?Event $event): void
-    {
-        if ($event && $this->events->removeElement($event)) {
-            $event->setEventType(null);
-        }
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEvents(): Collection
-    {
-        return $this->events;
     }
 
     final public function destroyRevisions(): void

@@ -234,7 +234,6 @@ class Event
      * @var EventType|null $eventType
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
-     *     inversedBy="events",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
@@ -245,7 +244,7 @@ class Event
      * @var EventSeries|null $eventSeries
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
-     *     inversedBy="events"
+     *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      * @MaxDepth(1)
@@ -430,13 +429,7 @@ class Event
      */
     final public function setEventType(?EventType $eventType): void
     {
-        if ($this->eventType && $eventType !== $this->eventType) {
-            $this->eventType->removeEvent($this);
-        }
         $this->eventType = $eventType;
-        if ($eventType && $this->eventType !== $eventType) {
-            $eventType->addEvent($this);
-        }
     }
 
     /**
@@ -955,13 +948,7 @@ class Event
      */
     final public function setEventSeries(?EventSeries $eventSeries): void
     {
-        if ($this->eventSeries && $eventSeries !== $this->eventSeries) {
-            $this->eventSeries->removeEvent($this);
-        }
         $this->eventSeries = $eventSeries;
-        if ($eventSeries && $this->eventSeries !== $eventSeries) {
-            $eventSeries->addEvent($this);
-        }
     }
 
     /**
