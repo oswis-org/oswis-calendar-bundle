@@ -140,7 +140,6 @@ class EventParticipant
      * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     inversedBy="eventParticipants",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )
@@ -404,13 +403,7 @@ class EventParticipant
      */
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
-        if ($this->eventParticipantType && $eventParticipantType !== $this->eventParticipantType) {
-            $this->eventParticipantType->removeEventParticipant($this);
-        }
-        if ($eventParticipantType && $this->eventParticipantType !== $eventParticipantType) {
-            $this->eventParticipantType = $eventParticipantType;
-            $eventParticipantType->addEventParticipant($this);
-        }
+        $this->eventParticipantType = $eventParticipantType;
     }
 
     final public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int

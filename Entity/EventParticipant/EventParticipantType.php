@@ -77,17 +77,6 @@ class EventParticipantType
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipantType",
-     *     fetch="EAGER"
-     * )
-     */
-    protected ?Collection $eventParticipants = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
      *     cascade={"all"},
      *     mappedBy="eventParticipantType"
@@ -126,7 +115,6 @@ class EventParticipantType
         ?string $type = null,
         ?bool $formal = true
     ) {
-        $this->eventParticipants = new ArrayCollection();
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
@@ -229,28 +217,5 @@ class EventParticipantType
     final public function getEventParticipantFlagInEventConnections(): ?Collection
     {
         return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
-    }
-
-    final public function getEventParticipants(): Collection
-    {
-        return $this->eventParticipants ?? new ArrayCollection();
-    }
-
-    final public function addEventParticipant(?EventParticipant $flagConnection): void
-    {
-        if ($flagConnection && !$this->eventParticipants->contains($flagConnection)) {
-            $this->eventParticipants->add($flagConnection);
-            $flagConnection->setEventParticipantType($this);
-        }
-    }
-
-    final public function removeEventParticipant(?EventParticipant $flagConnection): void
-    {
-        if (!$flagConnection) {
-            return;
-        }
-        if ($this->eventParticipants->removeElement($flagConnection)) {
-            $flagConnection->setEventParticipantType(null);
-        }
     }
 }
