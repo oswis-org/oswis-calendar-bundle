@@ -5,14 +5,11 @@ namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevisionContainer;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Exceptions\RevisionMissingException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
@@ -63,7 +60,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventType extends AbstractRevisionContainer
+class EventType
 {
     use BasicEntityTrait;
     use NameableBasicTrait;
@@ -78,28 +75,6 @@ class EventType extends AbstractRevisionContainer
     public const TRANSPORT = 'transport';
     public const TEAM_BUILDING_STAY = 'team-building-stay';
     public const TEAM_BUILDING = 'team-building';
-
-    /**
-     * @var Collection
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventTypeRevision",
-     *     mappedBy="container",
-     *     cascade={"all"},
-     *     orphanRemoval=true,
-     *     fetch="EAGER"
-     * )
-     */
-    protected ?Collection $revisions = null;
-
-    /**
-     * @var AbstractRevision|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventTypeRevision",
-     *     fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(name="active_revision_id", referencedColumnName="id")
-     */
-    protected ?AbstractRevision $activeRevision = null;
 
     /**
      * Events of that type.
@@ -127,9 +102,10 @@ class EventType extends AbstractRevisionContainer
         ?string $type = null,
         ?string $color = null
     ) {
-        $this->revisions = new ArrayCollection();
         $this->events = new ArrayCollection();
-        $this->addRevision(new EventTypeRevision($nameable, $type, $color));
+        $this->setFieldsFromNameable($nameable);
+        $this->setType($type);
+        $this->setColor($color);
     }
 
     public static function getAllowedTypesDefault(): array
@@ -192,33 +168,17 @@ class EventType extends AbstractRevisionContainer
 
     final public function destroyRevisions(): void
     {
-        try {
-            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
-            $this->setColor($this->getRevisionByDate()->getColor());
-            $this->setType($this->getRevisionByDate()->getType());
-            foreach ($this->getRevisions() as $revision) {
-                assert($revision instanceof EventTypeRevision);
-                $this->removeRevision($revision);
-            }
-            $this->setActiveRevision(null);
-        } catch (RevisionMissingException $e) {
-        } catch (InvalidArgumentException $e) {
-        }
+//        try {
+//            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
+//            $this->setColor($this->getRevisionByDate()->getColor());
+//            $this->setType($this->getRevisionByDate()->getType());
+//            foreach ($this->getRevisions() as $revision) {
+//                assert($revision instanceof EventTypeRevision);
+//                $this->removeRevision($revision);
+//            }
+//            $this->setActiveRevision(null);
+//        } catch (RevisionMissingException $e) {
+//        } catch (InvalidArgumentException $e) {
+//        }
     }
-
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @return EventTypeRevision
-     * @throws RevisionMissingException
-     */
-    final public function getRevisionByDate(?DateTime $dateTime = null): EventTypeRevision
-    {
-        $revision = $this->getRevision($dateTime);
-        assert($revision instanceof EventTypeRevision);
-
-        return $revision;
-    }
-
-
 }
