@@ -169,6 +169,21 @@ class Event
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\ManyToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinTable(
+     *     name="calendar_event_web_content_connection",
+     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_web_content_id", referencedColumnName="id", unique=true)}
+     * )
+     */
+    protected ?Collection $eventNewWebContents = null;
+
+    /**
+     * @var Collection|null
+     * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
      *     cascade={"all"},
      *     fetch="EAGER"
@@ -324,6 +339,10 @@ class Event
             assert($eventCapacity instanceof EventCapacity);
             $this->addEventNewCapacity($eventCapacity);
         }
+        foreach ($this->getEventWebContents() as $eventWebContent) {
+            assert($eventWebContent instanceof EventWebContent);
+            $this->addEventNewWebContent($eventWebContent);
+        }
         foreach ($this->getEventRegistrationRanges() as $eventRegistrationRange) {
             assert($eventRegistrationRange instanceof EventRegistrationRange);
             $this->addEventNewRegistrationRange($eventRegistrationRange);
@@ -387,6 +406,24 @@ class Event
     {
         if ($eventCapacity && !$this->eventNewCapacities->contains($eventCapacity)) {
             $this->eventNewCapacities->add($eventCapacity);
+        }
+    }
+
+    /**
+     * @return Collection|null
+     */
+    final public function getEventWebContents(): ?Collection
+    {
+        return $this->eventWebContents ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventWebContent|null $eventWebContent
+     */
+    final public function addEventNewWebContent(?EventWebContent $eventWebContent): void
+    {
+        if ($eventWebContent && !$this->eventNewWebContents->contains($eventWebContent)) {
+            $this->eventNewPrices->add($eventWebContent);
         }
     }
 
@@ -765,6 +802,21 @@ class Event
     }
 
     /**
+     * @param EventWebContent|null $eventWebContent
+     */
+    final public function removeEventNewWebContent(?EventWebContent $eventWebContent): void
+    {
+        if ($eventWebContent) {
+            $this->eventNewPrices->removeElement($eventWebContent);
+        }
+    }
+
+    final public function getEventNewWebContents(): Collection
+    {
+        return $this->eventNewWebContents ?? new ArrayCollection();
+    }
+
+    /**
      * @param EventCapacity|null $eventCapacity
      */
     final public function removeEventNewCapacity(?EventCapacity $eventCapacity): void
@@ -986,14 +1038,6 @@ class Event
         }
 
         return null;
-    }
-
-    /**
-     * @return Collection|null
-     */
-    final public function getEventWebContents(): ?Collection
-    {
-        return $this->eventWebContents ?? new ArrayCollection();
     }
 
     /**

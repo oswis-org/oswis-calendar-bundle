@@ -25,10 +25,8 @@ class EventManager
      */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
@@ -44,12 +42,11 @@ class EventManager
         ?bool $priceRecursiveFromParent = null
     ): Event {
         try {
-            $em = $this->em;
             $entity = new Event(
                 $nameable, $superEvent, $location, $eventType, $startDateTime, $endDateTime, $eventSeries, $priceRecursiveFromParent
             );
-            $em->persist($entity);
-            $em->flush();
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

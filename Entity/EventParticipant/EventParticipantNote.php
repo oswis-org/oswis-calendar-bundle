@@ -63,7 +63,7 @@ class EventParticipantNote
     protected ?bool $publicNote = null;
 
     /**
-     * Event contact revision (connected to person or organization).
+     * Event contact revision (connected to person or organization). // CHANGE
      * @var EventParticipant|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",

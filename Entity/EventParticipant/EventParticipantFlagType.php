@@ -5,8 +5,6 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Zakjakub\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
@@ -55,17 +53,6 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventParticipantFlagType extends AbstractEventFlagType
 {
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
-     *     mappedBy="eventParticipantFlagType",
-     *     cascade={"all"}
-     * )
-     */
-    protected ?Collection $eventParticipantFlags = null;
-
     /**
      * EmployerFlag constructor.
      *
@@ -78,7 +65,6 @@ class EventParticipantFlagType extends AbstractEventFlagType
         ?int $minFlagsAllowed = null,
         ?int $maxFlagsAllowed = null
     ) {
-        $this->eventParticipantFlags = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setMinInEventParticipant($minFlagsAllowed);
         $this->setMaxInEventParticipant($maxFlagsAllowed);
@@ -95,28 +81,5 @@ class EventParticipantFlagType extends AbstractEventFlagType
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    final public function getEventParticipantFlags(): Collection
-    {
-        return $this->eventParticipantFlags;
-    }
-
-    final public function addEventParticipantFlag(?EventParticipantFlag $eventContactFlag): void
-    {
-        if ($eventContactFlag && !$this->eventParticipantFlags->contains($eventContactFlag)) {
-            $this->eventParticipantFlags->add($eventContactFlag);
-            $eventContactFlag->setEventParticipantFlagType($this);
-        }
-    }
-
-    final public function removeEventParticipantFlag(?EventParticipantFlag $eventContactFlag): void
-    {
-        if (!$eventContactFlag) {
-            return;
-        }
-        if ($this->eventParticipantFlags->removeElement($eventContactFlag)) {
-            $eventContactFlag->setEventParticipantFlagType(null);
-        }
     }
 }

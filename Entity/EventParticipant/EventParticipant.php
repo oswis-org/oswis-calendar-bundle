@@ -162,6 +162,21 @@ class EventParticipant
 
     /**
      * @var Collection|null
+     * @Doctrine\ORM\Mapping\ManyToMany(
+     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
+     *     cascade={"all"},
+     *     fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinTable(
+     *     name="calendar_event_participant_note_connection",
+     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_participant_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_participant_note_id", referencedColumnName="id", unique=true)}
+     * )
+     */
+    protected ?Collection $eventParticipantNewNotes = null;
+
+    /**
+     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment",
      *     cascade={"all"},
@@ -234,6 +249,16 @@ class EventParticipant
         $this->setEventParticipantPayments(new ArrayCollection());
         $this->setEventParticipantFlagConnections($eventParticipantFlagConnections);
         $this->setDeleted($deleted);
+    }
+
+    /**
+     * @param EventParticipantNote|null $eventParticipantNote
+     */
+    final public function removeEventParticipantNewNote(?EventParticipantNote $eventParticipantNote): void
+    {
+        if ($eventParticipantNote) {
+            $this->eventParticipantNewNotes->removeElement($eventParticipantNote);
+        }
     }
 
     /**
@@ -607,6 +632,9 @@ class EventParticipant
 
     final public function destroyRevisions(): void
     {
+        foreach ($this->getEventParticipantNewNotes() as $eventParticipantNewNote) {
+            $this->addEventParticipantNewNote($eventParticipantNewNote);
+        }
 //        try {
 //            $this->setContact($this->getRevisionByDate()->getContact());
 //            $this->setEvent($this->getRevisionByDate()->getEvent());
@@ -620,6 +648,21 @@ class EventParticipant
 //        } catch (InvalidArgumentException $e) {
 //        } catch (EventCapacityExceededException $e) {
 //        }
+    }
+
+    final public function getEventParticipantNewNotes(): Collection
+    {
+        return $this->eventParticipantNewNotes ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventParticipantNote|null $eventParticipantNote
+     */
+    final public function addEventParticipantNewNote(?EventParticipantNote $eventParticipantNote): void
+    {
+        if ($eventParticipantNote && !$this->eventParticipantNewNotes->contains($eventParticipantNote)) {
+            $this->eventParticipantNewNotes->add($eventParticipantNote);
+        }
     }
 
 }

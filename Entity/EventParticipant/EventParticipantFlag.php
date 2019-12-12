@@ -83,7 +83,6 @@ class EventParticipantFlag extends AbstractEventFlag
      * @var EventParticipantFlagType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType",
-     *     inversedBy="eventParticipantFlags",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -192,12 +191,6 @@ class EventParticipantFlag extends AbstractEventFlag
 
     final public function setEventParticipantFlagType(?EventParticipantFlagType $eventContactFlagType): void
     {
-        if ($this->eventParticipantFlagType && $eventContactFlagType !== $this->eventParticipantFlagType) {
-            $this->eventParticipantFlagType->removeEventParticipantFlag($this);
-        }
-        if ($eventContactFlagType && $this->eventParticipantFlagType !== $eventContactFlagType) {
-            $this->eventParticipantFlagType = $eventContactFlagType;
-            $eventContactFlagType->addEventParticipantFlag($this);
-        }
+        $this->eventParticipantFlagType = $eventContactFlagType;
     }
 }
