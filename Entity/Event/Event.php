@@ -807,7 +807,7 @@ class Event
     final public function removeEventNewWebContent(?EventWebContent $eventWebContent): void
     {
         if ($eventWebContent) {
-            $this->eventNewPrices->removeElement($eventWebContent);
+            $this->eventNewWebContents->removeElement($eventWebContent);
         }
     }
 
