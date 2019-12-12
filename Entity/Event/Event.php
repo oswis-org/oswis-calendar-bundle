@@ -423,7 +423,7 @@ class Event
     final public function addEventNewWebContent(?EventWebContent $eventWebContent): void
     {
         if ($eventWebContent && !$this->eventNewWebContents->contains($eventWebContent)) {
-            $this->eventNewPrices->add($eventWebContent);
+            $this->eventNewWebContents->add($eventWebContent);
         }
     }
 
