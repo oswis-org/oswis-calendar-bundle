@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use InvalidArgumentException;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
@@ -164,7 +163,7 @@ class Event
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_capacity_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $eventNewCapacities = null;
+    protected ?Collection $eventCapacities = null;
 
     /**
      * @var Collection|null
@@ -179,7 +178,7 @@ class Event
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_web_content_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $eventNewWebContents = null;
+    protected ?Collection $eventWebContents = null;
 
     /**
      * @var Collection|null
@@ -194,7 +193,7 @@ class Event
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_price_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $eventNewPrices = null;
+    protected ?Collection $eventPrices = null;
 
     /**
      * @var Collection|null
@@ -209,7 +208,7 @@ class Event
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_registration_range_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $eventNewRegistrationRanges = null;
+    protected ?Collection $eventRegistrationRanges = null;
 
     /**
      * @var Collection|null
@@ -232,17 +231,6 @@ class Event
      * )
      */
     protected $eventParticipantFlagInEventConnections = null;
-
-    /**
-     * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",
-     *     cascade={"all"},
-     *     mappedBy="event",
-     *     fetch="EAGER"
-     * )
-     */
-    protected $eventWebContents = null;
 
     /**
      * Type of this event.
@@ -302,12 +290,11 @@ class Event
     ) {
         $this->subEvents = new ArrayCollection();
         $this->eventParticipants = new ArrayCollection();
-        $this->eventNewPrices = new ArrayCollection();
-        $this->eventNewCapacities = new ArrayCollection();
-        $this->eventNewRegistrationRanges = new ArrayCollection();
+        $this->eventPrices = new ArrayCollection();
+        $this->eventCapacities = new ArrayCollection();
+        $this->eventRegistrationRanges = new ArrayCollection();
         $this->eventParticipantTypeInEventConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
-        $this->eventWebContents = new ArrayCollection();
         $this->setEventType($eventType);
         $this->setSuperEvent($superEvent);
         $this->setEventSeries($eventSeries);
@@ -331,22 +318,6 @@ class Event
 
     final public function destroyRevisions(): void
     {
-        foreach ($this->getEventPrices() as $eventPrice) {
-            assert($eventPrice instanceof EventPrice);
-            $this->addEventNewPrice($eventPrice);
-        }
-        foreach ($this->getEventCapacities() as $eventCapacity) {
-            assert($eventCapacity instanceof EventCapacity);
-            $this->addEventNewCapacity($eventCapacity);
-        }
-        foreach ($this->getEventWebContents() as $eventWebContent) {
-            assert($eventWebContent instanceof EventWebContent);
-            $this->addEventNewWebContent($eventWebContent);
-        }
-        foreach ($this->getEventRegistrationRanges() as $eventRegistrationRange) {
-            assert($eventRegistrationRange instanceof EventRegistrationRange);
-            $this->addEventNewRegistrationRange($eventRegistrationRange);
-        }
 //        try {
 //            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
 //            $this->setStartDateTime($this->getRevisionByDate()->getStartDateTime());
@@ -374,74 +345,32 @@ class Event
     }
 
     /**
-     * @return Collection
-     */
-    final public function getEventPrices(): Collection
-    {
-        return $this->eventNewPrices ?? new ArrayCollection();
-    }
-
-    /**
      * @param EventPrice|null $eventPrice
      */
-    final public function addEventNewPrice(?EventPrice $eventPrice): void
+    final public function addEventPrice(?EventPrice $eventPrice): void
     {
-        if ($eventPrice && !$this->eventNewPrices->contains($eventPrice)) {
-            $this->eventNewPrices->add($eventPrice);
+        if ($eventPrice && !$this->eventPrices->contains($eventPrice)) {
+            $this->eventPrices->add($eventPrice);
         }
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventCapacities(): Collection
-    {
-        return $this->eventNewCapacities ?? new ArrayCollection();
     }
 
     /**
      * @param EventCapacity|null $eventCapacity
      */
-    final public function addEventNewCapacity(?EventCapacity $eventCapacity): void
+    final public function addEventCapacity(?EventCapacity $eventCapacity): void
     {
-        if ($eventCapacity && !$this->eventNewCapacities->contains($eventCapacity)) {
-            $this->eventNewCapacities->add($eventCapacity);
+        if ($eventCapacity && !$this->eventCapacities->contains($eventCapacity)) {
+            $this->eventCapacities->add($eventCapacity);
         }
-    }
-
-    /**
-     * @return Collection|null
-     */
-    final public function getEventWebContents(): ?Collection
-    {
-        return $this->eventWebContents ?? new ArrayCollection();
-    }
-
-    /**
-     * @param EventWebContent|null $eventWebContent
-     */
-    final public function addEventNewWebContent(?EventWebContent $eventWebContent): void
-    {
-        if ($eventWebContent && !$this->eventNewWebContents->contains($eventWebContent)) {
-            $this->eventNewWebContents->add($eventWebContent);
-        }
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventRegistrationRanges(): Collection
-    {
-        return $this->eventNewRegistrationRanges ?? new ArrayCollection();
     }
 
     /**
      * @param EventRegistrationRange|null $eventRegistrationRange
      */
-    final public function addEventNewRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
+    final public function addEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if ($eventRegistrationRange && !$this->eventNewRegistrationRanges->contains($eventRegistrationRange)) {
-            $this->eventNewRegistrationRanges->add($eventRegistrationRange);
+        if ($eventRegistrationRange && !$this->eventRegistrationRanges->contains($eventRegistrationRange)) {
+            $this->eventRegistrationRanges->add($eventRegistrationRange);
         }
     }
 
@@ -603,6 +532,14 @@ class Event
     }
 
     /**
+     * @return Collection
+     */
+    final public function getEventCapacities(): Collection
+    {
+        return $this->eventCapacities ?? new ArrayCollection();
+    }
+
+    /**
      * @param EventParticipantType|null $eventParticipantType
      * @param int|null                  $recursiveDepth
      * @param bool|null                 $includeDeleted
@@ -665,8 +602,7 @@ class Event
     ): Collection {
         if ($eventParticipantType) {
             $eventParticipants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->filter(
-                fn(EventParticipant $eventParticipant) => !$eventParticipant->getEventParticipantType() ? false : $eventParticipantType->getId() === $eventParticipant->getEventParticipantType(
-                    )->getId()
+                fn(EventParticipant $participant) => !$participant->getEventParticipantType() ? false : $eventParticipantType->getId() === $participant->getEventParticipantType()->getId()
             )->toArray();
         } else {
             $eventParticipants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->toArray();
@@ -794,45 +730,30 @@ class Event
     /**
      * @param EventPrice|null $eventPrice
      */
-    final public function removeEventNewPrice(?EventPrice $eventPrice): void
+    final public function removeEventPrice(?EventPrice $eventPrice): void
     {
         if ($eventPrice) {
-            $this->eventNewPrices->removeElement($eventPrice);
+            $this->eventPrices->removeElement($eventPrice);
         }
-    }
-
-    /**
-     * @param EventWebContent|null $eventWebContent
-     */
-    final public function removeEventNewWebContent(?EventWebContent $eventWebContent): void
-    {
-        if ($eventWebContent) {
-            $this->eventNewWebContents->removeElement($eventWebContent);
-        }
-    }
-
-    final public function getEventNewWebContents(): Collection
-    {
-        return $this->eventNewWebContents ?? new ArrayCollection();
     }
 
     /**
      * @param EventCapacity|null $eventCapacity
      */
-    final public function removeEventNewCapacity(?EventCapacity $eventCapacity): void
+    final public function removeEventCapacity(?EventCapacity $eventCapacity): void
     {
         if ($eventCapacity) {
-            $this->eventNewCapacities->removeElement($eventCapacity);
+            $this->eventCapacities->removeElement($eventCapacity);
         }
     }
 
     /**
      * @param EventRegistrationRange|null $eventRegistrationRange
      */
-    final public function removeEventNewRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
+    final public function removeEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
         if ($eventRegistrationRange) {
-            $this->eventNewRegistrationRanges->removeElement($eventRegistrationRange);
+            $this->eventRegistrationRanges->removeElement($eventRegistrationRange);
         }
     }
 
@@ -929,35 +850,19 @@ class Event
     }
 
     /**
+     * @return Collection
+     */
+    final public function getEventPrices(): Collection
+    {
+        return $this->eventPrices ?? new ArrayCollection();
+    }
+
+    /**
      * @return bool
      */
     final public function isPriceRecursiveFromParent(): bool
     {
         return $this->priceRecursiveFromParent ?? false;
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventNewPrices(): Collection
-    {
-        return $this->eventNewPrices ?? new ArrayCollection();
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventNewCapacities(): Collection
-    {
-        return $this->eventNewCapacities ?? new ArrayCollection();
-    }
-
-    /**
-     * @return Collection
-     */
-    final public function getEventNewRegistrationRanges(): Collection
-    {
-        return $this->eventNewRegistrationRanges ?? new ArrayCollection();
     }
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int
@@ -1003,11 +908,6 @@ class Event
         $this->eventSeries = $eventSeries;
     }
 
-    /**
-     * @param EventWebContent|null $eventWebContent
-     *
-     * @throws InvalidArgumentException
-     */
     final public function addEventWebContent(?EventWebContent $eventWebContent): void
     {
         $existingOne = null;
@@ -1015,19 +915,13 @@ class Event
             $existingOne = $this->getEventWebContent($eventWebContent->getType());
         }
         if ($existingOne) {
-            $this->removeWebContent($existingOne);
+            $this->removeEventWebContent($existingOne);
         }
         if ($eventWebContent && !$this->eventWebContents->contains($eventWebContent)) {
             $this->eventWebContents->add($eventWebContent);
-            $eventWebContent->setEvent($this);
         }
     }
 
-    /**
-     * @param string $type
-     *
-     * @return EventWebContent|null
-     */
     final public function getEventWebContent(string $type = 'html'): ?EventWebContent
     {
         foreach ($this->getEventWebContents() as $eventWebContent) {
@@ -1041,17 +935,20 @@ class Event
     }
 
     /**
-     * @param EventWebContent|null $eventWebContent
-     *
-     * @throws InvalidArgumentException
+     * @return Collection|null
      */
-    final public function removeWebContent(?EventWebContent $eventWebContent): void
+    final public function getEventWebContents(): ?Collection
     {
-        if (!$eventWebContent) {
-            return;
-        }
-        if ($this->eventWebContents->removeElement($eventWebContent)) {
-            $eventWebContent->setEvent(null);
+        return $this->eventWebContents ?? new ArrayCollection();
+    }
+
+    /**
+     * @param EventWebContent|null $eventWebContent
+     */
+    final public function removeEventWebContent(?EventWebContent $eventWebContent): void
+    {
+        if ($eventWebContent) {
+            $this->eventWebContents->removeElement($eventWebContent);
         }
     }
 
@@ -1200,6 +1097,14 @@ class Event
         return $this->getEventRegistrationRanges()->filter(
                 fn(EventRegistrationRange $registrationRange) => $registrationRange->isApplicable($eventParticipantType, $referenceDateTime)
             )->count() > 0;
+    }
+
+    /**
+     * @return Collection
+     */
+    final public function getEventRegistrationRanges(): Collection
+    {
+        return $this->eventRegistrationRanges ?? new ArrayCollection();
     }
 
     final public function __toString(): string

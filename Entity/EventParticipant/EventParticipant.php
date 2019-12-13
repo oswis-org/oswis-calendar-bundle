@@ -632,7 +632,7 @@ class EventParticipant
 
     final public function destroyRevisions(): void
     {
-        foreach ($this->getEventParticipantNewNotes() as $eventParticipantNewNote) {
+        foreach ($this->getEventParticipantNotes() as $eventParticipantNewNote) {
             $this->addEventParticipantNewNote($eventParticipantNewNote);
         }
 //        try {
@@ -650,11 +650,6 @@ class EventParticipant
 //        }
     }
 
-    final public function getEventParticipantNewNotes(): Collection
-    {
-        return $this->eventParticipantNewNotes ?? new ArrayCollection();
-    }
-
     /**
      * @param EventParticipantNote|null $eventParticipantNote
      */
@@ -663,6 +658,11 @@ class EventParticipant
         if ($eventParticipantNote && !$this->eventParticipantNewNotes->contains($eventParticipantNote)) {
             $this->eventParticipantNewNotes->add($eventParticipantNote);
         }
+    }
+
+    final public function getEventParticipantNewNotes(): Collection
+    {
+        return $this->eventParticipantNewNotes ?? new ArrayCollection();
     }
 
 }

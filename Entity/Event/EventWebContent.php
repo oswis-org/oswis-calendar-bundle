@@ -23,30 +23,17 @@ class EventWebContent
     use TextValueTrait;
 
     /**
-     * @var Event|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventWebContents"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?Event $event = null;
-
-    /**
      * EventWebContent constructor.
      *
-     * @param Event|null  $event
      * @param string|null $textValue
      * @param string|null $type
      *
      * @throws InvalidArgumentException
      */
     public function __construct(
-        ?Event $event = null,
         ?string $textValue = null,
         ?string $type = null
     ) {
-        $this->setEvent($event);
         $this->setType($type);
         $this->setTextValue($textValue);
     }
@@ -63,26 +50,5 @@ class EventWebContent
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    final public function getEvent(): ?Event
-    {
-        return $this->event;
-    }
-
-    /**
-     * @param Event|null $event
-     *
-     * @throws InvalidArgumentException
-     */
-    final public function setEvent(?Event $event): void
-    {
-        if ($this->event && $event !== $this->event) {
-            $this->event->removeWebContent($this);
-        }
-        if ($event && $this->event !== $event) {
-            $this->event = $event;
-            $event->addEventWebContent($this);
-        }
     }
 }
