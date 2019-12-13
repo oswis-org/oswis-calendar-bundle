@@ -150,18 +150,6 @@ class EventParticipant
 
     /**
      * @var Collection|null
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
-     *     cascade={"all"},
-     *     mappedBy="eventParticipant",
-     *     fetch="EAGER"
-     * )
-     * @MaxDepth(1)
-     */
-    protected ?Collection $eventParticipantNotes = null;
-
-    /**
-     * @var Collection|null
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
      *     cascade={"all"},
@@ -173,7 +161,7 @@ class EventParticipant
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_participant_note_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $eventParticipantNewNotes = null;
+    protected ?Collection $eventParticipantNotes = null;
 
     /**
      * @var Collection|null
@@ -252,16 +240,6 @@ class EventParticipant
     }
 
     /**
-     * @param EventParticipantNote|null $eventParticipantNote
-     */
-    final public function removeEventParticipantNewNote(?EventParticipantNote $eventParticipantNote): void
-    {
-        if ($eventParticipantNote) {
-            $this->eventParticipantNewNotes->removeElement($eventParticipantNote);
-        }
-    }
-
-    /**
      * @param EventParticipantFlagNewConnection|null $newConnection
      *
      * @throws EventCapacityExceededException
@@ -305,12 +283,7 @@ class EventParticipant
      */
     final public function removeEmptyEventParticipantNotes(): void
     {
-        foreach ($this->getEventParticipantNotes() as $note) {
-            assert($note instanceof EventParticipantNote);
-            if (!$note->getTextValue() || '' === $note->getTextValue()) {
-                $this->removeEventParticipantNote($note);
-            }
-        }
+        $this->setEventParticipantNotes($this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note) => $note->getTextValue() && '' === $note->getTextValue()));
     }
 
     /**
@@ -326,38 +299,20 @@ class EventParticipant
      */
     final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
     {
-        $this->eventParticipantNotes = $this->eventParticipantNotes ?? new ArrayCollection();
-        $newEventParticipantNotes = $newEventParticipantNotes ?? new ArrayCollection();
-        foreach ($this->eventParticipantNotes as $oldNote) {
-            if (!$newEventParticipantNotes->contains($oldNote)) {
-                $this->removeEventParticipantNote($oldNote);
-            }
-        }
-        foreach ($newEventParticipantNotes as $newNote) {
-            if (!$this->eventParticipantNotes->contains($newNote)) {
-                $this->addEventParticipantNote($newNote);
-            }
-        }
+        $this->eventParticipantNotes = $newEventParticipantNotes ?? new ArrayCollection();
     }
 
-    /**
-     * @param EventParticipantNote|null $eventParticipantNote
-     */
     final public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
-        if ($eventParticipantNote && $this->eventParticipantNotes->removeElement($eventParticipantNote)) {
-            $eventParticipantNote->setEventParticipant(null);
+        if ($eventParticipantNote) {
+            $this->eventParticipantNotes->removeElement($eventParticipantNote);
         }
     }
 
-    /**
-     * @param EventParticipantNote|null $eventParticipantNote
-     */
     final public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
             $this->eventParticipantNotes->add($eventParticipantNote);
-            $eventParticipantNote->setEventParticipant($this);
         }
     }
 
@@ -632,9 +587,6 @@ class EventParticipant
 
     final public function destroyRevisions(): void
     {
-        foreach ($this->getEventParticipantNotes() as $eventParticipantNewNote) {
-            $this->addEventParticipantNewNote($eventParticipantNewNote);
-        }
 //        try {
 //            $this->setContact($this->getRevisionByDate()->getContact());
 //            $this->setEvent($this->getRevisionByDate()->getEvent());
@@ -648,21 +600,6 @@ class EventParticipant
 //        } catch (InvalidArgumentException $e) {
 //        } catch (EventCapacityExceededException $e) {
 //        }
-    }
-
-    /**
-     * @param EventParticipantNote|null $eventParticipantNote
-     */
-    final public function addEventParticipantNewNote(?EventParticipantNote $eventParticipantNote): void
-    {
-        if ($eventParticipantNote && !$this->eventParticipantNewNotes->contains($eventParticipantNote)) {
-            $this->eventParticipantNewNotes->add($eventParticipantNote);
-        }
-    }
-
-    final public function getEventParticipantNewNotes(): Collection
-    {
-        return $this->eventParticipantNewNotes ?? new ArrayCollection();
     }
 
 }
