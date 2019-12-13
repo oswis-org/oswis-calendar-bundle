@@ -25,46 +25,18 @@ use function in_array;
  */
 final class EventParticipantSubscriber implements EventSubscriberInterface
 {
-
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $em;
 
-    /**
-     * @var MailerInterface
-     */
     private MailerInterface $mailer;
 
-    /**
-     * @var LoggerInterface
-     */
     private LoggerInterface $logger;
 
-    /**
-     * @var OswisCoreSettingsProvider
-     */
     private OswisCoreSettingsProvider $oswisCoreSettings;
 
-    /**
-     * @var UserPasswordEncoderInterface
-     */
     private UserPasswordEncoderInterface $encoder;
 
-    /**
-     * @param EntityManagerInterface       $em
-     * @param MailerInterface              $mailer
-     * @param LoggerInterface              $logger
-     * @param OswisCoreSettingsProvider    $oswisCoreSettings
-     * @param UserPasswordEncoderInterface $encoder
-     */
-    public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        UserPasswordEncoderInterface $encoder
-    ) {
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings, UserPasswordEncoderInterface $encoder)
+    {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
@@ -72,9 +44,6 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         $this->encoder = $encoder;
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -85,11 +54,11 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /** @noinspection PhpUnused */
     /**
      * @param ViewEvent $event
      *
      * @throws Exception
+     * @noinspection PhpUnused
      */
     public function postWrite(ViewEvent $event): void
     {
@@ -109,11 +78,11 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         }
     }
 
-    /** @noinspection PhpUnused */
     /**
      * @param ViewEvent $event
      *
      * @throws Exception
+     * @noinspection PhpUnused
      */
     public function postValidate(ViewEvent $event): void
     {

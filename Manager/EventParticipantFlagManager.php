@@ -39,12 +39,9 @@ class EventParticipantFlagManager
         ?bool $publicOnWebRoute = null
     ): EventParticipantFlag {
         try {
-            $em = $this->em;
-            $entity = new EventParticipantFlag(
-                $nameable, $eventParticipantFlagType, $publicInIS, $publicInPortal, $publicOnWeb, $publicOnWebRoute
-            );
-            $em->persist($entity);
-            $em->flush();
+            $entity = new EventParticipantFlag($nameable, $eventParticipantFlagType, $publicInIS, $publicInPortal, $publicOnWeb, $publicOnWebRoute);
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event participant flag (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

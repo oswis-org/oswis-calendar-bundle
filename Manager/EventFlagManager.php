@@ -11,32 +11,22 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventFlagManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?Nameable $nameable = null
-    ): EventFlag {
+    final public function create(?Nameable $nameable = null): ?EventFlag
+    {
         try {
-            $em = $this->em;
             $entity = new EventFlag($nameable);
-            $em->persist($entity);
-            $em->flush();
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event flag (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

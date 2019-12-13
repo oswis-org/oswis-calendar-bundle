@@ -58,7 +58,6 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 class EventParticipantFlag extends AbstractEventFlag
 {
     /**
-     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
      *     mappedBy="eventParticipantFlag",
@@ -69,7 +68,6 @@ class EventParticipantFlag extends AbstractEventFlag
     protected ?Collection $eventParticipantFlagNewConnections = null;
 
     /**
-     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
      *     mappedBy="eventParticipantFlag",
@@ -80,7 +78,6 @@ class EventParticipantFlag extends AbstractEventFlag
 
     /**
      * Event contact flag type.
-     * @var EventParticipantFlagType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType",
      *     fetch="EAGER"
@@ -91,21 +88,10 @@ class EventParticipantFlag extends AbstractEventFlag
 
     /**
      * Price adjust (positive, negative or zero).
-     * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $price = null;
 
-    /**
-     * EmployerFlag constructor.
-     *
-     * @param Nameable|null                 $nameable
-     * @param EventParticipantFlagType|null $eventParticipantFlagType
-     * @param bool|null                     $publicInIS
-     * @param bool|null                     $publicInPortal
-     * @param bool|null                     $publicOnWeb
-     * @param string|null                   $publicOnWebRoute
-     */
     public function __construct(
         ?Nameable $nameable = null,
         ?EventParticipantFlagType $eventParticipantFlagType = null,
@@ -124,17 +110,11 @@ class EventParticipantFlag extends AbstractEventFlag
         $this->setPublicOnWebRoute($publicOnWebRoute);
     }
 
-    /**
-     * @return int
-     */
     final public function getPrice(): int
     {
         return $this->price ?? 0;
     }
 
-    /**
-     * @param int $price
-     */
     final public function setPrice(?int $price): void
     {
         $this->price = $price;
@@ -144,7 +124,6 @@ class EventParticipantFlag extends AbstractEventFlag
     {
         return $this->eventParticipantFlagNewConnections;
     }
-
 
     final public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $flagConnection): void
     {
@@ -176,10 +155,7 @@ class EventParticipantFlag extends AbstractEventFlag
 
     final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
     {
-        if (!$eventParticipantFlagInEventConnection) {
-            return;
-        }
-        if ($this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
+        if ($eventParticipantFlagInEventConnection && $this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
             $eventParticipantFlagInEventConnection->setEventParticipantFlag(null);
         }
     }

@@ -19,9 +19,8 @@ class EventSeries
     /**
      * @param Nameable|null $nameable
      */
-    public function __construct(
-        ?Nameable $nameable = null
-    ) {
+    public function __construct(?Nameable $nameable = null)
+    {
         $this->setFieldsFromNameable($nameable);
     }
 }

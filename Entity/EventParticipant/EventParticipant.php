@@ -137,7 +137,6 @@ class EventParticipant
 
     /**
      * Type of relation between contact and event - attendee, staff....
-     * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     cascade={"all"},
@@ -149,7 +148,6 @@ class EventParticipant
     protected ?EventParticipantType $eventParticipantType = null;
 
     /**
-     * @var Collection|null
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
      *     cascade={"all"},
@@ -164,7 +162,6 @@ class EventParticipant
     protected ?Collection $eventParticipantNotes = null;
 
     /**
-     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment",
      *     cascade={"all"},
@@ -176,7 +173,6 @@ class EventParticipant
     protected ?Collection $eventParticipantPayments = null;
 
     /**
-     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
      *     cascade={"all"},
@@ -188,7 +184,6 @@ class EventParticipant
 
     /**
      * Related contact (person or organization).
-     * @var AbstractContact|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
      *     cascade={"all"},
@@ -200,7 +195,6 @@ class EventParticipant
 
     /**
      * Related event.
-     * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventParticipants",
@@ -283,7 +277,7 @@ class EventParticipant
      */
     final public function removeEmptyEventParticipantNotes(): void
     {
-        $this->setEventParticipantNotes($this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note) => $note->getTextValue() && '' !== $note->getTextValue()));
+        $this->setEventParticipantNotes($this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note): bool => !empty($note->getTextValue())));
     }
 
     /**
@@ -343,8 +337,7 @@ class EventParticipant
         if (!$this->getEvent() || !$this->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()->getPrice($this->getEventParticipantType());
-        $price += $this->getFlagsPrice();
+        $price = $this->getEvent()->getPrice($this->getEventParticipantType()) + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
@@ -364,8 +357,8 @@ class EventParticipant
         if ($this->event && $event !== $this->event) {
             $this->event->removeEventParticipant($this);
         }
+        $this->event = $event;
         if ($event && $this->event !== $event) {
-            $this->event = $event;
             $event->addEventParticipant($this);
         }
     }
@@ -431,8 +424,8 @@ class EventParticipant
      */
     final public function setEventParticipantFlagConnections(?Collection $newConnections): void
     {
-        $this->eventParticipantFlagConnections = $this->eventParticipantFlagConnections ?? new ArrayCollection();
-        $newConnections = $newConnections ?? new ArrayCollection();
+        $this->eventParticipantFlagConnections ??= new ArrayCollection();
+        $newConnections ??= new ArrayCollection();
         foreach ($this->eventParticipantFlagConnections as $oldConnection) {
             if (!$newConnections->contains($oldConnection)) {
                 $this->removeEventParticipantFlagConnection($oldConnection);
@@ -524,7 +517,7 @@ class EventParticipant
      */
     final public function getPaidPricePercent(): float
     {
-        return !$this->getPrice() ? 0 : $this->getPaidPrice() / $this->getPrice();
+        return !$this->getPrice() ? 0 : ($this->getPaidPrice() / $this->getPrice());
     }
 
     /**
@@ -579,27 +572,12 @@ class EventParticipant
      */
     public function getVariableSymbol(): ?string
     {
-        $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
-        $phone = preg_replace('/\s/', '', $phone);
+        $phone = preg_replace('/\s/', '', $this->getContact() ? $this->getContact()->getPhone() : null);
 
         return substr(trim($phone), strlen(trim($phone)) - 9, 9);
     }
 
     final public function destroyRevisions(): void
     {
-//        try {
-//            $this->setContact($this->getRevisionByDate()->getContact());
-//            $this->setEvent($this->getRevisionByDate()->getEvent());
-//            $this->setDeleted($this->getRevisionByDate()->getDeleted());
-//            foreach ($this->getRevisions() as $revision) {
-//                assert($revision instanceof EventParticipantRevision);
-//                $this->removeRevision($revision);
-//            }
-//            $this->setActiveRevision(null);
-//        } catch (RevisionMissingException $e) {
-//        } catch (InvalidArgumentException $e) {
-//        } catch (EventCapacityExceededException $e) {
-//        }
     }
-
 }

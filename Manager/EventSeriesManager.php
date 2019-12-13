@@ -11,34 +11,22 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventSeriesManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?Nameable $nameable = null
-    ): EventSeries {
+    final public function create(?Nameable $nameable = null): EventSeries
+    {
         try {
-            $em = $this->em;
-            $entity = new EventSeries(
-                $nameable
-            );
-            $em->persist($entity);
-            $em->flush();
+            $entity = new EventSeries($nameable);
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event series (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

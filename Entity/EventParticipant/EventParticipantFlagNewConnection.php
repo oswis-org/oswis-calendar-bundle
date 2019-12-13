@@ -21,7 +21,6 @@ class EventParticipantFlagNewConnection
 
     /**
      * Event contact flag.
-     * @var EventParticipantFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
      *     inversedBy="eventParticipantFlagNewConnections",
@@ -32,7 +31,6 @@ class EventParticipantFlagNewConnection
     protected ?EventParticipantFlag $eventParticipantFlag = null;
 
     /**
-     * @var EventParticipant|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     inversedBy="eventParticipantFlagConnections",
@@ -52,12 +50,8 @@ class EventParticipantFlagNewConnection
      *
      * @throws EventCapacityExceededException
      */
-    public function __construct(
-        ?EventParticipantFlag $eventParticipantFlag = null,
-        ?EventParticipant $eventParticipant = null,
-        ?string $textValue = null,
-        ?DateTime $dateTime = null
-    ) {
+    public function __construct(?EventParticipantFlag $eventParticipantFlag = null, ?EventParticipant $eventParticipant = null, ?string $textValue = null, ?DateTime $dateTime = null)
+    {
         $this->setEventParticipantFlag($eventParticipantFlag);
         $this->setEventParticipant($eventParticipant);
         $this->setTextValue($textValue);

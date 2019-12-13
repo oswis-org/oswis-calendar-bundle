@@ -15,14 +15,8 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
     public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
@@ -42,9 +36,7 @@ class EventManager
         ?bool $priceRecursiveFromParent = null
     ): Event {
         try {
-            $entity = new Event(
-                $nameable, $superEvent, $location, $eventType, $startDateTime, $endDateTime, $eventSeries, $priceRecursiveFromParent
-            );
+            $entity = new Event($nameable, $superEvent, $location, $eventType, $startDateTime, $endDateTime, $eventSeries, $priceRecursiveFromParent);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event (by manager): '.$entity->getId().' '.$entity->getName().'.';
@@ -63,10 +55,8 @@ class EventManager
      */
     final public function updateActiveRevisions(): void
     {
-        $events = $this->em->getRepository(Event::class)->findAll();
-        foreach ($events as $event) {
+        foreach ($this->em->getRepository(Event::class)->findAll() as $event) {
             assert($event instanceof Event);
-            // $event->updateActiveRevision();
             $event->destroyRevisions();
             $this->em->persist($event);
         }

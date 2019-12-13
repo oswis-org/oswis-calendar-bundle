@@ -41,40 +41,16 @@ class EventParticipantManager
 {
     public const DEFAULT_LIST_TITLE = 'Přehled přihlášek';
 
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface|null
-     */
     protected ?LoggerInterface $logger;
 
-    /**
-     * @var OswisCoreSettingsProvider
-     */
     protected ?OswisCoreSettingsProvider $oswisCoreSettings;
 
-    /**
-     * @var MailerInterface
-     */
     protected MailerInterface $mailer;
 
-    /**
-     * EventParticipantManager constructor.
-     *
-     * @param EntityManagerInterface         $em
-     * @param MailerInterface                $mailer
-     * @param OswisCoreSettingsProvider|null $oswisCoreSettings
-     * @param LoggerInterface|null           $logger
-     */
-    public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        ?LoggerInterface $logger
-    ) {
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, OswisCoreSettingsProvider $oswisCoreSettings, ?LoggerInterface $logger)
+    {
         $this->em = $em;
         $this->logger = $logger;
         $this->oswisCoreSettings = $oswisCoreSettings;
@@ -83,27 +59,17 @@ class EventParticipantManager
         /// TODO: Throw exceptions!
     }
 
-    /**
-     * @param AbstractContact|null      $contact
-     * @param Event|null                $event
-     * @param EventParticipantType|null $eventParticipantType
-     * @param Collection|null           $eventContactFlagConnections
-     * @param Collection|null           $eventParticipantNotes
-     *
-     * @return EventParticipant
-     */
     final public function create(
         ?AbstractContact $contact = null,
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
         ?Collection $eventContactFlagConnections = null,
         ?Collection $eventParticipantNotes = null
-    ): EventParticipant {
+    ): ?EventParticipant {
         try {
-            $em = $this->em;
             $entity = new EventParticipant($contact, $event, $eventParticipantType, $eventContactFlagConnections, $eventParticipantNotes);
-            $em->persist($entity);
-            $em->flush();
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event participant (by manager): ';
             $infoMessage .= $entity->getId().', ';
             $infoMessage .= ($entity->getContact() ? $entity->getContact()->getContactName() : '').', ';
@@ -129,28 +95,16 @@ class EventParticipantManager
      * @return bool
      * @throws OswisException
      */
-    final public function sendMail(
-        EventParticipant $eventParticipant = null,
-        UserPasswordEncoderInterface $encoder = null,
-        ?bool $new = false,
-        ?string $token = null
-    ): bool {
+    final public function sendMail(EventParticipant $eventParticipant = null, UserPasswordEncoderInterface $encoder = null, ?bool $new = false, ?string $token = null): bool
+    {
         if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
         if ($eventParticipant->isDeleted()) {
-            if (!$eventParticipant->getEMailDeleteConfirmationDateTime()) {
-                return $this->sendCancelConfirmation($eventParticipant);
-            }
-
-            return true;
+            return $eventParticipant->getEMailDeleteConfirmationDateTime() ? true : $this->sendCancelConfirmation($eventParticipant);
         }
         if ($eventParticipant->hasActivatedContactUser()) {
-            if (!$eventParticipant->getEMailConfirmationDateTime()) {
-                return $this->sendSummary($eventParticipant, $encoder, $new);
-            }
-
-            return true;
+            return $eventParticipant->getEMailConfirmationDateTime() ? true : $this->sendSummary($eventParticipant, $encoder, $new);
         }
         if ($token) {
             foreach ($eventParticipant->getContact()->getContactPersons() as $contactPerson) {
@@ -180,7 +134,6 @@ class EventParticipantManager
             assert($eventParticipant instanceof EventParticipant);
             $event = $eventParticipant->getEvent();
             assert($event instanceof Event);
-            $em = $this->em;
             $mailSettings = $this->oswisCoreSettings->getEmail();
             $eventParticipantContact = $eventParticipant->getContact();
             if ($eventParticipantContact instanceof Person) {
@@ -210,13 +163,12 @@ class EventParticipantManager
                     'oswis'            => $this->oswisCoreSettings->getArray(),
                     'logo'             => 'cid:logo',
                 );
-                $archiveAddress = new Address(
-                    $mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? ''
-                );
-                $email = (new TemplatedEmail())->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title))->htmlTemplate(
-                    '@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig'
-                )->context($mailData);
-                $em->persist($eventParticipant);
+                $archiveAddress = new Address($mailSettings['archive_address'] ?? '', self::mimeEnc($mailSettings['archive_name'] ?? '') ?? '');
+                $email = new TemplatedEmail();
+                $email->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''))->bcc($archiveAddress)->subject(self::mimeEnc($title));
+                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig')->context($mailData);
+                /** @noinspection DisconnectedForeachInstructionInspection */
+                $this->em->persist($eventParticipant);
                 try {
                     $this->mailer->send($email);
                     $mailSuccessCount++;
@@ -225,7 +177,7 @@ class EventParticipantManager
                     // throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
             }
-            $em->flush();
+            $this->em->flush();
             if ($mailSuccessCount < $contactPersons->count()) {
                 throw new OswisException("Část zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
             }
@@ -253,11 +205,8 @@ class EventParticipantManager
      * @return bool
      * @throws OswisException
      */
-    final public function sendSummary(
-        EventParticipant $eventParticipant,
-        UserPasswordEncoderInterface $encoder = null,
-        bool $new = false
-    ): bool {
+    final public function sendSummary(EventParticipant $eventParticipant, UserPasswordEncoderInterface $encoder = null, bool $new = false): bool
+    {
         try {
             if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
                 return false;

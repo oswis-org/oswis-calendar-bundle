@@ -23,40 +23,19 @@ use function assert;
  */
 class EventParticipantController extends AbstractController
 {
-
-    /**
-     * @var EntityManagerInterface
-     */
     public EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     public LoggerInterface $logger;
 
-    /**
-     * @var UserPasswordEncoderInterface
-     */
     public UserPasswordEncoderInterface $encoder;
 
-    /**
-     * @var OswisCoreSettingsProvider
-     */
     public OswisCoreSettingsProvider $oswisCoreSettings;
 
-    /**
-     * @var MailerInterface
-     */
     public MailerInterface $mailer;
 
-    /**
-     * @var Environment
-     */
     public Environment $templating;
 
     /**
-     * EventParticipantController constructor.
-     *
      * @param EntityManagerInterface       $em
      * @param LoggerInterface              $logger
      * @param UserPasswordEncoderInterface $encoder

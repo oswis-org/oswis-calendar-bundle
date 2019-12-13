@@ -318,30 +318,6 @@ class Event
 
     final public function destroyRevisions(): void
     {
-//        try {
-//            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
-//            $this->setStartDateTime($this->getRevisionByDate()->getStartDateTime());
-//            $this->setEndDateTime($this->getRevisionByDate()->getEndDateTime());
-//            $this->setColor($this->getRevisionByDate()->getColor());
-//            $this->setBankAccountNumber($this->getRevisionByDate()->getBankAccountNumber());
-//            $this->setBankAccountBank($this->getRevisionByDate()->getBankAccountBank());
-//            $this->setLocation($this->getRevisionByDate()->getLocation());
-//            foreach ($this->getRevisionByDate()->getEventFlagConnections() as $eventFlagConnection) {
-//                assert($eventFlagConnection instanceof EventFlagConnection);
-//                $this->addEventFlagConnection(
-//                    new EventFlagNewConnection($eventFlagConnection->getEventFlag(), null, $eventFlagConnection->getTextValue())
-//                );
-//            }
-//            foreach ($this->getRevisions() as $revision) {
-//                assert($revision instanceof EventRevision);
-//                $this->removeRevision($revision);
-//                foreach ($revision->getEventFlagConnections() as $eventFlagConnection) {
-//                    $revision->removeEventFlagConnection($eventFlagConnection);
-//                }
-//            }
-//            $this->setActiveRevision(null);
-//        } catch (RevisionMissingException $e) {
-//        }
     }
 
     /**
@@ -477,11 +453,6 @@ class Event
         }
     }
 
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     *
-     * @return int|null
-     */
     final public function getRemainingCapacity(?EventParticipantType $eventParticipantType = null): ?int
     {
         if ($this->getMaximumCapacity() === null) {
@@ -498,20 +469,15 @@ class Event
         return -1;
     }
 
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     *
-     * @return int|null
-     */
     final public function getMaximumCapacity(?EventParticipantType $eventParticipantType = null): ?int
     {
         $capacity = -1;
-        foreach ($this->getEventCapacities() as $eventCapacity) {
+        foreach ($this->getEventCapacities() as $oneCapacity) {
             try {
-                assert($eventCapacity instanceof EventCapacity);
-                $oneEventParticipantType = $eventCapacity->getEventParticipantType();
-                if (!$eventParticipantType || ($oneEventParticipantType && $eventParticipantType->getId() === $oneEventParticipantType->getId())) {
-                    $capacity += $eventCapacity->getNumericValue();
+                assert($oneCapacity instanceof EventCapacity);
+                $oneParticipantType = $oneCapacity->getEventParticipantType();
+                if (!$eventParticipantType || ($oneParticipantType && $eventParticipantType->getId() === $oneParticipantType->getId())) {
+                    $capacity += $oneCapacity->getNumericValue();
                 }
             } catch (Exception $e) {
                 continue;
@@ -529,31 +495,32 @@ class Event
         return $this->eventCapacities ?? new ArrayCollection();
     }
 
-    /**
-     * @param EventParticipantType|null $eventParticipantType
-     * @param int|null                  $recursiveDepth
-     * @param bool|null                 $includeDeleted
-     * @param bool|null                 $includeNotActivatedUsers
-     *
-     * @return int
-     */
-    final public function getOccupancy(?EventParticipantType $eventParticipantType = null, ?bool $includeDeleted = false, ?bool $includeNotActivatedUsers = true, ?int $recursiveDepth = null): int
-    {
-        return $this->getActiveEventParticipants($eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth)->count();
+    final public function getOccupancy(
+        ?EventParticipantType $participantType = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivatedUsers = true,
+        ?int $recursiveDepth = null
+    ): int {
+        return $this->getActiveEventParticipants($participantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth)->count();
     }
 
     final public function getActiveEventParticipants(
-        ?EventParticipantType $eventParticipantType = null,
+        ?EventParticipantType $participantType = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivatedUsers = true,
         ?int $recursiveDepth = 1
     ): Collection {
         /// TODO: Duplicities!!!
-        $eventParticipants = $this->getEventParticipantsByType($eventParticipantType, $includeDeleted, $includeNotActivatedUsers);
+        $eventParticipants = $this->getEventParticipantsByType($participantType, $includeDeleted, $includeNotActivatedUsers);
         if ($recursiveDepth > 0) {
             foreach ($this->getSubEvents() as $subEvent) {
                 assert($subEvent instanceof self);
-                $subEventParticipants = $subEvent->getActiveEventParticipants($eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth - 1);
+                $subEventParticipants = $subEvent->getActiveEventParticipants(
+                    $participantType,
+                    $includeDeleted,
+                    $includeNotActivatedUsers,
+                    $recursiveDepth - 1
+                );
                 foreach ($subEventParticipants as $newEventParticipant) {
                     if (!$eventParticipants->contains($newEventParticipant)) {
                         $eventParticipants->add($newEventParticipant);
@@ -567,18 +534,21 @@ class Event
         return new ArrayCollection($eventParticipantsArray);
     }
 
-    final public function getEventParticipantsByType(?EventParticipantType $eventParticipantType = null, ?bool $includeDeleted = false, ?bool $includeNotActivated = true): Collection
-    {
-        if ($eventParticipantType) {
-            $eventParticipants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->filter(
-                fn(EventParticipant $participant) => !$participant->getEventParticipantType() ? false : $eventParticipantType->getId() === $participant->getEventParticipantType()->getId()
+    final public function getEventParticipantsByType(
+        ?EventParticipantType $pType = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivated = true
+    ): Collection {
+        if ($pType) {
+            $participants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->filter(
+                fn(EventParticipant $p) => !$p->getEventParticipantType() ? false : $pType->getId() === $p->getEventParticipantType()->getId()
             )->toArray();
         } else {
-            $eventParticipants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->toArray();
+            $participants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->toArray();
         }
-        self::sortEventParticipants($eventParticipants);
+        self::sortEventParticipants($participants);
 
-        return new ArrayCollection($eventParticipants);
+        return new ArrayCollection($participants);
     }
 
     final public function getEventParticipants(?bool $includeDeleted = false, ?bool $includeNotActivatedUsers = true): Collection
@@ -644,44 +614,44 @@ class Event
     }
 
     /**
-     * @param EventParticipantTypeInEventConnection|null $eventParticipantTypeInEventConnection
+     * @param EventParticipantTypeInEventConnection|null $participantTypeInEventConnection
      */
-    final public function addEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $eventParticipantTypeInEventConnection): void
+    final public function addEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
     {
-        if ($eventParticipantTypeInEventConnection && !$this->eventParticipantTypeInEventConnections->contains($eventParticipantTypeInEventConnection)) {
-            $this->eventParticipantTypeInEventConnections->add($eventParticipantTypeInEventConnection);
-            $eventParticipantTypeInEventConnection->setEvent($this);
+        if ($participantTypeInEventConnection && !$this->eventParticipantTypeInEventConnections->contains($participantTypeInEventConnection)) {
+            $this->eventParticipantTypeInEventConnections->add($participantTypeInEventConnection);
+            $participantTypeInEventConnection->setEvent($this);
         }
     }
 
     /**
-     * @param EventParticipantTypeInEventConnection|null $eventParticipantTypeInEventConnection
+     * @param EventParticipantTypeInEventConnection|null $participantTypeInEventConnection
      */
-    final public function removeEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $eventParticipantTypeInEventConnection): void
+    final public function removeEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
     {
-        if ($eventParticipantTypeInEventConnection && $this->eventParticipantTypeInEventConnections->removeElement($eventParticipantTypeInEventConnection)) {
-            $eventParticipantTypeInEventConnection->setEvent(null);
+        if ($participantTypeInEventConnection && $this->eventParticipantTypeInEventConnections->removeElement($participantTypeInEventConnection)) {
+            $participantTypeInEventConnection->setEvent(null);
         }
     }
 
     /**
-     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
+     * @param EventParticipantFlagInEventConnection|null $participantFlagInEventConnection
      */
-    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    final public function addEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $participantFlagInEventConnection): void
     {
-        if ($eventParticipantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($eventParticipantFlagInEventConnection)) {
-            $this->eventParticipantFlagInEventConnections->add($eventParticipantFlagInEventConnection);
-            $eventParticipantFlagInEventConnection->setEvent($this);
+        if ($participantFlagInEventConnection && !$this->eventParticipantFlagInEventConnections->contains($participantFlagInEventConnection)) {
+            $this->eventParticipantFlagInEventConnections->add($participantFlagInEventConnection);
+            $participantFlagInEventConnection->setEvent($this);
         }
     }
 
     /**
-     * @param EventParticipantFlagInEventConnection|null $eventParticipantFlagInEventConnection
+     * @param EventParticipantFlagInEventConnection|null $participantFlagInEventConnection
      */
-    final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $eventParticipantFlagInEventConnection): void
+    final public function removeEventParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $participantFlagInEventConnection): void
     {
-        if ($eventParticipantFlagInEventConnection && $this->eventParticipantFlagInEventConnections->removeElement($eventParticipantFlagInEventConnection)) {
-            $eventParticipantFlagInEventConnection->setEvent(null);
+        if ($participantFlagInEventConnection && $this->eventParticipantFlagInEventConnections->removeElement($participantFlagInEventConnection)) {
+            $participantFlagInEventConnection->setEvent(null);
         }
     }
 
@@ -715,12 +685,6 @@ class Event
         }
     }
 
-    /**
-     * @param AbstractContact           $contact
-     * @param EventParticipantType|null $eventParticipantType
-     *
-     * @return bool
-     */
     final public function containsEventParticipantContact(AbstractContact $contact, EventParticipantType $eventParticipantType = null): bool
     {
         return $this->getEventParticipantsByType($eventParticipantType)->exists(
@@ -728,12 +692,6 @@ class Event
         );
     }
 
-    /**
-     * @param AppUser                   $appUser
-     * @param EventParticipantType|null $eventParticipantType
-     *
-     * @return bool
-     */
     final public function containsEventParticipantAppUser(AppUser $appUser, ?EventParticipantType $eventParticipantType = null): bool
     {
         return $this->getEventParticipantsByType($eventParticipantType)->exists(
@@ -749,11 +707,6 @@ class Event
         );
     }
 
-    /**
-     * @param Person $person
-     *
-     * @return bool
-     */
     final public function containsEventParticipantPerson(Person $person): bool
     {
         foreach ($this->getActiveEventParticipants() as $eventParticipant) {

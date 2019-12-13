@@ -12,35 +12,22 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInE
 
 class EventParticipantTypeInEventConnectionManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?EventParticipantType $eventParticipantType = null,
-        ?Event $event = null
-    ): EventParticipantTypeInEventConnection {
+    final public function create(?EventParticipantType $eventParticipantType = null, ?Event $event = null): EventParticipantTypeInEventConnection
+    {
         try {
-            $em = $this->em;
-            $entity = new EventParticipantTypeInEventConnection(
-                $eventParticipantType, $event
-            );
-            $em->persist($entity);
-            $em->flush();
+            $entity = new EventParticipantTypeInEventConnection($eventParticipantType, $event);
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event participant type in event connection (by manager): '.$entity->getId().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

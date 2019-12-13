@@ -11,33 +11,22 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventParticipantTypeManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?Nameable $nameable = null,
-        ?string $type = null
-    ): EventParticipantType {
+    final public function create(?Nameable $nameable = null, ?string $type = null): EventParticipantType
+    {
         try {
-            $em = $this->em;
             $entity = new EventParticipantType($nameable, $type);
-            $em->persist($entity);
-            $em->flush();
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event participant type (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

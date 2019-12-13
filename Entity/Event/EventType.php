@@ -82,11 +82,8 @@ class EventType
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(
-        ?Nameable $nameable = null,
-        ?string $type = null,
-        ?string $color = null
-    ) {
+    public function __construct(?Nameable $nameable = null, ?string $type = null, ?string $color = null)
+    {
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
         $this->setColor($color);
@@ -113,17 +110,5 @@ class EventType
 
     final public function destroyRevisions(): void
     {
-//        try {
-//            $this->setFieldsFromNameable($this->getRevisionByDate()->getNameable());
-//            $this->setColor($this->getRevisionByDate()->getColor());
-//            $this->setType($this->getRevisionByDate()->getType());
-//            foreach ($this->getRevisions() as $revision) {
-//                assert($revision instanceof EventTypeRevision);
-//                $this->removeRevision($revision);
-//            }
-//            $this->setActiveRevision(null);
-//        } catch (RevisionMissingException $e) {
-//        } catch (InvalidArgumentException $e) {
-//        }
     }
 }

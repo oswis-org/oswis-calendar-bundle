@@ -73,8 +73,7 @@ class EventParticipantType
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     /**
-     * Send formal or informal e-mails?
-     * @var bool|null
+     * Send formal (or informal) e-mails?
      * @ORM\Column(type="boolean", nullable=true)
      */
     protected ?bool $formal = null;
@@ -88,19 +87,13 @@ class EventParticipantType
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(
-        ?Nameable $nameable = null,
-        ?string $type = null,
-        ?bool $formal = true
-    ) {
+    public function __construct(?Nameable $nameable = null, ?string $type = null, ?bool $formal = true)
+    {
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
         $this->setFormal($formal);
     }
 
-    /**
-     * @param bool $formal
-     */
     final public function setFormal(?bool $formal): void
     {
         $this->formal = $formal ?? false;

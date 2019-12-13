@@ -11,34 +11,22 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventParticipantFlagTypeManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?Nameable $nameable = null,
-        ?int $minFlagsAllowed = null,
-        ?int $maxFlagsAllowed = null
-    ): EventParticipantFlagType {
+    final public function create(?Nameable $nameable = null, ?int $minFlagsAllowed = null, ?int $maxFlagsAllowed = null): ?EventParticipantFlagType
+    {
         try {
-            $em = $this->em;
             $entity = new EventParticipantFlagType($nameable, $minFlagsAllowed, $maxFlagsAllowed);
-            $em->persist($entity);
-            $em->flush();
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event participant flag type (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 

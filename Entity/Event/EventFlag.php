@@ -53,11 +53,6 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventFlag extends AbstractEventFlag
 {
-    /**
-     * EmployerFlag constructor.
-     *
-     * @param Nameable|null $nameable
-     */
     public function __construct(?Nameable $nameable = null)
     {
         $this->setFieldsFromNameable($nameable);

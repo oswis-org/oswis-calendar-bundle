@@ -11,34 +11,22 @@ use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventTypeManager
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?Nameable $nameable = null,
-        ?string $type = null,
-        ?string $color = null
-    ): EventType {
+    final public function create(?Nameable $nameable = null, ?string $type = null, ?string $color = null): ?EventType
+    {
         try {
-            $em = $this->em;
             $entity = new EventType($nameable, $type, $color);
-            $em->persist($entity);
-            $em->flush();
+            $this->em->persist($entity);
+            $this->em->flush();
             $infoMessage = 'CREATE: Created event type (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
@@ -55,10 +43,8 @@ class EventTypeManager
      */
     final public function updateActiveRevisions(): void
     {
-        $eventTypes = $this->em->getRepository(EventType::class)->findAll();
-        foreach ($eventTypes as $eventType) {
+        foreach ($this->em->getRepository(EventType::class)->findAll() as $eventType) {
             assert($eventType instanceof EventType);
-            // $eventType->updateActiveRevision();
             $eventType->destroyRevisions();
             $this->em->persist($eventType);
         }

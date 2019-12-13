@@ -20,7 +20,6 @@ class EventFlagNewConnection
 
     /**
      * Event flag.
-     * @var EventFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlag",
      *     fetch="EAGER"
@@ -31,7 +30,6 @@ class EventFlagNewConnection
 
     /**
      * Event.
-     * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventFlagConnections",
@@ -41,22 +39,8 @@ class EventFlagNewConnection
      */
     protected ?Event $event = null;
 
-    /**
-     * FlagInEmployerInEvent constructor.
-     *
-     * @param EventFlag|null $eventFlag
-     * @param Event|null     $event
-     * @param string|null    $textValue
-     * @param DateTime|null  $startDateTime
-     * @param DateTime|null  $endDateTie
-     */
-    public function __construct(
-        ?EventFlag $eventFlag = null,
-        ?Event $event = null,
-        ?string $textValue = null,
-        ?DateTime $startDateTime = null,
-        ?DateTime $endDateTie = null
-    ) {
+    public function __construct(?EventFlag $eventFlag = null, ?Event $event = null, ?string $textValue = null, ?DateTime $startDateTime = null, ?DateTime $endDateTie = null)
+    {
         $this->setEventFlag($eventFlag);
         $this->setEvent($event);
         $this->setTextValue($textValue);

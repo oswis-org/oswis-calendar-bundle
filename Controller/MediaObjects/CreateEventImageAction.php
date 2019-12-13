@@ -9,9 +9,6 @@ use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
 final class CreateEventImageAction extends AbstractImageAction
 {
 
-    /**
-     * @return string
-     */
     public static function getImageClassName(): string
     {
         return EventImage::class;

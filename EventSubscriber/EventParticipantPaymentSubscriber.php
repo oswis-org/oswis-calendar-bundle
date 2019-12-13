@@ -23,48 +23,22 @@ use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
  */
 final class EventParticipantPaymentSubscriber implements EventSubscriberInterface
 {
-
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $em;
 
-    /**
-     * @var MailerInterface
-     */
     private MailerInterface $mailer;
 
-    /**
-     * @var LoggerInterface
-     */
     private LoggerInterface $logger;
 
-    /**
-     * @var OswisCoreSettingsProvider
-     */
     private OswisCoreSettingsProvider $oswisCoreSettings;
 
-    /**
-     * @param EntityManagerInterface    $em
-     * @param MailerInterface           $mailer
-     * @param LoggerInterface           $logger
-     * @param OswisCoreSettingsProvider $oswisCoreSettings
-     */
-    public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings
-    ) {
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings)
+    {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
         $this->oswisCoreSettings = $oswisCoreSettings;
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [

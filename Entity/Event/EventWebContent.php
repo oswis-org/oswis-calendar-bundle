@@ -30,21 +30,15 @@ class EventWebContent
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(
-        ?string $textValue = null,
-        ?string $type = null
-    ) {
+    public function __construct(?string $textValue = null, ?string $type = null)
+    {
         $this->setType($type);
         $this->setTextValue($textValue);
     }
 
     public static function getAllowedTypesDefault(): array
     {
-        return [
-            self::HTML,
-            self::CSS,
-            self::JS,
-        ];
+        return [self::HTML, self::CSS, self::JS,];
     }
 
     public static function getAllowedTypesCustom(): array

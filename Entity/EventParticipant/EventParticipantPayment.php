@@ -102,7 +102,6 @@ class EventParticipantPayment extends AbstractPayment
 {
     /**
      * Event contact revision (connected to person or organization).
-     * @var EventParticipant|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     inversedBy="eventParticipantPayments",
@@ -117,7 +116,6 @@ class EventParticipantPayment extends AbstractPayment
      * @param EventParticipant|null $eventParticipant
      * @param int|null              $numericValue
      * @param DateTime|null         $dateTime
-     *
      * @param string|null           $type
      * @param string|null           $note
      * @param string|null           $internalNote

@@ -62,26 +62,8 @@ class EventParticipantNote
      */
     protected ?bool $publicNote = null;
 
-    /**
-     * Event contact revision (connected to person or organization). // CHANGE
-     * @var EventParticipant|null
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     inversedBy="eventParticipantNotes"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?EventParticipant $eventParticipant = null;
-
-    /**
-     * @param EventParticipant|null $eventParticipant
-     * @param string|null           $textValue
-     */
-    public function __construct(
-        ?EventParticipant $eventParticipant = null,
-        ?string $textValue = null
-    ) {
-        $this->setEventParticipant($eventParticipant);
+    public function __construct(?string $textValue = null)
+    {
         $this->setTextValue($textValue);
     }
 
@@ -99,21 +81,5 @@ class EventParticipantNote
     final public function setPublicNote(?bool $publicNote): void
     {
         $this->publicNote = $publicNote ?? false;
-    }
-
-    final public function getEventParticipant(): ?EventParticipant
-    {
-        return $this->eventParticipant;
-    }
-
-    final public function setEventParticipant(?EventParticipant $eventParticipant): void
-    {
-        if ($this->eventParticipant && $eventParticipant !== $this->eventParticipant) {
-            $this->eventParticipant->removeEventParticipantNote($this);
-        }
-        if ($eventParticipant && $this->eventParticipant !== $eventParticipant) {
-            $this->eventParticipant = $eventParticipant;
-            $eventParticipant->addEventParticipantNote($this);
-        }
     }
 }

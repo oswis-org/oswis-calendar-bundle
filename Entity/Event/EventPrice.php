@@ -26,7 +26,6 @@ class EventPrice
     // TODO: Dates missing!
 
     /**
-     * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     fetch="EAGER"
@@ -35,20 +34,8 @@ class EventPrice
      */
     protected ?EventParticipantType $eventParticipantType = null;
 
-    /**
-     * @param Nameable|null             $nameable
-     * @param EventParticipantType|null $eventParticipantType
-     * @param int|null                  $numericValue
-     * @param int|null                  $taxRate
-     * @param int|null                  $depositValue
-     */
-    public function __construct(
-        ?Nameable $nameable = null,
-        ?EventParticipantType $eventParticipantType = null,
-        ?int $numericValue = null,
-        ?int $taxRate = null,
-        ?int $depositValue = null
-    ) {
+    public function __construct(?Nameable $nameable = null, ?EventParticipantType $eventParticipantType = null, ?int $numericValue = null, ?int $taxRate = null, ?int $depositValue = null)
+    {
         $this->setEventParticipantType($eventParticipantType);
         $this->setNumericValue($numericValue);
         $this->setTaxRate($taxRate);
@@ -58,11 +45,7 @@ class EventPrice
 
     final public function isApplicableForEventParticipantType(EventParticipantType $eventParticipantType): bool
     {
-        if (!$eventParticipantType || !$this->getEventParticipantType()) {
-            return false;
-        }
-
-        return $eventParticipantType->getId() === $this->getEventParticipantType()->getId();
+        return $eventParticipantType && $this->getEventParticipantType() ? $eventParticipantType->getId() === $this->getEventParticipantType()->getId() : false;
     }
 
     final public function getEventParticipantType(): ?EventParticipantType

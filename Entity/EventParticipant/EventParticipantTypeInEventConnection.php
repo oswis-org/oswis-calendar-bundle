@@ -58,7 +58,6 @@ class EventParticipantTypeInEventConnection
 
     /**
      * Event contact type.
-     * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     fetch="EAGER"
@@ -69,7 +68,6 @@ class EventParticipantTypeInEventConnection
 
     /**
      * Event contact (connected to person or organization).
-     * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventParticipantTypeInEventConnections",
@@ -79,16 +77,8 @@ class EventParticipantTypeInEventConnection
      */
     protected ?Event $event = null;
 
-    /**
-     * FlagInEmployerInEvent constructor.
-     *
-     * @param EventParticipantType|null $eventParticipantType
-     * @param Event|null                $event
-     */
-    public function __construct(
-        ?EventParticipantType $eventParticipantType = null,
-        ?Event $event = null
-    ) {
+    public function __construct(?EventParticipantType $eventParticipantType = null, ?Event $event = null)
+    {
         $this->setEventParticipantType($eventParticipantType);
         $this->setEvent($event);
     }

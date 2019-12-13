@@ -21,7 +21,6 @@ class EventCapacity
 
     /**
      * Type of participants allowed by this capacity limit.
-     * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     fetch="EAGER"
@@ -32,42 +31,23 @@ class EventCapacity
 
     /**
      * Allow participants overflow (manually by manager).
-     * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer")
      */
     protected ?int $overflowAllowedAmount = null;
 
-    /**
-     * EmployerFlag constructor.
-     *
-     * @param Nameable|null             $nameable
-     * @param EventParticipantType|null $eventParticipantType
-     * @param int|null                  $numericValue
-     * @param int|null                  $overflowAllowedAmount
-     */
-    public function __construct(
-        ?Nameable $nameable = null,
-        ?EventParticipantType $eventParticipantType = null,
-        ?int $numericValue = null,
-        ?int $overflowAllowedAmount = null
-    ) {
+    public function __construct(?Nameable $nameable = null, ?EventParticipantType $eventParticipantType = null, ?int $numericValue = null, ?int $overflowAllowedAmount = null)
+    {
         $this->setEventParticipantType($eventParticipantType);
         $this->setNumericValue($numericValue);
         $this->setFieldsFromNameable($nameable);
         $this->setOverflowAllowedAmount($overflowAllowedAmount);
     }
 
-    /**
-     * @return int|null
-     */
     final public function getOverflowAllowedAmount(): int
     {
         return $this->overflowAllowedAmount ?? 0;
     }
 
-    /**
-     * @param int|null $overflowAllowedAmount
-     */
     final public function setOverflowAllowedAmount(?int $overflowAllowedAmount): void
     {
         $this->overflowAllowedAmount = $overflowAllowedAmount ?? 0;

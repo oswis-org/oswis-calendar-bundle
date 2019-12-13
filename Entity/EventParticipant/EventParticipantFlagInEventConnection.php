@@ -18,13 +18,11 @@ class EventParticipantFlagInEventConnection
     use ActiveTrait;
 
     /**
-     * @var int|null
      * @ORM\Column(type="integer", nullable=true)
      */
     protected ?int $maxAmountInEvent = null;
 
     /**
-     * @var EventParticipantFlag|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
      *     inversedBy="eventParticipantFlagInEventConnections",
@@ -36,7 +34,6 @@ class EventParticipantFlagInEventConnection
 
     /**
      * Event contact (connected to person or organization).
-     * @var Event|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="eventParticipantFlagInEventConnections",
@@ -48,7 +45,6 @@ class EventParticipantFlagInEventConnection
 
     /**
      * Event contact type.
-     * @var EventParticipantType|null
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     fetch="EAGER"

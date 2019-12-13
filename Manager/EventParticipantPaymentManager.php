@@ -9,7 +9,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
@@ -28,68 +27,25 @@ use function implode;
 use function str_getcsv;
 use function strlen;
 
-/**
- * Class EventParticipantPaymentManager
- * @package Zakjakub\OswisCalendarBundle\Manager
- */
 class EventParticipantPaymentManager
 {
 
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var Mailer
-     */
-    protected $mailer;
+    protected MailerInterface $mailer;
 
-    /**
-     * @var LoggerInterface
-     */
     protected LoggerInterface $logger;
 
-    /**
-     * @var OswisCoreSettingsProvider
-     */
     protected OswisCoreSettingsProvider $oswisCoreSettings;
 
-    /**
-     * EventParticipantPaymentManager constructor.
-     *
-     * @param EntityManagerInterface    $em
-     * @param MailerInterface           $mailer
-     * @param LoggerInterface           $logger
-     * @param OswisCoreSettingsProvider $oswisCoreSettings
-     */
-    public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings
-    ) {
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings)
+    {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
         $this->oswisCoreSettings = $oswisCoreSettings;
     }
 
-    /**
-     * @param Event       $event
-     * @param string      $csv
-     * @param string|null $eventParticipantTypeOfType
-     * @param string      $delimiter
-     * @param string      $enclosure
-     * @param string      $escape
-     * @param string      $variableSymbolColumnName
-     * @param string      $dateColumnName
-     * @param string      $valueColumnName
-     * @param string      $currencyColumnName
-     * @param string      $currencyAllowed
-     *
-     * @return int
-     */
     final public function createFromCsv(
         Event $event,
         string $csv,
@@ -276,11 +232,9 @@ class EventParticipantPaymentManager
      * @throws OswisException
      * @todo Fix case when contact is organization.
      */
-    final public function sendConfirmation(
-        EventParticipantPayment $payment = null
-    ): void {
+    final public function sendConfirmation(EventParticipantPayment $payment = null): void
+    {
         try {
-            $em = $this->em;
             if (!$payment) {
                 throw new NotFoundHttpException('Platba nenalezena.');
             }
@@ -331,8 +285,8 @@ class EventParticipantPaymentManager
             )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-manager');
-            $em->persist($payment);
-            $em->flush();
+            $this->em->persist($payment);
+            $this->em->flush();
         } catch (Exception $e) {
             $message = 'Problém s odesláním potvrzení o platbě (při vytváření zprávy). ';
             $this->logger->error($message.$e->getMessage());
@@ -353,10 +307,8 @@ class EventParticipantPaymentManager
      * @return string
      * @throws OswisException
      */
-    final public function sendCsvReport(
-        array $successfulPayments,
-        array $failedPayments
-    ): string {
+    final public function sendCsvReport(array $successfulPayments, array $failedPayments): string
+    {
         try {
             $title = 'Report CSV plateb';
             $mailSettings = $this->oswisCoreSettings->getEmail();
@@ -366,12 +318,10 @@ class EventParticipantPaymentManager
                 'oswis'              => $this->oswisCoreSettings,
                 'logo'               => 'cid:logo',
             );
-            $archive = new Address(
-                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
-            );
-            $email = (new TemplatedEmail())->to($archive)->subject(EmailUtils::mime_header_encode($title))->htmlTemplate(
-                '@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig'
-            )->context($mailData);
+            $archive = new Address($mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? '');
+            $email = new TemplatedEmail();
+            $email->to($archive)->subject(EmailUtils::mime_header_encode($title));
+            $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')->context($mailData);
             $this->mailer->send($email);
 
             return true;
