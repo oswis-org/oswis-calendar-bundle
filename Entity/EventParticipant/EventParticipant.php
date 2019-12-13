@@ -283,7 +283,7 @@ class EventParticipant
      */
     final public function removeEmptyEventParticipantNotes(): void
     {
-        $this->setEventParticipantNotes($this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note) => $note->getTextValue() && '' === $note->getTextValue()));
+        $this->setEventParticipantNotes($this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note) => $note->getTextValue() && '' !== $note->getTextValue()));
     }
 
     /**
