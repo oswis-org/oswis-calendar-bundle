@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "a7bd7b1ddefbabebddcf5ad770dcc58a",
+  "content-hash": "3468e3cfca3a3adfe174fc5e07be59ca",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -8809,6 +8809,142 @@
     }
   ],
   "packages-dev": [
+    {
+      "name": "nikic/php-parser",
+      "version": "v4.3.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/nikic/PHP-Parser.git",
+        "reference": "9a9981c347c5c49d6dfe5cf826bb882b824080dc"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/9a9981c347c5c49d6dfe5cf826bb882b824080dc",
+        "reference": "9a9981c347c5c49d6dfe5cf826bb882b824080dc",
+        "shasum": ""
+      },
+      "require": {
+        "ext-tokenizer": "*",
+        "php": ">=7.0"
+      },
+      "require-dev": {
+        "ircmaxell/php-yacc": "0.0.5",
+        "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0"
+      },
+      "bin": [
+        "bin/php-parse"
+      ],
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "4.3-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "PhpParser\\": "lib/PhpParser"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "BSD-3-Clause"
+      ],
+      "authors": [
+        {
+          "name": "Nikita Popov"
+        }
+      ],
+      "description": "A PHP parser written in PHP",
+      "keywords": [
+        "parser",
+        "php"
+      ],
+      "time": "2019-11-08T13:50:10+00:00"
+    },
+    {
+      "name": "phpstan/extension-installer",
+      "version": "1.0.3",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/phpstan/extension-installer.git",
+        "reference": "295656793c53b5eb73a38486032ad1bd650264bc"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/295656793c53b5eb73a38486032ad1bd650264bc",
+        "reference": "295656793c53b5eb73a38486032ad1bd650264bc",
+        "shasum": ""
+      },
+      "require": {
+        "composer-plugin-api": "^1.1",
+        "php": "^7.1",
+        "phpstan/phpstan": ">=0.11.6"
+      },
+      "require-dev": {
+        "composer/composer": "^1.8",
+        "consistence/coding-standard": "^3.8",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
+        "jakub-onderka/php-parallel-lint": "^1.0",
+        "phing/phing": "^2.16",
+        "phpstan/phpstan-strict-rules": "^0.11",
+        "slevomat/coding-standard": "^5.0.4"
+      },
+      "type": "composer-plugin",
+      "extra": {
+        "class": "PHPStan\\ExtensionInstaller\\Plugin"
+      },
+      "autoload": {
+        "psr-4": {
+          "PHPStan\\ExtensionInstaller\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "description": "Composer plugin for automatic installation of PHPStan extensions",
+      "time": "2019-10-18T17:09:48+00:00"
+    },
+    {
+      "name": "phpstan/phpstan",
+      "version": "0.12.3",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/phpstan/phpstan.git",
+        "reference": "c15a6ea55da71d8133399306f560cfe4d30301b7"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/c15a6ea55da71d8133399306f560cfe4d30301b7",
+        "reference": "c15a6ea55da71d8133399306f560cfe4d30301b7",
+        "shasum": ""
+      },
+      "require": {
+        "nikic/php-parser": "^4.3.0",
+        "php": "^7.1"
+      },
+      "bin": [
+        "phpstan",
+        "phpstan.phar"
+      ],
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "0.12-dev"
+        }
+      },
+      "autoload": {
+        "files": [
+          "bootstrap.php"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "description": "PHPStan - PHP Static Analysis Tool",
+      "time": "2019-12-14T13:41:17+00:00"
+    },
     {
       "name": "roave/security-advisories",
       "version": "dev-master",

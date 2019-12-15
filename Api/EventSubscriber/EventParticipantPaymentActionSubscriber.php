@@ -25,29 +25,16 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
 {
     public const ALLOWED_ACTION_TYPES = ['send-confirmation', 'csv'];
 
-    /**
-     * @var EntityManagerInterface
-     */
     private EntityManagerInterface $em;
 
-    /**
-     * @var EventParticipantPaymentManager
-     */
     private EventParticipantPaymentManager $eventParticipantPaymentManager;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings
-    ) {
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings)
+    {
         $this->em = $em;
         $this->eventParticipantPaymentManager = new EventParticipantPaymentManager($em, $mailer, $logger, $oswisCoreSettings);
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -90,7 +77,7 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
                 if (!$payment) {
                     continue;
                 }
-                assert($payment instanceof ReservationPayment);
+                assert($payment instanceof EventParticipantPayment);
                 $reservations->add($payment);
                 switch ($type) {
                     case 'get-receipt-pdf':

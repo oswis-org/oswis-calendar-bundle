@@ -17,8 +17,8 @@ use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisAddressBookBundle\Entity\Position;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
 use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
@@ -1021,7 +1021,7 @@ class Event
         foreach ($this->getActiveEventParticipants($eventParticipantType) as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
             foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
-                assert($eventParticipantFlagConnection instanceof EventParticipantFlagConnection);
+                assert($eventParticipantFlagConnection instanceof EventParticipantFlagNewConnection);
                 if (!$flagConnections->contains($eventParticipantFlagConnection)) {
                     $flagConnections->add($eventParticipantFlagConnection);
                 }
