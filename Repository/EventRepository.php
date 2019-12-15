@@ -53,9 +53,9 @@ class EventRepository extends EntityRepository
      */
     final public function findEventsByType(EventType $type): Collection
     {
-        $qb = $this->createQueryBuilder('e')->where('e.eventType = :type')->setParameter('type', $type->getId());
+        $queryBuilder = $this->createQueryBuilder('e')->where('e.eventType = :type')->setParameter('type', $type->getId());
 
-        return new ArrayCollection($qb->getQuery()->getResult(Query::HYDRATE_OBJECT));
+        return new ArrayCollection($queryBuilder->getQuery()->getResult(Query::HYDRATE_OBJECT));
     }
 
     /**
