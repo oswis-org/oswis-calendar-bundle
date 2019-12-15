@@ -360,7 +360,7 @@ class EventParticipantManager
                 $name = $contactPerson->getContactName() ?? ($contactPerson->getAppUser() ? $contactPerson->getAppUser()->getFullName() : '');
                 $eMail = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getEmail() : $contactPerson->getEmail();
                 if (!$contactPerson->getAppUser()) {
-                    if ($em->getRepository(AppUser::class)->findByEmail($eMail)->count() > 0) {
+                    if (count($em->getRepository(AppUser::class)->findByEmail($eMail)) > 0) {
                         throw new OswisUserNotUniqueException('Zadaný e-mail je již použitý.');
                     }
                     $contactPerson->setAppUser(new AppUser($name, null, $eMail));

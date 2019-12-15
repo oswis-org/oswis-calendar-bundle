@@ -42,6 +42,21 @@ services:
             - '@zakjakub_oswis_core.oswis_core_settings_provider'
             - '@security.user_password_encoder.generic'
 
+
+    zakjakub_oswis_calendar.event_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventService:
+        alias: zakjakub_oswis_calendar.event_service
+        public: true
+
+
+
+
     ##
     ## EventParticipant controller (What does this?)
     ##

@@ -16,9 +16,6 @@ class EventSeries
     use BasicEntityTrait;
     use NameableBasicTrait;
 
-    /**
-     * @param Nameable|null $nameable
-     */
     public function __construct(?Nameable $nameable = null)
     {
         $this->setFieldsFromNameable($nameable);

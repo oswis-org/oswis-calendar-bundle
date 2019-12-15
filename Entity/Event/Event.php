@@ -461,12 +461,7 @@ class Event
         if ($recursiveDepth > 0) {
             foreach ($this->getSubEvents() as $subEvent) {
                 assert($subEvent instanceof self);
-                $subEventParticipants = $subEvent->getActiveEventParticipants(
-                    $participantType,
-                    $includeDeleted,
-                    $includeNotActivatedUsers,
-                    $recursiveDepth - 1
-                );
+                $subEventParticipants = $subEvent->getActiveEventParticipants($participantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth - 1);
                 foreach ($subEventParticipants as $newEventParticipant) {
                     if (!$eventParticipants->contains($newEventParticipant)) {
                         $eventParticipants->add($newEventParticipant);
@@ -536,9 +531,6 @@ class Event
         );
     }
 
-    /**
-     * @return Collection
-     */
     final public function getSubEvents(): Collection
     {
         return $this->subEvents ?? new ArrayCollection();
@@ -678,17 +670,11 @@ class Event
         return $price <= 0 ? 0 : $price;
     }
 
-    /**
-     * @return Collection
-     */
     final public function getEventPrices(): Collection
     {
         return $this->eventPrices ?? new ArrayCollection();
     }
 
-    /**
-     * @return bool
-     */
     final public function isPriceRecursiveFromParent(): bool
     {
         return $this->priceRecursiveFromParent ?? false;
@@ -757,17 +743,11 @@ class Event
         return null;
     }
 
-    /**
-     * @return Collection|null
-     */
     final public function getEventWebContents(): ?Collection
     {
         return $this->eventWebContents ?? new ArrayCollection();
     }
 
-    /**
-     * @param EventWebContent|null $eventWebContent
-     */
     final public function removeEventWebContent(?EventWebContent $eventWebContent): void
     {
         if ($eventWebContent) {
@@ -1110,9 +1090,6 @@ class Event
         return $output;
     }
 
-    /**
-     * @return Collection|null
-     */
     final public function getEventFlagConnections(): ?Collection
     {
         return $this->eventFlagConnections ?? new ArrayCollection();
