@@ -45,7 +45,7 @@ class EventPrice
 
     final public function isApplicableForEventParticipantType(EventParticipantType $eventParticipantType): bool
     {
-        return $eventParticipantType && $this->getEventParticipantType() ? $eventParticipantType->getId() === $this->getEventParticipantType()->getId() : false;
+        return null !== $eventParticipantType && $this->getEventParticipantType() ? $eventParticipantType->getId() === $this->getEventParticipantType()->getId() : false;
     }
 
     final public function getEventParticipantType(): ?EventParticipantType

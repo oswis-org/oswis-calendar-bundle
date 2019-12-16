@@ -68,7 +68,7 @@ class EventParticipantPaymentService
         $valueColumnName = $valueColumnName ?? 'Objem';
         $currencyColumnName = $currencyColumnName ?? 'Měna';
         $currencyAllowed = $currencyAllowed ?? 'CZK';
-        $this->logger ? $this->logger->info('CSV_PAYMENT_START') : null;
+        $this->logger->info('CSV_PAYMENT_START');
         // $csvRow = null;
         $eventParticipants = $event->getEventParticipantsByTypeOfType(
             $eventParticipantTypeOfType,
@@ -130,15 +130,11 @@ class EventParticipantPaymentService
                     continue;
                 }
                 $filteredEventParticipants = $eventParticipants->filter(
-                    static function (EventParticipant $eventParticipant) use ($csvVariableSymbol) {
-                        return !$eventParticipant->isDeleted() && $eventParticipant->getVariableSymbol() === $csvVariableSymbol;
-                    }
+                    fn(EventParticipant $p) => !$p->isDeleted() && $p->getVariableSymbol() === $csvVariableSymbol
                 );
                 if ($filteredEventParticipants->count() < 1) {
                     $filteredEventParticipants = $eventParticipants->filter(
-                        static function (EventParticipant $eventParticipant) use ($csvVariableSymbol) {
-                            return $eventParticipant->getVariableSymbol() === $csvVariableSymbol;
-                        }
+                        fn(EventParticipant $p) => $p->getVariableSymbol() === $csvVariableSymbol
                     );
                 }
                 if ($filteredEventParticipants->count() < 1) {
@@ -154,19 +150,22 @@ class EventParticipantPaymentService
                             return $oneEventParticipant->getVariableSymbol() === $csvVariableSymbol && $oneEventParticipant->hasActivatedContactUser();
                         }
                     )->first();
-                    if (!$eventParticipant) {
+                    if (empty($eventParticipant)) {
                         $eventParticipant = $filteredEventParticipants->first();
                     }
                 } else {
                     $eventParticipant = $filteredEventParticipants->first();
                 }
                 assert($eventParticipant instanceof EventParticipant);
-                if (!$eventParticipant) {
+                if (empty($eventParticipant)) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: EventParticipant with VS ($csvVariableSymbol) not found; CSV: $csvRow;");
                     $failedPayments[] = $csvRow.' [VS not found (2. step)]';
                     continue;
                 }
                 $oneNewPayment = $this->create($eventParticipant, $csvValue, $csvDate, 'csv', null, $csvRow);
+                if (null === $oneNewPayment) {
+                    throw new OswisException('Error occurred, payment not created.');
+                }
                 $this->sendConfirmation($oneNewPayment);
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' ';
@@ -204,7 +203,7 @@ class EventParticipantPaymentService
         string $type = null,
         string $note = null,
         string $internalNote = null
-    ): EventParticipantPayment {
+    ): ?EventParticipantPayment {
         try {
             $em = $this->em;
             $entity = new EventParticipantPayment($eventParticipant, $numericValue, $dateTime, $type, $note, $internalNote);
@@ -246,15 +245,15 @@ class EventParticipantPaymentService
                 return;
             }
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
-            $contact = $eventParticipant ? $eventParticipant->getContact() : null;
+            $contact = $eventParticipant->getContact();
             if ($payment->getNumericValue() < 0) {
                 $title = 'Vrácení/oprava platby';
             } else {
                 $title = 'Přijetí platby';
             }
             if ($contact instanceof Person) {
-                $salutationName = $contact ? $contact->getSalutationName() : '';
-                $a = $contact ? $contact->getCzechSuffixA() : '';
+                $salutationName = $contact->getSalutationName() ?? '';
+                $a = $contact->getCzechSuffixA() ?? '';
             } else {
                 // TODO: Correct salutation (contact of organization).
                 $salutationName = $contact ? $contact->getContactName() : '';
@@ -304,10 +303,10 @@ class EventParticipantPaymentService
      * @param array $successfulPayments
      * @param array $failedPayments
      *
-     * @return string
+     * @return bool
      * @throws OswisException
      */
-    final public function sendCsvReport(array $successfulPayments, array $failedPayments): string
+    final public function sendCsvReport(array $successfulPayments, array $failedPayments): bool
     {
         try {
             $title = 'Report CSV plateb';

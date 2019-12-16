@@ -26,8 +26,14 @@ abstract class AbstractEventFlagType
      */
     protected ?int $maxInEventParticipant = null;
 
+    /**
+     * @return array<string>
+     */
     abstract public static function getAllowedTypesDefault(): array;
 
+    /**
+     * @return array<string>
+     */
     abstract public static function getAllowedTypesCustom(): array;
 
     final public function isInRangeInEventParticipant(int $amount): bool

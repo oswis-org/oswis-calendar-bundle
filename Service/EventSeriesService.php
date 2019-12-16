@@ -21,7 +21,7 @@ class EventSeriesService
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null): EventSeries
+    final public function create(?Nameable $nameable = null): ?EventSeries
     {
         try {
             $entity = new EventSeries($nameable);

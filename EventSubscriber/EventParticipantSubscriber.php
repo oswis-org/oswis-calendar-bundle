@@ -56,7 +56,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         }
         $eventParticipant = $this->em->getRepository(EventParticipant::class)->findOneBy(['id' => $eventParticipant->getId()]);
         assert($eventParticipant instanceof EventParticipant);
-        if ($eventParticipant) {
+        if (!empty($eventParticipant)) {
             $this->participantService->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
         } else {
             throw new OswisEventParticipantNotFoundException();
@@ -87,9 +87,8 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
 
     private function getExistingEventParticipant(EventParticipant $newEventParticipant): ?EventParticipant
     {
-        $eventParticipant = $this->em->getRepository(EventParticipant::class)->findOneBy(['id' => $newEventParticipant->getId()]);
-        assert($eventParticipant instanceof EventParticipant);
+        $eventParticipant = $this->participantService->getRepository()->findOneBy(['id' => $newEventParticipant->getId()]);
 
-        return $eventParticipant;
+        return ($eventParticipant instanceof EventParticipant) ? $eventParticipant : null;
     }
 }

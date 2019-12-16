@@ -15,7 +15,7 @@ class ZakjakubOswisCalendarExtension extends Extension implements PrependExtensi
     /**
      * Loads a specific configuration.
      *
-     * @param array            $configs
+     * @param array<array>     $configs
      * @param ContainerBuilder $container
      *
      * @throws Exception

@@ -22,7 +22,7 @@ class EventParticipantTypeInEventConnectionService
         $this->logger = $logger;
     }
 
-    final public function create(?EventParticipantType $eventParticipantType = null, ?Event $event = null): EventParticipantTypeInEventConnection
+    final public function create(?EventParticipantType $eventParticipantType = null, ?Event $event = null): ?EventParticipantTypeInEventConnection
     {
         try {
             $entity = new EventParticipantTypeInEventConnection($eventParticipantType, $event);

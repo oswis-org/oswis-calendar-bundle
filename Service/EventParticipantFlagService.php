@@ -29,7 +29,7 @@ class EventParticipantFlagService
         ?bool $publicInPortal = null,
         ?bool $publicOnWeb = null,
         ?bool $publicOnWebRoute = null
-    ): EventParticipantFlag {
+    ): ?EventParticipantFlag {
         try {
             $entity = new EventParticipantFlag($nameable, $eventParticipantFlagType, $publicInIS, $publicInPortal, $publicOnWeb, $publicOnWebRoute);
             $this->em->persist($entity);

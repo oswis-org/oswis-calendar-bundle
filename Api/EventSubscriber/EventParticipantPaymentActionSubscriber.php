@@ -32,6 +32,9 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         $this->participantPaymentService = $participantPaymentService;
     }
 
+    /**
+     * @return array<string, array<int|string>>
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -89,7 +92,6 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
                         $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
 
                         return;
-                        break;
                 }
             }
             if ($processedActionsCount === 0) {
@@ -97,12 +99,12 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
 
                 return;
             }
-            if ($output) {
-                $data = ['data' => chunk_split(base64_encode($output))];
-                $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
-
-                return;
-            }
+//            if ($output) {
+//                $data = ['data' => chunk_split(base64_encode($output))];
+//                $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
+//
+//                return;
+//            }
             $event->setResponse(new JsonResponse(null, Response::HTTP_NO_CONTENT));
         }
         $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));

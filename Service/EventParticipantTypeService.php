@@ -21,7 +21,7 @@ class EventParticipantTypeService
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null, ?string $type = null): EventParticipantType
+    final public function create(?Nameable $nameable = null, ?string $type = null): ?EventParticipantType
     {
         try {
             $entity = new EventParticipantType($nameable, $type);

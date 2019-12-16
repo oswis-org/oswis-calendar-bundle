@@ -13,6 +13,7 @@ use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Zakjakub\OswisAddressBookBundle\Form\StudentPersonType;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendee;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 
 class EventParticipantType extends AbstractType
 {
@@ -24,20 +25,20 @@ class EventParticipantType extends AbstractType
             'contact',
             StudentPersonType::class,
             array('label' => false, 'required' => true)
-        )->add(
-            'events',
-            CollectionType::class,
-            array(
-                'label'         => 'Výběr akcí k přihlášení',
-                'entry_type'    => SubEventAttendeeType::class,
-                'entry_options' => array(
-                    'label' => false,
-                    'attr'  => [
-                        'label' => false,
-                        'class' => 'event_attendee_events',
-                    ],
-                ),
-            )
+//        )->add(
+//            'events',
+//            CollectionType::class,
+//            array(
+//                'label'         => 'Výběr akcí k přihlášení',
+//                'entry_type'    => SubEventAttendeeType::class,
+//                'entry_options' => array(
+//                    'label' => false,
+//                    'attr'  => [
+//                        'label' => false,
+//                        'class' => 'event_attendee_events',
+//                    ],
+//                ),
+//            )
         )->add(
             'question',
             TextareaType::class,
@@ -99,7 +100,7 @@ class EventParticipantType extends AbstractType
     {
         $resolver->setDefaults(
             array(
-                'data_class' => EventAttendee::class,
+                'data_class' => EventParticipant::class,
             )
         );
     }

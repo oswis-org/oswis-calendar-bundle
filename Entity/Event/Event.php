@@ -100,6 +100,7 @@ class Event
     protected ?Place $location = null;
 
     /**
+     * @var Collection<EventFlagNewConnection> $eventFlagConnections
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagNewConnection",
      *     cascade={"all"},
@@ -124,6 +125,7 @@ class Event
 
     /**
      * Sub events.
+     * @var Collection<Event> $subEvents
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     mappedBy="superEvent",
@@ -135,6 +137,7 @@ class Event
 
     /**
      * People and organizations who attend at the event.
+     * @var Collection<EventParticipant> $eventParticipants
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     cascade={"all"},
@@ -146,6 +149,7 @@ class Event
     protected ?Collection $eventParticipants = null;
 
     /**
+     * @var Collection<EventCapacity> $eventCapacities
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventCapacity",
      *     cascade={"all"},
@@ -160,6 +164,7 @@ class Event
     protected ?Collection $eventCapacities = null;
 
     /**
+     * @var Collection<EventWebContent> $eventWebContents
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",
      *     cascade={"all"},
@@ -174,6 +179,7 @@ class Event
     protected ?Collection $eventWebContents = null;
 
     /**
+     * @var Collection<EventPrice> $eventPrices
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventPrice",
      *     cascade={"all"},
@@ -188,6 +194,7 @@ class Event
     protected ?Collection $eventPrices = null;
 
     /**
+     * @var Collection<EventRegistrationRange> $eventRegistrationRanges
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
      *     cascade={"all"},
@@ -202,6 +209,7 @@ class Event
     protected ?Collection $eventRegistrationRanges = null;
 
     /**
+     * @var Collection<EventParticipantTypeInEventConnection> $eventParticipantTypeInEventConnections
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
      *     cascade={"all"},
@@ -212,6 +220,7 @@ class Event
     protected ?Collection $eventParticipantTypeInEventConnections = null;
 
     /**
+     * @var Collection<EventParticipantFlagInEventConnection> $eventParticipantFlagInEventConnections
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
      *     cascade={"all"},
@@ -246,21 +255,6 @@ class Event
      */
     private ?bool $priceRecursiveFromParent = null;
 
-    /**
-     * Event constructor.
-     *
-     * @param Nameable|null    $nameable
-     * @param Event|null       $superEvent
-     * @param Place|null       $location
-     * @param EventType|null   $eventType
-     * @param DateTime|null    $startDateTime
-     * @param DateTime|null    $endDateTime
-     * @param EventSeries|null $eventSeries
-     * @param bool|null        $priceRecursiveFromParent
-     * @param string|null      $color
-     * @param string|null      $bankAccountNumber
-     * @param string|null      $bankAccountBank
-     */
     public function __construct(
         ?Nameable $nameable = null,
         ?Event $superEvent = null,
@@ -616,7 +610,7 @@ class Event
                 $participantAppUser = $eventParticipant->getContact()->getAppUser();
                 assert($participantAppUser instanceof AppUser);
 
-                return $participantAppUser && $appUser->getId() === $participantAppUser->getId();
+                return null !== $participantAppUser && $appUser->getId() === $participantAppUser->getId();
             }
         );
     }
@@ -630,7 +624,7 @@ class Event
                 continue;
             }
             assert($containedPerson instanceof Person);
-            if ($containedPerson && $person->getId() === $containedPerson->getId()) {
+            if (null !== $containedPerson && $person->getId() === $containedPerson->getId()) {
                 return true;
             }
         }

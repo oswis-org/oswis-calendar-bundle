@@ -63,10 +63,9 @@ class EventParticipantController extends AbstractController
             $eventParticipant = $this->getDoctrine()->getRepository(EventParticipant::class)->findOneBy(['id' => $eventParticipantId]);
             assert($eventParticipant instanceof EventParticipant);
             $person = $eventParticipant->getContact();
-            assert($person instanceof Person);
-            if (!$eventParticipant || !$person) {
-                $error = !$eventParticipant ? ', přihláška nenalezena' : '';
-                $error .= !$person ? ', účastník nenalezen' : '';
+            if (empty($eventParticipant) || null === $person || !($person instanceof Person)) {
+                $error = empty($eventParticipant) ? ', přihláška nenalezena' : '';
+                $error .= null === $person || !($person instanceof Person) ? ', účastník nenalezen' : '';
 
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',

@@ -31,6 +31,9 @@ final class EventActionSubscriber implements EventSubscriberInterface
         $this->pdfGenerator = $pdfGenerator;
     }
 
+    /**
+     * @return  array<string, array<int, int|string>>
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -68,7 +71,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
 
             return;
         }
-        if ($output) {
+        if (!empty($output)) {
             $data = ['data' => chunk_split(base64_encode($output))];
             $event->setResponse(new JsonResponse($data, Response::HTTP_CREATED));
 

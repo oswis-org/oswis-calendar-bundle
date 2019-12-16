@@ -91,6 +91,7 @@
     <inspection_tool class="JSHint" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="PhpUndefinedClassInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PropertyInitializationFlawsInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="RedundantDocCommentTagInspection" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="SecurityAdvisoriesInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="optionConfiguration">
         <list>
@@ -149,5 +150,6 @@
         </list>
       </option>
     </inspection_tool>
+    <inspection_tool class="VirtualTypeCheckInspection" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

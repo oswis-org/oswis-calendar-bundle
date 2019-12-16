@@ -9,6 +9,7 @@ use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries;
 use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
+use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventService
@@ -41,5 +42,11 @@ class EventService
         return $entity;
     }
 
+    final public function getRepository(): EventRepository
+    {
+        $repository = $this->em->getRepository(Event::class);
+        assert($repository instanceof EventRepository);
 
+        return $repository;
+    }
 }

@@ -86,14 +86,14 @@ class EventRepository extends EntityRepository
     }
 
     /**
-     * @param string    $id
+     * @param int|null  $id
      * @param bool|null $participantsLazyLoad
      * @param bool|null $partial
      *
      * @return Event|null
      * @throws NonUniqueResultException
      */
-    final public function findOneById(string $id, ?bool $participantsLazyLoad = false, ?bool $partial = false): ?Event
+    final public function findOneById(?int $id, ?bool $participantsLazyLoad = false, ?bool $partial = false): ?Event
     {
         $queryBuilder = $this->createQueryBuilder('e')->where('e.id = :id')->setParameter('id', $id);
         $queryBuilder->setCacheable(false);

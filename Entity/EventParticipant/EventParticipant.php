@@ -254,7 +254,7 @@ class EventParticipant
 //            }
 //        } catch (RevisionMissingException $e) {
 //        }
-        if ($newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
+        if (null !== $newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
             $this->eventParticipantFlagConnections->add($newConnection);
             $newConnection->setEventParticipant($this);
         }

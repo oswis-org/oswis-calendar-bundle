@@ -98,7 +98,7 @@ class EventParticipantFlag extends AbstractEventFlag
         ?bool $publicInIS = null,
         ?bool $publicInPortal = null,
         ?bool $publicOnWeb = null,
-        ?string $publicOnWebRoute = null
+        ?bool $publicOnWebRoute = null
     ) {
         $this->eventParticipantFlagNewConnections = new ArrayCollection();
         $this->eventParticipantFlagInEventConnections = new ArrayCollection();
