@@ -6,17 +6,14 @@ use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Mailer\MailerInterface;
 use Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
-use Zakjakub\OswisCalendarBundle\Manager\EventParticipantPaymentManager;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantPaymentService;
 use function assert;
 use function count;
 use function in_array;
@@ -27,12 +24,12 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
 
     private EntityManagerInterface $em;
 
-    private EventParticipantPaymentManager $eventParticipantPaymentManager;
+    private EventParticipantPaymentService $participantPaymentService;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings)
+    public function __construct(EntityManagerInterface $em, EventParticipantPaymentService $participantPaymentService)
     {
         $this->em = $em;
-        $this->eventParticipantPaymentManager = new EventParticipantPaymentManager($em, $mailer, $logger, $oswisCoreSettings);
+        $this->participantPaymentService = $participantPaymentService;
     }
 
     public static function getSubscribedEvents(): array
@@ -42,11 +39,11 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         ];
     }
 
-    /** @noinspection PhpUnused */
     /**
      * @param ViewEvent $event
      *
      * @throws Exception
+     * @noinspection PhpUnused
      */
     public function reservationPaymentAction(ViewEvent $event): void
     {
@@ -127,7 +124,7 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
         if (!$event) {
             return new JsonResponse('Vytvořeno 0 plateb z CSV. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
-        $successPaymentsCount = $this->eventParticipantPaymentManager->createFromCsv(
+        $successPaymentsCount = $this->participantPaymentService->createFromCsv(
             $event,
             $csvContent,
             $csvEventParticipantType,

@@ -23,10 +23,7 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
-            - '@monolog.logger'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - '@zakjakub_oswis_calendar.event_participant_payment_service'
 
     ##
     ## EventParticipant subscriber (checks etc.)
@@ -37,12 +34,10 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
-            - '@monolog.logger'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
             - '@security.user_password_encoder.generic'
+            - '@zakjakub_oswis_calendar.event_participant_service'
 
-
+    ### Event Service
     zakjakub_oswis_calendar.event_service:
         class: Zakjakub\OswisCalendarBundle\Service\EventService
         autowire: true
@@ -54,6 +49,117 @@ services:
         alias: zakjakub_oswis_calendar.event_service
         public: true
 
+    ### EventFlag Service
+    zakjakub_oswis_calendar.event_flag_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventFlagService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventFlagService:
+        alias: zakjakub_oswis_calendar.event_flag_service
+        public: true
+
+    ### EventType Service
+    zakjakub_oswis_calendar.event_type_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventTypeService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventTypeService:
+        alias: zakjakub_oswis_calendar.event_type_service
+        public: true
+
+    ### EventSeries Service
+    zakjakub_oswis_calendar.event_series_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventSeriesService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventSeriesService:
+        alias: zakjakub_oswis_calendar.event_series_service
+        public: true
+
+    ### EventParticipantType Service
+    zakjakub_oswis_calendar.event_participant_type_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService:
+        alias: zakjakub_oswis_calendar.event_participant_type_service
+        public: true
+
+    ### EventParticipantTypeInEventConnection Service
+    zakjakub_oswis_calendar.event_participant_type_in_event_connection_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeInEventConnectionService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeInEventConnectionService:
+        alias: zakjakub_oswis_calendar.event_participant_type_in_event_connection_service
+        public: true
+
+    ### EventParticipantPayment Service
+    zakjakub_oswis_calendar.event_participant_payment_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventParticipantPaymentService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@monolog.logger'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+    Zakjakub\OswisCalendarBundle\Service\EventParticipantPaymentService:
+        alias: zakjakub_oswis_calendar.event_participant_payment_service
+        public: true
+
+    ### EventParticipant Service
+    zakjakub_oswis_calendar.event_participant_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventParticipantService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - '@monolog.logger'
+    Zakjakub\OswisCalendarBundle\Service\EventParticipantService:
+        alias: zakjakub_oswis_calendar.event_participant_service
+        public: true
+
+    ### EventParticipantFlagType Service
+    zakjakub_oswis_calendar.event_participant_flag_type_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventParticipantFlagTypeService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+    Zakjakub\OswisCalendarBundle\Service\EventParticipantFlagTypeService:
+        alias: zakjakub_oswis_calendar.event_participant_flag_type_service
+        public: true
+
+    ### EventParticipantFlag Service
+    zakjakub_oswis_calendar.event_participant_flag_service:
+        class: Zakjakub\OswisCalendarBundle\Service\EventParticipantFlagService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@mailer.mailer'
+    Zakjakub\OswisCalendarBundle\Service\EventParticipantFlagService:
+        alias: zakjakub_oswis_calendar.event_participant_flag_service
+        public: true
 
 
 
@@ -68,8 +174,10 @@ services:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
             - '@security.user_password_encoder.generic'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
-            - '@mailer.mailer'
+            - '@zakjakub_oswis_calendar.event_participant_service'
+    Zakjakub\OswisCalendarBundle\Controller\EventParticipantController:
+        alias: zakjakub_oswis_calendar.event_participant_controller
+        public: true
 
     ##
     ## EventParticipant payment action (/event_participant_payment_action)
@@ -87,9 +195,7 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
-            - '@monolog.logger'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - '@zakjakub_oswis_calendar.event_participant_payment_service'
     Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantPaymentActionSubscriber:
         alias: zakjakub_oswis_calendar.event_participant_payment_action_subscriber
         public: true
@@ -112,10 +218,7 @@ services:
         arguments:
             - '@zakjakub_oswis_core.pdf_generator'
             - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
-            - '@monolog.logger'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
-            - '@twig'
+            - '@zakjakub_oswis_calendar.event_participant_service'
     Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventParticipantListActionSubscriber:
         alias: zakjakub_oswis_calendar.event_participant_list_action_subscriber
         public: true
@@ -135,10 +238,8 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
-            - '@monolog.logger'
-            - '@zakjakub_oswis_core.oswis_core_settings_provider'
+            - '@zakjakub_oswis_calendar.event_participant_service'
+            - '@zakjakub_oswis_core.pdf_generator'
     Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber:
         alias: zakjakub_oswis_calendar.event_action_subscriber
         public: true

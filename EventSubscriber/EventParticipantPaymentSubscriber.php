@@ -3,40 +3,23 @@
 namespace Zakjakub\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Mailer\MailerInterface;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
-use Zakjakub\OswisCalendarBundle\Manager\EventParticipantPaymentManager;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantPaymentService;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 
-/**
- * Class EventParticipantPaymentSubscriber
- * @package Zakjakub\OswisAccommodationBundle\EventSubscriber
- */
 final class EventParticipantPaymentSubscriber implements EventSubscriberInterface
 {
-    private EntityManagerInterface $em;
+    private EventParticipantPaymentService $paymentService;
 
-    private MailerInterface $mailer;
-
-    private LoggerInterface $logger;
-
-    private OswisCoreSettingsProvider $oswisCoreSettings;
-
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings)
+    public function __construct(EventParticipantPaymentService $paymentService)
     {
-        $this->em = $em;
-        $this->mailer = $mailer;
-        $this->logger = $logger;
-        $this->oswisCoreSettings = $oswisCoreSettings;
+        $this->paymentService = $paymentService;
     }
 
     public static function getSubscribedEvents(): array
@@ -62,8 +45,7 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
         if (!$eventParticipantPayment instanceof EventParticipantPayment || Request::METHOD_POST !== $method) {
             return;
         }
-        $eventParticipantPaymentManager = new EventParticipantPaymentManager($this->em, $this->mailer, $this->logger, $this->oswisCoreSettings);
-        $eventParticipantPaymentManager->sendConfirmation($eventParticipantPayment);
+        $this->paymentService->sendConfirmation($eventParticipantPayment);
     }
 
     /**

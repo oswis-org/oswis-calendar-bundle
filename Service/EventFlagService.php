@@ -1,15 +1,15 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Manager;
+namespace Zakjakub\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
+use Zakjakub\OswisCalendarBundle\Entity\Event\EventFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
-class EventParticipantTypeManager
+class EventFlagService
 {
     protected EntityManagerInterface $em;
 
@@ -21,18 +21,18 @@ class EventParticipantTypeManager
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null, ?string $type = null): EventParticipantType
+    final public function create(?Nameable $nameable = null): ?EventFlag
     {
         try {
-            $entity = new EventParticipantType($nameable, $type);
+            $entity = new EventFlag($nameable);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event participant type (by manager): '.$entity->getId().' '.$entity->getName().'.';
+            $infoMessage = 'CREATE: Created event flag (by manager): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event participant type not created (by manager): '.$e->getMessage()) : null;
+            $this->logger ? $this->logger->info('ERROR: Event event flag not created (by manager): '.$e->getMessage()) : null;
 
             return null;
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Manager;
+namespace Zakjakub\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -9,7 +9,7 @@ use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
-class EventTypeManager
+class EventTypeService
 {
     protected EntityManagerInterface $em;
 

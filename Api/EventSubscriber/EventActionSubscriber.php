@@ -3,56 +3,34 @@
 namespace Zakjakub\OswisCalendarBundle\Api\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Mailer\MailerInterface;
 use Zakjakub\OswisCalendarBundle\Api\Dto\EventActionRequest;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
 use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use function in_array;
 
-/**
- * Class EventActionSubscriber
- * @package Zakjakub\OswisCalendarBundle\Api\EventSubscriber
- */
 final class EventActionSubscriber implements EventSubscriberInterface
 {
     public const  TYPE_INFOMAIL = 'infomail';
     public const TYPE_FEEDBACK = 'feedback';
     public const ALLOWED_ACTION_TYPES = [self::TYPE_INFOMAIL, self::TYPE_FEEDBACK];
 
-    /**
-     * @var EventParticipantManager
-     */
-    private EventParticipantManager $eventParticipantManager;
+    private EventParticipantService $eventParticipantService;
 
-    /**
-     * @var PdfGenerator
-     */
     private PdfGenerator $pdfGenerator;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        PdfGenerator $pdfGenerator
-    ) {
+    public function __construct(EventParticipantService $participantService, PdfGenerator $pdfGenerator)
+    {
+        $this->eventParticipantService = $participantService;
         $this->pdfGenerator = $pdfGenerator;
-        $this->eventParticipantManager = new EventParticipantManager($em, $mailer, $oswisCoreSettings, $logger);
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -60,11 +38,11 @@ final class EventActionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /** @noinspection PhpUnused */
     /**
      * @param ViewEvent $event
      *
      * @throws Exception
+     * @noinspection PhpUnused
      */
     public function eventAction(ViewEvent $event): void
     {
@@ -108,7 +86,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
-        $successCount = $this->eventParticipantManager->sendInfoMails(
+        $successCount = $this->eventParticipantService->sendInfoMails(
             $this->pdfGenerator,
             $event,
             $eventParticipantTypeOfType,
@@ -131,13 +109,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
-        $successCount = $this->eventParticipantManager->sendFeedBackMails(
-            $event,
-            $eventParticipantTypeOfType,
-            $recursiveDepth,
-            $startId,
-            $endId
-        );
+        $successCount = $this->eventParticipantService->sendFeedBackMails($event, $eventParticipantTypeOfType, $recursiveDepth, $startId, $endId);
 
         return new JsonResponse("Zasláno $successCount zpráv z $count vyžádaných.", Response::HTTP_CREATED);
     }

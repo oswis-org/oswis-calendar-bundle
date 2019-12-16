@@ -5,17 +5,13 @@ namespace Zakjakub\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Mailer\MailerInterface;
-use Twig\Environment;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
 use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use function assert;
 
@@ -23,37 +19,19 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
 {
     public const DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG = 'ucastnik';
 
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var PdfGenerator
-     */
     protected PdfGenerator $pdfGenerator;
 
-    /**
-     * @var EventParticipantManager
-     */
-    private EventParticipantManager $eventParticipantManager;
+    private EventParticipantService $participantService;
 
-    public function __construct(
-        PdfGenerator $pdfGenerator,
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        Environment $templating
-    ) {
+    public function __construct(PdfGenerator $pdfGenerator, EntityManagerInterface $em, EventParticipantService $participantService)
+    {
         $this->em = $em;
         $this->pdfGenerator = $pdfGenerator;
-        $this->eventParticipantManager = new EventParticipantManager($em, $mailer, $oswisCoreSettings, $logger);
+        $this->participantService = $participantService;
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -61,9 +39,10 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
         ];
     }
 
-    /** @noinspection PhpUnused */
     /**
      * @param ViewEvent $event
+     *
+     * @noinspection PhpUnused
      */
     public function sendEventParticipantList(ViewEvent $event): void
     {
@@ -72,20 +51,13 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
             return;
         }
         $request = $event->getControllerResult();
-        $eventParticipantType = $request->eventParticipantType;
-        if (!$eventParticipantType) {
-            $eventParticipantTypeRepository = $this->em->getRepository(EventParticipantType::class);
-            $eventParticipantType = $eventParticipantTypeRepository->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG]);
+        $participantType = $request->eventParticipantType;
+        if (!$participantType) {
+            $participantType = $this->em->getRepository(EventParticipantType::class)->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG]);
         }
         try {
-            assert($eventParticipantType instanceof EventParticipantType);
-            $this->eventParticipantManager->sendEventParticipantList(
-                $this->pdfGenerator,
-                $request->event,
-                $eventParticipantType,
-                $request->detailed ?? false,
-                $request->title ?? null
-            );
+            assert($participantType instanceof EventParticipantType);
+            $this->participantService->sendEventParticipantList($this->pdfGenerator, $request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
         } catch (Exception $e) {
             $event->setResponse(new JsonResponse(['data' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR));
 

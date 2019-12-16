@@ -22,24 +22,14 @@ use Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType;
 final class EventParticipantListActionRequest
 {
     /**
-     * @var Event|null
      * @Symfony\Component\Validator\Constraints\NotNull()
      * @Symfony\Component\Validator\Constraints\NotBlank()
      */
     public ?Event $event = null;
 
-    /**
-     * @var EventParticipantType|null
-     */
     public ?EventParticipantType $eventParticipantType = null;
 
-    /**
-     * @var string|null
-     */
     public ?string $title = null;
 
-    /**
-     * @var bool|null
-     */
     public ?bool $detailed = null;
 }

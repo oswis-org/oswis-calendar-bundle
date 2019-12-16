@@ -5,43 +5,30 @@ namespace Zakjakub\OswisCalendarBundle\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Exceptions\OswisEventParticipantNotFoundException;
-use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
 use function assert;
 use function in_array;
 
-/**
- * Class EventParticipantSubscriber
- * @package Zakjakub\OswisCalendarBundle\EventSubscriber
- */
 final class EventParticipantSubscriber implements EventSubscriberInterface
 {
     private EntityManagerInterface $em;
 
-    private MailerInterface $mailer;
-
-    private LoggerInterface $logger;
-
-    private OswisCoreSettingsProvider $oswisCoreSettings;
-
     private UserPasswordEncoderInterface $encoder;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings, UserPasswordEncoderInterface $encoder)
+    private EventParticipantService $participantService;
+
+    public function __construct(EntityManagerInterface $em, UserPasswordEncoderInterface $encoder, EventParticipantService $participantService)
     {
         $this->em = $em;
-        $this->mailer = $mailer;
-        $this->logger = $logger;
-        $this->oswisCoreSettings = $oswisCoreSettings;
         $this->encoder = $encoder;
+        $this->participantService = $participantService;
     }
 
     public static function getSubscribedEvents(): array
@@ -67,12 +54,10 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         if (!$eventParticipant instanceof EventParticipant || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
-        $eventParticipantRepository = $this->em->getRepository(EventParticipant::class);
-        $eventParticipant = $eventParticipantRepository->findOneBy(['id' => $eventParticipant->getId()]);
+        $eventParticipant = $this->em->getRepository(EventParticipant::class)->findOneBy(['id' => $eventParticipant->getId()]);
         assert($eventParticipant instanceof EventParticipant);
         if ($eventParticipant) {
-            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
-            $eventParticipantManager->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
+            $this->participantService->sendMail($eventParticipant, $this->encoder, Request::METHOD_POST === $method);
         } else {
             throw new OswisEventParticipantNotFoundException();
         }
@@ -102,8 +87,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
 
     private function getExistingEventParticipant(EventParticipant $newEventParticipant): ?EventParticipant
     {
-        $eventParticipantRepository = $this->em->getRepository(EventParticipant::class);
-        $eventParticipant = $eventParticipantRepository->findOneBy(['id' => $newEventParticipant->getId()]);
+        $eventParticipant = $this->em->getRepository(EventParticipant::class)->findOneBy(['id' => $newEventParticipant->getId()]);
         assert($eventParticipant instanceof EventParticipant);
 
         return $eventParticipant;

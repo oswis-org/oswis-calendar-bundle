@@ -8,19 +8,12 @@ use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Twig\Environment;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Manager\EventParticipantManager;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
 use function assert;
 
-/**
- * Class EventParticipantController
- * @package Zakjakub\OswisCalendarBundle\Controller
- */
 class EventParticipantController extends AbstractController
 {
     public EntityManagerInterface $em;
@@ -29,34 +22,18 @@ class EventParticipantController extends AbstractController
 
     public UserPasswordEncoderInterface $encoder;
 
-    public OswisCoreSettingsProvider $oswisCoreSettings;
+    public EventParticipantService $participantService;
 
-    public MailerInterface $mailer;
-
-    public Environment $templating;
-
-    /**
-     * @param EntityManagerInterface       $em
-     * @param LoggerInterface              $logger
-     * @param UserPasswordEncoderInterface $encoder
-     * @param OswisCoreSettingsProvider    $oswisCoreSettings
-     * @param MailerInterface              $mailer
-     * @param Environment                  $templating
-     */
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
         UserPasswordEncoderInterface $encoder,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        MailerInterface $mailer,
-        Environment $templating
+        EventParticipantService $participantService
     ) {
         $this->em = $em;
         $this->logger = $logger;
         $this->encoder = $encoder;
-        $this->oswisCoreSettings = $oswisCoreSettings;
-        $this->mailer = $mailer;
-        $this->templating = $templating;
+        $this->participantService = $participantService;
     }
 
     /**
@@ -68,12 +45,9 @@ class EventParticipantController extends AbstractController
      * @return Response
      * @throws LogicException
      */
-    final public function eventParticipantRegistrationConfirmAction(
-        string $token,
-        int $eventParticipantId
-    ): Response {
+    final public function eventParticipantRegistrationConfirmAction(string $token, int $eventParticipantId): Response
+    {
         try {
-            $eventParticipantManager = new EventParticipantManager($this->em, $this->mailer, $this->oswisCoreSettings, $this->logger);
             if (!$token || !$eventParticipantId) {
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
@@ -109,7 +83,7 @@ class EventParticipantController extends AbstractController
                 $eventParticipant->getContact()->removeEmptyContactDetails();
                 $eventParticipant->getContact()->removeEmptyNotes();
             }
-            $eventParticipantManager->sendMail($eventParticipant, $this->encoder, true, $token);
+            $this->participantService->sendMail($eventParticipant, $this->encoder, true, $token);
 
             return $this->render(
                 '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',

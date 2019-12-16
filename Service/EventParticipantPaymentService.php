@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Manager;
+namespace Zakjakub\OswisCalendarBundle\Service;
 
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,7 +27,7 @@ use function implode;
 use function str_getcsv;
 use function strlen;
 
-class EventParticipantPaymentManager
+class EventParticipantPaymentService
 {
 
     protected EntityManagerInterface $em;

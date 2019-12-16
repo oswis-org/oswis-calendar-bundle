@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Manager;
+namespace Zakjakub\OswisCalendarBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -37,7 +37,7 @@ use function ucfirst;
 /**
  * Class EventParticipantManager
  */
-class EventParticipantManager
+class EventParticipantService
 {
     public const DEFAULT_LIST_TITLE = 'Přehled přihlášek';
 

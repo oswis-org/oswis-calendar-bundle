@@ -22,34 +22,18 @@ use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 final class EventActionRequest
 {
     /**
-     * @var string|null
      * @Symfony\Component\Validator\Constraints\NotNull()
      * @Symfony\Component\Validator\Constraints\NotBlank()
      */
     public ?string $type = null;
 
-    /**
-     * @var Event|null
-     */
     public ?Event $event = null;
 
-    /**
-     * @var int|null
-     */
     public ?int $count = null;
 
-    /**
-     * @var int|null
-     */
     public ?int $startId = null;
 
-    /**
-     * @var int|null
-     */
     public ?int $endId = null;
 
-    /**
-     * @var int|null
-     */
     public ?int $recursiveDepth = null;
 }

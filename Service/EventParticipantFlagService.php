@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Manager;
+namespace Zakjakub\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -10,22 +10,14 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
-class EventParticipantFlagManager
+class EventParticipantFlagService
 {
-    /**
-     * @var EntityManagerInterface
-     */
     protected EntityManagerInterface $em;
 
-    /**
-     * @var LoggerInterface
-     */
     protected ?LoggerInterface $logger;
 
-    public function __construct(
-        EntityManagerInterface $em,
-        ?LoggerInterface $logger = null
-    ) {
+    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    {
         $this->em = $em;
         $this->logger = $logger;
     }
