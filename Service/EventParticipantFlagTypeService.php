@@ -21,10 +21,14 @@ class EventParticipantFlagTypeService
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null, ?int $minFlagsAllowed = null, ?int $maxFlagsAllowed = null): ?EventParticipantFlagType
-    {
+    final public function create(
+        ?Nameable $nameable = null,
+        ?string $type = null,
+        ?int $minFlagsAllowed = null,
+        ?int $maxFlagsAllowed = null
+    ): ?EventParticipantFlagType {
         try {
-            $entity = new EventParticipantFlagType($nameable, $minFlagsAllowed, $maxFlagsAllowed);
+            $entity = new EventParticipantFlagType($nameable, $type, $minFlagsAllowed, $maxFlagsAllowed);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event participant flag type (by service): '.$entity->getId().' '.$entity->getName().'.';

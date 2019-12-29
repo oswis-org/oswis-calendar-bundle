@@ -43,7 +43,6 @@ use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
 use Zakjakub\OswisCoreBundle\Utils\StringUtils;
 use function assert;
-use function ucfirst;
 
 /**
  * Class EventParticipantManager
@@ -273,7 +272,7 @@ class EventParticipantService
                 $mailData['bankAccount'] = $event->getBankAccountComplete();
                 $mailData['depositQr'] = 'cid:depositQr';
                 $mailData['restQr'] = 'cid:restQr';
-                $email = $this->getEmptyEmail($contactPerson, null === $new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
+                $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
                 $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
                 if ($depositPaymentQrPng) {
                     $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
@@ -304,7 +303,7 @@ class EventParticipantService
         }
     }
 
-    private static function getQrPng(Event $event, EventParticipant $eventParticipant, string $qrComment, bool $isDeposit): string
+    private static function getQrPng(Event $event, EventParticipant $eventParticipant, string $qrComment, bool $isDeposit): ?string
     {
         try {
             return (new QrPayment(
@@ -395,7 +394,7 @@ class EventParticipantService
     }
 
     /**
-     * @param Event|null                $event
+     * @param Event                     $event
      * @param EventParticipantType|null $participantType
      * @param bool                      $detailed
      * @param string                    $title
@@ -542,11 +541,11 @@ class EventParticipantService
             ];
             $pdfString = null;
             $message = null;
+            $contactName = $participant->getContact() ? $participant->getContact()->getContactName() : 'Nepojmenovaný účastník';
             try {
                 $pdfTitle = 'Shrnutí přihlášky';
-                $contactName = $participant->getContact() ? $participant->getContact()->getContactName() : 'Nepojmenovaný účastník';
                 $pdfTitle .= $contactName ? ' - '.$contactName : null;
-                $pdfTitle .= $participant->getEvent() && $participant->getEvent()->getName() ? ' ('.$participant->getEvent()->getName().')' : null;
+                $pdfTitle .= ' ('.$event->getName().')';
                 $pdfString = $this->pdfGenerator->generatePdfAsString(
                     $pdfTitle,
                     '@ZakjakubOswisCalendar/documents/pages/event-participant-info-before-event.html.twig',
@@ -556,18 +555,14 @@ class EventParticipantService
                     null,
                     null
                 );
-            } catch (MpdfException $e) {
-                $pdfString = null;
-                $message = 'Vygenerování PDF se nezdařilo (MpdfException). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
-                $this->logger->error($message);
             } catch (Exception $e) {
                 $pdfString = null;
-                $message = 'Vygenerování PDF se nezdařilo (Exception). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
+                $message = 'Vygenerování PDF se nezdařilo. '.$e->getMessage();
                 $this->logger->error($message);
             }
-            $fileName = 'Shrnuti_';
-            $fileName .= ucfirst(iconv('utf-8', 'us-ascii//TRANSLIT', StringUtils::removeAccents($eventParticipantContact->getFamilyName())));
-            $fileName .= ucfirst(iconv('utf-8', 'us-ascii//TRANSLIT', StringUtils::removeAccents($eventParticipantContact->getGivenName()))).'.pdf';
+            $name = StringUtils::hyphensToCamel(StringUtils::hyphenize($event->getShortName())).'_';
+            $name .= StringUtils::hyphensToCamel(StringUtils::hyphenize($contactName));
+            $fileName = 'Shrnuti_'.iconv('utf-8', 'us-ascii//TRANSLIT', $name).'.pdf';
             $mailSuccessCount = 0;
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
@@ -589,7 +584,9 @@ class EventParticipantService
             }
             $this->em->flush();
             if ($mailSuccessCount < $contactPersons->count()) {
-                throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+                throw new OswisException(
+                    "Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').'
+                );
             }
 
             return true;
@@ -601,6 +598,15 @@ class EventParticipantService
         }
     }
 
+    /**
+     * @param Event       $event
+     * @param string|null $participantTypeOfType
+     * @param int         $recursiveDepth
+     * @param int|null    $startId
+     * @param int|null    $endId
+     *
+     * @return int Remaining (failed) count.
+     */
     final public function sendFeedBackMails(
         Event $event,
         ?string $participantTypeOfType = null,
@@ -608,7 +614,6 @@ class EventParticipantService
         ?int $startId = 0,
         ?int $endId = null
     ): int {
-        $successCount = 0;
         $eventParticipants = $this->getEventParticipantsByTypeOfType(
             $event,
             $participantTypeOfType,
@@ -616,14 +621,15 @@ class EventParticipantService
             false,
             $recursiveDepth
         )->filter(fn(EventParticipant $p) => null === $endId || ($p->getId() > $startId && $p->getId() < $endId));
+        $remaining = $eventParticipants->count();
         foreach ($eventParticipants as $eventParticipant) {
             $eventParticipants->removeElement($eventParticipant);
             if ($this->sendFeedBackMail($eventParticipant)) {
-                $successCount++;
+                $remaining--;
             }
         }
 
-        return $successCount;
+        return $remaining;
     }
 
     final public function sendFeedBackMail(EventParticipant $participant): bool
@@ -808,7 +814,7 @@ class EventParticipantService
                             'name'      => $flagType->getName(),
                             'shortName' => $flagType->getShortName(),
                         ];
-                        $flagSlug = $flag->getSlug() ?? '';
+                        $flagSlug = $flag->getSlug();
                         $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
                         if (isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']) && $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] > 0) {
                             $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']++;
@@ -903,6 +909,4 @@ class EventParticipantService
 
         return $output;
     }
-
-
 }

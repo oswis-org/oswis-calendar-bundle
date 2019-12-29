@@ -54,17 +54,14 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      */
     public function postWrite(ViewEvent $event): void
     {
-        $newEventParticipant = $event->getControllerResult();
+        $newParticipant = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-        if (!$newEventParticipant instanceof EventParticipant || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
+        if (!($newParticipant instanceof EventParticipant) || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
-        $oldEventParticipant = $this->participantService->getRepository()->findOneBy(['id' => $newEventParticipant->getId()]);
-        if (null === $newEventParticipant) {
-            throw new OswisEventParticipantNotFoundException();
-        }
-        $this->eventService->simulateAddEventParticipant($newEventParticipant, $oldEventParticipant);
-        $this->participantService->sendMail($newEventParticipant, $this->encoder, Request::METHOD_POST === $method);
+        $oldParticipant = $this->participantService->getRepository()->getEventParticipant(['id' => $newParticipant->getId()]);
+        $this->eventService->simulateAddEventParticipant($newParticipant, $oldParticipant);
+        $this->participantService->sendMail($newParticipant, $this->encoder, Request::METHOD_POST === $method);
     }
 
     /**
@@ -74,21 +71,21 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
      */
     public function postValidate(ViewEvent $event): void
     {
-        $newEventParticipant = $event->getControllerResult();
+        $newParticipant = $event->getControllerResult();
         $method = $event->getRequest()->getMethod();
-        if (!($newEventParticipant instanceof EventParticipant) || $method !== Request::METHOD_PUT) {
+        if (!($newParticipant instanceof EventParticipant) || $method !== Request::METHOD_PUT) {
             return;
         }
-        $oldEventParticipant = $this->getExistingEventParticipant($newEventParticipant);
-        if (null === $oldEventParticipant) {
+        $oldParticipant = $this->getExistingEventParticipant($newParticipant);
+        if (null === $oldParticipant) {
             throw new OswisEventParticipantNotFoundException();
         }
-        $newEventParticipant->setEMailConfirmationDateTime(null);
-        $oldEventParticipant->setEMailConfirmationDateTime(null);
+        $newParticipant->setEMailConfirmationDateTime(null);
+        $oldParticipant->setEMailConfirmationDateTime(null);
     }
 
     private function getExistingEventParticipant(EventParticipant $newEventParticipant): ?EventParticipant
     {
-        return $this->participantService->getRepository()->findOneBy(['id' => $newEventParticipant->getId()]);
+        return $this->participantService->getRepository()->getEventParticipant(['id' => $newEventParticipant->getId()]);
     }
 }

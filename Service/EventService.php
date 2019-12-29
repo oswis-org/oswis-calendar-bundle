@@ -108,7 +108,7 @@ class EventService
             EventParticipantRepository::CRITERIA_APP_USER         => $appUser,
         ];
 
-        return $this->participantService->getRepository()->getEventParticipants($opts)->count();
+        return $this->participantService->getRepository()->getEventParticipants($opts)->count() > 0;
     }
 
     final public function getOrganizer(Event $event): ?AbstractContact
@@ -297,6 +297,6 @@ class EventService
             EventParticipantRepository::CRITERIA_CONTACT          => $contact,
         ];
 
-        return $this->participantService->getRepository()->getEventParticipants($opts)->count();
+        return $this->participantService->getRepository()->getEventParticipants($opts)->count() > 0;
     }
 }

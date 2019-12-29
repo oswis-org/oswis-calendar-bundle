@@ -187,10 +187,7 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@monolog.logger'
-            - '@security.user_password_encoder.generic'
-            - '@zakjakub_oswis_calendar.event_participant_service'
+            - '@zakjakub_oswis_calendar.event_service'
     Zakjakub\OswisCalendarBundle\Controller\EventWebController:
         alias: zakjakub_oswis_calendar.event_web_controller
         public: true
@@ -255,7 +252,6 @@ services:
         public: true
         arguments:
             - '@zakjakub_oswis_calendar.event_participant_service'
-            - '@zakjakub_oswis_core.pdf_generator'
     Zakjakub\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber:
         alias: zakjakub_oswis_calendar.event_action_subscriber
         public: true

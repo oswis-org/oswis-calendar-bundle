@@ -166,8 +166,7 @@ class EventParticipantPaymentService
                 } else {
                     $eventParticipant = $filteredEventParticipants->first();
                 }
-                assert($eventParticipant instanceof EventParticipant);
-                if (null === $eventParticipant) {
+                if (!($eventParticipant instanceof EventParticipant)) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: EventParticipant with VS ($csvVariableSymbol) not found; CSV: $csvRow;");
                     $failedPayments[] = $csvRow.' [VS not found (2. step)]';
                     continue;
@@ -261,8 +260,7 @@ class EventParticipantPaymentService
                 $a = $contact->getCzechSuffixA() ?? '';
             } else {
                 assert($contact instanceof Organization);
-                // TODO: Correct salutation (contact of organization).
-                $salutationName = $contact ? $contact->getContactName() : '';
+                $salutationName = $contact->getContactName() ?? ''; // TODO: Correct salutation (contact of organization).
                 $a = '';
             }
             $name = $contact->getAppUser() ? $contact->getAppUser()->getFullName() : $contact->getContactName();

@@ -470,7 +470,7 @@ class Event
 
     final public function addEventWebContent(?EventWebContent $eventWebContent): void
     {
-        if (null !== $eventWebContent) {
+        if (null === $eventWebContent) {
             return;
         }
         $this->removeEventWebContent($this->getEventWebContent($eventWebContent->getType()));
@@ -647,7 +647,7 @@ class Event
 
     public function isYear(): bool
     {
-        return $this->getEventType() && EventType::YEAR_OF_EVENT === $this->getEventType();
+        return null !== $this->getEventType() && EventType::YEAR_OF_EVENT === $this->getEventType()->getType();
     }
 
     final public function getEventType(): ?EventType
@@ -662,7 +662,7 @@ class Event
 
     public function isBatch(): bool
     {
-        return $this->getEventType() && EventType::BATCH_OF_EVENT === $this->getEventType();
+        return $this->getEventType() && EventType::BATCH_OF_EVENT === $this->getEventType()->getType();
     }
 
     public function getStartYear(): ?int

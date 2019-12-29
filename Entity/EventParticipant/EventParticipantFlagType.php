@@ -54,6 +54,10 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventParticipantFlagType extends AbstractEventFlagType
 {
+    public const TYPE_FOOD = 'food';
+    public const TYPE_TRANSPORT = 'food';
+    public const TYPE_ACCOMMODATION_TYPE = 'food';
+
     /**
      * @param Nameable|null $nameable
      * @param string|null   $type
@@ -72,7 +76,7 @@ class EventParticipantFlagType extends AbstractEventFlagType
 
     public static function getAllowedTypesDefault(): array
     {
-        return ['food', 'transport'];
+        return [self::TYPE_FOOD, self::TYPE_TRANSPORT, self::TYPE_ACCOMMODATION_TYPE];
     }
 
     public static function getAllowedTypesCustom(): array

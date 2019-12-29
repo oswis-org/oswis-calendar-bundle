@@ -80,7 +80,7 @@ class EventRepository extends EntityRepository
         if (!empty($opts[self::CRITERIA_SUPER_EVENT]) && $opts[self::CRITERIA_SUPER_EVENT] instanceof Event) {
             $eventQuery = ' e.superEvent = :super_event_id ';
             $queryBuilder->leftJoin('e.superEvent', 'e0');
-            $superEventDepth = !empty($opts[self::CRITERIA_SUPER_EVENT]) ? $opts[self::CRITERIA_SUPER_EVENT] : 0;
+            $superEventDepth = !empty($opts[self::CRITERIA_SUPER_EVENT_DEPTH]) ? (int)$opts[self::CRITERIA_SUPER_EVENT_DEPTH] : 0;
             for ($i = 0; $i < $superEventDepth; $i++) {
                 $j = $i + 1;
                 $queryBuilder->leftJoin("e$i.superEvent", "e$j");
