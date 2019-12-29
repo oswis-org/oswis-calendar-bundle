@@ -8,7 +8,7 @@ use Zakjakub\OswisCalendarBundle\Controller\MediaObjects\CreateEventImageAction;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
 
 /**
- * @Doctrine\ORM\Mapping\Entity
+ * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_image")
  * @ApiResource(iri="http://schema.org/ImageObject", collectionOperations={
  *     "get",

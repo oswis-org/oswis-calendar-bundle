@@ -24,22 +24,19 @@ class EventParticipantFlagService
 
     final public function create(
         ?Nameable $nameable = null,
-        ?EventParticipantFlagType $eventParticipantFlagType = null,
-        ?bool $publicInIS = null,
-        ?bool $publicInPortal = null,
-        ?bool $publicOnWeb = null,
-        ?bool $publicOnWebRoute = null
+        ?EventParticipantFlagType $participantFlagType = null,
+        ?bool $publicOnWeb = null
     ): ?EventParticipantFlag {
         try {
-            $entity = new EventParticipantFlag($nameable, $eventParticipantFlagType, $publicInIS, $publicInPortal, $publicOnWeb, $publicOnWebRoute);
+            $entity = new EventParticipantFlag($nameable, $participantFlagType, $publicOnWeb);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event participant flag (by manager): '.$entity->getId().' '.$entity->getName().'.';
+            $infoMessage = 'CREATE: Created event participant flag (by service): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event participant flag not created (by manager): '.$e->getMessage()) : null;
+            $this->logger ? $this->logger->info('ERROR: Event event participant flag not created (by service): '.$e->getMessage()) : null;
 
             return null;
         }

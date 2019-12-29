@@ -1,4 +1,7 @@
 <?php
+/**
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Api\EventSubscriber;
 
@@ -19,6 +22,8 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
 {
     public const DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG = 'ucastnik';
 
+    // TODO: ParticipantType slug change!
+
     protected EntityManagerInterface $em;
 
     protected PdfGenerator $pdfGenerator;
@@ -32,9 +37,6 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
         $this->participantService = $participantService;
     }
 
-    /**
-     * @return array<string, array<int|string>>
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -42,11 +44,6 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
         ];
     }
 
-    /**
-     * @param ViewEvent $event
-     *
-     * @noinspection PhpUnused
-     */
     public function sendEventParticipantList(ViewEvent $event): void
     {
         $request = $event->getRequest();
@@ -60,7 +57,7 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
         }
         try {
             assert($participantType instanceof EventParticipantType);
-            $this->participantService->sendEventParticipantList($this->pdfGenerator, $request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
+            $this->participantService->sendEventParticipantList($request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
         } catch (Exception $e) {
             $event->setResponse(new JsonResponse(['data' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR));
 

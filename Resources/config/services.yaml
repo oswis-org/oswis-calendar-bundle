@@ -162,7 +162,6 @@ services:
         public: true
 
 
-
     ##
     ## EventParticipant controller (What does this?)
     ##
@@ -177,6 +176,23 @@ services:
             - '@zakjakub_oswis_calendar.event_participant_service'
     Zakjakub\OswisCalendarBundle\Controller\EventParticipantController:
         alias: zakjakub_oswis_calendar.event_participant_controller
+        public: true
+
+
+    ##
+    ## Event web controller.
+    ##
+    zakjakub_oswis_calendar.event_web_controller:
+        class: Zakjakub\OswisCalendarBundle\Controller\EventWebController
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+            - '@security.user_password_encoder.generic'
+            - '@zakjakub_oswis_calendar.event_participant_service'
+    Zakjakub\OswisCalendarBundle\Controller\EventWebController:
+        alias: zakjakub_oswis_calendar.event_web_controller
         public: true
 
     ##

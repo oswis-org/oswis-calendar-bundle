@@ -6,3 +6,11 @@ zakjakub_oswis_calendar_event_participant_registration_confirm:
     controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
+zakjakub_oswis_calendar_web_event:
+    controller: zakjakub_oswis_calendar.event_web_controller::showEvent
+    path: "/akce/{slug}"
+
+zakjakub_oswis_calendar_web_events:
+    controller: zakjakub_oswis_calendar.event_web_controller::showEvents
+    path: "/kalendar/{range}/{start}/{end}/{limit}/{offset}"
+

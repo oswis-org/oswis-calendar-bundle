@@ -1,0 +1,12 @@
+{% extends '@ZakjakubOswisCore/web/page-skeleton-default.html.twig' %}
+
+{% block html_description %}
+    Nechceš si nechat ujít letošní Seznamovák Univerzity Palackého {{ year }}? Projdi si všechny důležité informace přehledně na jedné stránce!
+{% endblock %}
+{% block og_description %}{{ block('html_description') }}{% endblock %}
+{% block html_title %}Základní informace o Seznamováku UP {{ year }}{% endblock %}
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        {% include 'web/parts/informace.html.twig' %}
+    </main>
+{% endblock %}

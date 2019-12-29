@@ -23,12 +23,9 @@ final class EventActionSubscriber implements EventSubscriberInterface
 
     private EventParticipantService $eventParticipantService;
 
-    private PdfGenerator $pdfGenerator;
-
-    public function __construct(EventParticipantService $participantService, PdfGenerator $pdfGenerator)
+    public function __construct(EventParticipantService $participantService)
     {
         $this->eventParticipantService = $participantService;
-        $this->pdfGenerator = $pdfGenerator;
     }
 
     /**
@@ -90,7 +87,6 @@ final class EventActionSubscriber implements EventSubscriberInterface
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
         $successCount = $this->eventParticipantService->sendInfoMails(
-            $this->pdfGenerator,
             $event,
             $eventParticipantTypeOfType,
             $recursiveDepth,

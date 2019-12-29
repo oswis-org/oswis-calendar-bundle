@@ -120,12 +120,6 @@ class EventParticipantFlagInEventConnection
 
     final public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
     {
-        if ($this->eventParticipantFlag && $eventParticipantFlag !== $this->eventParticipantFlag) {
-            $this->eventParticipantFlag->removeEventParticipantFlagInEventConnection($this);
-        }
-        if ($eventParticipantFlag && $this->eventParticipantFlag !== $eventParticipantFlag) {
-            $this->eventParticipantFlag = $eventParticipantFlag;
-            $eventParticipantFlag->addEventParticipantFlagInEventConnection($this);
-        }
+        $this->eventParticipantFlag = $eventParticipantFlag;
     }
 }

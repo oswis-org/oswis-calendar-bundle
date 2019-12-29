@@ -1,4 +1,8 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection MethodShouldBeFinalInspection */
+/** @noinspection RedundantDocCommentTagInspection */
+/**
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
@@ -11,33 +15,24 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
-use Zakjakub\OswisAddressBookBundle\Entity\Position;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
-use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
-use Zakjakub\OswisCoreBundle\Entity\AppUser;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
-use function strcmp;
 
 /**
- * Event.
- *
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
  * @ApiResource(
@@ -88,14 +83,12 @@ class Event
     use DateRangeTrait;
     use ColorTrait;
     use BankAccountTrait;
+    use DeletedTrait;
+    use EntityPublicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     * @MaxDepth(1)
      */
     protected ?Place $location = null;
 
@@ -118,35 +111,19 @@ class Event
      *     inversedBy="subEvents",
      *     fetch="EAGER"
      * )
-     * @MaxDepth(2)
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $superEvent = null;
 
     /**
-     * Sub events.
      * @var Collection<Event> $subEvents
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     mappedBy="superEvent",
      *     fetch="EAGER"
      * )
-     * @MaxDepth(2)
      */
     protected ?Collection $subEvents = null;
-
-    /**
-     * People and organizations who attend at the event.
-     * @var Collection<EventParticipant> $eventParticipants
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     cascade={"all"},
-     *     orphanRemoval=true,
-     *     mappedBy="event"
-     * )
-     * @MaxDepth(2)
-     */
-    protected ?Collection $eventParticipants = null;
 
     /**
      * @var Collection<EventCapacity> $eventCapacities
@@ -231,7 +208,6 @@ class Event
     protected ?Collection $eventParticipantFlagInEventConnections = null;
 
     /**
-     * Type of this event.
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
      *     fetch="EAGER"
@@ -243,17 +219,18 @@ class Event
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
+     *     inversedBy="events",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
-     * @MaxDepth(1)
      */
     private ?EventSeries $eventSeries = null;
 
     /**
+     * Indicates if price is relative to parent event.
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private ?bool $priceRecursiveFromParent = null;
+    private ?bool $priceRelative = null;
 
     public function __construct(
         ?Nameable $nameable = null,
@@ -263,13 +240,12 @@ class Event
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null,
         ?EventSeries $eventSeries = null,
-        ?bool $priceRecursiveFromParent = null,
+        ?bool $priceRelative = null,
         ?string $color = null,
         ?string $bankAccountNumber = null,
         ?string $bankAccountBank = null
     ) {
         $this->subEvents = new ArrayCollection();
-        $this->eventParticipants = new ArrayCollection();
         $this->eventPrices = new ArrayCollection();
         $this->eventCapacities = new ArrayCollection();
         $this->eventRegistrationRanges = new ArrayCollection();
@@ -278,7 +254,7 @@ class Event
         $this->setEventType($eventType);
         $this->setSuperEvent($superEvent);
         $this->setEventSeries($eventSeries);
-        $this->setPriceRecursiveFromParent($priceRecursiveFromParent);
+        $this->setPriceRelative($priceRelative);
         $this->setFieldsFromNameable($nameable);
         $this->setLocation($location);
         $this->setStartDateTime($startDateTime);
@@ -288,9 +264,9 @@ class Event
         $this->setBankAccountBank($bankAccountBank);
     }
 
-    final public function setPriceRecursiveFromParent(?bool $priceRecursiveFromParent): void
+    final public function setPriceRelative(?bool $priceRelative): void
     {
-        $this->priceRecursiveFromParent = $priceRecursiveFromParent;
+        $this->priceRelative = $priceRelative;
     }
 
     final public function destroyRevisions(): void
@@ -324,16 +300,6 @@ class Event
             $this->eventFlagConnections->add($eventContactFlagConnection);
             $eventContactFlagConnection->setEvent($this);
         }
-    }
-
-    final public function getEventType(): ?EventType
-    {
-        return $this->eventType;
-    }
-
-    final public function setEventType(?EventType $eventType): void
-    {
-        $this->eventType = $eventType;
     }
 
     final public function getEventParticipantTypeInEventConnections(): Collection
@@ -377,50 +343,14 @@ class Event
         }
     }
 
-    /**
-     * @param EventParticipant|null $eventParticipant
-     * @param bool|null             $force
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function addEventParticipant(?EventParticipant $eventParticipant, ?bool $force = false): void
+    final public function getMaximumCapacity(?EventParticipantType $participantType = null): ?int
     {
-        $this->eventParticipants ??= new ArrayCollection();
-        if ($eventParticipant && !$this->eventParticipants->contains($eventParticipant)) {
-            // Check capacity.
-            $eventParticipantType = $eventParticipant->getEventParticipantType();
-            if (!$force && $this->getRemainingCapacity($eventParticipantType) === 0) {
-                throw new EventCapacityExceededException();
-            }
-            $this->eventParticipants->add($eventParticipant);
-            $eventParticipant->setEvent($this);
-        }
-    }
-
-    final public function getRemainingCapacity(?EventParticipantType $eventParticipantType = null): ?int
-    {
-        if ($this->getMaximumCapacity() === null) {
-            return -1;
-        }
-        $occupancy = $this->getOccupancy($eventParticipantType);
-        $maximumCapacity = $this->getMaximumCapacity($eventParticipantType);
-        if ($occupancy >= 0 && $maximumCapacity >= 0) {
-            $remaining = $maximumCapacity - $occupancy;
-
-            return $remaining > 0 ? $remaining : 0;
-        }
-
-        return -1;
-    }
-
-    final public function getMaximumCapacity(?EventParticipantType $eventParticipantType = null): ?int
-    {
-        $capacity = -1;
+        $capacity = null;
         foreach ($this->getEventCapacities() as $oneCapacity) {
             try {
                 assert($oneCapacity instanceof EventCapacity);
                 $oneParticipantType = $oneCapacity->getEventParticipantType();
-                if (!$eventParticipantType || ($oneParticipantType && $eventParticipantType->getId() === $oneParticipantType->getId())) {
+                if (!$participantType || ($oneParticipantType && $participantType->getId() === $oneParticipantType->getId())) {
                     $capacity += $oneCapacity->getNumericValue();
                 }
             } catch (Exception $e) {
@@ -431,115 +361,9 @@ class Event
         return $capacity;
     }
 
-    /**
-     * @return Collection
-     */
     final public function getEventCapacities(): Collection
     {
         return $this->eventCapacities ?? new ArrayCollection();
-    }
-
-    final public function getOccupancy(?EventParticipantType $participantType = null, ?bool $includeDeleted = false, ?bool $includeNotActivatedUsers = true, ?int $recursiveDepth = null): int
-    {
-        return $this->getActiveEventParticipants($participantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth)->count();
-    }
-
-    final public function getActiveEventParticipants(
-        ?EventParticipantType $participantType = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true,
-        ?int $recursiveDepth = 1
-    ): Collection {
-        /// TODO: Duplicities!!!
-        $eventParticipants = $this->getEventParticipantsByType($participantType, $includeDeleted, $includeNotActivatedUsers);
-        if ($recursiveDepth > 0) {
-            foreach ($this->getSubEvents() as $subEvent) {
-                assert($subEvent instanceof self);
-                $subEventParticipants = $subEvent->getActiveEventParticipants($participantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth - 1);
-                foreach ($subEventParticipants as $newEventParticipant) {
-                    if (!$eventParticipants->contains($newEventParticipant)) {
-                        $eventParticipants->add($newEventParticipant);
-                    }
-                }
-            }
-        }
-        $eventParticipantsArray = $eventParticipants->toArray();
-        self::sortEventParticipants($eventParticipantsArray);
-
-        return new ArrayCollection($eventParticipantsArray);
-    }
-
-    final public function getEventParticipantsByType(?EventParticipantType $pType = null, ?bool $includeDeleted = false, ?bool $includeNotActivated = true): Collection
-    {
-        if ($pType) {
-            $participants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->filter(
-                fn(EventParticipant $p) => !$p->getEventParticipantType() ? false : $pType->getId() === $p->getEventParticipantType()->getId()
-            )->toArray();
-        } else {
-            $participants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->toArray();
-        }
-        self::sortEventParticipants($participants);
-
-        return new ArrayCollection($participants);
-    }
-
-    final public function getEventParticipants(?bool $includeDeleted = false, ?bool $includeNotActivatedUsers = true): Collection
-    {
-        $eventParticipantsArray = $this->eventParticipants->filter(
-            static function (EventParticipant $eventParticipant) use ($includeDeleted, $includeNotActivatedUsers) {
-                if ($includeDeleted && $includeNotActivatedUsers) {
-                    return true;
-                }
-                if (!$includeDeleted && $eventParticipant->isDeleted()) {
-                    return false;
-                }
-                if (!$includeNotActivatedUsers) {
-                    $person = $eventParticipant->getContact();
-                    assert($person instanceof Person);
-                    if ($person instanceof Person && $person->getAppUser() && !$person->getAppUser()->getAccountActivationDateTime()) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-        )->toArray();
-        self::sortEventParticipants($eventParticipantsArray);
-
-        return new ArrayCollection($eventParticipantsArray);
-    }
-
-    final public static function sortEventParticipants(array &$eventParticipants): void
-    {
-        usort(
-            $eventParticipants,
-            static function (EventParticipant $arg1, EventParticipant $arg2) {
-                if (!$arg1->getContact() || !$arg2->getContact()) {
-                    $cmpResult = 0;
-                } else {
-                    $cmpResult = strcmp($arg1->getContact()->getSortableContactName(), $arg2->getContact()->getSortableContactName());
-                }
-
-                return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
-            }
-        );
-    }
-
-    final public function getSubEvents(): Collection
-    {
-        return $this->subEvents ?? new ArrayCollection();
-    }
-
-    /**
-     * @param EventParticipant|null $eventParticipant
-     *
-     * @throws EventCapacityExceededException
-     */
-    final public function removeEventParticipant(?EventParticipant $eventParticipant): void
-    {
-        if ($eventParticipant && $this->eventParticipants->removeElement($eventParticipant)) {
-            $eventParticipant->setEvent(null);
-        }
     }
 
     final public function addEventParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
@@ -574,104 +398,46 @@ class Event
 
     final public function removeEventPrice(?EventPrice $eventPrice): void
     {
-        if ($eventPrice) {
+        if (null !== $eventPrice) {
             $this->eventPrices->removeElement($eventPrice);
         }
     }
 
     final public function removeEventCapacity(?EventCapacity $eventCapacity): void
     {
-        if ($eventCapacity) {
+        if (null !== $eventCapacity) {
             $this->eventCapacities->removeElement($eventCapacity);
         }
     }
 
     final public function removeEventRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if ($eventRegistrationRange) {
+        if (null !== $eventRegistrationRange) {
             $this->eventRegistrationRanges->removeElement($eventRegistrationRange);
         }
     }
 
-    final public function containsEventParticipantContact(AbstractContact $contact, EventParticipantType $eventParticipantType = null): bool
+    final public function getPrice(EventParticipantType $participantType): ?int
     {
-        return $this->getEventParticipantsByType($eventParticipantType)->exists(
-            fn(EventParticipant $participant) => $participant->getContact() && $contact->getId() === $participant->getContact()->getId()
-        );
-    }
-
-    final public function containsEventParticipantAppUser(AppUser $appUser, ?EventParticipantType $eventParticipantType = null): bool
-    {
-        return $this->getEventParticipantsByType($eventParticipantType)->exists(
-            static function (EventParticipant $eventParticipant) use ($appUser) {
-                if (!$eventParticipant->getContact()) {
-                    return false;
-                }
-                $participantAppUser = $eventParticipant->getContact()->getAppUser();
-                assert($participantAppUser instanceof AppUser);
-
-                return null !== $participantAppUser && $appUser->getId() === $participantAppUser->getId();
-            }
-        );
-    }
-
-    final public function containsEventParticipantPerson(Person $person): bool
-    {
-        foreach ($this->getActiveEventParticipants() as $eventParticipant) {
-            assert($eventParticipant instanceof EventParticipant);
-            $containedPerson = $eventParticipant->getContact();
-            if (!$containedPerson) {
-                continue;
-            }
-            assert($containedPerson instanceof Person);
-            if (null !== $containedPerson && $person->getId() === $containedPerson->getId()) {
-                return true;
+        $total = null;
+        foreach ($this->getEventPrices($participantType) as $price) {
+            assert($price instanceof EventPrice);
+            $total += $price->getNumericValue();
+            if ($price->isRelative() && null !== $this->getSuperEvent()) {
+                $total += $this->getSuperEvent()->getPrice($participantType);
             }
         }
 
-        return false;
+        return null !== $total && $total <= 0 ? 0 : $total;
     }
 
-    final public function getActiveEventParticipantsAmount(?EventParticipantType $eventParticipantType = null): int
+    public function getEventPrices(?EventParticipantType $participantType = null): Collection
     {
-        return $this->getEventParticipantsByType($eventParticipantType)->count();
-    }
-
-    final public function getPrice(EventParticipantType $eventParticipantType): int
-    {
-        if ($this->getPriceOfEvent($eventParticipantType) !== null) {
-            return $this->getPriceOfEvent($eventParticipantType);
+        if (null !== $participantType) {
+            return $this->getEventPrices()->filter(fn(EventPrice $price) => $price->isApplicableForEventParticipantType($participantType));
         }
 
-        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getPrice($eventParticipantType) : 0;
-    }
-
-    final public function getPriceOfEvent(EventParticipantType $eventParticipantType): ?int
-    {
-        $hasPrice = false;
-        $price = 0;
-        foreach ($this->getEventPrices() as $eventPrice) {
-            assert($eventPrice instanceof EventPrice);
-            if ($eventPrice->isApplicableForEventParticipantType($eventParticipantType)) {
-                $price += $eventPrice->getNumericValue();
-                $hasPrice = true;
-            }
-        }
-        if (!$hasPrice) {
-            return null;
-        }
-
-        return $price <= 0 ? 0 : $price;
-    }
-
-    final public function getEventPrices(): Collection
-    {
         return $this->eventPrices ?? new ArrayCollection();
-    }
-
-    final public function isPriceRecursiveFromParent(): bool
-    {
-        return $this->priceRecursiveFromParent ?? false;
     }
 
     final public function getDeposit(EventParticipantType $eventParticipantType): int
@@ -680,101 +446,58 @@ class Event
             return $this->getDepositOfEvent($eventParticipantType);
         }
 
-        return $this->isPriceRecursiveFromParent() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : 0;
+        return $this->isPriceRelative() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : 0;
     }
 
-    final public function getDepositOfEvent(EventParticipantType $eventParticipantType): ?int
+    final public function getDepositOfEvent(EventParticipantType $participantType): ?int
     {
-        $hasDeposit = false;
-        $depositValue = 0;
-        foreach ($this->getEventPrices() as $eventPrice) {
-            assert($eventPrice instanceof EventPrice);
-            if ($eventPrice->isApplicableForEventParticipantType($eventParticipantType)) {
-                $depositValue += $eventPrice->getDepositValue();
-                $hasDeposit = true;
+        $total = null;
+        foreach ($this->getEventPrices($participantType) as $price) {
+            assert($price instanceof EventPrice);
+            $total += $price->getDepositValue();
+            if ($price->isRelative() && null !== $this->getSuperEvent()) {
+                $total += $this->getSuperEvent()->getDeposit($participantType);
             }
         }
-        if (!$hasDeposit) {
-            return null;
-        }
 
-        return $depositValue <= 0 ? 0 : $depositValue;
+        return null !== $total && $total <= 0 ? 0 : $total;
     }
 
-    final public function getEventSeries(): ?EventSeries
+    final public function isPriceRelative(): bool
     {
-        return $this->eventSeries;
-    }
-
-    final public function setEventSeries(?EventSeries $eventSeries): void
-    {
-        $this->eventSeries = $eventSeries;
+        return $this->priceRelative ?? false;
     }
 
     final public function addEventWebContent(?EventWebContent $eventWebContent): void
     {
-        $existingOne = null;
-        if ($eventWebContent && $eventWebContent->getType()) {
-            $existingOne = $this->getEventWebContent($eventWebContent->getType());
+        if (null !== $eventWebContent) {
+            return;
         }
-        if ($existingOne) {
-            $this->removeEventWebContent($existingOne);
-        }
-        if ($eventWebContent && !$this->eventWebContents->contains($eventWebContent)) {
+        $this->removeEventWebContent($this->getEventWebContent($eventWebContent->getType()));
+        if (!$this->eventWebContents->contains($eventWebContent)) {
             $this->eventWebContents->add($eventWebContent);
         }
     }
 
-    final public function getEventWebContent(string $type = 'html'): ?EventWebContent
-    {
-        foreach ($this->getEventWebContents() as $eventWebContent) {
-            assert($eventWebContent instanceof EventWebContent);
-            if ($type === $eventWebContent->getType()) {
-                return $eventWebContent;
-            }
-        }
-
-        return null;
-    }
-
-    final public function getEventWebContents(): ?Collection
-    {
-        return $this->eventWebContents ?? new ArrayCollection();
-    }
-
     final public function removeEventWebContent(?EventWebContent $eventWebContent): void
     {
-        if ($eventWebContent) {
+        if (null !== $eventWebContent) {
             $this->eventWebContents->removeElement($eventWebContent);
         }
     }
 
-    final public function getOrganizer(): ?AbstractContact
+    final public function getEventWebContent(?string $type = 'html'): ?EventWebContent
     {
-        return $this->getEventParticipantsByTypeOfType(EventParticipantType::TYPE_ORGANIZER)->first();
+        return $this->getEventWebContents($type)->first();
     }
 
-    final public function getEventParticipantsByTypeOfType(
-        ?string $eventParticipantTypeOfType = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivated = true,
-        int $recursiveDepth = 0
-    ): Collection {
-        if ($eventParticipantTypeOfType) {
-            if ($recursiveDepth && $recursiveDepth > 0) {
-                $eventParticipants = $this->getActiveEventParticipants(null, $includeDeleted, $includeNotActivated, $recursiveDepth);
-            } else {
-                $eventParticipants = $this->getEventParticipants($includeDeleted, $includeNotActivated);
-            }
-            $eventParticipants = $eventParticipants->filter(
-                fn(EventParticipant $participant) => !$participant->getEventParticipantType() ? false : $eventParticipantTypeOfType === $participant->getEventParticipantType()->getType()
-            )->toArray();
-        } else {
-            $eventParticipants = $this->getEventParticipants($includeDeleted, $includeNotActivated)->toArray();
+    final public function getEventWebContents(?string $type = null): Collection
+    {
+        if (null !== $type) {
+            $this->getEventWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
         }
-        self::sortEventParticipants($eventParticipants);
 
-        return new ArrayCollection($eventParticipants);
+        return $this->eventWebContents ?? new ArrayCollection();
     }
 
     final public function getLocation(?bool $recursive = false): ?Place
@@ -802,6 +525,11 @@ class Event
         return $startDateTime === $maxDateTime ? null : $startDateTime;
     }
 
+    final public function getSubEvents(): Collection
+    {
+        return $this->subEvents ?? new ArrayCollection();
+    }
+
     final public function getEndDateTimeRecursive(): ?DateTime
     {
         $minDateTime = new DateTime(DateTimeUtils::MIN_DATE_TIME_STRING);
@@ -817,12 +545,12 @@ class Event
         return $endDateTime === $minDateTime ? null : $endDateTime;
     }
 
-    final public function getAllowedFlagsByType(?EventParticipantType $eventParticipantType = null): array
+    final public function getAllowedFlagsAggregatedByType(?EventParticipantType $eventParticipantType = null): array
     {
         $flags = [];
-        foreach ($this->getEventParticipantFlagInEventConnections($eventParticipantType) as $eventParticipantFlagInEventConnection) {
-            assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-            $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
+        foreach ($this->getEventParticipantFlagInEventConnections($eventParticipantType) as $flagInEventConnection) {
+            assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
+            $flag = $flagInEventConnection->getEventParticipantFlag();
             if ($flag) {
                 $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '';
                 $flags[$flagTypeId][] = $flag;
@@ -832,256 +560,63 @@ class Event
         return $flags;
     }
 
-    final public function getEventParticipantFlagInEventConnections(EventParticipantType $eventParticipantType = null, ?EventParticipantFlag $eventParticipantFlag = null): Collection
-    {
-        $this->eventParticipantFlagInEventConnections ??= new ArrayCollection();
-        if (!$eventParticipantType && !$eventParticipantFlag) {
-            return $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
+    final public function getEventParticipantFlagInEventConnections(
+        EventParticipantType $participantType = null,
+        ?EventParticipantFlag $participantFlag = null
+    ): Collection {
+        $out = $this->eventParticipantFlagInEventConnections ?? new ArrayCollection();
+        if (null !== $participantType) {
+            $out = $out->filter(
+                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantType() && $participantType->getId() === $c->getEventParticipantType()->getId()
+            );
+        }
+        if (null !== $participantFlag) {
+            $out = $out->filter(
+                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantFlag() && $participantFlag->getId() === $c->getEventParticipantFlag()->getId()
+            );
         }
 
-        return $this->eventParticipantFlagInEventConnections->filter(
-            static function (EventParticipantFlagInEventConnection $flagConn) use ($eventParticipantType, $eventParticipantFlag) {
-                if ($eventParticipantFlag && !($flagConn->getEventParticipantFlag() && $flagConn->getEventParticipantFlag()->getId() === $eventParticipantFlag->getId())) {
-                    return false;
-                }
-                if ($eventParticipantType && !($flagConn->getEventParticipantType() && $flagConn->getEventParticipantType()->getId() === $eventParticipantType->getId())) {
-                    return false;
-                }
-
-                return true;
-            }
-        );
+        return $out;
     }
 
     /**
-     * True if registrations for some participant type (or any if not specified) is allowed in some datetime (or now if not specified).
+     * True if registrations for specified participant type (or any if not specified) is allowed in some datetime (or now if not specified).
      *
-     * @param EventParticipantType $eventParticipantType
-     * @param DateTime|null        $referenceDateTime
+     * @param EventParticipantType $participantType
+     * @param DateTime|null        $dateTime
      *
      * @return bool
-     * @throws Exception
      */
-    final public function isRegistrationsAllowed(?EventParticipantType $eventParticipantType = null, ?DateTime $referenceDateTime = null): bool
+    final public function isRegistrationsAllowed(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): bool
     {
-        return $this->getEventRegistrationRanges()->filter(fn(EventRegistrationRange $registrationRange) => $registrationRange->isApplicable($eventParticipantType, $referenceDateTime))->count() > 0;
+        return $this->getEventRegistrationRanges($participantType, $dateTime)->count() > 0;
     }
 
-    final public function getEventRegistrationRanges(): Collection
+    final public function getEventRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): Collection
     {
+        if (null !== $participantType || null !== $dateTime) {
+            return $this->getEventRegistrationRanges()->filter(fn(EventRegistrationRange $range) => $range->isApplicable($participantType, $dateTime));
+        }
+
         return $this->eventRegistrationRanges ?? new ArrayCollection();
     }
 
     final public function __toString(): string
     {
-        $output = ''.$this->getShortName() ?? ''.$this->getName();
-        if ($this->getStartDate() && $this->getEndDate() && $this->getLengthInHours() > 24 && $this->getStartDate()->format('Y') === $this->getEndDate()->format('Y')) {
-            $output .= ' ('.$this->getStartDate()->format('d. m.');
-            $output .= ' až '.$this->getEndDate()->format('d. m.');
-            $output .= ' '.$this->getStartDate()->format('Y').')';
-        }
+        $range = $this->getRangeAsText();
 
-        return ''.$output;
+        return $this->getName().($range ? (' ('.$range.')') : null);
     }
 
-    final public function getEventParticipantFlagConnections(?EventParticipantType $eventParticipantType = null): Collection
-    {
-        $flagConnections = new ArrayCollection();
-        foreach ($this->getActiveEventParticipants($eventParticipantType) as $eventParticipant) {
-            assert($eventParticipant instanceof EventParticipant);
-            foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagConnection) {
-                assert($eventParticipantFlagConnection instanceof EventParticipantFlagNewConnection);
-                if (!$flagConnections->contains($eventParticipantFlagConnection)) {
-                    $flagConnections->add($eventParticipantFlagConnection);
-                }
-            }
-        }
-
-        return $flagConnections;
-    }
-
-    final public function getAllowedEventParticipantFlagRemainingAmount(?EventParticipantFlag $eventParticipantFlag, ?EventParticipantType $eventParticipantType): int
-    {
-        $allowedAmount = $this->getAllowedEventParticipantFlagAmount($eventParticipantFlag, $eventParticipantType);
-        $actualAmount = $this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag)->count();
-        $result = $allowedAmount - $actualAmount;
-
-        return $result < 0 ? 0 : $result;
-    }
-
-    final public function getAllowedEventParticipantFlagAmount(?EventParticipantFlag $eventParticipantFlag, ?EventParticipantType $eventParticipantType): int
+    final public function getAllowedEventParticipantFlagAmount(?EventParticipantFlag $participantFlag, ?EventParticipantType $participantType): int
     {
         $allowedAmount = 0;
-        foreach ($this->getEventParticipantFlagInEventConnections($eventParticipantType, $eventParticipantFlag) as $flagInEventConnection) {
+        foreach ($this->getEventParticipantFlagInEventConnections($participantType, $participantFlag) as $flagInEventConnection) {
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
             $allowedAmount += $flagInEventConnection->getActive() ? $flagInEventConnection->getMaxAmountInEvent() : 0;
         }
 
         return $allowedAmount;
-    }
-
-    /**
-     * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
-     *
-     * array[flagTypeSlug]['flagType']
-     * array[flagTypeSlug]['flags'][flagSlug]['flag']
-     * array[flagTypeSlug]['flags'][flagSlug]['eventParticipants']
-     *
-     * @param EventParticipantType|null $eventParticipantType
-     * @param bool|null                 $includeDeleted
-     * @param bool|null                 $includeNotActivatedUsers
-     * @param int|null                  $recursiveDepth Default is 1 for root events, 0 for others.
-     *
-     * @return array
-     */
-    final public function getActiveEventParticipantsAggregatedByFlags(
-        ?EventParticipantType $eventParticipantType = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = true,
-        ?int $recursiveDepth = null
-    ): array {
-        if (null === $recursiveDepth) {
-            $recursiveDepth = $this->getSuperEvent() ? 0 : 1;
-        }
-        $output = [];
-        $eventParticipants = $this->getActiveEventParticipants($eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth);
-        if ($eventParticipantType) {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagInEventConnection) {
-                    assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-                    $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
-                    if ($flag) {
-                        $flagType = $flag->getEventParticipantFlagType();
-                        $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
-                        $flagSlug = $flag->getSlug() ?? '';
-                        $output[$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
-                        if (!isset($output[$flagTypeSlug]['flagType']) || $output[$flagTypeSlug]['flagType'] !== $flagType) {
-                            $output[$flagTypeSlug]['flagType'] = $flagType;
-                        }
-                        if (!isset($output[$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
-                            $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
-                        }
-                    }
-                }
-            }
-        } else {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                $eventParticipantType = $eventParticipant->getEventParticipantType();
-                $eventParticipantTypeSlug = $eventParticipantType->getSlug();
-                $eventParticipantTypeArray = [
-                    'id'        => $eventParticipantType->getId(),
-                    'name'      => $eventParticipantType->getName(),
-                    'shortName' => $eventParticipantType->getShortName(),
-                ];
-                foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagInEventConnection) {
-                    assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-                    $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
-                    if ($flag) {
-                        $flagType = $flag->getEventParticipantFlagType();
-                        $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
-                        $flagArray = [
-                            'id'        => $flag->getId(),
-                            'slug'      => $flag->getSlug(),
-                            'name'      => $flag->getName(),
-                            'shortName' => $flag->getShortName(),
-                            'color'     => $flag->getColor(),
-                        ];
-                        $flagTypeArray = [
-                            'id'        => $flagType->getId(),
-                            'slug'      => $flagType->getSlug(),
-                            'name'      => $flagType->getName(),
-                            'shortName' => $flagType->getShortName(),
-                        ];
-                        $flagSlug = $flag->getSlug() ?? '';
-                        $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
-                        if (isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']) && $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] > 0) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']++;
-                        } else {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] = 1;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType']) || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagTypeArray) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] = $flagTypeArray;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flagArray) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flagArray;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType']) || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantTypeArray) {
-                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $eventParticipantTypeArray;
-                        }
-                    }
-                }
-            }
-        }
-
-        return $output;
-    }
-
-    /**
-     * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
-     *
-     * array[schoolSlug]['school']
-     * array[schoolSlug]['eventParticipants'][]
-     *
-     * @param EventParticipantType|null $eventParticipantType
-     * @param bool|null                 $includeDeleted
-     * @param bool|null                 $includeNotActivatedUsers
-     * @param int|null                  $recursiveDepth Default is 1 for root events, 0 for others.
-     *
-     * @return array
-     */
-    final public function getActiveEventParticipantsAggregatedBySchool(
-        ?EventParticipantType $eventParticipantType = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivatedUsers = false,
-        ?int $recursiveDepth = null
-    ): array {
-        if (null === $recursiveDepth) {
-            $recursiveDepth = $this->getSuperEvent() ? 0 : 1;
-        }
-        $output = [];
-        $eventParticipants = $this->getActiveEventParticipants($eventParticipantType, $includeDeleted, $includeNotActivatedUsers, $recursiveDepth);
-        if ($eventParticipantType) {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                $person = $eventParticipant->getContact();
-                if ($person instanceof Person) { // Fix for organizations!
-                    foreach ($person->getStudies() as $study) {
-                        assert($study instanceof Position);
-                        $school = $study->getOrganization();
-                        $schoolSlug = $school ? $school->getSlug() : '';
-                        $output[$schoolSlug]['eventParticipants'][] = $eventParticipant;
-                        if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['school'] !== $school) {
-                            $output[$schoolSlug]['school'] = $school;
-                        }
-                    }
-                }
-            }
-        } else {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                $eventParticipantType = $eventParticipant->getEventParticipantType();
-                $eventParticipantTypeSlug = $eventParticipantType->getSlug();
-                $person = $eventParticipant->getContact();
-                if ($person instanceof Person) { // Fix for organizations!
-                    foreach ($person->getStudies() as $study) {
-                        assert($study instanceof Position);
-                        $school = $study->getOrganization();
-                        $schoolSlug = $school ? $school->getSlug() : '';
-                        $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['eventParticipants'][] = $eventParticipant;
-                        if (!isset($output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school']) || $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school'] !== $school) {
-                            $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school'] = $school;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType']) || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantType) {
-                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $eventParticipantType;
-                        }
-                    }
-                }
-            }
-        }
-
-        return $output;
     }
 
     final public function getEventFlagConnections(): ?Collection
@@ -1096,4 +631,78 @@ class Event
         }
     }
 
+    public function getGeneratedSlug(): string /// TODO: Used somewhere?
+    {
+        if ($this->isBatchOrYear() && $this->getStartYear()) {
+            return $this->getStartYear().($this->isBatch() ? '-'.$this->getSeqId() : null);
+        }
+
+        return (string)$this->getId();
+    }
+
+    public function isBatchOrYear(): bool
+    {
+        return $this->isYear() || $this->isBatch();
+    }
+
+    public function isYear(): bool
+    {
+        return $this->getEventType() && EventType::YEAR_OF_EVENT === $this->getEventType();
+    }
+
+    final public function getEventType(): ?EventType
+    {
+        return $this->eventType;
+    }
+
+    final public function setEventType(?EventType $eventType): void
+    {
+        $this->eventType = $eventType;
+    }
+
+    public function isBatch(): bool
+    {
+        return $this->getEventType() && EventType::BATCH_OF_EVENT === $this->getEventType();
+    }
+
+    public function getStartYear(): ?int
+    {
+        return (int)$this->getStartByFormat(DateTimeUtils::DATE_TIME_YEARS);
+    }
+
+    public function getSeqId(): ?int
+    {
+        return $this->getEventSeries() ? $this->getEventSeries()->getSeqId($this) : null;
+    }
+
+    final public function getEventSeries(): ?EventSeries
+    {
+        return $this->eventSeries;
+    }
+
+    final public function setEventSeries(?EventSeries $eventSeries): void
+    {
+        if ($this->eventSeries && $eventSeries !== $this->eventSeries) {
+            $this->eventSeries->removeEvent($this);
+        }
+        $this->eventSeries = $eventSeries;
+        if ($eventSeries && $this->eventSeries !== $eventSeries) {
+            $eventSeries->addEvent($this);
+        }
+    }
+
+    public function isSuperEvents(?Event $event, ?bool $recursive = true): bool
+    {
+        return in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
+    }
+
+    public function getSuperEvents(): array
+    {
+        return null === $this->getSuperEvent() ? [...$this->getSuperEvents(), $this->getSuperEvent()] : [$this];
+    }
+
+    public function isSuperEventRequired(?EventParticipantType $participantType): bool
+    {
+        return $this->getEventPrices($participantType)->exists(fn(EventPrice $price) => $price->isSuperEventRequired());
+    }
 }

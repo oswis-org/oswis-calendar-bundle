@@ -1,4 +1,7 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -23,7 +26,6 @@ class EventParticipantFlagNewConnection
      * Event contact flag.
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
-     *     inversedBy="eventParticipantFlagNewConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -50,8 +52,12 @@ class EventParticipantFlagNewConnection
      *
      * @throws EventCapacityExceededException
      */
-    public function __construct(?EventParticipantFlag $eventParticipantFlag = null, ?EventParticipant $eventParticipant = null, ?string $textValue = null, ?DateTime $dateTime = null)
-    {
+    public function __construct(
+        ?EventParticipantFlag $eventParticipantFlag = null,
+        ?EventParticipant $eventParticipant = null,
+        ?string $textValue = null,
+        ?DateTime $dateTime = null
+    ) {
         $this->setEventParticipantFlag($eventParticipantFlag);
         $this->setEventParticipant($eventParticipant);
         $this->setTextValue($textValue);
@@ -86,12 +92,6 @@ class EventParticipantFlagNewConnection
 
     final public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
     {
-        if ($this->eventParticipantFlag && $eventParticipantFlag !== $this->eventParticipantFlag) {
-            $this->eventParticipantFlag->removeEventParticipantFlagConnection($this);
-        }
-        if ($eventParticipantFlag && $this->eventParticipantFlag !== $eventParticipantFlag) {
-            $this->eventParticipantFlag = $eventParticipantFlag;
-            $eventParticipantFlag->addEventParticipantFlagConnection($this);
-        }
+        $this->eventParticipantFlag = $eventParticipantFlag;
     }
 }

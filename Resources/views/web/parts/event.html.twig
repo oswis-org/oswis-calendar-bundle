@@ -1,0 +1,254 @@
+<div class="row text-justify">
+    <div class="col-lg-9" itemscope itemtype="http://schema.org/Event">
+        <span itemprop="image" content="{{ absolute_url(asset(event.image)) }}"></span>
+        <header><h2 class="text-uppercase" itemprop="name">{{ event.name }}</h2></header>
+        {% include 'web/parts/years-nav.html.twig' %}
+        {% if year == 2019 %}
+        <h3>8. ročník Seznamováku UP</h3>
+        <p>
+            <span itemprop="startDate" content="{{ yearContent.startDate|date("Y-m-d\\TH:i:sP") }}"></span>
+            <span itemprop="endDate" content="{{ yearContent.endDate|date("Y-m-d\\TH:i:sP") }}"></span>
+            <strong>První&nbsp;turnus:</strong> 4.&nbsp;-&nbsp;8.&nbsp;9.&nbsp;2019<br>
+            <strong>Druhý&nbsp;turnus:</strong> 8.&nbsp;-&nbsp;12.&nbsp;9.&nbsp;2019<br>
+            <!-- <strong>Uzávěrka&nbsp;podávání&nbsp;přihlášek:</strong> 31.&nbsp;7.&nbsp;2019 -->
+            <!--&nbsp;<a href="{{ path('registrace') }}" class="badge badge-danger">
+                zbývá&nbsp;již&nbsp;jen&nbsp;-1&nbsp;dní!
+                </a>-->
+            <span itemprop="performer" itemscope itemtype="http://schema.org/PerformingGroup">
+                <span itemprop="name" content="STUDENTLIFE z.s."></span>
+            </span>
+            <span itemprop="description" content="
+                Každoroční zážitkový a vzdělávací pobyt pro všechny nastupující studenty Univerzity Palackého.
+                Spousty přednášek, informací, sportovního i kulturního vyžití nebo třeba deskových her...
+            "></span>
+        </p>
+        <!--
+        <div class="row" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+            <div class="col-sm-6 col-md-4">
+                <p>
+                    <strong>Záloha:</strong> <a href="{{ path('registrace') }}" class="badge badge-info"> 1190,- Kč</a>
+                    <br>
+                    <small>(splatná a vratná do 31. 7.)</small>
+                </p>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <p>
+                    <strong>Doplatek:</strong>
+                    <a itemprop="url" href="{{ absolute_url(path('registrace')) }}"
+                       content="{{ absolute_url(path('registrace')) }}"
+                       class="badge badge-info"> 2000,- Kč</a>
+                    <br>
+                    <small>(splatný do 31. 8.)</small>
+                </p>
+            </div>
+            <div class="col-sm-12 col-md-4 text-left text-sm-center text-md-left">
+                <p>
+                    <strong>Celkem:</strong>
+                    <a href="{{ path('registrace') }}" class="badge badge-info">
+                        <span itemprop="price">3190</span><span itemprop="priceCurrency" content="CZK">,- Kč</span>
+                    </a>
+                </p>
+                <span itemprop="name" content="Přihláška na Seznamovák UP"></span>
+                <span itemprop="availability" content="http://schema.org/InStock"></span>
+                <span itemprop="validFrom" content="2019-05-25T16:20+00:00"></span>
+                <span itemprop="validThrough" content="2019-07-31T23:59+00:00"></span>
+            </div>
+            <div class="col-12">
+                <p>
+                    <small>V případě ubytování hotelového typu s vlastním soc. zařízením příplatek 500,- Kč.</small>
+                </p>
+            </div>
+        </div>
+-->
+    </div>
+    <div class="d-lg-none col-md-4 col-sm-3 col-xs-2 d-print-none"></div>
+    <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8 text-uppercase center-block text-center d-print-none">
+        <div id="small-banner" style="background-image: url('{{ asset('img/tlacitka/small/padak.jpg') }}')">
+            <a href="{{ path('registrace') }}">
+                Pojeď s námi!
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row text-justify">
+    <div class="col-lg-12">
+        <h3>Místo a ubytování <a href="http://moravacamp.cz" class="badge badge-info">Web areálu</a></h3>
+        <p>
+            Akce se letos nově konala v kempu Morava poblíž Mohelnice.
+            <!-- Ubytování je zajištěno v dřevěných chatkách po šesti až osmi osobách. V areálu je k dispozici
+            přednáškový sál, jídelna, párty stan, gril, bar nebo také hřiště pro různé sporty a plavecký bazén. -->
+        </p>
+        <p>
+            <strong>K dispozici byly dva typy ubytování:</strong>
+        </p>
+        <ul>
+            <li>
+                kempové ubytování v chatkách
+            </li>
+            <li>
+                ubytování hotelového typu s vlastním soc. zařízením (za příplatek)
+            </li>
+        </ul>
+    </div>
+    <div class="col-lg-12">
+        <h3>Stravování</h3>
+        <p>
+            Stravování bylo zajištěno formou plné penze.
+            <!-- <br> <small>(je&nbsp;možné&nbsp;upravit&nbsp;i&nbsp;dle&nbsp;zdravotních&nbsp;omezení)</small>-->
+        </p>
+    </div>
+    <!--
+    <div class="col-lg-12">
+        <h3>Doprava</h3>
+        <p>
+            Na místo konání akce je možné se dopravit buď samostatně (můžeme zařídit odvoz od hromadné dopravy) nebo společně,
+            námi objednávaným autobusem od Přírodovědecké fakulty z Olomouce.
+            Cena, čas odejezdu a přesné místo budou upřesněny později v závislosti na počtu cestujících.
+        </p>
+    </div>
+    -->
+    <div class="col-lg-12">
+        <h3>Program a aktivity</h3>
+        <p>
+            Po celou dobu bylo k dispozici nepřeberné množství aktivit z nejrůznějších oblastí, od přednášek, přes
+            teambuildingové aktivity a sporty, až po párty, táboráky a další společenský program. Účast na každé z
+            aktivit je naprosto dobrovolá a každý jedinec si může vybrat, co mu více vyhovuje (nicméně všechny jsou
+            silně doporučované).
+        </p>
+    </div>
+    <div class="col-lg-12">
+        <h3>Vzdělávací aktivity</h3>
+        <p>
+            Máme připravenou spoustu přednášek, na kterých se dozvíš užitečné informace jak o studiu,
+            tak i životě v Olomouci. Dozvíš se, jak využívat informační technologie na UP, jak se přihlásit
+            do Portálu UP a STAGu, jak se připojit k bezdrátovým sítím, jakých pravidel se držet při
+            tvorbě a odevzdávání seminárních prací nebo jak si půjčit knihu v některé z olomouckých knihoven.
+            Další přednášky jsou zaměřené na různé subjekty a instituce spojené s Univerzitou Palackého,
+            takže získáš přehled třeba o tom, ke kterému spolku se můžeš zapojit nebo kde si najít brigádu při studiu.
+        </p>
+        <h4>Stručný obsah přednášek</h4>
+        <div class="row bottom-margin-medium top-margin-small clearfix info-list">
+            <ul class="col-lg-4 col-md-6 no-bottom-margin">
+                <li>ICT na UP, Portál UP, STAG</li>
+                <li>Koleje a menzy</li>
+                <li>Knihovny</li>
+                <li>Stipendia</li>
+                <li>Seminární práce</li>
+            </ul>
+            <ul class="col-lg-4 col-md-6 no-bottom-margin">
+                <li>Komunikační dovednosti</li>
+                <li>Zahraniční pobyty, Erasmus</li>
+                <li>Kam v Olomouci</li>
+                <li>UPoint</li>
+                <li>Akademik Sport Centrum UP</li>
+            </ul>
+            <ul class="col-lg-4 col-md-6 no-bottom-margin">
+                <li>Academia Film Olomouc</li>
+                <li>Pevnost Poznání</li>
+                <!--<li>Rekola</li>-->
+                <li>Studentské organizace</li>
+            </ul>
+        </div>
+        <p>A nejednou už za námi dojel i samotný pan rektor a není vyloučeno, že se ukáže i letos.</p>
+    </div>
+    <div class="col-lg-12">
+        <h3>Sportovní aktivity</h3>
+        <div class="row bottom-margin-medium top-margin-small clearfix info-list">
+            <ul class="col-lg-4 col-md-6 no-bottom-margin">
+                <li>Kinball</li>
+                <li>Fotbal</li>
+                <li>Volejbal</li>
+                <li>Softbal</li>
+                <li>Nohejbal</li>
+            </ul>
+            <ul class="col-lg-4 col-md-6 no-bottom-margin">
+                <li>Aerobik</li>
+                <li>Zumba</li>
+                <li>Lukostřelba</li>
+                <li>Badminton</li>
+                <li>Stolní tenis</li>
+            </ul>
+            <ul class="col-lg-4 col-md-6 no-bottom-margin">
+                <li>Skákací boty</li>
+                <!--<li>Paintball</li>-->
+                <li>A další...</li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-12">
+        <h3>Teambuilding</h3>
+        <p>
+            Každý den byla možnost se zúčastnit nejrůznějších aktivit pro seznámení a navázání pozitivních vztahů, od
+            těch nejtradičnějších až po ty, se kterými jste se třeba ještě nesetkali.
+        </p>
+    </div>
+    <div class="col-lg-12">
+        <h3>Večerní program</h3>
+        <p>
+            Pro ty, kteří nechtěli poslední letní noci před začátkem školy prospat, bylo připraveno vždy hned několik
+            různých možností zábavy. Řadí se mezi ně klasické i tématické párty, táboráky s hudebními nástroji,
+            deskové hry, promítání filmů nebo večery plné scének a her.
+        </p>
+    </div>
+
+    <div class="col-lg-12">
+        <h3>Fotogalerie</h3>
+        <p>
+            Fotogalerii z letošního ročníku naleznete na <a href="https://drive.google.com/drive/folders/14urtklZYLrY6EDeR_lZTOd_hpVLqCWkR" target="_blank" title="Fotogalerie">Google
+                Disku</a>.
+        </p>
+    </div>
+
+
+    {% else %}
+
+    {% autoescape false %}
+        <span itemprop="startDate" content="{{ yearContent.startDate|date("Y-m-d\\TH:i:sP") }}"></span>
+        <span itemprop="endDate" content="{{ yearContent.endDate|date("Y-m-d\\TH:i:sP") }}"></span>
+        <span itemprop="description" content="Každoroční zážitkový a vzdělávací pobyt
+                pro všechny nastupující studenty Univerzity Palackého. Spousty přednášek, informací,
+                sportovního i kulturního vyžití nebo třeba deskových her..."></span>
+        <span itemprop="performer" itemscope itemtype="http://schema.org/PerformingGroup">
+                <span itemprop="name" content="STUDENTLIFE z.s."></span>
+            </span>
+        {% if yearContent.startDate|date("Y") > 2018 %}
+            <span itemprop="location" itemscope itemtype="http://schema.org/Place">
+                <span itemprop="name" content="Kemp Morava, Mohelnice"></span>&nbsp;
+                <span content="http://moravacamp.cz" itemprop="url"></span>
+                <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                    <span itemprop="name" content="Kemp Morava"></span>
+                    <span itemprop="streetAddress" content="Petra Bezruče 795/13"></span>
+                    <span itemprop="addressLocality" content="Mohelnice"></span>
+                    <span itemprop="postalCode" content="789 85"></span>
+                    <span itemprop="addressRegion" content="Mohelnice"></span>
+                    <span itemprop="url" content="http://moravacamp.cz"></span>
+                </span>
+            </span>
+        {% else %}
+            <span itemprop="location" itemscope itemtype="http://schema.org/Place">
+                <span itemprop="name" content="RS&nbsp;Jiskra, Náměšť&nbsp;nad&nbsp;Oslavou"></span>&nbsp;
+                <span content="http://rsjiskra.cz" itemprop="url"></span>
+                <span itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                    <span itemprop="name" content="RS Jiskra"></span>
+                    <span itemprop="streetAddress" content="Velké pole 47"></span>
+                    <span itemprop="addressLocality" content="Kralice nad Oslavou"></span>
+                    <span itemprop="postalCode" content="675 71"></span>
+                    <span itemprop="addressRegion" content="Náměšť nad Oslavou"></span>
+                    <span itemprop="url" content="http://www.rsjiskra.cz"></span>
+                </span>
+            </span>
+        {% endif %}
+    {% endautoescape %}
+</div>
+<div class="col-lg-12 text-justify">
+    {% if event.eventWebContent is defined and event.eventWebContent.textValue is defined and event.eventWebContent.textValue %}
+        {% autoescape false %}
+            {{ event.eventWebContent.textValue }}
+        {% endautoescape %}
+    {% endif %}
+</div>
+
+{% endif %}
+
+</div>
+

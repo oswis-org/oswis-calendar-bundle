@@ -1,7 +1,10 @@
-<?php
+<?php /** @noinspection MethodShouldBeFinalInspection */
+
+/** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
+use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -23,7 +26,12 @@ class EventPrice
     use TaxRateTrait;
     use DepositValueTrait;
 
-    // TODO: Dates missing!
+    // TODO: Date range missing!
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected ?bool $superEventRequired;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -34,8 +42,18 @@ class EventPrice
      */
     protected ?EventParticipantType $eventParticipantType = null;
 
-    public function __construct(?Nameable $nameable = null, ?EventParticipantType $eventParticipantType = null, ?int $numericValue = null, ?int $taxRate = null, ?int $depositValue = null)
-    {
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    protected ?bool $isRelative = null;
+
+    public function __construct(
+        ?Nameable $nameable = null,
+        ?EventParticipantType $eventParticipantType = null,
+        ?int $numericValue = null,
+        ?int $taxRate = null,
+        ?int $depositValue = null
+    ) {
         $this->setEventParticipantType($eventParticipantType);
         $this->setNumericValue($numericValue);
         $this->setTaxRate($taxRate);
@@ -56,5 +74,35 @@ class EventPrice
     final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
         $this->eventParticipantType = $eventParticipantType;
+    }
+
+    public function isRelative(): bool
+    {
+        return $this->getIsRelative();
+    }
+
+    public function getIsRelative(): bool
+    {
+        return $this->isRelative ?? false;
+    }
+
+    public function setIsRelative(?bool $isRelative): void
+    {
+        $this->isRelative = $isRelative;
+    }
+
+    public function isSuperEventRequired(): ?bool
+    {
+        return $this->getSuperEventRequired();
+    }
+
+    public function getSuperEventRequired(): ?bool
+    {
+        return $this->superEventRequired;
+    }
+
+    public function setSuperEventRequired(?bool $superEventRequired): void
+    {
+        $this->superEventRequired = $superEventRequired;
     }
 }

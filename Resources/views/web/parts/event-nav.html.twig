@@ -1,0 +1,11 @@
+<nav>
+    <h4 class="badges clearfix">
+        <a href="{{ path('faq') }}" class="badge badge-warning">Časté dotazy</a>
+        {% for oneYear in years %}
+            <a href="{{ path('informace', {'year': oneYear.startDate|date("Y")}) }}"
+               class="badge {{ year is defined and year==oneYear.startDate|date("Y") ? 'badge-success' : 'badge-light' }}">
+                {{ oneYear.startDate|date("Y") }}
+            </a>
+        {% endfor %}
+    </h4>
+</nav>

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @noinspection RedundantDocCommentTagInspection
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\EventSubscriber;
 
@@ -36,7 +40,6 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
      * @param ViewEvent $event
      *
      * @throws Exception
-     * @noinspection PhpUnused
      */
     public function postWrite(ViewEvent $event): void
     {
@@ -53,7 +56,6 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
      *
      * @throws OswisException
      * @throws SuspiciousOperationException
-     * @noinspection PhpUnused
      */
     public function postValidate(ViewEvent $event): void
     {

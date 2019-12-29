@@ -1,4 +1,7 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
 
@@ -13,7 +16,7 @@ abstract class AbstractEventFlagType
     use TypeTrait;
 
     /**
-     * Minimal amount of flags used.
+     * Minimal amount of flags used in one EventParticipant.
      * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
@@ -26,14 +29,8 @@ abstract class AbstractEventFlagType
      */
     protected ?int $maxInEventParticipant = null;
 
-    /**
-     * @return array<string>
-     */
     abstract public static function getAllowedTypesDefault(): array;
 
-    /**
-     * @return array<string>
-     */
     abstract public static function getAllowedTypesCustom(): array;
 
     final public function isInRangeInEventParticipant(int $amount): bool
@@ -41,33 +38,21 @@ abstract class AbstractEventFlagType
         return $amount >= $this->getMinInEventParticipant() && $amount <= $this->getMaxInEventParticipant();
     }
 
-    /**
-     * @return int|null
-     */
     final public function getMinInEventParticipant(): ?int
     {
         return $this->minInEventParticipant;
     }
 
-    /**
-     * @param int|null $minInEventParticipant
-     */
     final public function setMinInEventParticipant(?int $minInEventParticipant): void
     {
         $this->minInEventParticipant = $minInEventParticipant;
     }
 
-    /**
-     * @return int|null
-     */
     final public function getMaxInEventParticipant(): ?int
     {
         return $this->maxInEventParticipant;
     }
 
-    /**
-     * @param int|null $maxInEventParticipant
-     */
     final public function setMaxInEventParticipant(?int $maxInEventParticipant): void
     {
         $this->maxInEventParticipant = $maxInEventParticipant;

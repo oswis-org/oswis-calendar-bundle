@@ -28,12 +28,12 @@ class EventParticipantTypeInEventConnectionService
             $entity = new EventParticipantTypeInEventConnection($eventParticipantType, $event);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event participant type in event connection (by manager): '.$entity->getId().'.';
+            $infoMessage = 'CREATE: Created event participant type in event connection (by service): '.$entity->getId().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event participant type in event connection not created (by manager): '.$e->getMessage()) : null;
+            $this->logger ? $this->logger->info('ERROR: Event event participant type in event connection not created (by service): '.$e->getMessage()) : null;
 
             return null;
         }

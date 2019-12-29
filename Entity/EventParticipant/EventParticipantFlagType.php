@@ -5,6 +5,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use InvalidArgumentException;
 use Zakjakub\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
@@ -53,11 +54,20 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventParticipantFlagType extends AbstractEventFlagType
 {
-    public function __construct(?Nameable $nameable = null, ?int $minFlagsAllowed = null, ?int $maxFlagsAllowed = null)
+    /**
+     * @param Nameable|null $nameable
+     * @param string|null   $type
+     * @param int|null      $minFlagsAllowed
+     * @param int|null      $maxFlagsAllowed
+     *
+     * @throws InvalidArgumentException
+     */
+    public function __construct(?Nameable $nameable = null, ?string $type = null, ?int $minFlagsAllowed = null, ?int $maxFlagsAllowed = null)
     {
         $this->setFieldsFromNameable($nameable);
         $this->setMinInEventParticipant($minFlagsAllowed);
         $this->setMaxInEventParticipant($maxFlagsAllowed);
+        $this->setType($type);
     }
 
     public static function getAllowedTypesDefault(): array

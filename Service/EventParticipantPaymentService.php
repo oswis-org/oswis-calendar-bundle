@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection RedundantDocCommentTagInspection */
 
 namespace Zakjakub\OswisCalendarBundle\Service;
 
@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
+use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
@@ -36,14 +37,22 @@ class EventParticipantPaymentService
 
     protected LoggerInterface $logger;
 
-    protected OswisCoreSettingsProvider $oswisCoreSettings;
+    protected OswisCoreSettingsProvider $coreSettings;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger, OswisCoreSettingsProvider $oswisCoreSettings)
-    {
+    protected EventParticipantService $participantService;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        LoggerInterface $logger,
+        OswisCoreSettingsProvider $oswisCoreSettings,
+        EventParticipantService $participantService
+    ) {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
-        $this->oswisCoreSettings = $oswisCoreSettings;
+        $this->coreSettings = $oswisCoreSettings;
+        $this->participantService = $participantService;
     }
 
     final public function createFromCsv(
@@ -70,7 +79,8 @@ class EventParticipantPaymentService
         $currencyAllowed = $currencyAllowed ?? 'CZK';
         $this->logger->info('CSV_PAYMENT_START');
         // $csvRow = null;
-        $eventParticipants = $event->getEventParticipantsByTypeOfType(
+        $eventParticipants = $this->participantService->getEventParticipantsByTypeOfType(
+            $event,
             $eventParticipantTypeOfType,
             true,
             true,
@@ -157,7 +167,7 @@ class EventParticipantPaymentService
                     $eventParticipant = $filteredEventParticipants->first();
                 }
                 assert($eventParticipant instanceof EventParticipant);
-                if (empty($eventParticipant)) {
+                if (null === $eventParticipant) {
                     $this->logger->info("CSV_PAYMENT_FAILED: ERROR: EventParticipant with VS ($csvVariableSymbol) not found; CSV: $csvRow;");
                     $failedPayments[] = $csvRow.' [VS not found (2. step)]';
                     continue;
@@ -214,11 +224,11 @@ class EventParticipantPaymentService
             } else {
                 $name = $entity->getEventParticipant()->getId();
             }
-            $this->logger->info('CREATE: Created event participant payment (by manager): '.$entity->getId().' '.$name.'.');
+            $this->logger->info('CREATE: Created event participant payment (by service): '.$entity->getId().' '.$name.'.');
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Event participant payment not created (by manager): '.$e->getMessage());
+            $this->logger->info('ERROR: Event participant payment not created (by service): '.$e->getMessage());
 
             return null;
         }
@@ -234,69 +244,66 @@ class EventParticipantPaymentService
     final public function sendConfirmation(EventParticipantPayment $payment = null): void
     {
         try {
-            if (!$payment) {
-                throw new NotFoundHttpException('Platba nenalezena.');
+            if (null === $payment || !($payment instanceof EventParticipantPayment)) {
+                throw new NotFoundHttpException('Platba neexistuje.');
             }
-            assert($payment instanceof EventParticipantPayment);
             $eventParticipant = $payment->getEventParticipant();
             if (!$eventParticipant || $eventParticipant->isDeleted()) {
-                $this->logger->notice('Not sending payment confirmation - eventParticipant is deleted.');
+                $this->logger->notice('Not sending payment confirmation because eventParticipant is deleted.');
 
                 return;
             }
             $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
             $contact = $eventParticipant->getContact();
-            if ($payment->getNumericValue() < 0) {
-                $title = 'Vrácení/oprava platby';
-            } else {
-                $title = 'Přijetí platby';
-            }
+            $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
             if ($contact instanceof Person) {
                 $salutationName = $contact->getSalutationName() ?? '';
                 $a = $contact->getCzechSuffixA() ?? '';
             } else {
+                assert($contact instanceof Organization);
                 // TODO: Correct salutation (contact of organization).
                 $salutationName = $contact ? $contact->getContactName() : '';
                 $a = '';
             }
-            if ($contact->getAppUser()) {
-                $name = $contact->getAppUser()->getFullName();
-                $eMail = $contact->getAppUser()->getEmail();
-            } else {
-                $name = $contact->getContactName();
-                $eMail = $contact->getEmail();
-            }
-            $mailSettings = $this->oswisCoreSettings->getEmail();
+            $name = $contact->getAppUser() ? $contact->getAppUser()->getFullName() : $contact->getContactName();
+            $eMail = $contact->getAppUser() ? $contact->getAppUser()->getEmail() : $contact->getEmail();
+            $mailConfig = $this->coreSettings->getEmail();
             $mailData = array(
                 'salutationName'   => $salutationName,
                 'a'                => $a,
                 'f'                => $formal,
                 'payment'          => $payment,
                 'eventParticipant' => $payment->getEventParticipant(),
-                'oswis'            => $this->oswisCoreSettings,
+                'oswis'            => $this->coreSettings,
                 'logo'             => 'cid:logo',
             );
             $archive = new Address(
-                $mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? ''
+                $mailConfig['archive_address'] ?? '', self::mimeEnc($mailConfig['archive_name'] ?? '') ?? ''
             );
-            $email = (new TemplatedEmail())->to(new Address($eMail ?? '', EmailUtils::mime_header_encode($name ?? '') ?? ''))->bcc($archive)->subject(
-                EmailUtils::mime_header_encode($title)
-            )->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+            $email = new TemplatedEmail();
+            $email->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
+            $email->bcc($archive)->subject(self::mimeEnc($title));
+            $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
-            $payment->setMailConfirmationSend('event-participant-payment-manager');
+            $payment->setMailConfirmationSend('event-participant-payment-service');
             $this->em->persist($payment);
             $this->em->flush();
-        } catch (Exception $e) {
-            $message = 'Problém s odesláním potvrzení o platbě (při vytváření zprávy). ';
+        } catch (TransportExceptionInterface $e) {
+            $message = 'Problém s odesláním potvrzení o platbě. ';
             $this->logger->error($message.$e->getMessage());
             $this->logger->error($e->getTraceAsString());
             throw new OswisException($message);
-        } catch (TransportExceptionInterface $e) {
-            $message = 'Problém s odesláním potvrzení o platbě (při odeslání zprávy). ';
+        } catch (Exception $e) {
+            $message = 'Problém při vytváření potvrzení o platbě. ';
             $this->logger->error($message.$e->getMessage());
             $this->logger->error($e->getTraceAsString());
             throw new OswisException($message);
         }
+    }
+
+    private static function mimeEnc(string $mime): string
+    {
+        return EmailUtils::mime_header_encode($mime);
     }
 
     /**
@@ -310,24 +317,26 @@ class EventParticipantPaymentService
     {
         try {
             $title = 'Report CSV plateb';
-            $mailSettings = $this->oswisCoreSettings->getEmail();
+            $mailConfig = $this->coreSettings->getEmail();
             $mailData = array(
                 'successfulPayments' => $successfulPayments,
                 'failedPayments'     => $failedPayments,
-                'oswis'              => $this->oswisCoreSettings,
+                'oswis'              => $this->coreSettings,
                 'logo'               => 'cid:logo',
             );
-            $archive = new Address($mailSettings['archive_address'] ?? '', EmailUtils::mime_header_encode($mailSettings['archive_name'] ?? '') ?? '');
+            $archive = new Address(
+                $mailConfig['archive_address'] ?? '', self::mimeEnc($mailConfig['archive_name'] ?? '') ?? ''
+            );
             $email = new TemplatedEmail();
-            $email->to($archive)->subject(EmailUtils::mime_header_encode($title));
+            $email->to($archive)->subject(self::mimeEnc($title));
             $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')->context($mailData);
             $this->mailer->send($email);
 
             return true;
         } catch (Exception $e) {
-            throw new OswisException('Problém s odesláním reportu o CSV platbách (při vytváření zprávy).  '.$e->getMessage());
+            throw new OswisException('Problém s vytvářením reportu o CSV platbách.  '.$e->getMessage());
         } catch (TransportExceptionInterface $e) {
-            throw new OswisException('Problém s odesláním reportu o CSV platbách (při odeslání zprávy).  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním reportu o CSV platbách.  '.$e->getMessage());
         }
     }
 }

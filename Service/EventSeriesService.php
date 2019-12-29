@@ -27,12 +27,12 @@ class EventSeriesService
             $entity = new EventSeries($nameable);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event series (by manager): '.$entity->getId().' '.$entity->getName().'.';
+            $infoMessage = 'CREATE: Created event series (by service): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event series not created (by manager): '.$e->getMessage()) : null;
+            $this->logger ? $this->logger->info('ERROR: Event event series not created (by service): '.$e->getMessage()) : null;
 
             return null;
         }

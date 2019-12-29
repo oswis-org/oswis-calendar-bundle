@@ -1,4 +1,8 @@
-<?php /** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection RedundantDocCommentTagInspection
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Controller;
 
