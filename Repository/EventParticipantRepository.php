@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection PhpUnusedParameterInspection
  * @noinspection PhpUnused
  */
 
@@ -53,8 +52,21 @@ class EventParticipantRepository extends EntityRepository
     public function getEventParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('ep');
-        $queryBuilder->where('');
-        $queryBuilder->leftJoin('ep.contact', 'contact');
+        $this->addSuperEventQuery($queryBuilder, $opts);
+        $this->addIdQuery($queryBuilder, $opts);
+        $this->addParticipantTypeQuery($queryBuilder, $opts);
+        $this->addParticipantTypeOfTypeQuery($queryBuilder, $opts);
+        $this->addIncludeDeletedQuery($queryBuilder, $opts);
+        $this->addContactQuery($queryBuilder, $opts);
+        $this->addAppUserQuery($queryBuilder, $opts);
+        $this->addLimit($queryBuilder, $limit, $offset);
+        $this->addOrderBy($queryBuilder, true, true);
+
+        return $queryBuilder;
+    }
+
+    private function addSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
             $eventQuery = ' ep.event = :event_id ';
             $queryBuilder->leftJoin('ep.event', 'e0');
@@ -66,43 +78,80 @@ class EventParticipantRepository extends EntityRepository
             }
             $queryBuilder->andWhere($eventQuery)->setParameter('event_id', $opts[self::CRITERIA_EVENT]->getId());
         }
+    }
+
+    private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (!empty($opts[self::CRITERIA_ID])) {
             $queryBuilder->andWhere(' ep.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
+    }
+
+    private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof EventParticipantType) {
             $queryBuilder->andWhere('ep.eventParticipantType = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
         }
+    }
+
+    private function addParticipantTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE])) {
             $queryBuilder->leftJoin('ep.type', 'type');
             $queryBuilder->andWhere('type.type = :type_type');
             $queryBuilder->setParameter('type_type', $opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE]);
         }
+    }
+
+    private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
             $queryBuilder->andWhere('ep.deleted IS NULL');
         }
+    }
+
+    private function addContactQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (!empty($opts[self::CRITERIA_CONTACT]) && $opts[self::CRITERIA_CONTACT] instanceof AbstractContact) {
             $queryBuilder->andWhere('ep.contact = :contact_id')->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
         }
+    }
+
+    private function addAppUserQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
         if (!empty($opts[self::CRITERIA_APP_USER]) && $opts[self::CRITERIA_APP_USER] instanceof AppUser) {
+            $queryBuilder->leftJoin('ep.contact', 'contact');
             $queryBuilder->andWhere('contact.appUser = :app_user_id');
             $queryBuilder->setParameter('app_user_id', $opts[self::CRITERIA_APP_USER]->getId());
         }
+    }
+
+    private function addLimit(QueryBuilder $queryBuilder, ?int $limit = null, ?int $offset = null): void
+    {
         if (null !== $limit) {
             $queryBuilder->setMaxResults($limit);
         }
         if (null !== $offset) {
             $queryBuilder->setFirstResult($offset);
         }
-        $queryBuilder->orderBy('priority', 'DESC')->addOrderBy('sortableName', 'ASC');
+    }
 
-        return $queryBuilder->addOrderBy('id', 'ASC');
+    private function addOrderBy(QueryBuilder $queryBuilder, bool $priority = true, bool $name = true): void
+    {
+        if ($priority) {
+            $queryBuilder->addOrderBy('ep.priority', 'DESC');
+        }
+        if ($name) {
+            $queryBuilder->addOrderBy('ep.sortableName', 'ASC');
+        }
+        $queryBuilder->addOrderBy('ep.id', 'ASC');
     }
 
     public function getEventParticipant(?array $opts = []): ?EventParticipant
     {
         try {
-            $eventParticipant = $this->getEventParticipantsQueryBuilder($opts, 1)->getQuery()->getOneOrNullResult();
+            $eventParticipant = $this->getEventParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }

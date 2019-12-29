@@ -33,9 +33,9 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@doctrine.orm.entity_manager'
             - '@security.user_password_encoder.generic'
             - '@zakjakub_oswis_calendar.event_participant_service'
+            - '@zakjakub_oswis_calendar.event_service'
 
     ### Event Service
     zakjakub_oswis_calendar.event_service:

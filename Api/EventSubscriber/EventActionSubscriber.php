@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Zakjakub\OswisCalendarBundle\Api\Dto\EventActionRequest;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
-use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
 use function in_array;
 
 final class EventActionSubscriber implements EventSubscriberInterface

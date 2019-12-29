@@ -23,7 +23,6 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
     public const DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG = 'ucastnik';
 
     // TODO: ParticipantType slug change!
-
     protected EntityManagerInterface $em;
 
     protected PdfGenerator $pdfGenerator;

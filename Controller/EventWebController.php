@@ -17,6 +17,7 @@ use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
 use Zakjakub\OswisCalendarBundle\Service\EventService;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisNotFoundException;
+use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 
 class EventWebController extends AbstractController
 {
@@ -62,17 +63,16 @@ class EventWebController extends AbstractController
         if ($event->getEventSeries() && $event->getEventType()) {
             $navEvents = $event->getEventSeries()->getEvents($event->getEventType(), $event->isBatch() ? $event->getStartYear() : null);
         }
-
-        return $this->render(
-            '@ZakjakubOswisCalendar/web/pages/event.html.twig',
-            array(
-                'navEvents' => $navEvents,
-                'event'     => $event,
-            )
+        $data = array(
+            'navEvents' => $navEvents,
+            'event'     => $event,
         );
+
+        return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);
     }
 
     /**
+     * @param DateTimeUtils $dateTimeUtils
      * @param string|null   $range
      * @param DateTime|null $start
      * @param DateTime|null $end
@@ -80,9 +80,11 @@ class EventWebController extends AbstractController
      * @param int|null      $offset
      *
      * @return Response
+     * @throws LogicException
      * @throws Exception
      */
     final public function eventsAction(
+        DateTimeUtils $dateTimeUtils,
         ?string $range = self::RANGE_ALL,
         ?DateTime $start = null,
         ?DateTime $end = null,
@@ -91,8 +93,8 @@ class EventWebController extends AbstractController
     ): Response {
         $limit = $limit < 1 ? null : $limit;
         $offset = $offset < 1 ? null : $offset;
-        $start = $this->getDateTimeByRange($start, $range, false);
-        $end = $this->getDateTimeByRange($end, $range, false);
+        $start = $dateTimeUtils->getDateTimeByRange($start, $range, false);
+        $end = $dateTimeUtils->getDateTimeByRange($end, $range, false);
         $opts = [
             EventRepository::CRITERIA_START              => $start,
             EventRepository::CRITERIA_END                => $end,
@@ -114,21 +116,5 @@ class EventWebController extends AbstractController
         ];
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $context);
-    }
-
-    private function getDateTimeByRange(?DateTime $dateTime, ?string $range, ?bool $isEnd = false): DateTime
-    {
-        if (in_array($range, [self::RANGE_YEAR, self::RANGE_MONTH, self::RANGE_DAY], true)) {
-            $dateTime ??= new DateTime();
-            $year = (int)$dateTime->format('Y');
-            $month = $isEnd ? 12 : 1;
-            $month = $range === self::RANGE_MONTH || self::RANGE_DAY ? (int)$dateTime->format('m') : $month;
-            $day = $isEnd ? (int)$dateTime->format('t') : 1;
-            $day = $range || self::RANGE_DAY ? (int)$dateTime->format('d') : $day;
-            $dateTime = $dateTime->setDate($year, $month, $day);
-            $dateTime->setTime($isEnd ? 23 : 0, $isEnd ? 59 : 0, $isEnd ? 59 : 0, $isEnd ? 999 : 0);
-        }
-
-        return $dateTime;
     }
 }
