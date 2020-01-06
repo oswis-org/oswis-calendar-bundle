@@ -1,11 +1,14 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection ALL */
+
+/**
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
@@ -56,9 +59,8 @@ class EventParticipantNote
     use TextValueTrait;
 
     /**
-     * Note is public.
-     * @var boolean|null
-     * @ORM\Column(type="boolean", nullable=true)
+     * Is note public?
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      */
     protected ?bool $publicNote = null;
 
@@ -67,18 +69,12 @@ class EventParticipantNote
         $this->setTextValue($textValue);
     }
 
-    /**
-     * @return bool
-     */
-    final public function isPublicNote(): bool
+    public function isPublicNote(): bool
     {
         return $this->publicNote ?? false;
     }
 
-    /**
-     * @param bool $publicNote
-     */
-    final public function setPublicNote(?bool $publicNote): void
+    public function setPublicNote(?bool $publicNote): void
     {
         $this->publicNote = $publicNote ?? false;
     }

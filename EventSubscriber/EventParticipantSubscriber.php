@@ -12,7 +12,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Exceptions\OswisEventParticipantNotFoundException;
 use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
@@ -21,18 +20,12 @@ use function in_array;
 
 final class EventParticipantSubscriber implements EventSubscriberInterface
 {
-    private UserPasswordEncoderInterface $encoder;
-
     private EventParticipantService $participantService;
 
     private EventService $eventService;
 
-    public function __construct(
-        UserPasswordEncoderInterface $encoder,
-        EventParticipantService $participantService,
-        EventService $eventService
-    ) {
-        $this->encoder = $encoder;
+    public function __construct(EventParticipantService $participantService, EventService $eventService)
+    {
         $this->participantService = $participantService;
         $this->eventService = $eventService;
     }
@@ -61,7 +54,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
         }
         $oldParticipant = $this->participantService->getRepository()->getEventParticipant(['id' => $newParticipant->getId()]);
         $this->eventService->simulateAddEventParticipant($newParticipant, $oldParticipant);
-        $this->participantService->sendMail($newParticipant, $this->encoder, Request::METHOD_POST === $method);
+        $this->participantService->sendMail($newParticipant, Request::METHOD_POST === $method);
     }
 
     /**

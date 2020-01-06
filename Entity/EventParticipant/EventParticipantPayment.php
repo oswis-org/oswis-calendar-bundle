@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -138,12 +138,12 @@ class EventParticipantPayment extends AbstractPayment
         $this->setType($type);
     }
 
-    final public function getEventParticipant(): ?EventParticipant
+    public function getEventParticipant(): ?EventParticipant
     {
         return $this->eventParticipant;
     }
 
-    final public function setEventParticipant(?EventParticipant $eventParticipant): void
+    public function setEventParticipant(?EventParticipant $eventParticipant): void
     {
         if ($this->eventParticipant && $eventParticipant !== $this->eventParticipant) {
             $this->eventParticipant->removeEventParticipantPayment($this);

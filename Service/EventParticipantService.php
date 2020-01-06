@@ -1,9 +1,8 @@
 <?php
 /**
- * @noinspection DuplicatedCode
+ * @noinspection PhpUnusedParameterInspection
  * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection RedundantDocCommentTagInspection
  */
 
 namespace Zakjakub\OswisCalendarBundle\Service;
@@ -23,7 +22,6 @@ use Symfony\Component\Mime\Exception\LogicException;
 use Symfony\Component\Mime\Exception\RfcComplianceException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Position;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
@@ -32,6 +30,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
@@ -44,9 +43,6 @@ use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
 use Zakjakub\OswisCoreBundle\Utils\StringUtils;
 use function assert;
 
-/**
- * Class EventParticipantManager
- */
 class EventParticipantService
 {
     public const DEFAULT_LIST_TITLE = 'Přehled přihlášek';
@@ -63,13 +59,18 @@ class EventParticipantService
 
     protected PdfGenerator $pdfGenerator;
 
+    protected EventParticipantRepository $participantRepository;
+
+    protected UserPasswordEncoderInterface $encoder;
+
     public function __construct(
         EntityManagerInterface $em,
         MailerInterface $mailer,
         OswisCoreSettingsProvider $oswisCoreSettings,
         ?LoggerInterface $logger,
         AppUserService $appUserService,
-        PdfGenerator $pdfGenerator
+        PdfGenerator $pdfGenerator,
+        UserPasswordEncoderInterface $encoder = null
     ) {
         $this->em = $em;
         $this->logger = $logger;
@@ -77,8 +78,18 @@ class EventParticipantService
         $this->mailer = $mailer;
         $this->appUserService = $appUserService;
         $this->pdfGenerator = $pdfGenerator;
+        $this->participantRepository = $this->getRepository();
+        $this->encoder = $encoder;
         /// TODO: Encoder, createAppUser...
         /// TODO: Throw exceptions!
+    }
+
+    final public function getRepository(): EventParticipantRepository
+    {
+        $repository = $this->em->getRepository(EventParticipant::class);
+        assert($repository instanceof EventParticipantRepository);
+
+        return $repository;
     }
 
     final public function create(
@@ -109,76 +120,63 @@ class EventParticipantService
     /**
      * Sends summary e-mail if user is already activated or activation e-mail if user is not activated.
      *
-     * @param EventParticipant|null             $eventParticipant
-     * @param UserPasswordEncoderInterface|null $encoder
-     * @param bool                              $new
-     * @param string|null                       $token
+     * @param EventParticipant|null $participant
+     * @param bool                  $new
+     * @param string|null           $token
      *
      * @return bool
      * @throws OswisException
      */
-    final public function sendMail(
-        EventParticipant $eventParticipant = null,
-        UserPasswordEncoderInterface $encoder = null,
-        ?bool $new = false,
-        ?string $token = null
-    ): bool {
-        if (!$eventParticipant || !$eventParticipant->getEvent() || !$eventParticipant->getContact()) {
+    final public function sendMail(EventParticipant $participant = null, ?bool $new = false, ?string $token = null): bool
+    {
+        if (!$participant || !$participant->getEvent() || !$participant->getContact()) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
-        if ($eventParticipant->isDeleted()) {
-            return $eventParticipant->getEMailDeleteConfirmationDateTime() ? true : $this->sendCancelConfirmation($eventParticipant);
+        if ($participant->isDeleted()) {
+            return $participant->getEMailDeleteConfirmationDateTime() ? true : $this->sendCancelConfirmation($participant);
         }
-        if ($eventParticipant->hasActivatedContactUser()) {
-            return $eventParticipant->getEMailConfirmationDateTime() ? true : $this->sendSummary($eventParticipant, $encoder, $new);
+        if ($participant->hasActivatedContactUser()) {
+            return $participant->getEMailConfirmationDateTime() ? true : $this->sendSummary($participant, $this->encoder, $new);
         }
         if ($token) {
-            foreach ($eventParticipant->getContact()->getContactPersons() as $contactPerson) {
+            foreach ($participant->getContact()->getContactPersons() as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
-                    return $this->sendSummary($eventParticipant, $encoder, $new);
+                    return $this->sendSummary($participant, $this->encoder, $new);
                 }
             }
         }
 
-        return $this->sendVerification($eventParticipant);
+        return $this->sendVerification($participant);
     }
 
-    final public function sendCancelConfirmation(EventParticipant $eventParticipant): bool
+    final public function sendCancelConfirmation(EventParticipant $participant): bool
     {
         try {
-            if (null === $eventParticipant->getEvent() || null === $eventParticipant->getContact()) {
+            $event = $participant->getEvent();
+            $participantContact = $participant->getContact();
+            if (null === $event || null === $participantContact) {
                 return false;
             }
-            assert($eventParticipant instanceof EventParticipant);
-            $event = $eventParticipant->getEvent();
-            assert($event instanceof Event);
-            $eventParticipantContact = $eventParticipant->getContact();
-            if ($eventParticipantContact instanceof Person) {
-                $isOrganization = false;
-                $contactPersons = new ArrayCollection([$eventParticipantContact]);
-            } else {
-                assert($eventParticipantContact instanceof Organization);
-                $isOrganization = true;
-                $contactPersons = $eventParticipantContact->getContactPersons();
-            }
-            $mailSuccessCount = 0;
+            $isOrganization = !($participantContact instanceof Person);
+            $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
+            $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $email = $this->getEmptyEmail($contactPerson, 'Zrušení přihlášky');
                 $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig');
-                $email->context($this->getMailData($eventParticipant, $event, $contactPerson, $isOrganization));
-                $this->em->persist($eventParticipant);
+                $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
+                $this->em->persist($participant);
                 try {
                     $this->mailer->send($email);
-                    $mailSuccessCount++;
+                    $remaining--;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
                 }
             }
             $this->em->flush();
-            if ($mailSuccessCount < $contactPersons->count()) {
-                throw new OswisException("Část zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+            if ($remaining > 0) {
+                throw new OswisException("Část zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').');
             }
 
             return true;
@@ -213,18 +211,13 @@ class EventParticipantService
             'eventParticipant' => $participant,
             'event'            => $event,
             'contactPerson'    => $contactPerson,
-            'f'                => self::isFormal($participant),
+            'f'                => $participant->isFormal(),
             'salutationName'   => $contactPerson->getSalutationName(),
             'a'                => $contactPerson->getCzechSuffixA(),
             'isOrganization'   => $isOrg,
             'logo'             => 'cid:logo',
             'oswis'            => $this->coreSettings->getArray(),
         ];
-    }
-
-    private static function isFormal(EventParticipant $participant): bool
-    {
-        return $participant->getEventParticipantType() ? $participant->getEventParticipantType()->isFormal() : true;
     }
 
     /**
@@ -240,7 +233,6 @@ class EventParticipantService
     final public function sendSummary(EventParticipant $participant, UserPasswordEncoderInterface $encoder = null, bool $new = false): bool
     {
         try {
-            assert($participant instanceof EventParticipant);
             $event = $participant->getEvent();
             $participantContact = $participant->getContact();
             if (!($event instanceof Event) || !($participantContact instanceof AbstractContact)) {
@@ -249,15 +241,9 @@ class EventParticipantService
             $qrComment = $participantContact->getContactName().', ID '.$participant->getId().', '.$event->getName();
             $depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true);
             $restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true);
-            if ($participantContact instanceof Person) {
-                $isOrganization = false;
-                $contactPersons = new ArrayCollection([$participantContact]);
-            } else {
-                assert($participantContact instanceof Organization);
-                $isOrganization = true;
-                $contactPersons = $participantContact->getContactPersons();
-            }
-            $mailSuccessCount = 0;
+            $isOrganization = !($participantContact instanceof Person);
+            $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
+            $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $password = null;
@@ -283,22 +269,19 @@ class EventParticipantService
                 try {
                     $this->mailer->send($email);
                     $this->em->persist($participant);
-                    $mailSuccessCount++;
+                    $remaining--;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
-                    $this->logger->error($e->getTraceAsString());
-                    throw new OswisException('Odeslání e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
             }
             $this->em->flush();
-            if ($mailSuccessCount < $contactPersons->count()) {
-                throw new OswisException("Část zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').');
+            if ($remaining > 0) {
+                throw new OswisException("Část zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').');
             }
 
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            $this->logger->error($e->getTraceAsString());
             throw new OswisException('Problém s odesláním shrnutí přihlášky.  '.$e->getMessage());
         }
     }
@@ -329,19 +312,13 @@ class EventParticipantService
     {
         try {
             $event = $participant->getEvent();
-            $eventParticipantContact = $participant->getContact();
-            if (null === $event || null === $eventParticipantContact) {
+            $participantContact = $participant->getContact();
+            if (null === $event || null === $participantContact) {
                 return false;
             }
-            if ($eventParticipantContact instanceof Person) {
-                $isOrganization = false;
-                $contactPersons = new ArrayCollection([$eventParticipantContact]);
-            } else {
-                assert($eventParticipantContact instanceof Organization);
-                $isOrganization = true;
-                $contactPersons = $eventParticipantContact->getContactPersons();
-            }
-            $mailSuccessCount = 0;
+            $isOrganization = !($participantContact instanceof Person);
+            $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
+            $remaining = $contactPersons->count();
             $appUserRepository = $this->appUserService->getRepository();
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
@@ -357,7 +334,7 @@ class EventParticipantService
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 try {
                     $this->mailer->send($email);
-                    $mailSuccessCount++;
+                    $remaining--;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
                     throw new OswisException('Odeslání ověřovacího e-mailu se nezdařilo ('.$e->getMessage().').');
@@ -365,25 +342,24 @@ class EventParticipantService
             }
             $this->em->persist($participant);
             $this->em->flush();
-            if ($mailSuccessCount < $contactPersons->count()) {
-                $message = "Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').';
+            if ($remaining > 0) {
+                $message = "Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').';
                 throw new OswisException($message);
             }
 
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            $this->logger->error($e->getTraceAsString());
             throw new OswisException('Problém s odesláním ověřovacího e-mailu.  '.$e->getMessage());
         }
     }
 
     /**
-     * Calls method for update of active revision in container.
+     * Calls method for update of active revision in container. DEPRECATED!
      */
     final public function updateActiveRevisions(): void
     {
-        $eventParticipants = $this->em->getRepository(EventParticipant::class)->findAll();
+        $eventParticipants = $this->participantRepository->findAll();
         foreach ($eventParticipants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
             // $eventParticipant->updateActiveRevision();
@@ -399,16 +375,20 @@ class EventParticipantService
      * @param bool                      $detailed
      * @param string                    $title
      *
-     * @throws OswisException
+     * @param int|null                  $recursiveDepth
+     *
      * @throws LogicException
+     * @throws OswisException
      * @throws RfcComplianceException
      */
     public function sendEventParticipantList(
         Event $event,
         ?EventParticipantType $participantType = null,
         bool $detailed = false,
-        string $title = null
+        string $title = null,
+        ?int $recursiveDepth = 0
     ): void {
+        // TODO: Check and refactor.
         $templatePdf = '@ZakjakubOswisCalendar/documents/pages/event-participant-list.html.twig';
         $templateEmail = '@ZakjakubOswisCalendar/e-mail/event-participant-list.html.twig';
         $title ??= self::DEFAULT_LIST_TITLE.' ('.$event->getShortName().')';
@@ -433,10 +413,12 @@ class EventParticipantService
             $pdfString = $this->pdfGenerator->generatePdfAsString('Přehled účastníků', $templatePdf, $data, $paper, $detailed);
         } catch (MpdfException $e) {
             $pdfString = null;
-            $message = 'Vygenerování PDF se nezdařilo (MpdfException). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
+            $this->logger->error($e->getMessage());
+            $message = 'Vygenerování PDF se nezdařilo (MpdfException). '.$e->getMessage();
         } catch (Exception $e) {
             $pdfString = null;
-            $message = 'Vygenerování PDF se nezdařilo (Exception). '.$e->getMessage().'<br><br>'.$e->getTraceAsString();
+            $this->logger->error($e->getMessage());
+            $message = 'Vygenerování PDF se nezdařilo (Exception). '.$e->getMessage();
         }
         $mailData = [
             'data'    => $data,
@@ -503,36 +485,31 @@ class EventParticipantService
             EventParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH    => $depth,
         ];
 
-        return $this->getRepository()->getEventParticipants($opts, $includeNotActivated);
+        return $this->getEventParticipants($opts, $includeNotActivated);
     }
 
-    final public function getRepository(): EventParticipantRepository
-    {
-        $repository = $this->em->getRepository(EventParticipant::class);
-        assert($repository instanceof EventParticipantRepository);
-
-        return $repository;
+    public function getEventParticipants(
+        array $opts = [],
+        ?bool $includeNotActivated = true,
+        ?int $limit = null,
+        ?int $offset = null
+    ): Collection {
+        return $this->participantRepository->getEventParticipants($opts, $includeNotActivated, $limit, $offset);
     }
 
     final public function sendInfoMail(EventParticipant $participant, ?string $source = null, ?bool $force = false): bool
     {
         try {
             $event = $participant->getEvent();
-            $eventParticipantContact = $participant->getContact();
-            if (null === $event || null === $eventParticipantContact) {
+            $participantContact = $participant->getContact();
+            if (null === $event || null === $participantContact) {
                 return false;
             }
             if (!$force && $participant->getInfoMailSentCount() > 0) {
                 return false;
             }
-            if ($eventParticipantContact instanceof Person) {
-                $isOrganization = false;
-                $contactPersons = new ArrayCollection([$eventParticipantContact]);
-            } else {
-                assert($eventParticipantContact instanceof Organization);
-                $isOrganization = true;
-                $contactPersons = $eventParticipantContact->getContactPersons();
-            }
+            $isOrganization = !($participantContact instanceof Person);
+            $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
             $title = 'Než vyrazíš na '.($event->getName() ?? 'akci');
             $pdfData = [
                 'title'            => $title,
@@ -563,7 +540,7 @@ class EventParticipantService
             $name = StringUtils::hyphensToCamel(StringUtils::hyphenize($event->getShortName())).'_';
             $name .= StringUtils::hyphensToCamel(StringUtils::hyphenize($contactName));
             $fileName = 'Shrnuti_'.iconv('utf-8', 'us-ascii//TRANSLIT', $name).'.pdf';
-            $mailSuccessCount = 0;
+            $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $email = $this->getEmptyEmail($contactPerson, $title);
@@ -574,25 +551,23 @@ class EventParticipantService
                 }
                 try {
                     $this->mailer->send($email);
-                    $mailSuccessCount++;
+                    $remaining--;
                     $participant->setInfoMailSent($source);
                     $this->em->persist($participant);
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
-                    throw new OswisException('Odeslání ověřovacího e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
             }
             $this->em->flush();
-            if ($mailSuccessCount < $contactPersons->count()) {
+            if ($remaining > 0) {
                 throw new OswisException(
-                    "Část ověřovacích zpráv se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').'
+                    "Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').'
                 );
             }
 
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            $this->logger->error($e->getTraceAsString());
 
             return false;
         }
@@ -636,20 +611,14 @@ class EventParticipantService
     {
         try {
             $event = $participant->getEvent();
-            $eventParticipantContact = $participant->getContact();
-            if (null === $event || null === $eventParticipantContact) {
+            $participantContact = $participant->getContact();
+            if (null === $event || null === $participantContact) {
                 return false;
             }
-            if ($eventParticipantContact instanceof Person) {
-                $isOrganization = false;
-                $contactPersons = new ArrayCollection([$eventParticipantContact]);
-            } else {
-                assert($eventParticipantContact instanceof Organization);
-                $isOrganization = true;
-                $contactPersons = $eventParticipantContact->getContactPersons();
-            }
+            $isOrganization = !($participantContact instanceof Person);
+            $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
             $message = null;
-            $mailSuccessCount = 0;
+            $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $email = $this->getEmptyEmail($contactPerson, 'Zpětná vazba');
@@ -657,22 +626,20 @@ class EventParticipantService
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 try {
                     $this->mailer->send($email);
-                    $mailSuccessCount++;
+                    $remaining--;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
-                    throw new OswisException('Odeslání zpětné vazby se nezdařilo ('.$e->getMessage().').');
                 }
             }
             $this->em->flush();
-            if ($mailSuccessCount < $contactPersons->count()) {
-                $message = "Část zpětných vazeb se nepodařilo odeslat (odesláno $mailSuccessCount z ".$contactPersons->count().').';
+            if ($remaining > 0) {
+                $message = "Část zpětných vazeb se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').';
                 throw new OswisException($message);
             }
 
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            $this->logger->error($e->getTraceAsString());
 
             return false;
         }
@@ -725,13 +692,14 @@ class EventParticipantService
         return $connections;
     }
 
-    public function getEventParticipants(
-        array $opts = [],
-        ?bool $includeNotActivated = true,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Collection {
-        return $this->getRepository()->getEventParticipants($opts, $includeNotActivated, $limit, $offset);
+    public function getEventWebPartners(array $opts = []): Collection
+    {
+        $opts[EventParticipantRepository::CRITERIA_PARTICIPANT_TYPE_OF_TYPE] ??= EventParticipantType::TYPE_PARTNER;
+
+        return $this->getEventParticipants($opts)->filter(
+            fn(EventParticipant $ep) => $ep->hasFlagOfTypeOfType(EventParticipantFlagType::TYPE_PARTNER_HOMEPAGE)
+        );
+
     }
 
     /**

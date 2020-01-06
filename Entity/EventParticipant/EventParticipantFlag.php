@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection MethodShouldBeFinalInspection */
+
+/** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -79,22 +81,27 @@ class EventParticipantFlag extends AbstractEventFlag
         $this->setPublicOnWeb($publicOnWeb);
     }
 
-    final public function getPrice(): int
+    public function getPrice(): int
     {
         return $this->price ?? 0;
     }
 
-    final public function setPrice(?int $price): void
+    public function setPrice(?int $price): void
     {
         $this->price = $price;
     }
 
-    final public function getEventParticipantFlagType(): ?EventParticipantFlagType
+    public function getTypeOfType(): ?string
+    {
+        return $this->getEventParticipantFlagType() ? $this->getEventParticipantFlagType()->getType() : null;
+    }
+
+    public function getEventParticipantFlagType(): ?EventParticipantFlagType
     {
         return $this->eventParticipantFlagType;
     }
 
-    final public function setEventParticipantFlagType(?EventParticipantFlagType $eventContactFlagType): void
+    public function setEventParticipantFlagType(?EventParticipantFlagType $eventContactFlagType): void
     {
         $this->eventParticipantFlagType = $eventContactFlagType;
     }

@@ -680,16 +680,16 @@
     },
     {
       "name": "doctrine/dbal",
-      "version": "v2.10.0",
+      "version": "v2.10.1",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/dbal.git",
-        "reference": "0c9a646775ef549eb0a213a4f9bd4381d9b4d934"
+        "reference": "c2b8e6e82732a64ecde1cddf9e1e06cb8556e3d8"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/dbal/zipball/0c9a646775ef549eb0a213a4f9bd4381d9b4d934",
-        "reference": "0c9a646775ef549eb0a213a4f9bd4381d9b4d934",
+        "url": "https://api.github.com/repos/doctrine/dbal/zipball/c2b8e6e82732a64ecde1cddf9e1e06cb8556e3d8",
+        "reference": "c2b8e6e82732a64ecde1cddf9e1e06cb8556e3d8",
         "shasum": ""
       },
       "require": {
@@ -768,7 +768,7 @@
         "sqlserver",
         "sqlsrv"
       ],
-      "time": "2019-11-03T16:50:43+00:00"
+      "time": "2020-01-04T12:56:21+00:00"
     },
     {
       "name": "doctrine/doctrine-bundle",
@@ -1515,27 +1515,26 @@
     },
     {
       "name": "egulias/email-validator",
-      "version": "2.1.12",
+      "version": "2.1.13",
       "source": {
         "type": "git",
         "url": "https://github.com/egulias/EmailValidator.git",
-        "reference": "a6255605af39f2db7f5cb62e672bd8a7bad8d208"
+        "reference": "834593d5900615639208417760ba6a17299e2497"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/a6255605af39f2db7f5cb62e672bd8a7bad8d208",
-        "reference": "a6255605af39f2db7f5cb62e672bd8a7bad8d208",
+        "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/834593d5900615639208417760ba6a17299e2497",
+        "reference": "834593d5900615639208417760ba6a17299e2497",
         "shasum": ""
       },
       "require": {
         "doctrine/lexer": "^1.0.1",
-        "php": ">= 5.5"
+        "php": ">=5.5"
       },
       "require-dev": {
-        "dominicsayers/isemail": "dev-master",
-        "phpunit/phpunit": "^4.8.35||^5.7||^6.0",
-        "satooshi/php-coveralls": "^1.0.1",
-        "symfony/phpunit-bridge": "^4.4@dev"
+        "dominicsayers/isemail": "^3.0.7",
+        "phpunit/phpunit": "^4.8.36|^7.5.15",
+        "satooshi/php-coveralls": "^1.0.1"
       },
       "suggest": {
         "ext-intl": "PHP Internationalization Libraries are required to use the SpoofChecking validation"
@@ -1569,7 +1568,7 @@
         "validation",
         "validator"
       ],
-      "time": "2019-12-20T12:49:39+00:00"
+      "time": "2019-12-30T08:14:25+00:00"
     },
     {
       "name": "elasticsearch/elasticsearch",
@@ -8665,16 +8664,16 @@
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.361",
+      "version": "v0.0.362",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "f280e8ee419a6acab2e41e430fcc513d06a5e6e1"
+        "reference": "68b305bc0ec900bdb3ce9c198b2c5fd89ae19cc8"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/f280e8ee419a6acab2e41e430fcc513d06a5e6e1",
-        "reference": "f280e8ee419a6acab2e41e430fcc513d06a5e6e1",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/68b305bc0ec900bdb3ce9c198b2c5fd89ae19cc8",
+        "reference": "68b305bc0ec900bdb3ce9c198b2c5fd89ae19cc8",
         "shasum": ""
       },
       "require": {
@@ -8763,7 +8762,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-12-29T12:14:34+00:00"
+      "time": "2019-12-29T14:13:18+00:00"
     },
     {
       "name": "zendframework/zend-code",
@@ -8820,6 +8819,7 @@
         "code",
         "zf"
       ],
+      "abandoned": "laminas/laminas-code",
       "time": "2019-12-10T19:21:15+00:00"
     },
     {
@@ -8874,6 +8874,7 @@
         "events",
         "zf2"
       ],
+      "abandoned": "laminas/laminas-eventmanager",
       "time": "2018-04-25T15:33:34+00:00"
     }
   ],
@@ -9020,12 +9021,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "44a677c8e06241a66409ae6e4820dc166fc09ab2"
+        "reference": "872fce6c151b06f6446f228f2290a48862ede2a4"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/44a677c8e06241a66409ae6e4820dc166fc09ab2",
-        "reference": "44a677c8e06241a66409ae6e4820dc166fc09ab2",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/872fce6c151b06f6446f228f2290a48862ede2a4",
+        "reference": "872fce6c151b06f6446f228f2290a48862ede2a4",
         "shasum": ""
       },
       "conflict": {
@@ -9060,8 +9061,9 @@
         "doctrine/mongodb-odm-bundle": ">=2,<3.0.1",
         "doctrine/orm": ">=2,<2.4.8|>=2.5,<2.5.1",
         "dompdf/dompdf": ">=0.6,<0.6.2",
-        "drupal/core": ">=7,<8.7.11|>=8.8,<8.8.1",
+        "drupal/core": ">=7,<7.69|>=8,<8.7.11|>=8.8,<8.8.1",
         "drupal/drupal": ">=7,<8.7.11|>=8.8,<8.8.1",
+        "endroid/qr-code-bundle": "<3.4.2",
         "erusev/parsedown": "<1.7.2",
         "ezsystems/ezplatform-admin-ui": ">=1.3,<1.3.5|>=1.4,<1.4.4",
         "ezsystems/ezpublish-kernel": ">=5.3,<5.3.12.1|>=5.4,<5.4.13.1|>=6,<6.7.9.1|>=6.8,<6.13.5.1|>=7,<7.2.4.1|>=7.3,<7.3.2.1",
@@ -9231,7 +9233,7 @@
         }
       ],
       "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-      "time": "2019-12-26T14:16:40+00:00"
+      "time": "2020-01-02T17:29:14+00:00"
     }
   ],
   "aliases": [],

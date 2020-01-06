@@ -1,4 +1,7 @@
 <?php
+/**
+ * @noinspection MethodShouldBeFinalInspection
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Service;
 
@@ -7,6 +10,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use Zakjakub\OswisCalendarBundle\Repository\EventParticipantTypeRepository;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventParticipantTypeService
@@ -21,7 +25,15 @@ class EventParticipantTypeService
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null, ?string $type = null): ?EventParticipantType
+    public function getRepository(): EventParticipantTypeRepository
+    {
+        $repository = $this->em->getRepository(EventParticipantType::class);
+        assert($repository instanceof EventParticipantTypeRepository);
+
+        return $repository;
+    }
+
+    public function create(?Nameable $nameable = null, ?string $type = null): ?EventParticipantType
     {
         try {
             $entity = new EventParticipantType($nameable, $type);

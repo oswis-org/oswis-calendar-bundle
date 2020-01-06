@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection ALL */
+
 /**
  * @noinspection PhpUnused
  */
@@ -64,7 +65,7 @@ class EventParticipantFlagNewConnection
         $this->setDateTime($dateTime);
     }
 
-    final public function getEventParticipant(): ?EventParticipant
+    public function getEventParticipant(): ?EventParticipant
     {
         return $this->eventParticipant;
     }
@@ -74,7 +75,7 @@ class EventParticipantFlagNewConnection
      *
      * @throws EventCapacityExceededException
      */
-    final public function setEventParticipant(?EventParticipant $eventParticipant): void
+    public function setEventParticipant(?EventParticipant $eventParticipant): void
     {
         if ($this->eventParticipant && $eventParticipant !== $this->eventParticipant) {
             $this->eventParticipant->removeEventParticipantFlagConnection($this);
@@ -85,12 +86,12 @@ class EventParticipantFlagNewConnection
         }
     }
 
-    final public function getEventParticipantFlag(): ?EventParticipantFlag
+    public function getEventParticipantFlag(): ?EventParticipantFlag
     {
         return $this->eventParticipantFlag;
     }
 
-    final public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
+    public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
     {
         $this->eventParticipantFlag = $eventParticipantFlag;
     }

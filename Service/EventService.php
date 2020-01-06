@@ -75,7 +75,7 @@ class EventService
     public function getRemainingCapacity(Event $event, ?EventParticipantType $eventParticipantType = null): ?int
     {
         $occupancy = $this->getOccupancy($event, $eventParticipantType);
-        $maximumCapacity = $event->getMaximumCapacity($eventParticipantType);
+        $maximumCapacity = $event->getCapacity($eventParticipantType);
         if (null !== $maximumCapacity) {
             return ($maximumCapacity - $occupancy) > 0 ? ($maximumCapacity - $occupancy) : 0;
         }
@@ -148,7 +148,7 @@ class EventService
             throw new EventCapacityExceededException('Změna typu účastníka není povolena.');
         }
         if (null === $oldEvent || $newEvent->getId() !== $oldEvent->getId()) { // Event was changed or participant is new.
-            $this->checkRegistrationRanges($newEvent, $newParticipantType);
+            $this->checkRegistrationRanges($newEvent, $newParticipantType, $newParticipant->getCreatedDateTime() ?? new DateTime());
             $this->checkCapacity($newEvent, $newParticipantType);
         }
         /// TODO: Check "isParentRequired".
@@ -177,12 +177,13 @@ class EventService
     /**
      * @param Event                $event
      * @param EventParticipantType $participantType
+     * @param DateTime|null        $dateTime
      *
      * @throws EventCapacityExceededException
      */
-    public function checkRegistrationRanges(Event $event, EventParticipantType $participantType): void
+    public function checkRegistrationRanges(Event $event, EventParticipantType $participantType, ?DateTime $dateTime = null): void
     {
-        if (!$event->isRegistrationsAllowed($participantType)) {
+        if (!$event->isRegistrationsAllowed($participantType, $dateTime)) {
             throw new EventCapacityExceededException('Přihlašování na událost '.$event->getName().' není aktuálně povoleno.');
         }
     }

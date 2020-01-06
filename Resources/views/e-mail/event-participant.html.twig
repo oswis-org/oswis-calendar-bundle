@@ -69,9 +69,11 @@
             {% endif %}
         {% endblock message_payment_outer %}
 
-        {% include '@ZakjakubOswisCalendar/other/event-participant-summary/event-participant-summary.html.twig' %}
-        {% include '@ZakjakubOswisCalendar/other/event-participant-qr-payment/event-participant-qr-payment.html.twig' %}
-        {% include '@ZakjakubOswisCalendar/other/event-participant-summary/event-participant-event-summary.html.twig' %}
+        {% include '@ZakjakubOswisCalendar/other/summary/event-participant-summary.html.twig' %}
+        {% include '@ZakjakubOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
+        <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
+            {% include '@ZakjakubOswisCalendar/other/summary/event-summary.html.twig' %}
+        </div>
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
 

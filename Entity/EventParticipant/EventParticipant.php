@@ -15,6 +15,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -202,7 +203,6 @@ class EventParticipant
     protected ?AbstractContact $contact = null;
 
     /**
-     * Related event.
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
      *     fetch="EAGER"
@@ -212,15 +212,17 @@ class EventParticipant
     protected ?Event $event = null;
 
     /**
-     * EventAttendee constructor.
-     *
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected ?bool $formal = null;
+
+    /**
      * @param AbstractContact|null      $contact
      * @param Event|null                $event
      * @param EventParticipantType|null $participantType
      * @param Collection|null           $participantFlagConnections
      * @param Collection|null           $participantNotes
      * @param DateTime|null             $deleted
-     *
      * @param int|null                  $priority
      *
      * @throws EventCapacityExceededException
@@ -260,7 +262,7 @@ class EventParticipant
         return $eventParticipants;
     }
 
-    final public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
+    public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
     {
         try {
             return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
@@ -269,12 +271,12 @@ class EventParticipant
         }
     }
 
-    final public function getContact(): ?AbstractContact
+    public function getContact(): ?AbstractContact
     {
         return $this->contact;
     }
 
-    final public function setContact(?AbstractContact $contact): void
+    public function setContact(?AbstractContact $contact): void
     {
         $this->contact = $contact;
     }
@@ -303,12 +305,47 @@ class EventParticipant
         );
     }
 
+    public function isFormal(bool $recursive = false): bool
+    {
+        if ($recursive && null === $this->formal) {
+            return $this->getEventParticipantType() ? $this->getEventParticipantType()->isFormal() : null;
+        }
+
+        return $this->formal;
+    }
+
+    public function getEventParticipantType(): ?EventParticipantType
+    {
+        return $this->eventParticipantType;
+    }
+
+    public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    {
+        $this->eventParticipantType = $eventParticipantType;
+    }
+
+    public function setFormal(?bool $formal): void
+    {
+        $this->formal = $formal;
+    }
+
+    public function isManager(): bool
+    {
+        return false;
+        // return in_array($this->getType(), self::MANAGEMENT_TYPES, true);
+    }
+
+    public function getName(): ?string
+    {
+        return null !== $this->getContact() ? $this->getContact()->getContactName() : null;
+    }
+
     /**
      * @param EventParticipantFlagNewConnection|null $newConnection
      *
      * @throws EventCapacityExceededException
      */
-    final public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
+    public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
     {
         if (null !== $newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
             $this->eventParticipantFlagConnections->add($newConnection);
@@ -321,38 +358,38 @@ class EventParticipant
      *
      * @throws EventCapacityExceededException
      */
-    final public function removeEventParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
+    public function removeEventParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
     {
         if ($eventContactFlagConnection && $this->eventParticipantFlagConnections->removeElement($eventContactFlagConnection)) {
             $eventContactFlagConnection->setEventParticipant(null);
         }
     }
 
-    final public function removeEmptyEventParticipantNotes(): void
+    public function removeEmptyEventParticipantNotes(): void
     {
         $this->setEventParticipantNotes(
             $this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note): bool => !empty($note->getTextValue()))
         );
     }
 
-    final public function getEventParticipantNotes(): Collection
+    public function getEventParticipantNotes(): Collection
     {
         return $this->eventParticipantNotes ?? new ArrayCollection();
     }
 
-    final public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
+    public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
     {
         $this->eventParticipantNotes = $newEventParticipantNotes ?? new ArrayCollection();
     }
 
-    final public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote) {
             $this->eventParticipantNotes->removeElement($eventParticipantNote);
         }
     }
 
-    final public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
             $this->eventParticipantNotes->add($eventParticipantNote);
@@ -363,7 +400,7 @@ class EventParticipant
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    final public function getRemainingRest(): int
+    public function getRemainingRest(): int
     {
         return $this->getPriceRest() - $this->getPaidPrice() + $this->getPriceDeposit();
     }
@@ -372,7 +409,7 @@ class EventParticipant
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    final public function getPriceRest(): int
+    public function getPriceRest(): int
     {
         return $this->getPrice() - $this->getPriceDeposit();
     }
@@ -381,7 +418,7 @@ class EventParticipant
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    final public function getPrice(): int
+    public function getPrice(): int
     {
         if (null === $this->getEvent()) {
             throw new PriceInvalidArgumentException(' (událost nezadána)');
@@ -389,32 +426,23 @@ class EventParticipant
         if (null === $this->getEventParticipantType()) {
             throw new PriceInvalidArgumentException(' (typ uživatele nezadán)');
         }
-        $price = $this->getEvent()->getPrice($this->getEventParticipantType()) + $this->getFlagsPrice();
+        $dateTime = $this->getCreatedDateTime() ?? new DateTime();
+        $price = $this->getEvent()->getPrice($this->getEventParticipantType(), $dateTime) + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
 
-    final public function getEvent(): ?Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
 
-    final public function setEvent(?Event $event): void
+    public function setEvent(?Event $event): void
     {
         $this->event = $event;
     }
 
-    final public function getEventParticipantType(): ?EventParticipantType
-    {
-        return $this->eventParticipantType;
-    }
-
-    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
-    {
-        $this->eventParticipantType = $eventParticipantType;
-    }
-
-    final public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int
+    public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int
     {
         $price = 0;
         foreach ($this->getEventParticipantFlags($eventParticipantFlagType) as $flag) {
@@ -425,16 +453,16 @@ class EventParticipant
         return $price;
     }
 
-    final public function getEventParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    public function getEventParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
         return $this->getEventParticipantFlagConnections($eventParticipantFlagType)->map(
             fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
         );
     }
 
-    final public function getEventParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    public function getEventParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
-        if (!$eventParticipantFlagType) {
+        if (null === $eventParticipantFlagType) {
             return $this->eventParticipantFlagConnections ?? new ArrayCollection();
         }
 
@@ -457,7 +485,7 @@ class EventParticipant
      *
      * @throws EventCapacityExceededException
      */
-    final public function setEventParticipantFlagConnections(?Collection $newConnections): void
+    public function setEventParticipantFlagConnections(?Collection $newConnections): void
     {
         $this->eventParticipantFlagConnections ??= new ArrayCollection();
         $newConnections ??= new ArrayCollection();
@@ -477,7 +505,7 @@ class EventParticipant
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    final public function getPriceDeposit(): int
+    public function getPriceDeposit(): ?int
     {
         if (!$this->getEvent() || !$this->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
@@ -487,7 +515,7 @@ class EventParticipant
         return $price < 0 ? 0 : $price;
     }
 
-    final public function getPaidPrice(): int
+    public function getPaidPrice(): int
     {
         $paid = 0;
         foreach ($this->getEventParticipantPayments() as $eventParticipantPayment) {
@@ -498,12 +526,12 @@ class EventParticipant
         return $paid;
     }
 
-    final public function getEventParticipantPayments(): ?Collection
+    public function getEventParticipantPayments(): ?Collection
     {
         return $this->eventParticipantPayments ?? new ArrayCollection();
     }
 
-    final public function setEventParticipantPayments(?Collection $newEventParticipantPayments): void
+    public function setEventParticipantPayments(?Collection $newEventParticipantPayments): void
     {
         $this->eventParticipantPayments = $this->eventParticipantPayments ?? new ArrayCollection();
         $newEventParticipantPayments = $newEventParticipantPayments ?? new ArrayCollection();
@@ -519,11 +547,21 @@ class EventParticipant
         }
     }
 
+    public function hasFlag(EventParticipantFlag $flag): bool
+    {
+        return $this->getEventParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flag->getId() === $f->getId());
+    }
+
+    public function hasFlagOfTypeOfType(?string $flagType): bool
+    {
+        return $this->getEventParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flagType && $flagType === $f->getTypeOfType());
+    }
+
     /**
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    final public function getRemainingPrice(): int
+    public function getRemainingPrice(): int
     {
         return $this->getPrice() - $this->getPaidPrice();
     }
@@ -532,28 +570,30 @@ class EventParticipant
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    final public function getRemainingDeposit(): int
+    public function getRemainingDeposit(): int
     {
-        return $this->getPriceDeposit() - $this->getPaidPrice();
+        $remaining = null !== $this->getPriceDeposit() ? $this->getPriceDeposit() - $this->getPaidPrice() : 0;
+
+        return $remaining > 0 ? $remaining : 0;
     }
 
     /**
      * @return float
      * @throws PriceInvalidArgumentException
      */
-    final public function getPaidPricePercent(): float
+    public function getPaidPricePercent(): float
     {
-        return !$this->getPrice() ? 0 : ($this->getPaidPrice() / $this->getPrice());
+        return $this->getPaidPrice() / $this->getPrice();
     }
 
-    final public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
+    public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
         if ($eventParticipantPayment && $this->eventParticipantPayments->removeElement($eventParticipantPayment)) {
             $eventParticipantPayment->setEventParticipant(null);
         }
     }
 
-    final public function addEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
+    public function addEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
         if ($eventParticipantPayment && !$this->eventParticipantPayments->contains($eventParticipantPayment)) {
             $this->eventParticipantPayments->add($eventParticipantPayment);
@@ -571,20 +611,7 @@ class EventParticipant
         return substr(trim($phone), strlen(trim($phone)) - 9, 9);
     }
 
-    public function getFlagsByType(): array
-    {
-        $out = [];
-        foreach ($this->getEventParticipantFlags() as $flag) {
-            assert($flag instanceof EventParticipantFlag);
-            $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getId() : -1;
-            $out[$flagTypeId] ??= [];
-            $out[$flagTypeId][$flag->getId()] ??= $flag;
-        }
-
-        return $out;
-    }
-
-    final public function getFlagsAggregatedByType(): array
+    public function getFlagsAggregatedByType(): array
     {
         $flags = [];
         foreach ($this->getEventParticipantFlags() as $flag) {
@@ -598,7 +625,7 @@ class EventParticipant
         return $flags;
     }
 
-    final public function destroyRevisions(): void
+    public function destroyRevisions(): void
     {
     }
 }

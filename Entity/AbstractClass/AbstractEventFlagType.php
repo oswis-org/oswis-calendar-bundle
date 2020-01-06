@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection MethodShouldBeFinalInspection
  * @noinspection PhpUnused
  */
 
@@ -17,14 +18,12 @@ abstract class AbstractEventFlagType
 
     /**
      * Minimal amount of flags used in one EventParticipant.
-     * @var int|null
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $minInEventParticipant = null;
 
     /**
-     * Maximal amount of flags used.
-     * @var int|null
+     * Maximal amount of flags used in one EventParticipant.
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $maxInEventParticipant = null;
@@ -33,27 +32,36 @@ abstract class AbstractEventFlagType
 
     abstract public static function getAllowedTypesCustom(): array;
 
-    final public function isInRangeInEventParticipant(int $amount): bool
+    public function isInRangeInEventParticipant(int $amount): bool
     {
-        return $amount >= $this->getMinInEventParticipant() && $amount <= $this->getMaxInEventParticipant();
+        $min = $this->getMinInEventParticipant();
+        $max = $this->getMaxInEventParticipant();
+        if (null !== $min && $amount < $min) {
+            return false;
+        }
+        if (null !== $max && $amount > $max) {
+            return false;
+        }
+
+        return true;
     }
 
-    final public function getMinInEventParticipant(): ?int
+    public function getMinInEventParticipant(): ?int
     {
         return $this->minInEventParticipant;
     }
 
-    final public function setMinInEventParticipant(?int $minInEventParticipant): void
+    public function setMinInEventParticipant(?int $minInEventParticipant): void
     {
         $this->minInEventParticipant = $minInEventParticipant;
     }
 
-    final public function getMaxInEventParticipant(): ?int
+    public function getMaxInEventParticipant(): ?int
     {
         return $this->maxInEventParticipant;
     }
 
-    final public function setMaxInEventParticipant(?int $maxInEventParticipant): void
+    public function setMaxInEventParticipant(?int $maxInEventParticipant): void
     {
         $this->maxInEventParticipant = $maxInEventParticipant;
     }

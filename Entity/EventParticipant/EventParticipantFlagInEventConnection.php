@@ -1,4 +1,7 @@
-<?php
+<?php /** @noinspection ALL */
+/** @noinspection ALL */
+/** @noinspection ALL */
+/** @noinspection ALL */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -71,12 +74,12 @@ class EventParticipantFlagInEventConnection
         $this->setMaxAmountInEvent($maxAmountInEvent);
     }
 
-    final public function getEventParticipantType(): ?EventParticipantType
+    public function getEventParticipantType(): ?EventParticipantType
     {
         return $this->eventParticipantType;
     }
 
-    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
         $this->eventParticipantType = $eventParticipantType;
     }
@@ -84,7 +87,7 @@ class EventParticipantFlagInEventConnection
     /**
      * @return int|null
      */
-    final public function getMaxAmountInEvent(): ?int
+    public function getMaxAmountInEvent(): ?int
     {
         return $this->maxAmountInEvent;
     }
@@ -92,17 +95,17 @@ class EventParticipantFlagInEventConnection
     /**
      * @param int|null $maxAmountInEvent
      */
-    final public function setMaxAmountInEvent(?int $maxAmountInEvent): void
+    public function setMaxAmountInEvent(?int $maxAmountInEvent): void
     {
         $this->maxAmountInEvent = $maxAmountInEvent;
     }
 
-    final public function getEvent(): ?Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
 
-    final public function setEvent(?Event $event): void
+    public function setEvent(?Event $event): void
     {
         if ($this->event && $event !== $this->event) {
             $this->event->removeEventParticipantFlagInEventConnection($this);
@@ -113,12 +116,12 @@ class EventParticipantFlagInEventConnection
         }
     }
 
-    final public function getEventParticipantFlag(): ?EventParticipantFlag
+    public function getEventParticipantFlag(): ?EventParticipantFlag
     {
         return $this->eventParticipantFlag;
     }
 
-    final public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
+    public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
     {
         $this->eventParticipantFlag = $eventParticipantFlag;
     }

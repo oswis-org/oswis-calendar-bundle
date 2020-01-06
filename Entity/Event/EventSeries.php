@@ -37,7 +37,7 @@ class EventSeries
         $this->events = new ArrayCollection();
     }
 
-    final public function addEvent(?Event $event): void
+    public function addEvent(?Event $event): void
     {
         if ($event && !$this->events->contains($event)) {
             $this->events->add($event);
@@ -45,7 +45,7 @@ class EventSeries
         }
     }
 
-    final public function removeEvent(?Event $contact): void
+    public function removeEvent(?Event $contact): void
     {
         if ($contact && $this->events->removeElement($contact)) {
             $contact->setEventSeries(null);
@@ -68,7 +68,7 @@ class EventSeries
         return $seqId;
     }
 
-    final public function getEvents(?string $eventTypeType = null, ?int $year = null, ?bool $deleted = true): Collection
+    public function getEvents(?string $eventTypeType = null, ?int $year = null, ?bool $deleted = true): Collection
     {
         $events = ($this->events ?? new ArrayCollection())->filter(fn(Event $e) => $deleted || !$e->isDeleted());
         if (null !== $eventTypeType) {

@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection ALL */
+
+/** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -83,12 +85,12 @@ class EventParticipantTypeInEventConnection
         $this->setEvent($event);
     }
 
-    final public function getEvent(): ?Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
 
-    final public function setEvent(?Event $event): void
+    public function setEvent(?Event $event): void
     {
         if ($this->event && $event !== $this->event) {
             $this->event->removeEventParticipantTypeInEventConnection($this);
@@ -99,12 +101,12 @@ class EventParticipantTypeInEventConnection
         }
     }
 
-    final public function getEventParticipantType(): ?EventParticipantType
+    public function getEventParticipantType(): ?EventParticipantType
     {
         return $this->eventParticipantType;
     }
 
-    final public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
     {
         $this->eventParticipantType = $eventParticipantType;
     }

@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection ALL */
+
+/** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
@@ -108,7 +110,7 @@ class EventType
         return [];
     }
 
-    final public function destroyRevisions(): void
+    public function destroyRevisions(): void
     {
     }
 }

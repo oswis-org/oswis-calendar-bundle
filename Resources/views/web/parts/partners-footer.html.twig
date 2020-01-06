@@ -1,0 +1,32 @@
+<!-- START: PARTNERS -->
+{% if footerPartners is defined and footerPartners|length > 3 %}
+    <div id="main-logos" class="container-fluid bg-white-tra60 pt-4 pb-5">
+        <div class="row">
+            <div class="col-12 pl-0 pr-0">
+                <div id="main-logos-horizontal-swiper" class="swiper-container horizontal-logos">
+                    <div class="swiper-wrapper">
+                        {% for partner in footerPartners if partner.contact is defined and partner.contact.image %}
+                            <div class="swiper-slide pt-1 pb-1 pl-1 pr-1">
+                                {% if partner.contact.url %}
+                                    <a href="{{ partner.contact.url }}" target="_blank" title="{{ partner.name }}" data-toggle="tooltip" data-placement="top">
+                                        <div data-background="{{ asset('/images/contacts/'~partner.contact.image) }}" class="swiper-lazy" title="{{ partner.name }}">
+                                            <div class="swiper-lazy-preloader"></div>
+                                        </div>
+                                    </a>
+                                {% else %}
+                                    <div data-background="{{ asset('/images/contacts/'~partner.contact.image) }}" class="swiper-lazy"
+                                         title="{{ partner.name }}" data-toggle="tooltip" data-placement="top">
+                                        <div class="swiper-lazy-preloader"></div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <!-- Partners count: {{ footerPartners is defined ? footerPartners|length : 'null' }} -->
+{% endif %}
+<!-- END: PARTNERS -->

@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection MethodShouldBeFinalInspection */
+
+/** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -67,7 +69,7 @@ class EventParticipantType
     public const TYPE_ATTENDEE = 'attendee';
     public const TYPE_ORGANIZER = 'organizer';
     public const TYPE_STAFF = 'staff';
-    public const TYPE_SPONSOR = 'sponsor';
+    public const TYPE_PARTNER = 'partner';
     public const TYPE_GUEST = 'guest';
     public const TYPE_MANAGER = 'manager';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
@@ -94,7 +96,7 @@ class EventParticipantType
         $this->setFormal($formal);
     }
 
-    final public function setFormal(?bool $formal): void
+    public function setFormal(?bool $formal): void
     {
         $this->formal = $formal ?? false;
     }
@@ -105,7 +107,7 @@ class EventParticipantType
             self::TYPE_ATTENDEE, // Attendee of event.
             self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
             self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
-            self::TYPE_SPONSOR, // Somebody (organization) who supports event.
+            self::TYPE_PARTNER, // Somebody (organization) who supports event.
             self::TYPE_GUEST, // Somebody who performs at the event.
             self::TYPE_MANAGER, // Somebody who manages the event.
         ];
@@ -116,15 +118,12 @@ class EventParticipantType
         return [];
     }
 
-    /**
-     * @return bool
-     */
-    final public function isFormal(): bool
+    public function isFormal(): bool
     {
         return $this->formal ?? false;
     }
 
-    final public function isManager(): bool
+    public function isManager(): bool
     {
         return in_array($this->getType(), self::MANAGEMENT_TYPES, true);
     }

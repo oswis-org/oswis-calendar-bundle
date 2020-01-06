@@ -203,7 +203,7 @@ class EventRepository extends EntityRepository
         if ($name) {
             $queryBuilder->addOrderBy('e.name', 'ASC');
         }
-        $queryBuilder->addOrderBy('ep.id', 'ASC');
+        $queryBuilder->addOrderBy('e.id', 'ASC');
     }
 
     public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection

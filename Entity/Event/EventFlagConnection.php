@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php /** @noinspection ALL */
+
+/** @noinspection PhpUnused */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
@@ -12,7 +14,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventFlagNewConnection
+class EventFlagConnection
 {
     use BasicEntityTrait;
     use TextValueTrait;
@@ -48,12 +50,12 @@ class EventFlagNewConnection
         $this->setEndDateTime($endDateTie);
     }
 
-    final public function getEvent(): ?Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
 
-    final public function setEvent(?Event $event): void
+    public function setEvent(?Event $event): void
     {
         if ($this->event && $event !== $this->event) {
             $this->event->removeEventFlagConnection($this);
@@ -64,12 +66,12 @@ class EventFlagNewConnection
         }
     }
 
-    final public function getEventFlag(): ?EventFlag
+    public function getEventFlag(): ?EventFlag
     {
         return $this->eventFlag;
     }
 
-    final public function setEventFlag(?EventFlag $eventFlag): void
+    public function setEventFlag(?EventFlag $eventFlag): void
     {
         $this->eventFlag = $eventFlag;
     }

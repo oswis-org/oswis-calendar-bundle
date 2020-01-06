@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
  * @noinspection PhpUnused
  */
@@ -49,15 +50,16 @@ class EventParticipantController extends AbstractController
      * @return Response
      * @throws LogicException
      */
-    final public function eventParticipantRegistrationConfirmAction(string $token, int $eventParticipantId): Response
+    public function eventParticipantRegistrationConfirmAction(string $token, int $eventParticipantId): Response
     {
+        // TODO: Check and refactor.
         try {
             if (!$token || !$eventParticipantId) {
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     array(
                         'type'    => 'error',
-                        'title'   => 'Chyba! Nesprávný formát adresy!',
+                        'title'   => 'Chyba! URL nekompletní!',
                         'message' => 'Formát adresy pro ověření je chybný.
                             Zkuste odkaz otevřít znovu nebo jej zkopírovat celý do adresního řádku prohlížeče.
                             Pokud se to nepodaří, kontaktujte nás a společně to vyřešíme.',
@@ -66,18 +68,17 @@ class EventParticipantController extends AbstractController
             }
             $eventParticipant = $this->getDoctrine()->getRepository(EventParticipant::class)->findOneBy(['id' => $eventParticipantId]);
             assert($eventParticipant instanceof EventParticipant);
-            $person = $eventParticipant->getContact();
-            if (empty($eventParticipant) || null === $person || !($person instanceof Person)) {
+            $contact = $eventParticipant->getContact();
+            if (empty($eventParticipant) || null === $contact) {
                 $error = empty($eventParticipant) ? ', přihláška nenalezena' : '';
-                $error .= null === $person || !($person instanceof Person) ? ', účastník nenalezen' : '';
+                $error .= null === $contact || !($contact instanceof Person) ? ', účastník nenalezen' : '';
 
                 return $this->render(
                     '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     array(
                         'type'    => 'error',
                         'title'   => 'Chyba!',
-                        'message' => "Aktivace se nezdařila. 
-                        Kontaktujte nás, prosím. (token $token, přihláška $eventParticipantId$error)",
+                        'message' => "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška $eventParticipantId$error)",
                     )
                 );
             }
@@ -86,22 +87,18 @@ class EventParticipantController extends AbstractController
                 $eventParticipant->getContact()->removeEmptyContactDetails();
                 $eventParticipant->getContact()->removeEmptyNotes();
             }
-            $this->participantService->sendMail($eventParticipant, $this->encoder, true, $token);
+            $this->participantService->sendMail($eventParticipant, true, $token);
 
             return $this->render(
                 '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                 array(
                     'type'    => 'success',
                     'title'   => 'Hotovo!',
-                    'message' => 'Registrace i přihláška byly úspěšně potvrzeny.',
+                    'message' => 'Ověření uživatele proběhlo úspěšně.',
                 )
             );
         } catch (Exception $e) {
-            try {
-                $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
-            } catch (Exception $exception) {
-                $this->logger->notice('OSWIS_CONFIRM_ERROR: PROBLEM WITH ERROR MESSAGE!!!');
-            }
+            $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
 
             return $this->render(
                 '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
@@ -112,5 +109,19 @@ class EventParticipantController extends AbstractController
                 )
             );
         }
+    }
+
+    /**
+     * Partners for homepage.
+     * @return Response
+     * @throws LogicException
+     */
+    public function partnersFooter(): Response
+    {
+        $data = [
+            'footerPartners' => $this->participantService->getEventWebPartners(),
+        ];
+
+        return $this->render('@ZakjakubOswisCalendar/web/parts/partners-footer.html.twig', $data);
     }
 }

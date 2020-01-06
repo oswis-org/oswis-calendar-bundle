@@ -55,8 +55,13 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 class EventParticipantFlagType extends AbstractEventFlagType
 {
     public const TYPE_FOOD = 'food';
-    public const TYPE_TRANSPORT = 'food';
-    public const TYPE_ACCOMMODATION_TYPE = 'food';
+    public const TYPE_TRANSPORT = 'transport';
+    public const TYPE_ACCOMMODATION_TYPE = 'accommodation-type';
+
+    /**
+     * @var string Flag of this type says that partner might be rendered on homepage of web.
+     */
+    public const TYPE_PARTNER_HOMEPAGE = 'partner-homepage';
 
     /**
      * @param Nameable|null $nameable
@@ -76,7 +81,7 @@ class EventParticipantFlagType extends AbstractEventFlagType
 
     public static function getAllowedTypesDefault(): array
     {
-        return [self::TYPE_FOOD, self::TYPE_TRANSPORT, self::TYPE_ACCOMMODATION_TYPE];
+        return [self::TYPE_FOOD, self::TYPE_TRANSPORT, self::TYPE_ACCOMMODATION_TYPE, self::TYPE_PARTNER_HOMEPAGE];
     }
 
     public static function getAllowedTypesCustom(): array

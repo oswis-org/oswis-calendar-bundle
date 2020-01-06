@@ -14,7 +14,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use Zakjakub\OswisCalendarBundle\Repository\EventParticipantTypeRepository;
 use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
+use Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService;
 use Zakjakub\OswisCalendarBundle\Service\EventService;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
@@ -31,10 +34,13 @@ class EventWebController extends AbstractController
 
     protected EventRepository $eventRepository;
 
-    public function __construct(EventService $eventService)
+    protected EventParticipantTypeService $participantTypeService;
+
+    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService)
     {
         $this->eventService = $eventService;
         $this->eventRepository = $eventService->getRepository();
+        $this->participantTypeService = $participantTypeService;
     }
 
     /**
@@ -66,9 +72,16 @@ class EventWebController extends AbstractController
                 $event->isBatch() ? $event->getStartYear() : null
             );
         }
+        $participantType = $this->participantTypeService->getRepository()->getEventParticipantTypes(
+            [
+                EventParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => EventParticipantType::TYPE_ATTENDEE,
+                EventParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            ]
+        )->first();
         $data = array(
-            'navEvents' => $navEvents,
-            'event'     => $event,
+            'navEvents'       => $navEvents,
+            'event'           => $event,
+            'participantType' => $participantType,
         );
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);

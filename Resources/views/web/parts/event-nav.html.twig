@@ -1,10 +1,16 @@
 <nav>
     <h4 class="badges clearfix">
         <a href="{{ path('faq') }}" class="badge badge-warning">Časté dotazy</a>
-        {% for oneYear in years %}
-            <a href="{{ path('informace', {'year': oneYear.startDate|date("Y")}) }}"
-               class="badge {{ year is defined and year==oneYear.startDate|date("Y") ? 'badge-success' : 'badge-light' }}">
-                {{ oneYear.startDate|date("Y") }}
+        {% for navEvent in navEvents %}
+            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': navEvent.slug}) }}"
+               class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
+                {% if navEvent.year and navEvent.startYear %}
+                    {{ navEvent.startYear }}
+                {% elseif navEvent.batch and navEvent.seqId %}
+                    {{ navEvent.seqId }}
+                {% else %}
+                    {{ navEvent.getShortName }}
+                {% endif %}
             </a>
         {% endfor %}
     </h4>
