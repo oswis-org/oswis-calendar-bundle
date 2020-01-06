@@ -7,7 +7,7 @@
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use DateTime;
-use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
+use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateTimeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;

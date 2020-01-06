@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Exceptions\OswisEventParticipantNotFoundException;
+use Zakjakub\OswisCalendarBundle\Exception\OswisEventParticipantNotFoundException;
 use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
 use Zakjakub\OswisCalendarBundle\Service\EventService;
 use function in_array;

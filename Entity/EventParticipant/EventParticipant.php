@@ -20,7 +20,7 @@ use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
+use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;

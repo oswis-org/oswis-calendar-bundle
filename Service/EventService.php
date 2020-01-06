@@ -20,7 +20,7 @@ use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Exceptions\EventCapacityExceededException;
+use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository;
 use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
