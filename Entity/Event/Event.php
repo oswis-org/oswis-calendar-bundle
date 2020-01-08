@@ -19,6 +19,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
+use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
@@ -29,6 +30,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
+use Zakjakub\OswisProjectBundle\Entity\MediaObject\ProjectImage;
 use function assert;
 
 /**
@@ -126,11 +128,7 @@ class Event
 
     /**
      * @var Collection<EventWebContent> $eventWebContents
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent",
-     *     cascade={"all"},
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"}, fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_event_web_content_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
@@ -177,20 +175,18 @@ class Event
     protected ?Collection $eventParticipantFlagInEventConnections = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\OneToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage", cascade={"all"}, fetch="EAGER")
+     */
+    protected ?EventImage $image = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
      */
     private ?EventType $eventType = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries",
-     *     inversedBy="events",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries", inversedBy="events", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      */
     private ?EventSeries $eventSeries = null;
@@ -234,6 +230,16 @@ class Event
     public function setPriceRelative(?bool $priceRelative): void
     {
         $this->priceRelative = $priceRelative;
+    }
+
+    public function getImage(): ?EventImage
+    {
+        return $this->image;
+    }
+
+    public function setImage(?EventImage $image): void
+    {
+        $this->image = $image;
     }
 
     public function destroyRevisions(): void
