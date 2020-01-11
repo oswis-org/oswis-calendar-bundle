@@ -1,4 +1,7 @@
 <?php
+/**
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Form\MediaObjects;
 
@@ -7,11 +10,6 @@ use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
 
 final class EventImageType extends AbstractType
 {
-
-    /**
-     * @return string
-     * @noinspection PhpUnused
-     */
     public static function getImageClassName(): string
     {
         return EventImage::class;
