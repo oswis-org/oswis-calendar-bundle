@@ -241,7 +241,6 @@ class EventService
      * @param Collection|null      $oldFlags
      *
      * @throws EventCapacityExceededException
-     * @noinspection PhpUndefinedMethodInspection
      */
     public function checkFlagsCapacity(Event $event, EventParticipantType $participantType, Collection $newFlags, ?Collection $oldFlags = null): void
     {
@@ -262,7 +261,7 @@ class EventService
         ?EventParticipantFlag $participantFlag,
         ?EventParticipantType $participantType
     ): int {
-        $allowedAmount = $event->getAllowedEventParticipantFlagAmount($participantFlag, $participantType);
+        $allowedAmount = $event->getAllowedParticipantFlagAmount($participantFlag, $participantType);
         $actualAmount = $this->participantService->getEventParticipantFlags($event, $participantType, $participantFlag)->count();
 
         return ($allowedAmount - $actualAmount) < 0 ? 0 : ($allowedAmount - $actualAmount);

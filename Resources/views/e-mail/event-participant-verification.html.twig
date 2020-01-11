@@ -47,11 +47,11 @@
             </p>
             <p>
                 <a href="{{ absolute_url(path(
-                    'zakjakub_oswis_calendar_event_participant_registration_confirm',
+                    'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
                     {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                 ) }}" itemprop="confirmReservationUrl" title="Odkaz pro potvrzení přihlášky a aktivaci účtu" target="_blank">
                     {{ absolute_url(path(
-                        'zakjakub_oswis_calendar_event_participant_registration_confirm',
+                        'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
                         {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                     ) }}</a>
                 <br>
@@ -62,13 +62,13 @@
         <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
             <meta itemprop="name" content="Potvrdit"/>
             <link itemprop="url" href="{{ absolute_url(path(
-                'zakjakub_oswis_calendar_event_participant_registration_confirm',
+                'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
                 {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
             ) }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
                 <link itemprop="url"
                       href="{{ absolute_url(path(
-                          'zakjakub_oswis_calendar_event_participant_registration_confirm',
+                          'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
                           {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                       ) }}"/>
             </div>
@@ -78,13 +78,13 @@
             <meta itemprop="name" content="Potvrdit"/>
             <link itemprop="url"
                   href="{{ absolute_url(path(
-                      'zakjakub_oswis_calendar_event_participant_registration_confirm',
+                      'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
                       {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                   ) }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
                 <link itemprop="url"
                       href="{{ absolute_url(path(
-                          'zakjakub_oswis_calendar_event_participant_registration_confirm',
+                          'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
                           {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                       ) }}"/>
             </div>

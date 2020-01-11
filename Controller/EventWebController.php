@@ -66,9 +66,9 @@ class EventWebController extends AbstractController
             throw new OswisNotFoundException('Událost nenalezena.');
         }
         $navEvents = new ArrayCollection();
-        if (null !== $event->getEventSeries() && null !== $event->getEventType()) {
-            $navEvents = $event->getEventSeries()->getEvents(
-                $event->getEventType()->getType(),
+        if (null !== $event->getSeries() && null !== $event->getType()) {
+            $navEvents = $event->getSeries()->getEvents(
+                $event->getType()->getType(),
                 $event->isBatch() ? $event->getStartYear() : null
             );
         }

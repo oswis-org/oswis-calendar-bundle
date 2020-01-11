@@ -7,6 +7,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Service;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,8 +23,8 @@ use Symfony\Component\Mime\Exception\LogicException;
 use Symfony\Component\Mime\Exception\RfcComplianceException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use Zakjakub\OswisAddressBookBundle\Entity\Organization;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
-use Zakjakub\OswisAddressBookBundle\Entity\Position;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
@@ -659,7 +660,9 @@ class EventParticipantService
             $includeDeleted,
             $includeNotActivated,
             $recursiveDepth
-        )->map(fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag());
+        )->map(
+            fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
+        );
         if (null !== $flag) {
             return $flags->filter(fn(EventParticipantFlag $f) => $f->getId() === $flag->getId());
         }
@@ -699,7 +702,6 @@ class EventParticipantService
         return $this->getEventParticipants($opts)->filter(
             fn(EventParticipant $ep) => $ep->hasFlagOfTypeOfType(EventParticipantFlagType::TYPE_PARTNER_HOMEPAGE)
         );
-
     }
 
     /**
@@ -707,7 +709,7 @@ class EventParticipantService
      *
      * array[flagTypeSlug]['flagType']
      * array[flagTypeSlug]['flags'][flagSlug]['flag']
-     * array[flagTypeSlug]['flags'][flagSlug]['eventParticipants']
+     * array[flagTypeSlug]['flags'][flagSlug]['participants']
      *
      * @param Event                     $event
      * @param EventParticipantType|null $participantType
@@ -732,41 +734,35 @@ class EventParticipantService
             EventParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
             EventParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
         ];
-        $eventParticipants = $this->getEventParticipants($opts, $includeNotActivated);
+        $participants = $this->getEventParticipants($opts, $includeNotActivated);
         if ($participantType) {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagInEventConnection) {
-                    assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-                    $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
-                    if ($flag) {
+            foreach ($participants as $participant) {
+                assert($participant instanceof EventParticipant);
+                foreach ($participant->getEventParticipantFlagConnections() as $participantFlagConnection) {
+                    assert($participantFlagConnection instanceof EventParticipantFlagInEventConnection);
+                    $flag = $participantFlagConnection->getEventParticipantFlag();
+                    if (null !== $flag) {
                         $flagType = $flag->getEventParticipantFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
-                        $flagSlug = $flag->getSlug() ?? '';
-                        $output[$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
-                        if (!isset($output[$flagTypeSlug]['flagType']) || $output[$flagTypeSlug]['flagType'] !== $flagType) {
-                            $output[$flagTypeSlug]['flagType'] = $flagType;
-                        }
-                        if (!isset($output[$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flag) {
-                            $output[$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flag;
-                        }
+                        $output[$flagTypeSlug]['flags'][$flag->getSlug()]['participants'][] = $participant;
+                        $output[$flagTypeSlug]['flags'][$flag->getSlug()]['flag'] ??= $flag;
+                        $output[$flagTypeSlug]['flagType'] ??= $flagType;
                     }
                 }
             }
         } else {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                $participantType = $eventParticipant->getEventParticipantType();
-                $eventParticipantTypeSlug = $participantType->getSlug();
-                $eventParticipantTypeArray = [
+            foreach ($participants as $participant) {
+                assert($participant instanceof EventParticipant);
+                $participantType = $participant->getEventParticipantType();
+                $participantTypeArray = [
                     'id'        => $participantType->getId(),
                     'name'      => $participantType->getName(),
                     'shortName' => $participantType->getShortName(),
                 ];
-                foreach ($eventParticipant->getEventParticipantFlagConnections() as $eventParticipantFlagInEventConnection) {
-                    assert($eventParticipantFlagInEventConnection instanceof EventParticipantFlagInEventConnection);
-                    $flag = $eventParticipantFlagInEventConnection->getEventParticipantFlag();
-                    if ($flag) {
+                foreach ($participant->getEventParticipantFlagConnections() as $participantFlagConnection) {
+                    assert($participantFlagConnection instanceof EventParticipantFlagNewConnection);
+                    $flag = $participantFlagConnection->getEventParticipantFlag();
+                    if (null !== $flag) {
                         $flagType = $flag->getEventParticipantFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
                         $flagArray = [
@@ -782,22 +778,15 @@ class EventParticipantService
                             'name'      => $flagType->getName(),
                             'shortName' => $flagType->getShortName(),
                         ];
-                        $flagSlug = $flag->getSlug();
-                        $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipants'][] = $eventParticipant;
-                        if (isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']) && $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] > 0) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount']++;
+                        $output[$participantType->getSlug()]['flagTypes'][$flagTypeSlug]['flags'][$flag->getSlug()]['participants'][] = $participant;
+                        if (empty($output[$participantType->getSlug()]['flagTypes'][$flagTypeSlug]['flags'][$flag->getSlug()]['participantsCount'])) {
+                            $output[$participantType->getSlug()]['flagTypes'][$flagTypeSlug]['flags'][$flag->getSlug()]['participantsCount'] = 1;
                         } else {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['eventParticipantsCount'] = 1;
+                            $output[$participantType->getSlug()]['flagTypes'][$flagTypeSlug]['flags'][$flag->getSlug()]['participantsCount']++;
                         }
-                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType']) || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] !== $flagTypeArray) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flagType'] = $flagTypeArray;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag']) || $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] !== $flagArray) {
-                            $output[$eventParticipantTypeSlug]['flagTypes'][$flagTypeSlug]['flags'][$flagSlug]['flag'] = $flagArray;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType']) || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $eventParticipantTypeArray) {
-                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $eventParticipantTypeArray;
-                        }
+                        $output[$participantType->getSlug()]['flagTypes'][$flagTypeSlug]['flagType'] ??= $flagTypeArray;
+                        $output[$participantType->getSlug()]['flagTypes'][$flagTypeSlug]['flags'][$flag->getSlug()]['flag'] ??= $flagArray;
+                        $output[$participantType->getSlug()]['participantType'] ??= $participantTypeArray;
                     }
                 }
             }
@@ -810,7 +799,7 @@ class EventParticipantService
      * Array of eventParticipants aggregated by flags (and aggregated by flagTypes).
      *
      * array[schoolSlug]['school']
-     * array[schoolSlug]['eventParticipants'][]
+     * array[schoolSlug]['participants'][]
      *
      * @param Event                     $event
      * @param EventParticipantType|null $participantType
@@ -819,6 +808,7 @@ class EventParticipantService
      * @param int|null                  $recursiveDepth Default is 1 for root events, 0 for others.
      *
      * @return array
+     * @throws Exception
      */
     final public function getActiveEventParticipantsAggregatedBySchool(
         Event $event,
@@ -827,6 +817,7 @@ class EventParticipantService
         ?bool $includeNotActivated = false,
         ?int $recursiveDepth = null
     ): array {
+        $now = new DateTime();
         $recursiveDepth ??= $event->getSuperEvent() ? 0 : 1;
         $output = [];
         $opts = [
@@ -835,41 +826,30 @@ class EventParticipantService
             EventParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
             EventParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
         ];
-        $eventParticipants = $this->getEventParticipants($opts, $includeNotActivated);
-        if ($participantType) {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                $person = $eventParticipant->getContact();
-                if ($person instanceof Person) { // Fix for organizations!
-                    foreach ($person->getStudies() as $study) {
-                        assert($study instanceof Position);
-                        $school = $study->getOrganization();
-                        $schoolSlug = $school ? $school->getSlug() : '';
-                        $output[$schoolSlug]['eventParticipants'][] = $eventParticipant;
-                        if (!isset($output[$schoolSlug]['school']) || $output[$schoolSlug]['school'] !== $school) {
-                            $output[$schoolSlug]['school'] = $school;
-                        }
+        $participants = $this->getEventParticipants($opts, $includeNotActivated);
+        if (null !== $participantType) {
+            foreach ($participants as $participant) {
+                assert($participant instanceof EventParticipant);
+                $person = $participant->getContact();
+                if ($person instanceof Person) { // Fix for organizations?
+                    foreach ($person->getSchools($now) as $school) {
+                        assert($school instanceof Organization);
+                        $output[$school->getSlug()]['participants'][] = $participant;
+                        $output[$school->getSlug()]['school'] ??= $school;
                     }
                 }
             }
         } else {
-            foreach ($eventParticipants as $eventParticipant) {
-                assert($eventParticipant instanceof EventParticipant);
-                $participantType = $eventParticipant->getEventParticipantType();
-                $eventParticipantTypeSlug = $participantType->getSlug();
-                $person = $eventParticipant->getContact();
-                if ($person instanceof Person) { // Fix for organizations!
-                    foreach ($person->getStudies() as $study) {
-                        assert($study instanceof Position);
-                        $school = $study->getOrganization();
-                        $schoolSlug = $school ? $school->getSlug() : '';
-                        $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['eventParticipants'][] = $eventParticipant;
-                        if (!isset($output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school']) || $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school'] !== $school) {
-                            $output[$eventParticipantTypeSlug]['schools'][$schoolSlug]['school'] = $school;
-                        }
-                        if (!isset($output[$eventParticipantTypeSlug]['eventParticipantType']) || $output[$eventParticipantTypeSlug]['eventParticipantType'] !== $participantType) {
-                            $output[$eventParticipantTypeSlug]['eventParticipantType'] = $participantType;
-                        }
+            foreach ($participants as $participant) {
+                assert($participant instanceof EventParticipant);
+                $participantType = $participant->getEventParticipantType();
+                $person = $participant->getContact();
+                if ($person instanceof Person) { // Fix for organizations?
+                    foreach ($person->getSchools() as $school) {
+                        assert($school instanceof Organization);
+                        $output[$participantType->getSlug()]['schools'][$school->getSlug()]['participants'][] = $participant;
+                        $output[$participantType->getSlug()]['schools'][$school->getSlug()]['school'] ??= $school;
+                        $output[$participantType->getSlug()]['participantType'] ??= $participantType;
                     }
                 }
             }

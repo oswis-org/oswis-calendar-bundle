@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "3468e3cfca3a3adfe174fc5e07be59ca",
+  "content-hash": "9052d210662fdcb623956efe6da31c59",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -597,16 +597,16 @@
     },
     {
       "name": "doctrine/common",
-      "version": "v2.11.0",
+      "version": "2.12.0",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/common.git",
-        "reference": "b8ca1dcf6b0dc8a2af7a09baac8d0c48345df4ff"
+        "reference": "2053eafdf60c2172ee1373d1b9289ba1db7f1fc6"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/common/zipball/b8ca1dcf6b0dc8a2af7a09baac8d0c48345df4ff",
-        "reference": "b8ca1dcf6b0dc8a2af7a09baac8d0c48345df4ff",
+        "url": "https://api.github.com/repos/doctrine/common/zipball/2053eafdf60c2172ee1373d1b9289ba1db7f1fc6",
+        "reference": "2053eafdf60c2172ee1373d1b9289ba1db7f1fc6",
         "shasum": ""
       },
       "require": {
@@ -676,7 +676,7 @@
         "doctrine",
         "php"
       ],
-      "time": "2019-09-10T10:10:14+00:00"
+      "time": "2020-01-10T15:49:25+00:00"
     },
     {
       "name": "doctrine/dbal",
@@ -1192,16 +1192,16 @@
     },
     {
       "name": "doctrine/migrations",
-      "version": "2.2.0",
+      "version": "2.2.1",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/migrations.git",
-        "reference": "8e124252d2f6be1124017d746d5994dd4095d66f"
+        "reference": "a3987131febeb0e9acb3c47ab0df0af004588934"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/migrations/zipball/8e124252d2f6be1124017d746d5994dd4095d66f",
-        "reference": "8e124252d2f6be1124017d746d5994dd4095d66f",
+        "url": "https://api.github.com/repos/doctrine/migrations/zipball/a3987131febeb0e9acb3c47ab0df0af004588934",
+        "reference": "a3987131febeb0e9acb3c47ab0df0af004588934",
         "shasum": ""
       },
       "require": {
@@ -1270,7 +1270,7 @@
         "migrations",
         "php"
       ],
-      "time": "2019-11-13T11:06:31+00:00"
+      "time": "2019-12-04T06:09:14+00:00"
     },
     {
       "name": "doctrine/orm",
@@ -1357,16 +1357,16 @@
     },
     {
       "name": "doctrine/persistence",
-      "version": "1.3.3",
+      "version": "1.3.4",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/persistence.git",
-        "reference": "99b196bbd4715a94fa100fac664a351ffa46d6a5"
+        "reference": "ff7e08b0f814be2cd20c52dc3c8a262579376b94"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/persistence/zipball/99b196bbd4715a94fa100fac664a351ffa46d6a5",
-        "reference": "99b196bbd4715a94fa100fac664a351ffa46d6a5",
+        "url": "https://api.github.com/repos/doctrine/persistence/zipball/ff7e08b0f814be2cd20c52dc3c8a262579376b94",
+        "reference": "ff7e08b0f814be2cd20c52dc3c8a262579376b94",
         "shasum": ""
       },
       "require": {
@@ -1436,20 +1436,20 @@
         "orm",
         "persistence"
       ],
-      "time": "2019-12-13T10:43:02+00:00"
+      "time": "2020-01-09T19:49:17+00:00"
     },
     {
       "name": "doctrine/reflection",
-      "version": "v1.0.0",
+      "version": "v1.1.0",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/reflection.git",
-        "reference": "02538d3f95e88eb397a5f86274deb2c6175c2ab6"
+        "reference": "bc420ead87fdfe08c03ecc3549db603a45b06d4c"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/reflection/zipball/02538d3f95e88eb397a5f86274deb2c6175c2ab6",
-        "reference": "02538d3f95e88eb397a5f86274deb2c6175c2ab6",
+        "url": "https://api.github.com/repos/doctrine/reflection/zipball/bc420ead87fdfe08c03ecc3549db603a45b06d4c",
+        "reference": "bc420ead87fdfe08c03ecc3549db603a45b06d4c",
         "shasum": ""
       },
       "require": {
@@ -1457,13 +1457,15 @@
         "ext-tokenizer": "*",
         "php": "^7.1"
       },
+      "conflict": {
+        "doctrine/common": "<2.9"
+      },
       "require-dev": {
-        "doctrine/coding-standard": "^4.0",
-        "doctrine/common": "^2.8",
-        "phpstan/phpstan": "^0.9.2",
-        "phpstan/phpstan-phpunit": "^0.9.4",
-        "phpunit/phpunit": "^7.0",
-        "squizlabs/php_codesniffer": "^3.0"
+        "doctrine/coding-standard": "^5.0",
+        "doctrine/common": "^2.10",
+        "phpstan/phpstan": "^0.11.0",
+        "phpstan/phpstan-phpunit": "^0.11.0",
+        "phpunit/phpunit": "^7.0"
       },
       "type": "library",
       "extra": {
@@ -1482,16 +1484,16 @@
       ],
       "authors": [
         {
+          "name": "Guilherme Blanco",
+          "email": "guilhermeblanco@gmail.com"
+        },
+        {
           "name": "Roman Borschel",
           "email": "roman@code-factory.org"
         },
         {
           "name": "Benjamin Eberlei",
           "email": "kontakt@beberlei.de"
-        },
-        {
-          "name": "Guilherme Blanco",
-          "email": "guilhermeblanco@gmail.com"
         },
         {
           "name": "Jonathan Wage",
@@ -1506,25 +1508,26 @@
           "email": "ocramius@gmail.com"
         }
       ],
-      "description": "Doctrine Reflection component",
+      "description": "The Doctrine Reflection project is a simple library used by the various Doctrine projects which adds some additional functionality on top of the reflection functionality that comes with PHP. It allows you to get the reflection information about classes, methods and properties statically.",
       "homepage": "https://www.doctrine-project.org/projects/reflection.html",
       "keywords": [
-        "reflection"
+        "reflection",
+        "static"
       ],
-      "time": "2018-06-14T14:45:07+00:00"
+      "time": "2020-01-08T19:53:19+00:00"
     },
     {
       "name": "egulias/email-validator",
-      "version": "2.1.13",
+      "version": "2.1.14",
       "source": {
         "type": "git",
         "url": "https://github.com/egulias/EmailValidator.git",
-        "reference": "834593d5900615639208417760ba6a17299e2497"
+        "reference": "c4b8d12921999d8a561004371701dbc2e05b5ece"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/834593d5900615639208417760ba6a17299e2497",
-        "reference": "834593d5900615639208417760ba6a17299e2497",
+        "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/c4b8d12921999d8a561004371701dbc2e05b5ece",
+        "reference": "c4b8d12921999d8a561004371701dbc2e05b5ece",
         "shasum": ""
       },
       "require": {
@@ -1568,7 +1571,7 @@
         "validation",
         "validator"
       ],
-      "time": "2019-12-30T08:14:25+00:00"
+      "time": "2020-01-05T14:11:20+00:00"
     },
     {
       "name": "elasticsearch/elasticsearch",
@@ -2038,6 +2041,64 @@
       "time": "2019-05-04T08:16:12+00:00"
     },
     {
+      "name": "imagine/imagine",
+      "version": "1.2.3",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/avalanche123/Imagine.git",
+        "reference": "cb2361e5bb4410b681462d8e4f912bc5dabf84ab"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/avalanche123/Imagine/zipball/cb2361e5bb4410b681462d8e4f912bc5dabf84ab",
+        "reference": "cb2361e5bb4410b681462d8e4f912bc5dabf84ab",
+        "shasum": ""
+      },
+      "require": {
+        "php": ">=5.3.2"
+      },
+      "require-dev": {
+        "friendsofphp/php-cs-fixer": "2.2.*",
+        "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5 || ^7.5 || ^8.4"
+      },
+      "suggest": {
+        "ext-gd": "to use the GD implementation",
+        "ext-gmagick": "to use the Gmagick implementation",
+        "ext-imagick": "to use the Imagick implementation"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-develop": "0.7-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Imagine\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Bulat Shakirzyanov",
+          "email": "mallluhuct@gmail.com",
+          "homepage": "http://avalanche123.com"
+        }
+      ],
+      "description": "Image processing for PHP 5.3",
+      "homepage": "http://imagine.readthedocs.org/",
+      "keywords": [
+        "drawing",
+        "graphics",
+        "image manipulation",
+        "image processing"
+      ],
+      "time": "2019-12-04T09:55:33+00:00"
+    },
+    {
       "name": "jdorn/sql-formatter",
       "version": "v1.2.17",
       "source": {
@@ -2195,6 +2256,177 @@
       "time": "2018-04-26T11:41:33+00:00"
     },
     {
+      "name": "laminas/laminas-code",
+      "version": "3.4.1",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/laminas/laminas-code.git",
+        "reference": "1cb8f203389ab1482bf89c0e70a04849bacd7766"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/laminas/laminas-code/zipball/1cb8f203389ab1482bf89c0e70a04849bacd7766",
+        "reference": "1cb8f203389ab1482bf89c0e70a04849bacd7766",
+        "shasum": ""
+      },
+      "require": {
+        "laminas/laminas-eventmanager": "^2.6 || ^3.0",
+        "laminas/laminas-zendframework-bridge": "^1.0",
+        "php": "^7.1"
+      },
+      "conflict": {
+        "phpspec/prophecy": "<1.9.0"
+      },
+      "replace": {
+        "zendframework/zend-code": "self.version"
+      },
+      "require-dev": {
+        "doctrine/annotations": "^1.7",
+        "ext-phar": "*",
+        "laminas/laminas-coding-standard": "^1.0",
+        "laminas/laminas-stdlib": "^2.7 || ^3.0",
+        "phpunit/phpunit": "^7.5.16 || ^8.4"
+      },
+      "suggest": {
+        "doctrine/annotations": "Doctrine\\Common\\Annotations >=1.0 for annotation features",
+        "laminas/laminas-stdlib": "Laminas\\Stdlib component"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "3.4.x-dev",
+          "dev-develop": "3.5.x-dev",
+          "dev-dev-4.0": "4.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Laminas\\Code\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "BSD-3-Clause"
+      ],
+      "description": "Extensions to the PHP Reflection API, static code scanning, and code generation",
+      "homepage": "https://laminas.dev",
+      "keywords": [
+        "code",
+        "laminas"
+      ],
+      "time": "2019-12-31T16:28:24+00:00"
+    },
+    {
+      "name": "laminas/laminas-eventmanager",
+      "version": "3.2.1",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/laminas/laminas-eventmanager.git",
+        "reference": "ce4dc0bdf3b14b7f9815775af9dfee80a63b4748"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/laminas/laminas-eventmanager/zipball/ce4dc0bdf3b14b7f9815775af9dfee80a63b4748",
+        "reference": "ce4dc0bdf3b14b7f9815775af9dfee80a63b4748",
+        "shasum": ""
+      },
+      "require": {
+        "laminas/laminas-zendframework-bridge": "^1.0",
+        "php": "^5.6 || ^7.0"
+      },
+      "replace": {
+        "zendframework/zend-eventmanager": "self.version"
+      },
+      "require-dev": {
+        "athletic/athletic": "^0.1",
+        "container-interop/container-interop": "^1.1.0",
+        "laminas/laminas-coding-standard": "~1.0.0",
+        "laminas/laminas-stdlib": "^2.7.3 || ^3.0",
+        "phpunit/phpunit": "^5.7.27 || ^6.5.8 || ^7.1.2"
+      },
+      "suggest": {
+        "container-interop/container-interop": "^1.1.0, to use the lazy listeners feature",
+        "laminas/laminas-stdlib": "^2.7.3 || ^3.0, to use the FilterChain feature"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "3.2-dev",
+          "dev-develop": "3.3-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Laminas\\EventManager\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "BSD-3-Clause"
+      ],
+      "description": "Trigger and listen to events within a PHP application",
+      "homepage": "https://laminas.dev",
+      "keywords": [
+        "event",
+        "eventmanager",
+        "events",
+        "laminas"
+      ],
+      "time": "2019-12-31T16:44:52+00:00"
+    },
+    {
+      "name": "laminas/laminas-zendframework-bridge",
+      "version": "1.0.1",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/laminas/laminas-zendframework-bridge.git",
+        "reference": "0fb9675b84a1666ab45182b6c5b29956921e818d"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/laminas/laminas-zendframework-bridge/zipball/0fb9675b84a1666ab45182b6c5b29956921e818d",
+        "reference": "0fb9675b84a1666ab45182b6c5b29956921e818d",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^5.6 || ^7.0"
+      },
+      "require-dev": {
+        "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5 || ^8.1",
+        "squizlabs/php_codesniffer": "^3.5"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "1.0.x-dev",
+          "dev-develop": "1.1.x-dev"
+        },
+        "laminas": {
+          "module": "Laminas\\ZendFrameworkBridge"
+        }
+      },
+      "autoload": {
+        "files": [
+          "src/autoload.php"
+        ],
+        "psr-4": {
+          "Laminas\\ZendFrameworkBridge\\": "src//"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "BSD-3-Clause"
+      ],
+      "description": "Alias legacy ZF class names to Laminas Project equivalents.",
+      "keywords": [
+        "ZendFramework",
+        "autoloading",
+        "laminas",
+        "zf"
+      ],
+      "time": "2020-01-07T22:58:31+00:00"
+    },
+    {
       "name": "lcobucci/jwt",
       "version": "3.3.1",
       "source": {
@@ -2251,16 +2483,16 @@
     },
     {
       "name": "league/commonmark",
-      "version": "1.1.2",
+      "version": "1.2.0",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "772e03fa9c6477ef5ef2d154fefd8a2a8d8ed03c"
+        "reference": "2533c389fd2a7573d4f7be279b1c33cf941c8dfc"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/772e03fa9c6477ef5ef2d154fefd8a2a8d8ed03c",
-        "reference": "772e03fa9c6477ef5ef2d154fefd8a2a8d8ed03c",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/2533c389fd2a7573d4f7be279b1c33cf941c8dfc",
+        "reference": "2533c389fd2a7573d4f7be279b1c33cf941c8dfc",
         "shasum": ""
       },
       "require": {
@@ -2272,7 +2504,7 @@
       },
       "require-dev": {
         "cebe/markdown": "~1.0",
-        "commonmark/commonmark.js": "0.29.0",
+        "commonmark/commonmark.js": "0.29.1",
         "erusev/parsedown": "~1.0",
         "ext-json": "*",
         "michelf/php-markdown": "~1.4",
@@ -2291,7 +2523,7 @@
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "1.2-dev"
+          "dev-master": "1.3-dev"
         }
       },
       "autoload": {
@@ -2318,7 +2550,7 @@
         "markdown",
         "parser"
       ],
-      "time": "2019-12-10T02:55:03+00:00"
+      "time": "2020-01-09T22:41:09+00:00"
     },
     {
       "name": "league/commonmark-ext-autolink",
@@ -2906,6 +3138,107 @@
       "time": "2019-11-22T14:22:26+00:00"
     },
     {
+      "name": "liip/imagine-bundle",
+      "version": "2.3.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/liip/LiipImagineBundle.git",
+        "reference": "06740a0a0e9c0054d3e0589472fd19b975784c52"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/liip/LiipImagineBundle/zipball/06740a0a0e9c0054d3e0589472fd19b975784c52",
+        "reference": "06740a0a0e9c0054d3e0589472fd19b975784c52",
+        "shasum": ""
+      },
+      "require": {
+        "imagine/imagine": "^0.7.1|^1.1",
+        "php": "^7.1",
+        "symfony/asset": "^3.4|^4.3|^5.0",
+        "symfony/filesystem": "^3.4|^4.3|^5.0",
+        "symfony/finder": "^3.4|^4.3|^5.0",
+        "symfony/framework-bundle": "^3.4|^4.3|^5.0",
+        "symfony/options-resolver": "^3.4|^4.3|^5.0",
+        "symfony/process": "^3.4|^4.3|^5.0",
+        "symfony/templating": "^3.4|^4.3|^5.0",
+        "symfony/translation": "^3.4|^4.3|^5.0"
+      },
+      "require-dev": {
+        "amazonwebservices/aws-sdk-for-php": "^1.0",
+        "aws/aws-sdk-php": "^2.4",
+        "doctrine/cache": "^1.1",
+        "doctrine/orm": "^2.3",
+        "enqueue/enqueue-bundle": "^0.9|^0.10",
+        "ext-gd": "*",
+        "friendsofphp/php-cs-fixer": "^2.10",
+        "league/flysystem": "^1.0",
+        "psr/log": "^1.0",
+        "symfony/browser-kit": "^3.4|^4.3|^5.0",
+        "symfony/console": "^3.4|^4.3|^5.0",
+        "symfony/dependency-injection": "^3.4|^4.3|^5.0",
+        "symfony/form": "^3.4|^4.3|^5.0",
+        "symfony/phpunit-bridge": "^4.3|^5.0",
+        "symfony/validator": "^3.4|^4.3|^5.0",
+        "symfony/yaml": "^3.4|^4.3|^5.0",
+        "twig/twig": "^1.34|^2.4|^3.0"
+      },
+      "suggest": {
+        "alcaeus/mongo-php-adapter": "required on PHP >= 7.0 to use mongo components with mongodb extension",
+        "amazonwebservices/aws-sdk-for-php": "required to use AWS version 1 cache resolver",
+        "aws/aws-sdk-php": "required to use AWS version 2/3 cache resolver",
+        "doctrine/mongodb-odm": "required to use mongodb-backed doctrine components",
+        "enqueue/enqueue-bundle": "^0.9 add if you like to process images in background",
+        "ext-exif": "required to read EXIF metadata from images",
+        "ext-gd": "required to use gd driver",
+        "ext-gmagick": "required to use gmagick driver",
+        "ext-imagick": "required to use imagick driver",
+        "ext-mongo": "required for mongodb components on PHP <7.0",
+        "ext-mongodb": "required for mongodb components on PHP >=7.0",
+        "league/flysystem": "required to use FlySystem data loader or cache resolver",
+        "monolog/monolog": "A psr/log compatible logger is required to enable logging",
+        "twig/twig": "required to use the provided Twig extension. Version 1.12 or greater needed"
+      },
+      "type": "symfony-bundle",
+      "extra": {
+        "branch-alias": {
+          "dev-1.0": "1.7-dev",
+          "dev-master": "2.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Liip\\ImagineBundle\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Liip and other contributors",
+          "homepage": "https://github.com/liip/LiipImagineBundle/contributors"
+        }
+      ],
+      "description": "This bundle provides an image manipulation abstraction toolkit for Symfony-based projects.",
+      "homepage": "http://liip.ch",
+      "keywords": [
+        "bundle",
+        "image",
+        "imagine",
+        "liip",
+        "manipulation",
+        "photos",
+        "pictures",
+        "symfony",
+        "transformation"
+      ],
+      "time": "2020-01-07T13:29:56+00:00"
+    },
+    {
       "name": "lorenzo/pinky",
       "version": "1.0.5",
       "source": {
@@ -3311,45 +3644,46 @@
     },
     {
       "name": "ocramius/proxy-manager",
-      "version": "2.5.1",
+      "version": "2.6.0",
       "source": {
         "type": "git",
         "url": "https://github.com/Ocramius/ProxyManager.git",
-        "reference": "b7bac968eef945322d1e28d7e833b6a549a6da27"
+        "reference": "406ca12cabfb43e3b11c994bcbeea8e358c65af9"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/b7bac968eef945322d1e28d7e833b6a549a6da27",
-        "reference": "b7bac968eef945322d1e28d7e833b6a549a6da27",
+        "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/406ca12cabfb43e3b11c994bcbeea8e358c65af9",
+        "reference": "406ca12cabfb43e3b11c994bcbeea8e358c65af9",
         "shasum": ""
       },
       "require": {
+        "laminas/laminas-code": "^3.4.1",
         "ocramius/package-versions": "^1.5.1",
-        "php": "^7.4.0",
-        "zendframework/zend-code": "^3.3.1"
+        "php": "7.4.*",
+        "webimpress/safe-writer": "^2.0"
       },
       "conflict": {
         "doctrine/annotations": "<1.6.1",
+        "laminas/laminas-stdlib": "<3.2.1",
         "zendframework/zend-stdlib": "<3.2.1"
       },
       "require-dev": {
-        "couscous/couscous": "^1.7.2",
         "doctrine/coding-standard": "^6.0.0",
         "ext-phar": "*",
-        "infection/infection": "^0.13.4",
-        "nikic/php-parser": "^4.2.2",
-        "phpbench/phpbench": "^0.16.9",
-        "phpunit/phpunit": "^8.3.3",
+        "infection/infection": "^0.15.0",
+        "nikic/php-parser": "^4.3.0",
+        "phpbench/phpbench": "^0.16.10",
+        "phpunit/phpunit": "^8.5.1",
         "slevomat/coding-standard": "^5.0.4",
-        "squizlabs/php_codesniffer": "^3.4.2",
-        "symfony/console": "^4.3.3",
-        "vimeo/psalm": "3.4.11"
+        "squizlabs/php_codesniffer": "^3.5.3",
+        "symfony/console": "^4.4.2",
+        "vimeo/psalm": "3.7.0"
       },
       "suggest": {
-        "ocramius/generated-hydrator": "To have very fast object to array to object conversion for ghost objects",
-        "zendframework/zend-json": "To have the JsonRpc adapter (Remote Object feature)",
-        "zendframework/zend-soap": "To have the Soap adapter (Remote Object feature)",
-        "zendframework/zend-xmlrpc": "To have the XmlRpc adapter (Remote Object feature)"
+        "laminas/laminas-json": "To have the JsonRpc adapter (Remote Object feature)",
+        "laminas/laminas-soap": "To have the Soap adapter (Remote Object feature)",
+        "laminas/laminas-xmlrpc": "To have the XmlRpc adapter (Remote Object feature)",
+        "ocramius/generated-hydrator": "To have very fast object to array to object conversion for ghost objects"
       },
       "type": "library",
       "extra": {
@@ -3382,7 +3716,7 @@
         "proxy pattern",
         "service proxies"
       ],
-      "time": "2019-12-17T09:22:43+00:00"
+      "time": "2020-01-07T08:10:36+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -4117,43 +4451,41 @@
       "time": "2017-12-24T16:06:50+00:00"
     },
     {
-      "name": "swiftmailer/swiftmailer",
-      "version": "v6.2.3",
+      "name": "symfony/asset",
+      "version": "v4.4.2",
       "source": {
         "type": "git",
-        "url": "https://github.com/swiftmailer/swiftmailer.git",
-        "reference": "149cfdf118b169f7840bbe3ef0d4bc795d1780c9"
+        "url": "https://github.com/symfony/asset.git",
+        "reference": "7ec5fc653dab63d7519a6f411982ee224a696d66"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/149cfdf118b169f7840bbe3ef0d4bc795d1780c9",
-        "reference": "149cfdf118b169f7840bbe3ef0d4bc795d1780c9",
+        "url": "https://api.github.com/repos/symfony/asset/zipball/7ec5fc653dab63d7519a6f411982ee224a696d66",
+        "reference": "7ec5fc653dab63d7519a6f411982ee224a696d66",
         "shasum": ""
       },
       "require": {
-        "egulias/email-validator": "~2.0",
-        "php": ">=7.0.0",
-        "symfony/polyfill-iconv": "^1.0",
-        "symfony/polyfill-intl-idn": "^1.10",
-        "symfony/polyfill-mbstring": "^1.0"
+        "php": "^7.1.3"
       },
       "require-dev": {
-        "mockery/mockery": "~0.9.1",
-        "symfony/phpunit-bridge": "^3.4.19|^4.1.8"
+        "symfony/http-foundation": "^3.4|^4.0|^5.0",
+        "symfony/http-kernel": "^3.4|^4.0|^5.0"
       },
       "suggest": {
-        "ext-intl": "Needed to support internationalized email addresses",
-        "true/punycode": "Needed to support internationalized email addresses, if ext-intl is not installed"
+        "symfony/http-foundation": ""
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "6.2-dev"
+          "dev-master": "4.4-dev"
         }
       },
       "autoload": {
-        "files": [
-          "lib/swift_required.php"
+        "psr-4": {
+          "Symfony\\Component\\Asset\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
         ]
       },
       "notification-url": "https://packagist.org/downloads/",
@@ -4162,21 +4494,17 @@
       ],
       "authors": [
         {
-          "name": "Chris Corbyn"
-        },
-        {
           "name": "Fabien Potencier",
           "email": "fabien@symfony.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
         }
       ],
-      "description": "Swiftmailer, free feature-rich PHP mailer",
-      "homepage": "https://swiftmailer.symfony.com",
-      "keywords": [
-        "email",
-        "mail",
-        "mailer"
-      ],
-      "time": "2019-11-12T09:31:26+00:00"
+      "description": "Symfony Asset Component",
+      "homepage": "https://symfony.com",
+      "time": "2019-10-12T00:35:04+00:00"
     },
     {
       "name": "symfony/browser-kit",
@@ -6079,65 +6407,6 @@
       "time": "2019-11-27T13:56:44+00:00"
     },
     {
-      "name": "symfony/polyfill-iconv",
-      "version": "v1.13.1",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/symfony/polyfill-iconv.git",
-        "reference": "a019efccc03f1a335af6b4f20c30f5ea8060be36"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-iconv/zipball/a019efccc03f1a335af6b4f20c30f5ea8060be36",
-        "reference": "a019efccc03f1a335af6b4f20c30f5ea8060be36",
-        "shasum": ""
-      },
-      "require": {
-        "php": ">=5.3.3"
-      },
-      "suggest": {
-        "ext-iconv": "For best performance"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.13-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Symfony\\Polyfill\\Iconv\\": ""
-        },
-        "files": [
-          "bootstrap.php"
-        ]
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Nicolas Grekas",
-          "email": "p@tchwork.com"
-        },
-        {
-          "name": "Symfony Community",
-          "homepage": "https://symfony.com/contributors"
-        }
-      ],
-      "description": "Symfony polyfill for the Iconv extension",
-      "homepage": "https://symfony.com",
-      "keywords": [
-        "compatibility",
-        "iconv",
-        "polyfill",
-        "portable",
-        "shim"
-      ],
-      "time": "2019-11-27T13:56:44+00:00"
-    },
-    {
       "name": "symfony/polyfill-intl-icu",
       "version": "v1.13.1",
       "source": {
@@ -6728,6 +6997,63 @@
         "validator"
       ],
       "time": "2019-11-18T17:27:11+00:00"
+    },
+    {
+      "name": "symfony/proxy-manager-bridge",
+      "version": "v4.4.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/proxy-manager-bridge.git",
+        "reference": "9da5781e8fe48396eeacc463ef050205ea6ed2cb"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/symfony/proxy-manager-bridge/zipball/9da5781e8fe48396eeacc463ef050205ea6ed2cb",
+        "reference": "9da5781e8fe48396eeacc463ef050205ea6ed2cb",
+        "shasum": ""
+      },
+      "require": {
+        "ocramius/proxy-manager": "~2.1",
+        "php": "^7.1.3",
+        "symfony/dependency-injection": "^4.0|^5.0"
+      },
+      "conflict": {
+        "zendframework/zend-eventmanager": "2.6.0"
+      },
+      "require-dev": {
+        "symfony/config": "^3.4|^4.0|^5.0"
+      },
+      "type": "symfony-bridge",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "4.4-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Symfony\\Bridge\\ProxyManager\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Fabien Potencier",
+          "email": "fabien@symfony.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
+        }
+      ],
+      "description": "Symfony ProxyManager Bridge",
+      "homepage": "https://symfony.com",
+      "time": "2019-12-19T15:57:49+00:00"
     },
     {
       "name": "symfony/routing",
@@ -7361,71 +7687,6 @@
       "time": "2019-11-18T17:27:11+00:00"
     },
     {
-      "name": "symfony/swiftmailer-bundle",
-      "version": "v3.4.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/symfony/swiftmailer-bundle.git",
-        "reference": "553d2474288349faed873da8ab7c1551a00d26ae"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/symfony/swiftmailer-bundle/zipball/553d2474288349faed873da8ab7c1551a00d26ae",
-        "reference": "553d2474288349faed873da8ab7c1551a00d26ae",
-        "shasum": ""
-      },
-      "require": {
-        "php": ">=7.1",
-        "swiftmailer/swiftmailer": "^6.1.3",
-        "symfony/config": "^4.3.8|^5.0",
-        "symfony/dependency-injection": "^4.3.8|^5.0",
-        "symfony/http-kernel": "^4.3.8|^5.0"
-      },
-      "conflict": {
-        "twig/twig": "<1.41|<2.10"
-      },
-      "require-dev": {
-        "symfony/console": "^4.3.8|^5.0",
-        "symfony/framework-bundle": "^4.3.8|^5.0",
-        "symfony/phpunit-bridge": "^4.3.8|^5.0",
-        "symfony/yaml": "^4.3.8|^5.0"
-      },
-      "suggest": {
-        "psr/log": "Allows logging"
-      },
-      "type": "symfony-bundle",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "3.4-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Symfony\\Bundle\\SwiftmailerBundle\\": ""
-        },
-        "exclude-from-classmap": [
-          "/Tests/"
-        ]
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Fabien Potencier",
-          "email": "fabien@symfony.com"
-        },
-        {
-          "name": "Symfony Community",
-          "homepage": "http://symfony.com/contributors"
-        }
-      ],
-      "description": "Symfony SwiftmailerBundle",
-      "homepage": "http://symfony.com",
-      "time": "2019-11-14T16:18:31+00:00"
-    },
-    {
       "name": "symfony/templating",
       "version": "v5.0.2",
       "source": {
@@ -7480,6 +7741,82 @@
       "description": "Symfony Templating Component",
       "homepage": "https://symfony.com",
       "time": "2019-11-18T17:27:11+00:00"
+    },
+    {
+      "name": "symfony/translation",
+      "version": "v4.4.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/translation.git",
+        "reference": "f7669f48a9633bf8139bc026c755e894b7206677"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/symfony/translation/zipball/f7669f48a9633bf8139bc026c755e894b7206677",
+        "reference": "f7669f48a9633bf8139bc026c755e894b7206677",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^7.1.3",
+        "symfony/polyfill-mbstring": "~1.0",
+        "symfony/translation-contracts": "^1.1.6|^2"
+      },
+      "conflict": {
+        "symfony/config": "<3.4",
+        "symfony/dependency-injection": "<3.4",
+        "symfony/http-kernel": "<4.4",
+        "symfony/yaml": "<3.4"
+      },
+      "provide": {
+        "symfony/translation-implementation": "1.0"
+      },
+      "require-dev": {
+        "psr/log": "~1.0",
+        "symfony/config": "^3.4|^4.0|^5.0",
+        "symfony/console": "^3.4|^4.0|^5.0",
+        "symfony/dependency-injection": "^3.4|^4.0|^5.0",
+        "symfony/finder": "~2.8|~3.0|~4.0|^5.0",
+        "symfony/http-kernel": "^4.4",
+        "symfony/intl": "^3.4|^4.0|^5.0",
+        "symfony/service-contracts": "^1.1.2|^2",
+        "symfony/yaml": "^3.4|^4.0|^5.0"
+      },
+      "suggest": {
+        "psr/log-implementation": "To use logging capability in translator",
+        "symfony/config": "",
+        "symfony/yaml": ""
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "4.4-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Symfony\\Component\\Translation\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Fabien Potencier",
+          "email": "fabien@symfony.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
+        }
+      ],
+      "description": "Symfony Translation Component",
+      "homepage": "https://symfony.com",
+      "time": "2019-12-12T12:53:52+00:00"
     },
     {
       "name": "symfony/translation-contracts",
@@ -7540,53 +7877,54 @@
     },
     {
       "name": "symfony/twig-bridge",
-      "version": "v5.0.2",
+      "version": "v4.4.2",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/twig-bridge.git",
-        "reference": "abbaeee38ff39651e335c55be40752be2ddd0976"
+        "reference": "936cf6f5b973377345e8ac43870987ef8e747ce3"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/twig-bridge/zipball/abbaeee38ff39651e335c55be40752be2ddd0976",
-        "reference": "abbaeee38ff39651e335c55be40752be2ddd0976",
+        "url": "https://api.github.com/repos/symfony/twig-bridge/zipball/936cf6f5b973377345e8ac43870987ef8e747ce3",
+        "reference": "936cf6f5b973377345e8ac43870987ef8e747ce3",
         "shasum": ""
       },
       "require": {
-        "php": "^7.2.5",
+        "php": "^7.1.3",
         "symfony/translation-contracts": "^1.1|^2",
-        "twig/twig": "^2.10|^3.0"
+        "twig/twig": "^1.41|^2.10|^3.0"
       },
       "conflict": {
-        "symfony/console": "<4.4",
-        "symfony/form": "<5.0",
-        "symfony/http-foundation": "<4.4",
-        "symfony/http-kernel": "<4.4",
-        "symfony/translation": "<5.0",
-        "symfony/workflow": "<4.4"
+        "symfony/console": "<3.4",
+        "symfony/form": "<4.4",
+        "symfony/http-foundation": "<4.3",
+        "symfony/translation": "<4.2",
+        "symfony/workflow": "<4.3"
       },
       "require-dev": {
         "egulias/email-validator": "^2.1.10",
-        "symfony/asset": "^4.4|^5.0",
-        "symfony/console": "^4.4|^5.0",
-        "symfony/dependency-injection": "^4.4|^5.0",
-        "symfony/expression-language": "^4.4|^5.0",
-        "symfony/finder": "^4.4|^5.0",
-        "symfony/form": "^5.0",
-        "symfony/http-foundation": "^4.4|^5.0",
-        "symfony/http-kernel": "^4.4|^5.0",
-        "symfony/mime": "^4.4|^5.0",
+        "symfony/asset": "^3.4|^4.0|^5.0",
+        "symfony/console": "^3.4|^4.0|^5.0",
+        "symfony/dependency-injection": "^3.4|^4.0|^5.0",
+        "symfony/error-handler": "^4.4|^5.0",
+        "symfony/expression-language": "^3.4|^4.0|^5.0",
+        "symfony/finder": "^3.4|^4.0|^5.0",
+        "symfony/form": "^4.3.5",
+        "symfony/http-foundation": "^4.3|^5.0",
+        "symfony/http-kernel": "^4.4",
+        "symfony/mime": "^4.3|^5.0",
         "symfony/polyfill-intl-icu": "~1.0",
-        "symfony/routing": "^4.4|^5.0",
+        "symfony/routing": "^3.4|^4.0|^5.0",
         "symfony/security-acl": "^2.8|^3.0",
-        "symfony/security-core": "^4.4|^5.0",
-        "symfony/security-csrf": "^4.4|^5.0",
-        "symfony/security-http": "^4.4|^5.0",
-        "symfony/stopwatch": "^4.4|^5.0",
-        "symfony/translation": "^5.0",
+        "symfony/security-core": "^3.0|^4.0|^5.0",
+        "symfony/security-csrf": "^3.4|^4.0|^5.0",
+        "symfony/security-http": "^3.4|^4.0|^5.0",
+        "symfony/stopwatch": "^3.4|^4.0|^5.0",
+        "symfony/templating": "^3.4|^4.0|^5.0",
+        "symfony/translation": "^4.2.1|^5.0",
         "symfony/web-link": "^4.4|^5.0",
-        "symfony/workflow": "^4.4|^5.0",
-        "symfony/yaml": "^4.4|^5.0",
+        "symfony/workflow": "^4.3|^5.0",
+        "symfony/yaml": "^3.4|^4.0|^5.0",
         "twig/cssinliner-extra": "^2.12",
         "twig/inky-extra": "^2.12",
         "twig/markdown-extra": "^2.12"
@@ -7602,6 +7940,7 @@
         "symfony/security-csrf": "For using the CsrfExtension",
         "symfony/security-http": "For using the LogoutUrlExtension",
         "symfony/stopwatch": "For using the StopwatchExtension",
+        "symfony/templating": "For using the TwigEngine",
         "symfony/translation": "For using the TranslationExtension",
         "symfony/var-dumper": "For using the DumpExtension",
         "symfony/web-link": "For using the WebLinkExtension",
@@ -7610,7 +7949,7 @@
       "type": "symfony-bridge",
       "extra": {
         "branch-alias": {
-          "dev-master": "5.0-dev"
+          "dev-master": "4.4-dev"
         }
       },
       "autoload": {
@@ -7637,7 +7976,7 @@
       ],
       "description": "Symfony Twig Bridge",
       "homepage": "https://symfony.com",
-      "time": "2019-12-18T16:23:52+00:00"
+      "time": "2019-12-05T05:58:42+00:00"
     },
     {
       "name": "symfony/twig-bundle",
@@ -8016,6 +8355,70 @@
         "push"
       ],
       "time": "2019-10-12T00:35:04+00:00"
+    },
+    {
+      "name": "symfony/web-profiler-bundle",
+      "version": "v4.4.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/web-profiler-bundle.git",
+        "reference": "92453ec17c365c561d9e65b06050b9e2a65e9306"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/symfony/web-profiler-bundle/zipball/92453ec17c365c561d9e65b06050b9e2a65e9306",
+        "reference": "92453ec17c365c561d9e65b06050b9e2a65e9306",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^7.1.3",
+        "symfony/config": "^4.2|^5.0",
+        "symfony/framework-bundle": "^4.4|^5.0",
+        "symfony/http-kernel": "^4.4",
+        "symfony/routing": "^3.4|^4.0|^5.0",
+        "symfony/twig-bundle": "^4.2|^5.0",
+        "twig/twig": "^1.41|^2.10|^3.0"
+      },
+      "conflict": {
+        "symfony/form": "<4.3",
+        "symfony/messenger": "<4.2"
+      },
+      "require-dev": {
+        "symfony/console": "^3.4|^4.0|^5.0",
+        "symfony/dependency-injection": "^3.4|^4.0|^5.0",
+        "symfony/stopwatch": "^3.4|^4.0|^5.0"
+      },
+      "type": "symfony-bundle",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "4.4-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Symfony\\Bundle\\WebProfilerBundle\\": ""
+        },
+        "exclude-from-classmap": [
+          "/Tests/"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Fabien Potencier",
+          "email": "fabien@symfony.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
+        }
+      ],
+      "description": "Symfony WebProfilerBundle",
+      "homepage": "https://symfony.com",
+      "time": "2019-11-20T10:44:55+00:00"
     },
     {
       "name": "symfony/yaml",
@@ -8508,6 +8911,54 @@
       "time": "2019-12-07T13:02:37+00:00"
     },
     {
+      "name": "webimpress/safe-writer",
+      "version": "2.0.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/webimpress/safe-writer.git",
+        "reference": "d03bea3b98abe1d4c8b24cbebf524361ffaafee4"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/webimpress/safe-writer/zipball/d03bea3b98abe1d4c8b24cbebf524361ffaafee4",
+        "reference": "d03bea3b98abe1d4c8b24cbebf524361ffaafee4",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^7.2"
+      },
+      "require-dev": {
+        "phpunit/phpunit": "^8.4.3",
+        "webimpress/coding-standard": "dev-develop"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "2.0.x-dev",
+          "dev-develop": "2.1.x-dev",
+          "dev-release-1.0": "1.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Webimpress\\SafeWriter\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "BSD-2-Clause"
+      ],
+      "description": "Tool to write files safely, to avoid race conditions",
+      "keywords": [
+        "concurrent write",
+        "file writer",
+        "race condition",
+        "safe writer",
+        "webimpress"
+      ],
+      "time": "2019-11-27T19:40:53+00:00"
+    },
+    {
       "name": "webmozart/assert",
       "version": "1.6.0",
       "source": {
@@ -8609,16 +9060,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.159",
+      "version": "v0.0.169",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "f44dd7f5f65496cf442aa0f313d12d1416da271c"
+        "reference": "604823ac3e7f34454339a336e3b48a8b99e0d297"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/f44dd7f5f65496cf442aa0f313d12d1416da271c",
-        "reference": "f44dd7f5f65496cf442aa0f313d12d1416da271c",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/604823ac3e7f34454339a336e3b48a8b99e0d297",
+        "reference": "604823ac3e7f34454339a336e3b48a8b99e0d297",
         "shasum": ""
       },
       "require": {
@@ -8660,20 +9111,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2019-12-23T15:47:07+00:00"
+      "time": "2020-01-11T15:24:58+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.362",
+      "version": "v0.0.373",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "68b305bc0ec900bdb3ce9c198b2c5fd89ae19cc8"
+        "reference": "ef59d4c994203981420cde98ca9ded4718a4b307"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/68b305bc0ec900bdb3ce9c198b2c5fd89ae19cc8",
-        "reference": "68b305bc0ec900bdb3ce9c198b2c5fd89ae19cc8",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/ef59d4c994203981420cde98ca9ded4718a4b307",
+        "reference": "ef59d4c994203981420cde98ca9ded4718a4b307",
         "shasum": ""
       },
       "require": {
@@ -8696,11 +9147,13 @@
         "league/csv": "^9.4",
         "league/html-to-markdown": "^4.9",
         "lexik/jwt-authentication-bundle": "^2.6",
+        "liip/imagine-bundle": "^2.2",
         "mpdf/mpdf": "^8.0",
         "php": "^7.4",
         "psr/event-dispatcher": "^1.0",
         "sensio/framework-extra-bundle": "^5.5",
         "stof/doctrine-extensions-bundle": "^1.3",
+        "symfony/asset": "^4.4",
         "symfony/browser-kit": "^4.4",
         "symfony/dependency-injection": "^4.4",
         "symfony/expression-language": "^4.4",
@@ -8709,10 +9162,12 @@
         "symfony/monolog-bundle": "^3.5",
         "symfony/orm-pack": "^1.0",
         "symfony/process": "^4.4",
+        "symfony/proxy-manager-bridge": "^4.4",
+        "symfony/security-bundle": "^4.4",
         "symfony/serializer-pack": "^1.0",
-        "symfony/swiftmailer-bundle": "^3.4",
         "symfony/twig-bundle": "^4.4",
         "symfony/web-link": "^4.4",
+        "symfony/web-profiler-bundle": "^4.4",
         "symfony/yaml": "^4.4",
         "twig/cssinliner-extra": "^3.0",
         "twig/extra-bundle": "^3.0",
@@ -8762,175 +9217,10 @@
         "php",
         "zakjakub"
       ],
-      "time": "2019-12-29T14:13:18+00:00"
-    },
-    {
-      "name": "zendframework/zend-code",
-      "version": "3.4.1",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/zendframework/zend-code.git",
-        "reference": "268040548f92c2bfcba164421c1add2ba43abaaa"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/zendframework/zend-code/zipball/268040548f92c2bfcba164421c1add2ba43abaaa",
-        "reference": "268040548f92c2bfcba164421c1add2ba43abaaa",
-        "shasum": ""
-      },
-      "require": {
-        "php": "^7.1",
-        "zendframework/zend-eventmanager": "^2.6 || ^3.0"
-      },
-      "conflict": {
-        "phpspec/prophecy": "<1.9.0"
-      },
-      "require-dev": {
-        "doctrine/annotations": "^1.7",
-        "ext-phar": "*",
-        "phpunit/phpunit": "^7.5.16 || ^8.4",
-        "zendframework/zend-coding-standard": "^1.0",
-        "zendframework/zend-stdlib": "^2.7 || ^3.0"
-      },
-      "suggest": {
-        "doctrine/annotations": "Doctrine\\Common\\Annotations >=1.0 for annotation features",
-        "zendframework/zend-stdlib": "Zend\\Stdlib component"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "3.4.x-dev",
-          "dev-develop": "3.5.x-dev",
-          "dev-dev-4.0": "4.0.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Zend\\Code\\": "src/"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "description": "Extensions to the PHP Reflection API, static code scanning, and code generation",
-      "keywords": [
-        "ZendFramework",
-        "code",
-        "zf"
-      ],
-      "abandoned": "laminas/laminas-code",
-      "time": "2019-12-10T19:21:15+00:00"
-    },
-    {
-      "name": "zendframework/zend-eventmanager",
-      "version": "3.2.1",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/zendframework/zend-eventmanager.git",
-        "reference": "a5e2583a211f73604691586b8406ff7296a946dd"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/zendframework/zend-eventmanager/zipball/a5e2583a211f73604691586b8406ff7296a946dd",
-        "reference": "a5e2583a211f73604691586b8406ff7296a946dd",
-        "shasum": ""
-      },
-      "require": {
-        "php": "^5.6 || ^7.0"
-      },
-      "require-dev": {
-        "athletic/athletic": "^0.1",
-        "container-interop/container-interop": "^1.1.0",
-        "phpunit/phpunit": "^5.7.27 || ^6.5.8 || ^7.1.2",
-        "zendframework/zend-coding-standard": "~1.0.0",
-        "zendframework/zend-stdlib": "^2.7.3 || ^3.0"
-      },
-      "suggest": {
-        "container-interop/container-interop": "^1.1.0, to use the lazy listeners feature",
-        "zendframework/zend-stdlib": "^2.7.3 || ^3.0, to use the FilterChain feature"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "3.2-dev",
-          "dev-develop": "3.3-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Zend\\EventManager\\": "src/"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "description": "Trigger and listen to events within a PHP application",
-      "homepage": "https://github.com/zendframework/zend-eventmanager",
-      "keywords": [
-        "event",
-        "eventmanager",
-        "events",
-        "zf2"
-      ],
-      "abandoned": "laminas/laminas-eventmanager",
-      "time": "2018-04-25T15:33:34+00:00"
+      "time": "2020-01-10T21:38:55+00:00"
     }
   ],
   "packages-dev": [
-    {
-      "name": "nikic/php-parser",
-      "version": "v4.3.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/nikic/PHP-Parser.git",
-        "reference": "9a9981c347c5c49d6dfe5cf826bb882b824080dc"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/9a9981c347c5c49d6dfe5cf826bb882b824080dc",
-        "reference": "9a9981c347c5c49d6dfe5cf826bb882b824080dc",
-        "shasum": ""
-      },
-      "require": {
-        "ext-tokenizer": "*",
-        "php": ">=7.0"
-      },
-      "require-dev": {
-        "ircmaxell/php-yacc": "0.0.5",
-        "phpunit/phpunit": "^6.5 || ^7.0 || ^8.0"
-      },
-      "bin": [
-        "bin/php-parse"
-      ],
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "4.3-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "PhpParser\\": "lib/PhpParser"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Nikita Popov"
-        }
-      ],
-      "description": "A PHP parser written in PHP",
-      "keywords": [
-        "parser",
-        "php"
-      ],
-      "time": "2019-11-08T13:50:10+00:00"
-    },
     {
       "name": "phpstan/extension-installer",
       "version": "1.0.3",
@@ -8977,20 +9267,19 @@
     },
     {
       "name": "phpstan/phpstan",
-      "version": "0.12.3",
+      "version": "0.12.4",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan.git",
-        "reference": "c15a6ea55da71d8133399306f560cfe4d30301b7"
+        "reference": "100a25ba8561223f6bf5a5ff4204f951c0ec007c"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/c15a6ea55da71d8133399306f560cfe4d30301b7",
-        "reference": "c15a6ea55da71d8133399306f560cfe4d30301b7",
+        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/100a25ba8561223f6bf5a5ff4204f951c0ec007c",
+        "reference": "100a25ba8561223f6bf5a5ff4204f951c0ec007c",
         "shasum": ""
       },
       "require": {
-        "nikic/php-parser": "^4.3.0",
         "php": "^7.1"
       },
       "bin": [
@@ -9013,7 +9302,7 @@
         "MIT"
       ],
       "description": "PHPStan - PHP Static Analysis Tool",
-      "time": "2019-12-14T13:41:17+00:00"
+      "time": "2020-01-06T06:38:17+00:00"
     },
     {
       "name": "roave/security-advisories",
@@ -9021,12 +9310,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "872fce6c151b06f6446f228f2290a48862ede2a4"
+        "reference": "67ac6ea8f4a078c3c9b7aec5d7ae70f098c37389"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/872fce6c151b06f6446f228f2290a48862ede2a4",
-        "reference": "872fce6c151b06f6446f228f2290a48862ede2a4",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/67ac6ea8f4a078c3c9b7aec5d7ae70f098c37389",
+        "reference": "67ac6ea8f4a078c3c9b7aec5d7ae70f098c37389",
         "shasum": ""
       },
       "conflict": {
@@ -9062,7 +9351,7 @@
         "doctrine/orm": ">=2,<2.4.8|>=2.5,<2.5.1",
         "dompdf/dompdf": ">=0.6,<0.6.2",
         "drupal/core": ">=7,<7.69|>=8,<8.7.11|>=8.8,<8.8.1",
-        "drupal/drupal": ">=7,<8.7.11|>=8.8,<8.8.1",
+        "drupal/drupal": ">=7,<7.69|>=8,<8.7.11|>=8.8,<8.8.1",
         "endroid/qr-code-bundle": "<3.4.2",
         "erusev/parsedown": "<1.7.2",
         "ezsystems/ezplatform-admin-ui": ">=1.3,<1.3.5|>=1.4,<1.4.4",
@@ -9233,7 +9522,7 @@
         }
       ],
       "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-      "time": "2020-01-02T17:29:14+00:00"
+      "time": "2020-01-06T19:16:46+00:00"
     }
   ],
   "aliases": [],
@@ -9245,7 +9534,8 @@
   "prefer-stable": false,
   "prefer-lowest": false,
   "platform": {
-    "php": "^7.4"
+    "php": "^7.4",
+    "ext-iconv": "*"
   },
   "platform-dev": []
 }

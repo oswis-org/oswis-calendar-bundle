@@ -33,7 +33,6 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@security.user_password_encoder.generic'
             - '@zakjakub_oswis_calendar.event_participant_service'
             - '@zakjakub_oswis_calendar.event_service'
 
@@ -166,15 +165,17 @@ services:
     ## EventParticipant controller (What does this?)
     ##
     zakjakub_oswis_calendar.event_participant_controller:
-        class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantController
+        class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantWebController
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
             - '@security.user_password_encoder.generic'
-            - '@zakjakub_oswis_calendar.event_participant_service'
-    Zakjakub\OswisCalendarBundle\Controller\EventParticipantController:
+            - '@zakjakub_oswis_calendar.event_service'
+            - '@zakjakub_oswis_calendar.event_participant_type_service'
+            - '@zakjakub_oswis_address_book.address_book_service'
+    Zakjakub\OswisCalendarBundle\Controller\EventParticipantWebController:
         alias: zakjakub_oswis_calendar.event_participant_controller
         public: true
 

@@ -41,24 +41,24 @@ class EventSeries
     {
         if ($event && !$this->events->contains($event)) {
             $this->events->add($event);
-            $event->setEventSeries($this);
+            $event->setSeries($this);
         }
     }
 
     public function removeEvent(?Event $contact): void
     {
         if ($contact && $this->events->removeElement($contact)) {
-            $contact->setEventSeries(null);
+            $contact->setSeries(null);
         }
     }
 
     public function getSeqId(Event $event): ?int
     {
-        if (!$event->getEventType() || !$event->getStartDate() || !$event->isBatchOrYear()) {
+        if (!$event->getType() || !$event->getStartDate() || !$event->isBatchOrYear()) {
             return null;
         }
         $seqId = 1;
-        $events = $this->getEvents($event->getEventType()->getType(), ($event->isBatch() ? $event->getStartYear() : null), false);
+        $events = $this->getEvents($event->getType()->getType(), ($event->isBatch() ? $event->getStartYear() : null), false);
         foreach ($events as $e) {
             if ($e instanceof Event && $e->getStartDate() && $e->getId() !== $event->getId() && $e->getStartDate() < $event->getStartDate()) {
                 $seqId++;
@@ -72,7 +72,7 @@ class EventSeries
     {
         $events = ($this->events ?? new ArrayCollection())->filter(fn(Event $e) => $deleted || !$e->isDeleted());
         if (null !== $eventTypeType) {
-            $events = $events->filter(fn(Event $e) => $e->getEventType() && $eventTypeType === $e->getEventType()->getType());
+            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeType === $e->getType()->getType());
         }
         if (null !== $year) {
             $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());

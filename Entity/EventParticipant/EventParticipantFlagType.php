@@ -56,6 +56,7 @@ class EventParticipantFlagType extends AbstractEventFlagType
 {
     public const TYPE_FOOD = 'food';
     public const TYPE_TRANSPORT = 'transport';
+    public const TYPE_T_SHIRT = 't-shirt';
     public const TYPE_ACCOMMODATION_TYPE = 'accommodation-type';
 
     /**

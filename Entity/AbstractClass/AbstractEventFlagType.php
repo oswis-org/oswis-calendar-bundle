@@ -9,12 +9,14 @@ namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\ValueTrait;
 
 abstract class AbstractEventFlagType
 {
     use BasicEntityTrait;
     use NameableBasicTrait;
     use TypeTrait;
+    use ValueTrait;
 
     /**
      * Minimal amount of flags used in one EventParticipant.

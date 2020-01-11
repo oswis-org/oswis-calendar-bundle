@@ -2,16 +2,16 @@ controllers:
     resource: ../../Controller/
     type: annotation
 
-zakjakub_oswis_calendar_event_participant_registration_confirm:
-    controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
+zakjakub_oswis_calendar_event_participant_web_registration_confirm:
+    controller: zakjakub_oswis_calendar.event_participant_web_controller::eventParticipantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
 zakjakub_oswis_calendar_web_event:
     controller: zakjakub_oswis_calendar.event_web_controller::showEvent
     path: "/akce/{slug}"
 
-zakjakub_oswis_calendar_web_event_registration:
-    controller: zakjakub_oswis_calendar.event_web_controller::showEventRegistration
+zakjakub_oswis_calendar_web_event_participant_registration:
+    controller: zakjakub_oswis_calendar.event_participant_web_controller::eventParticipantRegistration
     path: "/akce/{slug}/prihlaska"
 
 zakjakub_oswis_calendar_web_events:

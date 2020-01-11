@@ -4,7 +4,7 @@ namespace Zakjakub\OswisCalendarBundle\Api\Dto;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType;
+use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 
 /**
  * @ApiResource(

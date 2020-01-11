@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisAddressBookBundle\Form;
+namespace Zakjakub\OswisCalendarBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -24,7 +24,6 @@ class EventParticipantNoteType extends AbstractType
             )
         );
     }
-
 
     /**
      * @param OptionsResolver $resolver

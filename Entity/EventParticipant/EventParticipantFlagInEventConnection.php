@@ -28,7 +28,6 @@ class EventParticipantFlagInEventConnection
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
-     *     inversedBy="eventParticipantFlagInEventConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -39,7 +38,7 @@ class EventParticipantFlagInEventConnection
      * Event contact (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventParticipantFlagInEventConnections",
+     *     inversedBy="participantFlagInEventConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -108,11 +107,11 @@ class EventParticipantFlagInEventConnection
     public function setEvent(?Event $event): void
     {
         if ($this->event && $event !== $this->event) {
-            $this->event->removeEventParticipantFlagInEventConnection($this);
+            $this->event->removeParticipantFlagInEventConnection($this);
         }
         if ($event && $this->event !== $event) {
             $this->event = $event;
-            $event->addEventParticipantFlagInEventConnection($this);
+            $event->addParticipantFlagInEventConnection($this);
         }
     }
 

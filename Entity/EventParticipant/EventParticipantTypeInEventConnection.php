@@ -72,7 +72,7 @@ class EventParticipantTypeInEventConnection
      * Event contact (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventParticipantTypeInEventConnections",
+     *     inversedBy="participantTypeInEventConnections",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -93,11 +93,11 @@ class EventParticipantTypeInEventConnection
     public function setEvent(?Event $event): void
     {
         if ($this->event && $event !== $this->event) {
-            $this->event->removeEventParticipantTypeInEventConnection($this);
+            $this->event->removeParticipantTypeInEventConnection($this);
         }
         if ($event && $this->event !== $event) {
             $this->event = $event;
-            $event->addEventParticipantTypeInEventConnection($this);
+            $event->addParticipantTypeInEventConnection($this);
         }
     }
 

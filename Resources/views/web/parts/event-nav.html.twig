@@ -1,6 +1,6 @@
 <nav>
     <h4 class="badges clearfix">
-        <a href="{{ path('faq') }}" class="badge badge-warning">Časté dotazy</a>
+        <!-- <a href="{#{{ path('faq') }}#}" class="badge badge-warning">Časté dotazy</a> -->
         {% for navEvent in navEvents %}
             <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': navEvent.slug}) }}"
                class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
