@@ -160,14 +160,14 @@ class EventRepository extends EntityRepository
     private function addOnlyPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB])) {
-            $queryBuilder->andWhere('e.public_on_web = true');
+            $queryBuilder->andWhere('e.publicOnWeb = true');
         }
     }
 
     private function addOnlyPublicOnWebRouteQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE])) {
-            $queryBuilder->andWhere('e.public_on_web_route = true');
+            $queryBuilder->andWhere('e.publicOnWebRoute = true');
         }
     }
 
