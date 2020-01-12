@@ -101,12 +101,13 @@ class EventWebController extends AbstractController
      */
     final public function eventsAction(
         DateTimeUtils $dateTimeUtils,
-        ?string $range = self::RANGE_ALL,
+        ?string $range = null,
         ?DateTime $start = null,
         ?DateTime $end = null,
         ?int $limit = null,
         ?int $offset = null
     ): Response {
+        $range ??= self::RANGE_ALL;
         $limit = $limit < 1 ? null : $limit;
         $offset = $offset < 1 ? null : $offset;
         $start = $dateTimeUtils->getDateTimeByRange($start, $range, false);
