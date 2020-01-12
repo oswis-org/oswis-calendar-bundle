@@ -1,0 +1,11 @@
+{% extends '@ZakjakubOswisCore/web/page-skeleton-default.html.twig' %}
+
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        {% for event in events %}
+            {% include '@ZakjakubOswisCalendar/web/parts/event.html.twig' %}
+        {% else %}
+            Nebyly nalezeny žádné akce k zobrazení.
+        {% endfor %}
+    </main>
+{% endblock %}

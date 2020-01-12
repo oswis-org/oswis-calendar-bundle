@@ -132,6 +132,6 @@ class EventWebController extends AbstractController
             'withoutDateEvents' => $withoutDateEvents,
         ];
 
-        return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $context);
+        return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);
     }
 }
