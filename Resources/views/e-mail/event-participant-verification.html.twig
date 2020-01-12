@@ -109,7 +109,7 @@
 
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             <meta itemprop="name" content="{{ event.name }}"/>
-            <link itemprop="url" href="{{ absolute_url(path('homepage')) }}"/>
+            <link itemprop="url" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
             <meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
             <meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
             {% if event.location is defined and event.location %}
@@ -152,8 +152,8 @@
                 </div>
             {% endif %}
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
     </div>
 {% endblock content_inner %}
 

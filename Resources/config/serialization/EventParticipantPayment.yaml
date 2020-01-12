@@ -6,6 +6,10 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
             groups: ['calendar_event_participant_payment_get']
         updatedDateTime:
             groups: ['calendar_event_participant_payment_get']
+        createdAppUser:
+            groups: ['calendar_event_participant_payment_get']
+        updatedAppUser:
+            groups: ['calendar_event_participant_payment_get']
         dateTime:
             groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payments_post', 'calendar_event_participant_payment_get', 'calendar_event_participant_payment_put']
         eventParticipant:
@@ -44,7 +48,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
             groups:
                 - 'calendar_event_participant_payments_get'
                 - 'calendar_event_participant_payment_get'
-
 
 Zakjakub\OswisCalendarBundle\Entity\Event\Event:
     attributes:

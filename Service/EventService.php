@@ -241,6 +241,7 @@ class EventService
      * @param Collection|null      $oldFlags
      *
      * @throws EventCapacityExceededException
+     * @noinspection PhpUndefinedMethodInspection
      */
     public function checkFlagsCapacity(Event $event, EventParticipantType $participantType, Collection $newFlags, ?Collection $oldFlags = null): void
     {

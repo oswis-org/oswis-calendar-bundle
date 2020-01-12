@@ -28,8 +28,8 @@
         {% block event_participant_event_summary %}
             {% include '@ZakjakubOswisCalendar/other/summary/event-summary.html.twig' %}
         {% endblock event_participant_event_summary %}
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
         {% block message_footer %}{% endblock message_footer %}
     </div>
 {% endblock %}

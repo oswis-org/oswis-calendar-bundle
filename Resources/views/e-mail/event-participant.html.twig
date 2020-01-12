@@ -34,7 +34,9 @@
                     {% endif %}
                     {% if portal is defined and portal %}
                         Přihlašovací údaje slouží pro přihlášení do aplikace {{ portal }}, která bude již brzy dostupná na adrese
-                        <a href="{{ absolute_url(path('portal')) }}" title="{{ portal }}" target="_blank">{{ absolute_url(path('portal')) }}</a>.
+                        <a href="{{ absolute_url(path('zakjakub_oswis_core_web_portal')) }}" title="{{ portal }}" target="_blank">
+                            {{ absolute_url(path('zakjakub_oswis_core_web_portal')) }}
+                        </a>.
                     {% endif %}
                 </p>
             {% endif %}
@@ -74,8 +76,8 @@
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             {% include '@ZakjakubOswisCalendar/other/summary/event-summary.html.twig' %}
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('homepage')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_core_homepage_action')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_core_homepage_action')) }}"/>
 
         {% block message_footer %}
             <p>Pokud zpráva přišla opakovaně, přihláška byla aktualizována uživatelem nebo správcem.</p>

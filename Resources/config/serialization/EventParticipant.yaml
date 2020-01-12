@@ -6,6 +6,10 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
             groups: ['calendar_event_participant_get']
         updatedDateTime:
             groups: ['calendar_event_participant_get']
+        createdAppUser:
+            groups: ['calendar_event_participant_get']
+        updatedAppUser:
+            groups: ['calendar_event_participant_get']
         deleted:
             groups: ['calendar_event_participants_get', 'calendar_event_participant_get', 'calendar_event_participant_put']
         eventParticipantType:
@@ -28,7 +32,8 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
             groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
         paidPrice:
             groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
-
+        webContents:
+            groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
 
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
     attributes:
@@ -54,7 +59,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnect
                 - 'calendar_event_participants_post'
                 - 'calendar_event_participant_get'
                 - 'calendar_event_participant_put'
-
 
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
     attributes:
@@ -102,7 +106,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
             groups:
                 - 'calendar_event_participant_get'
 
-
 Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
     attributes:
         id:
@@ -135,7 +138,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
         type:
             groups:
                 - 'calendar_event_participant_get'
-
 
 Zakjakub\OswisCalendarBundle\Entity\Event\Event:
     attributes:
@@ -238,7 +240,6 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
                 - 'calendar_event_participants_post'
                 - 'calendar_event_participant_get'
                 - 'calendar_event_participant_put'
-
 
 Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
     attributes:

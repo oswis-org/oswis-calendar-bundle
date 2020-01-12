@@ -1,5 +1,7 @@
 <?php
 /**
+ * @noinspection UnknownInspectionInspection
+ * @noinspection HtmlUnknownTarget
  * @noinspection MethodShouldBeFinalInspection
  */
 

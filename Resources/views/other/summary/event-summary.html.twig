@@ -1,5 +1,5 @@
 <meta itemprop="name" content="{{ event.name }}"/>
-<link itemprop="url" href="{{ absolute_url(path('homepage')) }}"/>
+<link itemprop="url" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_event', {'slug': event.slug})) }}"/>
 <meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
 <meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
 {% if event.location is defined and event.location %}
