@@ -160,7 +160,6 @@ services:
         alias: zakjakub_oswis_calendar.event_participant_flag_service
         public: true
 
-
     ##
     ## EventParticipant controller (What does this?)
     ##
@@ -178,7 +177,6 @@ services:
     Zakjakub\OswisCalendarBundle\Controller\EventParticipantWebController:
         alias: zakjakub_oswis_calendar.event_participant_controller
         public: true
-
 
     ##
     ## Event web controller.

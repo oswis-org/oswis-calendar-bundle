@@ -188,7 +188,7 @@ class Event
 
     /**
      * Indicates if price is relative to parent event.
-     * @Doctrine\ORM\Column(type="boolean", nullable=true)
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      */
     private ?bool $priceRelative = null;
 
