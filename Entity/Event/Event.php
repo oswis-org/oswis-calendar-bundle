@@ -1,6 +1,7 @@
-<?php /** @noinspection MethodShouldBeFinalInspection */
-/** @noinspection RedundantDocCommentTagInspection */
+<?php
 /**
+ * @noinspection MethodShouldBeFinalInspection
+ * @noinspection RedundantDocCommentTagInspection
  * @noinspection PhpUnused
  */
 
@@ -12,7 +13,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
@@ -117,11 +117,7 @@ class Event
 
     /**
      * @var Collection<Event> $subEvents
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     mappedBy="superEvent",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent", fetch="EAGER")
      */
     protected ?Collection $subEvents = null;
 
@@ -192,7 +188,7 @@ class Event
 
     /**
      * Indicates if price is relative to parent event.
-     * @ORM\Column(type="boolean", nullable=true)
+     * @Doctrine\ORM\Column(type="boolean", nullable=true)
      */
     private ?bool $priceRelative = null;
 
