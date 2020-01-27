@@ -23,11 +23,7 @@ class EventSeries
     use NameableBasicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     mappedBy="eventSeries",
-     *     cascade={"all"}
-     * )
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="series", cascade={"all"})
      */
     protected ?Collection $events = null;
 
