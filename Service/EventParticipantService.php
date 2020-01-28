@@ -85,6 +85,27 @@ class EventParticipantService
         /// TODO: Throw exceptions!
     }
 
+    private static function mimeEnc(string $content): string
+    {
+        return EmailUtils::mime_header_encode($content);
+    }
+
+    private static function getQrPng(Event $event, EventParticipant $eventParticipant, string $qrComment, bool $isDeposit): ?string
+    {
+        try {
+            return (new QrPayment(
+                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
+                    QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
+                    QrPaymentOptions::AMOUNT          => $isDeposit ? $eventParticipant->getPriceDeposit() : $eventParticipant->getPriceRest(),
+                    QrPaymentOptions::CURRENCY        => 'CZK',
+                    QrPaymentOptions::COMMENT         => $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek'),
+                ]
+            ))->getQrImage(true)->writeString();
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     final public function getRepository(): EventParticipantRepository
     {
         $repository = $this->em->getRepository(EventParticipant::class);
@@ -189,39 +210,6 @@ class EventParticipantService
     }
 
     /**
-     * @param Person $person
-     * @param string $title
-     *
-     * @return TemplatedEmail
-     * @throws LogicException
-     * @throws RfcComplianceException
-     */
-    private function getEmptyEmail(Person $person, string $title): TemplatedEmail
-    {
-        return (new TemplatedEmail())->to($person->getMailerAddress())->bcc($this->coreSettings->getArchiveMailerAddress())->subject(self::mimeEnc($title));
-    }
-
-    private static function mimeEnc(string $content): string
-    {
-        return EmailUtils::mime_header_encode($content);
-    }
-
-    private function getMailData(EventParticipant $participant, Event $event, Person $contactPerson, bool $isOrg = false): array
-    {
-        return [
-            'eventParticipant' => $participant,
-            'event'            => $event,
-            'contactPerson'    => $contactPerson,
-            'f'                => $participant->isFormal(),
-            'salutationName'   => $contactPerson->getSalutationName(),
-            'a'                => $contactPerson->getCzechSuffixA(),
-            'isOrganization'   => $isOrg,
-            'logo'             => 'cid:logo',
-            'oswis'            => $this->coreSettings->getArray(),
-        ];
-    }
-
-    /**
      * Send summary of eventParticipant. Includes appUser info is appUser exist.
      *
      * @param EventParticipant                  $participant
@@ -284,22 +272,6 @@ class EventParticipantService
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
             throw new OswisException('Problém s odesláním shrnutí přihlášky.  '.$e->getMessage());
-        }
-    }
-
-    private static function getQrPng(Event $event, EventParticipant $eventParticipant, string $qrComment, bool $isDeposit): ?string
-    {
-        try {
-            return (new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
-                    QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
-                    QrPaymentOptions::AMOUNT          => $isDeposit ? $eventParticipant->getPriceDeposit() : $eventParticipant->getPriceRest(),
-                    QrPaymentOptions::CURRENCY        => 'CZK',
-                    QrPaymentOptions::COMMENT         => $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek'),
-                ]
-            ))->getQrImage(true)->writeString();
-        } catch (Exception $e) {
-            return null;
         }
     }
 
@@ -856,5 +828,33 @@ class EventParticipantService
         }
 
         return $output;
+    }
+
+    /**
+     * @param Person $person
+     * @param string $title
+     *
+     * @return TemplatedEmail
+     * @throws LogicException
+     * @throws RfcComplianceException
+     */
+    private function getEmptyEmail(Person $person, string $title): TemplatedEmail
+    {
+        return (new TemplatedEmail())->to($person->getMailerAddress())->bcc($this->coreSettings->getArchiveMailerAddress())->subject(self::mimeEnc($title));
+    }
+
+    private function getMailData(EventParticipant $participant, Event $event, Person $contactPerson, bool $isOrg = false): array
+    {
+        return [
+            'eventParticipant' => $participant,
+            'event'            => $event,
+            'contactPerson'    => $contactPerson,
+            'f'                => $participant->isFormal(),
+            'salutationName'   => $contactPerson->getSalutationName(),
+            'a'                => $contactPerson->getCzechSuffixA(),
+            'isOrganization'   => $isOrg,
+            'logo'             => 'cid:logo',
+            'oswis'            => $this->coreSettings->getArray(),
+        ];
     }
 }

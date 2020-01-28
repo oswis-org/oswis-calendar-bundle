@@ -3652,16 +3652,16 @@
     },
     {
       "name": "ocramius/proxy-manager",
-      "version": "2.6.0",
+      "version": "2.6.1",
       "source": {
         "type": "git",
         "url": "https://github.com/Ocramius/ProxyManager.git",
-        "reference": "406ca12cabfb43e3b11c994bcbeea8e358c65af9"
+        "reference": "dec37bfb3c3594440ee4fa263494189344787d22"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/406ca12cabfb43e3b11c994bcbeea8e358c65af9",
-        "reference": "406ca12cabfb43e3b11c994bcbeea8e358c65af9",
+        "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/dec37bfb3c3594440ee4fa263494189344787d22",
+        "reference": "dec37bfb3c3594440ee4fa263494189344787d22",
         "shasum": ""
       },
       "require": {
@@ -3679,6 +3679,7 @@
         "doctrine/coding-standard": "^6.0.0",
         "ext-phar": "*",
         "infection/infection": "^0.15.0",
+        "mikey179/vfsstream": "^1.6.8",
         "nikic/php-parser": "^4.3.0",
         "phpbench/phpbench": "^0.16.10",
         "phpunit/phpunit": "^8.5.1",
@@ -3724,7 +3725,7 @@
         "proxy pattern",
         "service proxies"
       ],
-      "time": "2020-01-07T08:10:36+00:00"
+      "time": "2020-01-27T09:25:51+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -9259,16 +9260,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.175",
+      "version": "v0.0.177",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "ce6ba9ea49cffff5f61bec5911ededd56ea483c5"
+        "reference": "a5904d4fc22c7e3637fc6293db98537338d9e769"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/ce6ba9ea49cffff5f61bec5911ededd56ea483c5",
-        "reference": "ce6ba9ea49cffff5f61bec5911ededd56ea483c5",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/a5904d4fc22c7e3637fc6293db98537338d9e769",
+        "reference": "a5904d4fc22c7e3637fc6293db98537338d9e769",
         "shasum": ""
       },
       "require": {
@@ -9310,7 +9311,7 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-01-13T07:04:25+00:00"
+      "time": "2020-01-28T22:10:39+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
@@ -9466,16 +9467,16 @@
     },
     {
       "name": "phpstan/phpstan",
-      "version": "0.12.7",
+      "version": "0.12.8",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan.git",
-        "reference": "07fa7958027fd98c567099bbcda5d6a0f2ec5197"
+        "reference": "62a552602b7586d82826231f2fd4cbfe39fe0b1d"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/07fa7958027fd98c567099bbcda5d6a0f2ec5197",
-        "reference": "07fa7958027fd98c567099bbcda5d6a0f2ec5197",
+        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/62a552602b7586d82826231f2fd4cbfe39fe0b1d",
+        "reference": "62a552602b7586d82826231f2fd4cbfe39fe0b1d",
         "shasum": ""
       },
       "require": {
@@ -9501,7 +9502,7 @@
         "MIT"
       ],
       "description": "PHPStan - PHP Static Analysis Tool",
-      "time": "2020-01-20T21:59:06+00:00"
+      "time": "2020-01-26T23:36:48+00:00"
     },
     {
       "name": "roave/security-advisories",
@@ -9509,12 +9510,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "5e2ebc8340c8b7dcdc3f938dcbb9e2b99b72fd8e"
+        "reference": "666ba252853924887ac57dc9f66e6b6af78d5a76"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/5e2ebc8340c8b7dcdc3f938dcbb9e2b99b72fd8e",
-        "reference": "5e2ebc8340c8b7dcdc3f938dcbb9e2b99b72fd8e",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/666ba252853924887ac57dc9f66e6b6af78d5a76",
+        "reference": "666ba252853924887ac57dc9f66e6b6af78d5a76",
         "shasum": ""
       },
       "conflict": {
@@ -9632,7 +9633,8 @@
         "sylius/admin-bundle": ">=1,<1.0.17|>=1.1,<1.1.9|>=1.2,<1.2.2",
         "sylius/grid": ">=1,<1.1.19|>=1.2,<1.2.18|>=1.3,<1.3.13|>=1.4,<1.4.5|>=1.5,<1.5.1",
         "sylius/grid-bundle": ">=1,<1.1.19|>=1.2,<1.2.18|>=1.3,<1.3.13|>=1.4,<1.4.5|>=1.5,<1.5.1",
-        "sylius/sylius": ">=1,<1.1.18|>=1.2,<1.2.17|>=1.3,<1.3.12|>=1.4,<1.4.4",
+        "sylius/resource-bundle": ">=1,<1.3.13|>=1.4,<1.4.6|>=1.5,<1.5.1|>=1.6,<1.6.3",
+        "sylius/sylius": ">=1,<1.3.12|>=1.4,<1.4.4",
         "symfony/cache": ">=3.1,<3.4.35|>=4,<4.2.12|>=4.3,<4.3.8",
         "symfony/dependency-injection": ">=2,<2.0.17|>=2.7,<2.7.51|>=2.8,<2.8.50|>=3,<3.4.26|>=4,<4.1.12|>=4.2,<4.2.7",
         "symfony/form": ">=2.3,<2.3.35|>=2.4,<2.6.12|>=2.7,<2.7.50|>=2.8,<2.8.49|>=3,<3.4.20|>=4,<4.0.15|>=4.1,<4.1.9|>=4.2,<4.2.1",
@@ -9718,10 +9720,15 @@
           "name": "Marco Pivetta",
           "email": "ocramius@gmail.com",
           "role": "maintainer"
+        },
+        {
+          "name": "Ilya Tribusean",
+          "email": "slash3b@gmail.com",
+          "role": "maintainer"
         }
       ],
       "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-      "time": "2020-01-20T14:23:18+00:00"
+      "time": "2020-01-28T17:25:41+00:00"
     }
   ],
   "aliases": [],

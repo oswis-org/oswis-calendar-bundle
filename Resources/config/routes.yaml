@@ -16,7 +16,7 @@ zakjakub_oswis_calendar_web_event_participant_registration:
 
 zakjakub_oswis_calendar_web_events:
     controller: zakjakub_oswis_calendar.event_web_controller::eventsAction
-    path: "/kalendar/{!range?}/{!start?}/{!end?}/{!limit?}/{!offset?}"
+    path: "/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
     defaults:
         range: null
         start: null

@@ -51,6 +51,11 @@ class EventParticipantTypeRepository extends EntityRepository
         return $queryBuilder;
     }
 
+    public function getEventParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    {
+        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getArrayResult());
+    }
+
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
@@ -96,10 +101,5 @@ class EventParticipantTypeRepository extends EntityRepository
             $queryBuilder->addOrderBy('ept.name', 'ASC');
         }
         $queryBuilder->addOrderBy('ept.id', 'ASC');
-    }
-
-    public function getEventParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
-    {
-        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getArrayResult());
     }
 }
