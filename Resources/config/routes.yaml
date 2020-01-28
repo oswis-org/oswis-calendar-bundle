@@ -10,6 +10,10 @@ zakjakub_oswis_calendar_web_event:
     controller: zakjakub_oswis_calendar.event_web_controller::showEvent
     path: "/akce/{slug}"
 
+zakjakub_oswis_calendar_event_web_leaflet:
+    controller: zakjakub_oswis_calendar.event_web_controller::eventLeafletPdf
+    path: "/letak/{slug}"
+
 zakjakub_oswis_calendar_web_event_participant_registration:
     controller: zakjakub_oswis_calendar.event_participant_web_controller::eventParticipantRegistration
     path: "/akce/{slug}/prihlaska"
