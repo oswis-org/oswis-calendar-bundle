@@ -19,7 +19,7 @@ zakjakub_oswis_calendar_web_event_participant_registration:
     path: "/akce/{slug}/prihlaska"
 
 zakjakub_oswis_calendar_web_events:
-    controller: zakjakub_oswis_calendar.event_web_controller::eventsAction
+    controller: zakjakub_oswis_calendar.event_web_controller::showEvents
     path: "/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
     defaults:
         range: null

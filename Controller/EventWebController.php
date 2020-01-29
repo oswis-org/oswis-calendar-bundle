@@ -50,7 +50,7 @@ class EventWebController extends AbstractController
      * @throws LogicException
      * @throws NotFoundHttpException
      */
-    final public function eventAction(?string $slug = null): Response
+    final public function showEvent(?string $slug = null): Response
     {
         if (null !== $slug) {
             $this->redirectToRoute('zakjakub_oswis_calendar_web_events');
@@ -99,7 +99,7 @@ class EventWebController extends AbstractController
      * @throws LogicException
      * @throws Exception
      */
-    final public function eventsAction(
+    final public function showEvents(
         DateTimeUtils $dateTimeUtils,
         ?string $range = null,
         ?DateTime $start = null,
