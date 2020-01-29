@@ -143,7 +143,7 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@mailer.mailer'
+            - '@monolog.logger'
     Zakjakub\OswisCalendarBundle\Service\EventParticipantFlagTypeService:
         alias: zakjakub_oswis_calendar.event_participant_flag_type_service
         public: true
