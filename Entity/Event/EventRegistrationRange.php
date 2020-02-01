@@ -24,16 +24,21 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
  */
 class EventRegistrationRange
 {
-    use BasicEntityTrait; // Basic columns (id...).
+    use BasicEntityTrait;
 
-    use NameableBasicTrait; // Name of this combination of price, range and capacity.
+    // Basic columns (id...).
+    use NameableBasicTrait;
 
-    use NumericValueTrait; // Basic price.
+    // Name of this combination of price, range and capacity.
+    use NumericValueTrait;
 
-    use DepositValueTrait; // Absolute value of deposit.
+    // Basic price.
+    use DepositValueTrait;
 
-    use EventCapacityTrait; // Columns for capacity and capacity overflow limit.
+    // Absolute value of deposit.
+    use EventCapacityTrait;
 
+    // Columns for capacity and capacity overflow limit.
     use DateRangeTrait { // Range when registrations are allowed with this price.
         setEndDateTime as protected traitSetEnd;
     }

@@ -196,10 +196,10 @@ class Event
         ?Nameable $nameable = null,
         ?Event $superEvent = null,
         ?Place $location = null,
-        ?EventType $eventType = null,
+        ?EventType $type = null,
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null,
-        ?EventSeries $eventSeries = null,
+        ?EventSeries $series = null,
         ?bool $priceRelative = null,
         ?string $color = null,
         ?string $bankAccountNumber = null,
@@ -209,9 +209,9 @@ class Event
         $this->registrationRanges = new ArrayCollection();
         $this->participantTypeInEventConnections = new ArrayCollection();
         $this->participantFlagInEventConnections = new ArrayCollection();
-        $this->setType($eventType);
+        $this->setType($type);
         $this->setSuperEvent($superEvent);
-        $this->setSeries($eventSeries);
+        $this->setSeries($series);
         $this->setPriceRelative($priceRelative);
         $this->setFieldsFromNameable($nameable);
         $this->setLocation($location);

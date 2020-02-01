@@ -20,9 +20,9 @@ class EventRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
-    public const CRITERIA_EVENT_TYPE = 'eventType';
-    public const CRITERIA_EVENT_TYPE_OF_TYPE = 'eventTypeOfType';
-    public const CRITERIA_EVENT_SERIES = 'eventSeries';
+    public const CRITERIA_EVENT_TYPE = 'type';
+    public const CRITERIA_EVENT_TYPE_OF_TYPE = 'typeOfType';
+    public const CRITERIA_EVENT_SERIES = 'series';
     public const CRITERIA_SUPER_EVENT = 'superEvent';
     public const CRITERIA_SUPER_EVENT_DEPTH = 'superEventDepth';
     public const CRITERIA_ONLY_ROOT = 'onlyRoot';
@@ -63,12 +63,12 @@ class EventRepository extends EntityRepository
         $this->addIncludeDeletedQuery($queryBuilder, $opts);
         $this->addOnlyRootQuery($queryBuilder, $opts);
         $this->addOnlyWithoutDateQuery($queryBuilder, $opts);
-        $this->addEventSeriesQuery($queryBuilder, $opts);
+        $this->addSeriesQuery($queryBuilder, $opts);
         $this->addLocationQuery($queryBuilder, $opts);
         $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->addOnlyPublicOnWebRouteQuery($queryBuilder, $opts);
-        $this->addEventTypeOfTypeQuery($queryBuilder, $opts);
-        $this->addEventTypeQuery($queryBuilder, $opts);
+        $this->addTypeOfTypeQuery($queryBuilder, $opts);
+        $this->addTypeQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
         $this->addOrderBy($queryBuilder, true);
 
@@ -142,11 +142,11 @@ class EventRepository extends EntityRepository
         }
     }
 
-    private function addEventSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function addSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT_SERIES]) && $opts[self::CRITERIA_END] instanceof EventSeries) {
-            $queryBuilder->andWhere('e.eventSeries = :event_series_id');
-            $queryBuilder->setParameter('event_series_id', $opts[self::CRITERIA_EVENT_SERIES]->getId());
+            $queryBuilder->andWhere('e.series = :series_id');
+            $queryBuilder->setParameter('series_id', $opts[self::CRITERIA_EVENT_SERIES]->getId());
         }
     }
 
@@ -171,20 +171,20 @@ class EventRepository extends EntityRepository
         }
     }
 
-    private function addEventTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function addTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_EVENT_TYPE_OF_TYPE])) {
-            $queryBuilder->leftJoin('e.eventType', 'eventType');
-            $queryBuilder->andWhere('eventType.type = :type_type');
-            $queryBuilder->setParameter('type_type', $opts[self::CRITERIA_EVENT_TYPE_OF_TYPE]);
+            $queryBuilder->leftJoin('e.type', 'type');
+            $queryBuilder->andWhere('type.type = :type_of_type');
+            $queryBuilder->setParameter('type_of_type', $opts[self::CRITERIA_EVENT_TYPE_OF_TYPE]);
         }
     }
 
-    private function addEventTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function addTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT_TYPE]) && $opts[self::CRITERIA_EVENT_TYPE] instanceof EventType) {
-            $queryBuilder->andWhere('e.eventType = :event_type_id');
-            $queryBuilder->setParameter('event_type_id', $opts[self::CRITERIA_EVENT_TYPE]->getId());
+            $queryBuilder->andWhere('e.type = :type_id');
+            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_EVENT_TYPE]->getId());
         }
     }
 

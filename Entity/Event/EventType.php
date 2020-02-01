@@ -1,6 +1,8 @@
-<?php /** @noinspection ALL */
-
-/** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection MethodShouldBeFinalInspection
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
@@ -17,7 +19,6 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 
 /**
  * Type of Event.
- *
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_type")
  * @ApiResource(
@@ -76,8 +77,6 @@ class EventType
     public const TEAM_BUILDING = 'team-building';
 
     /**
-     * ContactDetailType constructor.
-     *
      * @param Nameable|null $nameable
      * @param string|null   $type
      * @param string|null   $color

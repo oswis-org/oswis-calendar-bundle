@@ -45,13 +45,13 @@ class EventService
         ?Nameable $nameable = null,
         ?Event $superEvent = null,
         ?Place $location = null,
-        ?EventType $eventType = null,
+        ?EventType $type = null,
         ?DateTime $startDateTime = null,
         ?DateTime $endDateTime = null,
-        ?EventSeries $eventSeries = null,
+        ?EventSeries $series = null,
         ?bool $priceRecursiveFromParent = null
     ): Event {
-        $entity = new Event($nameable, $superEvent, $location, $eventType, $startDateTime, $endDateTime, $eventSeries, $priceRecursiveFromParent);
+        $entity = new Event($nameable, $superEvent, $location, $type, $startDateTime, $endDateTime, $series, $priceRecursiveFromParent);
         $this->em->persist($entity);
         $this->em->flush();
         $this->logger->info('CREATE: Created event (by service): '.$entity->getId().' '.$entity->getName().'.');
@@ -241,7 +241,6 @@ class EventService
      * @param Collection|null      $oldFlags
      *
      * @throws EventCapacityExceededException
-     * @noinspection PhpUndefinedMethodInspection
      */
     public function checkFlagsCapacity(Event $event, EventParticipantType $participantType, Collection $newFlags, ?Collection $oldFlags = null): void
     {

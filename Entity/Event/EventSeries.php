@@ -64,11 +64,11 @@ class EventSeries
         return $seqId;
     }
 
-    public function getEvents(?string $eventTypeType = null, ?int $year = null, ?bool $deleted = true): Collection
+    public function getEvents(?string $eventTypeOfType = null, ?int $year = null, ?bool $deleted = true): Collection
     {
         $events = ($this->events ?? new ArrayCollection())->filter(fn(Event $e) => $deleted || !$e->isDeleted());
-        if (null !== $eventTypeType) {
-            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeType === $e->getType()->getType());
+        if (null !== $eventTypeOfType) {
+            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeOfType === $e->getType()->getType());
         }
         if (null !== $year) {
             $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());
