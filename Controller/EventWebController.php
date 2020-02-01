@@ -111,7 +111,7 @@ class EventWebController extends AbstractController
         $limit = $limit < 1 ? null : $limit;
         $offset = $offset < 1 ? null : $offset;
         $start = $dateTimeUtils->getDateTimeByRange($start, $range, false);
-        $end = $dateTimeUtils->getDateTimeByRange($end, $range, false);
+        $end = $dateTimeUtils->getDateTimeByRange($end, $range, true);
         $opts = [
             EventRepository::CRITERIA_START              => $start,
             EventRepository::CRITERIA_END                => $end,
@@ -129,6 +129,7 @@ class EventWebController extends AbstractController
         $withoutDateEvents = $this->eventRepository->getEvents($opts);
         $context = [
             'events'            => $events,
+            'navEvents'         => [],
             'withoutDateEvents' => $withoutDateEvents,
         ];
 

@@ -34,9 +34,7 @@ use function assert;
 /**
  * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
  *
- * @Doctrine\ORM\Mapping\Entity(
- *     repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository"
- * )
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant")
  * @ApiResource(
  *   attributes={

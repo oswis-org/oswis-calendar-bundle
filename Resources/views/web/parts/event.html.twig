@@ -5,14 +5,14 @@
             <link itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}"/>
         </header>
         {% include '@ZakjakubOswisCalendar/web/parts/event-nav.html.twig' %}
-        {% if event.eventSeries is defined and event.batchOrYear and event.getSeqId > 0 %}
+        {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
             <h3>
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }}
-                akce {{ event.eventSeries.shortName }}{{ event.batch ? event.startYear : null }}
+                akce {{ event.series.shortName }}{{ event.batch ? event.startYear : null }}
             </h3>
         {% else %}
-            {{ event.eventType ? event.eventType.shortName~', ' : null }}
-            {{ event.eventSeries ? event.eventSeries.shortName : null }}
+            {{ event.type ? event.type.shortName~', ' : null }}
+            {{ event.series ? event.series.shortName : null }}
         {% endif %}
         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
