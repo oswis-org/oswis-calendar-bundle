@@ -88,7 +88,7 @@
                 </div>
             {% endif %}
         </div>
-        {% for range in event.rangesByTypeOfType(participantType) %}
+        {% for range in event.registrationRangesByTypeOfType('attendee') %}
             <div class="row" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
                 <div class="col-12">
                     <h4 itemprop="name">{{ range.name ? range.name : 'Přihláška na akci '~event.name }}</h4>
@@ -106,7 +106,7 @@
                     <p>
                         <strong>Záloha:</strong>
                         <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}" class="badge badge-info">
-                            {{ range.depositValue(participantType)|default(0) }},- Kč
+                            {{ range.depositValue()|default(0) }},- Kč
                         </a><br><!-- <small>(splatná a vratná do 31. 7.)</small> -->
                     </p>
                 </div>
@@ -115,7 +115,7 @@
                         <strong>Celkem:</strong>
                         <a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}"
                            content="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}" class="badge badge-info">
-                            <span itemprop="price">{{ range.priceValue(participantType) }}</span><span itemprop="priceCurrency" content="CZK">,- Kč</span>
+                            <span itemprop="price">{{ range.numericValue() }}</span><span itemprop="priceCurrency" content="CZK">,- Kč</span>
                         </a>
                     </p>
                 </div>
