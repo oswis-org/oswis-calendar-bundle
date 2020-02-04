@@ -115,7 +115,7 @@ class EventRepository extends EntityRepository
     private function addEndQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_END])) {
-            $endQuery = ' (e.endDateTime IS NULL) OR (:end < e.endDateTime) ';
+            $endQuery = ' (e.endDateTime IS NULL) OR (:end > e.endDateTime) ';
             $queryBuilder->andWhere($endQuery)->setParameter('end', $opts[self::CRITERIA_END]);
         }
     }
