@@ -100,6 +100,6 @@ class EventParticipantTypeRepository extends EntityRepository
 
     public function getEventParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getArrayResult());
+        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
     }
 }

@@ -208,6 +208,6 @@ class EventRepository extends EntityRepository
 
     public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection($this->getEventsQueryBuilder($opts, $limit, $offset)->getQuery()->getArrayResult());
+        return new ArrayCollection($this->getEventsQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
     }
 }

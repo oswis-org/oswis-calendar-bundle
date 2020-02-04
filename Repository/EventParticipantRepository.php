@@ -44,7 +44,7 @@ class EventParticipantRepository extends EntityRepository
         $queryBuilder = $this->getEventParticipantsQueryBuilder($opts, $limit, $offset);
 
         return EventParticipant::filterEventParticipants(
-            new ArrayCollection($queryBuilder->getQuery()->getArrayResult()),
+            new ArrayCollection($queryBuilder->getQuery()->getResult()),
             $includeNotActivated
         );
     }
