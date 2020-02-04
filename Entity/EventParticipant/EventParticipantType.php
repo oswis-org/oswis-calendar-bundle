@@ -18,7 +18,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 use function in_array;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventParticipantTypeRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_type")
  * @ApiResource(
  *   attributes={

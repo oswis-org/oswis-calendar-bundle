@@ -57,11 +57,12 @@ class EventWebController extends AbstractController
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
-            EventRepository::CRITERIA_SLUG                     => $slug,
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE => true,
-            EventRepository::CRITERIA_INCLUDE_DELETED          => false,
+            EventRepository::CRITERIA_SLUG               => $slug,
+            // EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE => true,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
         ];
-        $event = $eventRepo->getEvents($opts, 1);
+        $event = $eventRepo->getEvent($opts);
         if (!($event instanceof Event)) {
             throw new OswisNotFoundException('Událost nenalezena.');
         }
