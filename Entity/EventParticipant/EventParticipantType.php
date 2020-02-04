@@ -1,6 +1,8 @@
-<?php /** @noinspection MethodShouldBeFinalInspection */
-
-/** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection MethodShouldBeFinalInspection
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
