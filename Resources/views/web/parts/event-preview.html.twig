@@ -69,7 +69,7 @@
     </div>
     <div class="d-lg-none col-md-4 col-sm-3 col-xs-2 d-print-none"></div>
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8 text-uppercase center-block text-center d-print-none">
-        {% if event.image %}
+        {% if event.image != null %}
             <div itemprop="image" id="small-banner" style="background-image: url('{{ asset('/images/events/'~event.image) }}')"
                  content="{{ asset('/images/events/'~event.image) }}">
                 <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}">Přihlas se nyní!</a>
