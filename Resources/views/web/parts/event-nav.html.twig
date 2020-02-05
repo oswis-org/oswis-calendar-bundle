@@ -1,5 +1,5 @@
 <nav>
-    <h4 class="badges clearfix">
+    <div class="badges clearfix">
         <!-- <a href="{#{{ path('faq') }}#}" class="badge badge-warning">Časté dotazy</a> -->
         {% for navEvent in navEvents|default %}
             <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': navEvent.slug}) }}"
@@ -13,5 +13,5 @@
                 {% endif %}
             </a>
         {% endfor %}
-    </h4>
+    </div>
 </nav>

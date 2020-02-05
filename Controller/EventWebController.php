@@ -14,8 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Repository\EventParticipantTypeRepository;
 use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
 use Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService;
 use Zakjakub\OswisCalendarBundle\Service\EventService;
@@ -74,8 +72,8 @@ class EventWebController extends AbstractController
             );
         }
         $data = array(
-            'navEvents'       => $navEvents,
-            'event'           => $event,
+            'navEvents' => $navEvents,
+            'event'     => $event,
         );
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);
