@@ -124,9 +124,12 @@
     </div>
     <div class="d-lg-none col-md-4 col-sm-3 col-xs-2 d-print-none"></div>
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8 text-uppercase center-block text-center d-print-none">
-        <div itemprop="image" id="small-banner" style="background-image: url('{{ asset('/images/events/'~event.image) }}')" content="{{ asset('/images/events/'~event.image) }}">
-            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}">Přihlas se nyní!</a>
-        </div>
+        {% if event.image %}
+            <div itemprop="image" id="small-banner" style="background-image: url('{{ asset('/images/events/'~event.image) }}')"
+                 content="{{ asset('/images/events/'~event.image) }}">
+                <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}">Přihlas se nyní!</a>
+            </div>
+        {% endif %}
     </div>
 </div>
 <div class="row text-justify">
