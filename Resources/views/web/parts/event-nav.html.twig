@@ -1,5 +1,5 @@
 <nav>
-    <div class="badges clearfix">
+    <div class="badges clearfix text-wrap mb-3" style="font-size:1.5rem">
         <!-- <a href="{#{{ path('faq') }}#}" class="badge badge-warning">Časté dotazy</a> -->
         {% for navEvent in navEvents|default %}
             <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': navEvent.slug}) }}"
