@@ -76,7 +76,7 @@ class EventParticipantTypeRepository extends EntityRepository
     private function addOnlyPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB])) {
-            $queryBuilder->andWhere('ept.public_on_web = true');
+            $queryBuilder->andWhere('ept.publicOnWeb = true');
         }
     }
 
