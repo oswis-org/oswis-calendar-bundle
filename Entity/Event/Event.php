@@ -457,7 +457,9 @@ class Event
 
     public function getWebContent(?string $type = 'html'): ?EventWebContent
     {
-        return $this->getWebContents($type)->first();
+        $webContent = $this->getWebContents($type)->first();
+
+        return $webContent instanceof EventWebContent ? $webContent : null;
     }
 
     public function getLocation(?bool $recursive = false): ?Place
