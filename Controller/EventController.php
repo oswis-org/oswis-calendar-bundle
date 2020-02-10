@@ -20,7 +20,7 @@ use Zakjakub\OswisCalendarBundle\Service\EventService;
 use Zakjakub\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
 
-class EventWebController extends AbstractController
+class EventController extends AbstractController
 {
     public const RANGE_ALL = null;
     public const RANGE_YEAR = 'year';

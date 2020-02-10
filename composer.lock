@@ -9372,16 +9372,16 @@
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.394",
+      "version": "v0.0.396",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "bb5b136ad4b0594c675359917db615906d279171"
+        "reference": "3f79ed0cf2be6a50c7523c984bb9b6567c1c04ce"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/bb5b136ad4b0594c675359917db615906d279171",
-        "reference": "bb5b136ad4b0594c675359917db615906d279171",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/3f79ed0cf2be6a50c7523c984bb9b6567c1c04ce",
+        "reference": "3f79ed0cf2be6a50c7523c984bb9b6567c1c04ce",
         "shasum": ""
       },
       "require": {
@@ -9476,7 +9476,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-02-10T09:29:54+00:00"
+      "time": "2020-02-10T13:36:12+00:00"
     }
   ],
   "packages-dev": [

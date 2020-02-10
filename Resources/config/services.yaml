@@ -164,7 +164,7 @@ services:
     ## EventParticipant controller (What does this?)
     ##
     zakjakub_oswis_calendar.event_participant_controller:
-        class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantWebController
+        class: Zakjakub\OswisCalendarBundle\Controller\EventParticipantController
         autowire: true
         public: true
         arguments:
@@ -174,36 +174,36 @@ services:
             - '@zakjakub_oswis_calendar.event_service'
             - '@zakjakub_oswis_calendar.event_participant_type_service'
             - '@zakjakub_oswis_address_book.address_book_service'
-    Zakjakub\OswisCalendarBundle\Controller\EventParticipantWebController:
+    Zakjakub\OswisCalendarBundle\Controller\EventParticipantController:
         alias: zakjakub_oswis_calendar.event_participant_controller
         public: true
 
     ##
     ## Event web controller.
     ##
-    zakjakub_oswis_calendar.event_web_controller:
-        class: Zakjakub\OswisCalendarBundle\Controller\EventWebController
+    zakjakub_oswis_calendar.event_controller:
+        class: Zakjakub\OswisCalendarBundle\Controller\EventController
         autowire: true
         public: true
         arguments:
             - '@zakjakub_oswis_calendar.event_service'
             - '@zakjakub_oswis_calendar.event_participant_type_service'
-    Zakjakub\OswisCalendarBundle\Controller\EventWebController:
-        alias: zakjakub_oswis_calendar.event_web_controller
+    Zakjakub\OswisCalendarBundle\Controller\EventController:
+        alias: zakjakub_oswis_calendar.event_controller
         public: true
 
     ##
     ## Event leaflet web controller.
     ##
-    zakjakub_oswis_calendar.event_leaflet_web_controller:
-        class: Zakjakub\OswisCalendarBundle\Controller\EventLeafletWebController
+    zakjakub_oswis_calendar.event_leaflet_controller:
+        class: Zakjakub\OswisCalendarBundle\Controller\EventLeafletController
         autowire: true
         public: true
         arguments:
             - '@zakjakub_oswis_calendar.event_service'
             - '@zakjakub_oswis_calendar.event_participant_type_service'
-    Zakjakub\OswisCalendarBundle\Controller\EventLeafletWebController:
-        alias: zakjakub_oswis_calendar.event_leaflet_web_controller
+    Zakjakub\OswisCalendarBundle\Controller\EventLeafletController:
+        alias: zakjakub_oswis_calendar.event_leaflet_controller
         public: true
 
     ##

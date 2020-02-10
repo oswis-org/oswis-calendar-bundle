@@ -3,23 +3,23 @@ controllers:
     type: annotation
 
 zakjakub_oswis_calendar_event_participant_web_registration_confirm:
-    controller: zakjakub_oswis_calendar.event_participant_web_controller::eventParticipantRegistrationConfirmAction
+    controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
 zakjakub_oswis_calendar_web_event:
-    controller: zakjakub_oswis_calendar.event_web_controller::showEvent
+    controller: zakjakub_oswis_calendar.event_controller::showEvent
     path: "/akce/{slug}"
 
 zakjakub_oswis_calendar_event_web_leaflet:
-    controller: zakjakub_oswis_calendar.event_web_controller::eventLeafletPdf
+    controller: zakjakub_oswis_calendar.event_controller::eventLeafletPdf
     path: "/letak/{slug}"
 
 zakjakub_oswis_calendar_web_event_participant_registration:
-    controller: zakjakub_oswis_calendar.event_participant_web_controller::eventParticipantRegistration
+    controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistration
     path: "/akce/{slug}/prihlaska"
 
 zakjakub_oswis_calendar_web_events:
-    controller: zakjakub_oswis_calendar.event_web_controller::showEvents
+    controller: zakjakub_oswis_calendar.event_controller::showEvents
     path: "/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
     defaults:
         range: null

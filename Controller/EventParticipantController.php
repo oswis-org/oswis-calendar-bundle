@@ -46,7 +46,7 @@ use Zakjakub\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use Zakjakub\OswisCoreBundle\Utils\SpamDateTimeEncoder;
 use function assert;
 
-class EventParticipantWebController extends AbstractController
+class EventParticipantController extends AbstractController
 {
     public EntityManagerInterface $em;
 

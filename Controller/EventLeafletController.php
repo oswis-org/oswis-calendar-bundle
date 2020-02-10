@@ -13,7 +13,7 @@ use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
 use Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService;
 use Zakjakub\OswisCalendarBundle\Service\EventService;
 
-class EventLeafletWebController extends AbstractController
+class EventLeafletController extends AbstractController
 {
     protected EventService $eventService;
 
