@@ -270,4 +270,15 @@ services:
         alias: zakjakub_oswis_calendar.event_action_subscriber
         public: true
 
+    ### EventParticipantType (form)
+    zakjakub_oswis_calendar.event_participant_type:
+        class: Zakjakub\OswisCalendarBundle\Form\EventParticipantType
+        autowire: true
+        public: true
+        arguments:
+            - '@zakjakub_oswis_calendar.event_service'
+            - '@zakjakub_oswis_calendar.event_series_service'
+    Zakjakub\OswisCalendarBundle\Form\EventParticipantType:
+        alias: zakjakub_oswis_calendar.event_participant_type
+        public: true
 

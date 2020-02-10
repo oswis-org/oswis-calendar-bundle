@@ -298,7 +298,9 @@ class EventParticipantController extends AbstractController
         assert($contactDetailTypeRepository instanceof ContactDetailTypeRepository);
         $addressBook = $this->getAddressBook($event);
         $participantType = $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)->first();
-        assert($participantType instanceof EventParticipantType);
+        if (!($participantType instanceof EventParticipantType)) {
+            $participantType = null;
+        }
         $contactDetailTypeEmail = $contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
         $contactDetailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
         $participantPerson = new Person(
