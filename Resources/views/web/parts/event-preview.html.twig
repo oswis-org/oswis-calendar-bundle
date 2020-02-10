@@ -2,7 +2,7 @@
     <div class="col-lg-9" itemscope itemtype="http://schema.org/Event">
         <header>
             <h2 class="text-uppercase" itemprop="name">
-                <a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.slug}) }}">{{ event.name }}</a>
+                <a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a>
             </h2>
         </header>
         {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
