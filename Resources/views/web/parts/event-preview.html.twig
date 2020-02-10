@@ -38,7 +38,9 @@
                         <p>
                             <strong>Místo: </strong>
                             {% if event.location.url %}
-                                <a href="{{ event.location.url }}" title="{{ event.location.name }}">{{ event.location.name }}</a>
+                                <a href="{{ event.location.url }}" title="{{ event.location.name }}" target="_blank">
+                                    {{ event.location.name }}
+                                </a>
                             {% else %}
                                 {{ event.location.name }}
                             {% endif %}

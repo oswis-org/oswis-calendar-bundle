@@ -31,25 +31,25 @@
                     {% endfor %}
                     {% if event.superEvent is defined and event.superEvent %}
                         <li>
-                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.superEvent.slug}) }}"
-                               title="{{ event.superEvent.name }}">
-                                je součástí akce <strong>{{ event.superEvent.shortName }}</strong>
-                                {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
+                            je součástí akce
+                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'slug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
+                                <strong>{{ event.superEvent.shortName }}</strong>
                             </a>
+                            {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
                         </li>
                     {% endif %}
                 </ul>
             {% endif %}
-            {% if event.organizer is defined and event.organizer %}
+            {% if event.organizer is defined and event.organizer != null %}
                 <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
                     <strong>Pořadatel: </strong><span itemprop="name">{{ event.organizer.name|default('') }}</span>
                     <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/>
                 </div>
             {% endif %}
-            {% if event.description is defined and event.description %}
+            {% if event.description is defined and event.description != null %}
                 <p itemprop="description">{{ event.description }}</p>
             {% endif %}
-            {% if event.location is defined and event.location %}
+            {% if event.location is defined and event.location != null %}
                 <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
                     {% if event.location.name is defined and event.location.name %}
                         <meta itemprop="name" content="{{ event.location.name }}"/>
@@ -62,7 +62,7 @@
                             {% else %}
                                 {{ event.location.name }}
                             {% endif %}
-                            <br><strong>Adresa:</strong>{{ event.location.fullAddress }}
+                            <br><strong>Adresa:</strong> {{ event.location.fullAddress }}
                         </p>
                         {% if event.location.name is defined and event.location.name %}
                             <meta itemprop="name" content="{{ event.location.name }}"/>
