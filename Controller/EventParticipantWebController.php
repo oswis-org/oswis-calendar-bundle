@@ -23,10 +23,10 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use Zakjakub\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
 use Zakjakub\OswisAddressBookBundle\Entity\ContactDetail;
+use Zakjakub\OswisAddressBookBundle\Entity\ContactDetailType;
 use Zakjakub\OswisAddressBookBundle\Entity\ContactNote;
 use Zakjakub\OswisAddressBookBundle\Entity\Person;
 use Zakjakub\OswisAddressBookBundle\Entity\Position;
-use Zakjakub\OswisAddressBookBundle\Form\ContactDetailType;
 use Zakjakub\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
 use Zakjakub\OswisAddressBookBundle\Service\AddressBookService;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
@@ -311,7 +311,7 @@ class EventParticipantWebController extends AbstractController
             null,
             new ArrayCollection([new Position(null, null, Position::TYPE_STUDENT)]),
             null,
-            new ArrayCollection([$addressBook])
+            null !== $addressBook ? new ArrayCollection([$addressBook]) : null
         );
 
         return new EventParticipant(
@@ -319,7 +319,7 @@ class EventParticipantWebController extends AbstractController
         );
     }
 
-    public function getAddressBook(Event $event): AddressBook
+    public function getAddressBook(Event $event): ?AddressBook
     {
         $addressBook = $this->addressBookService->getRepository()->findOneBy(['slug' => $event->getSlug()]);
         if (null === $addressBook) {
