@@ -3,7 +3,7 @@
 {% block body_content %}
     <main class="container" id="main-content-container">
         {% for event in events %}
-            {% include '@ZakjakubOswisCalendar/web/parts/event-preview.html.twig' %}
+            {% include '@ZakjakubOswisCalendar/web/parts/event.html.twig' with {'isEventPreview': 'true'} %}
         {% else %}
             Nebyly nalezeny žádné akce k zobrazení.
         {% endfor %}
