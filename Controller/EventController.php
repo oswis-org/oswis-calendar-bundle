@@ -42,20 +42,20 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param string|null $slug
+     * @param string|null $eventSlug
      *
      * @return Response
      * @throws LogicException
      * @throws NotFoundHttpException
      */
-    final public function showEvent(?string $slug = null): Response
+    final public function showEvent(?string $eventSlug = null): Response
     {
-        if (null !== $slug) {
+        if (null !== $eventSlug) {
             $this->redirectToRoute('zakjakub_oswis_calendar_web_events');
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
-            EventRepository::CRITERIA_SLUG               => $slug,
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
             // EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE => true,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,

@@ -8,15 +8,15 @@ zakjakub_oswis_calendar_event_participant_web_registration_confirm:
 
 zakjakub_oswis_calendar_web_event:
     controller: zakjakub_oswis_calendar.event_controller::showEvent
-    path: "/akce/{slug}"
+    path: "/akce/{eventSlug}"
 
 zakjakub_oswis_calendar_event_web_leaflet:
     controller: zakjakub_oswis_calendar.event_controller::eventLeafletPdf
-    path: "/letak/{slug}"
+    path: "/letak/{eventSlug}"
 
 zakjakub_oswis_calendar_web_event_participant_registration:
     controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistration
-    path: "/akce/{slug}/prihlaska"
+    path: "/akce/{eventSlug}/prihlaska"
 
 zakjakub_oswis_calendar_web_events:
     controller: zakjakub_oswis_calendar.event_controller::showEvents
