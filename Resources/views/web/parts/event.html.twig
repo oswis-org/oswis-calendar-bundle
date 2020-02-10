@@ -99,7 +99,7 @@
                 </div>
             {% endif %}
         </div>
-        {% if isEventPreview %}
+        {% if isEventPreview is not defined or not isEventPreview %}
             {% for range in event.registrationRangesByTypeOfType('attendee') %}
                 <div class="row" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
                     <div class="col-12">
