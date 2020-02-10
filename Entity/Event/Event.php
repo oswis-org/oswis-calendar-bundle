@@ -433,10 +433,19 @@ class Event
 
     public function addWebContent(?EventWebContent $eventWebContent): void
     {
-        if (null !== $eventWebContent && !$this->webContents->contains($eventWebContent)) {
+        if (null !== $eventWebContent && !$this->getWebContents()->contains($eventWebContent)) {
             $this->removeWebContent($this->getWebContent($eventWebContent->getType()));
             $this->webContents->add($eventWebContent);
         }
+    }
+
+    public function getWebContents(?string $type = null): Collection
+    {
+        if (null !== $type) {
+            $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
+        }
+
+        return $this->webContents ?? new ArrayCollection();
     }
 
     public function removeWebContent(?EventWebContent $eventWebContent): void
@@ -449,15 +458,6 @@ class Event
     public function getWebContent(?string $type = 'html'): ?EventWebContent
     {
         return $this->getWebContents($type)->first();
-    }
-
-    public function getWebContents(?string $type = null): Collection
-    {
-        if (null !== $type) {
-            $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
-        }
-
-        return $this->webContents ?? new ArrayCollection();
     }
 
     public function getLocation(?bool $recursive = false): ?Place
