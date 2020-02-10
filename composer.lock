@@ -2491,30 +2491,31 @@
     },
     {
       "name": "league/commonmark",
-      "version": "1.2.2",
+      "version": "1.3.0",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "34cf4ddb3892c715ae785c880e6691d839cff88d"
+        "reference": "4f30be7a2cbf3bfa5788abab71384713e48f451f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/34cf4ddb3892c715ae785c880e6691d839cff88d",
-        "reference": "34cf4ddb3892c715ae785c880e6691d839cff88d",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/4f30be7a2cbf3bfa5788abab71384713e48f451f",
+        "reference": "4f30be7a2cbf3bfa5788abab71384713e48f451f",
         "shasum": ""
       },
       "require": {
         "ext-mbstring": "*",
         "php": "^7.1"
       },
-      "replace": {
-        "colinodell/commonmark-php": "*"
+      "conflict": {
+        "scrutinizer/ocular": "1.7.*"
       },
       "require-dev": {
         "cebe/markdown": "~1.0",
         "commonmark/commonmark.js": "0.29.1",
         "erusev/parsedown": "~1.0",
         "ext-json": "*",
+        "github/gfm": "0.29.0",
         "michelf/php-markdown": "~1.4",
         "mikehaertl/php-shellcommand": "^1.4",
         "phpstan/phpstan-shim": "^0.11.5",
@@ -2522,16 +2523,13 @@
         "scrutinizer/ocular": "^1.5",
         "symfony/finder": "^4.2"
       },
-      "suggest": {
-        "league/commonmark-extras": "Library of useful extensions including smart punctuation"
-      },
       "bin": [
         "bin/commonmark"
       ],
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "1.3-dev"
+          "dev-master": "1.4-dev"
         }
       },
       "autoload": {
@@ -2551,14 +2549,19 @@
           "role": "Lead Developer"
         }
       ],
-      "description": "PHP Markdown parser based on the CommonMark spec",
+      "description": "Highly-extensible PHP Markdown parser which fully supports the CommonMark spec and Github-Flavored Markdown (GFM)",
       "homepage": "https://commonmark.thephpleague.com",
       "keywords": [
         "commonmark",
+        "flavored",
+        "gfm",
+        "github",
+        "github-flavored",
         "markdown",
+        "md",
         "parser"
       ],
-      "time": "2020-01-16T01:18:13+00:00"
+      "time": "2020-02-08T23:42:03+00:00"
     },
     {
       "name": "league/commonmark-ext-autolink",
@@ -3493,16 +3496,16 @@
     },
     {
       "name": "myclabs/php-enum",
-      "version": "1.7.2",
+      "version": "1.7.4",
       "source": {
         "type": "git",
         "url": "https://github.com/myclabs/php-enum.git",
-        "reference": "45f01adf6922df6082bcda36619deb466e826acf"
+        "reference": "c3f3b36602748871098069f4f2f8224ca34df899"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/myclabs/php-enum/zipball/45f01adf6922df6082bcda36619deb466e826acf",
-        "reference": "45f01adf6922df6082bcda36619deb466e826acf",
+        "url": "https://api.github.com/repos/myclabs/php-enum/zipball/c3f3b36602748871098069f4f2f8224ca34df899",
+        "reference": "c3f3b36602748871098069f4f2f8224ca34df899",
         "shasum": ""
       },
       "require": {
@@ -3510,8 +3513,9 @@
         "php": ">=7.1"
       },
       "require-dev": {
-        "phpunit/phpunit": "^4.8.35|^5.7|^6.0",
-        "squizlabs/php_codesniffer": "1.*"
+        "phpunit/phpunit": "^7",
+        "squizlabs/php_codesniffer": "1.*",
+        "vimeo/psalm": "^3.8"
       },
       "type": "library",
       "autoload": {
@@ -3534,7 +3538,7 @@
       "keywords": [
         "enum"
       ],
-      "time": "2019-08-19T13:53:00+00:00"
+      "time": "2020-02-07T08:35:07+00:00"
     },
     {
       "name": "namshi/jose",
@@ -3652,16 +3656,16 @@
     },
     {
       "name": "ocramius/proxy-manager",
-      "version": "2.6.1",
+      "version": "2.7.0",
       "source": {
         "type": "git",
         "url": "https://github.com/Ocramius/ProxyManager.git",
-        "reference": "dec37bfb3c3594440ee4fa263494189344787d22"
+        "reference": "e77928e8f11ea36b388f87e75c993d05f5da6bf1"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/dec37bfb3c3594440ee4fa263494189344787d22",
-        "reference": "dec37bfb3c3594440ee4fa263494189344787d22",
+        "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/e77928e8f11ea36b388f87e75c993d05f5da6bf1",
+        "reference": "e77928e8f11ea36b388f87e75c993d05f5da6bf1",
         "shasum": ""
       },
       "require": {
@@ -3679,14 +3683,12 @@
         "doctrine/coding-standard": "^6.0.0",
         "ext-phar": "*",
         "infection/infection": "^0.15.0",
-        "mikey179/vfsstream": "^1.6.8",
         "nikic/php-parser": "^4.3.0",
-        "phpbench/phpbench": "^0.16.10",
-        "phpunit/phpunit": "^8.5.1",
+        "phpbench/phpbench": "^0.17.0",
+        "phpunit/phpunit": "^8.5.2",
         "slevomat/coding-standard": "^5.0.4",
-        "squizlabs/php_codesniffer": "^3.5.3",
-        "symfony/console": "^4.4.2",
-        "vimeo/psalm": "3.7.0"
+        "squizlabs/php_codesniffer": "^3.5.4",
+        "vimeo/psalm": "^3.8.5"
       },
       "suggest": {
         "laminas/laminas-json": "To have the JsonRpc adapter (Remote Object feature)",
@@ -3725,7 +3727,7 @@
         "proxy pattern",
         "service proxies"
       ],
-      "time": "2020-01-27T09:25:51+00:00"
+      "time": "2020-02-08T19:22:03+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -8952,6 +8954,61 @@
       "time": "2019-12-28T07:09:27+00:00"
     },
     {
+      "name": "twig/string-extra",
+      "version": "v3.0.1",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/twigphp/string-extra.git",
+        "reference": "54fb5511c4a0189de1d48d0f7c98843c270084e8"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/twigphp/string-extra/zipball/54fb5511c4a0189de1d48d0f7c98843c270084e8",
+        "reference": "54fb5511c4a0189de1d48d0f7c98843c270084e8",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^7.2.9",
+        "symfony/string": "^5.0",
+        "twig/twig": "^2.4|^3.0"
+      },
+      "require-dev": {
+        "symfony/phpunit-bridge": "^4.4|^5.0"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "2.12-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Twig\\Extra\\String\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Fabien Potencier",
+          "email": "fabien@symfony.com",
+          "homepage": "http://fabien.potencier.org",
+          "role": "Lead Developer"
+        }
+      ],
+      "description": "A Twig extension for Symfony String",
+      "homepage": "https://twig.symfony.com",
+      "keywords": [
+        "html",
+        "string",
+        "twig",
+        "unicode"
+      ],
+      "time": "2019-12-27T07:33:44+00:00"
+    },
+    {
       "name": "twig/twig",
       "version": "v3.0.1",
       "source": {
@@ -9015,16 +9072,16 @@
     },
     {
       "name": "vich/uploader-bundle",
-      "version": "1.13.0",
+      "version": "1.13.1",
       "source": {
         "type": "git",
         "url": "https://github.com/dustin10/VichUploaderBundle.git",
-        "reference": "83be1a5fc9415826b28b2947623b876c6f028e59"
+        "reference": "282321173e8a01a295d04fa642658b6b10c3ec9a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/dustin10/VichUploaderBundle/zipball/83be1a5fc9415826b28b2947623b876c6f028e59",
-        "reference": "83be1a5fc9415826b28b2947623b876c6f028e59",
+        "url": "https://api.github.com/repos/dustin10/VichUploaderBundle/zipball/282321173e8a01a295d04fa642658b6b10c3ec9a",
+        "reference": "282321173e8a01a295d04fa642658b6b10c3ec9a",
         "shasum": ""
       },
       "require": {
@@ -9108,7 +9165,7 @@
         "file uploads",
         "upload"
       ],
-      "time": "2020-01-14T08:33:14+00:00"
+      "time": "2020-02-06T07:49:31+00:00"
     },
     {
       "name": "webimpress/safe-writer",
@@ -9260,16 +9317,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.178",
+      "version": "v0.0.185",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "4c1b1744199d501928447f929bad19b9191e3755"
+        "reference": "09e71ddcfd5b6a177ccfaa48999389d91024de69"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/4c1b1744199d501928447f929bad19b9191e3755",
-        "reference": "4c1b1744199d501928447f929bad19b9191e3755",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/09e71ddcfd5b6a177ccfaa48999389d91024de69",
+        "reference": "09e71ddcfd5b6a177ccfaa48999389d91024de69",
         "shasum": ""
       },
       "require": {
@@ -9311,20 +9368,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-02-01T17:38:29+00:00"
+      "time": "2020-02-10T10:12:47+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.392",
+      "version": "v0.0.394",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "fe7ea343e89a4f793892b366f43d344adb100e49"
+        "reference": "bb5b136ad4b0594c675359917db615906d279171"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/fe7ea343e89a4f793892b366f43d344adb100e49",
-        "reference": "fe7ea343e89a4f793892b366f43d344adb100e49",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/bb5b136ad4b0594c675359917db615906d279171",
+        "reference": "bb5b136ad4b0594c675359917db615906d279171",
         "shasum": ""
       },
       "require": {
@@ -9333,7 +9390,7 @@
         "bigit/vokativ": "dev-master",
         "doctrine/collections": "^1.6",
         "egulias/email-validator": "^2.1",
-        "elasticsearch/elasticsearch": "^7.4",
+        "elasticsearch/elasticsearch": "^7.5",
         "ext-calendar": "*",
         "ext-ctype": "*",
         "ext-iconv": "*",
@@ -9342,12 +9399,12 @@
         "gedmo/doctrine-extensions": "^2.4",
         "gesdinet/jwt-refresh-token-bundle": "^0.8",
         "hirak/prestissimo": "^0.3",
-        "league/commonmark": "^1.1",
+        "league/commonmark": "^1.2",
         "league/commonmark-extras": "^1.1",
-        "league/csv": "^9.4",
+        "league/csv": "^9.5",
         "league/html-to-markdown": "^4.9",
         "lexik/jwt-authentication-bundle": "^2.6",
-        "liip/imagine-bundle": "^2.2",
+        "liip/imagine-bundle": "^2.3",
         "mpdf/mpdf": "^8.0",
         "php": "^7.4",
         "psr/event-dispatcher": "^1.0",
@@ -9365,6 +9422,7 @@
         "symfony/proxy-manager-bridge": "^4.4",
         "symfony/security-bundle": "^4.4",
         "symfony/serializer-pack": "^1.0",
+        "symfony/string": "^5.0",
         "symfony/twig-bundle": "^4.4",
         "symfony/web-link": "^4.4",
         "symfony/web-profiler-bundle": "^4.4",
@@ -9373,7 +9431,8 @@
         "twig/extra-bundle": "^3.0",
         "twig/inky-extra": "^3.0",
         "twig/markdown-extra": "^3.0",
-        "vich/uploader-bundle": "^1.11"
+        "twig/string-extra": "^3.0",
+        "vich/uploader-bundle": "^1.13"
       },
       "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16",
@@ -9417,7 +9476,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-02-04T22:24:15+00:00"
+      "time": "2020-02-10T09:29:54+00:00"
     }
   ],
   "packages-dev": [
@@ -9510,12 +9569,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "af61943caaa512a4f00f1ee80e6e0cfec3fb63d1"
+        "reference": "7d271200b041d3e4be5927fdb03122508b9f8ebb"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/af61943caaa512a4f00f1ee80e6e0cfec3fb63d1",
-        "reference": "af61943caaa512a4f00f1ee80e6e0cfec3fb63d1",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/7d271200b041d3e4be5927fdb03122508b9f8ebb",
+        "reference": "7d271200b041d3e4be5927fdb03122508b9f8ebb",
         "shasum": ""
       },
       "conflict": {
@@ -9554,7 +9613,11 @@
         "drupal/drupal": ">=7,<7.69|>=8,<8.7.11|>=8.8,<8.8.1",
         "endroid/qr-code-bundle": "<3.4.2",
         "erusev/parsedown": "<1.7.2",
-        "ezsystems/ezplatform-admin-ui": ">=1.3,<1.3.5|>=1.4,<1.4.4",
+        "ezsystems/ezfind-ls": ">=5.3,<5.3.6.1|>=5.4,<5.4.11.1|>=2017.12,<2017.12.0.1",
+        "ezsystems/ezplatform": ">=1.7,<1.7.9.1|>=1.13,<1.13.5.1|>=2.5,<2.5.4",
+        "ezsystems/ezplatform-admin-ui": ">=1.3,<1.3.5|>=1.4,<1.4.6",
+        "ezsystems/ezplatform-admin-ui-assets": ">=4,<4.2",
+        "ezsystems/ezplatform-user": ">=1,<1.0.1",
         "ezsystems/ezpublish-kernel": ">=5.3,<5.3.12.1|>=5.4,<5.4.13.1|>=6,<6.7.9.1|>=6.8,<6.13.5.1|>=7,<7.2.4.1|>=7.3,<7.3.2.1",
         "ezsystems/ezpublish-legacy": ">=5.3,<5.3.12.6|>=5.4,<5.4.12.3|>=2011,<2017.12.4.3|>=2018.6,<2018.6.1.4|>=2018.9,<2018.9.1.3",
         "ezsystems/repository-forms": ">=2.3,<2.3.2.1",
@@ -9735,7 +9798,7 @@
         }
       ],
       "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-      "time": "2020-02-05T14:02:42+00:00"
+      "time": "2020-02-06T16:34:55+00:00"
     }
   ],
   "aliases": [],
