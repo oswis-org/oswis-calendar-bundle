@@ -451,7 +451,7 @@ class Event
     public function removeWebContent(?EventWebContent $eventWebContent): void
     {
         if (null !== $eventWebContent) {
-            $this->webContents->removeElement($eventWebContent);
+            $this->getWebContents()->removeElement($eventWebContent);
         }
     }
 
