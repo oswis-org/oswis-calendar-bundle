@@ -435,7 +435,7 @@ class Event
     {
         if (null !== $eventWebContent && !$this->getWebContents()->contains($eventWebContent)) {
             $this->removeWebContent($this->getWebContent($eventWebContent->getType()));
-            $this->webContents->add($eventWebContent);
+            $this->getWebContents()->add($eventWebContent);
         }
     }
 

@@ -40,7 +40,6 @@ use Zakjakub\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Zakjakub\OswisCoreBundle\Service\AppUserService;
 use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
-use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
 use Zakjakub\OswisCoreBundle\Utils\StringUtils;
 use function assert;
 
@@ -198,12 +197,7 @@ class EventParticipantService
      */
     private function getEmptyEmail(Person $person, string $title): TemplatedEmail
     {
-        return (new TemplatedEmail())->to($person->getMailerAddress())->bcc($this->coreSettings->getArchiveMailerAddress())->subject(self::mimeEnc($title));
-    }
-
-    private static function mimeEnc(string $content): string
-    {
-        return EmailUtils::mime_header_encode($content);
+        return (new TemplatedEmail())->to($person->getMailerAddress())->bcc($this->coreSettings->getArchiveMailerAddress())->subject($title);
     }
 
     private function getMailData(EventParticipant $participant, Event $event, Person $contactPerson, bool $isOrg = false): array
@@ -428,7 +422,7 @@ class EventParticipantService
             'oswis'   => $this->coreSettings->getArray(),
         ];
         $mail = new TemplatedEmail();
-        $mail->to($this->coreSettings->getArchiveMailerAddress())->subject(self::mimeEnc($title));
+        $mail->to($this->coreSettings->getArchiveMailerAddress())->subject($title);
         $mail->htmlTemplate($templateEmail)->context($mailData);
         if ($pdfString) {
             $mail->attach($pdfString, $title, 'application/pdf');
@@ -443,7 +437,7 @@ class EventParticipantService
 
     final public function sendInfoMails(
         Event $event,
-        ?string $eventParticipantTypeOfType = null,
+        ?string $participantTypeOfType = null,
         int $recursiveDepth = 0,
         ?int $count = 0,
         ?string $source = null,
@@ -452,7 +446,7 @@ class EventParticipantService
         $successCount = 0;
         $eventParticipants = $this->getEventParticipantsByTypeOfType(
             $event,
-            $eventParticipantTypeOfType,
+            $participantTypeOfType,
             false,
             false,
             $recursiveDepth
