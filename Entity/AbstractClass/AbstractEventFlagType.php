@@ -6,12 +6,13 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
 
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ValueTrait;
 
-abstract class AbstractEventFlagType
+abstract class AbstractEventFlagType implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use NameableBasicTrait;

@@ -12,6 +12,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
@@ -60,7 +61,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventType
+class EventType implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use NameableBasicTrait;

@@ -1,10 +1,13 @@
-<?php /** @noinspection ALL */
-
-/** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection MethodShouldBeFinalInspection
+ * @noinspection PhpUnused
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
@@ -14,7 +17,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventFlagConnection
+class EventFlagConnection implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use TextValueTrait;

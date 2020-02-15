@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
 /**
@@ -54,16 +55,13 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantTypeInEventConnection
+class EventParticipantTypeInEventConnection implements BasicEntityInterface
 {
     use BasicEntityTrait;
 
     /**
      * Event contact type.
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",)
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventParticipantType $eventParticipantType = null;
@@ -72,16 +70,15 @@ class EventParticipantTypeInEventConnection
      * Event contact (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="participantTypeInEventConnections",
-     *     fetch="EAGER"
+     *     inversedBy="participantTypeInEventConnections"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $event = null;
 
-    public function __construct(?EventParticipantType $eventParticipantType = null, ?Event $event = null)
+    public function __construct(?EventParticipantType $participantType = null, ?Event $event = null)
     {
-        $this->setEventParticipantType($eventParticipantType);
+        $this->setEventParticipantType($participantType);
         $this->setEvent($event);
     }
 

@@ -24,6 +24,7 @@ use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
 use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
@@ -134,7 +135,7 @@ use function assert;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipant
+class EventParticipant implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use DeletedTrait;
@@ -306,7 +307,7 @@ class EventParticipant
     public function isFormal(bool $recursive = false): bool
     {
         if ($recursive && null === $this->formal) {
-            return $this->getEventParticipantType() ? $this->getEventParticipantType()->isFormal() : null;
+            return $this->getEventParticipantType() ? $this->getEventParticipantType()->isFormal() : false;
         }
 
         return $this->formal;

@@ -1,6 +1,6 @@
-<?php /** @noinspection ALL */
-
+<?php
 /**
+ * @noinspection MethodShouldBeFinalInspection
  * @noinspection PhpUnused
  */
 
@@ -8,6 +8,7 @@ namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use DateTime;
 use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateTimeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
@@ -17,7 +18,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantFlagNewConnection
+class EventParticipantFlagNewConnection implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use TextValueTrait;
@@ -25,10 +26,7 @@ class EventParticipantFlagNewConnection
 
     /**
      * Event contact flag.
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventParticipantFlag $eventParticipantFlag = null;

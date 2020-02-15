@@ -11,6 +11,7 @@ use Exception;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DepositValueTrait;
@@ -22,7 +23,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_price")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventRegistrationRange
+class EventRegistrationRange implements BasicEntityInterface
 {
     use BasicEntityTrait;
 

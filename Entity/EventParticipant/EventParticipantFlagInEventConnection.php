@@ -1,12 +1,13 @@
-<?php /** @noinspection ALL */
-/** @noinspection ALL */
-/** @noinspection ALL */
-/** @noinspection ALL */
+<?php
+/**
+ * @noinspection MethodShouldBeFinalInspection
+ */
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
 use Doctrine\ORM\Mapping as ORM;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ActiveTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 
@@ -15,7 +16,7 @@ use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_in_event_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantFlagInEventConnection
+class EventParticipantFlagInEventConnection implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use ActiveTrait;
@@ -38,8 +39,7 @@ class EventParticipantFlagInEventConnection
      * Event contact (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="participantFlagInEventConnections",
-     *     fetch="EAGER"
+     *     inversedBy="participantFlagInEventConnections"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -47,10 +47,7 @@ class EventParticipantFlagInEventConnection
 
     /**
      * Event contact type.
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventParticipantType $eventParticipantType = null;
@@ -83,17 +80,11 @@ class EventParticipantFlagInEventConnection
         $this->eventParticipantType = $eventParticipantType;
     }
 
-    /**
-     * @return int|null
-     */
     public function getMaxAmountInEvent(): ?int
     {
         return $this->maxAmountInEvent;
     }
 
-    /**
-     * @param int|null $maxAmountInEvent
-     */
     public function setMaxAmountInEvent(?int $maxAmountInEvent): void
     {
         $this->maxAmountInEvent = $maxAmountInEvent;

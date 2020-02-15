@@ -22,6 +22,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInE
 use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
@@ -76,7 +77,7 @@ use function assert;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class Event
+class Event implements BasicEntityInterface
 {
     use BasicEntityTrait;
     use NameableBasicTrait;
@@ -201,9 +202,7 @@ class Event
         ?DateTime $endDateTime = null,
         ?EventSeries $series = null,
         ?bool $priceRelative = null,
-        ?string $color = null,
-        ?string $bankAccountNumber = null,
-        ?string $bankAccountBank = null
+        ?string $color = null
     ) {
         $this->subEvents = new ArrayCollection();
         $this->registrationRanges = new ArrayCollection();
@@ -218,13 +217,17 @@ class Event
         $this->setStartDateTime($startDateTime);
         $this->setEndDateTime($endDateTime);
         $this->setColor($color);
-        $this->setBankAccountNumber($bankAccountNumber);
-        $this->setBankAccountBank($bankAccountBank);
     }
 
     public function setPriceRelative(?bool $priceRelative): void
     {
         $this->priceRelative = $priceRelative;
+    }
+
+    public function setBankAccount(?string $number, ?string $bank): void
+    {
+        $this->setBankAccountNumber($number);
+        $this->setBankAccountBank($bank);
     }
 
     public function getImage(): ?EventImage
@@ -243,17 +246,39 @@ class Event
 
     public function addRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if (null !== $eventRegistrationRange && !$this->registrationRanges->contains($eventRegistrationRange)) {
-            $this->registrationRanges->add($eventRegistrationRange);
+        if (null !== $eventRegistrationRange && !$this->getRegistrationRanges()->contains($eventRegistrationRange)) {
+            $this->getRegistrationRanges()->add($eventRegistrationRange);
         }
+    }
+
+    /**
+     * @param EventParticipantType|null $participantType
+     * @param DateTime|null             $dateTime
+     *
+     * @return Collection<EventRegistrationRange>
+     */
+    public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): Collection
+    {
+        if (null !== $participantType || null !== $dateTime) {
+            return $this->getRegistrationRanges()->filter(
+                fn(EventRegistrationRange $range) => $range->isApplicableByType($participantType, $dateTime)
+            );
+        }
+
+        return $this->registrationRanges ?? new ArrayCollection();
     }
 
     public function addEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
     {
-        if (null !== $eventContactFlagConnection && !$this->eventFlagConnections->contains($eventContactFlagConnection)) {
-            $this->eventFlagConnections->add($eventContactFlagConnection);
+        if (null !== $eventContactFlagConnection && !$this->getEventFlagConnections()->contains($eventContactFlagConnection)) {
+            $this->getEventFlagConnections()->add($eventContactFlagConnection);
             $eventContactFlagConnection->setEvent($this);
         }
+    }
+
+    public function getEventFlagConnections(): Collection
+    {
+        return $this->eventFlagConnections ?? new ArrayCollection();
     }
 
     public function getParticipantTypes(?string $type = null): Collection
@@ -291,15 +316,15 @@ class Event
 
     public function addSubEvent(?Event $event): void
     {
-        if (null !== $event && !$this->subEvents->contains($event)) {
-            $this->subEvents->add($event);
+        if (null !== $event && !$this->getSubEvents()->contains($event)) {
+            $this->getSubEvents()->add($event);
             $event->setSuperEvent($this);
         }
     }
 
     public function removeSubEvent(?Event $event): void
     {
-        if (null !== $event && $this->subEvents->removeElement($event)) {
+        if (null !== $event && $this->getSubEvents()->removeElement($event)) {
             $event->setSuperEvent(null);
         }
     }
@@ -315,23 +340,6 @@ class Event
         }
 
         return $capacity;
-    }
-
-    /**
-     * @param EventParticipantType|null $participantType
-     * @param DateTime|null             $dateTime
-     *
-     * @return Collection<EventRegistrationRange>
-     */
-    public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): Collection
-    {
-        if (null !== $participantType || null !== $dateTime) {
-            return $this->getRegistrationRanges()->filter(
-                fn(EventRegistrationRange $range) => $range->isApplicableByType($participantType, $dateTime)
-            );
-        }
-
-        return $this->registrationRanges ?? new ArrayCollection();
     }
 
     public function getMaxCapacity(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): ?int
@@ -350,30 +358,49 @@ class Event
 
     public function addParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
     {
-        if ($participantTypeInEventConnection && !$this->participantTypeInEventConnections->contains($participantTypeInEventConnection)) {
-            $this->participantTypeInEventConnections->add($participantTypeInEventConnection);
+        if ($participantTypeInEventConnection && !$this->getParticipantTypeInEventConnections()->contains($participantTypeInEventConnection)) {
+            $this->getParticipantTypeInEventConnections()->add($participantTypeInEventConnection);
             $participantTypeInEventConnection->setEvent($this);
         }
     }
 
     public function removeParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
     {
-        if ($participantTypeInEventConnection && $this->participantTypeInEventConnections->removeElement($participantTypeInEventConnection)) {
+        if ($participantTypeInEventConnection && $this->getParticipantTypeInEventConnections()->removeElement($participantTypeInEventConnection)) {
             $participantTypeInEventConnection->setEvent(null);
         }
     }
 
     public function addParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $participantFlagInEventConnection): void
     {
-        if ($participantFlagInEventConnection && !$this->participantFlagInEventConnections->contains($participantFlagInEventConnection)) {
-            $this->participantFlagInEventConnections->add($participantFlagInEventConnection);
+        if ($participantFlagInEventConnection && !$this->getParticipantFlagInEventConnections()->contains($participantFlagInEventConnection)) {
+            $this->getParticipantFlagInEventConnections()->add($participantFlagInEventConnection);
             $participantFlagInEventConnection->setEvent($this);
         }
     }
 
+    public function getParticipantFlagInEventConnections(
+        EventParticipantType $participantType = null,
+        ?EventParticipantFlag $participantFlag = null
+    ): Collection {
+        $out = $this->participantFlagInEventConnections ?? new ArrayCollection();
+        if (null !== $participantType) {
+            $out = $out->filter(
+                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantType() && $participantType->getId() === $c->getEventParticipantType()->getId()
+            );
+        }
+        if (null !== $participantFlag) {
+            $out = $out->filter(
+                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantFlag() && $participantFlag->getId() === $c->getEventParticipantFlag()->getId()
+            );
+        }
+
+        return $out;
+    }
+
     public function removeParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $participantFlagInEventConnection): void
     {
-        if ($participantFlagInEventConnection && $this->participantFlagInEventConnections->removeElement($participantFlagInEventConnection)) {
+        if ($participantFlagInEventConnection && $this->getParticipantFlagInEventConnections()->removeElement($participantFlagInEventConnection)) {
             $participantFlagInEventConnection->setEvent(null);
         }
     }
@@ -523,25 +550,6 @@ class Event
         return $flags;
     }
 
-    public function getParticipantFlagInEventConnections(
-        EventParticipantType $participantType = null,
-        ?EventParticipantFlag $participantFlag = null
-    ): Collection {
-        $out = $this->participantFlagInEventConnections ?? new ArrayCollection();
-        if (null !== $participantType) {
-            $out = $out->filter(
-                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantType() && $participantType->getId() === $c->getEventParticipantType()->getId()
-            );
-        }
-        if (null !== $participantFlag) {
-            $out = $out->filter(
-                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantFlag() && $participantFlag->getId() === $c->getEventParticipantFlag()->getId()
-            );
-        }
-
-        return $out;
-    }
-
     /**
      * True if registrations for specified participant type (or any if not specified) is allowed in some datetime (or now if not specified).
      *
@@ -584,14 +592,9 @@ class Event
         return $allowedAmount;
     }
 
-    public function getEventFlagConnections(): ?Collection
-    {
-        return $this->eventFlagConnections ?? new ArrayCollection();
-    }
-
     public function removeEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
     {
-        if (null !== $eventContactFlagConnection && $this->eventFlagConnections->removeElement($eventContactFlagConnection)) {
+        if (null !== $eventContactFlagConnection && $this->getEventFlagConnections()->removeElement($eventContactFlagConnection)) {
             $eventContactFlagConnection->setEvent(null);
         }
     }
