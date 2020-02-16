@@ -9,6 +9,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Entity\Publicity;
 
 class EventParticipantFlagService
 {
@@ -25,10 +26,10 @@ class EventParticipantFlagService
     final public function create(
         ?Nameable $nameable = null,
         ?EventParticipantFlagType $participantFlagType = null,
-        ?bool $publicOnWeb = null
+        ?Publicity $publicity = null
     ): ?EventParticipantFlag {
         try {
-            $entity = new EventParticipantFlag($nameable, $participantFlagType, $publicOnWeb);
+            $entity = new EventParticipantFlag($nameable, $participantFlagType, $publicity);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event participant flag (by service): '.$entity->getId().' '.$entity->getName().'.';

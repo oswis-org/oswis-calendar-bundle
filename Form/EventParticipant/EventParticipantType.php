@@ -156,25 +156,28 @@ class EventParticipantType extends AbstractType
     public function getTShirtGroupName(EventParticipantFlag $flag): string
     {
         if (strpos($flag->getName(), 'Pán') !== false) {
-            return 'Pánské tričko';
+            return '♂ Pánské tričko';
         }
         if (strpos($flag->getName(), 'Dám') !== false) {
-            return 'Dámské tričko';
+            return '♀ Dámské tričko';
+        }
+        if (strpos($flag->getName(), 'Uni') !== false) {
+            return '⚲ Unisex tričko';
         }
 
-        return 'Ostatní';
+        return '⚪ Ostatní';
     }
 
     public function getFlagPriceGroup(EventParticipantFlag $flag): string
     {
         if ($flag->getPrice() > 0) {
-            return 'S příplatkem';
+            return '💰 S příplatkem';
         }
         if (empty($flag->getPrice())) {
-            return 'Bez příplatku';
+            return '🆓 Bez příplatku';
         }
 
-        return 'Ostatní';
+        return '⬤ Ostatní';
     }
 
     public function addGdprField(FormBuilderInterface $builder): void

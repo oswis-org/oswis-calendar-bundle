@@ -12,6 +12,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Entity\Publicity;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -86,17 +87,19 @@ class EventParticipantType implements BasicEntityInterface
     /**
      * EmployerFlag constructor.
      *
-     * @param Nameable|null $nameable
-     * @param string|null   $type
-     * @param bool|null     $formal
+     * @param Nameable|null  $nameable
+     * @param string|null    $type
+     * @param bool|null      $formal
+     * @param Publicity|null $publicity
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(?Nameable $nameable = null, ?string $type = null, ?bool $formal = true)
+    public function __construct(?Nameable $nameable = null, ?string $type = null, ?bool $formal = true, Publicity $publicity = null)
     {
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
         $this->setFormal($formal);
+        $this->setFieldsFromPublicity($publicity);
     }
 
     public function setFormal(?bool $formal): void

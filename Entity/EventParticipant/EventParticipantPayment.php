@@ -117,7 +117,7 @@ class EventParticipantPayment extends AbstractPayment
     protected ?EventParticipant $eventParticipant = null;
 
     /**
-     * @param EventParticipant|null  $eventParticipant
+     * @param EventParticipant|null  $participant
      * @param int|null               $numericValue
      * @param DateTimeInterface|null $dateTime
      * @param string|null            $type
@@ -127,14 +127,14 @@ class EventParticipantPayment extends AbstractPayment
      * @throws Exception
      */
     public function __construct(
-        ?EventParticipant $eventParticipant = null,
+        ?EventParticipant $participant = null,
         ?int $numericValue = null,
         ?DateTimeInterface $dateTime = null,
         ?string $type = null,
         ?string $note = null,
         ?string $internalNote = null
     ) {
-        $this->setEventParticipant($eventParticipant);
+        $this->setEventParticipant($participant);
         $this->setNumericValue($numericValue);
         $this->setDateTime($dateTime ?? new DateTime());
         $this->setNote($note);

@@ -25,21 +25,14 @@ class EventFlagConnection implements BasicEntityInterface
 
     /**
      * Event flag.
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlag",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlag")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventFlag $eventFlag = null;
 
     /**
      * Event.
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="eventFlagConnections",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", inversedBy="eventFlagConnections")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $event = null;

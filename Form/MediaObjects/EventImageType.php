@@ -1,17 +1,22 @@
 <?php
 /**
- * @noinspection PhpUnused
+ * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace Zakjakub\OswisCalendarBundle\Form\MediaObjects;
 
-use Symfony\Component\Form\AbstractType;
 use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
+use Zakjakub\OswisCoreBundle\Form\AbstractClass\AbstractImageType;
 
-final class EventImageType extends AbstractType
+class EventImageType extends AbstractImageType
 {
-    public static function getImageClassName(): string
+    public static function getFileClassName(): string
     {
         return EventImage::class;
+    }
+
+    public function getBlockPrefix(): string
+    {
+        return 'oswis_calendar_event_image';
     }
 }

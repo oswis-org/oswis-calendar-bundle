@@ -22,6 +22,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
 use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Entity\Publicity;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
@@ -188,12 +189,6 @@ class Event implements BasicEntityInterface
      */
     private ?EventSeries $series = null;
 
-    /**
-     * Indicates if price is relative to parent event.
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
-     */
-    private ?bool $priceRelative = null;
-
     public function __construct(
         ?Nameable $nameable = null,
         ?Event $superEvent = null,
@@ -202,8 +197,8 @@ class Event implements BasicEntityInterface
         ?DateTimeInterface $startDateTime = null,
         ?DateTimeInterface $endDateTime = null,
         ?EventSeries $series = null,
-        ?bool $priceRelative = null,
-        ?string $color = null
+        ?string $color = null,
+        ?Publicity $publicity = null
     ) {
         $this->subEvents = new ArrayCollection();
         $this->registrationRanges = new ArrayCollection();
@@ -212,17 +207,12 @@ class Event implements BasicEntityInterface
         $this->setType($type);
         $this->setSuperEvent($superEvent);
         $this->setSeries($series);
-        $this->setPriceRelative($priceRelative);
         $this->setFieldsFromNameable($nameable);
         $this->setLocation($location);
         $this->setStartDateTime($startDateTime);
         $this->setEndDateTime($endDateTime);
         $this->setColor($color);
-    }
-
-    public function setPriceRelative(?bool $priceRelative): void
-    {
-        $this->priceRelative = $priceRelative;
+        $this->setFieldsFromPublicity($publicity);
     }
 
     public function setBankAccount(?string $number, ?string $bank): void
@@ -425,11 +415,7 @@ class Event implements BasicEntityInterface
 
     public function getDeposit(EventParticipantType $eventParticipantType): ?int
     {
-        if ($this->getDepositOfEvent($eventParticipantType) !== null) {
-            return $this->getDepositOfEvent($eventParticipantType);
-        }
-
-        return $this->isPriceRelative() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : 0;
+        return $this->getDepositOfEvent($eventParticipantType);
     }
 
     public function getDepositOfEvent(EventParticipantType $participantType, ?DateTimeInterface $dateTime = null): ?int
@@ -448,11 +434,6 @@ class Event implements BasicEntityInterface
         return null !== $total && $total <= 0 ? 0 : $total;
     }
 
-    public function isPriceRelative(): bool
-    {
-        return $this->priceRelative ?? false;
-    }
-
     public function addWebContent(?EventWebContent $eventWebContent): void
     {
         if (null !== $eventWebContent && !$this->getWebContents()->contains($eventWebContent)) {
@@ -464,7 +445,7 @@ class Event implements BasicEntityInterface
     public function getWebContents(?string $type = null): Collection
     {
         if (null !== $type) {
-            $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
+            return $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
         }
 
         return $this->webContents ?? new ArrayCollection();
@@ -472,9 +453,7 @@ class Event implements BasicEntityInterface
 
     public function removeWebContent(?EventWebContent $eventWebContent): void
     {
-        if (null !== $eventWebContent) {
-            $this->getWebContents()->removeElement($eventWebContent);
-        }
+        $this->getWebContents()->removeElement($eventWebContent);
     }
 
     public function getWebContent(?string $type = 'html'): ?EventWebContent

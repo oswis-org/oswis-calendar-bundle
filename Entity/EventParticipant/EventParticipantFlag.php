@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use Zakjakub\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Entity\Publicity;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
@@ -71,14 +72,11 @@ class EventParticipantFlag extends AbstractEventFlag
      */
     protected ?int $price = null;
 
-    public function __construct(
-        ?Nameable $nameable = null,
-        ?EventParticipantFlagType $eventParticipantFlagType = null,
-        ?bool $publicOnWeb = null
-    ) {
+    public function __construct(?Nameable $nameable = null, ?EventParticipantFlagType $participantFlagType = null, ?Publicity $publicity = null)
+    {
         $this->setFieldsFromNameable($nameable);
-        $this->setEventParticipantFlagType($eventParticipantFlagType);
-        $this->setPublicOnWeb($publicOnWeb);
+        $this->setEventParticipantFlagType($participantFlagType);
+        $this->setFieldsFromPublicity($publicity);
     }
 
     public function getPrice(): int

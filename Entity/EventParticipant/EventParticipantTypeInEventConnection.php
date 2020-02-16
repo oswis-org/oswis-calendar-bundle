@@ -68,10 +68,7 @@ class EventParticipantTypeInEventConnection implements BasicEntityInterface
 
     /**
      * Event contact (connected to person or organization).
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="participantTypeInEventConnections"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", inversedBy="participantTypeInEventConnections")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $event = null;

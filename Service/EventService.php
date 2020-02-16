@@ -14,10 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
@@ -25,7 +22,6 @@ use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository;
 use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
 use Zakjakub\OswisCoreBundle\Entity\AppUser;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
 
 class EventService
 {
@@ -42,22 +38,13 @@ class EventService
         $this->participantService = $participantService;
     }
 
-    final public function create(
-        ?Nameable $nameable = null,
-        ?Event $superEvent = null,
-        ?Place $location = null,
-        ?EventType $type = null,
-        ?DateTime $startDateTime = null,
-        ?DateTime $endDateTime = null,
-        ?EventSeries $series = null,
-        ?bool $priceRecursiveFromParent = null
-    ): Event {
-        $entity = new Event($nameable, $superEvent, $location, $type, $startDateTime, $endDateTime, $series, $priceRecursiveFromParent);
-        $this->em->persist($entity);
+    public function create(Event $event): Event
+    {
+        $this->em->persist($event);
         $this->em->flush();
-        $this->logger->info('CREATE: Created event (by service): '.$entity->getId().' '.$entity->getName().'.');
+        $this->logger->info('CREATE: Created event (by service): '.$event->getId().' '.$event->getName().'.');
 
-        return $entity;
+        return $event;
     }
 
     public function getRepository(): EventRepository

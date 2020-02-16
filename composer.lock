@@ -2071,16 +2071,16 @@
     },
     {
       "name": "hirak/prestissimo",
-      "version": "0.3.9",
+      "version": "0.3.10",
       "source": {
         "type": "git",
         "url": "https://github.com/hirak/prestissimo.git",
-        "reference": "01bed92c45e84d01a96f5d15c6e49958cbd57f36"
+        "reference": "fb6724d5ee81c96bebd2255175d8c364ac9301e3"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/hirak/prestissimo/zipball/01bed92c45e84d01a96f5d15c6e49958cbd57f36",
-        "reference": "01bed92c45e84d01a96f5d15c6e49958cbd57f36",
+        "url": "https://api.github.com/repos/hirak/prestissimo/zipball/fb6724d5ee81c96bebd2255175d8c364ac9301e3",
+        "reference": "fb6724d5ee81c96bebd2255175d8c364ac9301e3",
         "shasum": ""
       },
       "require": {
@@ -2118,7 +2118,7 @@
         "parallel",
         "speedup"
       ],
-      "time": "2019-05-04T08:16:12+00:00"
+      "time": "2020-02-16T12:49:55+00:00"
     },
     {
       "name": "imagine/imagine",
@@ -9673,16 +9673,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.189",
+      "version": "v0.0.191",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "96ff28409e12e1483e809d9b95ebe4032f3a6dbe"
+        "reference": "a11e7e47ba8d727789ce2ee15e9a196adf5497d1"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/96ff28409e12e1483e809d9b95ebe4032f3a6dbe",
-        "reference": "96ff28409e12e1483e809d9b95ebe4032f3a6dbe",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/a11e7e47ba8d727789ce2ee15e9a196adf5497d1",
+        "reference": "a11e7e47ba8d727789ce2ee15e9a196adf5497d1",
         "shasum": ""
       },
       "require": {
@@ -9724,20 +9724,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-02-16T00:18:09+00:00"
+      "time": "2020-02-16T14:34:54+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.410",
+      "version": "v0.0.416",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "34eda5b768e8bb93c962a4dc36fcde15e29e8181"
+        "reference": "0803257a2c99f1a3eb6fd301ba2716b122c00052"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/34eda5b768e8bb93c962a4dc36fcde15e29e8181",
-        "reference": "34eda5b768e8bb93c962a4dc36fcde15e29e8181",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/0803257a2c99f1a3eb6fd301ba2716b122c00052",
+        "reference": "0803257a2c99f1a3eb6fd301ba2716b122c00052",
         "shasum": ""
       },
       "require": {
@@ -9832,7 +9832,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-02-15T23:55:09+00:00"
+      "time": "2020-02-16T15:40:01+00:00"
     }
   ],
   "packages-dev": [
@@ -9882,16 +9882,16 @@
     },
     {
       "name": "phpstan/phpstan",
-      "version": "0.12.10",
+      "version": "0.12.11",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan.git",
-        "reference": "39004edc7fc308752f625b89b70ad1710708f45e"
+        "reference": "ca5f2b7cf81c6d8fba74f9576970399c5817e03b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/39004edc7fc308752f625b89b70ad1710708f45e",
-        "reference": "39004edc7fc308752f625b89b70ad1710708f45e",
+        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ca5f2b7cf81c6d8fba74f9576970399c5817e03b",
+        "reference": "ca5f2b7cf81c6d8fba74f9576970399c5817e03b",
         "shasum": ""
       },
       "require": {
@@ -9917,7 +9917,7 @@
         "MIT"
       ],
       "description": "PHPStan - PHP Static Analysis Tool",
-      "time": "2020-02-12T22:03:42+00:00"
+      "time": "2020-02-16T14:00:29+00:00"
     },
     {
       "name": "roave/security-advisories",

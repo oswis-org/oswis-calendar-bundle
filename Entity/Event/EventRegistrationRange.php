@@ -67,7 +67,7 @@ class EventRegistrationRange implements BasicEntityInterface
 
     public function __construct(
         ?Nameable $nameable = null,
-        ?EventParticipantType $eventParticipantType = null,
+        ?EventParticipantType $participantType = null,
         ?int $numericValue = null,
         ?int $depositValue = null,
         ?DateTimeInterface $startDateTime = null,
@@ -77,7 +77,7 @@ class EventRegistrationRange implements BasicEntityInterface
         ?int $capacity = null,
         ?int $capacityOverflowLimit = null
     ) {
-        $this->setEventParticipantType($eventParticipantType);
+        $this->setEventParticipantType($participantType);
         $this->setNumericValue($numericValue);
         $this->setFieldsFromNameable($nameable);
         $this->setDepositValue($depositValue);
