@@ -11,6 +11,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -198,8 +199,8 @@ class Event implements BasicEntityInterface
         ?Event $superEvent = null,
         ?Place $location = null,
         ?EventType $type = null,
-        ?DateTime $startDateTime = null,
-        ?DateTime $endDateTime = null,
+        ?DateTimeInterface $startDateTime = null,
+        ?DateTimeInterface $endDateTime = null,
         ?EventSeries $series = null,
         ?bool $priceRelative = null,
         ?string $color = null
@@ -251,13 +252,7 @@ class Event implements BasicEntityInterface
         }
     }
 
-    /**
-     * @param EventParticipantType|null $participantType
-     * @param DateTime|null             $dateTime
-     *
-     * @return Collection<EventRegistrationRange>
-     */
-    public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): Collection
+    public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTimeInterface $dateTime = null): Collection
     {
         if (null !== $participantType || null !== $dateTime) {
             return $this->getRegistrationRanges()->filter(
@@ -329,7 +324,7 @@ class Event implements BasicEntityInterface
         }
     }
 
-    public function getCapacity(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): ?int
+    public function getCapacity(?EventParticipantType $participantType = null, ?DateTimeInterface $dateTime = null): ?int
     {
         $capacity = null;
         foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
@@ -342,7 +337,7 @@ class Event implements BasicEntityInterface
         return $capacity;
     }
 
-    public function getMaxCapacity(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): ?int
+    public function getMaxCapacity(?EventParticipantType $participantType = null, ?DateTimeInterface $dateTime = null): ?int
     {
         $capacity = null;
         foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
@@ -412,7 +407,7 @@ class Event implements BasicEntityInterface
         }
     }
 
-    public function getPrice(EventParticipantType $participantType, ?DateTime $dateTime = null): ?int
+    public function getPrice(EventParticipantType $participantType, ?DateTimeInterface $dateTime = null): ?int
     {
         $total = null;
         foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
@@ -437,7 +432,7 @@ class Event implements BasicEntityInterface
         return $this->isPriceRelative() && $this->getSuperEvent() ? $this->getSuperEvent()->getDeposit($eventParticipantType) : 0;
     }
 
-    public function getDepositOfEvent(EventParticipantType $participantType, ?DateTime $dateTime = null): ?int
+    public function getDepositOfEvent(EventParticipantType $participantType, ?DateTimeInterface $dateTime = null): ?int
     {
         $total = null;
         foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
@@ -499,7 +494,7 @@ class Event implements BasicEntityInterface
         $this->location = $event;
     }
 
-    public function getStartDateTimeRecursive(): ?DateTime
+    public function getStartDateTimeRecursive(): ?DateTimeInterface
     {
         $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
         $startDateTime = $this->getStartDateTime() ?? $maxDateTime;
@@ -553,17 +548,17 @@ class Event implements BasicEntityInterface
     /**
      * True if registrations for specified participant type (or any if not specified) is allowed in some datetime (or now if not specified).
      *
-     * @param EventParticipantType $participantType
-     * @param DateTime|null        $dateTime
+     * @param EventParticipantType   $participantType
+     * @param DateTimeInterface|null $dateTime
      *
      * @return bool
      */
-    public function isRegistrationsAllowed(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): bool
+    public function isRegistrationsAllowed(?EventParticipantType $participantType = null, ?DateTimeInterface $dateTime = null): bool
     {
         return $this->getRegistrationRanges($participantType, $dateTime)->count() > 0;
     }
 
-    public function getRegistrationRangesByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): Collection
+    public function getRegistrationRangesByTypeOfType(?string $participantType = null, ?DateTimeInterface $dateTime = null): Collection
     {
         if (null !== $participantType || null !== $dateTime) {
             return $this->getRegistrationRanges(null, $dateTime)->filter(
@@ -669,7 +664,7 @@ class Event implements BasicEntityInterface
         return null === $this->getSuperEvent() ? [...$this->getSuperEvents(), $this->getSuperEvent()] : [$this];
     }
 
-    public function isSuperEventRequired(?EventParticipantType $participantType, ?DateTime $dateTime = null): bool
+    public function isSuperEventRequired(?EventParticipantType $participantType, ?DateTimeInterface $dateTime = null): bool
     {
         return $this->getRegistrationRanges($participantType, $dateTime)->exists(
             fn(EventRegistrationRange $price) => $price->isSuperEventRequired()

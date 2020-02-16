@@ -7,6 +7,7 @@
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
+use DateTimeInterface;
 use Exception;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
@@ -69,8 +70,8 @@ class EventRegistrationRange implements BasicEntityInterface
         ?EventParticipantType $eventParticipantType = null,
         ?int $numericValue = null,
         ?int $depositValue = null,
-        ?DateTime $startDateTime = null,
-        ?DateTime $endDateTime = null,
+        ?DateTimeInterface $startDateTime = null,
+        ?DateTimeInterface $endDateTime = null,
         ?bool $isRelative = null,
         ?bool $superEventRequired = null,
         ?int $capacity = null,
@@ -91,21 +92,21 @@ class EventRegistrationRange implements BasicEntityInterface
     /**
      * Sets the end of registration range (can't be set to past).
      *
-     * @param DateTime|null $endDateTime
+     * @param DateTimeInterface|null $endDateTime
      */
-    public function setEndDateTime(?DateTime $endDateTime): void
+    public function setEndDateTime(?DateTimeInterface $endDateTime): void
     {
         try {
             $now = new DateTime();
         } catch (Exception $e) {
             $now = null;
         }
-        if ($endDateTime != $this->getEndDate()) {
+        if ($endDateTime !== $this->getEndDate()) {
             $this->traitSetEnd(null !== $now && $endDateTime < $now ? $now : $endDateTime);
         }
     }
 
-    public function isApplicableByType(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): bool
+    public function isApplicableByType(?EventParticipantType $participantType = null, ?DateTimeInterface $dateTime = null): bool
     {
         if (null !== $participantType && null === $this->getEventParticipantType()) {
             return false;
@@ -130,7 +131,7 @@ class EventRegistrationRange implements BasicEntityInterface
         $this->eventParticipantType = $eventParticipantType;
     }
 
-    public function isApplicableByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): bool
+    public function isApplicableByTypeOfType(?string $participantType = null, ?DateTimeInterface $dateTime = null): bool
     {
         if ($participantType && null === $this->getEventParticipantType()) {
             return false;

@@ -13,6 +13,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -221,7 +222,7 @@ class EventParticipant implements BasicEntityInterface
      * @param EventParticipantType|null $participantType
      * @param Collection|null           $participantFlagConnections
      * @param Collection|null           $participantNotes
-     * @param DateTime|null             $deleted
+     * @param DateTimeInterface|null    $deleted
      * @param int|null                  $priority
      *
      * @throws EventCapacityExceededException
@@ -232,7 +233,7 @@ class EventParticipant implements BasicEntityInterface
         ?EventParticipantType $participantType = null,
         ?Collection $participantFlagConnections = null,
         ?Collection $participantNotes = null,
-        ?DateTime $deleted = null,
+        ?DateTimeInterface $deleted = null,
         ?int $priority = null
     ) {
         $this->setContact($contact);
@@ -261,7 +262,7 @@ class EventParticipant implements BasicEntityInterface
         return $eventParticipants;
     }
 
-    public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
+    public function hasActivatedContactUser(?DateTimeInterface $referenceDateTime = null): bool
     {
         try {
             return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;

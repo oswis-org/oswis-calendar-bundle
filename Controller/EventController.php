@@ -6,7 +6,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Controller;
 
-use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use LogicException;
@@ -80,12 +80,12 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param DateTimeUtils $dateTimeUtils
-     * @param string|null   $range
-     * @param DateTime|null $start
-     * @param DateTime|null $end
-     * @param int|null      $limit
-     * @param int|null      $offset
+     * @param DateTimeUtils          $dateTimeUtils
+     * @param string|null            $range
+     * @param DateTimeInterface|null $start
+     * @param DateTimeInterface|null $end
+     * @param int|null               $limit
+     * @param int|null               $offset
      *
      * @return Response
      * @throws LogicException
@@ -94,8 +94,8 @@ class EventController extends AbstractController
     final public function showEvents(
         DateTimeUtils $dateTimeUtils,
         ?string $range = null,
-        ?DateTime $start = null,
-        ?DateTime $end = null,
+        ?DateTimeInterface $start = null,
+        ?DateTimeInterface $end = null,
         ?int $limit = null,
         ?int $offset = null
     ): Response {

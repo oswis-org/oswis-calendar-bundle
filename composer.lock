@@ -9673,16 +9673,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.188",
+      "version": "v0.0.189",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "d95e811b3254ce52ac5ec77c425d725041d462fb"
+        "reference": "96ff28409e12e1483e809d9b95ebe4032f3a6dbe"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/d95e811b3254ce52ac5ec77c425d725041d462fb",
-        "reference": "d95e811b3254ce52ac5ec77c425d725041d462fb",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/96ff28409e12e1483e809d9b95ebe4032f3a6dbe",
+        "reference": "96ff28409e12e1483e809d9b95ebe4032f3a6dbe",
         "shasum": ""
       },
       "require": {
@@ -9724,20 +9724,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-02-15T20:17:21+00:00"
+      "time": "2020-02-16T00:18:09+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.409",
+      "version": "v0.0.410",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "0dc984915bf06e312cdfbb044ccfb23ba21264f7"
+        "reference": "34eda5b768e8bb93c962a4dc36fcde15e29e8181"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/0dc984915bf06e312cdfbb044ccfb23ba21264f7",
-        "reference": "0dc984915bf06e312cdfbb044ccfb23ba21264f7",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/34eda5b768e8bb93c962a4dc36fcde15e29e8181",
+        "reference": "34eda5b768e8bb93c962a4dc36fcde15e29e8181",
         "shasum": ""
       },
       "require": {
@@ -9832,7 +9832,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-02-15T19:32:57+00:00"
+      "time": "2020-02-15T23:55:09+00:00"
     }
   ],
   "packages-dev": [
