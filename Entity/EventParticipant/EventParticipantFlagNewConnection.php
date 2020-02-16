@@ -6,7 +6,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
 
-use DateTimeInterface;
+use DateTime;
 use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
@@ -47,7 +47,7 @@ class EventParticipantFlagNewConnection implements BasicEntityInterface
      * @param EventParticipantFlag|null $eventParticipantFlag
      * @param EventParticipant|null     $eventParticipant
      * @param string|null               $textValue
-     * @param DateTimeInterface|null    $dateTime
+     * @param DateTime|null             $dateTime
      *
      * @throws EventCapacityExceededException
      */
@@ -55,7 +55,7 @@ class EventParticipantFlagNewConnection implements BasicEntityInterface
         ?EventParticipantFlag $eventParticipantFlag = null,
         ?EventParticipant $eventParticipant = null,
         ?string $textValue = null,
-        ?DateTimeInterface $dateTime = null
+        ?DateTime $dateTime = null
     ) {
         $this->setEventParticipantFlag($eventParticipantFlag);
         $this->setEventParticipant($eventParticipant);

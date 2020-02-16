@@ -6,7 +6,6 @@
 namespace Zakjakub\OswisCalendarBundle\Service;
 
 use DateTime;
-use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
@@ -212,7 +211,7 @@ class EventParticipantPaymentService
     final public function create(
         EventParticipant $eventParticipant,
         int $numericValue = 0,
-        DateTimeInterface $dateTime = null,
+        DateTime $dateTime = null,
         string $type = null,
         string $note = null,
         string $internalNote = null

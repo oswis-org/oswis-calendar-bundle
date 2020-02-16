@@ -8,7 +8,6 @@
 namespace Zakjakub\OswisCalendarBundle\Service;
 
 use DateTime;
-use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -163,13 +162,13 @@ class EventService
     }
 
     /**
-     * @param Event                  $event
-     * @param EventParticipantType   $participantType
-     * @param DateTimeInterface|null $dateTime
+     * @param Event                $event
+     * @param EventParticipantType $participantType
+     * @param DateTime|null        $dateTime
      *
      * @throws EventCapacityExceededException
      */
-    public function checkRegistrationRanges(Event $event, EventParticipantType $participantType, ?DateTimeInterface $dateTime = null): void
+    public function checkRegistrationRanges(Event $event, EventParticipantType $participantType, ?DateTime $dateTime = null): void
     {
         if (!$event->isRegistrationsAllowed($participantType, $dateTime)) {
             throw new EventCapacityExceededException('Přihlašování na událost '.$event->getName().' není aktuálně povoleno.');

@@ -11,7 +11,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
-use DateTimeInterface;
 use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
@@ -117,19 +116,19 @@ class EventParticipantPayment extends AbstractPayment
     protected ?EventParticipant $eventParticipant = null;
 
     /**
-     * @param EventParticipant|null  $participant
-     * @param int|null               $numericValue
-     * @param DateTimeInterface|null $dateTime
-     * @param string|null            $type
-     * @param string|null            $note
-     * @param string|null            $internalNote
+     * @param EventParticipant|null $participant
+     * @param int|null              $numericValue
+     * @param DateTime|null         $dateTime
+     * @param string|null           $type
+     * @param string|null           $note
+     * @param string|null           $internalNote
      *
      * @throws Exception
      */
     public function __construct(
         ?EventParticipant $participant = null,
         ?int $numericValue = null,
-        ?DateTimeInterface $dateTime = null,
+        ?DateTime $dateTime = null,
         ?string $type = null,
         ?string $note = null,
         ?string $internalNote = null

@@ -6,7 +6,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Entity\Event;
 
-use DateTimeInterface;
+use DateTime;
 use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
@@ -41,8 +41,8 @@ class EventFlagConnection implements BasicEntityInterface
         ?EventFlag $eventFlag = null,
         ?Event $event = null,
         ?string $textValue = null,
-        ?DateTimeInterface $startDateTime = null,
-        ?DateTimeInterface $endDateTie = null
+        ?DateTime $startDateTime = null,
+        ?DateTime $endDateTie = null
     ) {
         $this->setEventFlag($eventFlag);
         $this->setEvent($event);
