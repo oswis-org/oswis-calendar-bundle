@@ -74,6 +74,7 @@ class EventController extends AbstractController
         $data = array(
             'navEvents' => $navEvents,
             'event'     => $event,
+            'organizer' => $this->eventService->getOrganizer($event),
         );
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);
