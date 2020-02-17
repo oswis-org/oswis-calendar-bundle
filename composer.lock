@@ -9728,16 +9728,16 @@
     },
     {
       "name": "zakjakub/oswis-core-bundle",
-      "version": "v0.0.417",
+      "version": "v0.0.418",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-core-bundle.git",
-        "reference": "cddcbefb97b56a9d93af31821117de30e213b52c"
+        "reference": "29cbf5f58dca53e936b895a97d8671bc55dc5ba2"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/cddcbefb97b56a9d93af31821117de30e213b52c",
-        "reference": "cddcbefb97b56a9d93af31821117de30e213b52c",
+        "url": "https://api.github.com/repos/zakjakub/oswis-core-bundle/zipball/29cbf5f58dca53e936b895a97d8671bc55dc5ba2",
+        "reference": "29cbf5f58dca53e936b895a97d8671bc55dc5ba2",
         "shasum": ""
       },
       "require": {
@@ -9753,6 +9753,7 @@
         "ext-iconv": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
+        "gedmo/doctrine-extensions": "^2.4",
         "gesdinet/jwt-refresh-token-bundle": "^0.8",
         "hirak/prestissimo": "^0.3",
         "knplabs/doctrine-behaviors": "^2.0",
@@ -9832,7 +9833,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-02-16T23:04:53+00:00"
+      "time": "2020-02-17T10:14:00+00:00"
     }
   ],
   "packages-dev": [

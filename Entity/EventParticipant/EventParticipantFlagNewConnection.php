@@ -26,7 +26,7 @@ class EventParticipantFlagNewConnection implements BasicEntityInterface
 
     /**
      * Event contact flag.
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventParticipantFlag $eventParticipantFlag = null;
@@ -34,8 +34,7 @@ class EventParticipantFlagNewConnection implements BasicEntityInterface
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     inversedBy="eventParticipantFlagConnections",
-     *     fetch="EAGER"
+     *     inversedBy="eventParticipantFlagConnections"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */

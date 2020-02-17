@@ -24,7 +24,7 @@ class EventSeries implements BasicEntityInterface
     use NameableBasicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="series", cascade={"all"})
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="series")
      */
     protected ?Collection $events = null;
 

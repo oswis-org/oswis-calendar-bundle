@@ -61,7 +61,7 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 class EventParticipantFlag extends AbstractEventFlag
 {
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType",fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventParticipantFlagType $eventParticipantFlagType = null;

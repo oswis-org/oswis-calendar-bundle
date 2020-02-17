@@ -13,7 +13,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Zakjakub\OswisAddressBookBundle\Entity\Place;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
@@ -102,7 +101,6 @@ class Event implements BasicEntityInterface
      *     mappedBy="event",
      *     fetch="EAGER"
      * )
-     * @MaxDepth(1)
      */
     protected ?Collection $eventFlagConnections = null;
 
@@ -119,7 +117,7 @@ class Event implements BasicEntityInterface
 
     /**
      * @var Collection<Event> $subEvents
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent")
      */
     protected ?Collection $subEvents = null;
 
@@ -177,7 +175,7 @@ class Event implements BasicEntityInterface
     protected ?EventImage $image = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType",fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
      */
     private ?EventType $type = null;

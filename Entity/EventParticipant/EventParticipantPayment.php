@@ -107,8 +107,7 @@ class EventParticipantPayment extends AbstractPayment
      * Event contact revision (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     inversedBy="eventParticipantPayments",
-     *     fetch="EAGER"
+     *     inversedBy="eventParticipantPayments"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @MaxDepth(1)
