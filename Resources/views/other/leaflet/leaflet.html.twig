@@ -1,0 +1,135 @@
+{% extends '@ZakjakubOswisCore/web/page-skeleton-default.html.twig' %}
+
+{# TODO: Abstract this specific content!!! #}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .letak2 {
+            min-width: 900px;
+            max-width: 1300px;
+            padding: 0 1em;
+            font-size: 0.85em;
+            margin: auto;
+        }
+
+        .letak2 h2, .letak2 p {
+            padding-left: 10px;
+        }
+
+        .letak2 h2 {
+            font-size: 2em;
+        }
+
+        .letak2 p {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0.5em;
+            margin-bottom: 0.1em;
+        }
+
+        .letak2 ul, .letak2 ol {
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-left: -1em;
+        }
+
+        .letak2-divided {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .letak2-divided > * {
+            flex: 1 0 0%;
+            flex: 1 0 0;
+        }
+
+        .pas {
+            display: flex;
+            margin: 0.2em 0;
+            flex-direction: row;
+            height: 0.5em;
+            justify-content: space-between;
+            align-content: stretch;
+        }
+
+        .pas > * {
+            flex-direction: row;
+            flex-basis: 0%;
+            flex: 1 0 0%;
+            flex: 1 0 0;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block body_content %}
+    <div class="container-fluid" id="footer-sponsors">
+        <div class="row text-justify">
+            <div class="col-lg-12" style="overflow-y: auto">
+                <div class="letak2">
+                    <div class="pas">
+                        <div style="background-color: #FDC401; border-color: #FDC401;"></div>
+                        <div style="background-color: #2EA937; border-color: #2EA937;"></div>
+                        <div style="background-color: #1F93D0; border-color: #1F93D0;"></div>
+                        <div style="background-color: #C42488; border-color: #C42488;"></div>
+                        <div style="background-color: #E52814; border-color: #E52814;"></div>
+                        <div style="background-color: #E61B75; border-color: #E61B75;"></div>
+                        <div style="background-color: #212E5A; border-color: #212E5A;"></div>
+                        <div style="background-color: #B83016; border-color: #B83016;"></div>
+                    </div>
+                    <header>
+                        <h2 class="text-uppercase">Seznamovák UP 2019</h2>
+                    </header>
+                    <p>Zážitkový a vzdělávací pobyt pro všechny studenty prvních ročníků.</p>
+                    <p>
+                        Právě jsi dostal příležitost stát se studentem Univerzity Palackého v Olomouci.
+                        Chytni se této šance a zahaj studium pobytem na Seznamováku UP!
+                        Jsme parta studentů a absolventů, která Ti řekne o škole vše, co budeš potřebovat.
+                        Seznámíme Tě se STAGem, studijními předpisy a objasníme i kreditový systém studia.
+                        To vše (a mnohem více) takovým způsobem, aby sis zároveň i užil poslední dny prázdnin dle svých představ.
+                    </p>
+                    <p><strong>Výčet z programu:</strong></p>
+                    <ul>
+                        <li>Vzdělávání (přednášky STAG, Erasmus+, knihovny, stipendia, koleje a menzy, Akademik Sport Centrum UP...)</li>
+                        <li>Sporty (fotbal, lukostřelba, lakros, baseball, kinball, badminton, stolní tenis, beach volejbal, zumba...)</li>
+                        <li>Hry (teambuildingové aktivity, deskové a karetní hry...)</li>
+                        <li>Kultura (párty, kino, improvizace, zpěv...)</li>
+                        <li>A další (skákací boty, bazén, táborák, výlety po okolí...)</li>
+                    </ul>
+                    <p>Zároveň Ti po celou dobu budeme k dispozici pro Tvé dotazy.</p>
+                    <div class="letak2-divided">
+                        <div>
+                            <p><strong>Bližší informace a přihláška na:</strong></p>
+                            <ul>
+                                <li>webu: <a href="https://seznamovakup.cz">www.seznamovakup.cz</a></li>
+                                <li>
+                                    Facebooku: <a href="https://facebook.com/groups/prvaciupol2019" target="_blank">Prváci UPOL 2019/2020</a>
+                                </li>
+                                <li>e-mailu: <a href="mailto:info@seznamovakup.cz">info@seznamovakup.cz</a></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p><strong>Termíny:</strong></p>
+                            <ol>
+                                <li>4.9. - 8.9.2019</li>
+                                <li>8.9. - 12.9.2019</li>
+                            </ol>
+                            <p><strong>Cena: </strong> 3190,- Kč (1190,- Kč záloha a 2000,- Kč doplatek)</p>
+                        </div>
+                    </div>
+
+                    <div class="pas">
+                        <div style="background-color: #FDC401;"></div>
+                        <div style="background-color: #2EA937;"></div>
+                        <div style="background-color: #1F93D0;"></div>
+                        <div style="background-color: #C42488;"></div>
+                        <div style="background-color: #E52814;"></div>
+                        <div style="background-color: #E61B75;"></div>
+                        <div style="background-color: #212E5A;"></div>
+                        <div style="background-color: #B83016;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

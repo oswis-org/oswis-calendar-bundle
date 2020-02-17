@@ -56,7 +56,6 @@ class EventController extends AbstractController
         $eventRepo = $this->eventService->getRepository();
         $opts = [
             EventRepository::CRITERIA_SLUG               => $eventSlug,
-            // EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE => true,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,
         ];
@@ -110,14 +109,14 @@ class EventController extends AbstractController
             EventRepository::CRITERIA_END                => $end,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => true,
         ];
         $events = $this->eventRepository->getEvents($opts, $limit, $offset);
         $opts = [
-            EventRepository::CRITERIA_START              => $start,
-            EventRepository::CRITERIA_END                => $end,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_ONLY_WITHOUT_DATE  => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => true,
         ];
         $withoutDateEvents = $this->eventRepository->getEvents($opts);
         $context = [
