@@ -20,12 +20,14 @@
         {% else %}
             {{ event.type ? event.type.shortName~', ' : null }} {{ event.series ? event.series.shortName : null }}
         {% endif %}
-        <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
-        <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
         <div>
-            {% if event.rangeAsText is defined and event.rangeAsText %}
-                <p><strong>Termín:</strong> {{ event.rangeAsText }}<br></p>
-            {% endif %}
+            <div>
+                {% if event.rangeAsText is defined and event.rangeAsText %}
+                    <strong>Termín:</strong> {{ event.rangeAsText }}
+                {% endif %}
+                <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+                <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+            </div>
             {% if organizer is defined and organizer %}
                 <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
                     <strong>Pořadatel: </strong><span itemprop="name">{{ organizer.name|default('') }}</span>
@@ -38,19 +40,17 @@
                         <meta itemprop="name" content="{{ event.location(true).name }}"/>
                     {% endif %}
                     <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                        <p>
-                            <strong>Místo: </strong>
-                            {% if event.location(true).url %}
-                                <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank">
-                                    {{ event.location(true).name }}
-                                </a>
-                            {% else %}
+                        <strong>Místo: </strong>
+                        {% if event.location(true).url %}
+                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank">
                                 {{ event.location(true).name }}
-                            {% endif %}
-                            {% if isEventPreview is not defined or not isEventPreview %}
-                                <br><strong>Adresa:</strong> {{ event.location(true).fullAddress }}
-                            {% endif %}
-                        </p>
+                            </a>
+                        {% else %}
+                            {{ event.location(true).name }}
+                        {% endif %}
+                        {% if isEventPreview is not defined or not isEventPreview %}
+                            <br><strong>Adresa:</strong> {{ event.location(true).fullAddress }}
+                        {% endif %}
                         {% if event.location(true).name is defined and event.location(true).name %}
                             <meta itemprop="name" content="{{ event.location(true).name }}"/>
                         {% endif %}
