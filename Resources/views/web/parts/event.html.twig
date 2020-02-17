@@ -15,8 +15,7 @@
         {% endif %}
         {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
             <h3>
-                {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }}
-                akce {{ event.series.shortName }}{{ event.batch ? event.startYear : null }}
+                {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
             </h3>
         {% else %}
             {{ event.type ? event.type.shortName~', ' : null }} {{ event.series ? event.series.shortName : null }}
@@ -27,7 +26,7 @@
             {% if event.rangeAsText is defined and event.rangeAsText %}
                 <p><strong>Termín:</strong> {{ event.rangeAsText }}<br></p>
             {% endif %}
-            {% if (isEventPreview is not defined or not isEventPreview) and event.subEvents|length > 0 %}
+            {% if (isEventPreview is not defined or not isEventPreview) and (event.subEvents|length > 0 or event.superEvent) %}
                 <ul>
                     {% for subEvent in event.subEvents %}
                         <li>
@@ -47,52 +46,52 @@
                     {% endif %}
                 </ul>
             {% endif %}
-            {% if event.organizer is defined and event.organizer %}
+            {% if organizer is defined and organizer %}
                 <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
-                    <strong>Pořadatel: </strong><span itemprop="name">{{ event.organizer.name|default('') }}</span>
-                    <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/>
+                    <strong>Pořadatel: </strong><span itemprop="name">{{ organizer.name|default('') }}</span>
+                    <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/> {# TODO: Image.#}
                 </div>
             {% endif %}
             {% if event.description is defined and event.description %}
                 <p itemprop="description">{{ event.description }}</p>
             {% endif %}
-            {% if event.location is defined and event.location %}
+            {% if event.location(true) is defined and event.location(true) %}
                 <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
-                    {% if event.location.name is defined and event.location.name %}
-                        <meta itemprop="name" content="{{ event.location.name }}"/>
+                    {% if event.location(true).name is defined and event.location(true).name %}
+                        <meta itemprop="name" content="{{ event.location(true).name }}"/>
                     {% endif %}
                     <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
                         <p>
                             <strong>Místo: </strong>
-                            {% if event.location.url %}
-                                <a href="{{ event.location.url }}" title="{{ event.location.name }}" target="_blank">
-                                    {{ event.location.name }}
+                            {% if event.location(true).url %}
+                                <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank">
+                                    {{ event.location(true).name }}
                                 </a>
                             {% else %}
-                                {{ event.location.name }}
+                                {{ event.location(true).name }}
                             {% endif %}
                             {% if isEventPreview is not defined or not isEventPreview %}
-                                <br><strong>Adresa:</strong> {{ event.location.fullAddress }}
+                                <br><strong>Adresa:</strong> {{ event.location(true).fullAddress }}
                             {% endif %}
                         </p>
-                        {% if event.location.name is defined and event.location.name %}
-                            <meta itemprop="name" content="{{ event.location.name }}"/>
+                        {% if event.location(true).name is defined and event.location(true).name %}
+                            <meta itemprop="name" content="{{ event.location(true).name }}"/>
                         {% endif %}
-                        {% if event.location.streetAddress is defined and event.location.streetAddress %}
-                            <meta itemprop="streetAddress" content="{{ event.location.streetAddress }}"/>
+                        {% if event.location(true).streetAddress is defined and event.location(true).streetAddress %}
+                            <meta itemprop="streetAddress" content="{{ event.location(true).streetAddress }}"/>
                         {% endif %}
-                        {% if event.location.city is defined and event.location.city %}
-                            <meta itemprop="addressLocality" content="{{ event.location.city }}"/>
+                        {% if event.location(true).city is defined and event.location(true).city %}
+                            <meta itemprop="addressLocality" content="{{ event.location(true).city }}"/>
                         {% endif %}
-                        {% if event.location.postalCode is defined and event.location.postalCode %}
-                            <meta itemprop="postalCode" content="{{ event.location.postalCode }}"/>
+                        {% if event.location(true).postalCode is defined and event.location(true).postalCode %}
+                            <meta itemprop="postalCode" content="{{ event.location(true).postalCode }}"/>
                         {% endif %}
-                        {% if event.location.city is defined and event.location.city %}
-                            <meta itemprop="addressRegion" content="{{ event.location.city }}"/>
+                        {% if event.location(true).city is defined and event.location(true).city %}
+                            <meta itemprop="addressRegion" content="{{ event.location(true).city }}"/>
                         {% endif %}
-                        {% if event.location.url is defined and event.location.url %}
+                        {% if event.location(true).url is defined and event.location(true).url %}
                             <!--suppress HtmlUnknownAttribute -->
-                            <meta itemprop="url" href="{{ event.location.url }}" content="{{ event.location.url }}"/>
+                            <meta itemprop="url" href="{{ event.location(true).url }}" content="{{ event.location(true).url }}"/>
                         {% endif %}
                         <meta itemprop=Country" content="CZ"/>
                     </div>
@@ -146,8 +145,8 @@
 </div>
 {% if isEventPreview is not defined or not isEventPreview %}
     <div class="row text-justify">
-        {% if event.eventWebContent is defined and event.eventWebContent.textValue is defined and event.eventWebContent.textValue %}
-            {% autoescape false %}{{ event.eventWebContent.textValue }}{% endautoescape %}
+        {% if event.webContent is defined and event.webContent.textValue is defined and event.webContent.textValue %}
+            {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
         {% endif %}
     </div>
 {% endif %}

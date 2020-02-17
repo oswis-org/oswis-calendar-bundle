@@ -439,10 +439,12 @@ class Event implements BasicEntityInterface
         }
     }
 
-    public function getWebContents(?string $type = null): Collection
+    public function getWebContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            return $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
+            $contents = $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
+
+            return $recursive && $contents->count() < 1 && $this->getSuperEvent() ? $this->getSuperEvent()->getWebContents($type) : $contents;
         }
 
         return $this->webContents ?? new ArrayCollection();
@@ -455,7 +457,7 @@ class Event implements BasicEntityInterface
 
     public function getWebContent(?string $type = 'html'): ?EventWebContent
     {
-        $webContent = $this->getWebContents($type)->first();
+        $webContent = $this->getWebContents($type, true)->first();
 
         return $webContent instanceof EventWebContent ? $webContent : null;
     }
