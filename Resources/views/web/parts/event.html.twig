@@ -26,34 +26,11 @@
             {% if event.rangeAsText is defined and event.rangeAsText %}
                 <p><strong>Termín:</strong> {{ event.rangeAsText }}<br></p>
             {% endif %}
-            {% if (isEventPreview is not defined or not isEventPreview) and (event.subEvents|length > 0 or event.superEvent) %}
-                <ul>
-                    {% for subEvent in event.subEvents %}
-                        <li>
-                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
-                                <strong>{{ subEvent.shortName }}:</strong> {{ subEvent.rangeAsText }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                    {% if event.superEvent is defined and event.superEvent %}
-                        <li>
-                            je součástí akce
-                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
-                                <strong>{{ event.superEvent.shortName }}</strong>
-                            </a>
-                            {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
-                        </li>
-                    {% endif %}
-                </ul>
-            {% endif %}
             {% if organizer is defined and organizer %}
                 <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
                     <strong>Pořadatel: </strong><span itemprop="name">{{ organizer.name|default('') }}</span>
                     <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/> {# TODO: Image.#}
                 </div>
-            {% endif %}
-            {% if event.description is defined and event.description %}
-                <p itemprop="description">{{ event.description }}</p>
             {% endif %}
             {% if event.location(true) is defined and event.location(true) %}
                 <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
@@ -96,6 +73,29 @@
                         <meta itemprop=Country" content="CZ"/>
                     </div>
                 </div>
+            {% endif %}
+            {% if (isEventPreview is not defined or not isEventPreview) and (event.subEvents|length > 0 or event.superEvent) %}
+                <ul>
+                    {% for subEvent in event.subEvents %}
+                        <li>
+                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
+                                <strong>{{ subEvent.shortName }}:</strong> {{ subEvent.rangeAsText }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                    {% if event.superEvent is defined and event.superEvent %}
+                        <li>
+                            je součástí akce
+                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
+                                <strong>{{ event.superEvent.shortName }}</strong>
+                            </a>
+                            {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
+                        </li>
+                    {% endif %}
+                </ul>
+            {% endif %}
+            {% if event.description is defined and event.description %}
+                <p itemprop="description">{{ event.description }}</p>
             {% endif %}
         </div>
         {% if isEventPreview is not defined or not isEventPreview %}
