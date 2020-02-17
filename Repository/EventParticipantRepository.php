@@ -98,7 +98,7 @@ class EventParticipantRepository extends EntityRepository
     private function addParticipantTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE])) {
-            $queryBuilder->leftJoin('ep.type', 'type');
+            $queryBuilder->leftJoin('ep.eventParticipantType', 'type');
             $queryBuilder->andWhere('type.type = :type_type');
             $queryBuilder->setParameter('type_type', $opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE]);
         }
@@ -143,7 +143,8 @@ class EventParticipantRepository extends EntityRepository
             $queryBuilder->addOrderBy('ep.priority', 'DESC');
         }
         if ($name) {
-            $queryBuilder->addOrderBy('ep.sortableName', 'ASC');
+            $queryBuilder->leftJoin('ep.contact', 'contact_0');
+            $queryBuilder->addOrderBy('contact_0.sortableName', 'ASC');
         }
         $queryBuilder->addOrderBy('ep.id', 'ASC');
     }

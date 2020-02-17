@@ -100,7 +100,7 @@ class EventService
 
     final public function getOrganizer(Event $event): ?AbstractContact
     {
-        return $this->getOrganizers($event)->first();
+        return $this->getOrganizers($event)->map(fn(EventParticipant $p) => $p->getContact())->first();
     }
 
     final public function getOrganizers(Event $event): Collection
