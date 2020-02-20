@@ -1,139 +1,48 @@
 <div class="row text-justify">
     <div class="col-lg-9" itemscope itemtype="http://schema.org/Event">
-        <header>
-            {% if isEventPreview is defined and isEventPreview %}
-                <h2 class="text-uppercase" itemprop="name">
-                    <a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a>
-                </h2>
-                <link itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}"/>
-            {% else %}
-                <h2 class="text-uppercase" itemprop="name">{{ event.name }}</h2>
-            {% endif %}
+        <header class="text-uppercase">
+            <h2 itemprop="name" content="{{ event.name }}">
+                <span class="d-block d-md-none">{{ event.shortName }}</span>
+                <span class="d-none d-md-block">{{ event.name }}</span>
+            </h2>
         </header>
-        {% if isEventPreview is not defined or not isEventPreview %}
-            {% include '@ZakjakubOswisCalendar/web/parts/event-nav.html.twig' %}
+        {% include '@ZakjakubOswisCalendar/web/parts/event-nav.html.twig' %}
+        <h3>
+            {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
+                {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
+                {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
+            {% else %} {# TODO: Create method event.getSubTitle() #}
+                {{ event.type ? event.type.shortName~', ' : null }} {{ event.series ? event.series.shortName : null }}
+            {% endif %}
+        </h3>
+        <h3 class="mb-3"><small>{{ event.rangeAsText|default }}</small></h3>
+        <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+        <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+        {% if event.subEvents|length > 0 %}
+            <h3>Zahrnuje akce:</h3>
+            <ul class="mt-2">
+                {% for subEvent in event.subEvents %}
+                    <li>
+                        <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
+                            <strong>{{ subEvent.shortName }}</strong>
+                        </a>
+                        {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
-        {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
-            <h3>
-                {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
-            </h3>
-        {% else %}
-            {{ event.type ? event.type.shortName~', ' : null }} {{ event.series ? event.series.shortName : null }}
+        {% if event.superEvent is defined and event.superEvent %}
+            <h3>Je součástí akce:</h3>
+            <ul class="mt-2">
+                <li>
+                    <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
+                        <strong>{{ event.superEvent.shortName }}</strong>
+                    </a>
+                    {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
+                </li>
+            </ul>
         {% endif %}
-        <div>
-            <div>
-                {% if event.rangeAsText is defined and event.rangeAsText %}
-                    <strong>Termín:</strong> {{ event.rangeAsText }}
-                {% endif %}
-                <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
-                <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
-            </div>
-            {% if organizer is defined and organizer %}
-                <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
-                    <strong>Pořadatel: </strong><span itemprop="name">{{ organizer.name|default('') }}</span>
-                    <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/> {# TODO: Image.#}
-                </div>
-            {% endif %}
-            {% if event.location(true) is defined and event.location(true) %}
-                <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
-                    {% if event.location(true).name is defined and event.location(true).name %}
-                        <meta itemprop="name" content="{{ event.location(true).name }}"/>
-                    {% endif %}
-                    <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                        <strong>Místo: </strong>
-                        {% if event.location(true).url %}
-                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank">
-                                {{ event.location(true).name }}
-                            </a>
-                        {% else %}
-                            {{ event.location(true).name }}
-                        {% endif %}
-                        {% if isEventPreview is not defined or not isEventPreview %}
-                            <br><strong>Adresa:</strong> {{ event.location(true).fullAddress }}
-                        {% endif %}
-                        {% if event.location(true).name is defined and event.location(true).name %}
-                            <meta itemprop="name" content="{{ event.location(true).name }}"/>
-                        {% endif %}
-                        {% if event.location(true).streetAddress is defined and event.location(true).streetAddress %}
-                            <meta itemprop="streetAddress" content="{{ event.location(true).streetAddress }}"/>
-                        {% endif %}
-                        {% if event.location(true).city is defined and event.location(true).city %}
-                            <meta itemprop="addressLocality" content="{{ event.location(true).city }}"/>
-                        {% endif %}
-                        {% if event.location(true).postalCode is defined and event.location(true).postalCode %}
-                            <meta itemprop="postalCode" content="{{ event.location(true).postalCode }}"/>
-                        {% endif %}
-                        {% if event.location(true).city is defined and event.location(true).city %}
-                            <meta itemprop="addressRegion" content="{{ event.location(true).city }}"/>
-                        {% endif %}
-                        {% if event.location(true).url is defined and event.location(true).url %}
-                            <!--suppress HtmlUnknownAttribute -->
-                            <meta itemprop="url" href="{{ event.location(true).url }}" content="{{ event.location(true).url }}"/>
-                        {% endif %}
-                        <meta itemprop=Country" content="CZ"/>
-                    </div>
-                </div>
-            {% endif %}
-            {% if (isEventPreview is not defined or not isEventPreview) and (event.subEvents|length > 0 or event.superEvent) %}
-                <ul>
-                    {% for subEvent in event.subEvents %}
-                        <li>
-                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
-                                <strong>{{ subEvent.shortName }}:</strong> {{ subEvent.rangeAsText }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                    {% if event.superEvent is defined and event.superEvent %}
-                        <li>
-                            je součástí akce
-                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
-                                <strong>{{ event.superEvent.shortName }}</strong>
-                            </a>
-                            {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
-                        </li>
-                    {% endif %}
-                </ul>
-            {% endif %}
-            {% if event.description is defined and event.description %}
-                <p itemprop="description">{{ event.description }}</p>
-            {% endif %}
-        </div>
-        {% if isEventPreview is not defined or not isEventPreview %}
-            {% for range in event.registrationRangesByTypeOfType('attendee') %}
-                <div class="row" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
-                    <div class="col-12">
-                        <h4 itemprop="name">{{ range.name|default('Přihláška na akci '~event.name) }}</h4>
-                        <span itemprop="availability" content="http://schema.org/InStock"></span>
-                        <strong>Začátek přihlášek: </strong>
-                        <span itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default('') }}">
-                        {{ range.startDate|date("d. m. Y H:i")|default('neurčen') }}
-                    </span><br>
-                        <strong>Konec přihlášek: </strong>
-                        <span itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default('') }}">
-                        {{ range.endDate|date("d. m. Y H:i")|default('neurčen') }}
-                    </span><br>
-                    </div>
-                    <div class="col-6">
-                        <p>
-                            <strong>Záloha:</strong>
-                            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" class="badge badge-info">
-                                {{ range.depositValue()|default(0) }},- Kč
-                            </a>
-                            <br><!-- <small>(splatná a vratná do 31. 7.)</small> -->
-                        </p>
-                    </div>
-                    <div class="col-6">
-                        <p>
-                            <strong>Celkem:</strong>
-                            <a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}"
-                               content="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" class="badge badge-info">
-                                <span itemprop="price">{{ range.numericValue() }}</span><span itemprop="priceCurrency" content="CZK">,- Kč</span>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div itemprop="description">{{ event.description|default }}</div>
     </div>
     <div class="d-lg-none col-md-4 col-sm-3 col-xs-2 d-print-none"></div>
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8 text-uppercase center-block text-center d-print-none">
@@ -143,10 +52,108 @@
         </div>
     </div>
 </div>
-{% if isEventPreview is not defined or not isEventPreview %}
-    <div class="row text-justify">
-        {% if event.webContent is defined and event.webContent.textValue is defined and event.webContent.textValue %}
-            {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
-        {% endif %}
+
+<div class="row card-deck">
+    {% if event.location(true) is defined and event.location(true) %}
+        <div class="col-md-6 col-lg-7 mt-2 mb-3 p-0">
+            <div class="card" itemprop="event.location" itemscope itemtype="http://schema.org/Place">
+                <meta itemprop="name" content="{{ event.location(true).name|default }}"/>
+                <div class="card-header p-2"><small class="text-muted">Místo konání akce</small></div>
+                {% if event.location(true).geoLon and event.location(true).geoLat %}
+                    <iframe class="card-img-top border-0" style="min-height: 200px;"
+                            src="https://frame.mapy.cz/zakladni?x={{ event.location.geoLon }}&y={{ event.location.geoLat }}&z=15">
+                    </iframe>
+                {% endif %}
+                <div class="card-body p-3">
+                    <h5 class="card-title" itemprop="name"><strong>{{ event.location(true).name }}</strong></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ event.location(true).fullAddress|default }}</h6>
+                    <div class="card-text" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                        <meta itemprop="streetAddress" content="{{ event.location(true).streetAddress|default }}"/>
+                        <meta itemprop="addressLocality" content="{{ event.location(true).city|default }}"/>
+                        <meta itemprop="postalCode" content="{{ event.location(true).postalCode|default }}"/>
+                        <meta itemprop="addressRegion" content="{{ event.location(true).city|default }}"/>
+                        <meta itemprop="url" content="{{ event.location(true).url|default }}"/>
+                        <meta itemprop=Country" content="CZ"/>
+                    </div>
+                </div>
+                {% if event.location(true).url %}
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank" class="card-link">Web</a>
+                        </li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if organizer is defined and organizer %}
+        <div class="col-md-6 col-lg-5 mt-2 mb-3 p-0">
+            <div class="card" itemprop="performer" itemscope itemtype="http://schema.org/Organization">
+                <div class="card-header p-2"><small class="text-muted">Organizátor akce</small></div>
+                {% if organizer.image %}{# TODO: Image.#}
+                    <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image"
+                         src="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}">
+                {% endif %}
+                <div class="card-body p-3">
+                    <h5 class="card-title" itemprop="name"><strong>{{ organizer.name|default }}</strong></h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ organizer.identificationNumber|default }}</h6>
+                </div>
+                {% if organizer.url %}
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <a href="{{ organizer.url }}" title="{{ organizer.name }}" target="_blank" class="card-link">Web</a>
+                        </li>
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r->publicOnWeb) %}
+    <h3>Přihlášky</h3>
+    <div class="row card-deck" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+        <div class="card mt-2 mb-2">
+            <div class="card-body p-3">
+                <h5 class="card-title" itemprop="name">
+                    {% if range.rangeActive %}
+                        <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                            {{ range.name|default('Přihláška na akci '~event.name|default) }}
+                        </a>
+                    {% else %}
+                        {{ range.name|default('Přihláška na akci '~event.name|default) }}
+                    {% endif %}
+                </h5>
+                <h6 class="card-subtitle mb-2 text-muted">
+                    Rozmezí přihlášek: {{ range.rangeAsText|default }}
+                    {% if range.rangeActive %}
+                        <div class="badge badge-success">AKTIVNÍ</div>
+                    {% else %}
+                        <div class="badge badge-danger" title="Aktuálně není možné odeslat přihlášku.">NEAKTIVNÍ</div>
+                    {% endif %}
+                </h6>
+                <span itemprop="availability" content="http://schema.org/InStock"></span>
+                <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
+                <div itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
+            </div>
+            <div class="card-footer row m-0">
+                <div class="col-6 p-0">
+                    <strong>Záloha</strong><br>
+                    {{ range.depositValue|default(0) }},-&nbsp;Kč
+                </div>
+                <div class="col-6 p-0">
+                    <strong>Celkem</strong><br>
+                    <span itemprop="price">{{ range.numericValue }}</span><span itemprop="priceCurrency" content="CZK">,-&nbsp;Kč</span>
+                </div>
+            </div>
+        </div>
     </div>
-{% endif %}
+{% endfor %}
+
+<div class="row text-justify">
+    {% if event.webContent is defined and event.webContent.textValue is defined and event.webContent.textValue %}
+        {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
+    {% endif %}
+</div>
+

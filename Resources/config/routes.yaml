@@ -18,7 +18,7 @@ zakjakub_oswis_calendar_web_event_participant_registration:
     controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistration
     path: "/akce/{eventSlug}/prihlaska"
 
-zakjakub_oswis_calendar_web_events:
+zakjakub_oswis_calendar_web_events: ## ??????????????????????????????????????
     controller: zakjakub_oswis_calendar.event_controller::showEvents
     path: "/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
     defaults:
@@ -27,4 +27,23 @@ zakjakub_oswis_calendar_web_events:
         end: null
         limit: null
         offset: null
+
+zakjakub_oswis_calendar_web_events_calendar:
+    controller: zakjakub_oswis_calendar.event_controller::showEvents
+    path: "/kalendar/{range?}/{rangeValue?}"
+    defaults:
+        range: null
+        rangeValue: null
+
+zakjakub_oswis_calendar_web_events_future:
+    controller: zakjakub_oswis_calendar.event_controller::showFutureEvents
+    path: "/akce/{page?}"
+    defaults:
+        page: null
+
+zakjakub_oswis_calendar_web_events_past:
+    controller: zakjakub_oswis_calendar.event_controller::showPastEvents
+    path: "/minule-akce/{page?}"
+    defaults:
+        page: null
 

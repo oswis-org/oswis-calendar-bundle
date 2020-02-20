@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
  * @noinspection PhpUnused
  */
@@ -8,6 +9,7 @@ namespace Zakjakub\OswisCalendarBundle\Controller;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Exception;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -79,8 +81,53 @@ class EventController extends AbstractController
         return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);
     }
 
+
     /**
-     * @param DateTimeUtils $dateTimeUtils
+     * @param string|null   $range
+     * @param DateTime|null $start
+     * @param DateTime|null $end
+     * @param int|null      $limit
+     * @param int|null      $offset
+     *
+     * @return Collection
+     * @throws Exception
+     */
+    public function getEvents(
+        ?string $range = null,
+        ?DateTime $start = null,
+        ?DateTime $end = null,
+        ?int $limit = null,
+        ?int $offset = null
+    ): Collection {
+        $range ??= self::RANGE_ALL;
+        $limit = $limit < 1 ? null : $limit;
+        $offset = $offset < 1 ? null : $offset;
+        $start = DateTimeUtils::getDateTimeByRange($start, $range, false);
+        $end = DateTimeUtils::getDateTimeByRange($end, $range, true);
+        $opts = [
+            EventRepository::CRITERIA_START              => $start,
+            EventRepository::CRITERIA_END                => $end,
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => true,
+        ];
+
+        return $this->eventRepository->getEvents($opts, $limit, $offset);
+    }
+
+    public function getMagicEvents(): Collection {
+        $opts = [
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_ONLY_WITHOUT_DATE  => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => true,
+        ];
+        return $this->eventRepository->getEvents($opts);
+    }
+
+
+
+    /**
      * @param string|null   $range
      * @param DateTime|null $start
      * @param DateTime|null $end
@@ -91,38 +138,36 @@ class EventController extends AbstractController
      * @throws LogicException
      * @throws Exception
      */
-    final public function showEvents(
-        DateTimeUtils $dateTimeUtils,
+    public function showEvents(
         ?string $range = null,
         ?DateTime $start = null,
         ?DateTime $end = null,
         ?int $limit = null,
         ?int $offset = null
     ): Response {
-        $range ??= self::RANGE_ALL;
-        $limit = $limit < 1 ? null : $limit;
-        $offset = $offset < 1 ? null : $offset;
-        $start = $dateTimeUtils->getDateTimeByRange($start, $range, false);
-        $end = $dateTimeUtils->getDateTimeByRange($end, $range, true);
-        $opts = [
-            EventRepository::CRITERIA_START              => $start,
-            EventRepository::CRITERIA_END                => $end,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => true,
-        ];
-        $events = $this->eventRepository->getEvents($opts, $limit, $offset);
-        $opts = [
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_WITHOUT_DATE  => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => true,
-        ];
-        $withoutDateEvents = $this->eventRepository->getEvents($opts);
+        $events = $this->getEvents($range, $start, $end, $limit, $offset);
+
         $context = [
             'events'            => $events,
             'navEvents'         => [],
-            'withoutDateEvents' => $withoutDateEvents,
+        ];
+
+        return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);
+    }
+
+
+    public function showFutureEvents(?string $range = null, ?string $rangeValue = null): Response {
+        $start = new DateTime($rangeValue);
+        $end = new DateTime($rangeValue);
+
+        $events = $this->getEvents($range, $start, $end);
+
+        $context = [
+            'range' => $range,
+            'start' => $start,
+            'end' => $end,
+            'events'            => $events,
+            'navRanges'         => [], /////////
         ];
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);

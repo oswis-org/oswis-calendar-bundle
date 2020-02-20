@@ -11,10 +11,12 @@ use Exception;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use Zakjakub\OswisCoreBundle\Entity\Publicity;
 use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
 use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\DepositValueTrait;
+use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
 use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
 
@@ -43,6 +45,8 @@ class EventRegistrationRange implements BasicEntityInterface
     use DateRangeTrait { // Range when registrations are allowed with this price.
         setEndDateTime as protected traitSetEnd;
     }
+
+    use EntityPublicTrait;
 
     /**
      * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
@@ -74,34 +78,43 @@ class EventRegistrationRange implements BasicEntityInterface
         ?bool $isRelative = null,
         ?bool $superEventRequired = null,
         ?int $capacity = null,
-        ?int $capacityOverflowLimit = null
+        ?int $capacityOverflowLimit = null,
+        Publicity $publicity = null
     ) {
         $this->setEventParticipantType($participantType);
         $this->setNumericValue($numericValue);
         $this->setFieldsFromNameable($nameable);
         $this->setDepositValue($depositValue);
         $this->setStartDateTime($startDateTime);
-        $this->setEndDateTime($endDateTime);
+        $this->setEndDateTime($endDateTime, true);
         $this->setIsRelative($isRelative);
         $this->setSuperEventRequired($superEventRequired);
         $this->setCapacity($capacity);
         $this->setCapacityOverflowLimit($capacityOverflowLimit);
+        $this->setFieldsFromPublicity($publicity);
+    }
+
+    public function getNumericValueRecursive(): int
+    {
+        // TODO: Invent it.
+        return $this->getNumericValue();
     }
 
     /**
      * Sets the end of registration range (can't be set to past).
      *
      * @param DateTime|null $endDateTime
+     * @param bool|null     $force
      */
-    public function setEndDateTime(?DateTime $endDateTime): void
+    public function setEndDateTime(?DateTime $endDateTime, ?bool $force = null): void
     {
         try {
             $now = new DateTime();
+            if ($endDateTime !== $this->getEndDate()) {
+                $this->traitSetEnd(!$force && $endDateTime && $endDateTime < $now ? $now : $endDateTime);
+                // TODO: Probably better to test this in subscriber.
+            }
         } catch (Exception $e) {
-            $now = null;
-        }
-        if ($endDateTime !== $this->getEndDate()) {
-            $this->traitSetEnd(null !== $now && $endDateTime < $now ? $now : $endDateTime);
         }
     }
 
@@ -113,7 +126,7 @@ class EventRegistrationRange implements BasicEntityInterface
         if (null !== $participantType && $this->getEventParticipantType()->getId() !== $participantType->getId()) {
             return false;
         }
-        if (!$this->containsDateTimeInRange($dateTime)) {
+        if (null !== $dateTime && !$this->containsDateTimeInRange($dateTime)) {
             return false;
         }
 
@@ -139,7 +152,7 @@ class EventRegistrationRange implements BasicEntityInterface
             return false;
         }
 
-        return $this->containsDateTimeInRange($dateTime);
+        return null === $dateTime || $this->containsDateTimeInRange($dateTime);
     }
 
     public function isRelative(): bool
@@ -170,5 +183,9 @@ class EventRegistrationRange implements BasicEntityInterface
     public function setSuperEventRequired(?bool $superEventRequired): void
     {
         $this->superEventRequired = $superEventRequired;
+    }
+
+    public function isRangeActive(): bool {
+        return $this->containsDateTimeInRange() && $this->getCapacity() > 0;
     }
 }

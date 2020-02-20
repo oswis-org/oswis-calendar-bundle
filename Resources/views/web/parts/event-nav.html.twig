@@ -7,7 +7,7 @@
                 {% if navEvent.year and navEvent.startYear %}
                     {{ navEvent.startYear }}
                 {% elseif navEvent.batch and navEvent.seqId %}
-                    {{ navEvent.seqId }}
+                    {{ navEvent.seqId }}. turnus
                 {% else %}
                     {{ navEvent.getShortName }}
                 {% endif %}

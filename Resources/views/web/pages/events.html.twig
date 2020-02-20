@@ -2,10 +2,18 @@
 
 {% block body_content %}
     <main class="container" id="main-content-container">
-        {% for event in events %}
-            {% include '@ZakjakubOswisCalendar/web/parts/event.html.twig' with {'isEventPreview': 'true'} %}
+        {% if range == 'year' %}
+            {# Show calendar for year. #}
+        {% elseif range == 'month' %}
+            {# Show calendar for month. #}
+        {% elseif range == 'week' %}
+            {# Show calendar for week. #}
         {% else %}
-            Nebyly nalezeny žádné akce k zobrazení.
-        {% endfor %}
+            {% for event in events %}
+                {% include '@ZakjakubOswisCalendar/web/parts/event-preview.html.twig' %}
+            {% else %}
+                Nebyly nalezeny žádné akce k zobrazení.
+            {% endfor %}
+        {% endif %}
     </main>
 {% endblock %}

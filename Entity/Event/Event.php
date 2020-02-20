@@ -201,6 +201,7 @@ class Event implements BasicEntityInterface
         $this->registrationRanges = new ArrayCollection();
         $this->participantTypeInEventConnections = new ArrayCollection();
         $this->participantFlagInEventConnections = new ArrayCollection();
+        $this->webContents = new ArrayCollection();
         $this->setType($type);
         $this->setSuperEvent($superEvent);
         $this->setSeries($series);
@@ -536,6 +537,12 @@ class Event implements BasicEntityInterface
         return $this->getRegistrationRanges($participantType, $dateTime)->count() > 0;
     }
 
+    /**
+     * @param string|null   $participantType
+     * @param DateTime|null $dateTime
+     *
+     * @return Collection<EventRegistrationRange>
+     */
     public function getRegistrationRangesByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): Collection
     {
         if (null !== $participantType || null !== $dateTime) {

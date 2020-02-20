@@ -39,5 +39,7 @@ trait EventCapacityTrait
         $this->capacity = $capacity;
     }
 
-
+    public function getMaxCapacity(): int {
+        return 0 + $this->getCapacity() + $this->getCapacityOverflowLimit();
+    }
 }
