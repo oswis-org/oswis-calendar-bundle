@@ -2,11 +2,11 @@
 
 {% block body_content %}
     <main class="container" id="main-content-container">
-        {% if range == 'year' %}
+        {% if range|default == 'year' %}
             {# Show calendar for year. #}
-        {% elseif range == 'month' %}
+        {% elseif range|default == 'month' %}
             {# Show calendar for month. #}
-        {% elseif range == 'week' %}
+        {% elseif range|default == 'week' %}
             {# Show calendar for week. #}
         {% else %}
             {% for event in events %}

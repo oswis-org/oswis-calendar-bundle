@@ -19,14 +19,9 @@ trait EventCapacityTrait
      */
     protected ?int $capacity = null;
 
-    public function getCapacityOverflowLimit(): ?int
+    public function getMaxCapacity(): int
     {
-        return $this->capacityOverflowLimit;
-    }
-
-    public function setCapacityOverflowLimit(?int $capacityOverflowLimit): void
-    {
-        $this->capacityOverflowLimit = $capacityOverflowLimit;
+        return 0 + $this->getCapacity() + $this->getCapacityOverflowLimit();
     }
 
     public function getCapacity(): ?int
@@ -39,7 +34,13 @@ trait EventCapacityTrait
         $this->capacity = $capacity;
     }
 
-    public function getMaxCapacity(): int {
-        return 0 + $this->getCapacity() + $this->getCapacityOverflowLimit();
+    public function getCapacityOverflowLimit(): ?int
+    {
+        return $this->capacityOverflowLimit;
+    }
+
+    public function setCapacityOverflowLimit(?int $capacityOverflowLimit): void
+    {
+        $this->capacityOverflowLimit = $capacityOverflowLimit;
     }
 }

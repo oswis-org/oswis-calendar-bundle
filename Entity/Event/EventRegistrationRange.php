@@ -94,12 +94,6 @@ class EventRegistrationRange implements BasicEntityInterface
         $this->setFieldsFromPublicity($publicity);
     }
 
-    public function getNumericValueRecursive(): int
-    {
-        // TODO: Invent it.
-        return $this->getNumericValue();
-    }
-
     /**
      * Sets the end of registration range (can't be set to past).
      *
@@ -116,6 +110,12 @@ class EventRegistrationRange implements BasicEntityInterface
             }
         } catch (Exception $e) {
         }
+    }
+
+    public function getNumericValueRecursive(): int
+    {
+        // TODO: Invent it.
+        return $this->getNumericValue();
     }
 
     public function isApplicableByType(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): bool
@@ -185,7 +185,8 @@ class EventRegistrationRange implements BasicEntityInterface
         $this->superEventRequired = $superEventRequired;
     }
 
-    public function isRangeActive(): bool {
+    public function isRangeActive(): bool
+    {
         return $this->containsDateTimeInRange() && $this->getCapacity() > 0;
     }
 }

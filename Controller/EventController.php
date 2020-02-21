@@ -73,14 +73,54 @@ class EventController extends AbstractController
             );
         }
         $data = array(
-            'navEvents' => $navEvents,
-            'event'     => $event,
-            'organizer' => $this->eventService->getOrganizer($event),
+            'title'       => $event->getShortName(),
+            'description' => $event->getDescription(),
+            'navEvents'   => $navEvents,
+            'event'       => $event,
+            'organizer'   => $this->eventService->getOrganizer($event),
         );
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);
     }
 
+    public function getMagicEvents(): Collection
+    {
+        $opts = [
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_ONLY_WITHOUT_DATE  => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => true,
+        ];
+
+        return $this->eventRepository->getEvents($opts);
+    }
+
+    /**
+     * @param string|null   $range
+     * @param DateTime|null $start
+     * @param DateTime|null $end
+     * @param int|null      $limit
+     * @param int|null      $offset
+     *
+     * @return Response
+     * @throws LogicException
+     * @throws Exception
+     */
+    public function showEvents(
+        ?string $range = null,
+        ?DateTime $start = null,
+        ?DateTime $end = null,
+        ?int $limit = null,
+        ?int $offset = null
+    ): Response {
+        $context = [
+            'events'    => $this->getEvents($range, $start, $end, $limit, $offset),
+            'range'     => $range,
+            'navEvents' => [],
+        ];
+
+        return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);
+    }
 
     /**
      * @param string|null   $range
@@ -115,59 +155,17 @@ class EventController extends AbstractController
         return $this->eventRepository->getEvents($opts, $limit, $offset);
     }
 
-    public function getMagicEvents(): Collection {
-        $opts = [
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_WITHOUT_DATE  => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => true,
-        ];
-        return $this->eventRepository->getEvents($opts);
-    }
-
-
-
-    /**
-     * @param string|null   $range
-     * @param DateTime|null $start
-     * @param DateTime|null $end
-     * @param int|null      $limit
-     * @param int|null      $offset
-     *
-     * @return Response
-     * @throws LogicException
-     * @throws Exception
-     */
-    public function showEvents(
-        ?string $range = null,
-        ?DateTime $start = null,
-        ?DateTime $end = null,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Response {
-        $events = $this->getEvents($range, $start, $end, $limit, $offset);
-
-        $context = [
-            'events'            => $events,
-            'navEvents'         => [],
-        ];
-
-        return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);
-    }
-
-
-    public function showFutureEvents(?string $range = null, ?string $rangeValue = null): Response {
+    public function showFutureEvents(?string $range = null, ?string $rangeValue = null): Response
+    {
         $start = new DateTime($rangeValue);
         $end = new DateTime($rangeValue);
-
         $events = $this->getEvents($range, $start, $end);
-
         $context = [
-            'range' => $range,
-            'start' => $start,
-            'end' => $end,
-            'events'            => $events,
-            'navRanges'         => [], /////////
+            'range'     => $range,
+            'start'     => $start,
+            'end'       => $end,
+            'events'    => $events,
+            'navRanges' => [], /////////
         ];
 
         return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);

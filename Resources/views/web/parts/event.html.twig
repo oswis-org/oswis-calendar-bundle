@@ -16,8 +16,8 @@
             {% endif %}
         </h3>
         <h3 class="mb-3"><small>{{ event.rangeAsText|default }}</small></h3>
-        <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
-        <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+        <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
+        <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         {% if event.subEvents|length > 0 %}
             <h3>Zahrnuje akce:</h3>
             <ul class="mt-2">
@@ -79,7 +79,9 @@
                 {% if event.location(true).url %}
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
-                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank" class="card-link">Web</a>
+                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank" class="card-link">
+                                Web
+                            </a>
                         </li>
                     </ul>
                 {% endif %}
@@ -93,7 +95,8 @@
                 <div class="card-header p-2"><small class="text-muted">Organizátor akce</small></div>
                 {% if organizer.image %}{# TODO: Image.#}
                     <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image"
-                         src="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}">
+                         src="{{ asset('') }}"
+                         src="{{ absolute_url(asset('img/web/og-image.jpg'))|default }}">
                 {% endif %}
                 <div class="card-body p-3">
                     <h5 class="card-title" itemprop="name"><strong>{{ organizer.name|default }}</strong></h5>
@@ -111,37 +114,35 @@
     {% endif %}
 </div>
 
-{% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r->publicOnWeb) %}
+{% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r.publicOnWeb) %}
     <h3>Přihlášky</h3>
     <div class="row card-deck" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
         <div class="card mt-2 mb-2">
-            <div class="card-body p-3">
-                <h5 class="card-title" itemprop="name">
-                    {% if range.rangeActive %}
-                        <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
-                            {{ range.name|default('Přihláška na akci '~event.name|default) }}
-                        </a>
-                    {% else %}
-                        {{ range.name|default('Přihláška na akci '~event.name|default) }}
-                    {% endif %}
+            <div class="card-header p-2">
+                <h5 class="card-title mb-0" itemprop="name">
+                    <small>
+                        <strong>
+                            {% if range.rangeActive %}
+                                <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                                    {{ range.name|default('Přihláška na akci '~event.name|default) }}
+                                </a>
+                            {% else %}
+                                {{ range.name|default('Přihláška na akci '~event.name|default) }}
+                            {% endif %}
+                        </strong>
+                    </small>
                 </h5>
-                <h6 class="card-subtitle mb-2 text-muted">
-                    Rozmezí přihlášek: {{ range.rangeAsText|default }}
-                    {% if range.rangeActive %}
-                        <div class="badge badge-success">AKTIVNÍ</div>
-                    {% else %}
-                        <div class="badge badge-danger" title="Aktuálně není možné odeslat přihlášku.">NEAKTIVNÍ</div>
-                    {% endif %}
-                </h6>
+            </div>
+            <div class="card-body p-3">
+                <h6 class="card-subtitle mb-2 text-muted">{{ range.rangeAsText ? 'Rozmezí přihlášek: ' ~ range.rangeAsText|default : null }}</h6>
+                <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
+                <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">Zbývá 5 dní.</div>
                 <span itemprop="availability" content="http://schema.org/InStock"></span>
                 <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
                 <div itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
             </div>
             <div class="card-footer row m-0">
-                <div class="col-6 p-0">
-                    <strong>Záloha</strong><br>
-                    {{ range.depositValue|default(0) }},-&nbsp;Kč
-                </div>
+                <div class="col-6 p-0"><strong>Záloha</strong><br>{{ range.depositValue|default(0) }},-&nbsp;Kč</div>
                 <div class="col-6 p-0">
                     <strong>Celkem</strong><br>
                     <span itemprop="price">{{ range.numericValue }}</span><span itemprop="priceCurrency" content="CZK">,-&nbsp;Kč</span>
