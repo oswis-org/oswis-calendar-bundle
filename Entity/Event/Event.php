@@ -170,7 +170,7 @@ class Event implements BasicEntityInterface
     protected ?Collection $participantFlagInEventConnections = null;
 
     /**
-     * @Doctrine\ORM\Mapping\OneToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage", cascade={"all"}, fetch="EAGER")
+     * @Doctrine\ORM\Mapping\OneToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\MediaObjects\EventImage", cascade={"all"}, fetch="EAGER")
      */
     protected ?EventImage $image = null;
 
