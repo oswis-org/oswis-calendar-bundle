@@ -155,6 +155,14 @@ class EventController extends AbstractController
         return $this->eventRepository->getEvents($opts, $limit, $offset);
     }
 
+    /**
+     * @param string|null $range
+     * @param string|null $rangeValue
+     *
+     * @return Response
+     * @throws LogicException
+     * @throws Exception
+     */
     public function showFutureEvents(?string $range = null, ?string $rangeValue = null): Response
     {
         $start = new DateTime($rangeValue);

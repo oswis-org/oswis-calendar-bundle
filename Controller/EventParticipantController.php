@@ -120,7 +120,7 @@ class EventParticipantController extends AbstractController
             }
             $eventParticipant->removeEmptyEventParticipantNotes();
             if ($eventParticipant->getContact()) {
-                $eventParticipant->getContact()->removeEmptyContactDetails();
+                $eventParticipant->getContact()->removeEmptyDetails();
                 $eventParticipant->getContact()->removeEmptyNotes();
             }
             $this->participantService->sendMail($eventParticipant, true, $token);
@@ -182,7 +182,7 @@ class EventParticipantController extends AbstractController
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event);
         try {
-            $form = $this->createForm(\Zakjakub\OswisCalendarBundle\Form\EventParticipantType::class, $participant);
+            $form = $this->createForm(\Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
@@ -201,7 +201,7 @@ class EventParticipantController extends AbstractController
                 }
                 $participant->getContact()->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
                 $participant->removeEmptyEventParticipantNotes();
-                $participant->getContact()->removeEmptyContactDetails();
+                $participant->getContact()->removeEmptyDetails();
                 $participant->getContact()->removeEmptyNotes();
                 $flagsRows = $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
                 foreach ($flagsRows as $flagsRow) {
@@ -245,7 +245,7 @@ class EventParticipantController extends AbstractController
         } catch (Exception $e) {
             $participant = $this->prepareEventParticipant($event);
             if (!isset($form)) {
-                $form = $this->createForm(\Zakjakub\OswisCalendarBundle\Form\EventParticipantType::class, $participant);
+                $form = $this->createForm(\Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
                 $form->handleRequest($request);
             }
             $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte.  '.$e->getMessage().''));

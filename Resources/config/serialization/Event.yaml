@@ -47,6 +47,10 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
         slug:
             groups:
                 - 'calendar_events_get'
+                - 'calendar_event_get'
+        forcedSlug:
+            groups:
+                - 'calendar_events_get'
                 - 'calendar_events_post'
                 - 'calendar_event_get'
                 - 'calendar_event_put'
@@ -57,6 +61,18 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_event_get'
                 - 'calendar_event_put'
         endDateTime:
+            groups:
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
+        startDateTimeRecursive:
+            groups:
+                - 'calendar_events_get'
+                - 'calendar_events_post'
+                - 'calendar_event_get'
+                - 'calendar_event_put'
+        endDateTimeRecursive:
             groups:
                 - 'calendar_events_get'
                 - 'calendar_events_post'

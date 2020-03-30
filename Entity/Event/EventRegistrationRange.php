@@ -45,7 +45,6 @@ class EventRegistrationRange implements BasicEntityInterface
     use DateRangeTrait { // Range when registrations are allowed with this price.
         setEndDateTime as protected traitSetEnd;
     }
-
     use EntityPublicTrait;
 
     /**

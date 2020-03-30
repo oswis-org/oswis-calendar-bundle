@@ -70,7 +70,7 @@ class EventParticipantService
         ?LoggerInterface $logger,
         AppUserService $appUserService,
         PdfGenerator $pdfGenerator,
-        UserPasswordEncoderInterface $encoder = null
+        UserPasswordEncoderInterface $encoder
     ) {
         $this->em = $em;
         $this->logger = $logger;

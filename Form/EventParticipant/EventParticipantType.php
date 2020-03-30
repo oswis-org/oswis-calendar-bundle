@@ -5,7 +5,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\Form;
+namespace Zakjakub\OswisCalendarBundle\Form\EventParticipant;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;

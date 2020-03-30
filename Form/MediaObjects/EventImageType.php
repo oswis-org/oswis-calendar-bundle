@@ -5,7 +5,7 @@
 
 namespace Zakjakub\OswisCalendarBundle\Form\MediaObjects;
 
-use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
+use Zakjakub\OswisCalendarBundle\Entity\MediaObjects\EventImage;
 use Zakjakub\OswisCoreBundle\Form\AbstractClass\AbstractImageType;
 
 class EventImageType extends AbstractImageType

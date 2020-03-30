@@ -30,7 +30,7 @@ class EventService
 
     protected EventParticipantService $participantService;
 
-    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger, EventParticipantService $participantService)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, EventParticipantService $participantService)
     {
         $this->em = $em;
         $this->logger = $logger;

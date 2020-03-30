@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Entity\MediaObject;
+namespace Zakjakub\OswisCalendarBundle\Entity\MediaObjects;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\File\File;

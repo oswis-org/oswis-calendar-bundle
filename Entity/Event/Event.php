@@ -18,7 +18,7 @@ use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
-use Zakjakub\OswisCalendarBundle\Entity\MediaObject\EventImage;
+use Zakjakub\OswisCalendarBundle\Entity\MediaObjects\EventImage;
 use Zakjakub\OswisCoreBundle\Entity\Nameable;
 use Zakjakub\OswisCoreBundle\Entity\Publicity;
 use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
