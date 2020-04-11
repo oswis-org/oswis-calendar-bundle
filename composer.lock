@@ -499,20 +499,21 @@
     },
     {
       "name": "doctrine/annotations",
-      "version": "v1.8.0",
+      "version": "1.10.1",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/annotations.git",
-        "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc"
+        "reference": "5eb79f3dbdffed6544e1fc287572c0f462bd29bb"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/annotations/zipball/904dca4eb10715b92569fbcd79e201d5c349b6bc",
-        "reference": "904dca4eb10715b92569fbcd79e201d5c349b6bc",
+        "url": "https://api.github.com/repos/doctrine/annotations/zipball/5eb79f3dbdffed6544e1fc287572c0f462bd29bb",
+        "reference": "5eb79f3dbdffed6544e1fc287572c0f462bd29bb",
         "shasum": ""
       },
       "require": {
         "doctrine/lexer": "1.*",
+        "ext-tokenizer": "*",
         "php": "^7.1"
       },
       "require-dev": {
@@ -522,7 +523,7 @@
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "1.7.x-dev"
+          "dev-master": "1.9.x-dev"
         }
       },
       "autoload": {
@@ -563,7 +564,7 @@
         "docblock",
         "parser"
       ],
-      "time": "2019-10-01T18:55:10+00:00"
+      "time": "2020-04-02T12:33:25+00:00"
     },
     {
       "name": "doctrine/cache",
@@ -2416,16 +2417,16 @@
     },
     {
       "name": "knplabs/doctrine-behaviors",
-      "version": "v2.0.2",
+      "version": "v2.0.3",
       "source": {
         "type": "git",
         "url": "https://github.com/KnpLabs/DoctrineBehaviors.git",
-        "reference": "43a841a4bcb2b9d8f667e0852e38bfab72fccf8e"
+        "reference": "92bd39bab67bdc8698c0db02679484a31029bba3"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/KnpLabs/DoctrineBehaviors/zipball/43a841a4bcb2b9d8f667e0852e38bfab72fccf8e",
-        "reference": "43a841a4bcb2b9d8f667e0852e38bfab72fccf8e",
+        "url": "https://api.github.com/repos/KnpLabs/DoctrineBehaviors/zipball/92bd39bab67bdc8698c0db02679484a31029bba3",
+        "reference": "92bd39bab67bdc8698c0db02679484a31029bba3",
         "shasum": ""
       },
       "require": {
@@ -2464,7 +2465,8 @@
       "type": "symfony-bundle",
       "autoload": {
         "psr-4": {
-          "Knp\\DoctrineBehaviors\\": "src"
+          "Knp\\DoctrineBehaviors\\": "src",
+          "Knp\\DoctrineBehaviors\\PHPStan\\": "utils/phpstan-behaviors/src"
         }
       },
       "notification-url": "https://packagist.org/downloads/",
@@ -2489,7 +2491,7 @@
         "tree",
         "uuid"
       ],
-      "time": "2020-03-28T13:25:40+00:00"
+      "time": "2020-04-01T09:20:12+00:00"
     },
     {
       "name": "laminas/laminas-code",
@@ -2612,16 +2614,16 @@
     },
     {
       "name": "laminas/laminas-zendframework-bridge",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "source": {
         "type": "git",
         "url": "https://github.com/laminas/laminas-zendframework-bridge.git",
-        "reference": "faf68f6109ceeff24241226033ab59640c7eb63b"
+        "reference": "bfbbdb6c998d50dbf69d2187cb78a5f1fa36e1e9"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/laminas/laminas-zendframework-bridge/zipball/faf68f6109ceeff24241226033ab59640c7eb63b",
-        "reference": "faf68f6109ceeff24241226033ab59640c7eb63b",
+        "url": "https://api.github.com/repos/laminas/laminas-zendframework-bridge/zipball/bfbbdb6c998d50dbf69d2187cb78a5f1fa36e1e9",
+        "reference": "bfbbdb6c998d50dbf69d2187cb78a5f1fa36e1e9",
         "shasum": ""
       },
       "require": {
@@ -2660,7 +2662,13 @@
         "laminas",
         "zf"
       ],
-      "time": "2020-03-26T16:07:12+00:00"
+      "funding": [
+        {
+          "url": "https://funding.communitybridge.org/projects/laminas-project",
+          "type": "community_bridge"
+        }
+      ],
+      "time": "2020-04-03T16:01:00+00:00"
     },
     {
       "name": "lcobucci/jwt",
@@ -2719,16 +2727,16 @@
     },
     {
       "name": "league/commonmark",
-      "version": "1.3.2",
+      "version": "1.3.3",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "75542a366ccbe1896ed79fcf3e8e68206d6c4257"
+        "reference": "5a67afc2572ec6d430526cdc9c637ef124812389"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/75542a366ccbe1896ed79fcf3e8e68206d6c4257",
-        "reference": "75542a366ccbe1896ed79fcf3e8e68206d6c4257",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/5a67afc2572ec6d430526cdc9c637ef124812389",
+        "reference": "5a67afc2572ec6d430526cdc9c637ef124812389",
         "shasum": ""
       },
       "require": {
@@ -2789,339 +2797,24 @@
         "md",
         "parser"
       ],
-      "funding": [
-        {
-          "url": "https://github.com/colinodell",
-          "type": "github"
-        },
-        {
-          "url": "https://www.patreon.com/colinodell",
-          "type": "patreon"
-        },
-        {
-          "url": "https://tidelift.com/funding/github/packagist/league%2fcommonmark",
-          "type": "tidelift"
-        }
-      ],
-      "time": "2020-03-25T19:55:28+00:00"
-    },
-    {
-      "name": "league/commonmark-ext-autolink",
-      "version": "v1.0.1",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/thephpleague/commonmark-ext-autolink.git",
-        "reference": "9b10753fa6cb21893f63d16680f01712adbc0f61"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-ext-autolink/zipball/9b10753fa6cb21893f63d16680f01712adbc0f61",
-        "reference": "9b10753fa6cb21893f63d16680f01712adbc0f61",
-        "shasum": ""
-      },
-      "require": {
-        "league/commonmark": "^1.0",
-        "php": "^7.1"
-      },
-      "require-dev": {
-        "phpunit/phpunit": "^7.5"
-      },
-      "type": "commonmark-extension",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.1-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "League\\CommonMark\\Ext\\Autolink\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Colin O'Dell",
-          "email": "colinodell@gmail.com",
-          "homepage": "https://www.colinodell.com",
-          "role": "Lead Developer"
-        }
-      ],
-      "description": "Extension for league/commonmark which autolinks URLs, emails, and @-mentions",
-      "homepage": "https://github.com/thephpleague/commonmark-ext-autolink",
-      "keywords": [
-        "autolink",
-        "commonmark",
-        "extension",
-        "gfm",
-        "github",
-        "markdown",
-        "twitter"
-      ],
-      "time": "2020-01-14T01:53:02+00:00"
-    },
-    {
-      "name": "league/commonmark-ext-smartpunct",
-      "version": "v1.1.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/thephpleague/commonmark-ext-smartpunct.git",
-        "reference": "3746a86c91903fe200999a992de064f87b352019"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-ext-smartpunct/zipball/3746a86c91903fe200999a992de064f87b352019",
-        "reference": "3746a86c91903fe200999a992de064f87b352019",
-        "shasum": ""
-      },
-      "require": {
-        "league/commonmark": "^1.0",
-        "php": "^7.1"
-      },
-      "require-dev": {
-        "jgm/smartpunct": "0.29",
-        "phpunit/phpunit": "^7.5"
-      },
-      "type": "commonmark-extension",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.2-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "League\\CommonMark\\Ext\\SmartPunct\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Colin O'Dell",
-          "email": "colinodell@gmail.com",
-          "homepage": "https://www.colinodell.com",
-          "role": "Lead Developer"
-        }
-      ],
-      "description": "Intelligently converts ASCII quotes, dashes, and ellipses in Markdown to their Unicode equivalents",
-      "homepage": "https://github.com/thephpleague/commonmark-ext-smartpunct",
-      "keywords": [
-        "commonmark",
-        "extension",
-        "markdown",
-        "punctuation",
-        "smartpunct"
-      ],
-      "time": "2019-10-03T12:57:34+00:00"
-    },
-    {
-      "name": "league/commonmark-ext-strikethrough",
-      "version": "v1.0.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/thephpleague/commonmark-ext-strikethrough.git",
-        "reference": "99892ad549e101fe1fbe424ff71224efc32d2d68"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-ext-strikethrough/zipball/99892ad549e101fe1fbe424ff71224efc32d2d68",
-        "reference": "99892ad549e101fe1fbe424ff71224efc32d2d68",
-        "shasum": ""
-      },
-      "require": {
-        "ext-mbstring": "*",
-        "league/commonmark": "^1.0",
-        "php": "^7.1"
-      },
-      "replace": {
-        "uafrica/commonmark-ext": ">=0.1.1"
-      },
-      "require-dev": {
-        "phpunit/phpunit": "^7.5"
-      },
-      "type": "commonmark-extension",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.1-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "League\\CommonMark\\Ext\\Strikethrough\\": "src/"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Colin O'Dell",
-          "email": "colinodell@gmail.com"
-        },
-        {
-          "name": "Johan Meiring",
-          "email": "johan@uafrica.com"
-        }
-      ],
-      "description": "Strikethrough support for the PHP League's CommonMark Markdown parser",
-      "homepage": "https://github.com/thephpleague/commonmark-ext-strikethrough",
-      "keywords": [
-        "commonmark",
-        "extension",
-        "markdown",
-        "strikeout",
-        "strikethrough"
-      ],
-      "time": "2019-06-29T11:34:00+00:00"
-    },
-    {
-      "name": "league/commonmark-ext-table",
-      "version": "v2.1.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/thephpleague/commonmark-ext-table.git",
-        "reference": "3228888ea69636e855efcf6636ff8e6316933fe7"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-ext-table/zipball/3228888ea69636e855efcf6636ff8e6316933fe7",
-        "reference": "3228888ea69636e855efcf6636ff8e6316933fe7",
-        "shasum": ""
-      },
-      "require": {
-        "league/commonmark": "~0.19.3|^1.0",
-        "php": "^7.1"
-      },
-      "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.14",
-        "phpstan/phpstan": "~0.11",
-        "phpunit/phpunit": "^7.0|^8.0",
-        "symfony/var-dumper": "^4.0",
-        "vimeo/psalm": "^3.0"
-      },
-      "type": "commonmark-extension",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "2.2-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "League\\CommonMark\\Ext\\Table\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Martin Hasoň",
-          "email": "martin.hason@gmail.com"
-        },
-        {
-          "name": "Webuni s.r.o.",
-          "homepage": "https://www.webuni.cz"
-        },
-        {
-          "name": "Colin O'Dell",
-          "email": "colinodell@gmail.com",
-          "homepage": "https://www.colinodell.com"
-        }
-      ],
-      "description": "Table extension for league/commonmark",
-      "homepage": "https://github.com/thephpleague/commonmark-ext-table",
-      "keywords": [
-        "commonmark",
-        "extension",
-        "markdown",
-        "table"
-      ],
-      "time": "2019-09-26T13:28:33+00:00"
-    },
-    {
-      "name": "league/commonmark-ext-task-list",
-      "version": "v1.0.1",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/thephpleague/commonmark-ext-task-list.git",
-        "reference": "9fe28f3527ab913b60d44bdc8d66829733cad7c6"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-ext-task-list/zipball/9fe28f3527ab913b60d44bdc8d66829733cad7c6",
-        "reference": "9fe28f3527ab913b60d44bdc8d66829733cad7c6",
-        "shasum": ""
-      },
-      "require": {
-        "league/commonmark": "^0.19|^1.0",
-        "php": "^7.1"
-      },
-      "require-dev": {
-        "phpunit/phpunit": "^7.5"
-      },
-      "type": "commonmark-extension",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.1-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "League\\CommonMark\\Ext\\TaskList\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Colin O'Dell",
-          "email": "colinodell@gmail.com",
-          "homepage": "https://www.colinodell.com",
-          "role": "Lead Developer"
-        }
-      ],
-      "description": "Extension for league/commonmark which supports GFM-style task lists",
-      "homepage": "https://github.com/thephpleague/commonmark-ext-task-list",
-      "keywords": [
-        "Lists",
-        "commonmark",
-        "extension",
-        "gfm",
-        "github",
-        "markdown",
-        "task"
-      ],
-      "time": "2019-07-11T00:35:13+00:00"
+      "time": "2020-04-05T16:01:48+00:00"
     },
     {
       "name": "league/commonmark-extras",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark-extras.git",
-        "reference": "4947edfb292d6f38b309cd63c64d7b08558df315"
+        "reference": "b1961aa4a85465bf884235106a7517e315f14f41"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-extras/zipball/4947edfb292d6f38b309cd63c64d7b08558df315",
-        "reference": "4947edfb292d6f38b309cd63c64d7b08558df315",
+        "url": "https://api.github.com/repos/thephpleague/commonmark-extras/zipball/b1961aa4a85465bf884235106a7517e315f14f41",
+        "reference": "b1961aa4a85465bf884235106a7517e315f14f41",
         "shasum": ""
       },
       "require": {
-        "league/commonmark": "^1.0",
-        "league/commonmark-ext-autolink": "^1.0",
-        "league/commonmark-ext-smartpunct": "^1.0",
-        "league/commonmark-ext-strikethrough": "^1.0",
-        "league/commonmark-ext-table": "^2.0",
-        "league/commonmark-ext-task-list": "^1.0",
+        "league/commonmark": "^1.3",
         "php": "^7.1"
       },
       "require-dev": {
@@ -3130,7 +2823,7 @@
       "type": "commonmark-extension",
       "extra": {
         "branch-alias": {
-          "dev-master": "1.2-dev"
+          "dev-master": "1.3-dev"
         }
       },
       "autoload": {
@@ -3159,7 +2852,18 @@
         "gfm",
         "markdown"
       ],
-      "time": "2019-07-13T11:56:05+00:00"
+      "funding": [
+        {
+          "url": "https://github.com/colinodell",
+          "type": "github"
+        },
+        {
+          "url": "https://www.patreon.com/colinodell",
+          "type": "patreon"
+        }
+      ],
+      "abandoned": "league/commonmark",
+      "time": "2020-04-04T16:03:32+00:00"
     },
     {
       "name": "league/csv",
@@ -3996,24 +3700,24 @@
     },
     {
       "name": "ocramius/package-versions",
-      "version": "1.7.0",
+      "version": "1.8.0",
       "source": {
         "type": "git",
         "url": "https://github.com/Ocramius/PackageVersions.git",
-        "reference": "651c372efc914aea8223e049f85afaf65e09ba23"
+        "reference": "421679846270a5772534828013a93be709fb13df"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Ocramius/PackageVersions/zipball/651c372efc914aea8223e049f85afaf65e09ba23",
-        "reference": "651c372efc914aea8223e049f85afaf65e09ba23",
+        "url": "https://api.github.com/repos/Ocramius/PackageVersions/zipball/421679846270a5772534828013a93be709fb13df",
+        "reference": "421679846270a5772534828013a93be709fb13df",
         "shasum": ""
       },
       "require": {
-        "composer-plugin-api": "^1.1.0",
+        "composer-plugin-api": "^1.1.0 || ^2.0",
         "php": "^7.4.0"
       },
       "require-dev": {
-        "composer/composer": "^1.9.3",
+        "composer/composer": "^1.9.3 || ^2.0@dev",
         "doctrine/coding-standard": "^7.0.2",
         "ext-zip": "^1.15.0",
         "infection/infection": "^0.15.3",
@@ -4053,7 +3757,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-03-06T11:34:16+00:00"
+      "time": "2020-04-06T17:43:35+00:00"
     },
     {
       "name": "ocramius/proxy-manager",
@@ -4808,25 +4512,25 @@
     },
     {
       "name": "sensio/framework-extra-bundle",
-      "version": "v5.5.3",
+      "version": "v5.5.4",
       "source": {
         "type": "git",
         "url": "https://github.com/sensiolabs/SensioFrameworkExtraBundle.git",
-        "reference": "98f0807137b13d0acfdf3c255a731516e97015de"
+        "reference": "d0585d4825a87a5030ca8cd34adb4a17e1066c17"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/98f0807137b13d0acfdf3c255a731516e97015de",
-        "reference": "98f0807137b13d0acfdf3c255a731516e97015de",
+        "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/d0585d4825a87a5030ca8cd34adb4a17e1066c17",
+        "reference": "d0585d4825a87a5030ca8cd34adb4a17e1066c17",
         "shasum": ""
       },
       "require": {
         "doctrine/annotations": "^1.0",
         "php": ">=7.1.3",
-        "symfony/config": "^4.3|^5.0",
-        "symfony/dependency-injection": "^4.3|^5.0",
-        "symfony/framework-bundle": "^4.3|^5.0",
-        "symfony/http-kernel": "^4.3|^5.0"
+        "symfony/config": "^4.4|^5.0",
+        "symfony/dependency-injection": "^4.4|^5.0",
+        "symfony/framework-bundle": "^4.4|^5.0",
+        "symfony/http-kernel": "^4.4|^5.0"
       },
       "conflict": {
         "doctrine/doctrine-cache-bundle": "<1.3.1"
@@ -4835,23 +4539,18 @@
         "doctrine/doctrine-bundle": "^1.11|^2.0",
         "doctrine/orm": "^2.5",
         "nyholm/psr7": "^1.1",
-        "symfony/browser-kit": "^4.3|^5.0",
-        "symfony/dom-crawler": "^4.3|^5.0",
-        "symfony/expression-language": "^4.3|^5.0",
-        "symfony/finder": "^4.3|^5.0",
+        "symfony/browser-kit": "^4.4|^5.0",
+        "symfony/dom-crawler": "^4.4|^5.0",
+        "symfony/expression-language": "^4.4|^5.0",
+        "symfony/finder": "^4.4|^5.0",
         "symfony/monolog-bridge": "^4.0|^5.0",
         "symfony/monolog-bundle": "^3.2",
         "symfony/phpunit-bridge": "^4.3.5|^5.0",
         "symfony/psr-http-message-bridge": "^1.1",
-        "symfony/security-bundle": "^4.3|^5.0",
-        "symfony/twig-bundle": "^4.3|^5.0",
-        "symfony/yaml": "^4.3|^5.0",
+        "symfony/security-bundle": "^4.4|^5.0",
+        "symfony/twig-bundle": "^4.4|^5.0",
+        "symfony/yaml": "^4.4|^5.0",
         "twig/twig": "^1.34|^2.4|^3.0"
-      },
-      "suggest": {
-        "symfony/expression-language": "",
-        "symfony/psr-http-message-bridge": "To use the PSR-7 converters",
-        "symfony/security-bundle": ""
       },
       "type": "symfony-bundle",
       "extra": {
@@ -4882,7 +4581,7 @@
         "annotations",
         "controllers"
       ],
-      "time": "2019-12-27T08:57:19+00:00"
+      "time": "2020-04-06T12:20:39+00:00"
     },
     {
       "name": "setasign/fpdi",
@@ -9997,16 +9696,16 @@
     },
     {
       "name": "symplify/package-builder",
-      "version": "v7.2.8",
+      "version": "v7.2.12",
       "source": {
         "type": "git",
         "url": "https://github.com/symplify/package-builder.git",
-        "reference": "91e019cad6441b8a5e7b300e153cb1c3d3ec7e29"
+        "reference": "9eacafc4bfc0f5b1ce785ff5662bc3309786c6dd"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symplify/package-builder/zipball/91e019cad6441b8a5e7b300e153cb1c3d3ec7e29",
-        "reference": "91e019cad6441b8a5e7b300e153cb1c3d3ec7e29",
+        "url": "https://api.github.com/repos/symplify/package-builder/zipball/9eacafc4bfc0f5b1ce785ff5662bc3309786c6dd",
+        "reference": "9eacafc4bfc0f5b1ce785ff5662bc3309786c6dd",
         "shasum": ""
       },
       "require": {
@@ -10039,17 +9738,7 @@
         "MIT"
       ],
       "description": "Dependency Injection, Console and Kernel toolkit for Symplify packages.",
-      "funding": [
-        {
-          "url": "https://github.com/tomasvotruba",
-          "type": "github"
-        },
-        {
-          "url": "https://www.patreon.com/rectorphp",
-          "type": "patreon"
-        }
-      ],
-      "time": "2020-03-18T23:14:48+00:00"
+      "time": "2020-04-07T13:55:45+00:00"
     },
     {
       "name": "tijsverkoyen/css-to-inline-styles",
@@ -10696,16 +10385,16 @@
     },
     {
       "name": "zakjakub/oswis-address-book-bundle",
-      "version": "v0.0.210",
+      "version": "v0.0.211",
       "source": {
         "type": "git",
         "url": "https://github.com/zakjakub/oswis-address-book-bundle.git",
-        "reference": "2dedc37dea551ec44c04e87a8a5fa1bc26d46095"
+        "reference": "6cb2000bae2f544e2229d7e14143a4c016dd5bb7"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/2dedc37dea551ec44c04e87a8a5fa1bc26d46095",
-        "reference": "2dedc37dea551ec44c04e87a8a5fa1bc26d46095",
+        "url": "https://api.github.com/repos/zakjakub/oswis-address-book-bundle/zipball/6cb2000bae2f544e2229d7e14143a4c016dd5bb7",
+        "reference": "6cb2000bae2f544e2229d7e14143a4c016dd5bb7",
         "shasum": ""
       },
       "require": {
@@ -10747,7 +10436,7 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-03-30T17:38:50+00:00"
+      "time": "2020-03-31T21:38:04+00:00"
     },
     {
       "name": "zakjakub/oswis-core-bundle",

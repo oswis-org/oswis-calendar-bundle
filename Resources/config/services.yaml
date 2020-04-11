@@ -272,13 +272,13 @@ services:
 
     ### EventParticipantType (form)
     zakjakub_oswis_calendar.event_participant_type:
-        class: Zakjakub\OswisCalendarBundle\Form\EventParticipantType
+        class: Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType
         autowire: true
         public: true
         arguments:
             - '@zakjakub_oswis_calendar.event_service'
             - '@zakjakub_oswis_calendar.event_series_service'
-    Zakjakub\OswisCalendarBundle\Form\EventParticipantType:
+    Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType:
         alias: zakjakub_oswis_calendar.event_participant_type
         public: true
 
