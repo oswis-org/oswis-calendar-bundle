@@ -1,7 +1,7 @@
 {
-  "name": "zakjakub/oswis-calendar-bundle",
+  "name": "oswis-org/oswis-calendar-bundle",
   "description": "Calendar module for One Simple Web IS.",
-  "homepage": "https://github.com/zakjakub/oswis-calendar-bundle",
+  "homepage": "https://github.com/oswis-org/oswis-calendar-bundle",
   "type": "symfony-bundle",
   "minimum-stability": "stable",
   "keywords": [
@@ -27,8 +27,8 @@
     "bigit/vokativ": "dev-master",
     "endroid/qr-code": "^3.7",
     "rikudou/czqrpayment": "^4.0",
-    "zakjakub/oswis-core-bundle": "^0.0",
-    "zakjakub/oswis-address-book-bundle": "^0.0"
+    "oswis-org/oswis-core-bundle": "^0.0",
+    "oswis-org/oswis-address-book-bundle": "^0.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",

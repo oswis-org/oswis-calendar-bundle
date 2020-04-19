@@ -148,8 +148,6 @@
       <path value="$PROJECT_DIR$/vendor/twig/string-extra" />
       <path value="$PROJECT_DIR$/vendor/jms/metadata" />
       <path value="$PROJECT_DIR$/vendor/bigit/vokativ" />
-      <path value="$PROJECT_DIR$/vendor/zakjakub/oswis-core-bundle" />
-      <path value="$PROJECT_DIR$/vendor/zakjakub/oswis-address-book-bundle" />
       <path value="$PROJECT_DIR$/vendor/symplify/package-builder" />
       <path value="$PROJECT_DIR$/vendor/ezimuel/ringphp" />
       <path value="$PROJECT_DIR$/vendor/ezimuel/guzzlestreams" />
@@ -161,6 +159,8 @@
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan" />
       <path value="$PROJECT_DIR$/vendor/brick/math" />
       <path value="$PROJECT_DIR$/vendor/ramsey/collection" />
+      <path value="$PROJECT_DIR$/vendor/oswis-org/oswis-address-book-bundle" />
+      <path value="$PROJECT_DIR$/vendor/oswis-org/oswis-core-bundle" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
