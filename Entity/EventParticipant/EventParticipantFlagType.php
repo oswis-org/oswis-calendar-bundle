@@ -1,14 +1,14 @@
 <?php /** @noinspection PhpUnused */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use InvalidArgumentException;
-use Zakjakub\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagType;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagType;
+use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

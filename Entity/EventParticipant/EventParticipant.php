@@ -5,7 +5,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -18,24 +18,24 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
-use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\InfoMailSentTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\PriorityTrait;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
+use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\DeletedTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\InfoMailSentTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\PriorityTrait;
 use function assert;
 
 /**
  * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
  *
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant")
  * @ApiResource(
  *   attributes={
@@ -146,7 +146,7 @@ class EventParticipant implements BasicEntityInterface
     /**
      * Type of relation between contact and event - attendee, staff....
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )
@@ -157,7 +157,7 @@ class EventParticipant implements BasicEntityInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )
@@ -171,7 +171,7 @@ class EventParticipant implements BasicEntityInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment",
      *     cascade={"all"},
      *     mappedBy="eventParticipant",
      *     fetch="EAGER"
@@ -182,7 +182,7 @@ class EventParticipant implements BasicEntityInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
      *     cascade={"all"},
      *     mappedBy="eventParticipant",
      *     fetch="EAGER"
@@ -193,7 +193,7 @@ class EventParticipant implements BasicEntityInterface
     /**
      * Related contact (person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
+     *     targetEntity="OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )
@@ -203,7 +203,7 @@ class EventParticipant implements BasicEntityInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)

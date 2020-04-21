@@ -3,7 +3,7 @@
         <div class="card mb-3">
             <div class="row no-gutters">
                 <div class="col-md-3">
-                    <a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                    <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
                         <img class="card-img" alt="{{ event.name }}"
                              src="{{ absolute_url(asset(event.image ? '/images/events/'~event.image : 'img/web/og-image.jpg'))|default('') }}">
                     </a>
@@ -11,9 +11,9 @@
                 <div class="col-md-9">
                     <div class="card-body pt-0 pb-0">
                         <h2 class="card-title text-uppercase mt-1 mb-0" itemprop="name">
-                            <small><a itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
+                            <small><a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
                         </h2>
-                        <link itemprop="url" href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}"/>
+                        <link itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}"/>
                         <p class="card-text text-muted">
                             {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
                                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce

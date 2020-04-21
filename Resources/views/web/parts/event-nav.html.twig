@@ -2,7 +2,7 @@
     <div class="badges clearfix text-wrap mb-3" style="font-size:1.5rem">
         <!-- <a href="{#{{ path('faq') }}#}" class="badge badge-warning">Časté dotazy</a> -->
         {% for navEvent in navEvents|default %}
-            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
+            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
                class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
                 {% if navEvent.year and navEvent.startYear %}
                     {{ navEvent.startYear }}

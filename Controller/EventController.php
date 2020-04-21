@@ -5,7 +5,7 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Controller;
+namespace OswisOrg\OswisCalendarBundle\Controller;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -15,12 +15,12 @@ use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService;
-use Zakjakub\OswisCalendarBundle\Service\EventService;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisNotFoundException;
-use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
+use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
+use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 
 class EventController extends AbstractController
 {
@@ -53,7 +53,7 @@ class EventController extends AbstractController
     final public function showEvent(?string $eventSlug = null): Response
     {
         if (null !== $eventSlug) {
-            $this->redirectToRoute('zakjakub_oswis_calendar_web_events');
+            $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
@@ -80,7 +80,7 @@ class EventController extends AbstractController
             'organizer'   => $this->eventService->getOrganizer($event),
         );
 
-        return $this->render('@ZakjakubOswisCalendar/web/pages/event.html.twig', $data);
+        return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);
     }
 
     public function getMagicEvents(): Collection
@@ -119,7 +119,7 @@ class EventController extends AbstractController
             'navEvents' => [],
         ];
 
-        return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);
+        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
     }
 
     /**
@@ -176,6 +176,6 @@ class EventController extends AbstractController
             'navRanges' => [], /////////
         ];
 
-        return $this->render('@ZakjakubOswisCalendar/web/pages/events.html.twig', $context);
+        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
     }
 }

@@ -4,13 +4,13 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\AbstractClass;
+namespace OswisOrg\OswisCalendarBundle\Entity\AbstractClass;
 
-use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\TypeTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\ValueTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\TypeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\ValueTrait;
 
 abstract class AbstractEventFlagType implements BasicEntityInterface
 {

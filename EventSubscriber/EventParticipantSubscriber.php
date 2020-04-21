@@ -4,7 +4,7 @@
  * @noinspection RedundantDocCommentTagInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\EventSubscriber;
+namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
@@ -12,10 +12,10 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Exception\OswisEventParticipantNotFoundException;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
-use Zakjakub\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Exception\OswisEventParticipantNotFoundException;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\EventService;
 use function in_array;
 
 final class EventParticipantSubscriber implements EventSubscriberInterface

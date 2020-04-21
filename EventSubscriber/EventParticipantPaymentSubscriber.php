@@ -4,7 +4,7 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\EventSubscriber;
+namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
@@ -13,9 +13,9 @@ use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantPaymentService;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantPaymentService;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 
 final class EventParticipantPaymentSubscriber implements EventSubscriberInterface
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Form\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Form\EventParticipant;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
 
 class EventParticipantNoteType extends AbstractType
 {

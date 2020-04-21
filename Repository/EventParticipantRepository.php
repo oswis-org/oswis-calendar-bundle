@@ -4,18 +4,18 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Repository;
+namespace OswisOrg\OswisCalendarBundle\Repository;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCoreBundle\Entity\AppUser;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCoreBundle\Entity\AppUser;
 
 class EventParticipantRepository extends EntityRepository
 {

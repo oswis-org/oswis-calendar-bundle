@@ -5,7 +5,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\Service;
+namespace OswisOrg\OswisCalendarBundle\Service;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -22,25 +22,25 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Exception\LogicException;
 use Symfony\Component\Mime\Exception\RfcComplianceException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisAddressBookBundle\Entity\Organization;
-use Zakjakub\OswisAddressBookBundle\Entity\Person;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository;
-use Zakjakub\OswisCoreBundle\Entity\AppUser;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
-use Zakjakub\OswisCoreBundle\Service\AppUserService;
-use Zakjakub\OswisCoreBundle\Service\PdfGenerator;
-use Zakjakub\OswisCoreBundle\Utils\StringUtils;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\Organization;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
+use OswisOrg\OswisCoreBundle\Entity\AppUser;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
+use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use OswisOrg\OswisCoreBundle\Service\AppUserService;
+use OswisOrg\OswisCoreBundle\Service\PdfGenerator;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use function assert;
 
 class EventParticipantService
@@ -164,7 +164,7 @@ class EventParticipantService
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $email = $this->getEmptyEmail($contactPerson, 'Zrušení přihlášky');
-                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-delete.html.twig');
+                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-delete.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 $this->em->persist($participant);
                 try {
@@ -254,7 +254,7 @@ class EventParticipantService
                 $mailData['depositQr'] = 'cid:depositQr';
                 $mailData['restQr'] = 'cid:restQr';
                 $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
-                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
+                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
                 if ($depositPaymentQrPng) {
                     $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
                 }
@@ -325,7 +325,7 @@ class EventParticipantService
                 }
                 $contactPerson->getAppUser()->generateAccountActivationRequestToken();
                 $email = $this->getEmptyEmail($contactPerson, 'Ověření přihlášky');
-                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-verification.html.twig');
+                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-verification.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 try {
                     $this->mailer->send($email);
@@ -384,8 +384,8 @@ class EventParticipantService
         ?int $recursiveDepth = 0
     ): void {
         // TODO: Check and refactor.
-        $templatePdf = '@ZakjakubOswisCalendar/documents/pages/event-participant-list.html.twig';
-        $templateEmail = '@ZakjakubOswisCalendar/e-mail/event-participant-list.html.twig';
+        $templatePdf = '@OswisOrgOswisCalendar/documents/pages/event-participant-list.html.twig';
+        $templateEmail = '@OswisOrgOswisCalendar/e-mail/event-participant-list.html.twig';
         $title ??= self::DEFAULT_LIST_TITLE.' ('.$event->getShortName().')';
         $events = new ArrayCollection([$event]);
         // TODO: Send events participants from repo.
@@ -520,7 +520,7 @@ class EventParticipantService
                 $pdfTitle .= ' ('.$event->getName().')';
                 $pdfString = $this->pdfGenerator->generatePdfAsString(
                     $pdfTitle,
-                    '@ZakjakubOswisCalendar/documents/pages/event-participant-info-before-event.html.twig',
+                    '@OswisOrgOswisCalendar/documents/pages/event-participant-info-before-event.html.twig',
                     $pdfData,
                     PdfGenerator::DEFAULT_PAPER_FORMAT,
                     false,
@@ -539,7 +539,7 @@ class EventParticipantService
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $email = $this->getEmptyEmail($contactPerson, $title);
-                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-info-before-event.html.twig');
+                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-info-before-event.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 if (!empty($pdfString)) {
                     $email->attach($pdfString, $fileName, 'application/pdf');
@@ -617,7 +617,7 @@ class EventParticipantService
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $email = $this->getEmptyEmail($contactPerson, 'Zpětná vazba');
-                $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-feedback.html.twig');
+                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-feedback.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 try {
                     $this->mailer->send($email);

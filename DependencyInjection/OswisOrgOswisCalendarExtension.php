@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\DependencyInjection;
+namespace OswisOrg\OswisCalendarBundle\DependencyInjection;
 
 use Exception;
 use Symfony\Component\Config\FileLocator;
@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class ZakjakubOswisCalendarExtension extends Extension implements PrependExtensionInterface
+class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensionInterface
 {
 
     /**

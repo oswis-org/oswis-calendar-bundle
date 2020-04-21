@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Exception;
+namespace OswisOrg\OswisCalendarBundle\Exception;
 
 use Exception;
 

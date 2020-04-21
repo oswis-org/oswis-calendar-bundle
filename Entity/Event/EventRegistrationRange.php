@@ -4,21 +4,21 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
 use Exception;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Entity\Publicity;
-use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DepositValueTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NumericValueTrait;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
+use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use OswisOrg\OswisCoreBundle\Entity\Publicity;
+use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\DateRangeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\DepositValueTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\NumericValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -54,7 +54,7 @@ class EventRegistrationRange implements BasicEntityInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)

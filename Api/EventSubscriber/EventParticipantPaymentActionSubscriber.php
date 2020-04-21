@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Api\EventSubscriber;
+namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Zakjakub\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantPaymentService;
+use OswisOrg\OswisCalendarBundle\Api\Dto\EventParticipantPaymentActionRequest;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantPaymentService;
 use function assert;
 use function count;
 use function in_array;

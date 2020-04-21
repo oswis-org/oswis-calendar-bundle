@@ -1,4 +1,4 @@
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
     attributes:
         id:
             groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payment_get']
@@ -29,7 +29,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
         eMailConfirmationSource:
             groups: ['calendar_event_participant_payments_get', 'calendar_event_participant_payment_get']
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
     attributes:
         id:
             groups:
@@ -49,7 +49,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
                 - 'calendar_event_participant_payments_get'
                 - 'calendar_event_participant_payment_get'
 
-Zakjakub\OswisCalendarBundle\Entity\Event\Event:
+OswisOrg\OswisCalendarBundle\Entity\Event\Event:
     attributes:
         id:
             groups:
@@ -78,7 +78,7 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_event_participant_payment_get'
 
 
-Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
+OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
     attributes:
         id:
             groups:

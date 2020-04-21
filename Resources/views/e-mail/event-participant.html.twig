@@ -1,4 +1,4 @@
-{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+{% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
@@ -34,8 +34,8 @@
                     {% endif %}
                     {% if portal is defined and portal %}
                         Přihlašovací údaje slouží pro přihlášení do aplikace {{ portal }}, která bude již brzy dostupná na adrese
-                        <a href="{{ absolute_url(path('zakjakub_oswis_core_web_portal')) }}" title="{{ portal }}" target="_blank">
-                            {{ absolute_url(path('zakjakub_oswis_core_web_portal')) }}
+                        <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" title="{{ portal }}" target="_blank">
+                            {{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}
                         </a>.
                     {% endif %}
                 </p>
@@ -71,13 +71,13 @@
             {% endif %}
         {% endblock message_payment_outer %}
 
-        {% include '@ZakjakubOswisCalendar/other/summary/event-participant-summary.html.twig' %}
-        {% include '@ZakjakubOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/summary/event-participant-summary.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
-            {% include '@ZakjakubOswisCalendar/other/summary/event-summary.html.twig' %}
+            {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' %}
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_core_homepage_action')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_core_homepage_action')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
 
         {% block message_footer %}
             <p>Pokud zpráva přišla opakovaně, přihláška byla aktualizována uživatelem nebo správcem.</p>

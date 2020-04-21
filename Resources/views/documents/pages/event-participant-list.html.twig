@@ -1,8 +1,8 @@
-{% extends '@ZakjakubOswisCore/documents/pdf-document.html.twig' %}
+{% extends '@OswisOrgOswisCore/documents/pdf-document.html.twig' %}
 
-{% block css %}{% include '@ZakjakubOswisCalendar/documents/pages/event-participant-list.css.twig' %}{% endblock %}
+{% block css %}{% include '@OswisOrgOswisCalendar/documents/pages/event-participant-list.css.twig' %}{% endblock %}
 {% block title %}{{ title|default('Seznam přihlášek') }}{% endblock %}
 
 {% block content_inner %}
-    {% include '@ZakjakubOswisCalendar/other/event-participant-list/event-participant-list.html.twig' %}
+    {% include '@OswisOrgOswisCalendar/other/event-participant-list/event-participant-list.html.twig' %}
 {% endblock %}

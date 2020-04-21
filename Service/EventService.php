@@ -5,22 +5,22 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Service;
+namespace OswisOrg\OswisCalendarBundle\Service;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use Zakjakub\OswisCalendarBundle\Repository\EventParticipantRepository;
-use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
-use Zakjakub\OswisCoreBundle\Entity\AppUser;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCoreBundle\Entity\AppUser;
 
 class EventService
 {

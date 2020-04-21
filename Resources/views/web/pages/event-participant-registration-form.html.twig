@@ -1,5 +1,5 @@
 {% form_theme form 'bootstrap_4_layout.html.twig' %}
-{% extends '@ZakjakubOswisCore/web/page-skeleton-default.html.twig' %}
+{% extends '@OswisOrgOswisCore/web/page-skeleton-default.html.twig' %}
 
 {% block html_title %}{{ title }}{% endblock %}
 {% block html_description %}{% if message is defined and message %}{{ message }}{% else %}{{ title }}{% endif %}{% endblock %}
@@ -7,6 +7,6 @@
 
 {% block body_content %}
     <main class="container" id="main-content-container">
-        {% include '@ZakjakubOswisCalendar/web/parts/event-participant-registration.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration.html.twig' %}
     </main>
 {% endblock %}

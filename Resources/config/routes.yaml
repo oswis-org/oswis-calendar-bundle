@@ -2,24 +2,24 @@ controllers:
     resource: ../../Controller/
     type: annotation
 
-zakjakub_oswis_calendar_event_participant_web_registration_confirm:
-    controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
+oswis_org_oswis_calendar_event_participant_web_registration_confirm:
+    controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
-zakjakub_oswis_calendar_web_event:
-    controller: zakjakub_oswis_calendar.event_controller::showEvent
+oswis_org_oswis_calendar_web_event:
+    controller: oswis_org_oswis_calendar.event_controller::showEvent
     path: "/akce/{eventSlug}"
 
-zakjakub_oswis_calendar_event_web_leaflet:
-    controller: zakjakub_oswis_calendar.event_controller::eventLeafletPdf
+oswis_org_oswis_calendar_event_web_leaflet:
+    controller: oswis_org_oswis_calendar.event_controller::eventLeafletPdf
     path: "/letak/{eventSlug}"
 
-zakjakub_oswis_calendar_web_event_participant_registration:
-    controller: zakjakub_oswis_calendar.event_participant_controller::eventParticipantRegistration
+oswis_org_oswis_calendar_web_event_participant_registration:
+    controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistration
     path: "/akce/{eventSlug}/prihlaska"
 
-zakjakub_oswis_calendar_web_events: ## ??????????????????????????????????????
-    controller: zakjakub_oswis_calendar.event_controller::showEvents
+oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????
+    controller: oswis_org_oswis_calendar.event_controller::showEvents
     path: "/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
     defaults:
         range: null
@@ -28,21 +28,21 @@ zakjakub_oswis_calendar_web_events: ## ??????????????????????????????????????
         limit: null
         offset: null
 
-zakjakub_oswis_calendar_web_events_calendar:
-    controller: zakjakub_oswis_calendar.event_controller::showEvents
+oswis_org_oswis_calendar_web_events_calendar:
+    controller: oswis_org_oswis_calendar.event_controller::showEvents
     path: "/kalendar/{range?}/{rangeValue?}"
     defaults:
         range: null
         rangeValue: null
 
-zakjakub_oswis_calendar_web_events_future:
-    controller: zakjakub_oswis_calendar.event_controller::showFutureEvents
+oswis_org_oswis_calendar_web_events_future:
+    controller: oswis_org_oswis_calendar.event_controller::showFutureEvents
     path: "/akce/{page?}"
     defaults:
         page: null
 
-zakjakub_oswis_calendar_web_events_past:
-    controller: zakjakub_oswis_calendar.event_controller::showPastEvents
+oswis_org_oswis_calendar_web_events_past:
+    controller: oswis_org_oswis_calendar.event_controller::showPastEvents
     path: "/minule-akce/{page?}"
     defaults:
         page: null

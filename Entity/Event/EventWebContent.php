@@ -1,8 +1,8 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractWebContent;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractWebContent;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

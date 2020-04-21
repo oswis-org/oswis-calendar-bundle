@@ -1,13 +1,13 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Service;
+namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
-use Zakjakub\OswisCalendarBundle\Entity\Event\EventFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
+use OswisOrg\OswisCoreBundle\Entity\Nameable;
 
 class EventFlagService
 {

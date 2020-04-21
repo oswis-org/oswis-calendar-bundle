@@ -1,4 +1,4 @@
-{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+{% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Zrušení přihlášky') }}{% endblock %}
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
@@ -56,10 +56,10 @@
             </li>
         </ul>
 
-        {% include '@ZakjakubOswisCalendar/other/summary/event-summary.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' %}
 
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
 
         {% block message_footer %}
             <p>

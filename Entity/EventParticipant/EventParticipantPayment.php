@@ -3,7 +3,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -13,8 +13,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Exception;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
  * Payment (or return - when numericValue is negative).
@@ -106,7 +106,7 @@ class EventParticipantPayment extends AbstractPayment
     /**
      * Event contact revision (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
      *     inversedBy="eventParticipantPayments"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)

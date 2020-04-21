@@ -1,4 +1,4 @@
-Zakjakub\OswisCalendarBundle\Entity\Event\Event:
+OswisOrg\OswisCalendarBundle\Entity\Event\Event:
     attributes:
         id:
             groups:
@@ -109,7 +109,7 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
             groups:
                 - 'calendar_event_get'
 
-Zakjakub\OswisCalendarBundle\Entity\Event\EventType:
+OswisOrg\OswisCalendarBundle\Entity\Event\EventType:
     attributes:
         id:
             groups:
@@ -130,7 +130,7 @@ Zakjakub\OswisCalendarBundle\Entity\Event\EventType:
                 - 'calendar_events_get'
                 - 'calendar_event_get'
 
-Zakjakub\OswisAddressBookBundle\Entity\Place:
+OswisOrg\OswisAddressBookBundle\Entity\Place:
     attributes:
         id:
             groups:

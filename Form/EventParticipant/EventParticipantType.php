@@ -5,7 +5,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\Form\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Form\EventParticipant;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -16,15 +16,15 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Zakjakub\OswisAddressBookBundle\Form\StudentPersonType;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
-use Zakjakub\OswisCalendarBundle\Service\EventSeriesService;
-use Zakjakub\OswisCalendarBundle\Service\EventService;
-use Zakjakub\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
+use OswisOrg\OswisAddressBookBundle\Form\StudentPersonType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\EventSeriesService;
+use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 
 class EventParticipantType extends AbstractType
 {
@@ -100,7 +100,7 @@ class EventParticipantType extends AbstractType
 
     public function getEventLabel(
         Event $e,
-        \Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType $participantType,
+        \OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType $participantType,
         EventService $eventService
     ): string {
         $label = $e->getName().' '.$e->getRangeAsText();

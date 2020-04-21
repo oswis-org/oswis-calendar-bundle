@@ -5,7 +5,7 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -13,28 +13,28 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Zakjakub\OswisAddressBookBundle\Entity\Place;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
-use Zakjakub\OswisCalendarBundle\Entity\MediaObjects\EventImage;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Entity\Publicity;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use Zakjakub\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BankAccountTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\ColorTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DateRangeTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\DeletedTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
-use Zakjakub\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
-use Zakjakub\OswisCoreBundle\Utils\DateTimeUtils;
+use OswisOrg\OswisAddressBookBundle\Entity\Place;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection;
+use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
+use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use OswisOrg\OswisCoreBundle\Entity\Publicity;
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Entity\BankAccountTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\ColorTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\DateRangeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\DeletedTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="Zakjakub\OswisCalendarBundle\Repository\EventRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\EventRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
  * @ApiResource(
  *   attributes={
@@ -88,7 +88,7 @@ class Event implements BasicEntityInterface
     use EntityPublicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisAddressBookBundle\Entity\Place", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisAddressBookBundle\Entity\Place", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Place $location = null;
@@ -96,7 +96,7 @@ class Event implements BasicEntityInterface
     /**
      * @var Collection<EventFlagConnection> $eventFlagConnections
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventFlagConnection",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection",
      *     cascade={"all"},
      *     mappedBy="event",
      *     fetch="EAGER"
@@ -107,7 +107,7 @@ class Event implements BasicEntityInterface
     /**
      * Parent event (if this is not top level event).
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
      *     inversedBy="subEvents",
      *     fetch="EAGER"
      * )
@@ -117,13 +117,13 @@ class Event implements BasicEntityInterface
 
     /**
      * @var Collection<Event> $subEvents
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent")
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent")
      */
     protected ?Collection $subEvents = null;
 
     /**
      * @var Collection<EventWebContent> $webContents
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"}, fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"}, fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_event_web_content_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
@@ -135,7 +135,7 @@ class Event implements BasicEntityInterface
     /**
      * @var Collection<EventRegistrationRange> $registrationRanges
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
      *     cascade={"all"},
      *     fetch="EAGER"
      * )
@@ -150,7 +150,7 @@ class Event implements BasicEntityInterface
     /**
      * @var Collection<EventParticipantTypeInEventConnection> $participantTypeInEventConnections
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantTypeInEventConnection",
      *     cascade={"all"},
      *     mappedBy="event",
      *     fetch="EAGER"
@@ -161,7 +161,7 @@ class Event implements BasicEntityInterface
     /**
      * @var Collection<EventParticipantFlagInEventConnection> $participantFlagInEventConnections
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection",
      *     cascade={"all"},
      *     mappedBy="event",
      *     fetch="EAGER"
@@ -170,18 +170,18 @@ class Event implements BasicEntityInterface
     protected ?Collection $participantFlagInEventConnections = null;
 
     /**
-     * @Doctrine\ORM\Mapping\OneToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\MediaObjects\EventImage", cascade={"all"}, fetch="EAGER")
+     * @Doctrine\ORM\Mapping\OneToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage", cascade={"all"}, fetch="EAGER")
      */
     protected ?EventImage $image = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventType", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
      */
     private ?EventType $type = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\Event\EventSeries", inversedBy="events", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventSeries", inversedBy="events", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      */
     private ?EventSeries $series = null;

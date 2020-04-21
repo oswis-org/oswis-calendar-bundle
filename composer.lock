@@ -3861,7 +3861,7 @@
             "type": "symfony-bundle",
             "autoload": {
                 "psr-4": {
-                    "Zakjakub\\OswisAddressBookBundle\\": ""
+                    "OswisOrg\\OswisAddressBookBundle\\": ""
                 },
                 "classmap": [
                     ""
@@ -3970,7 +3970,7 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Zakjakub\\OswisCoreBundle\\": ""
+                    "OswisOrg\\OswisCoreBundle\\": ""
                 },
                 "classmap": [
                     ""

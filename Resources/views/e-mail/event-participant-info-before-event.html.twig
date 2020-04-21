@@ -1,4 +1,4 @@
-{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+{% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
@@ -23,13 +23,13 @@
         {% endblock message_message_outer %}
 
         {% block event_participant_summary %}
-            {% include '@ZakjakubOswisCalendar/other/summary/event-participant-summary.html.twig' %}
+            {% include '@OswisOrgOswisCalendar/other/summary/event-participant-summary.html.twig' %}
         {% endblock event_participant_summary %}
         {% block event_participant_event_summary %}
-            {% include '@ZakjakubOswisCalendar/other/summary/event-summary.html.twig' %}
+            {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' %}
         {% endblock event_participant_event_summary %}
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
         {% block message_footer %}{% endblock message_footer %}
     </div>
 {% endblock %}

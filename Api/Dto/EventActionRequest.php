@@ -1,9 +1,9 @@
 <?php /** @noinspection PhpUnused */
 
-namespace Zakjakub\OswisCalendarBundle\Api\Dto;
+namespace OswisOrg\OswisCalendarBundle\Api\Dto;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 
 /**
  * @ApiResource(

@@ -2,15 +2,15 @@
 
 /** @noinspection PhpUnused */
 
-namespace Zakjakub\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use Zakjakub\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Entity\Publicity;
-use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
+use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use OswisOrg\OswisCoreBundle\Entity\Publicity;
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
  * Flag is some specification of EventParticipant. Each flag can adjust price and can be used only once in one participant.
@@ -61,7 +61,7 @@ use Zakjakub\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 class EventParticipantFlag extends AbstractEventFlag
 {
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?EventParticipantFlagType $eventParticipantFlagType = null;

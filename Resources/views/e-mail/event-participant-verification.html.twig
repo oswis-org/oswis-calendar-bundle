@@ -1,4 +1,4 @@
-{% extends '@ZakjakubOswisCore/e-mail/message.html.twig' %}
+{% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
 {% block meta_description %}{{ block('html_title') }}{% endblock meta_description %}
@@ -47,11 +47,11 @@
             </p>
             <p>
                 <a href="{{ absolute_url(path(
-                    'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
+                    'oswis_org_oswis_calendar_event_participant_web_registration_confirm',
                     {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                 ) }}" itemprop="confirmReservationUrl" title="Odkaz pro potvrzení přihlášky a aktivaci účtu" target="_blank">
                     {{ absolute_url(path(
-                        'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
+                        'oswis_org_oswis_calendar_event_participant_web_registration_confirm',
                         {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                     ) }}</a>
                 <br>
@@ -62,13 +62,13 @@
         <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
             <meta itemprop="name" content="Potvrdit"/>
             <link itemprop="url" href="{{ absolute_url(path(
-                'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
+                'oswis_org_oswis_calendar_event_participant_web_registration_confirm',
                 {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
             ) }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
                 <link itemprop="url"
                       href="{{ absolute_url(path(
-                          'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
+                          'oswis_org_oswis_calendar_event_participant_web_registration_confirm',
                           {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                       ) }}"/>
             </div>
@@ -78,13 +78,13 @@
             <meta itemprop="name" content="Potvrdit"/>
             <link itemprop="url"
                   href="{{ absolute_url(path(
-                      'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
+                      'oswis_org_oswis_calendar_event_participant_web_registration_confirm',
                       {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                   ) }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
                 <link itemprop="url"
                       href="{{ absolute_url(path(
-                          'zakjakub_oswis_calendar_event_participant_web_registration_confirm',
+                          'oswis_org_oswis_calendar_event_participant_web_registration_confirm',
                           {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
                       ) }}"/>
             </div>
@@ -98,9 +98,9 @@
                 and eventParticipant.event.organizer.contact.contactName %}
                 Tyto údaje budou zpracovány subjektem {{ eventParticipant.event.organizer.contact.contactName }}
                 a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
-                <a href="{{ absolute_url(path('zakjakub_oswis_core_gdpr_action')) }}" target="_blank">našich webových stránkách</a>.
+                <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank">našich webových stránkách</a>.
             {% else %}
-                Informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na<a href="{{ absolute_url(path('zakjakub_oswis_core_gdpr_action')) }}" target="_blank"> webových
+                Informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na<a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank"> webových
                 stránkách</a>.
             {% endif %}
         </p>
@@ -109,7 +109,7 @@
 
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             <meta itemprop="name" content="{{ event.name }}"/>
-            <link itemprop="url" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
+            <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
             <meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
             <meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
             {% if event.location is defined and event.location %}
@@ -152,8 +152,8 @@
                 </div>
             {% endif %}
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('zakjakub_oswis_calendar_web_events')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
     </div>
 {% endblock content_inner %}
 

@@ -4,14 +4,14 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Controller;
+namespace OswisOrg\OswisCalendarBundle\Controller;
 
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService;
-use Zakjakub\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
+use OswisOrg\OswisCalendarBundle\Service\EventService;
 
 class EventLeafletController extends AbstractController
 {
@@ -36,6 +36,6 @@ class EventLeafletController extends AbstractController
      */
     final public function eventLeafletPdf(?string $slug = null): Response
     {
-        return $this->render('@ZakjakubOswisCalendar/other/leaflet/leaflet.html.twig', ['slug' => $slug]);
+        return $this->render('@OswisOrgOswisCalendar/other/leaflet/leaflet.html.twig', ['slug' => $slug]);
     }
 }

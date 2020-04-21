@@ -1,6 +1,6 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\DependencyInjection;
+namespace OswisOrg\OswisCalendarBundle\DependencyInjection;
 
 use RuntimeException;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -14,7 +14,7 @@ class Configuration implements ConfigurationInterface
      */
     final public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('zakjakub_oswis_calendar');
+        $treeBuilder = new TreeBuilder('oswis_org_oswis_calendar');
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->info('Default configuration for address book module for OSWIS (One Simple Web IS).')->end();
 

@@ -6,7 +6,7 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Controller;
+namespace OswisOrg\OswisCalendarBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,30 +20,30 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use Zakjakub\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
-use Zakjakub\OswisAddressBookBundle\Entity\ContactDetail;
-use Zakjakub\OswisAddressBookBundle\Entity\ContactDetailType;
-use Zakjakub\OswisAddressBookBundle\Entity\ContactNote;
-use Zakjakub\OswisAddressBookBundle\Entity\Person;
-use Zakjakub\OswisAddressBookBundle\Entity\Position;
-use Zakjakub\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
-use Zakjakub\OswisAddressBookBundle\Service\AddressBookService;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use Zakjakub\OswisCalendarBundle\Repository\EventRepository;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantService;
-use Zakjakub\OswisCalendarBundle\Service\EventParticipantTypeService;
-use Zakjakub\OswisCalendarBundle\Service\EventService;
-use Zakjakub\OswisCoreBundle\Entity\Nameable;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisNotFoundException;
-use Zakjakub\OswisCoreBundle\Utils\SpamDateTimeEncoder;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetail;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailType;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
+use OswisOrg\OswisAddressBookBundle\Entity\Position;
+use OswisOrg\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
+use OswisOrg\OswisAddressBookBundle\Service\AddressBookService;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
+use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
+use OswisOrg\OswisCoreBundle\Utils\SpamDateTimeEncoder;
 use function assert;
 
 class EventParticipantController extends AbstractController
@@ -94,7 +94,7 @@ class EventParticipantController extends AbstractController
         try {
             if (!$token || !$eventParticipantId) {
                 return $this->render(
-                    '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
+                    '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     array(
                         'type'    => 'error',
                         'title'   => 'Chyba! URL nekompletní!',
@@ -110,7 +110,7 @@ class EventParticipantController extends AbstractController
                 $error .= !($eventParticipant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
 
                 return $this->render(
-                    '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
+                    '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     array(
                         'type'    => 'error',
                         'title'   => 'Chyba!',
@@ -126,7 +126,7 @@ class EventParticipantController extends AbstractController
             $this->participantService->sendMail($eventParticipant, true, $token);
 
             return $this->render(
-                '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
+                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                 array(
                     'type'    => 'success',
                     'title'   => 'Hotovo!',
@@ -137,7 +137,7 @@ class EventParticipantController extends AbstractController
             $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
 
             return $this->render(
-                '@ZakjakubOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
+                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                 array(
                     'type'    => 'error',
                     'title'   => 'Neočekávaná chyba!',
@@ -158,7 +158,7 @@ class EventParticipantController extends AbstractController
             'footerPartners' => $this->participantService->getEventWebPartners(),
         ];
 
-        return $this->render('@ZakjakubOswisCalendar/web/parts/partners-footer.html.twig', $data);
+        return $this->render('@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig', $data);
     }
 
     /**
@@ -182,7 +182,7 @@ class EventParticipantController extends AbstractController
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event);
         try {
-            $form = $this->createForm(\Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
+            $form = $this->createForm(\OswisOrg\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
@@ -216,7 +216,7 @@ class EventParticipantController extends AbstractController
                 $this->participantService->sendMail($participant, true);
 
                 return $this->render(
-                    '@ZakjakubOswisCalendar/web/pages/event-participant-registration-form.html.twig',
+                    '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
                     array(
                         'form'                => $form->createView(),
                         'title'               => 'Přihláška odeslána!',
@@ -230,7 +230,7 @@ class EventParticipantController extends AbstractController
             }
 
             return $this->render(
-                '@ZakjakubOswisCalendar/web/pages/event-participant-registration-form.html.twig',
+                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
                 array(
                     'form'                => $form->createView(),
                     'title'               => 'Přihlaš se na Seznamovák UP právě teď!',
@@ -245,13 +245,13 @@ class EventParticipantController extends AbstractController
         } catch (Exception $e) {
             $participant = $this->prepareEventParticipant($event);
             if (!isset($form)) {
-                $form = $this->createForm(\Zakjakub\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
+                $form = $this->createForm(\OswisOrg\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
                 $form->handleRequest($request);
             }
             $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte.  '.$e->getMessage().''));
 
             return $this->render(
-                '@ZakjakubOswisCalendar/web/pages/event-participant-registration-form.html.twig',
+                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
                 array(
                     'form'                => $form->createView(),
                     'title'               => 'Přihláška na akci '.$event->getName(),

@@ -1,11 +1,11 @@
 <?php
 
-namespace Zakjakub\OswisCalendarBundle\Entity\MediaObjects;
+namespace OswisOrg\OswisCalendarBundle\Entity\MediaObjects;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\File\File;
-use Zakjakub\OswisCalendarBundle\Controller\MediaObjects\CreateEventImageAction;
-use Zakjakub\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
+use OswisOrg\OswisCalendarBundle\Controller\MediaObjects\CreateEventImageAction;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

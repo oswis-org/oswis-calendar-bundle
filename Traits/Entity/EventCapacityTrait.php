@@ -4,7 +4,7 @@
  * @noinspection PhpUnused
  */
 
-namespace Zakjakub\OswisCalendarBundle\Traits\Entity;
+namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
 trait EventCapacityTrait
 {

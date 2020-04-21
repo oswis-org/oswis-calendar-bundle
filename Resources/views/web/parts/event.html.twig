@@ -6,7 +6,7 @@
                 <span class="d-none d-md-block">{{ event.name }}</span>
             </h2>
         </header>
-        {% include '@ZakjakubOswisCalendar/web/parts/event-nav.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig' %}
         <h3>
             {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
@@ -23,7 +23,7 @@
             <ul class="mt-2">
                 {% for subEvent in event.subEvents %}
                     <li>
-                        <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
+                        <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
                             <strong>{{ subEvent.shortName }}</strong>
                         </a>
                         {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
@@ -35,7 +35,7 @@
             <h3>Je součástí akce:</h3>
             <ul class="mt-2">
                 <li>
-                    <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
+                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
                         <strong>{{ event.superEvent.shortName }}</strong>
                     </a>
                     {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
@@ -48,7 +48,7 @@
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8 text-uppercase center-block text-center d-print-none">
         <div itemprop="image" id="small-banner" content="{{ asset('/images/events/'~event.image) }}"
              style="background-image: url('{{ event.image ? asset('/images/events/'~event.image) : '' }}')">
-            <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">Přihlas se nyní!</a>
+            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">Přihlas se nyní!</a>
         </div>
     </div>
 </div>
@@ -123,7 +123,7 @@
                     <small>
                         <strong>
                             {% if range.rangeActive %}
-                                <a href="{{ path('zakjakub_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                                <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
                                     {{ range.name|default('Přihláška na akci '~event.name|default) }}
                                 </a>
                             {% else %}

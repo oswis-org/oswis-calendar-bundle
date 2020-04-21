@@ -1,4 +1,4 @@
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
     attributes:
         id:
             groups: ['calendar_event_participants_get', 'calendar_event_participant_get']
@@ -35,7 +35,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
         webContents:
             groups: ['calendar_event_participants_get', 'calendar_event_participants_post', 'calendar_event_participant_get', 'calendar_event_participant_put']
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
     attributes:
         id:
             groups:
@@ -60,7 +60,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnect
                 - 'calendar_event_participant_get'
                 - 'calendar_event_participant_put'
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
     attributes:
         id:
             groups:
@@ -106,7 +106,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
             groups:
                 - 'calendar_event_participant_get'
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
     attributes:
         id:
             groups:
@@ -139,7 +139,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
             groups:
                 - 'calendar_event_participant_get'
 
-Zakjakub\OswisCalendarBundle\Entity\Event\Event:
+OswisOrg\OswisCalendarBundle\Entity\Event\Event:
     attributes:
         id:
             groups:
@@ -169,7 +169,7 @@ Zakjakub\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_event_participants_get'
                 - 'calendar_event_participant_get'
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
     attributes:
         id:
             groups:
@@ -188,7 +188,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
                 - 'calendar_event_participant_get'
                 - 'calendar_event_participant_put'
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
     attributes:
         id:
             groups:
@@ -222,7 +222,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
             groups:
                 - 'calendar_event_participant_get'
 
-Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
     attributes:
         id:
             groups:
@@ -241,7 +241,7 @@ Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
                 - 'calendar_event_participant_get'
                 - 'calendar_event_participant_put'
 
-Zakjakub\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
+OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
     attributes:
         id:
             groups:

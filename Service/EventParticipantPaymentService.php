@@ -3,7 +3,7 @@
  * @noinspection RedundantDocCommentTagInspection
  */
 
-namespace Zakjakub\OswisCalendarBundle\Service;
+namespace OswisOrg\OswisCalendarBundle\Service;
 
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,15 +14,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
-use Zakjakub\OswisAddressBookBundle\Entity\Organization;
-use Zakjakub\OswisAddressBookBundle\Entity\Person;
-use Zakjakub\OswisCalendarBundle\Entity\Event\Event;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
-use Zakjakub\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use Zakjakub\OswisCoreBundle\Exceptions\OswisException;
-use Zakjakub\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
-use Zakjakub\OswisCoreBundle\Utils\EmailUtils;
+use OswisOrg\OswisAddressBookBundle\Entity\Organization;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
 use function array_key_exists;
 use function array_map;
 use function assert;
@@ -284,7 +284,7 @@ class EventParticipantPaymentService
             $email = new TemplatedEmail();
             $email->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
             $email->bcc($archive)->subject(self::mimeEnc($title));
-            $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-service');
             $this->em->persist($payment);
@@ -330,7 +330,7 @@ class EventParticipantPaymentService
             );
             $email = new TemplatedEmail();
             $email->to($archive)->subject(self::mimeEnc($title));
-            $email->htmlTemplate('@ZakjakubOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')->context($mailData);
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')->context($mailData);
             $this->mailer->send($email);
 
             return true;
