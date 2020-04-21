@@ -75,6 +75,11 @@ class EventRepository extends EntityRepository
         return $queryBuilder;
     }
 
+    public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    {
+        return new ArrayCollection($this->getEventsQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
+    }
+
     private function addSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SUPER_EVENT]) && $opts[self::CRITERIA_SUPER_EVENT] instanceof Event) {
@@ -208,10 +213,5 @@ class EventRepository extends EntityRepository
             $queryBuilder->addOrderBy('e.name', 'ASC');
         }
         $queryBuilder->addOrderBy('e.id', 'ASC');
-    }
-
-    public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
-    {
-        return new ArrayCollection($this->getEventsQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
     }
 }

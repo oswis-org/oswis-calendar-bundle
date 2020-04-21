@@ -261,25 +261,6 @@ class EventParticipant implements BasicEntityInterface
         return $eventParticipants;
     }
 
-    public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
-    {
-        try {
-            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    public function getContact(): ?AbstractContact
-    {
-        return $this->contact;
-    }
-
-    public function setContact(?AbstractContact $contact): void
-    {
-        $this->contact = $contact;
-    }
-
     public static function sort(Collection $eventParticipants): Collection
     {
         $participants = $eventParticipants->toArray();
@@ -302,6 +283,25 @@ class EventParticipant implements BasicEntityInterface
                 return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
             }
         );
+    }
+
+    public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
+    {
+        try {
+            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function getContact(): ?AbstractContact
+    {
+        return $this->contact;
+    }
+
+    public function setContact(?AbstractContact $contact): void
+    {
+        $this->contact = $contact;
     }
 
     public function isFormal(bool $recursive = false): bool

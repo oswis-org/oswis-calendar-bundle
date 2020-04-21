@@ -58,6 +58,11 @@ class EventParticipantPaymentService
         $this->participantService = $participantService;
     }
 
+    private static function mimeEnc(string $mime): string
+    {
+        return EmailUtils::mime_header_encode($mime);
+    }
+
     final public function createFromCsv(
         Event $event,
         string $csv,
@@ -300,11 +305,6 @@ class EventParticipantPaymentService
             $this->logger->error($e->getTraceAsString());
             throw new OswisException($message);
         }
-    }
-
-    private static function mimeEnc(string $mime): string
-    {
-        return EmailUtils::mime_header_encode($mime);
     }
 
     /**

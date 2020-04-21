@@ -65,6 +65,17 @@ class EventParticipantRepository extends EntityRepository
         return $queryBuilder;
     }
 
+    public function getEventParticipant(?array $opts = []): ?EventParticipant
+    {
+        try {
+            $eventParticipant = $this->getEventParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+        } catch (Exception $e) {
+            return null;
+        }
+
+        return $eventParticipant instanceof EventParticipant ? $eventParticipant : null;
+    }
+
     private function addSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
@@ -147,17 +158,6 @@ class EventParticipantRepository extends EntityRepository
             $queryBuilder->addOrderBy('contact_0.sortableName', 'ASC');
         }
         $queryBuilder->addOrderBy('ep.id', 'ASC');
-    }
-
-    public function getEventParticipant(?array $opts = []): ?EventParticipant
-    {
-        try {
-            $eventParticipant = $this->getEventParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
-            return null;
-        }
-
-        return $eventParticipant instanceof EventParticipant ? $eventParticipant : null;
     }
 }
 
