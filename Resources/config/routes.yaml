@@ -12,7 +12,7 @@ oswis_org_oswis_calendar_web_event_leaflet:
 
 oswis_org_oswis_calendar_web_event_participant_registration:
     controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistration
-    path: "/akce/{eventSlug}/prihlaska"
+    path: "/akce/{eventSlug?}/prihlaska"
 
 oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????
     controller: oswis_org_oswis_calendar.event_controller::showEvents

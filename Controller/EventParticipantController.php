@@ -29,6 +29,7 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNew
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
@@ -62,13 +63,16 @@ class EventParticipantController extends AbstractController
 
     public EventService $eventService;
 
+    public OswisCalendarSettingsProvider $calendarSettings;
+
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
         UserPasswordEncoderInterface $encoder,
         EventService $eventService,
         EventParticipantTypeService $participantTypeService,
-        AddressBookService $addressBookService
+        AddressBookService $addressBookService,
+        OswisCalendarSettingsProvider $calendarSettings
     ) {
         $this->em = $em;
         $this->logger = $logger;
@@ -77,6 +81,7 @@ class EventParticipantController extends AbstractController
         $this->participantTypeService = $participantTypeService;
         $this->addressBookService = $addressBookService;
         $this->participantService = $eventService->getEventParticipantService();
+        $this->calendarSettings = $calendarSettings;
     }
 
     /**
@@ -177,8 +182,12 @@ class EventParticipantController extends AbstractController
      * @throws LogicException
      * @throws OswisNotFoundException
      */
-    final public function eventParticipantRegistration(Request $request, UserPasswordEncoderInterface $encoder, string $eventSlug): Response
+    final public function eventParticipantRegistration(Request $request, UserPasswordEncoderInterface $encoder, ?string $eventSlug): Response
     {
+        $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
+        if (empty($eventSlug) && !empty($defaultEventSlug)) {
+            $this->redirectToRoute('oswis_org_oswis_calendar_web_event_participant_registration', ['eventSlug' => $defaultEventSlug]);
+        }
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event);
         try {
