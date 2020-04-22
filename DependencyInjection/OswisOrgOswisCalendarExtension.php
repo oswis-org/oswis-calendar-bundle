@@ -11,7 +11,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensionInterface
 {
-
     /**
      * Loads a specific configuration.
      *
