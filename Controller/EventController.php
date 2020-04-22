@@ -47,15 +47,6 @@ class EventController extends AbstractController
         $this->calendarSettings = $calendarSettings;
     }
 
-    public function defaultEvent(): Response
-    {
-        if (empty($this->calendarSettings->getDefaultEvent())) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
-        }
-
-        return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $this->calendarSettings->getDefaultEvent()]);
-    }
-
     /**
      * @param string|null $eventSlug
      *
@@ -67,10 +58,10 @@ class EventController extends AbstractController
     {
         $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
         if (empty($eventSlug) && !empty($defaultEventSlug)) {
-            $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEventSlug]);
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEventSlug]);
         }
         if (null !== $eventSlug) {
-            $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
@@ -111,7 +102,7 @@ class EventController extends AbstractController
     {
         $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
         if (empty($eventSlug) && !empty($defaultEventSlug)) {
-            $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEventSlug]);
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEventSlug]);
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
