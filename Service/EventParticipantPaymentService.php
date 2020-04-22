@@ -8,12 +8,6 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use OswisOrg\OswisAddressBookBundle\Entity\Organization;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
@@ -23,6 +17,12 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
+use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use function array_key_exists;
 use function array_map;
 use function assert;
@@ -56,11 +56,6 @@ class EventParticipantPaymentService
         $this->logger = $logger;
         $this->coreSettings = $oswisCoreSettings;
         $this->participantService = $participantService;
-    }
-
-    private static function mimeEnc(string $mime): string
-    {
-        return EmailUtils::mime_header_encode($mime);
     }
 
     final public function createFromCsv(
@@ -305,6 +300,11 @@ class EventParticipantPaymentService
             $this->logger->error($e->getTraceAsString());
             throw new OswisException($message);
         }
+    }
+
+    private static function mimeEnc(string $mime): string
+    {
+        return EmailUtils::mime_header_encode($mime);
     }
 
     /**

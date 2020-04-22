@@ -96,6 +96,38 @@ class EventController extends AbstractController
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);
     }
 
+    /**
+     * @param string|null $eventSlug
+     *
+     * @return Response
+     * @throws LogicException
+     * @throws NotFoundHttpException
+     */
+    final public function showEventLeaflet(?string $eventSlug = null): Response
+    {
+        $eventRepo = $this->eventService->getRepository();
+        $opts = [
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+        ];
+        $event = $eventRepo->getEvent($opts);
+        if (!($event instanceof Event)) {
+            throw new OswisNotFoundException('Událost nenalezena.');
+        }
+        $data = array(
+            'title'       => $event->getShortName(),
+            'description' => $event->getDescription(),
+            'event'       => $event,
+            'organizer'   => $this->eventService->getOrganizer($event),
+        );
+        $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
+        if ($this->get('twig')->getLoader()->exists($templatePath)) {
+            return $this->render($templatePath, $data);
+        }
+        throw new OswisNotFoundException('Leták nenalezen.');
+    }
+
     public function getMagicEvents(): Collection
     {
         $opts = [

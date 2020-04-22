@@ -8,14 +8,14 @@ namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\ViewEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Exception\OswisEventParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use function in_array;
 
 final class EventParticipantSubscriber implements EventSubscriberInterface

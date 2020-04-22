@@ -102,6 +102,11 @@ class EventParticipantType implements BasicEntityInterface
         $this->setFieldsFromPublicity($publicity);
     }
 
+    public function setFormal(?bool $formal): void
+    {
+        $this->formal = $formal ?? false;
+    }
+
     public static function getAllowedTypesDefault(): array
     {
         return [
@@ -117,11 +122,6 @@ class EventParticipantType implements BasicEntityInterface
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    public function setFormal(?bool $formal): void
-    {
-        $this->formal = $formal ?? false;
     }
 
     public function isFormal(): bool

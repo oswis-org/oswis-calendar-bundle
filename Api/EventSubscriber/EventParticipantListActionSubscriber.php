@@ -8,14 +8,14 @@ namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
+use OswisOrg\OswisCoreBundle\Service\PdfGenerator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
-use OswisOrg\OswisCoreBundle\Service\PdfGenerator;
 use function assert;
 
 final class EventParticipantListActionSubscriber implements EventSubscriberInterface

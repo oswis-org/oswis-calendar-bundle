@@ -7,11 +7,11 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventParticipantTypeRepository;
 use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use Psr\Log\LoggerInterface;
 
 class EventParticipantTypeService
 {

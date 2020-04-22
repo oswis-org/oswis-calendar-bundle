@@ -2,9 +2,9 @@
 
 namespace OswisOrg\OswisCalendarBundle;
 
+use OswisOrg\OswisCalendarBundle\DependencyInjection\OswisOrgOswisCalendarExtension;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use OswisOrg\OswisCalendarBundle\DependencyInjection\OswisOrgOswisCalendarExtension;
 
 class OswisOrgOswisCalendarBundle extends Bundle
 {

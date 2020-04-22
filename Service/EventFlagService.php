@@ -4,10 +4,10 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCoreBundle\Entity\Nameable;
+use Psr\Log\LoggerInterface;
 
 class EventFlagService
 {

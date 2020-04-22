@@ -12,9 +12,9 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Exception;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * Payment (or return - when numericValue is negative).

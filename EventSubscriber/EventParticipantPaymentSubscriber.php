@@ -8,14 +8,14 @@ namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantPaymentService;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment;
-use OswisOrg\OswisCalendarBundle\Service\EventParticipantPaymentService;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 
 final class EventParticipantPaymentSubscriber implements EventSubscriberInterface
 {

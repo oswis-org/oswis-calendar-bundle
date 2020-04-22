@@ -17,7 +17,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
@@ -30,6 +29,7 @@ use OswisOrg\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Entity\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Entity\InfoMailSentTrait;
 use OswisOrg\OswisCoreBundle\Traits\Entity\PriorityTrait;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use function assert;
 
 /**
@@ -261,6 +261,25 @@ class EventParticipant implements BasicEntityInterface
         return $eventParticipants;
     }
 
+    public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
+    {
+        try {
+            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function getContact(): ?AbstractContact
+    {
+        return $this->contact;
+    }
+
+    public function setContact(?AbstractContact $contact): void
+    {
+        $this->contact = $contact;
+    }
+
     public static function sort(Collection $eventParticipants): Collection
     {
         $participants = $eventParticipants->toArray();
@@ -283,25 +302,6 @@ class EventParticipant implements BasicEntityInterface
                 return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
             }
         );
-    }
-
-    public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
-    {
-        try {
-            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
-
-    public function getContact(): ?AbstractContact
-    {
-        return $this->contact;
-    }
-
-    public function setContact(?AbstractContact $contact): void
-    {
-        $this->contact = $contact;
     }
 
     public function isFormal(bool $recursive = false): bool

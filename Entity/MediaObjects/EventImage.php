@@ -3,9 +3,9 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\MediaObjects;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use Symfony\Component\HttpFoundation\File\File;
 use OswisOrg\OswisCalendarBundle\Controller\MediaObjects\CreateEventImageAction;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
+use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

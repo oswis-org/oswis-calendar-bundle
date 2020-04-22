@@ -4,14 +4,14 @@ namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Api\Dto\EventActionRequest;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use OswisOrg\OswisCalendarBundle\Api\Dto\EventActionRequest;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use function in_array;
 
 final class EventActionSubscriber implements EventSubscriberInterface

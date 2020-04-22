@@ -7,11 +7,11 @@
 namespace OswisOrg\OswisCalendarBundle\Controller;
 
 use LogicException;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 
 class EventLeafletController extends AbstractController
 {
