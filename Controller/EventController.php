@@ -65,6 +65,10 @@ class EventController extends AbstractController
      */
     final public function showEvent(?string $eventSlug = null): Response
     {
+        $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
+        if (empty($eventSlug) && !empty($defaultEventSlug)) {
+            $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEventSlug]);
+        }
         if (null !== $eventSlug) {
             $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
@@ -107,7 +111,7 @@ class EventController extends AbstractController
     {
         $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
         if (empty($eventSlug) && !empty($defaultEventSlug)) {
-            $this->redirectToRoute('oswis_org_oswis_calendar_event_web_leaflet', ['eventSlug' => $defaultEventSlug]);
+            $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEventSlug]);
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [

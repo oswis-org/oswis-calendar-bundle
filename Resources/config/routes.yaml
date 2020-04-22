@@ -1,20 +1,12 @@
-controllers:
-    resource: ../../Controller/
-    type: annotation
-
-oswis_org_oswis_calendar_event_participant_web_registration_confirm:
+oswis_org_oswis_calendar_web_event_participant_registration_confirm:
     controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
 oswis_org_oswis_calendar_web_event:
     controller: oswis_org_oswis_calendar.event_controller::showEvent
-    path: "/akce/{eventSlug}"
+    path: "/akce/{eventSlug?}"
 
-oswis_org_oswis_calendar_web_default_event:
-    controller: oswis_org_oswis_calendar.event_controller::defaultEvent
-    path: "/akce"
-
-oswis_org_oswis_calendar_event_web_leaflet:
+oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
     path: "/letak/{eventSlug?}"
 
