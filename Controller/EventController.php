@@ -12,15 +12,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use LogicException;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EventController extends AbstractController
 {
@@ -36,11 +37,23 @@ class EventController extends AbstractController
 
     protected EventParticipantTypeService $participantTypeService;
 
-    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService)
+    protected OswisCalendarSettingsProvider $calendarSettings;
+
+    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService, OswisCalendarSettingsProvider $calendarSettings)
     {
         $this->eventService = $eventService;
         $this->eventRepository = $eventService->getRepository();
         $this->participantTypeService = $participantTypeService;
+        $this->calendarSettings = $calendarSettings;
+    }
+
+    public function defaultEvent(): Response
+    {
+        if (empty($this->calendarSettings->getDefaultEvent())) {
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
+        }
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $this->calendarSettings->getDefaultEvent()]);
     }
 
     /**

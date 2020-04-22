@@ -5,6 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\DependencyInjection;
 use Exception;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -26,6 +27,18 @@ class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensi
         $configuration = $this->getConfiguration($configs, $container);
         /** @noinspection PhpUnusedLocalVariableInspection */
         $config = $configuration ? $this->processConfiguration($configuration, $configs) : [];
+    }
+
+    /**
+     * @param ContainerBuilder $container
+     * @param array            $config
+     *
+     * @throws ServiceNotFoundException
+     */
+    private function oswisCalendarSettingsProvider(ContainerBuilder $container, array $config): void
+    {
+        $definition = $container->getDefinition('oswis_org_oswis_calendar.oswis_calendar_settings_provider');
+        $definition->setArgument(0, $config['default_event']);
     }
 
     final public function prepend(ContainerBuilder $container): void

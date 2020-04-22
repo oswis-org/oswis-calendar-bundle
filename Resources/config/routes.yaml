@@ -10,6 +10,10 @@ oswis_org_oswis_calendar_web_event:
     controller: oswis_org_oswis_calendar.event_controller::showEvent
     path: "/akce/{eventSlug}"
 
+oswis_org_oswis_calendar_web_default_event:
+    controller: oswis_org_oswis_calendar.event_controller::defaultEvent
+    path: "/akce"
+
 oswis_org_oswis_calendar_event_web_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::eventLeafletPdf
     path: "/letak/{eventSlug}"
@@ -37,7 +41,7 @@ oswis_org_oswis_calendar_web_events_calendar:
 
 oswis_org_oswis_calendar_web_events_future:
     controller: oswis_org_oswis_calendar.event_controller::showFutureEvents
-    path: "/akce/{page?}"
+    path: "/budouci-akce/{page?}"
     defaults:
         page: null
 

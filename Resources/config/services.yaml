@@ -282,3 +282,11 @@ services:
         alias: oswis_org_oswis_calendar.event_participant_type
         public: true
 
+    ### OSWIS Calendar Settings Provider
+    oswis_org_oswis_calendar.oswis_calendar_settings_provider:
+        class: OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider
+        autowire: true
+        public: true
+    OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider:
+        alias: oswis_org_oswis_calendar.oswis_calendar_settings_provider
+        public: true
