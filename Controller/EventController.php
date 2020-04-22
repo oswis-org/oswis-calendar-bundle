@@ -105,6 +105,7 @@ class EventController extends AbstractController
      */
     final public function showEventLeaflet(?string $eventSlug = null): Response
     {
+        $eventSlug ??= $this->calendarSettings->getDefaultEvent();
         $eventRepo = $this->eventService->getRepository();
         $opts = [
             EventRepository::CRITERIA_SLUG               => $eventSlug,
