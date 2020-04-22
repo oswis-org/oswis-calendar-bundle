@@ -60,7 +60,7 @@ class EventController extends AbstractController
         if (empty($eventSlug) && !empty($defaultEventSlug)) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEventSlug]);
         }
-        if (null !== $eventSlug) {
+        if (null === $eventSlug) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
         $eventRepo = $this->eventService->getRepository();
