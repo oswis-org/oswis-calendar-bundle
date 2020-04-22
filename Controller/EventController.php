@@ -105,7 +105,10 @@ class EventController extends AbstractController
      */
     final public function showEventLeaflet(?string $eventSlug = null): Response
     {
-        $eventSlug ??= $this->calendarSettings->getDefaultEvent();
+        $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
+        if (empty($eventSlug) && !empty($defaultEventSlug)) {
+            $this->redirectToRoute('oswis_org_oswis_calendar_event_web_leaflet', ['eventSlug' => $defaultEventSlug]);
+        }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
             EventRepository::CRITERIA_SLUG               => $eventSlug,

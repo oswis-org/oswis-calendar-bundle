@@ -16,7 +16,7 @@ oswis_org_oswis_calendar_web_default_event:
 
 oswis_org_oswis_calendar_event_web_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
-    path: "/letak/{eventSlug}"
+    path: "/letak/{eventSlug?}"
 
 oswis_org_oswis_calendar_web_event_participant_registration:
     controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistration
