@@ -48,7 +48,7 @@
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8 text-uppercase center-block text-center d-print-none">
         <div itemprop="image" id="small-banner" content="{{ asset('/images/events/'~event.image) }}"
              style="background-image: url('{{ event.image ? asset('/images/events/'~event.image) : '' }}')">
-            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">Přihlas se nyní!</a>
+            <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug}) }}">Přihlas se nyní!</a>
         </div>
     </div>
 </div>
