@@ -105,8 +105,10 @@ class EventParticipantService
             $this->em->flush();
             $infoMessage = 'CREATE: Created event participant (by service): ';
             $infoMessage .= $entity->getId().', ';
-            $infoMessage .= ($entity->getContact() ? $entity->getContact()->getContactName() : '').', ';
-            $infoMessage .= ($entity->getEvent() ? $entity->getEvent()->getName() : '').'.';
+            $infoMessage .= ($entity->getContact() ? $entity->getContact()
+                    ->getContactName() : '').', ';
+            $infoMessage .= ($entity->getEvent() ? $entity->getEvent()
+                    ->getName() : '').'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
@@ -139,9 +141,11 @@ class EventParticipantService
             return $participant->getEMailConfirmationDateTime() ? true : $this->sendSummary($participant, $this->encoder, $new);
         }
         if ($token) {
-            foreach ($participant->getContact()->getContactPersons() as $contactPerson) {
+            foreach ($participant->getContact()
+                         ->getContactPersons() as $contactPerson) {
                 assert($contactPerson instanceof Person);
-                if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
+                if ($contactPerson->getAppUser() && $contactPerson->getAppUser()
+                        ->checkAndDestroyAccountActivationRequestToken($token)) {
                     return $this->sendSummary($participant, $this->encoder, $new);
                 }
             }
@@ -197,7 +201,9 @@ class EventParticipantService
      */
     private function getEmptyEmail(Person $person, string $title): TemplatedEmail
     {
-        return (new TemplatedEmail())->to($person->getMailerAddress())->bcc($this->coreSettings->getArchiveMailerAddress())->subject($title);
+        return (new TemplatedEmail())->to($person->getMailerAddress())
+            ->bcc($this->coreSettings->getArchiveMailerAddress())
+            ->subject($title);
     }
 
     private function getMailData(EventParticipant $participant, Event $event, Person $contactPerson, bool $isOrg = false): array
@@ -244,7 +250,8 @@ class EventParticipantService
                 $password = null;
                 if ($encoder && null !== $contactPerson->getAppUser()) {
                     $password = StringUtils::generatePassword();
-                    $contactPerson->getAppUser()->setPassword($encoder->encodePassword($contactPerson->getAppUser(), $password));
+                    $contactPerson->getAppUser()
+                        ->setPassword($encoder->encodePassword($contactPerson->getAppUser(), $password));
                     $this->em->flush();
                 }
                 $mailData = $this->getMailData($participant, $event, $contactPerson, $isOrganization);
@@ -254,7 +261,8 @@ class EventParticipantService
                 $mailData['depositQr'] = 'cid:depositQr';
                 $mailData['restQr'] = 'cid:restQr';
                 $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
-                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
+                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')
+                    ->context($mailData);
                 if ($depositPaymentQrPng) {
                     $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
                 }
@@ -291,7 +299,8 @@ class EventParticipantService
                     QrPaymentOptions::CURRENCY        => 'CZK',
                     QrPaymentOptions::COMMENT         => $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek'),
                 ]
-            ))->getQrImage(true)->writeString();
+            ))->getQrImage(true)
+                ->writeString();
         } catch (Exception $e) {
             return null;
         }
@@ -323,7 +332,8 @@ class EventParticipantService
                     }
                     $contactPerson->setAppUser(new AppUser($contactPerson->getContactName(), null, $contactPerson->getEmail()));
                 }
-                $contactPerson->getAppUser()->generateAccountActivationRequestToken();
+                $contactPerson->getAppUser()
+                    ->generateAccountActivationRequestToken();
                 $email = $this->getEmptyEmail($contactPerson, 'Ověření přihlášky');
                 $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-verification.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
@@ -422,8 +432,10 @@ class EventParticipantService
             'oswis'   => $this->coreSettings->getArray(),
         ];
         $mail = new TemplatedEmail();
-        $mail->to($this->coreSettings->getArchiveMailerAddress())->subject($title);
-        $mail->htmlTemplate($templateEmail)->context($mailData);
+        $mail->to($this->coreSettings->getArchiveMailerAddress())
+            ->subject($title);
+        $mail->htmlTemplate($templateEmail)
+            ->context($mailData);
         if ($pdfString) {
             $mail->attach($pdfString, $title, 'application/pdf');
         }
@@ -450,7 +462,8 @@ class EventParticipantService
             false,
             false,
             $recursiveDepth
-        )->filter(fn(EventParticipant $p) => $p->getInfoMailSentCount() < 1);
+        )
+            ->filter(fn(EventParticipant $p) => $p->getInfoMailSentCount() < 1);
         $i = 0;
         foreach ($eventParticipants as $eventParticipant) {
             if ($this->sendInfoMail($eventParticipant, $source, $force)) {
@@ -513,7 +526,8 @@ class EventParticipantService
             ];
             $pdfString = null;
             $message = null;
-            $contactName = $participant->getContact() ? $participant->getContact()->getContactName() : 'Nepojmenovaný účastník';
+            $contactName = $participant->getContact() ? $participant->getContact()
+                ->getContactName() : 'Nepojmenovaný účastník';
             try {
                 $pdfTitle = 'Shrnutí přihlášky';
                 $pdfTitle .= $contactName ? ' - '.$contactName : null;
@@ -590,7 +604,8 @@ class EventParticipantService
             false,
             false,
             $recursiveDepth
-        )->filter(fn(EventParticipant $p) => null === $endId || ($p->getId() > $startId && $p->getId() < $endId));
+        )
+            ->filter(fn(EventParticipant $p) => null === $endId || ($p->getId() > $startId && $p->getId() < $endId));
         $remaining = $eventParticipants->count();
         foreach ($eventParticipants as $eventParticipant) {
             $eventParticipants->removeElement($eventParticipant);
@@ -654,9 +669,10 @@ class EventParticipantService
             $includeDeleted,
             $includeNotActivated,
             $recursiveDepth
-        )->map(
-            fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
-        );
+        )
+            ->map(
+                fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
+            );
         if (null !== $flag) {
             return $flags->filter(fn(EventParticipantFlag $f) => $f->getId() === $flag->getId());
         }
@@ -681,9 +697,10 @@ class EventParticipantService
         $participants = $this->getEventParticipants($opts, $includeNotActivated);
         foreach ($participants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
-            $eventParticipant->getEventParticipantFlagConnections()->map(
-                fn(EventParticipantFlagNewConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
-            );
+            $eventParticipant->getEventParticipantFlagConnections()
+                ->map(
+                    fn(EventParticipantFlagNewConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
+                );
         }
 
         return $connections;
@@ -693,9 +710,10 @@ class EventParticipantService
     {
         $opts[EventParticipantRepository::CRITERIA_PARTICIPANT_TYPE_OF_TYPE] ??= EventParticipantType::TYPE_PARTNER;
 
-        return $this->getEventParticipants($opts)->filter(
-            fn(EventParticipant $ep) => $ep->hasFlagOfTypeOfType(EventParticipantFlagType::TYPE_PARTNER_HOMEPAGE)
-        );
+        return $this->getEventParticipants($opts)
+            ->filter(
+                fn(EventParticipant $ep) => $ep->hasFlagOfTypeOfType(EventParticipantFlagType::TYPE_PARTNER_HOMEPAGE)
+            );
     }
 
     /**

@@ -91,7 +91,8 @@ class EventParticipantFlag extends AbstractEventFlag
 
     public function getTypeOfType(): ?string
     {
-        return $this->getEventParticipantFlagType() ? $this->getEventParticipantFlagType()->getType() : null;
+        return $this->getEventParticipantFlagType() ? $this->getEventParticipantFlagType()
+            ->getType() : null;
     }
 
     public function getEventParticipantFlagType(): ?EventParticipantFlagType

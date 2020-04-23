@@ -235,17 +235,20 @@ class Event implements BasicEntityInterface
 
     public function addRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
     {
-        if (null !== $eventRegistrationRange && !$this->getRegistrationRanges()->contains($eventRegistrationRange)) {
-            $this->getRegistrationRanges()->add($eventRegistrationRange);
+        if (null !== $eventRegistrationRange && !$this->getRegistrationRanges()
+                ->contains($eventRegistrationRange)) {
+            $this->getRegistrationRanges()
+                ->add($eventRegistrationRange);
         }
     }
 
     public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): Collection
     {
         if (null !== $participantType || null !== $dateTime) {
-            return $this->getRegistrationRanges()->filter(
-                fn(EventRegistrationRange $range) => $range->isApplicableByType($participantType, $dateTime)
-            );
+            return $this->getRegistrationRanges()
+                ->filter(
+                    fn(EventRegistrationRange $range) => $range->isApplicableByType($participantType, $dateTime)
+                );
         }
 
         return $this->registrationRanges ?? new ArrayCollection();
@@ -253,8 +256,10 @@ class Event implements BasicEntityInterface
 
     public function addEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
     {
-        if (null !== $eventContactFlagConnection && !$this->getEventFlagConnections()->contains($eventContactFlagConnection)) {
-            $this->getEventFlagConnections()->add($eventContactFlagConnection);
+        if (null !== $eventContactFlagConnection && !$this->getEventFlagConnections()
+                ->contains($eventContactFlagConnection)) {
+            $this->getEventFlagConnections()
+                ->add($eventContactFlagConnection);
             $eventContactFlagConnection->setEvent($this);
         }
     }
@@ -266,9 +271,11 @@ class Event implements BasicEntityInterface
 
     public function getParticipantTypes(?string $type = null): Collection
     {
-        return $this->getParticipantTypeInEventConnections()->map(
-            fn(EventParticipantTypeInEventConnection $conn) => $conn->getEventParticipantType()
-        )->filter(fn(EventParticipantType $t) => empty($type) || $type === $t->getType());
+        return $this->getParticipantTypeInEventConnections()
+            ->map(
+                fn(EventParticipantTypeInEventConnection $conn) => $conn->getEventParticipantType()
+            )
+            ->filter(fn(EventParticipantType $t) => empty($type) || $type === $t->getType());
     }
 
     public function getParticipantTypeInEventConnections(): Collection
@@ -299,15 +306,18 @@ class Event implements BasicEntityInterface
 
     public function addSubEvent(?Event $event): void
     {
-        if (null !== $event && !$this->getSubEvents()->contains($event)) {
-            $this->getSubEvents()->add($event);
+        if (null !== $event && !$this->getSubEvents()
+                ->contains($event)) {
+            $this->getSubEvents()
+                ->add($event);
             $event->setSuperEvent($this);
         }
     }
 
     public function removeSubEvent(?Event $event): void
     {
-        if (null !== $event && $this->getSubEvents()->removeElement($event)) {
+        if (null !== $event && $this->getSubEvents()
+                ->removeElement($event)) {
             $event->setSuperEvent(null);
         }
     }
@@ -341,23 +351,28 @@ class Event implements BasicEntityInterface
 
     public function addParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
     {
-        if ($participantTypeInEventConnection && !$this->getParticipantTypeInEventConnections()->contains($participantTypeInEventConnection)) {
-            $this->getParticipantTypeInEventConnections()->add($participantTypeInEventConnection);
+        if ($participantTypeInEventConnection && !$this->getParticipantTypeInEventConnections()
+                ->contains($participantTypeInEventConnection)) {
+            $this->getParticipantTypeInEventConnections()
+                ->add($participantTypeInEventConnection);
             $participantTypeInEventConnection->setEvent($this);
         }
     }
 
     public function removeParticipantTypeInEventConnection(?EventParticipantTypeInEventConnection $participantTypeInEventConnection): void
     {
-        if ($participantTypeInEventConnection && $this->getParticipantTypeInEventConnections()->removeElement($participantTypeInEventConnection)) {
+        if ($participantTypeInEventConnection && $this->getParticipantTypeInEventConnections()
+                ->removeElement($participantTypeInEventConnection)) {
             $participantTypeInEventConnection->setEvent(null);
         }
     }
 
     public function addParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $participantFlagInEventConnection): void
     {
-        if ($participantFlagInEventConnection && !$this->getParticipantFlagInEventConnections()->contains($participantFlagInEventConnection)) {
-            $this->getParticipantFlagInEventConnections()->add($participantFlagInEventConnection);
+        if ($participantFlagInEventConnection && !$this->getParticipantFlagInEventConnections()
+                ->contains($participantFlagInEventConnection)) {
+            $this->getParticipantFlagInEventConnections()
+                ->add($participantFlagInEventConnection);
             $participantFlagInEventConnection->setEvent($this);
         }
     }
@@ -369,12 +384,14 @@ class Event implements BasicEntityInterface
         $out = $this->participantFlagInEventConnections ?? new ArrayCollection();
         if (null !== $participantType) {
             $out = $out->filter(
-                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantType() && $participantType->getId() === $c->getEventParticipantType()->getId()
+                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantType() && $participantType->getId() === $c->getEventParticipantType()
+                        ->getId()
             );
         }
         if (null !== $participantFlag) {
             $out = $out->filter(
-                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantFlag() && $participantFlag->getId() === $c->getEventParticipantFlag()->getId()
+                fn(EventParticipantFlagInEventConnection $c) => $c->getEventParticipantFlag() && $participantFlag->getId() === $c->getEventParticipantFlag()
+                        ->getId()
             );
         }
 
@@ -383,7 +400,8 @@ class Event implements BasicEntityInterface
 
     public function removeParticipantFlagInEventConnection(?EventParticipantFlagInEventConnection $participantFlagInEventConnection): void
     {
-        if ($participantFlagInEventConnection && $this->getParticipantFlagInEventConnections()->removeElement($participantFlagInEventConnection)) {
+        if ($participantFlagInEventConnection && $this->getParticipantFlagInEventConnections()
+                ->removeElement($participantFlagInEventConnection)) {
             $participantFlagInEventConnection->setEvent(null);
         }
     }
@@ -404,7 +422,8 @@ class Event implements BasicEntityInterface
                 $total += $range->getNumericValue();
             }
             if ($range->isRelative() && null !== $this->getSuperEvent()) {
-                $total += $this->getSuperEvent()->getPrice($participantType);
+                $total += $this->getSuperEvent()
+                    ->getPrice($participantType);
             }
         }
 
@@ -425,7 +444,8 @@ class Event implements BasicEntityInterface
                 $total += $range->getDepositValue();
             }
             if ($range->isRelative() && null !== $this->getSuperEvent()) {
-                $total += $this->getSuperEvent()->getDeposit($participantType);
+                $total += $this->getSuperEvent()
+                    ->getDeposit($participantType);
             }
         }
 
@@ -434,18 +454,22 @@ class Event implements BasicEntityInterface
 
     public function addWebContent(?EventWebContent $eventWebContent): void
     {
-        if (null !== $eventWebContent && !$this->getWebContents()->contains($eventWebContent)) {
+        if (null !== $eventWebContent && !$this->getWebContents()
+                ->contains($eventWebContent)) {
             $this->removeWebContent($this->getWebContent($eventWebContent->getType()));
-            $this->getWebContents()->add($eventWebContent);
+            $this->getWebContents()
+                ->add($eventWebContent);
         }
     }
 
     public function getWebContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            $contents = $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
+            $contents = $this->getWebContents()
+                ->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
 
-            return $recursive && $contents->count() < 1 && $this->getSuperEvent() ? $this->getSuperEvent()->getWebContents($type) : $contents;
+            return $recursive && $contents->count() < 1 && $this->getSuperEvent() ? $this->getSuperEvent()
+                ->getWebContents($type) : $contents;
         }
 
         return $this->webContents ?? new ArrayCollection();
@@ -453,19 +477,22 @@ class Event implements BasicEntityInterface
 
     public function removeWebContent(?EventWebContent $eventWebContent): void
     {
-        $this->getWebContents()->removeElement($eventWebContent);
+        $this->getWebContents()
+            ->removeElement($eventWebContent);
     }
 
     public function getWebContent(?string $type = 'html'): ?EventWebContent
     {
-        $webContent = $this->getWebContents($type, true)->first();
+        $webContent = $this->getWebContents($type, true)
+            ->first();
 
         return $webContent instanceof EventWebContent ? $webContent : null;
     }
 
     public function getLocation(?bool $recursive = false): ?Place
     {
-        return $this->location ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getLocation() : null) ?? null;
+        return $this->location ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()
+                ->getLocation() : null) ?? null;
     }
 
     public function setLocation(?Place $event): void
@@ -515,7 +542,8 @@ class Event implements BasicEntityInterface
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
             $flag = $flagInEventConnection->getEventParticipantFlag();
             if ($flag) {
-                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '';
+                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()
+                    ->getSlug() : '';
                 $flags[$flagTypeId]['flagType'] = $flag->getEventParticipantFlagType();
                 $flags[$flagTypeId]['flags'][] = $flag;
             }
@@ -534,7 +562,8 @@ class Event implements BasicEntityInterface
      */
     public function isRegistrationsAllowed(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): bool
     {
-        return $this->getRegistrationRanges($participantType, $dateTime)->count() > 0;
+        return $this->getRegistrationRanges($participantType, $dateTime)
+                ->count() > 0;
     }
 
     /**
@@ -546,9 +575,10 @@ class Event implements BasicEntityInterface
     public function getRegistrationRangesByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): Collection
     {
         if (null !== $participantType || null !== $dateTime) {
-            return $this->getRegistrationRanges(null, $dateTime)->filter(
-                fn(EventRegistrationRange $range) => $range->isApplicableByTypeOfType($participantType)
-            );
+            return $this->getRegistrationRanges(null, $dateTime)
+                ->filter(
+                    fn(EventRegistrationRange $range) => $range->isApplicableByTypeOfType($participantType)
+                );
         }
 
         return $this->getRegistrationRanges();
@@ -574,7 +604,8 @@ class Event implements BasicEntityInterface
 
     public function removeEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
     {
-        if (null !== $eventContactFlagConnection && $this->getEventFlagConnections()->removeElement($eventContactFlagConnection)) {
+        if (null !== $eventContactFlagConnection && $this->getEventFlagConnections()
+                ->removeElement($eventContactFlagConnection)) {
             $eventContactFlagConnection->setEvent(null);
         }
     }
@@ -595,7 +626,8 @@ class Event implements BasicEntityInterface
 
     public function isYear(): bool
     {
-        return null !== $this->getType() && EventType::YEAR_OF_EVENT === $this->getType()->getType();
+        return null !== $this->getType() && EventType::YEAR_OF_EVENT === $this->getType()
+                ->getType();
     }
 
     public function getType(): ?EventType
@@ -610,7 +642,8 @@ class Event implements BasicEntityInterface
 
     public function isBatch(): bool
     {
-        return $this->getType() && EventType::BATCH_OF_EVENT === $this->getType()->getType();
+        return $this->getType() && EventType::BATCH_OF_EVENT === $this->getType()
+                ->getType();
     }
 
     public function getStartYear(): ?int
@@ -620,7 +653,8 @@ class Event implements BasicEntityInterface
 
     public function getSeqId(): ?int
     {
-        return $this->getSeries() ? $this->getSeries()->getSeqId($this) : null;
+        return $this->getSeries() ? $this->getSeries()
+            ->getSeqId($this) : null;
     }
 
     public function getSeries(): ?EventSeries
@@ -651,8 +685,9 @@ class Event implements BasicEntityInterface
 
     public function isSuperEventRequired(?EventParticipantType $participantType, ?DateTime $dateTime = null): bool
     {
-        return $this->getRegistrationRanges($participantType, $dateTime)->exists(
-            fn(EventRegistrationRange $price) => $price->isSuperEventRequired()
-        );
+        return $this->getRegistrationRanges($participantType, $dateTime)
+            ->exists(
+                fn(EventRegistrationRange $price) => $price->isSuperEventRequired()
+            );
     }
 }

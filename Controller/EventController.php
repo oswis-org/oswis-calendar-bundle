@@ -51,7 +51,6 @@ class EventController extends AbstractController
      * @param string|null $eventSlug
      *
      * @return Response
-     * @throws LogicException
      * @throws NotFoundHttpException
      */
     final public function showEvent(?string $eventSlug = null): Response
@@ -75,10 +74,12 @@ class EventController extends AbstractController
         }
         $navEvents = new ArrayCollection();
         if (null !== $event->getSeries() && null !== $event->getType()) {
-            $navEvents = $event->getSeries()->getEvents(
-                $event->getType()->getType(),
-                $event->isBatch() ? $event->getStartYear() : null
-            );
+            $navEvents = $event->getSeries()
+                ->getEvents(
+                    $event->getType()
+                        ->getType(),
+                    $event->isBatch() ? $event->getStartYear() : null
+                );
         }
         $data = array(
             'title'       => $event->getShortName(),
@@ -95,7 +96,6 @@ class EventController extends AbstractController
      * @param string|null $eventSlug
      *
      * @return Response
-     * @throws LogicException
      * @throws NotFoundHttpException
      */
     final public function showEventLeaflet(?string $eventSlug = null): Response
@@ -121,7 +121,9 @@ class EventController extends AbstractController
             'organizer'   => $this->eventService->getOrganizer($event),
         );
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
-        if ($this->get('twig')->getLoader()->exists($templatePath)) {
+        if ($this->get('twig')
+            ->getLoader()
+            ->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
         throw new OswisNotFoundException('Leták nenalezen.');
@@ -147,7 +149,6 @@ class EventController extends AbstractController
      * @param int|null      $offset
      *
      * @return Response
-     * @throws LogicException
      * @throws Exception
      */
     public function showEvents(
@@ -204,7 +205,6 @@ class EventController extends AbstractController
      * @param string|null $rangeValue
      *
      * @return Response
-     * @throws LogicException
      * @throws Exception
      */
     public function showFutureEvents(?string $range = null, ?string $rangeValue = null): Response

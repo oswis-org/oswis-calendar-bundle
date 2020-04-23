@@ -52,7 +52,8 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
         $request = $event->getControllerResult();
         $participantType = $request->eventParticipantType;
         if (!$participantType) {
-            $participantType = $this->em->getRepository(EventParticipantType::class)->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG]);
+            $participantType = $this->em->getRepository(EventParticipantType::class)
+                ->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG]);
         }
         try {
             assert($participantType instanceof EventParticipantType);

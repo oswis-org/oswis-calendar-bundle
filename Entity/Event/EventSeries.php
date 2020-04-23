@@ -55,7 +55,12 @@ class EventSeries implements BasicEntityInterface
             return null;
         }
         $seqId = 1;
-        $events = $this->getEvents($event->getType()->getType(), ($event->isBatch() ? $event->getStartYear() : null), false);
+        $events = $this->getEvents(
+            $event->getType()
+                ->getType(),
+            ($event->isBatch() ? $event->getStartYear() : null),
+            false
+        );
         foreach ($events as $e) {
             if ($e instanceof Event && $e->getStartDate() && $e->getId() !== $event->getId() && $e->getStartDate() < $event->getStartDate()) {
                 $seqId++;
@@ -69,7 +74,10 @@ class EventSeries implements BasicEntityInterface
     {
         $events = ($this->events ?? new ArrayCollection())->filter(fn(Event $e) => $deleted || !$e->isDeleted());
         if (null !== $eventTypeOfType) {
-            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeOfType === $e->getType()->getType());
+            $events = $events->filter(
+                fn(Event $e) => $e->getType() && $eventTypeOfType === $e->getType()
+                        ->getType()
+            );
         }
         if (null !== $year) {
             $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());

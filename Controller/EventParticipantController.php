@@ -91,7 +91,6 @@ class EventParticipantController extends AbstractController
      * @param int    $eventParticipantId
      *
      * @return Response
-     * @throws LogicException
      */
     public function eventParticipantRegistrationConfirmAction(string $token, int $eventParticipantId): Response
     {
@@ -109,7 +108,8 @@ class EventParticipantController extends AbstractController
                     )
                 );
             }
-            $eventParticipant = $this->participantService->getRepository()->findOneBy(['id' => $eventParticipantId]);
+            $eventParticipant = $this->participantService->getRepository()
+                ->findOneBy(['id' => $eventParticipantId]);
             if (null === $eventParticipant || null === $eventParticipant->getContact()) {
                 $error = null === $eventParticipant ? ', přihláška nenalezena' : '';
                 $error .= !($eventParticipant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
@@ -125,8 +125,10 @@ class EventParticipantController extends AbstractController
             }
             $eventParticipant->removeEmptyEventParticipantNotes();
             if ($eventParticipant->getContact()) {
-                $eventParticipant->getContact()->removeEmptyDetails();
-                $eventParticipant->getContact()->removeEmptyNotes();
+                $eventParticipant->getContact()
+                    ->removeEmptyDetails();
+                $eventParticipant->getContact()
+                    ->removeEmptyNotes();
             }
             $this->participantService->sendMail($eventParticipant, true, $token);
 
@@ -155,7 +157,6 @@ class EventParticipantController extends AbstractController
     /**
      * Partners for homepage.
      * @return Response
-     * @throws LogicException
      */
     public function partnersFooter(): Response
     {
@@ -208,11 +209,15 @@ class EventParticipantController extends AbstractController
                 if (!$participant->getContact()) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Contact)');
                 }
-                $participant->getContact()->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
+                $participant->getContact()
+                    ->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
                 $participant->removeEmptyEventParticipantNotes();
-                $participant->getContact()->removeEmptyDetails();
-                $participant->getContact()->removeEmptyNotes();
-                $flagsRows = $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
+                $participant->getContact()
+                    ->removeEmptyDetails();
+                $participant->getContact()
+                    ->removeEmptyNotes();
+                $flagsRows = $participant->getEvent()
+                    ->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
                 foreach ($flagsRows as $flagsRow) {
                     $flagType = $flagsRow['flagType'];
                     assert($flagType instanceof EventParticipantType);
@@ -284,7 +289,8 @@ class EventParticipantController extends AbstractController
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_SLUG               => $eventSlug,
         ];
-        $event = $this->eventService->getRepository()->getEvent($opts);
+        $event = $this->eventService->getRepository()
+            ->getEvent($opts);
         if (null === $event) {
             throw new OswisNotFoundException('Akce nebyla nalezena.');
         }
@@ -306,7 +312,8 @@ class EventParticipantController extends AbstractController
         $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
         assert($contactDetailTypeRepository instanceof ContactDetailTypeRepository);
         $addressBook = $this->getAddressBook($event);
-        $participantType = $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)->first();
+        $participantType = $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)
+            ->first();
         if (!($participantType instanceof EventParticipantType)) {
             $participantType = null;
         }
@@ -332,7 +339,8 @@ class EventParticipantController extends AbstractController
 
     public function getAddressBook(Event $event): ?AddressBook
     {
-        $addressBook = $this->addressBookService->getRepository()->findOneBy(['slug' => $event->getSlug()]);
+        $addressBook = $this->addressBookService->getRepository()
+            ->findOneBy(['slug' => $event->getSlug()]);
         if (null === $addressBook) {
             $addressBook = $this->addressBookService->create(
                 new Nameable('Akce '.$event->getName(), $event->getShortName(), 'Automatický adresář pro akci '.$event->getName(), null, $event->getSlug())

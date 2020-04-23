@@ -44,7 +44,8 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     public function postWrite(ViewEvent $event): void
     {
         $eventParticipantPayment = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method = $event->getRequest()
+            ->getMethod();
         if (!$eventParticipantPayment instanceof EventParticipantPayment || Request::METHOD_POST !== $method) {
             return;
         }
@@ -60,7 +61,8 @@ final class EventParticipantPaymentSubscriber implements EventSubscriberInterfac
     public function postValidate(ViewEvent $event): void
     {
         $eventParticipantPayment = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method = $event->getRequest()
+            ->getMethod();
         if (!$eventParticipantPayment instanceof EventParticipantPayment) {
             return;
         }

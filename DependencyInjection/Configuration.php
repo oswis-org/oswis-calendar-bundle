@@ -11,7 +11,6 @@ class Configuration implements ConfigurationInterface
 {
     /**
      * @return TreeBuilder
-     * @throws RuntimeException
      */
     final public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -26,7 +25,10 @@ class Configuration implements ConfigurationInterface
 
     private function addDefaultEvent(ArrayNodeDefinition $rootNode): void
     {
-        $rootNode->children()->scalarNode('default_event')->end()->end();
+        $rootNode->children()
+            ->scalarNode('default_event')
+            ->end()
+            ->end();
     }
 
 }

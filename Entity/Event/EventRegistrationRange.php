@@ -122,7 +122,8 @@ class EventRegistrationRange implements BasicEntityInterface
         if (null !== $participantType && null === $this->getEventParticipantType()) {
             return false;
         }
-        if (null !== $participantType && $this->getEventParticipantType()->getId() !== $participantType->getId()) {
+        if (null !== $participantType && $this->getEventParticipantType()
+                ->getId() !== $participantType->getId()) {
             return false;
         }
         if (null !== $dateTime && !$this->containsDateTimeInRange($dateTime)) {
@@ -147,7 +148,8 @@ class EventRegistrationRange implements BasicEntityInterface
         if ($participantType && null === $this->getEventParticipantType()) {
             return false;
         }
-        if ($participantType && $this->getEventParticipantType()->getType() !== $participantType) {
+        if ($participantType && $this->getEventParticipantType()
+                ->getType() !== $participantType) {
             return false;
         }
 

@@ -44,7 +44,10 @@ class EventParticipantRepository extends EntityRepository
         $queryBuilder = $this->getEventParticipantsQueryBuilder($opts, $limit, $offset);
 
         return EventParticipant::filterEventParticipants(
-            new ArrayCollection($queryBuilder->getQuery()->getResult()),
+            new ArrayCollection(
+                $queryBuilder->getQuery()
+                    ->getResult()
+            ),
             $includeNotActivated
         );
     }
@@ -76,14 +79,16 @@ class EventParticipantRepository extends EntityRepository
                 $queryBuilder->leftJoin("e$i.superEvent", "e$j");
                 $eventQuery .= " OR e$j = :event_id ";
             }
-            $queryBuilder->andWhere($eventQuery)->setParameter('event_id', $opts[self::CRITERIA_EVENT]->getId());
+            $queryBuilder->andWhere($eventQuery)
+                ->setParameter('event_id', $opts[self::CRITERIA_EVENT]->getId());
         }
     }
 
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
-            $queryBuilder->andWhere(' ep.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
+            $queryBuilder->andWhere(' ep.id = :id ')
+                ->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
@@ -114,7 +119,8 @@ class EventParticipantRepository extends EntityRepository
     private function addContactQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_CONTACT]) && $opts[self::CRITERIA_CONTACT] instanceof AbstractContact) {
-            $queryBuilder->andWhere('ep.contact = :contact_id')->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
+            $queryBuilder->andWhere('ep.contact = :contact_id')
+                ->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
         }
     }
 
@@ -152,7 +158,9 @@ class EventParticipantRepository extends EntityRepository
     public function getEventParticipant(?array $opts = []): ?EventParticipant
     {
         try {
-            $eventParticipant = $this->getEventParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $eventParticipant = $this->getEventParticipantsQueryBuilder($opts)
+                ->getQuery()
+                ->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }

@@ -32,7 +32,6 @@ class EventLeafletController extends AbstractController
      * @param string|null $slug
      *
      * @return Response
-     * @throws LogicException
      */
     final public function eventLeafletPdf(?string $slug = null): Response
     {

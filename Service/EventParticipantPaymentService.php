@@ -162,7 +162,8 @@ class EventParticipantPaymentService
                         static function (EventParticipant $oneEventParticipant) use ($csvVariableSymbol) {
                             return $oneEventParticipant->getVariableSymbol() === $csvVariableSymbol && $oneEventParticipant->hasActivatedContactUser();
                         }
-                    )->first();
+                    )
+                        ->first();
                     if (empty($eventParticipant)) {
                         $eventParticipant = $filteredEventParticipants->first();
                     }
@@ -181,7 +182,8 @@ class EventParticipantPaymentService
                 $this->sendConfirmation($oneNewPayment);
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' ';
-                $infoMessage .= $eventParticipant->getContact() ? $eventParticipant->getContact()->getContactName() : ''.', ';
+                $infoMessage .= $eventParticipant->getContact() ? $eventParticipant->getContact()
+                    ->getContactName() : ''.', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
                 $deletedString = '';
                 if ($eventParticipant->isDeleted()) {
@@ -221,10 +223,14 @@ class EventParticipantPaymentService
             $entity = new EventParticipantPayment($eventParticipant, $numericValue, $dateTime, $type, $note, $internalNote);
             $em->persist($entity);
             $em->flush();
-            if ($entity->getEventParticipant() && $entity->getEventParticipant()->getContact()) {
-                $name = $entity->getEventParticipant()->getContact()->getContactName();
+            if ($entity->getEventParticipant() && $entity->getEventParticipant()
+                    ->getContact()) {
+                $name = $entity->getEventParticipant()
+                    ->getContact()
+                    ->getContactName();
             } else {
-                $name = $entity->getEventParticipant()->getId();
+                $name = $entity->getEventParticipant()
+                    ->getId();
             }
             $this->logger->info('CREATE: Created event participant payment (by service): '.$entity->getId().' '.$name.'.');
 
@@ -255,7 +261,8 @@ class EventParticipantPaymentService
 
                 return;
             }
-            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
+            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()
+                ->isFormal() : true;
             $contact = $eventParticipant->getContact();
             $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
             if ($contact instanceof Person) {
@@ -266,8 +273,10 @@ class EventParticipantPaymentService
                 $salutationName = $contact->getContactName() ?? ''; // TODO: Correct salutation (contact of organization).
                 $a = '';
             }
-            $name = $contact->getAppUser() ? $contact->getAppUser()->getFullName() : $contact->getContactName();
-            $eMail = $contact->getAppUser() ? $contact->getAppUser()->getEmail() : $contact->getEmail();
+            $name = $contact->getAppUser() ? $contact->getAppUser()
+                ->getFullName() : $contact->getContactName();
+            $eMail = $contact->getAppUser() ? $contact->getAppUser()
+                ->getEmail() : $contact->getEmail();
             $mailConfig = $this->coreSettings->getEmail();
             $mailData = array(
                 'salutationName'   => $salutationName,
@@ -283,8 +292,10 @@ class EventParticipantPaymentService
             );
             $email = new TemplatedEmail();
             $email->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
-            $email->bcc($archive)->subject(self::mimeEnc($title));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+            $email->bcc($archive)
+                ->subject(self::mimeEnc($title));
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-payment.html.twig')
+                ->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-service');
             $this->em->persist($payment);
@@ -329,8 +340,10 @@ class EventParticipantPaymentService
                 $mailConfig['archive_address'] ?? '', self::mimeEnc($mailConfig['archive_name'] ?? '') ?? ''
             );
             $email = new TemplatedEmail();
-            $email->to($archive)->subject(self::mimeEnc($title));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')->context($mailData);
+            $email->to($archive)
+                ->subject(self::mimeEnc($title));
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')
+                ->context($mailData);
             $this->mailer->send($email);
 
             return true;

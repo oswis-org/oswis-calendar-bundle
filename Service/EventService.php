@@ -84,7 +84,8 @@ class EventService
             EventParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
         ];
 
-        return $this->participantService->getEventParticipants($opts, $includeNotActivated)->count();
+        return $this->participantService->getEventParticipants($opts, $includeNotActivated)
+            ->count();
     }
 
     final public function containsAppUser(Event $event, AppUser $appUser, EventParticipantType $participantType = null): bool
@@ -95,12 +96,16 @@ class EventService
             EventParticipantRepository::CRITERIA_APP_USER         => $appUser,
         ];
 
-        return $this->participantService->getRepository()->getEventParticipants($opts)->count() > 0;
+        return $this->participantService->getRepository()
+                ->getEventParticipants($opts)
+                ->count() > 0;
     }
 
     final public function getOrganizer(Event $event): ?AbstractContact
     {
-        $organizer = $this->getOrganizers($event)->map(fn(EventParticipant $p) => $p->getContact())->first();
+        $organizer = $this->getOrganizers($event)
+            ->map(fn(EventParticipant $p) => $p->getContact())
+            ->first();
         if (empty($organizer)) {
             $organizer = $event->getSuperEvent() ? $this->getOrganizer($event->getSuperEvent()) : null;
         }
@@ -239,8 +244,10 @@ class EventService
         $oldFlags ??= new ArrayCollection();
         foreach ($newFlags as $newFlag) {
             assert($newFlag instanceof EventParticipantFlag);
-            $newFlagCount = $newFlags->filter(fn(EventParticipantFlag $flag) => $newFlag->getId() === $flag->getId())->count();
-            $oldFlagCount = $oldFlags->filter(fn(EventParticipantFlag $flag) => $newFlag->getId() === $flag->getId())->count();
+            $newFlagCount = $newFlags->filter(fn(EventParticipantFlag $flag) => $newFlag->getId() === $flag->getId())
+                ->count();
+            $oldFlagCount = $oldFlags->filter(fn(EventParticipantFlag $flag) => $newFlag->getId() === $flag->getId())
+                ->count();
             if ($this->getAllowedEventParticipantFlagRemainingAmount($event, $newFlag, $participantType) < ($newFlagCount - $oldFlagCount)) {
                 $message = 'Kapacita příznaku '.$newFlag->getName().' u události '.$event->getName().' byla překročena.';
                 throw new EventCapacityExceededException($message);
@@ -254,7 +261,8 @@ class EventService
         ?EventParticipantType $participantType
     ): int {
         $allowedAmount = $event->getAllowedParticipantFlagAmount($participantFlag, $participantType);
-        $actualAmount = $this->participantService->getEventParticipantFlags($event, $participantType, $participantFlag)->count();
+        $actualAmount = $this->participantService->getEventParticipantFlags($event, $participantType, $participantFlag)
+            ->count();
 
         return ($allowedAmount - $actualAmount) < 0 ? 0 : ($allowedAmount - $actualAmount);
     }
@@ -289,6 +297,8 @@ class EventService
             EventParticipantRepository::CRITERIA_CONTACT          => $contact,
         ];
 
-        return $this->participantService->getRepository()->getEventParticipants($opts)->count() > 0;
+        return $this->participantService->getRepository()
+                ->getEventParticipants($opts)
+                ->count() > 0;
     }
 }

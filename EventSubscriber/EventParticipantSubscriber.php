@@ -48,11 +48,13 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
     public function postWrite(ViewEvent $event): void
     {
         $newParticipant = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method = $event->getRequest()
+            ->getMethod();
         if (!($newParticipant instanceof EventParticipant) || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
-        $oldParticipant = $this->participantService->getRepository()->getEventParticipant(['id' => $newParticipant->getId()]);
+        $oldParticipant = $this->participantService->getRepository()
+            ->getEventParticipant(['id' => $newParticipant->getId()]);
         $this->eventService->simulateAddEventParticipant($newParticipant, $oldParticipant);
         $this->participantService->sendMail($newParticipant, Request::METHOD_POST === $method);
     }
@@ -65,7 +67,8 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
     public function postValidate(ViewEvent $event): void
     {
         $newParticipant = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method = $event->getRequest()
+            ->getMethod();
         if (!($newParticipant instanceof EventParticipant) || $method !== Request::METHOD_PUT) {
             return;
         }
@@ -79,6 +82,7 @@ final class EventParticipantSubscriber implements EventSubscriberInterface
 
     private function getExistingEventParticipant(EventParticipant $newEventParticipant): ?EventParticipant
     {
-        return $this->participantService->getRepository()->getEventParticipant(['id' => $newEventParticipant->getId()]);
+        return $this->participantService->getRepository()
+            ->getEventParticipant(['id' => $newEventParticipant->getId()]);
     }
 }
