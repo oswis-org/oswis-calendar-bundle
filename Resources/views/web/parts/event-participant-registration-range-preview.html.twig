@@ -26,14 +26,7 @@
                 </h6>
             {% endif %}
             {% if range.rangeActive %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
-                    <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
-                </a>
-            {% else %}
-                <div class="badge badge-dark pt-1 pb-1 pl-2 pr-2 mt-1">Aktuálně neaktivní.</div>
-            {% endif %}
-            {% if range.rangeActive %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType}) }}">
                     <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
                 </a>
             {% else %}

@@ -236,8 +236,7 @@ class EventController extends AbstractController
      */
     public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null, ?DateTime $dateTime = null): Response
     {
-        $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug)
-            ->first() : null;
+        $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug)[0] ?? null : null;
         if (!empty($eventSlug) && empty($event)) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
         }

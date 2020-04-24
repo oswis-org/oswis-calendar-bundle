@@ -2,10 +2,6 @@ oswis_org_oswis_calendar_web_event_participant_registration_confirm:
     controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
-oswis_org_oswis_calendar_web_event:
-    controller: oswis_org_oswis_calendar.event_controller::showEvent
-    path: "/akce/{eventSlug?}"
-
 oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
     path: "/letak/{eventSlug?}"
@@ -16,7 +12,7 @@ oswis_org_oswis_calendar_web_event_registrations:
 
 oswis_org_oswis_calendar_web_event_participant_registration:
     controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistration
-    path: "/akce/prihlaska/{eventSlug?}"
+    path: "/akce/prihlaska/{eventSlug?}/{participantType?}"
 
 oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????
     controller: oswis_org_oswis_calendar.event_controller::showEvents
@@ -47,3 +43,7 @@ oswis_org_oswis_calendar_web_events_past:
     defaults:
         page: null
 
+
+oswis_org_oswis_calendar_web_event:
+    controller: oswis_org_oswis_calendar.event_controller::showEvent
+    path: "/akce/{eventSlug?}"
