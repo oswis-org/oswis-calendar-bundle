@@ -122,7 +122,7 @@ class EventParticipantType extends AbstractType
             assert($flagType instanceof EventParticipantFlagType);
             $flags = $flagsRow['flags'];
             $builder->add(
-                'flag_'.$flagType->getSlug(),
+                'flag_'.($flagType ? $flagType->getSlug() : '0'),
                 ChoiceType::class,
                 array(
                     'label'        => $flagType->getName(),
