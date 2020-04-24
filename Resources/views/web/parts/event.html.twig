@@ -56,100 +56,18 @@
 <div class="row card-deck">
     {% if event.location(true) is defined and event.location(true) %}
         <div class="col-md-6 col-lg-7 mt-2 mb-3 p-0">
-            <div class="card" itemprop="event.location" itemscope itemtype="http://schema.org/Place">
-                <meta itemprop="name" content="{{ event.location(true).name|default }}"/>
-                <div class="card-header p-2"><small class="text-muted">Místo konání akce</small></div>
-                {% if event.location(true).geoLon and event.location(true).geoLat %}
-                    <iframe class="card-img-top border-0" style="min-height: 200px;"
-                            src="https://frame.mapy.cz/zakladni?x={{ event.location.geoLon }}&y={{ event.location.geoLat }}&z=15">
-                    </iframe>
-                {% endif %}
-                <div class="card-body p-3">
-                    <h5 class="card-title" itemprop="name"><strong>{{ event.location(true).name }}</strong></h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ event.location(true).fullAddress|default }}</h6>
-                    <div class="card-text" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                        <meta itemprop="streetAddress" content="{{ event.location(true).streetAddress|default }}"/>
-                        <meta itemprop="addressLocality" content="{{ event.location(true).city|default }}"/>
-                        <meta itemprop="postalCode" content="{{ event.location(true).postalCode|default }}"/>
-                        <meta itemprop="addressRegion" content="{{ event.location(true).city|default }}"/>
-                        <meta itemprop="url" content="{{ event.location(true).url|default }}"/>
-                        <meta itemprop=Country" content="CZ"/>
-                    </div>
-                </div>
-                {% if event.location(true).url %}
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank" class="card-link">
-                                Web
-                            </a>
-                        </li>
-                    </ul>
-                {% endif %}
-            </div>
+            {% include '@OswisOrgOswisCalendar/web/parts/event-location.html.twig' %}
         </div>
     {% endif %}
-
     {% if organizer is defined and organizer %}
         <div class="col-md-6 col-lg-5 mt-2 mb-3 p-0">
-            <div class="card" itemprop="performer" itemscope itemtype="http://schema.org/Organization">
-                <div class="card-header p-2"><small class="text-muted">Organizátor akce</small></div>
-                {% if organizer.image %}{# TODO: Image.#}
-                    <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image"
-                         alt="{{ organizer.name }}"
-                         src="{{ absolute_url(asset('img/web/og-image.jpg'))|default }}">
-                {% endif %}
-                <div class="card-body p-3">
-                    <h5 class="card-title" itemprop="name"><strong>{{ organizer.name|default }}</strong></h5>
-                    <h6 class="card-subtitle mb-2 text-muted">{{ organizer.identificationNumber|default }}</h6>
-                </div>
-                {% if organizer.url %}
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <a href="{{ organizer.url }}" title="{{ organizer.name }}" target="_blank" class="card-link">Web</a>
-                        </li>
-                    </ul>
-                {% endif %}
-            </div>
+            {% include '@OswisOrgOswisCalendar/web/parts/event-organizer.html.twig' %}
         </div>
     {% endif %}
 </div>
 
 {% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r.publicOnWeb) %}
-    <h3>Přihlášky</h3>
-    <div class="row card-deck" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
-        <div class="card mt-2 mb-2">
-            <div class="card-header p-2">
-                <h5 class="card-title mb-0" itemprop="name">
-                    <small>
-                        <strong>
-                            {% if range.rangeActive %}
-                                <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
-                                    {{ range.name|default('Přihláška na akci '~event.name|default) }}
-                                </a>
-                            {% else %}
-                                {{ range.name|default('Přihláška na akci '~event.name|default) }}
-                            {% endif %}
-                        </strong>
-                    </small>
-                </h5>
-            </div>
-            <div class="card-body p-3">
-                <h6 class="card-subtitle mb-2 text-muted">{{ range.rangeAsText ? 'Rozmezí přihlášek: ' ~ range.rangeAsText|default : null }}</h6>
-                <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
-                <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">Zbývá 5 dní.</div>
-                <span itemprop="availability" content="http://schema.org/InStock"></span>
-                <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
-                <div itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
-            </div>
-            <div class="card-footer row m-0">
-                <div class="col-6 p-0"><strong>Záloha</strong><br>{{ range.depositValue|default(0) }},-&nbsp;Kč</div>
-                <div class="col-6 p-0">
-                    <strong>Celkem</strong><br>
-                    <span itemprop="price">{{ range.numericValue }}</span><span itemprop="priceCurrency" content="CZK">,-&nbsp;Kč</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
 {% endfor %}
 
 <div class="row text-justify">

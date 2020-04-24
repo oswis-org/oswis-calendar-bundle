@@ -11,8 +11,8 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
-use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
@@ -174,6 +174,8 @@ class EventController extends AbstractController
      * @param int|null      $limit
      * @param int|null      $offset
      *
+     * @param string|null   $eventSlug
+     *
      * @return Collection
      * @throws Exception
      */
@@ -182,7 +184,8 @@ class EventController extends AbstractController
         ?DateTime $start = null,
         ?DateTime $end = null,
         ?int $limit = null,
-        ?int $offset = null
+        ?int $offset = null,
+        ?string $eventSlug = null
     ): Collection {
         $range ??= self::RANGE_ALL;
         $limit = $limit < 1 ? null : $limit;
@@ -195,6 +198,7 @@ class EventController extends AbstractController
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_ONLY_ROOT          => true,
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
         ];
 
         return $this->eventRepository->getEvents($opts, $limit, $offset);
@@ -221,5 +225,51 @@ class EventController extends AbstractController
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
+    }
+
+    /**
+     * @param string        $eventSlug
+     * @param string|null   $participantType
+     * @param DateTime|null $dateTime
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null, ?DateTime $dateTime = null): Response
+    {
+        $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug)
+            ->first() : null;
+        if (!empty($eventSlug) && empty($event)) {
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
+        }
+        $events = null !== $event ? new ArrayCollection([$event]) : $this->getEvents();
+        $context = [
+            'ranges' => self::getRegistrationRanges($events, $participantType, $dateTime),
+        ];
+
+        return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
+    }
+
+    /**
+     * @param Collection    $events
+     * @param string|null   $participantType
+     * @param DateTime|null $dateTime
+     *
+     * @return Collection<EventRegistrationRange>
+     */
+    public static function getRegistrationRanges(Collection $events, ?string $participantType = null, ?DateTime $dateTime = null): Collection
+    {
+        $ranges = new ArrayCollection();
+        foreach ($events as $event) {
+            assert($event instanceof Event);
+            foreach ($event->getRegistrationRangesByTypeOfType($participantType, $dateTime) as $range) {
+                assert($range instanceof EventRegistrationRange);
+                if (!$ranges->contains($range)) {
+                    $ranges->add($range);
+                }
+            }
+        }
+
+        return $ranges;
     }
 }

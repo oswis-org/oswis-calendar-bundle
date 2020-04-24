@@ -576,9 +576,7 @@ class Event implements BasicEntityInterface
     {
         if (null !== $participantType || null !== $dateTime) {
             return $this->getRegistrationRanges(null, $dateTime)
-                ->filter(
-                    fn(EventRegistrationRange $range) => $range->isApplicableByTypeOfType($participantType)
-                );
+                ->filter(fn(EventRegistrationRange $range) => $range->isApplicableByTypeOfType($participantType));
         }
 
         return $this->getRegistrationRanges();

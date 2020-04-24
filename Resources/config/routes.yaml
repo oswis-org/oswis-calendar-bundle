@@ -10,6 +10,10 @@ oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
     path: "/letak/{eventSlug?}"
 
+oswis_org_oswis_calendar_web_event_registrations:
+    controller: oswis_org_oswis_calendar.event_participant_controller::showRegistrationRanges
+    path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
+
 oswis_org_oswis_calendar_web_event_participant_registration:
     controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistration
     path: "/akce/prihlaska/{eventSlug?}"

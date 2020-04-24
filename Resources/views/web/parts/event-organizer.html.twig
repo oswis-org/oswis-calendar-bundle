@@ -1,0 +1,19 @@
+<div class="card" itemprop="performer" itemscope itemtype="http://schema.org/Organization">
+    <div class="card-header p-2"><small class="text-muted">Organizátor akce</small></div>
+    {% if organizer.image %}{# TODO: Image.#}
+        <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image"
+             alt="{{ organizer.name }}"
+             src="{{ absolute_url(asset('img/web/og-image.jpg'))|default }}">
+    {% endif %}
+    <div class="card-body p-3">
+        <h5 class="card-title" itemprop="name"><strong>{{ organizer.name|default }}</strong></h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{ organizer.identificationNumber|default }}</h6>
+    </div>
+    {% if organizer.url %}
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <a href="{{ organizer.url }}" title="{{ organizer.name }}" target="_blank" class="card-link">Web</a>
+            </li>
+        </ul>
+    {% endif %}
+</div>

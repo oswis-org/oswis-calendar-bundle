@@ -1,18 +1,17 @@
 <?php
 /**
- * @noinspection RedundantDocCommentTagInspection
  * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\Controller;
 
+use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 
-class EventLeafletController extends AbstractController
+class EventRegistrationRangeController extends AbstractController
 {
     protected EventService $eventService;
 
@@ -20,20 +19,14 @@ class EventLeafletController extends AbstractController
 
     protected EventParticipantTypeService $participantTypeService;
 
-    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService)
+    protected OswisCalendarSettingsProvider $calendarSettings;
+
+    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService, OswisCalendarSettingsProvider $calendarSettings)
     {
         $this->eventService = $eventService;
         $this->eventRepository = $eventService->getRepository();
         $this->participantTypeService = $participantTypeService;
+        $this->calendarSettings = $calendarSettings;
     }
 
-    /**
-     * @param string|null $slug
-     *
-     * @return Response
-     */
-    final public function eventLeafletPdf(?string $slug = null): Response
-    {
-        return $this->render('@OswisOrgOswisCalendar/other/leaflet/leaflet.html.twig', ['slug' => $slug]);
-    }
 }
