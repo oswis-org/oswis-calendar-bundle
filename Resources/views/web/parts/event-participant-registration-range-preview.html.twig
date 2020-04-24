@@ -5,7 +5,7 @@
                 <small>
                     <strong>
                         {% if range.rangeActive %}
-                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug}) }}">
                                 {{ range.name|default('Přihláška na akci '~event.name|default) }}
                             </a>
                         {% else %}

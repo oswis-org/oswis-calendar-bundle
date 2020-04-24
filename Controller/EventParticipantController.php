@@ -1,5 +1,4 @@
-<?php /** @noinspection PhpUnusedParameterInspection */
-
+<?php
 /**
  * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
@@ -12,7 +11,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
-use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\AddressBook\AddressBook;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactDetail;
@@ -30,6 +28,7 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
+use OswisOrg\OswisCalendarBundle\Repository\EventParticipantTypeRepository;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
@@ -173,24 +172,23 @@ class EventParticipantController extends AbstractController
      * Route shows registration form or process it if form was sent.
      * Data from form is validated, user is created and than summary and activation e-mail is sent.
      *
-     * @param Request                      $request
-     * @param UserPasswordEncoderInterface $encoder
-     * @param string                       $eventSlug
+     * @param Request     $request
+     * @param string      $eventSlug
+     * @param string|null $participantSlug
      *
      * @return Response
      * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
-     * @throws LogicException
      * @throws OswisNotFoundException
      */
-    final public function eventParticipantRegistration(Request $request, UserPasswordEncoderInterface $encoder, ?string $eventSlug): Response
+    final public function eventParticipantRegistration(Request $request, ?string $eventSlug = null, ?string $participantSlug = null): Response
     {
         $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
         if (empty($eventSlug) && !empty($defaultEventSlug)) {
             $this->redirectToRoute('oswis_org_oswis_calendar_web_event_participant_registration', ['eventSlug' => $defaultEventSlug]);
         }
         $event = $this->getEvent($eventSlug);
-        $participant = $this->prepareEventParticipant($event);
+        $participant = $this->prepareEventParticipant($event, $this->getParticipantType($participantSlug));
         try {
             $form = $this->createForm(\OswisOrg\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
             $form->handleRequest($request);
@@ -301,22 +299,22 @@ class EventParticipantController extends AbstractController
     /**
      * Create empty eventParticipant for use in forms.
      *
-     * @param Event $event
+     * @param Event                $event
+     *
+     * @param EventParticipantType $participantType
      *
      * @return EventParticipant
      * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
      */
-    public function prepareEventParticipant(Event $event): EventParticipant
+    public function prepareEventParticipant(Event $event, ?EventParticipantType $participantType = null): EventParticipant
     {
         $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
         assert($contactDetailTypeRepository instanceof ContactDetailTypeRepository);
         $addressBook = $this->getAddressBook($event);
-        $participantType = $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)
+        $participantType ??= $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)
             ->first();
-        if (!($participantType instanceof EventParticipantType)) {
-            $participantType = null;
-        }
+        assert($participantType instanceof EventParticipantType);
         $contactDetailTypeEmail = $contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
         $contactDetailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
         $participantPerson = new Person(
@@ -348,6 +346,26 @@ class EventParticipantController extends AbstractController
         }
 
         return $addressBook;
+    }
+
+    public function getParticipantType(string $slug): EventParticipantType
+    {
+        $opts = [
+            EventParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventParticipantTypeRepository::CRITERIA_SLUG               => $slug,
+        ];
+        $type = $this->participantTypeService->getRepository()
+            ->getEventParticipantType($opts);
+        if (null === $type) {
+            $opts = [
+                EventParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+                EventParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
+            ];
+            $type = $this->participantTypeService->getRepository()
+                ->getEventParticipantType($opts);
+        }
+
+        return $type;
     }
 
     final public function checkSpamInForm(Form $form, LoggerInterface $logger, SpamDateTimeEncoder $spamDateTimeEncoder): void
