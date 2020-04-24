@@ -1,11 +1,16 @@
-<div class="row text-justify">
-    <div class="col-lg-9" itemscope itemtype="http://schema.org/Event">
+<div class="row">
+    <div class="col-12">
         <header class="text-uppercase">
             <h2 itemprop="name" content="{{ event.name }}">
                 <span class="d-block d-md-none">{{ event.shortName }}</span>
                 <span class="d-none d-md-block">{{ event.name }}</span>
             </h2>
         </header>
+    </div>
+</div>
+<div class="row text-justify">
+    <meta itemprop="name" content="{{ event.name }}">
+    <div class="col-lg-9" itemscope itemtype="http://schema.org/Event">
         {% include '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig' %}
         <h3>
             {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
