@@ -57,7 +57,7 @@ class EventParticipantType extends AbstractType
         $participantType = $participant->getEventParticipantType();
         $event = $participant->getEvent();
         if (null === $participantType || null === $event) {
-            throw new PriceInvalidArgumentException((int)(null !== $participantType).', '.(int)(null !== $participantType));
+            throw new PriceInvalidArgumentException((int)(null !== $participantType).', '.(int)(null !== $event));
         }
         $builder->add(
             'event',
