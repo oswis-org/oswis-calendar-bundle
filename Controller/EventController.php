@@ -172,8 +172,8 @@ class EventController extends AbstractController
      * @param DateTime|null $end
      * @param int|null      $limit
      * @param int|null      $offset
-     *
      * @param string|null   $eventSlug
+     * @param bool|null     $onlyRoot
      *
      * @return Collection
      * @throws Exception
@@ -184,7 +184,8 @@ class EventController extends AbstractController
         ?DateTime $end = null,
         ?int $limit = null,
         ?int $offset = null,
-        ?string $eventSlug = null
+        ?string $eventSlug = null,
+        ?bool $onlyRoot = true
     ): Collection {
         $range ??= self::RANGE_ALL;
         $limit = $limit < 1 ? null : $limit;
@@ -196,7 +197,7 @@ class EventController extends AbstractController
             EventRepository::CRITERIA_END                => $end,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => $onlyRoot,
             EventRepository::CRITERIA_SLUG               => $eventSlug,
         ];
 
@@ -236,11 +237,11 @@ class EventController extends AbstractController
      */
     public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null, ?DateTime $dateTime = null): Response
     {
-        $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug)[0] ?? null : null;
+        $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug, false)[0] ?? null : null;
         if (!empty($eventSlug) && empty($event)) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
         }
-        $events = null !== $event ? new ArrayCollection([$event]) : $this->getEvents();
+        $events = null !== $event ? new ArrayCollection([$event]) : $this->getEvents(null, null, null, null, null, null, false);
         $context = [
             'events' => self::getRegistrationRanges($events, $participantType, $dateTime),
         ];

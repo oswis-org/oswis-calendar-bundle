@@ -22,18 +22,20 @@
                 <h6 class="card-subtitle mb-2 text-muted">Typ přihlášky: {{ range.eventParticipantType.name }}</h6>
             {% endif %}
             {% if range.rangeActive %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType}) }}">
+                <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType.slug}) }}">
                     <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
                 </a>
             {% else %}
                 <div class="badge badge-dark pt-1 pb-1 pl-2 pr-2 mt-1">Aktuálně neaktivní.</div>
             {% endif %}
-            {% if range.startDateTime and date(range.endDateTime|date).diff(now).days != 0 %}
+            {#
+            {% if range.startDateTime and date(range.endDateTime).diff(date(now)).days != 0 %}
                 <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">Zbývá {{ date(range.endDateTime|date).diff(now).days }} dní.</div>
             {% endif %}
-            {% if range.endDateTime and date(range.startDateTime|date).diff(now).days != 0 %}
+            {% if range.endDateTime and date(range.startDateTime).diff(date(now)).days != 0 %}
                 <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">Začíná za {{ date(range.startDateTime|date).diff(now).days }} dní.</div>
             {% endif %}
+            #}
 
             <span itemprop="availability" content="http://schema.org/InStock"></span>
             <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
