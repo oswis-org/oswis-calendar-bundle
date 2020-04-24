@@ -312,8 +312,7 @@ class EventParticipantController extends AbstractController
         $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
         assert($contactDetailTypeRepository instanceof ContactDetailTypeRepository);
         $addressBook = $this->getAddressBook($event);
-        $participantType ??= $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)
-            ->first();
+        $participantType ??= $event->getParticipantTypes(EventParticipantType::TYPE_ATTENDEE)[0] ?? null;
         assert($participantType instanceof EventParticipantType);
         $contactDetailTypeEmail = $contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
         $contactDetailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
@@ -348,8 +347,11 @@ class EventParticipantController extends AbstractController
         return $addressBook;
     }
 
-    public function getParticipantType(string $slug): EventParticipantType
+    public function getParticipantType(?string $slug): ?EventParticipantType
     {
+        if (empty($slug)) {
+            return null;
+        }
         $opts = [
             EventParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventParticipantTypeRepository::CRITERIA_SLUG               => $slug,

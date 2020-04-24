@@ -243,7 +243,7 @@ class EventController extends AbstractController
         }
         $events = null !== $event ? new ArrayCollection([$event]) : $this->getEvents();
         $context = [
-            'events' => self::getRegistrationRanges($events, $participantType, $dateTime),
+            'eventsRanges' => self::getRegistrationRanges($events, $participantType, $dateTime),
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
