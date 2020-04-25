@@ -82,7 +82,7 @@ class EventParticipantFlagType extends AbstractEventFlagType
 
     public static function getAllowedTypesDefault(): array
     {
-        return [self::TYPE_FOOD, self::TYPE_TRANSPORT, self::TYPE_ACCOMMODATION_TYPE, self::TYPE_PARTNER_HOMEPAGE];
+        return [self::TYPE_FOOD, self::TYPE_TRANSPORT, self::TYPE_ACCOMMODATION_TYPE, self::TYPE_T_SHIRT, self::TYPE_PARTNER_HOMEPAGE];
     }
 
     public static function getAllowedTypesCustom(): array
