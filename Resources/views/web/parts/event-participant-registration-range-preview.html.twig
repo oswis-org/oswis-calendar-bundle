@@ -19,10 +19,10 @@
             </h5>
         </div>
         <div class="card-body p-3">
-            <h6 class="card-subtitle mb-2 text-muted">{{ range.rangeAsText ? 'Rozmezí přihlášek: ' ~ range.rangeAsText|default : null }}</h6>
-            <h6 class="card-subtitle mb-2 text-muted">Akce: {{ event.name }}</h6>
+            <h6 class="card-subtitle mb-2 text-muted">{{ range.rangeAsText ? '<strong>Rozmezí přihlášek:</strong> ' ~ range.rangeAsText|default : null }}</h6>
+            <h6 class="card-subtitle mb-2 text-muted"><strong>Akce:</strong> {{ event.name }}</h6>
             {% if range.eventParticipantType %}
-                <h6 class="card-subtitle mb-2 text-muted">Typ přihlášky: {{ range.eventParticipantType.name }}</h6>
+                <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.eventParticipantType.name }}</h6>
             {% endif %}
             {% if range.rangeActive %}
                 <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType.slug}) }}">
