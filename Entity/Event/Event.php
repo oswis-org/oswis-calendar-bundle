@@ -542,7 +542,8 @@ class Event implements BasicEntityInterface
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
             $flag = $flagInEventConnection->getEventParticipantFlag();
             if ($flag) {
-                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '';
+                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()
+                    ->getSlug() : '0';
                 $flags[$flagTypeId]['flagType'] = $flag->getEventParticipantFlagType();
                 $flags[$flagTypeId]['flags'][] = $flag;
             }

@@ -125,16 +125,16 @@ class EventParticipantType extends AbstractType
                 'flag_'.($flagType ? $flagType->getSlug() : '0'),
                 ChoiceType::class,
                 array(
-                    'label'        => $flagType->getName(),
-                    'help'         => $flagType->getDescription(),
-                    'required'     => $flagType->getMinInEventParticipant() > 1,
+                    'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
+                    'help'         => $flagType ? $flagType->getDescription() : 'Ostatní příznaky, které nespadají do žádné kategorie.',
+                    'required'     => $flagType ? $flagType->getMinInEventParticipant() > 1 : false,
                     'choices'      => $flags,
                     'mapped'       => false,
                     'expanded'     => false,
                     'multiple'     => false,
                     'choice_label' => fn(EventParticipantFlag $flag, $key, $value) => $this->getFlagNameWithPrice($flag),
                     'group_by'     => static function () use ($flagType) {
-                        if (EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
+                        if ($flagType && EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
                             return fn(EventParticipantFlag $flag, $key, $value) => self::getTShirtGroupName($flag);
                         }
 
