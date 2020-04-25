@@ -2,11 +2,24 @@
 
 {% block body_content %}
     <main class="container" id="main-content-container">
+        <div class="row">
+            <div class="col-12">
+                <header class="text-uppercase">
+                    <h2>
+                        <span class="d-block d-md-none">Přihlášky</span>
+                        <span class="d-none d-md-block">Přihlášky na akce</span>
+                    </h2>
+                </header>
+            </div>
+        </div>
         {% for eventRanges in events %}
             {% if eventRanges.ranges|length > 0 %}
                 <div class="row">
                     <div class="col-12">
-                        <h3>{{ eventRanges.event.name }}</h3>
+                        <h3>
+                            <span class="d-block d-md-none">{{ eventRanges.event.shortName|default) }}</span>
+                            <span class="d-none d-md-block">{{ eventRanges.event.name|default) }}</span>
+                        </h3>
                     </div>
                 </div>
                 {% for range in eventRanges.ranges %}

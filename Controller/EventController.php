@@ -228,12 +228,16 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param string        $eventSlug
-     * @param string|null   $participantType
-     * @param DateTime|null $dateTime
+     * Renders page with list of registration ranges.
      *
-     * @return Response
-     * @throws Exception
+     * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
+     *
+     * @param string        $eventSlug       Slug for selected event.
+     * @param string|null   $participantType Restriction by participant type.
+     * @param DateTime|null $dateTime        Reference dateTime ("now" if not selected).
+     *
+     * @return Response Page with registration ranges.
+     * @throws Exception Error occurred when getting events.
      */
     public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null, ?DateTime $dateTime = null): Response
     {
@@ -249,6 +253,17 @@ class EventController extends AbstractController
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
     }
 
+    /**
+     * Helper for getting structured array of registration ranges from given collection of events.
+     *
+     * @param Collection    $events          Collection of events to extract registration ranges.
+     * @param string|null   $participantType Restriction to event participant type.
+     * @param DateTime|null $dateTime        Reference dateTime.
+     *
+     * @return array [
+     *     eventId => ['event' => Event, 'ranges' => Collection<EventRegistrationRange>],
+     * ]
+     */
     public static function getRegistrationRanges(Collection $events, ?string $participantType = null, ?DateTime $dateTime = null): array
     {
         $ranges = [];
