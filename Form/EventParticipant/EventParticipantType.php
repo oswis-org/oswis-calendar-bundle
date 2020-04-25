@@ -133,7 +133,7 @@ class EventParticipantType extends AbstractType
                     'multiple'     => false,
                     'choice_label' => fn(EventParticipantFlag $flag, $key, $value) => $this->getFlagNameWithPrice($flag),
                     'group_by'     => static function () use ($flagType) {
-                        if ($flagType && EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
+                        if (!empty($flagType) && EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
                             return fn(EventParticipantFlag $flag, $key, $value) => self::getTShirtGroupName($flag);
                         }
 

@@ -7,8 +7,8 @@
                         {% if range.rangeActive %}
                             <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug}) }}">
                                 {% block range_preview_title %}
-                                    <span class="d-block d-md-none">{{ range.shortName|default('Přihláška na <wbr>'~event.shortName|default) }}</span>
-                                    <span class="d-none d-md-block">{{ range.name|default('Přihláška na akci <wbr>'~event.name|default) }}</span>
+                                    <span class="d-block d-md-none">{{ range.shortName|default('Přihláška na '~event.shortName|default) }}</span>
+                                    <span class="d-none d-md-block">{{ range.name|default('Přihláška na akci '~event.name|default) }}</span>
                                 {% endblock range_preview_title %}
                             </a>
                         {% else %}
@@ -19,10 +19,23 @@
             </h5>
         </div>
         <div class="card-body p-3">
-            <h6 class="card-subtitle mb-2 text-muted">{{ range.rangeAsText ? '<strong>Rozmezí přihlášek:</strong> ' ~ range.rangeAsText|default : null }}</h6>
-            <h6 class="card-subtitle mb-2 text-muted"><strong>Akce:</strong> {{ event.name }}</h6>
+            {% if range.rangeAsText %}
+                <h6 class="card-subtitle mb-2 text-muted"><strong>Rozmezí přihlášek:</strong> {{ range.rangeAsText|default }}</h6>
+            {% endif %}
+            <h6 class="card-subtitle mb-2 text-muted">
+                <strong>Akce:</strong>
+                <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" title="{{ event.name }} ({{ event.rangeAsText|default }})">
+                    {{ event.shortName }}
+                </a>
+            </h6>
             {% if range.eventParticipantType %}
                 <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.eventParticipantType.name }}</h6>
+            {% endif %}
+            {% if range.description %}
+                <div class="text-muted"><p>{{ range.description }}</p></div>
+            {% endif %}
+            {% if range.note %}
+                <div><p>{{ range.note }}</p></div>
             {% endif %}
             {% if range.rangeActive %}
                 <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType.slug}) }}">
