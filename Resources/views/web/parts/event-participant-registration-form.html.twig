@@ -3,7 +3,7 @@
     <div>
         <p><small>Pro změnu již odeslané přihlášky nás kontaktujte e-mailem nebo telefonicky.</small></p>
     </div>
-    {% if event and event.subEvents %}
+    {% if event is defined and event and event.subEvents %}
         <div>
             <p><strong>Jsou dostupné také dílčí akce:</strong></p>
             <ul>

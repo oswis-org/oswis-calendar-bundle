@@ -2,8 +2,9 @@
     <div class="col-12">
         <header class="text-uppercase">
             <h2 itemprop="name" content="{{ event.name }}">
-                <span class="d-block d-md-none">{{ event.shortName }}</span>
-                <span class="d-none d-md-block">{{ event.name }}</span>
+                <i class="fas fa-calendar-week"></i>
+                <span class="d-inline d-md-none">{{ event.shortName }}</span>
+                <span class="d-none d-md-inline">{{ event.name }}</span>
             </h2>
         </header>
     </div>
@@ -30,7 +31,7 @@
                 {% for subEvent in event.subEvents %}
                     <li>
                         <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
-                            <strong>{{ subEvent.shortName }}</strong>
+                            <i class="fas fa-calendar-week"></i>&nbsp;<strong>{{ subEvent.shortName }}</strong>
                         </a>
                         {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
                     </li>
