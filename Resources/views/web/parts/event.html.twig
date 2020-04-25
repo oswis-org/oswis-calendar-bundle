@@ -27,16 +27,7 @@
         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         {% if event.subEvents|length > 0 %}
             <h3>Zahrnuje akce:</h3>
-            <ul class="mt-2">
-                {% for subEvent in event.subEvents %}
-                    <li>
-                        <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
-                            <i class="fas fa-calendar-week"></i>&nbsp;<strong>{{ subEvent.shortName }}</strong>
-                        </a>
-                        {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
-                    </li>
-                {% endfor %}
-            </ul>
+            {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig' with {'subEvents': event.subEvents} %}
         {% endif %}
         {% if event.superEvent is defined and event.superEvent %}
             <h3>Je součástí akce:</h3>

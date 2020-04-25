@@ -21,6 +21,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\Position;
 use OswisOrg\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
 use OswisOrg\OswisAddressBookBundle\Service\AddressBookService;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
@@ -36,6 +37,7 @@ use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCoreBundle\Entity\Nameable;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
+use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Utils\SpamDateTimeEncoder;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -193,6 +195,13 @@ class EventParticipantController extends AbstractController
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event, $this->getParticipantType($participantSlug));
         try {
+            $ranges = $event->getRegistrationRanges($participant->getEventParticipantType())
+                ->filter(fn(EventRegistrationRange $r) => $r->isPublicOnWeb());
+            if ($ranges->count() < 1) {
+                throw new PriceInvalidArgumentException('Přihlášky nyní nejsou povoleny.');
+            }
+            $range = $ranges->first();
+            assert($range instanceof EventRegistrationRange);
             $form = $this->createForm(\OswisOrg\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
@@ -249,7 +258,7 @@ class EventParticipantController extends AbstractController
                 array(
                     'form'                => $form->createView(),
                     'title'               => 'Přihlaš se na Seznamovák UP právě teď!',
-                    'ranges'              => $event->getRegistrationRanges($participant->getEventParticipantType()),
+                    'range'               => $range,
                     'pageTitle'           => 'Přihláška na Seznamovák UP',
                     'message'             => '',
                     'type'                => 'form',
@@ -376,27 +385,5 @@ class EventParticipantController extends AbstractController
 
     final public function checkSpamInForm(Form $form, LoggerInterface $logger, SpamDateTimeEncoder $spamDateTimeEncoder): void
     {
-        /*
-        if ($form->get('verification')->getData() !== '42') {
-            $logger->notice('JS SPAM: '.$form->get('verification')->getData());
-            $form->addError(
-                new FormError(
-                    'Registrace byla vyhodnocena jako automatizovaný spam (pravděpodobně používáte nepodporovaný prohlížeč). :/'
-                )
-            );
-            throw new InvalidArgumentException('Spam detected (x991).');
-        }
-
-        if (!empty($form->get('url')->getData())) {
-            $logger->notice('URL FIELD SPAM: '.$form->get('url')->getData());
-            $form->addError(new FormError('Registrace byla vyhodnocena jako automatizovaný spam :/'));
-            throw new InvalidArgumentException('Spam detected (x992).');
-        }
-        if ($spamDateTimeEncoder->isSpam($form->get('verificationCode')->getData(), $logger)) {
-            $logger->notice('TIME SPAM: '.$form->get('verificationCode')->getData());
-            $form->addError(new FormError('Registrace byla vyhodnocena jako automatizovaný spam :/ Zkuste přihlášku odeslat ještě jednou.'));
-            throw new \InvalidArgumentException('Spam detected (x993).');
-        }
-        */
     }
 }
