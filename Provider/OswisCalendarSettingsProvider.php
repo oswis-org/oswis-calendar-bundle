@@ -36,11 +36,11 @@ class OswisCalendarSettingsProvider
             return null;
         }
         foreach ($this->patterns as $pattern) {
-            $parts = preg_split($pattern, $slug);
+            $parts = preg_split($pattern['pattern'] ?? '//', $slug);
             if (empty($parts)) {
                 continue;
             }
-            $slug = $parts[0].$this->processMath(date('Y'), $parts[2], $parts[3]).$parts[4];
+            $slug = $parts[0].$this->processMath($pattern['value'] ?? 0, $parts[2], $parts[3]).$parts[4];
         }
 
         return $slug;
