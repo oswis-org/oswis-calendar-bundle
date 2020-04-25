@@ -104,11 +104,11 @@ class EventParticipantType extends AbstractType
         \OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType $participantType,
         EventService $eventService
     ): string {
-        $label = $e->getName().' '.$e->getRangeAsText();
+        $label = $e->getName().' ['.$e->getRangeAsText().']';
         $price = $e->getPrice($participantType);
-        $label .= null !== $price ? ' ('.$price.',- Kč)' : '';
-        $label .= !$e->isRegistrationsAllowed($participantType) ? ' (přihlášky nejsou povoleny)' : null;
-        $label .= $eventService->getRemainingCapacity($e, $participantType) < 1 ? ' (překročena kapacita)' : null;
+        $label .= null !== $price ? ' ['.$price.',- Kč]' : '';
+        $label .= !$e->isRegistrationsAllowed($participantType) ? ' [přihlášky nejsou povoleny]' : null;
+        $label .= $eventService->getRemainingCapacity($e, $participantType) === 0 ? ' [překročena kapacita]' : null;
 
         return $label;
     }
@@ -147,8 +147,8 @@ class EventParticipantType extends AbstractType
     public function getFlagNameWithPrice(EventParticipantFlag $flag): string
     {
         $label = $flag->getName() ?? '';
-        $label .= $flag->getPrice() < 0 ? ' ('.$flag->getPrice().',- Kč)' : '';
-        $label .= $flag->getPrice() > 0 ? ' (+'.$flag->getPrice().',- Kč)' : '';
+        $label .= $flag->getPrice() < 0 ? ' ['.$flag->getPrice().',- Kč]' : '';
+        $label .= $flag->getPrice() > 0 ? ' [+'.$flag->getPrice().',- Kč]' : '';
 
         return $label;
     }
@@ -189,7 +189,7 @@ class EventParticipantType extends AbstractType
                 'mapped'     => false,
                 'label'      => 'Uvedením údajů potvrzuji souhlas s evidencí těchto dat.',
                 'help'       => "Přečetl(a) jsem si a souhlasím s 
-                                <a href='/gdpr' target='_blank'>podmínkami zpracování osobních údajů</a>.",
+                                <a href='/gdpr' target='_blank'><i class='fas fa-user-secret'></i> podmínkami zpracování osobních údajů</a>.",
                 'help_html'  => true,
                 'required'   => true,
                 'attr'       => [

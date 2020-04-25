@@ -1,8 +1,24 @@
 <header>
     <h2 class="text-uppercase">Nový účastník</h2>
-    <p>
-        <small>Pro změnu již odeslané přihlášky nás kontaktujte e-mailem nebo telefonicky.</small>
-    </p>
+    <div>
+        <p><small>Pro změnu již odeslané přihlášky nás kontaktujte e-mailem nebo telefonicky.</small></p>
+    </div>
+    {% if event and event.subEvents %}
+        <div>
+            <p><strong>Jsou dostupné také dílčí akce:</strong></p>
+            <ul>
+                {% for subEvent in event.subEvents %}
+                    <li>
+                        <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
+                            <strong class="d-inline d-md-none">{{ subEvent.shortName }}</strong>
+                            <strong class="d-none d-md-inline">{{ subEvent.name }}</strong>
+                        </a>
+                        {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
 </header>
 {{ form_start(form) }}
 {{ form_widget(form) }}
