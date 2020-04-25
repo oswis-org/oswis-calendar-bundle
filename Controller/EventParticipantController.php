@@ -195,13 +195,17 @@ class EventParticipantController extends AbstractController
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event, $this->getParticipantType($participantSlug));
         try {
-            $ranges = $event->getRegistrationRanges($participant->getEventParticipantType())
-                ->filter(fn(EventRegistrationRange $r) => $r->isPublicOnWeb());
-            if ($ranges->count() < 1) {
-                throw new PriceInvalidArgumentException('Přihlášky nyní nejsou povoleny.');
-            }
-            $range = $ranges->first();
-            assert($range instanceof EventRegistrationRange);
+            $range = $this->getRange($event, $participant);
+        } catch (PriceInvalidArgumentException $exception) {
+            return $this->redirectToRoute(
+                'oswis_org_oswis_calendar_web_event_registrations',
+                ['eventSlug'       => $event->getSlug(),
+                 'participantType' => $participant->getEventParticipantType()
+                     ->getType(),
+                ]
+            );
+        }
+        try {
             $form = $this->createForm(\OswisOrg\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
@@ -381,6 +385,18 @@ class EventParticipantController extends AbstractController
         }
 
         return $type;
+    }
+
+    protected function getRange(Event $event, EventParticipant $participant): EventRegistrationRange
+    {
+        $participantType = $participant->getEventParticipantType();
+        $ranges = $event->getRegistrationRanges($participantType)
+            ->filter(fn(EventRegistrationRange $r) => $r->isPublicOnWeb());
+        if ($ranges->count() < 1 || !($ranges->first() instanceof EventRegistrationRange)) {
+            throw new PriceInvalidArgumentException('Přihlášky na akci nyní nejsou povoleny.');
+        }
+
+        return $ranges->first();
     }
 
     final public function checkSpamInForm(Form $form, LoggerInterface $logger, SpamDateTimeEncoder $spamDateTimeEncoder): void

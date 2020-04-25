@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
@@ -247,7 +248,7 @@ class EventController extends AbstractController
         }
         $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->getEvents(null, null, null, null, null, null, false);
         $context = [
-            'events' => self::getRegistrationRanges($events, $participantType, $dateTime),
+            'events' => self::getRegistrationRanges($events, $participantType, true, $dateTime),
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
@@ -264,14 +265,18 @@ class EventController extends AbstractController
      *     eventId => ['event' => Event, 'ranges' => Collection<EventRegistrationRange>],
      * ]
      */
-    public static function getRegistrationRanges(Collection $events, ?string $participantType = null, ?DateTime $dateTime = null): array
+    public static function getRegistrationRanges(Collection $events, ?string $participantType = null, ?bool $onlyPublicOnWeb = true, ?DateTime $dateTime = null): array
     {
         $ranges = [];
         foreach ($events as $event) {
             assert($event instanceof Event);
+            $eventRanges = $event->getRegistrationRangesByTypeOfType($participantType, $dateTime);
+            if ($onlyPublicOnWeb) {
+                $eventRanges = $eventRanges->filter(fn(EventRegistrationRange $range) => $range->isPublicOnWeb());
+            }
             $ranges[$event->getId()] ??= [
                 'event'  => $event,
-                'ranges' => $event->getRegistrationRangesByTypeOfType($participantType, $dateTime),
+                'ranges' => $eventRanges,
             ];
         }
 

@@ -1,7 +1,7 @@
 <header>
     <h2 class="text-uppercase mb-2">Nový účastník</h2>
 
-    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' with {'event': form.vars.value.event, 'range': range} %}
+    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' with {'event': form.vars.value.event} %}
 
     {% if form.vars.value.event is defined and form.vars.value.event and form.vars.value.event.subEvents|length > 0 %}
         <div class="mt-2 mb-2">

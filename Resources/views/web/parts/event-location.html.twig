@@ -1,6 +1,9 @@
 <div class="card" itemprop="event.location" itemscope itemtype="http://schema.org/Place">
     <meta itemprop="name" content="{{ event.location(true).name|default }}"/>
-    <div class="card-header p-2"><small class="text-muted"><i class="fas fa-map-marked-alt"></i>&nbsp;Místo konání&nbsp;akce</small></div>
+    <div class="card-header p-2">
+        <small class="text-muted">Místo konání&nbsp;akce</small>
+        <strong class="float-right align-middle text-muted"><i class="fas fa-map-marked-alt"></i></strong>
+    </div>
     {% if event.location(true).geoLon and event.location(true).geoLat %}
         <iframe class="card-img-top border-0" style="min-height: 200px;"
                 src="https://frame.mapy.cz/zakladni?x={{ event.location.geoLon|number_format(6, '.', '') }}&y={{ event.location.geoLat|number_format(6, '.', '') }}&z=15">
