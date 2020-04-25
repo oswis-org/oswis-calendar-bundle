@@ -2718,16 +2718,16 @@
     },
     {
       "name": "league/commonmark",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "c995966d35424bae20f76f8b31248099487a3f57"
+        "reference": "9e780d972185e4f737a03bade0fd34a9e67bbf31"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/c995966d35424bae20f76f8b31248099487a3f57",
-        "reference": "c995966d35424bae20f76f8b31248099487a3f57",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/9e780d972185e4f737a03bade0fd34a9e67bbf31",
+        "reference": "9e780d972185e4f737a03bade0fd34a9e67bbf31",
         "shasum": ""
       },
       "require": {
@@ -2788,62 +2788,19 @@
         "md",
         "parser"
       ],
-      "time": "2020-04-20T13:36:51+00:00"
-    },
-    {
-      "name": "league/commonmark-extras",
-      "version": "1.2.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/thephpleague/commonmark-extras.git",
-        "reference": "b1961aa4a85465bf884235106a7517e315f14f41"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark-extras/zipball/b1961aa4a85465bf884235106a7517e315f14f41",
-        "reference": "b1961aa4a85465bf884235106a7517e315f14f41",
-        "shasum": ""
-      },
-      "require": {
-        "league/commonmark": "^1.3",
-        "php": "^7.1"
-      },
-      "require-dev": {
-        "phpunit/phpunit": "^7.5"
-      },
-      "type": "commonmark-extension",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.3-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "League\\CommonMark\\Extras\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Colin O'Dell",
-          "email": "colinodell@gmail.com",
-          "homepage": "https://www.colinodell.com",
-          "role": "Lead Developer"
-        }
-      ],
-      "description": "Useful extensions for customizing the league/commonmark Markdown parser",
-      "homepage": "https://github.com/thephpleague/commonmark-extras",
-      "keywords": [
-        "Extras",
-        "commonmark",
-        "extensions",
-        "gfm",
-        "markdown"
-      ],
       "funding": [
+        {
+          "url": "https://enjoy.gitstore.app/repositories/thephpleague/commonmark",
+          "type": "custom"
+        },
+        {
+          "url": "https://www.colinodell.com/sponsor",
+          "type": "custom"
+        },
+        {
+          "url": "https://www.paypal.me/colinpodell/10.00",
+          "type": "custom"
+        },
         {
           "url": "https://github.com/colinodell",
           "type": "github"
@@ -2851,10 +2808,13 @@
         {
           "url": "https://www.patreon.com/colinodell",
           "type": "patreon"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/league/commonmark",
+          "type": "tidelift"
         }
       ],
-      "abandoned": "league/commonmark",
-      "time": "2020-04-04T16:03:32+00:00"
+      "time": "2020-04-24T13:39:56+00:00"
     },
     {
       "name": "league/csv",
@@ -3821,16 +3781,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.216",
+      "version": "v0.0.218",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "98aec65f3bad0e5fe9f006846eb454c4689219c2"
+        "reference": "105dd529bf7146f6e12579bb394d5ab114d5764f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/98aec65f3bad0e5fe9f006846eb454c4689219c2",
-        "reference": "98aec65f3bad0e5fe9f006846eb454c4689219c2",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/105dd529bf7146f6e12579bb394d5ab114d5764f",
+        "reference": "105dd529bf7146f6e12579bb394d5ab114d5764f",
         "shasum": ""
       },
       "require": {
@@ -3872,20 +3832,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-04-23T12:11:08+00:00"
+      "time": "2020-04-25T10:10:15+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.442",
+      "version": "v0.0.443",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "d1c0b78ebc016577fa38400a5e0d0a63b9286feb"
+        "reference": "da4f06f3c2d012dfadeb617ee9b72c3bb6c71f76"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/d1c0b78ebc016577fa38400a5e0d0a63b9286feb",
-        "reference": "d1c0b78ebc016577fa38400a5e0d0a63b9286feb",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/da4f06f3c2d012dfadeb617ee9b72c3bb6c71f76",
+        "reference": "da4f06f3c2d012dfadeb617ee9b72c3bb6c71f76",
         "shasum": ""
       },
       "require": {
@@ -3895,7 +3855,7 @@
         "bigit/vokativ": "dev-master",
         "doctrine/collections": "^1.6",
         "egulias/email-validator": "^2.1",
-        "elasticsearch/elasticsearch": "^7.5",
+        "elasticsearch/elasticsearch": "^7.6",
         "ext-calendar": "*",
         "ext-ctype": "*",
         "ext-iconv": "*",
@@ -3905,9 +3865,8 @@
         "gesdinet/jwt-refresh-token-bundle": "^0.9",
         "hirak/prestissimo": "^0.3",
         "knplabs/doctrine-behaviors": "^2.0",
-        "league/commonmark": "^1.2",
-        "league/commonmark-extras": "^1.1",
-        "league/csv": "^9.5",
+        "league/commonmark": "^1.4",
+        "league/csv": "^9.6",
         "league/html-to-markdown": "^4.9",
         "lexik/jwt-authentication-bundle": "^2.6",
         "liip/imagine-bundle": "^2.3",
@@ -3916,23 +3875,23 @@
         "php-console/php-console": "^3.1",
         "psr/event-dispatcher": "^1.0",
         "sensio/framework-extra-bundle": "^5.5",
-        "symfony/asset": "5.0.*",
-        "symfony/browser-kit": "5.0.*",
-        "symfony/dependency-injection": "5.0.*",
-        "symfony/expression-language": "5.0.*",
-        "symfony/mailer": "5.0.*",
-        "symfony/mime": "5.0.*",
+        "symfony/asset": "^5.0",
+        "symfony/browser-kit": "^5.0",
+        "symfony/dependency-injection": "^5.0",
+        "symfony/expression-language": "^5.0",
+        "symfony/mailer": "^5.0",
+        "symfony/mime": "^5.0",
         "symfony/monolog-bundle": "^3.5",
         "symfony/orm-pack": "^1.0",
-        "symfony/process": "5.0.*",
-        "symfony/proxy-manager-bridge": "5.0.*",
-        "symfony/security-bundle": "5.0.*",
+        "symfony/process": "^5.0",
+        "symfony/proxy-manager-bridge": "^5.0",
+        "symfony/security-bundle": "^5.0",
         "symfony/serializer-pack": "^1.0",
-        "symfony/string": "5.0.*",
-        "symfony/twig-bundle": "5.0.*",
-        "symfony/web-link": "5.0.*",
-        "symfony/web-profiler-bundle": "5.0.*",
-        "symfony/yaml": "5.0.*",
+        "symfony/string": "^5.0",
+        "symfony/twig-bundle": "^5.0",
+        "symfony/web-link": "^5.0",
+        "symfony/web-profiler-bundle": "^5.0",
+        "symfony/yaml": "^5.0",
         "twig/cssinliner-extra": "^3.0",
         "twig/extra-bundle": "^3.0",
         "twig/inky-extra": "^3.0",
@@ -3950,7 +3909,7 @@
       "extra": {
         "symfony": {
           "allow-contrib": true,
-          "require": "5.0.*"
+          "require": "^5.0"
         }
       },
       "autoload": {
@@ -3982,7 +3941,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-04-23T10:10:47+00:00"
+      "time": "2020-04-25T09:50:16+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -9361,16 +9320,16 @@
     },
     {
       "name": "symplify/package-builder",
-      "version": "v7.2.17",
+      "version": "v7.2.19",
       "source": {
         "type": "git",
         "url": "https://github.com/symplify/package-builder.git",
-        "reference": "ab54eb67173b238a8c479d49393a57e852058abf"
+        "reference": "0da9a241760fbbb785473541a899d7570e457c89"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symplify/package-builder/zipball/ab54eb67173b238a8c479d49393a57e852058abf",
-        "reference": "ab54eb67173b238a8c479d49393a57e852058abf",
+        "url": "https://api.github.com/repos/symplify/package-builder/zipball/0da9a241760fbbb785473541a899d7570e457c89",
+        "reference": "0da9a241760fbbb785473541a899d7570e457c89",
         "shasum": ""
       },
       "require": {
@@ -9403,6 +9362,16 @@
         "MIT"
       ],
       "description": "Dependency Injection, Console and Kernel toolkit for Symplify packages.",
+      "funding": [
+        {
+          "url": "https://github.com/tomasvotruba",
+          "type": "github"
+        },
+        {
+          "url": "https://www.patreon.com/rectorphp",
+          "type": "patreon"
+        }
+      ],
       "time": "2020-04-19T11:07:36+00:00"
     },
     {
