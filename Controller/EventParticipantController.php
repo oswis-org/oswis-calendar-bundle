@@ -249,6 +249,7 @@ class EventParticipantController extends AbstractController
                 array(
                     'form'                => $form->createView(),
                     'title'               => 'Přihlaš se na Seznamovák UP právě teď!',
+                    'ranges'              => $event->getRegistrationRanges($participant->getEventParticipantType()),
                     'pageTitle'           => 'Přihláška na Seznamovák UP',
                     'message'             => '',
                     'type'                => 'form',

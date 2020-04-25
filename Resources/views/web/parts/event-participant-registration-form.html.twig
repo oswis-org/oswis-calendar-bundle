@@ -1,13 +1,18 @@
 <header>
-    <h2 class="text-uppercase">Nový účastník</h2>
-    <div>
-        <p><small>Pro změnu již odeslané přihlášky nás kontaktujte e-mailem nebo telefonicky.</small></p>
-    </div>
-    {% if event is defined and event and event.subEvents %}
-        <div>
+    <h2 class="text-uppercase mb-2">Nový účastník</h2>
+
+    {% if ranges is defined and ranges|length > 0 %}
+        {% for range in ranges %}
+            {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig'
+                with {'event': form.vars.value.event, 'range': range} %}
+        {% endfor %}
+    {% endif %}
+
+    {% if form.vars.value.event is defined and form.vars.value.event and form.vars.value.event.subEvents %}
+        <div class="mt-2 mb-2">
             <p><strong>Jsou dostupné také dílčí akce:</strong></p>
             <ul>
-                {% for subEvent in event.subEvents %}
+                {% for subEvent in form.vars.value.event.subEvents %}
                     <li>
                         <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
                             <strong class="d-inline d-md-none">{{ subEvent.shortName }}</strong>

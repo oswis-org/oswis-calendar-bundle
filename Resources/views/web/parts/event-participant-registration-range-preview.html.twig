@@ -32,10 +32,10 @@
                 <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.eventParticipantType.name }}</h6>
             {% endif %}
             {% if range.description %}
-                <div class="text-muted"><p>{{ range.description }}</p></div>
+                <div class="mt-2 mb-2">{{ range.description }}</div>
             {% endif %}
             {% if range.note %}
-                <div><p>{{ range.note }}</p></div>
+                <div class="text-muted mt-2 mb-2">{{ range.note }}</div>
             {% endif %}
             {% if range.rangeActive %}
                 <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType.slug}) }}">
