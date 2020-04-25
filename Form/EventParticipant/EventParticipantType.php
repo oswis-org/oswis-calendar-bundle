@@ -118,8 +118,7 @@ class EventParticipantType extends AbstractType
         $participantType = $participant->getEventParticipantType();
         $flagsRows = $event->getAllowedFlagsAggregatedByType($participantType);
         foreach ($flagsRows as $flagsRow) {
-            $flagType = $flagsRow['flagType'];
-            assert($flagType instanceof EventParticipantFlagType);
+            $flagType = $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType'] : null;
             $flags = $flagsRow['flags'];
             $builder->add(
                 'flag_'.($flagType ? $flagType->getSlug() : '0'),

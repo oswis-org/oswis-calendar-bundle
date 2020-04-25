@@ -241,7 +241,7 @@ class EventController extends AbstractController
         if (!empty($eventSlug) && empty($event)) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
         }
-        $events = null !== $event ? new ArrayCollection([$event]) : $this->getEvents(null, null, null, null, null, null, false);
+        $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->getEvents(null, null, null, null, null, null, false);
         $context = [
             'events' => self::getRegistrationRanges($events, $participantType, $dateTime),
         ];
