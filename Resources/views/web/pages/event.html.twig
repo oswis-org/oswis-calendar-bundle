@@ -1,7 +1,7 @@
 {% extends '@OswisOrgOswisCore/web/page-skeleton-default.html.twig' %}
 
 {% block body_content %}
-    <main class="container" id="main-content-container">
+    <main class="container" id="main-content-container" itemscope itemtype="http://schema.org/Event">
         {% include '@OswisOrgOswisCalendar/web/parts/event.html.twig' %}
     </main>
 {% endblock %}

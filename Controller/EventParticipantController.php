@@ -203,7 +203,7 @@ class EventParticipantController extends AbstractController
                 'oswis_org_oswis_calendar_web_event_registrations',
                 [
                     'eventSlug'       => $event->getSlug(),
-                    'participantType' => $participantType,
+                    'participantType' => $participantType ? $participantType->getType() : null,
                 ]
             );
         }

@@ -1,11 +1,14 @@
-<div class="row text-justify">
+<div class="row text-justify" itemscope itemtype="http://schema.org/Event">
+    <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
+    <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
     <div class="col-12">
         <div class="card mb-3">
             <div class="row no-gutters">
                 <div class="col-md-3">
-                    <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
-                        <img class="card-img" alt="{{ event.name }}"
-                             src="{{ absolute_url(asset(event.image ? '/images/events/'~event.image : 'img/web/og-image.jpg'))|default('') }}">
+                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
+                        <img class="card-img" alt="{{ event.name }}" itemprop="image"
+                             content="{{ absolute_url(asset(event.image ? '/images/events/'~event.image : 'img/web/og-image.jpg'))|default }}"
+                             src="{{ absolute_url(asset(event.image ? '/images/events/'~event.image : 'img/web/og-image.jpg'))|default }}">
                     </a>
                 </div>
                 <div class="col-md-9">
@@ -13,7 +16,6 @@
                         <h2 class="card-title text-uppercase mt-1 mb-0" itemprop="name">
                             <small><a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
                         </h2>
-                        <link itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}"/>
                         <p class="card-text text-muted">
                             {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
                                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
@@ -23,7 +25,7 @@
                             {% endif %}
                         </p>
                         {% if event.description %}
-                            <p class="card-text">{{ event.description }}</p>
+                            <p class="card-text" itemprop="description">{{ event.description|default }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -37,7 +39,7 @@
                     </div>
                     <div class="col-lg-6">
                         {% if event.location(true) is defined and event.location(true) %}
-                            <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
+                            <div itemprop="location" itemscope itemtype="http://schema.org/Place">
                                 {% if event.location(true).name is defined and event.location(true).name %}
                                     <div itemprop="name" content="{{ event.location(true).name }}"> 🗺&nbsp;
                                         {% if event.location(true).url %}
@@ -69,7 +71,7 @@
                                     {% if event.location(true).url is defined and event.location(true).url %}
                                         <meta itemprop="url" content="{{ event.location(true).url }}"/>
                                     {% endif %}
-                                    <meta itemprop=Country" content="CZ"/>
+                                    <meta itemprop="addressCountry" content="CZ"/>
                                 </div>
                             </div>
                         {% endif %}

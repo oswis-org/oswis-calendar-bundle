@@ -1,4 +1,4 @@
-<div class="card" itemprop="event.location" itemscope itemtype="http://schema.org/Place">
+<div class="card" itemprop="location" itemscope itemtype="http://schema.org/Place">
     <meta itemprop="name" content="{{ event.location(true).name|default }}"/>
     <div class="card-header p-2">
         <small class="text-muted">Místo konání&nbsp;akce</small>
@@ -18,7 +18,7 @@
             <meta itemprop="postalCode" content="{{ event.location(true).postalCode|default }}"/>
             <meta itemprop="addressRegion" content="{{ event.location(true).city|default }}"/>
             <meta itemprop="url" content="{{ event.location(true).url|default }}"/>
-            <meta itemprop=Country" content="CZ"/>
+            <meta itemprop="addressCountry" content="CZ"/>
         </div>
     </div>
     {% if event.location(true).url %}

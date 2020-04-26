@@ -13,3 +13,6 @@
 {{ form_start(form) }}
 {{ form_widget(form) }}
 {{ form_end(form) }}
+<footer class="mt-5 pt-5 mb-4">
+    {% include '@OswisOrgOswisCalendar/web/parts/event-preview.html.twig' with {'event': form.vars.value.event} %}
+</footer>

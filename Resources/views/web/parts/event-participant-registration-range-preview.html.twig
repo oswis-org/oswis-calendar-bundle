@@ -1,10 +1,10 @@
 {% if range is defined and range %}
-    <div class="row" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+    <div class="row" itemprop="offer" itemscope itemtype="http://schema.org/Offer">
         <div class="col-12">
             <div class="card-deck">
                 <div class="card mt-2 mb-4">
                     {% if range.rangeActive %}
-                        <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug}) }}">
+                        <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug}) }}" itemprop="url">
                             <div class="card-header p-2">
                                 <h5 class="card-title mb-0" itemprop="name">
                                     {% block range_preview_title %}
@@ -32,6 +32,9 @@
                                 {{ event.shortName }}
                             </a>
                         </h6>
+                        {% if event.rangeAsText %}
+                            <h6 class="card-subtitle mb-2 text-muted"><strong>Termín akce:</strong> {{ event.rangeAsText|default }}</h6>
+                        {% endif %}
                         {% if range.eventParticipantType %}
                             <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.eventParticipantType.name }}</h6>
                         {% endif %}

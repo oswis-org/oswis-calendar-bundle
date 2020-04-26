@@ -12,7 +12,9 @@
 
 <div class="row text-justify">
     <meta itemprop="name" content="{{ event.name }}">
-    <div class="col-lg-9" itemscope itemtype="http://schema.org/Event">
+    <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
+    <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
+    <div class="col-lg-9">
         {% include '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig' %}
         <h3>
             {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
