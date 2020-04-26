@@ -15,8 +15,10 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('oswis_org_oswis_calendar', 'array');
         $rootNode = $treeBuilder->getRootNode();
+        assert($rootNode instanceof ArrayNodeDefinition);
         $rootNode->info('Default configuration for calendar module for OSWIS (One Simple Web IS).');
         $this->addDefaultEvent($rootNode);
+        $this->addDefaultEventFallback($rootNode);
         $rootNode->end();
 
         return $treeBuilder;
@@ -26,8 +28,19 @@ class Configuration implements ConfigurationInterface
     {
         $rootNode->children()
             ->scalarNode('default_event')
+            ->defaultNull()
             ->end()
-            ->scalarNode('default_event_fallback')
+            ->end();
+    }
+
+    private function addDefaultEventFallback(ArrayNodeDefinition $rootNode): void
+    {
+        $rootNode->fixXmlConfig('default_event_fallback')
+            ->children()
+            ->arrayNode('default_event_fallbacks')
+            ->defaultValue([])
+            ->scalarPrototype()
+            ->end()
             ->end()
             ->end();
     }

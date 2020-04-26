@@ -67,10 +67,12 @@ class EventService
         ];
         $event = $this->getRepository()
             ->getEvent($opts);
-        if (null === $event) {
-            $opts[EventRepository::CRITERIA_SLUG] = $this->calendarSettings->getDefaultEvent();
-            $event = $this->getRepository()
-                ->getEvent($opts);
+        foreach ($this->calendarSettings->getDefaultEventFallbacks() as $fallback) {
+            if (null === $event && !empty($fallback)) {
+                $opts[EventRepository::CRITERIA_SLUG] = $fallback;
+                $event = $this->getRepository()
+                    ->getEvent($opts);
+            }
         }
 
         return $this->defaultEvent = $event;

@@ -10,13 +10,28 @@ namespace OswisOrg\OswisCalendarBundle\Provider;
  */
 class OswisCalendarSettingsProvider
 {
+    /**
+     * @var array
+     */
     public array $patterns = [];
 
+    /**
+     * @var string|null
+     */
     protected ?string $defaultEvent = null;
 
-    protected ?string $defaultEventFallback = null;
+    /**
+     * @var string[] Fallback default events.
+     */
+    protected array $defaultEventFallbacks = [];
 
-    public function __construct(?string $defaultEvent = null, ?string $defaultEventFallback = null)
+    /**
+     * OswisCalendarSettingsProvider constructor.
+     *
+     * @param string|null $defaultEvent
+     * @param array|null  $defaultEventFallbacks
+     */
+    public function __construct(?string $defaultEvent = null, ?array $defaultEventFallbacks = null)
     {
         $this->patterns = [
             [
@@ -25,9 +40,14 @@ class OswisCalendarSettingsProvider
             ],
         ];
         $this->setDefaultEvent($defaultEvent);
-        $this->setDefaultEventFallback($defaultEventFallback);
+        $this->setDefaultEventFallbacks($defaultEventFallbacks ?? []);
     }
 
+    /**
+     * @param string|null $slug
+     *
+     * @return string|null
+     */
     public function processSpecialSlug(?string $slug): ?string
     {
         if (empty($slug)) {
@@ -41,6 +61,12 @@ class OswisCalendarSettingsProvider
         return $slug;
     }
 
+    /**
+     * @param string $slug
+     * @param string $pattern
+     *
+     * @return array
+     */
     private function regexMatch(string $slug, string $pattern = '//'): array
     {
         $parts = null;
@@ -59,6 +85,13 @@ class OswisCalendarSettingsProvider
         ];
     }
 
+    /**
+     * @param int    $a
+     * @param string $sign
+     * @param int    $b
+     *
+     * @return int
+     */
     private function processMath(int $a, string $sign, int $b): int
     {
         if ($sign === '+') {
@@ -71,31 +104,49 @@ class OswisCalendarSettingsProvider
         return $a;
     }
 
+    /**
+     * @return array
+     */
     public function getArray(): array
     {
         return [
             'default_event'          => $this->getDefaultEvent(),
-            'default_event_fallback' => $this->getDefaultEventFallback(),
+            'default_event_fallback' => $this->getDefaultEventFallbacks(),
         ];
     }
 
+    /**
+     * @return string|null
+     */
     public function getDefaultEvent(): ?string
     {
         return $this->defaultEvent;
     }
 
+    /**
+     * @param string|null $slug
+     */
     public function setDefaultEvent(?string $slug): void
     {
         $this->defaultEvent = $this->processSpecialSlug($slug);
     }
 
-    public function getDefaultEventFallback(): ?string
+    /**
+     * @return string[]
+     */
+    public function getDefaultEventFallbacks(): array
     {
-        return $this->defaultEventFallback;
+        return $this->defaultEventFallbacks ?? [];
     }
 
-    public function setDefaultEventFallback(?string $slug): void
+    /**
+     * @param string[] $fallbacks
+     */
+    public function setDefaultEventFallbacks(array $fallbacks): void
     {
-        $this->defaultEventFallback = $this->processSpecialSlug($slug);
+        $this->defaultEventFallbacks = [];
+        foreach ($fallbacks as $fallback) {
+            $this->defaultEventFallbacks[] = $this->processSpecialSlug($fallback);
+        }
     }
 }

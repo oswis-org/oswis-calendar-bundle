@@ -186,11 +186,11 @@ class EventParticipantController extends AbstractController
      */
     final public function eventParticipantRegistration(Request $request, ?string $eventSlug = null, ?string $participantSlug = null): Response
     {
-        $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
-        if (empty($eventSlug) && !empty($defaultEventSlug)) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_participant_registration', ['eventSlug' => $defaultEventSlug]);
+        $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
+        if (null !== $defaultEvent) {
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_participant_registration', ['eventSlug' => $defaultEvent->getSlug()]);
         }
-        if (empty($eventSlug)) {
+        if (null === $eventSlug) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
         }
         $event = $this->getEvent($eventSlug);

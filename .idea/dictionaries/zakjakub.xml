@@ -2,6 +2,7 @@
   <dictionary name="zakjakub">
     <words>
       <w>clearfix</w>
+      <w>fallbacks</w>
       <w>iconv</w>
       <w>jidlo</w>
       <w>kalendar</w>
