@@ -199,9 +199,10 @@ class EventParticipantController extends AbstractController
         } catch (PriceInvalidArgumentException $exception) {
             return $this->redirectToRoute(
                 'oswis_org_oswis_calendar_web_event_registrations',
-                ['eventSlug'       => $event->getSlug(),
-                 'participantType' => $participant->getEventParticipantType()
-                     ->getType(),
+                [
+                    'eventSlug'       => $event->getSlug(),
+                    'participantType' => $participant->getEventParticipantType()
+                        ->getType(),
                 ]
             );
         }

@@ -18,16 +18,11 @@ class OswisCalendarSettingsProvider
     {
         $this->patterns = [
             [
-                'pattern' => "/(.*){\s*year\s*([\+\-])\s*(\d*)}(.*)/", // [0] prefix [1] 'year' [2] sign [3] number [4] suffix
+                'pattern' => "/(.*){\s*(year)\s*([\+\-]?)\s*(\d*)}(.*)/", // [1] prefix [2] 'year' [3] sign [4] number [5] suffix
                 'value'   => date('Y'),
             ],
         ];
         $this->setDefaultEvent($defaultEvent);
-    }
-
-    public function setDefaultEvent(?string $slug): void
-    {
-        $this->defaultEvent = $this->processSpecialSlug($slug);
     }
 
     public function processSpecialSlug(?string $slug): ?string
@@ -36,14 +31,46 @@ class OswisCalendarSettingsProvider
             return null;
         }
         foreach ($this->patterns as $pattern) {
-            $parts = preg_split($pattern['pattern'] ?? '//', $slug);
-            if (empty($parts)) {
-                continue;
-            }
-            $slug = $parts[0].$this->processMath($pattern['value'] ?? 0, $parts[2], $parts[3]).$parts[4];
+            $parts = $this->regexMatch($slug, $pattern['pattern']);
+            $slug = empty($parts) ? $slug : $parts[1].$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]).$parts[5];
         }
 
         return $slug;
+    }
+
+    public function getArray(): array
+    {
+        return [
+            'default_event' => $this->getDefaultEvent(),
+        ];
+    }
+
+    public function getDefaultEvent(): ?string
+    {
+        return $this->defaultEvent;
+    }
+
+    public function setDefaultEvent(?string $slug): void
+    {
+        $this->defaultEvent = $this->processSpecialSlug($slug);
+    }
+
+    private function regexMatch(string $slug, string $pattern = '//'): array
+    {
+        $parts = null;
+        preg_match($pattern, $slug, $parts);
+        if (empty($parts)) {
+            return [];
+        }
+
+        return [
+            $parts[0] ?? '',    // Whole string.
+            $parts[1] ?? '',    // Prefix.
+            $parts[2] ?? '',    // Keyword ("year").
+            $parts[3] ?? null,  // Sign.
+            $parts[4] ?? 0,     // Number.
+            $parts[5] ?? '',    // Suffix.
+        ];
     }
 
     private function processMath(int $a, string $sign, int $b): int
@@ -56,17 +83,5 @@ class OswisCalendarSettingsProvider
         }
 
         return $a;
-    }
-
-    public function getArray(): array
-    {
-        return [
-            'default_event' => $this->getDefaultEvent(),
-        ];
-    }
-
-    public function getDefaultEvent(): ?string
-    {
-        return $this->processSpecialSlug($this->defaultEvent);
     }
 }
