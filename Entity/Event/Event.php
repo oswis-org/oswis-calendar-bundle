@@ -123,7 +123,7 @@ class Event implements BasicEntityInterface
 
     /**
      * @var Collection<EventWebContent> $webContents
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"}, fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_event_web_content_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
@@ -136,8 +136,7 @@ class Event implements BasicEntityInterface
      * @var Collection<EventRegistrationRange> $registrationRanges
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange",
-     *     cascade={"all"},
-     *     fetch="EAGER"
+     *     cascade={"all"}
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_event_registration_range_connection",
