@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -194,15 +195,15 @@ class EventParticipantController extends AbstractController
         }
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event, $this->getParticipantType($participantSlug));
+        $participantType = $participant->getEventParticipantType();
         try {
-            $range = $this->getRange($event, $participant);
+            $range = $this->getRange($event, $participantType);
         } catch (PriceInvalidArgumentException $exception) {
             return $this->redirectToRoute(
                 'oswis_org_oswis_calendar_web_event_registrations',
                 [
                     'eventSlug'       => $event->getSlug(),
-                    'participantType' => $participant->getEventParticipantType()
-                        ->getType(),
+                    'participantType' => $participantType,
                 ]
             );
         }
@@ -388,13 +389,22 @@ class EventParticipantController extends AbstractController
         return $type;
     }
 
-    protected function getRange(Event $event, EventParticipant $participant): EventRegistrationRange
+    /**
+     * Finds correct registration range from event by eventParticipantType and reference date and time.
+     *
+     * @param Event                $event           Event.
+     * @param EventParticipantType $participantType Type of participant.
+     * @param DateTime|null        $dateTime        Reference date and time.
+     *
+     * @return EventRegistrationRange
+     * @throws PriceInvalidArgumentException
+     */
+    public function getRange(Event $event, ?EventParticipantType $participantType, ?DateTime $dateTime = null): EventRegistrationRange
     {
-        $participantType = $participant->getEventParticipantType();
-        $ranges = $event->getRegistrationRanges($participantType)
+        $ranges = $event->getRegistrationRanges($participantType, $dateTime)
             ->filter(fn(EventRegistrationRange $r) => $r->isPublicOnWeb());
         if ($ranges->count() < 1 || !($ranges->first() instanceof EventRegistrationRange)) {
-            throw new PriceInvalidArgumentException('Přihlášky na akci nyní nejsou povoleny.');
+            throw new PriceInvalidArgumentException('Přihlášky na tuto akci nyní nejsou povoleny.');
         }
 
         return $ranges->first();

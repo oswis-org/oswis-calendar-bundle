@@ -17,6 +17,7 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser;
@@ -30,11 +31,17 @@ class EventService
 
     protected EventParticipantService $participantService;
 
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, EventParticipantService $participantService)
+    protected OswisCalendarSettingsProvider $calendarSettings;
+
+    protected ?Event $defaultEvent = null;
+
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, EventParticipantService $participantService, OswisCalendarSettingsProvider $calendarSettings)
     {
         $this->em = $em;
         $this->logger = $logger;
         $this->participantService = $participantService;
+        $this->calendarSettings = $calendarSettings;
+        $this->setDefaultEvent();
     }
 
     public function create(Event $event): Event
@@ -44,6 +51,29 @@ class EventService
         $this->logger->info('CREATE: Created event (by service): '.$event->getId().' '.$event->getName().'.');
 
         return $event;
+    }
+
+    public function getDefaultEvent(): ?Event
+    {
+        return $this->defaultEvent;
+    }
+
+    public function setDefaultEvent(): ?Event
+    {
+        $opts = [
+            EventRepository::CRITERIA_SLUG               => $this->calendarSettings->getDefaultEvent(),
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+        ];
+        $event = $this->getRepository()
+            ->getEvent($opts);
+        if (null === $event) {
+            $opts[EventRepository::CRITERIA_SLUG] = $this->calendarSettings->getDefaultEvent();
+            $event = $this->getRepository()
+                ->getEvent($opts);
+        }
+
+        return $this->defaultEvent = $event;
     }
 
     public function getRepository(): EventRepository

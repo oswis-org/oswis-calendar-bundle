@@ -14,7 +14,9 @@ class OswisCalendarSettingsProvider
 
     protected ?string $defaultEvent = null;
 
-    public function __construct(?string $defaultEvent)
+    protected ?string $defaultEventFallback = null;
+
+    public function __construct(?string $defaultEvent = null, ?string $defaultEventFallback = null)
     {
         $this->patterns = [
             [
@@ -23,6 +25,7 @@ class OswisCalendarSettingsProvider
             ],
         ];
         $this->setDefaultEvent($defaultEvent);
+        $this->setDefaultEventFallback($defaultEventFallback);
     }
 
     public function processSpecialSlug(?string $slug): ?string
@@ -36,23 +39,6 @@ class OswisCalendarSettingsProvider
         }
 
         return $slug;
-    }
-
-    public function getArray(): array
-    {
-        return [
-            'default_event' => $this->getDefaultEvent(),
-        ];
-    }
-
-    public function getDefaultEvent(): ?string
-    {
-        return $this->defaultEvent;
-    }
-
-    public function setDefaultEvent(?string $slug): void
-    {
-        $this->defaultEvent = $this->processSpecialSlug($slug);
     }
 
     private function regexMatch(string $slug, string $pattern = '//'): array
@@ -83,5 +69,33 @@ class OswisCalendarSettingsProvider
         }
 
         return $a;
+    }
+
+    public function getArray(): array
+    {
+        return [
+            'default_event'          => $this->getDefaultEvent(),
+            'default_event_fallback' => $this->getDefaultEventFallback(),
+        ];
+    }
+
+    public function getDefaultEvent(): ?string
+    {
+        return $this->defaultEvent;
+    }
+
+    public function setDefaultEvent(?string $slug): void
+    {
+        $this->defaultEvent = $this->processSpecialSlug($slug);
+    }
+
+    public function getDefaultEventFallback(): ?string
+    {
+        return $this->defaultEventFallback;
+    }
+
+    public function setDefaultEventFallback(?string $slug): void
+    {
+        $this->defaultEventFallback = $this->processSpecialSlug($slug);
     }
 }

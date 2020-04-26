@@ -55,9 +55,9 @@ class EventController extends AbstractController
      */
     final public function showEvent(?string $eventSlug = null): Response
     {
-        $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
-        if (empty($eventSlug) && !empty($defaultEventSlug)) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEventSlug]);
+        $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
+        if (null !== $defaultEvent) {
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]);
         }
         if (null === $eventSlug) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
@@ -100,9 +100,9 @@ class EventController extends AbstractController
      */
     final public function showEventLeaflet(?string $eventSlug = null): Response
     {
-        $defaultEventSlug = $this->calendarSettings->getDefaultEvent();
-        if (empty($eventSlug) && !empty($defaultEventSlug)) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEventSlug]);
+        $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
+        if (null !== $defaultEvent) {
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]);
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
@@ -259,13 +259,14 @@ class EventController extends AbstractController
      *
      * @param Collection    $events          Collection of events to extract registration ranges.
      * @param string|null   $participantType Restriction to event participant type.
+     * @param bool          $onlyPublicOnWeb Restriction only for web-public ranges.
      * @param DateTime|null $dateTime        Reference dateTime.
      *
      * @return array [
      *     eventId => ['event' => Event, 'ranges' => Collection<EventRegistrationRange>],
      * ]
      */
-    public static function getRegistrationRanges(Collection $events, ?string $participantType = null, ?bool $onlyPublicOnWeb = true, ?DateTime $dateTime = null): array
+    public static function getRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true, ?DateTime $dateTime = null): array
     {
         $ranges = [];
         foreach ($events as $event) {

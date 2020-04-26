@@ -27,6 +27,8 @@ class Configuration implements ConfigurationInterface
         $rootNode->children()
             ->scalarNode('default_event')
             ->end()
+            ->scalarNode('default_event_fallback')
+            ->end()
             ->end();
     }
 

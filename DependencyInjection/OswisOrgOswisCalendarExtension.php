@@ -41,6 +41,7 @@ class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensi
     {
         $definition = $container->getDefinition('oswis_org_oswis_calendar.oswis_calendar_settings_provider');
         $definition->setArgument(0, $config['default_event']);
+        $definition->setArgument(1, $config['default_event_fallback']);
     }
 
     final public function prepend(ContainerBuilder $container): void
