@@ -247,8 +247,13 @@ class EventController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
         }
         $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->getEvents(null, null, null, null, null, null, false);
+        $shortTitle = 'Přihlášky';
+        $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
         $context = [
-            'events' => self::getRegistrationRanges($events, $participantType, true, $dateTime),
+            'event'      => $event,
+            'events'     => self::getRegistrationRanges($events, $participantType, true, $dateTime),
+            'title'      => $title,
+            'shortTitle' => $shortTitle,
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);

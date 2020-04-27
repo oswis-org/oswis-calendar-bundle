@@ -6,8 +6,8 @@
             <div class="col-12">
                 <header class="text-uppercase">
                     <h2>
-                        <span class="d-block d-md-none">Přihlášky</span>
-                        <span class="d-none d-md-block">Přihlášky na akce</span>
+                        <span class="d-block d-md-none">{{ shortTitle|default(title|default) }}</span>
+                        <span class="d-none d-md-block">{{ title|default(shortTitle|default) }}</span>
                     </h2>
                 </header>
             </div>
@@ -17,8 +17,10 @@
                 <div class="row">
                     <div class="col-12 mt-3">
                         <h3>
-                            <span class="d-block d-md-none">{{ eventRanges.event.shortName|default }}</span>
-                            <span class="d-none d-md-block">{{ eventRanges.event.name|default }}</span>
+                            <a href="{{ path('oswis_org_oswis_calendar_web_event_registrations', {'eventSlug': eventRanges.event.slug}) }}">
+                                <span class="d-block d-md-none">{{ eventRanges.event.shortName|default }}</span>
+                                <span class="d-none d-md-block">{{ eventRanges.event.name|default }}</span>
+                            </a>
                         </h3>
                     </div>
                 </div>
@@ -29,4 +31,14 @@
         {% endfor %}
     </main>
 {% endblock %}
+
+{% block body_breadcrumbs %}
+    {% if event is defined and event %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' %}
+    {% elseif events|length == 1 %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' with {'event': events|first} %}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock body_breadcrumbs %}
 

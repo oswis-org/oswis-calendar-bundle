@@ -17,3 +17,9 @@
         {% endif %}
     </main>
 {% endblock %}
+
+{% block body_breadcrumbs %}
+    {% if event is defined and event %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' %}
+    {% endif %}
+{% endblock body_breadcrumbs %}

@@ -1,9 +1,14 @@
+{{- null -}}
 {% if event.superEvent is defined and event.superEvent %}
-    {% include '@OswisOrgOswisCalendar/web/parts/breadcrumb-event-parent.html.twig' with {'event': event.superEvent} %}
+    {% include '@OswisOrgOswisCalendar/web/parts/breadcrumb-event-parent.html.twig' with {'event': event.superEvent, 'b_active': false} %}
 {% endif %}
+{{- null -}}
 {% include '@OswisOrgOswisCore/web/parts/breadcrumb-item.html.twig'
     with {
     'b_url': path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}),
-    'b_title': event.shortName~'YYY',
-    'b_position': breadcrumb_index} %}
-{% set breadcumb_index = breadcumb_index + 1 %}
+    'b_title': event.shortName,
+    'b_position': breadcrumb_index,
+    'b_active': b_active,} %}
+{{- null -}}
+{% set breadcrumb_index = breadcrumb_index + 1 %}
+{{- null -}}

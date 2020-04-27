@@ -139,6 +139,7 @@ class EventParticipantController extends AbstractController
                 array(
                     'type'    => 'success',
                     'title'   => 'Hotovo!',
+                    'event'   => $eventParticipant->getEvent(),
                     'message' => 'Ověření uživatele proběhlo úspěšně.',
                 )
             );
@@ -250,6 +251,7 @@ class EventParticipantController extends AbstractController
                     array(
                         'form'                => $form->createView(),
                         'title'               => 'Přihláška odeslána!',
+                        'event'               => $event,
                         'pageTitle'           => 'Přihláška odeslána!',
                         'message'             => 'Tvoje přihláška na letošní Seznamovák Univerzity Palackého byla úspěšně odeslána! 
                                         Nyní je ovšem ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.',
@@ -265,6 +267,7 @@ class EventParticipantController extends AbstractController
                     'form'                => $form->createView(),
                     'title'               => 'Přihlaš se na Seznamovák UP právě teď!',
                     'range'               => $range,
+                    'event'               => $event,
                     'pageTitle'           => 'Přihláška na Seznamovák UP',
                     'message'             => '',
                     'type'                => 'form',
@@ -287,6 +290,7 @@ class EventParticipantController extends AbstractController
                     'form'                => $form->createView(),
                     'title'               => 'Přihláška na akci '.$event->getName(),
                     'pageTitle'           => 'Přihláška na akci '.$event->getName(),
+                    'event'               => $event,
                     'type'                => 'form',
                     'registrationsActive' => $event->isRegistrationsAllowed($participant->getEventParticipantType()),
                 )

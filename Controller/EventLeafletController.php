@@ -6,25 +6,13 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller;
 
-use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
-use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
-use OswisOrg\OswisCalendarBundle\Service\EventService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
 class EventLeafletController extends AbstractController
 {
-    protected EventService $eventService;
-
-    protected EventRepository $eventRepository;
-
-    protected EventParticipantTypeService $participantTypeService;
-
-    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService)
+    public function __construct()
     {
-        $this->eventService = $eventService;
-        $this->eventRepository = $eventService->getRepository();
-        $this->participantTypeService = $participantTypeService;
     }
 
     /**

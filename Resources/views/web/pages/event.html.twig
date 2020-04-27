@@ -6,23 +6,6 @@
     </main>
 {% endblock %}
 
-{% set breadcumb_index = 2 %}
-{% block breadcrumb_loop %}
-    {% for b in breadcrumbs|default %}
-        {% include '@OswisOrgOswisCore/web/parts/breadcrumb-item.html.twig'
-            with {'b_url': b.url, 'b_title': b.title~'XXX', 'b_position': breadcrumb_index} %}
-        {% set breadcumb_index = breadcumb_index + 1 %}
-    {% endfor %}
-    {% if event.superEvent is defined and event.superEvent %}
-        {% include '@OswisOrgOswisCalendar/web/parts/breadcrumb-event-parent.html.twig' with {'event': event.superEvent} %}
-    {% endif %}
-{% endblock breadcrumb_loop %}
-{% block breadcrumb_last %}
-    {% include '@OswisOrgOswisCore/web/parts/breadcrumb-item.html.twig'
-        with {
-        'b_url': path('oswis_org_oswis_calendar_web_event', {'eventSlug':event.slug}),
-        'b_title': event.shortName~'ZZZ',
-        'b_position': breadcrumb_index,
-        'b_active': true
-    } %}
-{% endblock breadcrumb_last %}
+{% block body_breadcrumbs %}
+    {% include '@OswisOrgOswisCalendar/web/parts/event-breadcrumbs.html.twig' %}
+{% endblock body_breadcrumbs %}

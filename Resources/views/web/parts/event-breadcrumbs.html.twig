@@ -1,0 +1,7 @@
+{% extends '@OswisOrgOswisCore/web/parts/breadcrumbs.html.twig' %}
+
+{% block breadcrumb_additional %}
+    {% include '@OswisOrgOswisCalendar/web/parts/breadcrumb-event-parent.html.twig' with {'event': event, 'b_active': true} %}
+{% endblock breadcrumb_additional %}
+{% block breadcrumb_last %}
+{% endblock breadcrumb_last %}
