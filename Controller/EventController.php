@@ -104,10 +104,14 @@ class EventController extends AbstractController
     public function showEventsNavigationChunk(?string $eventSlug = null): Response
     {
         $eventRepo = $this->eventService->getRepository();
+        $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
 
         return $this->render(
             '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig',
-            ['navEvents' => $this->getNavigationEvents($eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug))),]
+            [
+                'event' => $event,
+                'navEvents' => $this->getNavigationEvents($event),
+            ]
         );
     }
 
