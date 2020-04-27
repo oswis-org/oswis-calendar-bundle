@@ -2,7 +2,7 @@
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
     <div class="col-12">
-        <div class="card mb-3">
+        <div class="card mt-3 mb-4">
             <div class="row no-gutters">
                 <div class="col-md-3">
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
@@ -25,7 +25,7 @@
                             {% endif %}
                         </p>
                         {% if event.description %}
-                            <p class="card-text" itemprop="description">{{ event.description|default }}</p>
+                            <div class="card-text small mb-3" itemprop="description">{{ event.description|default }}</div>
                         {% endif %}
                     </div>
                 </div>
