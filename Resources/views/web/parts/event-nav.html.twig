@@ -3,18 +3,18 @@
         {% block event_nav_pre %}
         {% endblock event_nav_pre %}
         {% block event_nav_loop %}
-        {% for navEvent in navEvents|default %}
-            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
-               class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
-                {% if navEvent.year and navEvent.startYear %}
-                    {{ navEvent.startYear }}
-                {% elseif navEvent.batch and navEvent.seqId %}
-                    {{ navEvent.seqId }}. turnus
-                {% else %}
-                    {{ navEvent.getShortName }}
-                {% endif %}
-            </a>
-        {% endfor %}
+            {% for navEvent in navEvents|default %}
+                <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
+                   class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
+                    {% if navEvent.year and navEvent.startYear %}
+                        {{ navEvent.startYear }}
+                    {% elseif navEvent.batch and navEvent.seqId %}
+                        {{ navEvent.seqId }}. turnus
+                    {% else %}
+                        {{ navEvent.getShortName }}
+                    {% endif %}
+                </a>
+            {% endfor %}
         {% endblock event_nav_loop %}
         {% block event_nav_post %}
         {% endblock event_nav_post %}

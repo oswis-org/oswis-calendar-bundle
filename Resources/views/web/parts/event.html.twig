@@ -15,7 +15,7 @@
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
     <div class="col-lg-9">
-        {% include '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig' %}
+        {{ render(controller('OswisOrg\\OswisCalendarBundle\\Controller\\EventController::showEventsNavigationChunk', {'eventSlug': event.slug})) }}
         <h3>
             {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce

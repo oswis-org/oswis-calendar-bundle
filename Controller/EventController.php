@@ -63,33 +63,52 @@ class EventController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
         $eventRepo = $this->eventService->getRepository();
-        $opts = [
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
-        ];
-        $event = $eventRepo->getEvent($opts);
+        $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
         if (!($event instanceof Event)) {
             throw new OswisNotFoundException('Událost nenalezena.');
-        }
-        $navEvents = new ArrayCollection();
-        if (null !== $event->getSeries() && null !== $event->getType()) {
-            $navEvents = $event->getSeries()
-                ->getEvents(
-                    $event->getType()
-                        ->getType(),
-                    $event->isBatch() ? $event->getStartYear() : null
-                );
         }
         $data = array(
             'title'       => $event->getShortName(),
             'description' => $event->getDescription(),
-            'navEvents'   => $navEvents,
+            'navEvents'   => $this->getNavigationEvents(),
             'event'       => $event,
             'organizer'   => $this->eventService->getOrganizer($event),
         );
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);
+    }
+
+    public function getWebPublicEventOpts(?string $eventSlug = null): array
+    {
+        return [
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+        ];
+    }
+
+    public function getNavigationEvents(?Event $event = null): Collection
+    {
+        if (null === $event) {
+            return new ArrayCollection();
+        }
+        $series = $event->getSeries();
+        $type = $event->getType();
+
+        return null !== $series && null !== $type ? $series->getEvents(
+            ''.$type->getType(),
+            $event->isBatch() ? $event->getStartYear() : null
+        ) : new ArrayCollection();
+    }
+
+    public function showEventsNavigationChunk(?string $eventSlug = null): Response
+    {
+        $eventRepo = $this->eventService->getRepository();
+
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig',
+            ['navEvents' => $this->getNavigationEvents($eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug))),]
+        );
     }
 
     /**
