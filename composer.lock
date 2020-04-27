@@ -3790,16 +3790,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.219",
+      "version": "v0.0.221",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "7e39d358b412179a48e3575839bcb78d016ebbc6"
+        "reference": "814dea1cc8490d2355610aaae7653c9df0a47fac"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/7e39d358b412179a48e3575839bcb78d016ebbc6",
-        "reference": "7e39d358b412179a48e3575839bcb78d016ebbc6",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/814dea1cc8490d2355610aaae7653c9df0a47fac",
+        "reference": "814dea1cc8490d2355610aaae7653c9df0a47fac",
         "shasum": ""
       },
       "require": {
@@ -3841,20 +3841,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-04-25T11:16:53+00:00"
+      "time": "2020-04-27T10:24:26+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.443",
+      "version": "v0.0.445",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "da4f06f3c2d012dfadeb617ee9b72c3bb6c71f76"
+        "reference": "e17606ac73b3d7d4a72841c731e9ec8277afda29"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/da4f06f3c2d012dfadeb617ee9b72c3bb6c71f76",
-        "reference": "da4f06f3c2d012dfadeb617ee9b72c3bb6c71f76",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/e17606ac73b3d7d4a72841c731e9ec8277afda29",
+        "reference": "e17606ac73b3d7d4a72841c731e9ec8277afda29",
         "shasum": ""
       },
       "require": {
@@ -3950,7 +3950,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-04-25T09:50:16+00:00"
+      "time": "2020-04-27T10:20:08+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -4050,23 +4050,20 @@
     },
     {
       "name": "phpdocumentor/reflection-common",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "source": {
         "type": "git",
         "url": "https://github.com/phpDocumentor/ReflectionCommon.git",
-        "reference": "63a995caa1ca9e5590304cd845c15ad6d482a62a"
+        "reference": "6568f4687e5b41b054365f9ae03fcb1ed5f2069b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/63a995caa1ca9e5590304cd845c15ad6d482a62a",
-        "reference": "63a995caa1ca9e5590304cd845c15ad6d482a62a",
+        "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/6568f4687e5b41b054365f9ae03fcb1ed5f2069b",
+        "reference": "6568f4687e5b41b054365f9ae03fcb1ed5f2069b",
         "shasum": ""
       },
       "require": {
         "php": ">=7.1"
-      },
-      "require-dev": {
-        "phpunit/phpunit": "~6"
       },
       "type": "library",
       "extra": {
@@ -4098,7 +4095,7 @@
         "reflection",
         "static analysis"
       ],
-      "time": "2018-08-07T13:53:10+00:00"
+      "time": "2020-04-27T09:25:28+00:00"
     },
     {
       "name": "phpdocumentor/reflection-docblock",
@@ -9329,16 +9326,16 @@
     },
     {
       "name": "symplify/package-builder",
-      "version": "v7.2.19",
+      "version": "v7.2.20",
       "source": {
         "type": "git",
         "url": "https://github.com/symplify/package-builder.git",
-        "reference": "50bdbfb84566f6e27e24a0a2243d1f433538b771"
+        "reference": "c81b24ae00a086dc26d307ded5de21f81926991b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symplify/package-builder/zipball/50bdbfb84566f6e27e24a0a2243d1f433538b771",
-        "reference": "50bdbfb84566f6e27e24a0a2243d1f433538b771",
+        "url": "https://api.github.com/repos/symplify/package-builder/zipball/c81b24ae00a086dc26d307ded5de21f81926991b",
+        "reference": "c81b24ae00a086dc26d307ded5de21f81926991b",
         "shasum": ""
       },
       "require": {
