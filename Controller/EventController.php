@@ -109,7 +109,7 @@ class EventController extends AbstractController
         return $this->render(
             '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig',
             [
-                'event' => $event,
+                'event'     => $event,
                 'navEvents' => $this->getNavigationEvents($event),
             ]
         );
