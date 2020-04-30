@@ -311,4 +311,12 @@ class EventController extends AbstractController
 
         return $ranges;
     }
+
+    public function showCurrentEvent(): Response
+    {
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig',
+            ['event' => $this->eventService->getDefaultEvent()]
+        );
+    }
 }
