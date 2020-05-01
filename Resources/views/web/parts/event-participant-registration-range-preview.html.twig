@@ -8,9 +8,9 @@
                             <div class="card-header p-2">
                                 <h5 class="card-title mb-0 font-weight-bold font-1em" itemprop="name">
                                     {% block range_preview_title %}
-                                        <div class="d-inline d-md-none">{{ range.shortName|default('Přihláška na '~event.shortName|default) }}</div>
-                                        <div class="d-none d-md-inline">{{ range.name|default('Přihláška na akci '~event.name|default) }}</div>
-                                        <div class="float-right align-middle text-muted"><i class="fas fa-ticket-alt"></i></div>
+                                        <span class="d-inline d-md-none">{{ range.shortName|default('Přihláška na '~event.shortName|default) }}</span>
+                                        <span class="d-none d-md-inline">{{ range.name|default('Přihláška na akci '~event.name|default) }}</span>
+                                        <span class="float-right align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
                                     {% endblock range_preview_title %}
                                 </h5>
                             </div>

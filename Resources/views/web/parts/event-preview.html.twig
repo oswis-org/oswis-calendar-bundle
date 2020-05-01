@@ -32,43 +32,44 @@
             </div>
             <div class="card-footer">
                 <div class="row no-gutters">
-                    <div class="col-lg-6">
-                        📅 &nbsp;{{ event.rangeAsText|default }}
+                    <div class="col-md-6">
+                        <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-2">{{ event.rangeAsText|default }}</small>
                         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                     </div>
-                    <div class="col-lg-6">
+                    <div class="col-md-6">
                         {% if event.location(true) is defined and event.location(true) %}
                             <div itemprop="location" itemscope itemtype="http://schema.org/Place">
                                 {% if event.location(true).name is defined and event.location(true).name %}
-                                    <div itemprop="name" content="{{ event.location(true).name }}"> 🗺&nbsp;
-                                        {% if event.location(true).url %}
-                                            <a href="{{ event.location(true).url }}" title="{{ event.location(true).fullAddress|default(event.location(true).name) }}"
-                                               target="_blank">
-                                                {{ event.location(true).name }}
+                                    <div itemprop="name" content="{{ event.location(true).name }}">
+                                        <i class="fas fa-map-marked-alt text-muted"></i>&nbsp;
+                                        {%- if event.location(true).url -%}
+                                            <a title="{{ event.location(true).fullAddress|default(event.location(true).name) }}"
+                                               href="{{ event.location(true).url }}" target="_blank">
+                                                {%- block event_location_name -%}<small class="p-2">{{- event.location(true).name -}}</small>{%- endblock event_location_name -%}
                                             </a>
-                                        {% else %}
-                                            {{ event.location(true).name }}
-                                        {% endif %}
+                                        {%- else -%}
+                                            {{ block('event_location_name') }}
+                                        {%- endif -%}
                                     </div>
                                 {% endif %}
                                 <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                                    {% if event.location(true).name is defined and event.location(true).name %}
+                                    {% if event.location(true).name|default %}
                                         <meta itemprop="name" content="{{ event.location(true).name }}"/>
                                     {% endif %}
-                                    {% if event.location(true).streetAddress is defined and event.location(true).streetAddress %}
+                                    {% if event.location(true).streetAddress|default %}
                                         <meta itemprop="streetAddress" content="{{ event.location(true).streetAddress }}"/>
                                     {% endif %}
-                                    {% if event.location(true).city is defined and event.location(true).city %}
+                                    {% if event.location(true).city|default %}
                                         <meta itemprop="addressLocality" content="{{ event.location(true).city }}"/>
                                     {% endif %}
-                                    {% if event.location(true).postalCode is defined and event.location(true).postalCode %}
+                                    {% if event.location(true).postalCode|default %}
                                         <meta itemprop="postalCode" content="{{ event.location(true).postalCode }}"/>
                                     {% endif %}
-                                    {% if event.location(true).city is defined and event.location(true).city %}
+                                    {% if event.location(true).city|default %}
                                         <meta itemprop="addressRegion" content="{{ event.location(true).city }}"/>
                                     {% endif %}
-                                    {% if event.location(true).url is defined and event.location(true).url %}
+                                    {% if event.location(true).url|default %}
                                         <meta itemprop="url" content="{{ event.location(true).url }}"/>
                                     {% endif %}
                                     <meta itemprop="addressCountry" content="CZ"/>
