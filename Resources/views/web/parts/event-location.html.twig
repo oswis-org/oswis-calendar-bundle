@@ -5,9 +5,9 @@
         <strong class="float-right align-middle text-muted"><i class="fas fa-map-marked-alt"></i></strong>
     </div>
     {% if event.location(true).geoLon and event.location(true).geoLat %}
-        <iframe class="card-img-top border-0" style="min-height: 200px;"
-                src="https://frame.mapy.cz/zakladni?x={{ event.location.geoLon|number_format(6, '.', '') }}&y={{ event.location.geoLat|number_format(6, '.', '') }}&z=15">
-        </iframe>
+        {% set geoLon = event.location.geoLon|number_format(6, '.', '') %}
+        {% set geoLat = event.location.geoLat|number_format(6, '.', '') %}
+        <iframe class="lazy card-img-top border-0" style="min-height: 200px;" loading="lazy" data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15"></iframe>
     {% endif %}
     <div class="card-body p-3">
         <h5 class="card-title" itemprop="name"><strong>{{ event.location(true).name }}</strong></h5>
@@ -24,7 +24,7 @@
     {% if event.location(true).url %}
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
-                <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank" class="card-link">
+                <a href="{{ event.location(true).url }}" title="{{ event.location(true).name }}" target="_blank" itemprop="url" class="card-link">
                     Web
                 </a>
             </li>
