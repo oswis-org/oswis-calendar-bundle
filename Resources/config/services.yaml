@@ -193,20 +193,6 @@ services:
         public: true
 
     ##
-    ## Event leaflet web controller.
-    ##
-    oswis_org_oswis_calendar.event_leaflet_controller:
-        class: OswisOrg\OswisCalendarBundle\Controller\EventLeafletController
-        autowire: true
-        public: true
-        arguments:
-            - '@oswis_org_oswis_calendar.event_service'
-            - '@oswis_org_oswis_calendar.event_participant_type_service'
-    OswisOrg\OswisCalendarBundle\Controller\EventLeafletController:
-        alias: oswis_org_oswis_calendar.event_leaflet_controller
-        public: true
-
-    ##
     ## EventParticipant payment action (/event_participant_payment_action)
     ##
     oswis_org_oswis_calendar.event_participant_payment_action_request:
