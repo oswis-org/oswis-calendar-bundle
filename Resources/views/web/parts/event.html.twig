@@ -73,12 +73,12 @@
 </section>
 
 {% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r.publicOnWeb) %}
-    <section class="row" itemprop="offers">
+    <section class="row">
         <header class="col-12">
             <h3>Přihlášky</h3>
         </header>
-        {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
     </section>
+    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
 {% endfor %}
 
 <section class="row text-justify">
