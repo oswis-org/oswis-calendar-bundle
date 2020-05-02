@@ -38,7 +38,9 @@
             <ul class="mt-2">
                 <li>
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
-                        <strong>{{ event.superEvent.shortName }}</strong>
+                        <i class="fas fa-calendar-week"></i>
+                        <strong class="d-inline d-md-none">{{ event.superEvent.shortName }}</strong>
+                        <strong class="d-none d-md-inline">{{ event.superEvent.name }}</strong>
                     </a>
                     {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
                 </li>
