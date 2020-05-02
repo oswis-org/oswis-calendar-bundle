@@ -32,7 +32,7 @@
     </div>
 {% endif %}
 {% if event.organizer is defined and event.organizer.contact is defined %}
-    <div itemprop="performer" itemscope itemtype="http://schema.org/Organization">
+    <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
         <meta itemprop="name" content="{{ event.organizer.contact.name|default('') }}"/>
         <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/>
         <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
