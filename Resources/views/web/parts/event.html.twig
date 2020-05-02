@@ -1,4 +1,4 @@
-<div class="row">
+<section class="row">
     <div class="col-12">
         <header class="text-uppercase">
             <h2 itemprop="name" content="{{ event.name }}">
@@ -8,9 +8,9 @@
             </h2>
         </header>
     </div>
-</div>
+</section>
 
-<div class="row text-justify">
+<section class="row text-justify">
     <meta itemprop="name" content="{{ event.name }}">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
@@ -53,9 +53,9 @@
         {{ render_hinclude(controller('OswisOrg\\OswisCoreBundle\\Controller\\Website\\WebBannerController::showWebBanner',
             {'type': 'event', 'identifier': event.slug})) }}
     </div>
-</div>
+</section>
 
-<div class="row">
+<section class="row">
     <div class="col-12">
         <div class="card-deck">
             {% if event.location(true) is defined and event.location(true) %}
@@ -70,16 +70,20 @@
             {% endif %}
         </div>
     </div>
-</div>
+</section>
 
 {% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r.publicOnWeb) %}
-    <h3>Přihlášky</h3>
-    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
+    <section class="row" itemprop="offers">
+        <header class="col-12">
+            <h3>Přihlášky</h3>
+        </header>
+        {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
+    </section>
 {% endfor %}
 
-<div class="row text-justify">
+<section class="row text-justify">
     {% if event.webContent is defined and event.webContent.textValue is defined and event.webContent.textValue %}
         {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
     {% endif %}
-</div>
+</section>
 
