@@ -6,10 +6,10 @@
                     {% if range.rangeActive %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug}) }}" itemprop="url">
                             <div class="card-header p-2">
-                                <h5 class="card-title mb-0 font-weight-bold font-1em" itemprop="name">
+                                <h5 class="card-title mb-0 font-weight-bold font-1em">
                                     {% block range_preview_title %}
                                         <span class="d-inline d-md-none">{{ range.shortName|default('Přihláška na '~event.shortName|default) }}</span>
-                                        <span class="d-none d-md-inline">{{ range.name|default('Přihláška na akci '~event.name|default) }}</span>
+                                        <span class="d-none d-md-inline" itemprop="name">{{ range.name|default('Přihláška na akci '~event.name|default) }}</span>
                                         <span class="float-right align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
                                     {% endblock range_preview_title %}
                                 </h5>
@@ -24,7 +24,8 @@
                         {% endif %}
                         <h6 class="card-subtitle mb-2 text-muted">
                             <strong>Akce:</strong>
-                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" title="{{ event.name }} ({{ event.rangeAsText|default }})">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" title="{{ event.nameWithRange|default }})"
+                               content="{{ event.nameWithRange|default }})" itemprop="itemOffered" data-toggle="tooltip">
                                 {{ event.shortName }}
                             </a>
                         </h6>
@@ -35,10 +36,10 @@
                             <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.eventParticipantType.name }}</h6>
                         {% endif %}
                         {% if range.description %}
-                            <div class="mt-2 mb-2">{{ range.description }}</div>
+                            <div class="mt-2 mb-2" itemprop="description">{{ range.description }}</div>
                         {% endif %}
                         {% if range.note %}
-                            <div class="text-muted mt-2 mb-2">{{ range.note }}</div>
+                            <div class="text-muted mt-2 mb-2" itemprop="description">{{ range.note }}</div>
                         {% endif %}
                         {% if range.rangeActive %}
                             <a href="{{ path('oswis_org_oswis_calendar_web_event_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType.slug}) }}">

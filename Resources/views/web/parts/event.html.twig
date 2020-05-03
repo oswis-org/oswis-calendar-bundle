@@ -72,7 +72,7 @@
     </div>
 </section>
 
-{% for range in event.registrationRangesByTypeOfType('attendee')|filter(r => r.publicOnWeb) %}
+{% for range in event.registrationRangesByTypeOfType('attendee', null, true)|filter(r => r.publicOnWeb) %}
     <section class="row">
         <header class="col-12">
             <h3>Přihlášky</h3>

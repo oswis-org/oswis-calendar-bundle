@@ -241,16 +241,32 @@ class Event implements BasicEntityInterface
         }
     }
 
-    public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null): Collection
+    public function getRegistrationRanges(?EventParticipantType $participantType = null, ?DateTime $dateTime = null, ?bool $recursive = false): Collection
     {
+        $ranges = $this->registrationRanges ?? new ArrayCollection();
         if (null !== $participantType || null !== $dateTime) {
-            return $this->getRegistrationRanges()
-                ->filter(
-                    fn(EventRegistrationRange $range) => $range->isApplicableByType($participantType, $dateTime)
-                );
+            $ranges = $this->getRegistrationRanges()
+                ->filter(fn(EventRegistrationRange $range) => $range->isApplicableByType($participantType, $dateTime));
+        }
+        if (true === $recursive) {
+            foreach ($this->getSubEvents() as $subEvent) {
+                assert($subEvent instanceof self);
+                $subEvent->getRegistrationRanges($participantType, $dateTime, $recursive)
+                    ->map(fn(EventRegistrationRange $range) => $ranges->contains($range) ? null : $ranges->add($range));
+            }
         }
 
         return $this->registrationRanges ?? new ArrayCollection();
+    }
+
+    public function getSubEvents(): Collection
+    {
+        return $this->subEvents ?? new ArrayCollection();
+    }
+
+    public function getNameWithRange(): string
+    {
+        return $this->getName().($this->getRangeAsText() ? ' ('.$this->getRangeAsText().')' : null);
     }
 
     public function addEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
@@ -514,11 +530,6 @@ class Event implements BasicEntityInterface
         return $startDateTime === $maxDateTime ? null : $startDateTime;
     }
 
-    public function getSubEvents(): Collection
-    {
-        return $this->subEvents ?? new ArrayCollection();
-    }
-
     public function getEndDateTimeRecursive(): ?DateTime
     {
         $minDateTime = new DateTime(DateTimeUtils::MIN_DATE_TIME_STRING);
@@ -568,13 +579,14 @@ class Event implements BasicEntityInterface
     /**
      * @param string|null   $participantType
      * @param DateTime|null $dateTime
+     * @param bool|null     $recursive
      *
      * @return Collection<EventRegistrationRange>
      */
-    public function getRegistrationRangesByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): Collection
+    public function getRegistrationRangesByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null, ?bool $recursive = false): Collection
     {
         if (null !== $participantType || null !== $dateTime) {
-            return $this->getRegistrationRanges(null, $dateTime)
+            return $this->getRegistrationRanges(null, $dateTime, $recursive)
                 ->filter(fn(EventRegistrationRange $range) => $range->isApplicableByTypeOfType($participantType));
         }
 
