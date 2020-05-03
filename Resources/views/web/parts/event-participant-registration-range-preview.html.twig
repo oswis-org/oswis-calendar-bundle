@@ -24,8 +24,8 @@
                         {% endif %}
                         <h6 class="card-subtitle mb-2 text-muted">
                             <strong>Akce:</strong>
-                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" title="{{ event.nameWithRange|default }})"
-                               content="{{ event.nameWithRange|default }})" itemprop="itemOffered" data-toggle="tooltip">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" title="{{ event }}" content="{{ event }}"
+                               itemprop="itemOffered" data-toggle="tooltip">
                                 {{ event.shortName }}
                             </a>
                         </h6>

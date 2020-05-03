@@ -264,11 +264,6 @@ class Event implements BasicEntityInterface
         return $this->subEvents ?? new ArrayCollection();
     }
 
-    public function getNameWithRange(): string
-    {
-        return $this->getName().($this->getRangeAsText() ? ' ('.$this->getRangeAsText().')' : null);
-    }
-
     public function addEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
     {
         if (null !== $eventContactFlagConnection && !$this->getEventFlagConnections()
@@ -593,11 +588,17 @@ class Event implements BasicEntityInterface
         return $this->getRegistrationRanges();
     }
 
-    public function __toString(): string
+
+    public function getNameWithRange(): string
     {
         $range = $this->getRangeAsText();
 
-        return $this->getName().($range ? (' ('.$range.')') : null);
+        return $this->getName().($range ? ' ('.$range.')' : null);
+    }
+
+    public function __toString(): string
+    {
+        return $this->getNameWithRange();
     }
 
     public function getAllowedParticipantFlagAmount(?EventParticipantFlag $participantFlag, ?EventParticipantType $participantType): int
