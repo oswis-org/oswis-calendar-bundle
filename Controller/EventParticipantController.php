@@ -399,8 +399,4 @@ class EventParticipantController extends AbstractController
 
         return $ranges->first();
     }
-
-    final public function checkSpamInForm(Form $form, LoggerInterface $logger, SpamDateTimeEncoder $spamDateTimeEncoder): void
-    {
-    }
 }
