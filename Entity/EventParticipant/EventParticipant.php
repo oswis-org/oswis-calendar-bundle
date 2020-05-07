@@ -20,15 +20,13 @@ use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractRevision;
-use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicMailConfirmationTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\DeletedTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\InfoMailSentTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\PriorityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicMailConfirmationTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\InfoMailSentTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use function assert;
 
@@ -264,9 +262,7 @@ class EventParticipant implements BasicEntityInterface
     public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
     {
         try {
-            return $this->getContact() && $this->getContact()
-                    ->getContactPersons($referenceDateTime, true)
-                    ->count() > 0;
+            return $this->getContact() && $this->getContact()->getContactPersons($referenceDateTime, true)->count() > 0;
         } catch (Exception $e) {
             return false;
         }
@@ -299,10 +295,8 @@ class EventParticipant implements BasicEntityInterface
                     $cmpResult = 0;
                 } else {
                     $cmpResult = strcmp(
-                        $arg1->getContact()
-                            ->getSortableContactName(),
-                        $arg2->getContact()
-                            ->getSortableContactName()
+                        $arg1->getContact()->getSortableContactName(),
+                        $arg2->getContact()->getSortableContactName()
                     );
                 }
 
@@ -314,8 +308,7 @@ class EventParticipant implements BasicEntityInterface
     public function isFormal(bool $recursive = false): bool
     {
         if ($recursive && null === $this->formal) {
-            return $this->getEventParticipantType() ? $this->getEventParticipantType()
-                ->isFormal() : false;
+            return $this->getEventParticipantType() ? $this->getEventParticipantType()->isFormal() : false;
         }
 
         return $this->formal;
@@ -344,8 +337,7 @@ class EventParticipant implements BasicEntityInterface
 
     public function getName(): ?string
     {
-        return null !== $this->getContact() ? $this->getContact()
-            ->getContactName() : null;
+        return null !== $this->getContact() ? $this->getContact()->getContactName() : null;
     }
 
     /**
@@ -376,8 +368,7 @@ class EventParticipant implements BasicEntityInterface
     public function removeEmptyEventParticipantNotes(): void
     {
         $this->setEventParticipantNotes(
-            $this->getEventParticipantNotes()
-                ->filter(fn(EventParticipantNote $note): bool => !empty($note->getTextValue()))
+            $this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note): bool => !empty($note->getTextValue()))
         );
     }
 
@@ -436,8 +427,7 @@ class EventParticipant implements BasicEntityInterface
             throw new PriceInvalidArgumentException(' (typ uživatele nezadán)');
         }
         $dateTime = $this->getCreatedDateTime() ?? new DateTime();
-        $price = $this->getEvent()
-                ->getPrice($this->getEventParticipantType(), $dateTime) + $this->getFlagsPrice();
+        $price = $this->getEvent()->getPrice($this->getEventParticipantType(), $dateTime) + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
@@ -465,10 +455,9 @@ class EventParticipant implements BasicEntityInterface
 
     public function getEventParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
-        return $this->getEventParticipantFlagConnections($eventParticipantFlagType)
-            ->map(
-                fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
-            );
+        return $this->getEventParticipantFlagConnections($eventParticipantFlagType)->map(
+            fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
+        );
     }
 
     public function getEventParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
@@ -521,8 +510,7 @@ class EventParticipant implements BasicEntityInterface
         if (!$this->getEvent() || !$this->getEventParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()
-            ->getDeposit($this->getEventParticipantType());
+        $price = $this->getEvent()->getDeposit($this->getEventParticipantType());
 
         return $price < 0 ? 0 : $price;
     }
@@ -561,14 +549,12 @@ class EventParticipant implements BasicEntityInterface
 
     public function hasFlag(EventParticipantFlag $flag): bool
     {
-        return $this->getEventParticipantFlags()
-            ->exists(fn(EventParticipantFlag $f) => $flag->getId() === $f->getId());
+        return $this->getEventParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flag->getId() === $f->getId());
     }
 
     public function hasFlagOfTypeOfType(?string $flagType): bool
     {
-        return $this->getEventParticipantFlags()
-            ->exists(fn(EventParticipantFlag $f) => $flagType && $flagType === $f->getTypeOfType());
+        return $this->getEventParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flagType && $flagType === $f->getTypeOfType());
     }
 
     /**
@@ -623,8 +609,7 @@ class EventParticipant implements BasicEntityInterface
         $phone = preg_replace(
             '/\s/',
             '',
-            $this->getContact() ? $this->getContact()
-                ->getPhone() : null
+            $this->getContact() ? $this->getContact()->getPhone() : null
         );
 
         return substr(trim($phone), strlen(trim($phone)) - 9, 9);
@@ -635,8 +620,7 @@ class EventParticipant implements BasicEntityInterface
         $flags = [];
         foreach ($this->getEventParticipantFlags() as $flag) {
             if ($flag instanceof EventParticipantFlag) {
-                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()
-                    ->getSlug() : '';
+                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '';
                 $flags[$flagTypeId] ??= [];
                 $flags[$flagTypeId][] = $flag;
             }

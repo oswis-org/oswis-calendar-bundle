@@ -70,12 +70,11 @@ class EventParticipantType extends AbstractType
                 'data'         => $event,
                 'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $eventService),
             )
-        )
-            ->add(
-                'contact',
-                StudentPersonType::class,
-                array('label' => 'Účastník', 'required' => true)
-            );
+        )->add(
+            'contact',
+            StudentPersonType::class,
+            array('label' => 'Účastník', 'required' => true)
+        );
         $this->addFlagsFields($builder, $event, $participant);
         $builder->add(
             'eventParticipantNotes',

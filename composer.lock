@@ -2423,16 +2423,16 @@
     },
     {
       "name": "knplabs/doctrine-behaviors",
-      "version": "v2.0.3",
+      "version": "v2.0.4",
       "source": {
         "type": "git",
         "url": "https://github.com/KnpLabs/DoctrineBehaviors.git",
-        "reference": "92bd39bab67bdc8698c0db02679484a31029bba3"
+        "reference": "073578526538c9f889f773776217af59d8eba256"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/KnpLabs/DoctrineBehaviors/zipball/92bd39bab67bdc8698c0db02679484a31029bba3",
-        "reference": "92bd39bab67bdc8698c0db02679484a31029bba3",
+        "url": "https://api.github.com/repos/KnpLabs/DoctrineBehaviors/zipball/073578526538c9f889f773776217af59d8eba256",
+        "reference": "073578526538c9f889f773776217af59d8eba256",
         "shasum": ""
       },
       "require": {
@@ -2497,7 +2497,7 @@
         "tree",
         "uuid"
       ],
-      "time": "2020-04-01T09:20:12+00:00"
+      "time": "2020-04-27T15:21:35+00:00"
     },
     {
       "name": "laminas/laminas-code",
@@ -2727,16 +2727,16 @@
     },
     {
       "name": "league/commonmark",
-      "version": "1.4.2",
+      "version": "1.4.3",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "9e780d972185e4f737a03bade0fd34a9e67bbf31"
+        "reference": "412639f7cfbc0b31ad2455b2fe965095f66ae505"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/9e780d972185e4f737a03bade0fd34a9e67bbf31",
-        "reference": "9e780d972185e4f737a03bade0fd34a9e67bbf31",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/412639f7cfbc0b31ad2455b2fe965095f66ae505",
+        "reference": "412639f7cfbc0b31ad2455b2fe965095f66ae505",
         "shasum": ""
       },
       "require": {
@@ -2823,7 +2823,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-04-24T13:39:56+00:00"
+      "time": "2020-05-04T22:15:21+00:00"
     },
     {
       "name": "league/csv",
@@ -3790,16 +3790,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.228",
+      "version": "v0.0.237",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "ba9aa8ff56aa60db212eb0964dd3188f028f5753"
+        "reference": "86169cab031c1a4ea493b9bee5a34d4734b45b6a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/ba9aa8ff56aa60db212eb0964dd3188f028f5753",
-        "reference": "ba9aa8ff56aa60db212eb0964dd3188f028f5753",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/86169cab031c1a4ea493b9bee5a34d4734b45b6a",
+        "reference": "86169cab031c1a4ea493b9bee5a34d4734b45b6a",
         "shasum": ""
       },
       "require": {
@@ -3841,20 +3841,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-04-30T12:59:22+00:00"
+      "time": "2020-05-07T21:00:59+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.464",
+      "version": "v0.0.493",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "516edf6963390c88a00bcd491e74db2b9c4b616f"
+        "reference": "686eb15e72f179124ff4018554e46cdfa3e4e928"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/516edf6963390c88a00bcd491e74db2b9c4b616f",
-        "reference": "516edf6963390c88a00bcd491e74db2b9c4b616f",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/686eb15e72f179124ff4018554e46cdfa3e4e928",
+        "reference": "686eb15e72f179124ff4018554e46cdfa3e4e928",
         "shasum": ""
       },
       "require": {
@@ -3867,6 +3867,7 @@
         "elasticsearch/elasticsearch": "^7.6",
         "ext-calendar": "*",
         "ext-ctype": "*",
+        "ext-exif": "*",
         "ext-iconv": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
@@ -3950,7 +3951,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-04-30T13:17:11+00:00"
+      "time": "2020-05-07T20:20:25+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -4672,16 +4673,16 @@
     },
     {
       "name": "sensio/framework-extra-bundle",
-      "version": "v5.5.4",
+      "version": "v5.5.5",
       "source": {
         "type": "git",
         "url": "https://github.com/sensiolabs/SensioFrameworkExtraBundle.git",
-        "reference": "d0585d4825a87a5030ca8cd34adb4a17e1066c17"
+        "reference": "c76bb1c5c67840ecb6d9be8e9d8d7036e375e317"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/d0585d4825a87a5030ca8cd34adb4a17e1066c17",
-        "reference": "d0585d4825a87a5030ca8cd34adb4a17e1066c17",
+        "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/c76bb1c5c67840ecb6d9be8e9d8d7036e375e317",
+        "reference": "c76bb1c5c67840ecb6d9be8e9d8d7036e375e317",
         "shasum": ""
       },
       "require": {
@@ -4741,7 +4742,7 @@
         "annotations",
         "controllers"
       ],
-      "time": "2020-04-06T12:20:39+00:00"
+      "time": "2020-05-06T12:12:33+00:00"
     },
     {
       "name": "setasign/fpdi",
@@ -9789,16 +9790,16 @@
     },
     {
       "name": "symplify/package-builder",
-      "version": "v7.2.20",
+      "version": "v7.3.9",
       "source": {
         "type": "git",
         "url": "https://github.com/symplify/package-builder.git",
-        "reference": "608528685d82919e47d5b30873f46d563a39dcb8"
+        "reference": "606f910a6e9e9f99350ee9343535dd9058c9483f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symplify/package-builder/zipball/608528685d82919e47d5b30873f46d563a39dcb8",
-        "reference": "608528685d82919e47d5b30873f46d563a39dcb8",
+        "url": "https://api.github.com/repos/symplify/package-builder/zipball/606f910a6e9e9f99350ee9343535dd9058c9483f",
+        "reference": "606f910a6e9e9f99350ee9343535dd9058c9483f",
         "shasum": ""
       },
       "require": {
@@ -9818,7 +9819,7 @@
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "7.3-dev"
+          "dev-master": "7.4-dev"
         }
       },
       "autoload": {
@@ -9835,13 +9836,9 @@
         {
           "url": "https://github.com/tomasvotruba",
           "type": "github"
-        },
-        {
-          "url": "https://www.patreon.com/rectorphp",
-          "type": "patreon"
         }
       ],
-      "time": "2020-04-19T11:07:36+00:00"
+      "time": "2020-05-04T10:14:30+00:00"
     },
     {
       "name": "tijsverkoyen/css-to-inline-styles",
@@ -10535,16 +10532,16 @@
     },
     {
       "name": "phpstan/phpstan",
-      "version": "0.12.19",
+      "version": "0.12.23",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan.git",
-        "reference": "054f6d76b12ba9a6c13a5a8d5fcdf51219615f4d"
+        "reference": "71e529efced79e055fa8318b692e7f7d03ea4e75"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/054f6d76b12ba9a6c13a5a8d5fcdf51219615f4d",
-        "reference": "054f6d76b12ba9a6c13a5a8d5fcdf51219615f4d",
+        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/71e529efced79e055fa8318b692e7f7d03ea4e75",
+        "reference": "71e529efced79e055fa8318b692e7f7d03ea4e75",
         "shasum": ""
       },
       "require": {
@@ -10573,7 +10570,21 @@
         "MIT"
       ],
       "description": "PHPStan - PHP Static Analysis Tool",
-      "time": "2020-04-19T20:35:10+00:00"
+      "funding": [
+        {
+          "url": "https://github.com/ondrejmirtes",
+          "type": "github"
+        },
+        {
+          "url": "https://www.patreon.com/phpstan",
+          "type": "patreon"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/phpstan/phpstan",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2020-05-05T12:55:44+00:00"
     },
     {
       "name": "roave/security-advisories",
@@ -10581,12 +10592,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "81541a731da2f245a08666de73169cb5da7ac573"
+        "reference": "f46390d28af4fdb07c09d9aabf4c4e35149a7a08"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/81541a731da2f245a08666de73169cb5da7ac573",
-        "reference": "81541a731da2f245a08666de73169cb5da7ac573",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/f46390d28af4fdb07c09d9aabf4c4e35149a7a08",
+        "reference": "f46390d28af4fdb07c09d9aabf4c4e35149a7a08",
         "shasum": ""
       },
       "conflict": {
@@ -10676,6 +10687,7 @@
         "magento/product-community-edition": ">=2,<2.2.10|>=2.3,<2.3.2-p.2",
         "monolog/monolog": ">=1.8,<1.12",
         "namshi/jose": "<2.2",
+        "nzo/url-encryptor-bundle": ">=4,<4.3.2|>=5,<5.0.1",
         "onelogin/php-saml": "<2.10.4",
         "oneup/uploader-bundle": "<1.9.3|>=2,<2.1.5",
         "openid/php-openid": "<2.3",
@@ -10839,7 +10851,17 @@
         }
       ],
       "description": "Prevents installation of composer packages with known security vulnerabilities: no API, simply require it",
-      "time": "2020-04-23T00:01:30+00:00"
+      "funding": [
+        {
+          "url": "https://github.com/Ocramius",
+          "type": "github"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/roave/security-advisories",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2020-05-04T14:37:25+00:00"
     }
   ],
   "aliases": [],

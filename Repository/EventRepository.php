@@ -44,9 +44,7 @@ class EventRepository extends EntityRepository
     public function getEvent(?array $opts = []): ?Event
     {
         try {
-            $event = $this->getEventsQueryBuilder($opts)
-                ->getQuery()
-                ->getOneOrNullResult();
+            $event = $this->getEventsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
@@ -88,24 +86,21 @@ class EventRepository extends EntityRepository
                 $queryBuilder->leftJoin("e$i.superEvent", "e$j");
                 $eventQuery .= " OR e$j = :event_id ";
             }
-            $queryBuilder->andWhere($eventQuery)
-                ->setParameter('super_event_id', $opts[self::CRITERIA_SUPER_EVENT]->getId());
+            $queryBuilder->andWhere($eventQuery)->setParameter('super_event_id', $opts[self::CRITERIA_SUPER_EVENT]->getId());
         }
     }
 
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
-            $queryBuilder->andWhere(' e.id = :id ')
-                ->setParameter('id', $opts[self::CRITERIA_ID]);
+            $queryBuilder->andWhere(' e.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
     private function addSlugQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SLUG])) {
-            $queryBuilder->andWhere(' e.slug = :slug ')
-                ->setParameter('slug', $opts[self::CRITERIA_SLUG]);
+            $queryBuilder->andWhere(' e.slug = :slug ')->setParameter('slug', $opts[self::CRITERIA_SLUG]);
         }
     }
 
@@ -113,8 +108,7 @@ class EventRepository extends EntityRepository
     {
         if (!empty($opts[self::CRITERIA_START])) {
             $startQuery = ' (e.startDateTime IS NULL) OR (:start < e.startDateTime) ';
-            $queryBuilder->andWhere($startQuery)
-                ->setParameter('start', $opts[self::CRITERIA_START]);
+            $queryBuilder->andWhere($startQuery)->setParameter('start', $opts[self::CRITERIA_START]);
         }
     }
 
@@ -122,8 +116,7 @@ class EventRepository extends EntityRepository
     {
         if (!empty($opts[self::CRITERIA_END])) {
             $endQuery = ' (e.endDateTime IS NULL) OR (:end > e.endDateTime) ';
-            $queryBuilder->andWhere($endQuery)
-                ->setParameter('end', $opts[self::CRITERIA_END]);
+            $queryBuilder->andWhere($endQuery)->setParameter('end', $opts[self::CRITERIA_END]);
         }
     }
 
@@ -160,8 +153,7 @@ class EventRepository extends EntityRepository
     private function addLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_END] instanceof Place) {
-            $queryBuilder->andWhere('e.location = :location_id')
-                ->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
+            $queryBuilder->andWhere('e.location = :location_id')->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
         }
     }
 
@@ -221,9 +213,7 @@ class EventRepository extends EntityRepository
     public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         return new ArrayCollection(
-            $this->getEventsQueryBuilder($opts, $limit, $offset)
-                ->getQuery()
-                ->getResult()
+            $this->getEventsQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
         );
     }
 }

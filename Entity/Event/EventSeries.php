@@ -8,19 +8,17 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCoreBundle\Entity\Nameable;
-use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_series")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventSeries implements BasicEntityInterface
+class EventSeries implements NameableEntityInterface
 {
-    use BasicEntityTrait;
     use NameableBasicTrait;
 
     /**
@@ -56,8 +54,7 @@ class EventSeries implements BasicEntityInterface
         }
         $seqId = 1;
         $events = $this->getEvents(
-            $event->getType()
-                ->getType(),
+            $event->getType()->getType(),
             ($event->isBatch() ? $event->getStartYear() : null),
             false
         );
@@ -75,8 +72,7 @@ class EventSeries implements BasicEntityInterface
         $events = ($this->events ?? new ArrayCollection())->filter(fn(Event $e) => $deleted || !$e->isDeleted());
         if (null !== $eventTypeOfType) {
             $events = $events->filter(
-                fn(Event $e) => $e->getType() && $eventTypeOfType === $e->getType()
-                        ->getType()
+                fn(Event $e) => $e->getType() && $eventTypeOfType === $e->getType()->getType()
             );
         }
         if (null !== $year) {

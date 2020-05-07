@@ -35,11 +35,7 @@ use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
-use OswisOrg\OswisCoreBundle\Entity\Nameable;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
-use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
-use OswisOrg\OswisCoreBundle\Utils\SpamDateTimeEncoder;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Form;
@@ -110,8 +106,7 @@ class EventParticipantController extends AbstractController
                     )
                 );
             }
-            $eventParticipant = $this->participantService->getRepository()
-                ->findOneBy(['id' => $eventParticipantId]);
+            $eventParticipant = $this->participantService->getRepository()->findOneBy(['id' => $eventParticipantId]);
             if (null === $eventParticipant || null === $eventParticipant->getContact()) {
                 $error = null === $eventParticipant ? ', přihláška nenalezena' : '';
                 $error .= !($eventParticipant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
@@ -127,10 +122,8 @@ class EventParticipantController extends AbstractController
             }
             $eventParticipant->removeEmptyEventParticipantNotes();
             if ($eventParticipant->getContact()) {
-                $eventParticipant->getContact()
-                    ->removeEmptyDetails();
-                $eventParticipant->getContact()
-                    ->removeEmptyNotes();
+                $eventParticipant->getContact()->removeEmptyDetails();
+                $eventParticipant->getContact()->removeEmptyNotes();
             }
             $this->participantService->sendMail($eventParticipant, true, $token);
 
@@ -226,15 +219,11 @@ class EventParticipantController extends AbstractController
                 if (!$participant->getContact()) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Contact)');
                 }
-                $participant->getContact()
-                    ->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
+                $participant->getContact()->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
                 $participant->removeEmptyEventParticipantNotes();
-                $participant->getContact()
-                    ->removeEmptyDetails();
-                $participant->getContact()
-                    ->removeEmptyNotes();
-                $flagsRows = $participant->getEvent()
-                    ->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
+                $participant->getContact()->removeEmptyDetails();
+                $participant->getContact()->removeEmptyNotes();
+                $flagsRows = $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
                 foreach ($flagsRows as $flagsRow) {
                     $flagType = $flagsRow['flagType'];
                     assert($flagType instanceof EventParticipantType);
@@ -310,8 +299,7 @@ class EventParticipantController extends AbstractController
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_SLUG               => $eventSlug,
         ];
-        $event = $this->eventService->getRepository()
-            ->getEvent($opts);
+        $event = $this->eventService->getRepository()->getEvent($opts);
         if (null === $event) {
             throw new OswisNotFoundException('Akce nebyla nalezena.');
         }
@@ -359,11 +347,12 @@ class EventParticipantController extends AbstractController
 
     public function getAddressBook(Event $event): ?AddressBook
     {
-        $addressBook = $this->addressBookService->getRepository()
-            ->findOneBy(['slug' => $event->getSlug()]);
+        $addressBook = $this->addressBookService->getRepository()->findOneBy(['slug' => $event->getSlug()]);
         if (null === $addressBook) {
             $addressBook = $this->addressBookService->create(
-                new Nameable('Akce '.$event->getName(), $event->getShortName(), 'Automatický adresář pro akci '.$event->getName(), null, $event->getSlug())
+                new Nameable(
+                    'Akce '.$event->getName(), $event->getShortName(), 'Automatický adresář pro akci '.$event->getName(), null, $event->getSlug()
+                )
             );
         }
 
@@ -379,15 +368,13 @@ class EventParticipantController extends AbstractController
             EventParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventParticipantTypeRepository::CRITERIA_SLUG               => $slug,
         ];
-        $type = $this->participantTypeService->getRepository()
-            ->getEventParticipantType($opts);
+        $type = $this->participantTypeService->getRepository()->getEventParticipantType($opts);
         if (null === $type) {
             $opts = [
                 EventParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
                 EventParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
             ];
-            $type = $this->participantTypeService->getRepository()
-                ->getEventParticipantType($opts);
+            $type = $this->participantTypeService->getRepository()->getEventParticipantType($opts);
         }
 
         return $type;
@@ -405,8 +392,7 @@ class EventParticipantController extends AbstractController
      */
     public function getRange(Event $event, ?EventParticipantType $participantType, ?DateTime $dateTime = null): EventRegistrationRange
     {
-        $ranges = $event->getRegistrationRanges($participantType, $dateTime)
-            ->filter(fn(EventRegistrationRange $r) => $r->isPublicOnWeb());
+        $ranges = $event->getRegistrationRanges($participantType, $dateTime)->filter(fn(EventRegistrationRange $r) => $r->isPublicOnWeb());
         if ($ranges->count() < 1 || !($ranges->first() instanceof EventRegistrationRange)) {
             throw new PriceInvalidArgumentException('Přihlášky na tuto akci nyní nejsou povoleny.');
         }

@@ -7,10 +7,10 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
-use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\DateRangeTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\TextValueTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

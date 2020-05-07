@@ -10,38 +10,26 @@ use DateTime;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
-use OswisOrg\OswisCoreBundle\Entity\Nameable;
-use OswisOrg\OswisCoreBundle\Entity\Publicity;
-use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\DateRangeTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\DepositValueTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\EntityPublicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\NameableBasicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\NumericValueTrait;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NumericValueTrait;
+use OswisOrg\OswisCoreBundle\Traits\Payment\DepositValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_price")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventRegistrationRange implements BasicEntityInterface
+class EventRegistrationRange implements NameableEntityInterface
 {
-    use BasicEntityTrait;
-
-    // Basic columns (id...).
     use NameableBasicTrait;
-
-    // Name of this combination of price, range and capacity.
     use NumericValueTrait;
-
-    // Basic price.
     use DepositValueTrait;
-
-    // Absolute value of deposit.
     use EventCapacityTrait;
-
-    // Columns for capacity and capacity overflow limit.
     use DateRangeTrait { // Range when registrations are allowed with this price.
         setEndDateTime as protected traitSetEnd;
     }
@@ -122,8 +110,7 @@ class EventRegistrationRange implements BasicEntityInterface
         if (null !== $participantType && null === $this->getEventParticipantType()) {
             return false;
         }
-        if (null !== $participantType && $this->getEventParticipantType()
-                ->getId() !== $participantType->getId()) {
+        if (null !== $participantType && $this->getEventParticipantType()->getId() !== $participantType->getId()) {
             return false;
         }
         if (null !== $dateTime && !$this->containsDateTimeInRange($dateTime)) {
@@ -148,8 +135,7 @@ class EventRegistrationRange implements BasicEntityInterface
         if ($participantType && null === $this->getEventParticipantType()) {
             return false;
         }
-        if ($participantType && $this->getEventParticipantType()
-                ->getType() !== $participantType) {
+        if ($participantType && $this->getEventParticipantType()->getType() !== $participantType) {
             return false;
         }
 

@@ -8,10 +8,10 @@ namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use DateTime;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\DateTimeTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\TextValueTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DateTimeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

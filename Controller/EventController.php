@@ -144,9 +144,7 @@ class EventController extends AbstractController
             'organizer'   => $this->eventService->getOrganizer($event),
         );
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
-        if ($this->get('twig')
-            ->getLoader()
-            ->exists($templatePath)) {
+        if ($this->get('twig')->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
         throw new OswisNotFoundException('Leták nenalezen.');

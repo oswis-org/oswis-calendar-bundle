@@ -7,9 +7,9 @@ namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use Doctrine\ORM\Mapping as ORM;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCoreBundle\Interfaces\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Entity\ActiveTrait;
-use OswisOrg\OswisCoreBundle\Traits\Entity\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\ActiveTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

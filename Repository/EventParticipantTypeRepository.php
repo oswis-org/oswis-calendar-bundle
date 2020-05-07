@@ -30,9 +30,7 @@ class EventParticipantTypeRepository extends EntityRepository
     public function getEventParticipantType(?array $opts = []): ?EventParticipantType
     {
         try {
-            $participantType = $this->getQueryBuilder($opts)
-                ->getQuery()
-                ->getOneOrNullResult();
+            $participantType = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
@@ -56,16 +54,14 @@ class EventParticipantTypeRepository extends EntityRepository
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
-            $queryBuilder->andWhere(' ept.id = :id ')
-                ->setParameter('id', $opts[self::CRITERIA_ID]);
+            $queryBuilder->andWhere(' ept.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
     private function addSlugQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SLUG])) {
-            $queryBuilder->andWhere(' ept.slug = :slug ')
-                ->setParameter('slug', $opts[self::CRITERIA_SLUG]);
+            $queryBuilder->andWhere(' ept.slug = :slug ')->setParameter('slug', $opts[self::CRITERIA_SLUG]);
         }
     }
 
@@ -105,9 +101,7 @@ class EventParticipantTypeRepository extends EntityRepository
     public function getEventParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         return new ArrayCollection(
-            $this->getQueryBuilder($opts, $limit, $offset)
-                ->getQuery()
-                ->getResult()
+            $this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
         );
     }
 }
