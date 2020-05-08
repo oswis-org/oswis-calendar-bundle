@@ -36,9 +36,10 @@ use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
+use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -97,13 +98,13 @@ class EventParticipantController extends AbstractController
             if (!$token || !$eventParticipantId) {
                 return $this->render(
                     '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                    array(
+                    [
                         'type'    => 'error',
                         'title'   => 'Chyba! URL nekompletní!',
                         'message' => 'Formát adresy pro ověření je chybný.
                             Zkuste odkaz otevřít znovu nebo jej zkopírovat celý do adresního řádku prohlížeče.
                             Pokud se to nepodaří, kontaktujte nás a společně to vyřešíme.',
-                    )
+                    ]
                 );
             }
             $eventParticipant = $this->participantService->getRepository()->findOneBy(['id' => $eventParticipantId]);
@@ -129,23 +130,23 @@ class EventParticipantController extends AbstractController
 
             return $this->render(
                 '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                array(
+                [
                     'type'    => 'success',
                     'title'   => 'Hotovo!',
                     'event'   => $eventParticipant->getEvent(),
                     'message' => 'Ověření uživatele proběhlo úspěšně.',
-                )
+                ]
             );
         } catch (Exception $e) {
             $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
 
             return $this->render(
                 '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                array(
+                [
                     'type'    => 'error',
                     'title'   => 'Neočekávaná chyba!',
                     'message' => 'Registraci a přihlášku se nepodařilo potvrdit. Kontaktujte nás a společně to vyřešíme.',
-                )
+                ]
             );
         }
     }
@@ -156,11 +157,12 @@ class EventParticipantController extends AbstractController
      */
     public function partnersFooter(): Response
     {
-        $data = [
-            'footerPartners' => $this->participantService->getEventWebPartners(),
-        ];
-
-        return $this->render('@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig', $data);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig',
+            [
+                'footerPartners' => $this->participantService->getEventWebPartners(),
+            ]
+        );
     }
 
     /**
@@ -237,7 +239,7 @@ class EventParticipantController extends AbstractController
 
                 return $this->render(
                     '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
-                    array(
+                    [
                         'form'                => $form->createView(),
                         'title'               => 'Přihláška odeslána!',
                         'event'               => $event,
@@ -246,13 +248,13 @@ class EventParticipantController extends AbstractController
                                         Nyní je ovšem ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.',
                         'type'                => 'success',
                         'registrationsActive' => true,
-                    )
+                    ]
                 );
             }
 
             return $this->render(
                 '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
-                array(
+                [
                     'form'                => $form->createView(),
                     'title'               => 'Přihlaš se na Seznamovák UP právě teď!',
                     'range'               => $range,
@@ -263,7 +265,7 @@ class EventParticipantController extends AbstractController
                     'registrationsActive' => true,
                     // 'year'       => $actualYear,
                     // 'verifyCode' => $verifyCodeNow,
-                )
+                ]
             );
         } catch (Exception $e) {
             $participant = $this->prepareEventParticipant($event);
@@ -275,14 +277,14 @@ class EventParticipantController extends AbstractController
 
             return $this->render(
                 '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
-                array(
+                [
                     'form'                => $form->createView(),
                     'title'               => 'Přihláška na akci '.$event->getName(),
                     'pageTitle'           => 'Přihláška na akci '.$event->getName(),
                     'event'               => $event,
                     'type'                => 'form',
                     'registrationsActive' => $event->isRegistrationsAllowed($participant->getEventParticipantType()),
-                )
+                ]
             );
         }
     }
@@ -295,11 +297,12 @@ class EventParticipantController extends AbstractController
      */
     public function getEvent(string $eventSlug): Event
     {
-        $opts = [
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
-        ];
-        $event = $this->eventService->getRepository()->getEvent($opts);
+        $event = $this->eventService->getRepository()->getEvent(
+            [
+                EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+                EventRepository::CRITERIA_SLUG               => $eventSlug,
+            ]
+        );
         if (null === $event) {
             throw new OswisNotFoundException('Akce nebyla nalezena.');
         }
@@ -311,7 +314,6 @@ class EventParticipantController extends AbstractController
      * Create empty eventParticipant for use in forms.
      *
      * @param Event                $event
-     *
      * @param EventParticipantType $participantType
      *
      * @return EventParticipant
