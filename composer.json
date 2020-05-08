@@ -27,8 +27,8 @@
     "bigit/vokativ": "dev-master",
     "endroid/qr-code": "^3.7",
     "rikudou/czqrpayment": "^4.0",
-    "oswis-org/oswis-core-bundle": "dev-master",
-    "oswis-org/oswis-address-book-bundle": "dev-master"
+    "oswis-org/oswis-core-bundle": "^0.0",
+    "oswis-org/oswis-address-book-bundle": "^0.0"
   },
   "require-dev": {
     "roave/security-advisories": "dev-master",
