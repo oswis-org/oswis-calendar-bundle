@@ -15,6 +15,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class EventParticipantRepository extends EntityRepository
 {

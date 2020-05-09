@@ -20,6 +20,8 @@ use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
+use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;

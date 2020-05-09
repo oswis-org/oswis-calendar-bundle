@@ -26,9 +26,12 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagTyp
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use OswisOrg\OswisCoreBundle\Service\PdfGenerator;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Psr\Log\LoggerInterface;
 use rikudou\CzQrPayment\QrPayment;
 use rikudou\CzQrPayment\QrPaymentOptions;
@@ -39,6 +42,7 @@ use Symfony\Component\Mime\Exception\LogicException;
 use Symfony\Component\Mime\Exception\RfcComplianceException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use function assert;
+use function Symfony\Component\String\u;
 
 class EventParticipantService
 {
@@ -529,8 +533,7 @@ class EventParticipantService
                 $message = 'Vygenerování PDF se nezdařilo. '.$e->getMessage();
                 $this->logger->error($message);
             }
-            $name = StringUtils::hyphensToCamel(StringUtils::hyphenize($event->getShortName())).'_';
-            $name .= StringUtils::hyphensToCamel(StringUtils::hyphenize($contactName));
+            $name = u($event->getShortName())->camel()->toString().'_'.u($contactName)->camel()->toString();
             $fileName = 'Shrnuti_'.iconv('utf-8', 'us-ascii//TRANSLIT', $name).'.pdf';
             $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {

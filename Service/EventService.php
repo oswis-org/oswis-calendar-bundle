@@ -20,6 +20,7 @@ use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use Psr\Log\LoggerInterface;
 
 class EventService
