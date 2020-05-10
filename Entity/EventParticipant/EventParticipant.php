@@ -211,7 +211,7 @@ class EventParticipant implements BasicInterface
     protected ?Event $event = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
      */
     protected ?bool $formal = null;
 

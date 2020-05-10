@@ -78,7 +78,7 @@ class EventParticipantType implements NameableInterface
 
     /**
      * Send formal (or informal) e-mails?
-     * @ORM\Column(type="boolean", nullable=true)
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      */
     protected ?bool $formal = null;
 

@@ -22,7 +22,7 @@ class EventParticipantFlagInEventConnection implements BasicInterface
     use ActiveTrait;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $maxAmountInEvent = null;
 
