@@ -14,9 +14,9 @@ use InvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use function in_array;
 
@@ -62,9 +62,9 @@ use function in_array;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantType implements NameableEntityInterface
+class EventParticipantType implements NameableInterface
 {
-    use NameableBasicTrait;
+    use NameableTrait;
     use EntityPublicTrait;
     use TypeTrait;
 

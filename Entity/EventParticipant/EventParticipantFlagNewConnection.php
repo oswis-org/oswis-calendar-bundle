@@ -8,8 +8,8 @@ namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use DateTime;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateTimeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
@@ -18,9 +18,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantFlagNewConnection implements BasicEntityInterface
+class EventParticipantFlagNewConnection implements BasicInterface
 {
-    use BasicEntityTrait;
+    use BasicTrait;
     use TextValueTrait;
     use DateTimeTrait;
 

@@ -7,18 +7,18 @@ namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use Doctrine\ORM\Mapping as ORM;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActiveTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_in_event_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantFlagInEventConnection implements BasicEntityInterface
+class EventParticipantFlagInEventConnection implements BasicInterface
 {
-    use BasicEntityTrait;
+    use BasicTrait;
     use ActiveTrait;
 
     /**

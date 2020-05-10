@@ -10,8 +10,8 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
@@ -54,9 +54,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantNote implements BasicEntityInterface
+class EventParticipantNote implements BasicInterface
 {
-    use BasicEntityTrait;
+    use BasicTrait;
     use TextValueTrait;
 
     /**

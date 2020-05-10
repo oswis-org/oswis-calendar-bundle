@@ -7,8 +7,8 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
@@ -17,9 +17,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventFlagConnection implements BasicEntityInterface
+class EventFlagConnection implements BasicInterface
 {
-    use BasicEntityTrait;
+    use BasicTrait;
     use TextValueTrait;
     use DateRangeTrait;
 

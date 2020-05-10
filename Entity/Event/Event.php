@@ -22,12 +22,12 @@ use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\BankAccountTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
@@ -76,9 +76,9 @@ use function assert;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class Event implements NameableEntityInterface
+class Event implements NameableInterface
 {
-    use NameableBasicTrait;
+    use NameableTrait;
     use DateRangeTrait;
     use ColorTrait;
     use BankAccountTrait;

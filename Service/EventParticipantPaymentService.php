@@ -181,7 +181,7 @@ class EventParticipantPaymentService
                 $this->sendConfirmation($oneNewPayment);
                 $infoMessage = 'CSV_PAYMENT_CREATED: id: '.$oneNewPayment->getId().', ';
                 $infoMessage .= 'participant: '.$eventParticipant->getId().' ';
-                $infoMessage .= $eventParticipant->getContact() ? $eventParticipant->getContact()->getContactName() : ''.', ';
+                $infoMessage .= $eventParticipant->getContact() ? $eventParticipant->getContact()->getName() : ''.', ';
                 $infoMessage .= 'CSV: '.$csvRow.'; ';
                 $deletedString = '';
                 if ($eventParticipant->isDeleted()) {
@@ -222,7 +222,7 @@ class EventParticipantPaymentService
             $em->persist($entity);
             $em->flush();
             if ($entity->getEventParticipant() && $entity->getEventParticipant()->getContact()) {
-                $name = $entity->getEventParticipant()->getContact()->getContactName();
+                $name = $entity->getEventParticipant()->getContact()->getName();
             } else {
                 $name = $entity->getEventParticipant()->getId();
             }
@@ -263,10 +263,10 @@ class EventParticipantPaymentService
                 $a = $contact->getCzechSuffixA() ?? '';
             } else {
                 assert($contact instanceof Organization);
-                $salutationName = $contact->getContactName() ?? ''; // TODO: Correct salutation (contact of organization).
+                $salutationName = $contact->getName() ?? ''; // TODO: Correct salutation (contact of organization).
                 $a = '';
             }
-            $name = $contact->getAppUser() ? $contact->getAppUser()->getFullName() : $contact->getContactName();
+            $name = $contact->getAppUser() ? $contact->getAppUser()->getFullName() : $contact->getName();
             $eMail = $contact->getAppUser() ? $contact->getAppUser()->getEmail() : $contact->getEmail();
             $mailConfig = $this->coreSettings->getEmail();
             $mailData = array(

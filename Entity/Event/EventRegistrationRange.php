@@ -12,10 +12,10 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NumericValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\DepositValueTrait;
 
@@ -24,9 +24,9 @@ use OswisOrg\OswisCoreBundle\Traits\Payment\DepositValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_price")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventRegistrationRange implements NameableEntityInterface
+class EventRegistrationRange implements NameableInterface
 {
-    use NameableBasicTrait;
+    use NameableTrait;
     use NumericValueTrait;
     use DepositValueTrait;
     use EventCapacityTrait;

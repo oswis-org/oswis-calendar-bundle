@@ -23,8 +23,8 @@ use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\InfoMailSentTrait;
@@ -135,9 +135,9 @@ use function assert;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipant implements BasicEntityInterface
+class EventParticipant implements BasicInterface
 {
-    use BasicEntityTrait;
+    use BasicTrait;
     use DeletedTrait;
     use BasicMailConfirmationTrait;
     use InfoMailSentTrait;
@@ -297,8 +297,8 @@ class EventParticipant implements BasicEntityInterface
                     $cmpResult = 0;
                 } else {
                     $cmpResult = strcmp(
-                        $arg1->getContact()->getSortableContactName(),
-                        $arg2->getContact()->getSortableContactName()
+                        $arg1->getContact()->getSortableName(),
+                        $arg2->getContact()->getSortableName()
                     );
                 }
 
@@ -339,7 +339,7 @@ class EventParticipant implements BasicEntityInterface
 
     public function getName(): ?string
     {
-        return null !== $this->getContact() ? $this->getContact()->getContactName() : null;
+        return null !== $this->getContact() ? $this->getContact()->getName() : null;
     }
 
     /**

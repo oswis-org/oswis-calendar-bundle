@@ -9,17 +9,17 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_series")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventSeries implements NameableEntityInterface
+class EventSeries implements NameableInterface
 {
-    use NameableBasicTrait;
+    use NameableTrait;
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="series")

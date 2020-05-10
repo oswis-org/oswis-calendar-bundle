@@ -106,7 +106,7 @@ class EventParticipantService
             $this->em->flush();
             $infoMessage = 'CREATE: Created event participant (by service): ';
             $infoMessage .= $entity->getId().', ';
-            $infoMessage .= ($entity->getContact() ? $entity->getContact()->getContactName() : '').', ';
+            $infoMessage .= ($entity->getContact() ? $entity->getContact()->getName() : '').', ';
             $infoMessage .= ($entity->getEvent() ? $entity->getEvent()->getName() : '').'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
@@ -234,7 +234,7 @@ class EventParticipantService
             if (!($event instanceof Event) || !($participantContact instanceof AbstractContact)) {
                 return false;
             }
-            $qrComment = $participantContact->getContactName().', ID '.$participant->getId().', '.$event->getName();
+            $qrComment = $participantContact->getName().', ID '.$participant->getId().', '.$event->getName();
             $depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true);
             $restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true);
             $isOrganization = !($participantContact instanceof Person);
@@ -322,7 +322,7 @@ class EventParticipantService
                     if (count($appUserRepository->findByEmail($contactPerson->getEmail())) > 0) {
                         throw new OswisUserNotUniqueException('Zadaný e-mail je již použitý.');
                     }
-                    $contactPerson->setAppUser(new AppUser($contactPerson->getContactName(), null, $contactPerson->getEmail()));
+                    $contactPerson->setAppUser(new AppUser($contactPerson->getName(), null, $contactPerson->getEmail()));
                 }
                 $contactPerson->getAppUser()->generateAccountActivationRequestToken();
                 $email = $this->getEmptyEmail($contactPerson, 'Ověření přihlášky');
@@ -514,7 +514,7 @@ class EventParticipantService
             ];
             $pdfString = null;
             $message = null;
-            $contactName = $participant->getContact() ? $participant->getContact()->getContactName() : 'Nepojmenovaný účastník';
+            $contactName = $participant->getContact() ? $participant->getContact()->getName() : 'Nepojmenovaný účastník';
             try {
                 $pdfTitle = 'Shrnutí přihlášky';
                 $pdfTitle .= $contactName ? ' - '.$contactName : null;

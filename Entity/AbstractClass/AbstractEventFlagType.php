@@ -6,14 +6,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\AbstractClass;
 
-use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\NameableBasicTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
 
-abstract class AbstractEventFlagType implements NameableEntityInterface
+abstract class AbstractEventFlagType implements NameableInterface
 {
-    use NameableBasicTrait;
+    use NameableTrait;
     use TypeTrait;
     use ValueTrait;
 

@@ -11,8 +11,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicEntityInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -57,9 +57,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicEntityTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantTypeInEventConnection implements BasicEntityInterface
+class EventParticipantTypeInEventConnection implements BasicInterface
 {
-    use BasicEntityTrait;
+    use BasicTrait;
 
     /**
      * Event contact type.
