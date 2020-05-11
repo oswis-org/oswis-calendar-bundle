@@ -12,7 +12,9 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Exception;
+use InvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
@@ -122,7 +124,10 @@ class EventParticipantPayment extends AbstractPayment
      * @param string|null           $note
      * @param string|null           $internalNote
      *
-     * @throws Exception
+     * @param string|null           $externalId
+     *
+     * @throws InvalidArgumentException
+     * @throws OswisNotImplementedException
      */
     public function __construct(
         ?EventParticipant $participant = null,
@@ -130,14 +135,11 @@ class EventParticipantPayment extends AbstractPayment
         ?DateTime $dateTime = null,
         ?string $type = null,
         ?string $note = null,
-        ?string $internalNote = null
+        ?string $internalNote = null,
+        ?string $externalId = null
     ) {
+        parent::__construct($numericValue, $type, $note, $internalNote, $externalId, $dateTime);
         $this->setEventParticipant($participant);
-        $this->setNumericValue($numericValue);
-        $this->setDateTime($dateTime ?? new DateTime());
-        $this->setNote($note);
-        $this->setInternalNote($internalNote);
-        $this->setType($type);
     }
 
     public function getEventParticipant(): ?EventParticipant

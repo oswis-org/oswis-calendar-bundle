@@ -333,7 +333,6 @@ class EventParticipantController extends AbstractController
         $participantPerson = new Person(
             null,
             null,
-            null,
             Person::TYPE_PERSON,
             null,
             new ArrayCollection([new ContactDetail($contactDetailTypeEmail), new ContactDetail($contactDetailTypePhone)]),

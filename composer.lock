@@ -4858,16 +4858,16 @@
         },
         {
             "name": "oswis-org/oswis-address-book-bundle",
-            "version": "v0.0.242",
+            "version": "v0.0.244",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-                "reference": "425541866bba616d87f749bd8965efbeeccb0a02"
+                "reference": "cbd937a6f8592bc0ed63c9df3134562d17868547"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/425541866bba616d87f749bd8965efbeeccb0a02",
-                "reference": "425541866bba616d87f749bd8965efbeeccb0a02",
+                "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/cbd937a6f8592bc0ed63c9df3134562d17868547",
+                "reference": "cbd937a6f8592bc0ed63c9df3134562d17868547",
                 "shasum": ""
             },
             "require": {
@@ -4909,20 +4909,20 @@
                 "oswis",
                 "zakjakub"
             ],
-            "time": "2020-05-10T19:37:38+00:00"
+            "time": "2020-05-10T21:08:21+00:00"
         },
         {
             "name": "oswis-org/oswis-core-bundle",
-            "version": "v0.0.502",
+            "version": "v0.0.508",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-                "reference": "608aadd68f6691bcae2281aafb736eb7746319de"
+                "reference": "97383a092a97ffbdca7b466cabce266ead74b4a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/608aadd68f6691bcae2281aafb736eb7746319de",
-                "reference": "608aadd68f6691bcae2281aafb736eb7746319de",
+                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/97383a092a97ffbdca7b466cabce266ead74b4a5",
+                "reference": "97383a092a97ffbdca7b466cabce266ead74b4a5",
                 "shasum": ""
             },
             "require": {
@@ -5021,7 +5021,7 @@
                 "php",
                 "zakjakub"
             ],
-            "time": "2020-05-10T18:38:58+00:00"
+            "time": "2020-05-11T11:02:31+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -11122,12 +11122,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/package-builder.git",
-                "reference": "a584e97915d1ddc1d1b3de0dece2377657617de7"
+                "reference": "2a20cc990e0a4a94499634e9ca15d8a981d5f45b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/package-builder/zipball/a584e97915d1ddc1d1b3de0dece2377657617de7",
-                "reference": "a584e97915d1ddc1d1b3de0dece2377657617de7",
+                "url": "https://api.github.com/repos/symplify/package-builder/zipball/2a20cc990e0a4a94499634e9ca15d8a981d5f45b",
+                "reference": "2a20cc990e0a4a94499634e9ca15d8a981d5f45b",
                 "shasum": ""
             },
             "require": {
@@ -11860,16 +11860,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.24",
+            "version": "0.12.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "823a120fea50b68742b2be2285818202ecce511e"
+                "reference": "9619551d68b2d4c0d681a8df73f3c847c798ee64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/823a120fea50b68742b2be2285818202ecce511e",
-                "reference": "823a120fea50b68742b2be2285818202ecce511e",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9619551d68b2d4c0d681a8df73f3c847c798ee64",
+                "reference": "9619551d68b2d4c0d681a8df73f3c847c798ee64",
                 "shasum": ""
             },
             "require": {
@@ -11912,7 +11912,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-10T14:25:55+00:00"
+            "time": "2020-05-10T20:36:16+00:00"
         },
         {
             "name": "roave/security-advisories",
