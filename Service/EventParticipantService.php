@@ -26,11 +26,12 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagTyp
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Export\PdfExportList;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
-use OswisOrg\OswisCoreBundle\Service\PdfGenerator;
+use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Psr\Log\LoggerInterface;
 use rikudou\CzQrPayment\QrPayment;
@@ -58,7 +59,7 @@ class EventParticipantService
 
     protected AppUserService $appUserService;
 
-    protected PdfGenerator $pdfGenerator;
+    protected ExportService $exportService;
 
     protected EventParticipantRepository $participantRepository;
 
@@ -70,7 +71,7 @@ class EventParticipantService
         OswisCoreSettingsProvider $oswisCoreSettings,
         ?LoggerInterface $logger,
         AppUserService $appUserService,
-        PdfGenerator $pdfGenerator,
+        ExportService $exportService,
         UserPasswordEncoderInterface $encoder
     ) {
         $this->em = $em;
@@ -78,7 +79,7 @@ class EventParticipantService
         $this->coreSettings = $oswisCoreSettings;
         $this->mailer = $mailer;
         $this->appUserService = $appUserService;
-        $this->pdfGenerator = $pdfGenerator;
+        $this->exportService = $exportService;
         $this->participantRepository = $this->getRepository();
         $this->encoder = $encoder;
         /// TODO: Encoder, createAppUser...
@@ -385,7 +386,7 @@ class EventParticipantService
         ?int $recursiveDepth = 0
     ): void {
         // TODO: Check and refactor.
-        $templatePdf = '@OswisOrgOswisCalendar/documents/pages/event-participant-list.html.twig';
+        // $templatePdf = '@OswisOrgOswisCalendar/documents/pages/event-participant-list.html.twig';
         $templateEmail = '@OswisOrgOswisCalendar/e-mail/event-participant-list.html.twig';
         $title ??= self::DEFAULT_LIST_TITLE.' ('.$event->getShortName().')';
         $events = new ArrayCollection([$event]);
@@ -402,11 +403,12 @@ class EventParticipantService
             'events'               => $events,
             'participantsService'  => $this,
         ];
-        $paper = PdfGenerator::DEFAULT_PAPER_FORMAT;
         $pdfString = null;
         $message = null;
         try {
-            $pdfString = $this->pdfGenerator->generatePdfAsString('Přehled účastníků', $templatePdf, $data, $paper, $detailed);
+            $pdfListConfig = new PdfExportList('Přehled účastníků', new ArrayCollection(), $data);
+            $pdfString = $this->exportService->getPdfAsString($pdfListConfig);
+            // TODO: $pdfString = $this->exportService->generatePdfAsString('Přehled účastníků', $templatePdf, $data, $paper, $detailed);
         } catch (MpdfException $e) {
             $pdfString = null;
             $this->logger->error($e->getMessage());
@@ -516,18 +518,18 @@ class EventParticipantService
             $message = null;
             $contactName = $participant->getContact() ? $participant->getContact()->getName() : 'Nepojmenovaný účastník';
             try {
-                $pdfTitle = 'Shrnutí přihlášky';
-                $pdfTitle .= $contactName ? ' - '.$contactName : null;
-                $pdfTitle .= ' ('.$event->getName().')';
-                $pdfString = $this->pdfGenerator->generatePdfAsString(
-                    $pdfTitle,
-                    '@OswisOrgOswisCalendar/documents/pages/event-participant-info-before-event.html.twig',
-                    $pdfData,
-                    PdfGenerator::DEFAULT_PAPER_FORMAT,
-                    false,
-                    null,
-                    null
-                );
+                $pdfTitle = "Přihláška - $contactName".' ('.$event->getName().')';
+                $pdfListConfig = new PdfExportList($pdfTitle, new ArrayCollection(), $pdfData);
+                $pdfString = $this->exportService->getPdfAsString($pdfListConfig);
+//                $pdfString = $this->exportService->generatePdfAsString(
+//                    // $pdfTitle,
+//                    '@OswisOrgOswisCalendar/documents/pages/event-participant-info-before-event.html.twig',
+//                    // $pdfData,
+//                    PdfGenerator::DEFAULT_PAPER_FORMAT,
+//                    false,
+//                    null,
+//                    null
+//                );
             } catch (Exception $e) {
                 $pdfString = null;
                 $message = 'Vygenerování PDF se nezdařilo. '.$e->getMessage();

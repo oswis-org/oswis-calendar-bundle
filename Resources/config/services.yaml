@@ -229,7 +229,7 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_core.pdf_generator'
+            - '@oswis_org_oswis_core.export_service'
             - '@doctrine.orm.entity_manager'
             - '@oswis_org_oswis_calendar.event_participant_service'
     OswisOrg\OswisCalendarBundle\Api\EventSubscriber\EventParticipantListActionSubscriber:

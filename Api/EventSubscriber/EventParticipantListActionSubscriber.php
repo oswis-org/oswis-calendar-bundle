@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
-use OswisOrg\OswisCoreBundle\Service\PdfGenerator;
+use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,19 +20,19 @@ use function assert;
 
 final class EventParticipantListActionSubscriber implements EventSubscriberInterface
 {
-    public const DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG = 'ucastnik';
+    public const DEFAULT_EVENT_PARTICIPANT_TYPE = 'ucastnik';
 
     // TODO: ParticipantType slug change!
     protected EntityManagerInterface $em;
 
-    protected PdfGenerator $pdfGenerator;
+    protected ExportService $exportService;
 
     private EventParticipantService $participantService;
 
-    public function __construct(PdfGenerator $pdfGenerator, EntityManagerInterface $em, EventParticipantService $participantService)
+    public function __construct(ExportService $pdfGenerator, EntityManagerInterface $em, EventParticipantService $participantService)
     {
         $this->em = $em;
-        $this->pdfGenerator = $pdfGenerator;
+        $this->exportService = $pdfGenerator;
         $this->participantService = $participantService;
     }
 
@@ -52,7 +52,7 @@ final class EventParticipantListActionSubscriber implements EventSubscriberInter
         $request = $event->getControllerResult();
         $participantType = $request->eventParticipantType;
         if (!$participantType) {
-            $participantType = $this->em->getRepository(EventParticipantType::class)->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE_SLUG]);
+            $participantType = $this->em->getRepository(EventParticipantType::class)->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE]);
         }
         try {
             assert($participantType instanceof EventParticipantType);

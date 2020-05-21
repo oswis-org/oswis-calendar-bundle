@@ -11,7 +11,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
-use Exception;
 use InvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
@@ -127,7 +126,6 @@ class EventParticipantPayment extends AbstractPayment
      * @param string|null           $externalId
      *
      * @throws InvalidArgumentException
-     * @throws OswisNotImplementedException
      */
     public function __construct(
         ?EventParticipant $participant = null,

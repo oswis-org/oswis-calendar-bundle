@@ -16,7 +16,7 @@ use function in_array;
 
 final class EventActionSubscriber implements EventSubscriberInterface
 {
-    public const  TYPE_INFOMAIL = 'infomail';
+    public const TYPE_INFOMAIL = 'infomail';
     public const TYPE_FEEDBACK = 'feedback';
     public const ALLOWED_ACTION_TYPES = [self::TYPE_INFOMAIL, self::TYPE_FEEDBACK];
 
