@@ -13,7 +13,6 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use InvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 

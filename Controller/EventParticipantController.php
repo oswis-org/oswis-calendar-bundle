@@ -26,6 +26,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
@@ -229,8 +230,8 @@ class EventParticipantController extends AbstractController
                 $flagsRows = $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
                 foreach ($flagsRows as $flagsRow) {
                     $flagType = $flagsRow['flagType'];
-                    assert($flagType instanceof EventParticipantType);
-                    $oneFlag = $form[$flagType->getSlug()]->getData();
+                    assert($flagType instanceof EventParticipantFlagType);
+                    $oneFlag = $form['flag_'.$flagType->getSlug()]->getData();
                     assert($oneFlag instanceof EventParticipantFlag);
                     if (null !== $oneFlag) {
                         $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
@@ -245,8 +246,7 @@ class EventParticipantController extends AbstractController
                         'title'               => 'Přihláška odeslána!',
                         'event'               => $event,
                         'pageTitle'           => 'Přihláška odeslána!',
-                        'message'             => 'Tvoje přihláška na letošní Seznamovák Univerzity Palackého byla úspěšně odeslána! 
-                                        Nyní je ovšem ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.',
+                        'message'             => 'Tvoje přihláška byla úspěšně odeslána! Nyní je ovšem ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.',
                         'type'                => 'success',
                         'registrationsActive' => true,
                     ]

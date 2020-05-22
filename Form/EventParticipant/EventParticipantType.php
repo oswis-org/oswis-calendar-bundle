@@ -13,7 +13,6 @@ use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
-use OswisOrg\OswisCalendarBundle\Service\EventSeriesService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -30,14 +29,11 @@ class EventParticipantType extends AbstractType
 {
     protected EventService $eventService;
 
-    protected EventSeriesService $eventSeriesService;
-
     protected EventParticipantService $participantService;
 
-    public function __construct(EventService $eventService, EventSeriesService $eventSeriesService)
+    public function __construct(EventService $eventService)
     {
         $this->eventService = $eventService;
-        $this->eventSeriesService = $eventSeriesService;
         $this->participantService = $this->eventService->getEventParticipantService();
     }
 
@@ -49,7 +45,6 @@ class EventParticipantType extends AbstractType
      */
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $eventService = $this->eventService;
         $participant = $builder->getData();
         if (!($participant instanceof EventParticipant)) {
             throw new PriceInvalidArgumentException('účastník neexistuje');
@@ -68,7 +63,7 @@ class EventParticipantType extends AbstractType
                 'required'     => true,
                 'choices'      => [$event],
                 'data'         => $event,
-                'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $eventService),
+                'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $this->eventService),
             )
         )->add(
             'contact',

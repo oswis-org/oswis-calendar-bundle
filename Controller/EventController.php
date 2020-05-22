@@ -227,6 +227,8 @@ class EventController extends AbstractController
     }
 
     /**
+     * Renders list of events
+     *
      * @param string|null $range
      * @param string|null $rangeValue
      *
