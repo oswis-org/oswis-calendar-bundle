@@ -312,7 +312,7 @@ class EventParticipant implements BasicInterface
             return $this->getEventParticipantType() ? $this->getEventParticipantType()->isFormal() : false;
         }
 
-        return $this->formal;
+        return (bool)$this->formal;
     }
 
     public function getEventParticipantType(): ?EventParticipantType

@@ -123,7 +123,7 @@ class EventParticipantType implements NameableInterface
 
     public function isFormal(): bool
     {
-        return $this->formal ?? false;
+        return (bool)$this->formal;
     }
 
     public function isManager(): bool
