@@ -138,13 +138,13 @@ class EventParticipantService
             return $participant->getEMailDeleteConfirmationDateTime() ? true : $this->sendCancelConfirmation($participant);
         }
         if ($participant->hasActivatedContactUser()) {
-            return $participant->getEMailConfirmationDateTime() ? true : $this->sendSummary($participant, $this->encoder, $new);
+            return $participant->getEMailConfirmationDateTime() ? true : $this->sendSummary($participant, $new);
         }
         if ($token) {
             foreach ($participant->getContact()->getContactPersons() as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
-                    return $this->sendSummary($participant, $this->encoder, $new);
+                    return $this->sendSummary($participant, $new);
                 }
             }
         }
@@ -220,14 +220,13 @@ class EventParticipantService
     /**
      * Send summary of eventParticipant. Includes appUser info is appUser exist.
      *
-     * @param EventParticipant                  $participant
-     * @param bool                              $new
-     * @param UserPasswordEncoderInterface|null $encoder
+     * @param EventParticipant $participant
+     * @param bool             $new
      *
      * @return bool
      * @throws OswisException
      */
-    final public function sendSummary(EventParticipant $participant, UserPasswordEncoderInterface $encoder = null, bool $new = false): bool
+    final public function sendSummary(EventParticipant $participant, bool $new = false): bool
     {
         try {
             $event = $participant->getEvent();
@@ -244,9 +243,9 @@ class EventParticipantService
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $password = null;
-                if ($encoder && null !== $contactPerson->getAppUser()) {
+                if (null !== $contactPerson->getAppUser()) {
                     $password = StringUtils::generatePassword();
-                    $contactPerson->getAppUser()->setPassword($encoder->encodePassword($contactPerson->getAppUser(), $password));
+                    $contactPerson->getAppUser()->setPassword($this->encoder->encodePassword($contactPerson->getAppUser(), $password));
                     $this->em->flush();
                 }
                 $mailData = $this->getMailData($participant, $event, $contactPerson, $isOrganization);
@@ -347,7 +346,7 @@ class EventParticipantService
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním ověřovacího e-mailu.  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním ověřovacího e-mailu. '.$e->getMessage());
         }
     }
 
