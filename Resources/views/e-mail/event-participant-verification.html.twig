@@ -6,7 +6,7 @@
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
         <link itemprop="reservationStatus" href="http://schema.org/Pending"/>
-        <meta itemprop="modifiedTime" content="{{ eventParticipant.lastRevisionDateTime|date('c') }}"/>
+        <meta itemprop="modifiedTime" content="{{ eventParticipant.updatedDateTime|date('c') }}"/>
         <meta itemprop="bookingTime" content="{{ eventParticipant.createdDateTime|date("c") }}"/>
         <meta itemprop="ticketToken" content="qrCode:{{ eventParticipant.id }}"/>{# TODO #}
         <meta itemprop="ticketNumber" content="{{ eventParticipant.id }}"/>

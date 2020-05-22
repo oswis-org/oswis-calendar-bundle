@@ -212,7 +212,6 @@ class EventParticipantService
             'salutationName'   => $contactPerson->getSalutationName(),
             'a'                => $contactPerson->getCzechSuffixA(),
             'isOrganization'   => $isOrg,
-            'logo'             => 'cid:logo',
             'oswis'            => $this->coreSettings->getArray(),
         ];
     }
@@ -420,7 +419,6 @@ class EventParticipantService
         $mailData = [
             'data'    => $data,
             'message' => $message,
-            'logo'    => 'cid:logo',
             'oswis'   => $this->coreSettings->getArray(),
         ];
         $mail = new TemplatedEmail();
