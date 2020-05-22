@@ -8,7 +8,7 @@
 {% block content_inner %}
     <div id="two-columns" style='width:100%;height:600px;margin:0;padding:0;vertical-align:top;'>
         <div id="first-column" style='width:50%;height:550px;padding-left:0;padding-right:0;float:left;margin:0;'>
-            <h1>{{ data.eventParticipant.contact.contactName|default('Účastník') }} ({{ data.eventParticipant.id }})</h1>
+            <h1>{{ data.eventParticipant.contact.name|default('Účastník') }} ({{ data.eventParticipant.id }})</h1>
             <ul>
 
                 <li>
