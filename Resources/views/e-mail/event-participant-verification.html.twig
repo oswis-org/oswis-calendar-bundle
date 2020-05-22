@@ -1,7 +1,6 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
-{% block meta_description %}{{ block('html_title') }}{% endblock meta_description %}
 
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
@@ -92,10 +91,7 @@
 
         <p>
             Potvrzením registrace také souhlasí{{ f ? 'te' : 'š' }} se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
-            {% if eventParticipant.event.organizer is defined
-                and eventParticipant.event.organizer
-                and eventParticipant.event.organizer.contact
-                and eventParticipant.event.organizer.contact.name %}
+            {% if eventParticipant.event.organizer.contact.name|default %}
                 Tyto údaje budou zpracovány subjektem {{ eventParticipant.event.organizer.contact.name }}
                 a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
                 <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank">našich webových stránkách</a>.
@@ -141,10 +137,7 @@
                     </div>
                 </div>
             {% endif %}
-            {% if eventParticipant.event.organizer is defined
-                and eventParticipant.event.organizer
-                and eventParticipant.event.organizer.contact
-                and eventParticipant.event.organizer.contact.name %}
+            {% if eventParticipant.event.organizer.contact.name|default %}
                 <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
                     <meta itemprop="name" content="{{ event.organizer.contact.name }}"/>
                     <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
@@ -156,4 +149,3 @@
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
     </div>
 {% endblock content_inner %}
-

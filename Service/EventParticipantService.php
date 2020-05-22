@@ -233,9 +233,7 @@ class EventParticipantService
             if (!($event instanceof Event) || !($participantContact instanceof AbstractContact)) {
                 return false;
             }
-            $qrComment = $participantContact->getName().', ID '.$participant->getId().', '.$event->getName();
-            $depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true);
-            $restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true);
+            $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', '.$event->getSlug();
             $isOrganization = !($participantContact instanceof Person);
             $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
             $remaining = $contactPersons->count();
@@ -255,10 +253,10 @@ class EventParticipantService
                 $mailData['restQr'] = 'cid:restQr';
                 $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
                 $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
-                if ($depositPaymentQrPng) {
+                if ($depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true)) {
                     $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
                 }
-                if ($restPaymentQrPng) {
+                if ($restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true)) {
                     $email->embed($restPaymentQrPng, 'restQr', 'image/png');
                 }
                 try {
@@ -277,7 +275,7 @@ class EventParticipantService
             return true;
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním shrnutí přihlášky.  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním shrnutí přihlášky. '.$e->getMessage());
         }
     }
 
@@ -315,6 +313,7 @@ class EventParticipantService
             $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
             $remaining = $contactPersons->count();
             $appUserRepository = $this->appUserService->getRepository();
+            $this->em->persist($participant);
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 if (null === $contactPerson->getAppUser()) {
@@ -328,15 +327,15 @@ class EventParticipantService
                 $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-verification.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
                 try {
+                    $this->em->flush();
                     $this->mailer->send($email);
                     $remaining--;
                 } catch (TransportExceptionInterface $e) {
                     $this->logger->error($e->getMessage());
                     throw new OswisException('Odeslání ověřovacího e-mailu se nezdařilo ('.$e->getMessage().').');
                 }
+                $this->em->flush();
             }
-            $this->em->persist($participant);
-            $this->em->flush();
             if ($remaining > 0) {
                 $message = "Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').';
                 throw new OswisException($message);
