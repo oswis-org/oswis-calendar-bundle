@@ -36,6 +36,7 @@ use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
@@ -227,6 +228,13 @@ class EventParticipantController extends AbstractController
                 $participant->removeEmptyEventParticipantNotes();
                 $participant->getContact()->removeEmptyDetails();
                 $participant->getContact()->removeEmptyNotes();
+                if (!$participant->getContact()->getAppUser()) {
+                    $participant->getContact()->setAppUser(
+                        new AppUser(
+                            $participant->getContact()->getName(), $participant->getContact()->getSlug(), $participant->getContact()->getEmail()
+                        )
+                    );
+                }
                 $flagsRows = $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
                 foreach ($flagsRows as $flagsRow) {
                     $flagType = $flagsRow['flagType'];

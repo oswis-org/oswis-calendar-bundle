@@ -115,7 +115,7 @@ class EventParticipantType extends AbstractType
             $flagType = $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType'] : null;
             $flags = $flagsRow['flags'];
             $builder->add(
-                'flag_'.($flagType ? $flagType->getSlug() : '0'),
+                'flag_'.$flagType->getSlug(),
                 ChoiceType::class,
                 array(
                     'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
