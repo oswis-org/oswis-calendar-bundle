@@ -119,12 +119,13 @@ class EventParticipantController extends AbstractController
                     array(
                         'type'    => 'error',
                         'title'   => 'Chyba!',
+                        'event'   => $eventParticipant->getEvent(),
                         'message' => "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $eventParticipantId$error)",
                     )
                 );
             }
             $eventParticipant->removeEmptyEventParticipantNotes();
-            if ($eventParticipant->getContact()) {
+            if (null !== $eventParticipant->getContact()) {
                 $eventParticipant->getContact()->removeEmptyDetails();
                 $eventParticipant->getContact()->removeEmptyNotes();
             }

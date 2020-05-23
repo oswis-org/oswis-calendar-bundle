@@ -22,5 +22,7 @@
 {% endblock %}
 
 {% block body_breadcrumbs %}
-    {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' %}
+    {% if event|default %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' %}
+    {% endif %}
 {% endblock body_breadcrumbs %}

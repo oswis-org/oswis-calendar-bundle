@@ -1,5 +1,7 @@
 {% extends '@OswisOrgOswisCore/web/parts/breadcrumbs.html.twig' %}
 
 {% block breadcrumb_additional %}
-    {% include '@OswisOrgOswisCalendar/web/parts/breadcrumb-event-parent.html.twig' with {'event': event, 'b_active': false} %}
+    {% if event|default %}
+        {% include '@OswisOrgOswisCalendar/web/parts/breadcrumb-event-parent.html.twig' with {'event': event, 'b_active': false} %}
+    {% endif %}
 {% endblock breadcrumb_additional %}
