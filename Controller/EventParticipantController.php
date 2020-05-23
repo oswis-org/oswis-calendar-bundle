@@ -97,7 +97,7 @@ class EventParticipantController extends AbstractController
     {
         // TODO: Check and refactor.
         try {
-            if (!$token || !$eventParticipantId) {
+            if (empty($token) || empty($eventParticipantId)) {
                 return $this->render(
                     '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     [

@@ -140,7 +140,7 @@ class EventParticipantService
         if ($participant->hasActivatedContactUser()) {
             return $participant->getEMailConfirmationDateTime() ? true : $this->sendSummary($participant, $new);
         }
-        if ($token) {
+        if (!empty($token)) {
             foreach ($participant->getContact()->getContactPersons() as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
@@ -233,14 +233,13 @@ class EventParticipantService
             if (!($event instanceof Event) || !($participantContact instanceof AbstractContact)) {
                 return false;
             }
-            $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', '.$event->getSlug();
             $isOrganization = !($participantContact instanceof Person);
             $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
             $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {
                 assert($contactPerson instanceof Person);
                 $password = null;
-                if (null !== $contactPerson->getAppUser()) {
+                if (null !== $contactPerson->getAppUser() && empty($contactPerson->getAppUser()->getPassword())) {
                     $password = StringUtils::generatePassword();
                     $contactPerson->getAppUser()->setPassword($this->encoder->encodePassword($contactPerson->getAppUser(), $password));
                     $this->em->flush();
@@ -249,18 +248,20 @@ class EventParticipantService
                 $mailData['appUser'] = $participantContact->getAppUser();
                 $mailData['password'] = $password;
                 $mailData['bankAccount'] = $event->getBankAccountComplete();
-                $mailData['depositQr'] = 'cid:depositQr';
-                $mailData['restQr'] = 'cid:restQr';
                 $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
                 $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
+                $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', '.$event->getSlug();
                 if ($depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true)) {
                     $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
+                    $mailData['depositQr'] = 'cid:depositQr';
                 }
-                if ($restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true)) {
+                if ($restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, false)) {
                     $email->embed($restPaymentQrPng, 'restQr', 'image/png');
+                    $mailData['restQr'] = 'cid:restQr';
                 }
                 try {
                     $this->mailer->send($email);
+                    $participant->setMailConfirmationSend('event-participant-service');
                     $this->em->persist($participant);
                     $remaining--;
                 } catch (TransportExceptionInterface $e) {
