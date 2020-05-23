@@ -43,6 +43,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -169,6 +170,26 @@ class EventParticipantController extends AbstractController
     }
 
     /**
+     * @param EventParticipant $participant
+     * @param FormInterface    $form
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function processFlags(EventParticipant $participant, FormInterface $form): void
+    {
+        $flagsRows = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType()) : new ArrayCollection();
+        foreach ($flagsRows as $flagsRow) {
+            $flagType = $flagsRow['flagType'];
+            assert($flagType instanceof EventParticipantFlagType);
+            $oneFlag = $form['flag_'.$flagType->getSlug()]->getData();
+            assert($oneFlag instanceof EventParticipantFlag);
+            if (null !== $oneFlag) {
+                $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
+            }
+        }
+    }
+
+    /**
      * Show or process registration form.
      *
      * Route shows registration form or process it if form was sent.
@@ -228,16 +249,8 @@ class EventParticipantController extends AbstractController
                 $participant->removeEmptyEventParticipantNotes();
                 $participant->getContact()->removeEmptyDetails();
                 $participant->getContact()->removeEmptyNotes();
-                $flagsRows = $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType());
-                foreach ($flagsRows as $flagsRow) {
-                    $flagType = $flagsRow['flagType'];
-                    assert($flagType instanceof EventParticipantFlagType);
-                    $oneFlag = $form['flag_'.$flagType->getSlug()]->getData();
-                    assert($oneFlag instanceof EventParticipantFlag);
-                    if (null !== $oneFlag) {
-                        $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
-                    }
-                }
+                $this->processFlags($participant, $form);
+                $this->eventService->simulateAddEventParticipant($participant);
                 $this->participantService->sendMail($participant, true);
 
                 return $this->render(
