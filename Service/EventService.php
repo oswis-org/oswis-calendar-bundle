@@ -218,7 +218,7 @@ class EventService
      */
     public function checkCapacity(Event $event, EventParticipantType $participantType): void
     {
-        if ($this->$this->getRemainingCapacity($event, $participantType) === 0) {
+        if ($this->getRemainingCapacity($event, $participantType) === 0) {
             throw new EventCapacityExceededException('Kapacita akce '.$event->getName().' byla překročena.');
         }
     }
