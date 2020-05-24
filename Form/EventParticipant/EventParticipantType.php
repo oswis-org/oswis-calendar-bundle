@@ -12,6 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType as EventParticipantTypeEntity;
 use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
@@ -47,13 +48,25 @@ class EventParticipantType extends AbstractType
     {
         $participant = $builder->getData();
         if (!($participant instanceof EventParticipant)) {
-            throw new PriceInvalidArgumentException('účastník neexistuje');
+            throw new PriceInvalidArgumentException('[účastník neexistuje]');
         }
         $participantType = $participant->getParticipantType();
         $event = $participant->getEvent();
         if (null === $participantType || null === $event) {
-            throw new PriceInvalidArgumentException((int)(null !== $participantType).', '.(int)(null !== $event));
+            $message = null === $participantType ? '[typ účastníka nezadán]' : '';
+            $message .= null !== $event ? '[událost nezadána]' : '';
+            throw new PriceInvalidArgumentException($message);
         }
+        $this->addEventField($builder, $event, $participantType);
+        self::addContactField($builder);
+        $this->addFlagTypeFields($builder, $event, $participant);
+        self::addParticipantNotesFields($builder);
+        self::addGdprField($builder);
+        self::addSubmitButton($builder);
+    }
+
+    public function addEventField(FormBuilderInterface $builder, Event $event, EventParticipantTypeEntity $participantType): void
+    {
         $builder->add(
             'event',
             EntityType::class,
@@ -65,82 +78,106 @@ class EventParticipantType extends AbstractType
                 'data'         => $event,
                 'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $this->eventService),
             )
-        )->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
-        $this->addFlagsFields($builder, $event, $participant);
-        $builder->add(
-            'participantNotes',
-            CollectionType::class,
-            array(
-                'label'         => false,
-                'entry_type'    => EventParticipantNoteType::class,
-                'entry_options' => array(
-                    'label' => false,
-                ),
-            )
-        );
-        $this->addGdprField($builder);
-        $builder->add(
-            'save',
-            SubmitType::class,
-            array(
-                'label' => 'Registrovat se!',
-                'attr'  => ['class' => 'btn-lg btn-primary btn-block'],
-            )
         );
     }
 
-    public function getEventLabel(
-        Event $e,
-        \OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType $participantType,
-        EventService $eventService
-    ): string {
-        $label = $e->getName().' ['.$e->getRangeAsText().']';
-        $price = $e->getPrice($participantType);
+    public function getEventLabel(Event $event, EventParticipantTypeEntity $participantType, EventService $eventService): string
+    {
+        $label = $event->getName().' ['.$event->getRangeAsText().']';
+        $price = $event->getPrice($participantType);
         $label .= null !== $price ? ' ['.$price.',- Kč]' : '';
-        $label .= !$e->isRegistrationsAllowed($participantType) ? ' [přihlášky nejsou povoleny]' : null;
-        $label .= $eventService->getRemainingCapacity($e, $participantType) === 0 ? ' [překročena kapacita]' : null;
+        $label .= !$event->isRegistrationsAllowed($participantType) ? ' [přihlášky nejsou povoleny]' : null;
+        $label .= $eventService->getRemainingCapacity($event, $participantType) === 0 ? ' [překročena kapacita]' : null;
 
         return $label;
     }
 
-    public function addFlagsFields(FormBuilderInterface $builder, Event $event, EventParticipant $participant): void
+    public static function addContactField(FormBuilderInterface $builder): void
     {
-        $participantType = $participant->getParticipantType();
-        $flagsRows = $event->getAllowedFlagsAggregatedByType($participantType);
-        foreach ($flagsRows as $flagsRow) {
-            $flagType = $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType'] : null;
-            $flags = $flagsRow['flags'];
-            $builder->add(
-                'flag_'.$flagType->getSlug(),
-                ChoiceType::class,
-                array(
-                    'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
-                    'help'         => $flagType ? $flagType->getDescription() : 'Ostatní příznaky, které nespadají do žádné kategorie.',
-                    'required'     => $flagType ? $flagType->getMinInEventParticipant() > 1 : false,
-                    'choices'      => $flags,
-                    'mapped'       => false,
-                    'expanded'     => false,
-                    'multiple'     => false,
-                    'choice_label' => fn(EventParticipantFlag $flag, $key, $value) => $this->getFlagNameWithPrice($flag),
-                    'group_by'     => static function (EventParticipantFlag $flag) use ($flagType) {
-                        if (!empty($flagType) && EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
-                            return self::getTShirtGroupName($flag);
-                        }
+        $builder->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
+    }
 
-                        return self::getFlagPriceGroup($flag);
-                    },
-                )
-            );
+    public function addFlagTypeFields(FormBuilderInterface $builder, Event $event, EventParticipant $participant): void
+    {
+        foreach ($event->getAllowedFlagsAggregatedByType($participant->getParticipantType()) as $flagsOfType) {
+            self::addFlagField($builder, $flagsOfType['flagType'], $flagsOfType['flags'], $this->eventService, $participant->getParticipantType(), $event);
         }
     }
 
-    public function getFlagNameWithPrice(EventParticipantFlag $flag): string
-    {
-        $label = $flag->getName() ?? '';
-        $label .= $flag->getPrice() < 0 ? ' ['.$flag->getPrice().',- Kč]' : '';
-        $label .= $flag->getPrice() > 0 ? ' [+'.$flag->getPrice().',- Kč]' : '';
+    public static function addFlagField(
+        FormBuilderInterface $builder,
+        ?EventParticipantFlagType $flagType,
+        array $flags,
+        EventService $eventService,
+        EventParticipantTypeEntity $participantType,
+        Event $event
+    ): void {
+        $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
+        $builder->add(
+            "flag_$flagTypeSlug",
+            ChoiceType::class,
+            [
+                'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
+                'help'         => $flagType ? $flagType->getDescription() : 'Ostatní příznaky, které nespadají do žádné kategorie.',
+                'required'     => $flagType ? $flagType->getMinInEventParticipant() > 1 : false,
+                'choices'      => $flags,
+                'mapped'       => false,
+                'expanded'     => false,
+                'multiple'     => false,
+                'choice_label' => fn(EventParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($flag),
+                'choice_attr'  => fn(EventParticipantFlag $flag, $key, $value) => self::getFlagAttributes($flag, $participantType, $eventService, $event),
+                'group_by'     => fn(EventParticipantFlag $flag, $key, $value) => self::getFlagGroupName($flagType, $flag),
+            ]
+        );
+    }
 
-        return $label;
+    /**
+     * Get flag name and include (only non-zero) price.
+     *
+     * @param EventParticipantFlag $flag
+     *
+     * @return string
+     */
+    public static function getFlagNameWithPrice(EventParticipantFlag $flag): string
+    {
+        $price = ' ['.($flag->getPrice() > 0 ? '+' : '').$flag->getPrice().',- Kč]';
+
+        return $flag->getName().(0 !== $flag->getPrice() ? $price : '');
+    }
+
+    public static function getFlagAttributes(
+        EventParticipantFlag $flag,
+        EventParticipantTypeEntity $participantType,
+        EventService $eventService,
+        Event $event
+    ): array {
+        $attributes = [];
+        if (self::isFlagDisabled($flag, $participantType, $eventService, $event)) {
+            $attributes['disabled'] = 'disabled';
+        }
+
+        return $attributes;
+    }
+
+    public static function isFlagDisabled(
+        EventParticipantFlag $flag,
+        EventParticipantTypeEntity $participantType,
+        EventService $eventService,
+        Event $event
+    ): bool {
+        return $eventService->getParticipantFlagRemainingCapacity($event, $flag, $participantType) < 1;
+    }
+
+    public static function getFlagGroupName(?EventParticipantFlagType $flagType, EventParticipantFlag $flag): ?string
+    {
+        if (null === $flagType) {
+            return null;
+        }
+        if (EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
+            return self::getTShirtGroupName($flag);
+        }
+
+        return self::getFlagPriceGroup($flag);
     }
 
     public static function getTShirtGroupName(EventParticipantFlag $flag): string
@@ -170,7 +207,22 @@ class EventParticipantType extends AbstractType
         return '⬤ Ostatní';
     }
 
-    public function addGdprField(FormBuilderInterface $builder): void
+    public static function addParticipantNotesFields(FormBuilderInterface $builder): void
+    {
+        $builder->add(
+            'participantNotes',
+            CollectionType::class,
+            array(
+                'label'         => false,
+                'entry_type'    => EventParticipantNoteType::class,
+                'entry_options' => array(
+                    'label' => false,
+                ),
+            )
+        );
+    }
+
+    public static function addGdprField(FormBuilderInterface $builder): void
     {
         $builder->add(
             'agreeGDPR',
@@ -192,6 +244,11 @@ class EventParticipantType extends AbstractType
         );
     }
 
+    public static function addSubmitButton(FormBuilderInterface $builder): void
+    {
+        $builder->add('save', SubmitType::class, ['label' => 'Registrovat se!', 'attr' => ['class' => 'btn-lg btn-primary btn-block'],]);
+    }
+
     /**
      * @param OptionsResolver $resolver
      *
@@ -208,7 +265,6 @@ class EventParticipantType extends AbstractType
 
     public function getName(): string
     {
-        return 'event_participant';
+        return 'calendar_event_participant';
     }
-
 }

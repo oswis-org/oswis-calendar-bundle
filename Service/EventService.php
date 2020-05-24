@@ -303,7 +303,7 @@ class EventService
             $newFlagName = $newFlag instanceof EventParticipantFlag ? $newFlag->getName() : null;
             $newFlagCount = $newFlags->filter(fn(EventParticipantFlag $flag) => $flag->getId() === $newFlagId)->count();
             $oldFlagCount = $oldFlags->filter(fn(EventParticipantFlag $flag) => $flag->getId() === $newFlagId)->count();
-            if ($this->getAllowedParticipantFlagRemaining($event, $newFlag, $participantType) < ($newFlagCount - $oldFlagCount)) {
+            if ($this->getParticipantFlagRemainingCapacity($event, $newFlag, $participantType) < ($newFlagCount - $oldFlagCount)) {
                 throw new EventCapacityExceededException("Kapacita příznaku $newFlagName u události $eventName byla překročena.");
             }
         }
@@ -318,7 +318,7 @@ class EventService
      *
      * @return int Remaining capacity of flag.
      */
-    public function getAllowedParticipantFlagRemaining(
+    public function getParticipantFlagRemainingCapacity(
         Event $event,
         ?EventParticipantFlag $participantFlag,
         ?EventParticipantType $participantType
