@@ -32,7 +32,6 @@ class EventRepository extends EntityRepository
     public const CRITERIA_END = 'end';
     public const CRITERIA_ONLY_WITHOUT_DATE = 'onlyWithoutDate';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
-    public const CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE = 'onlyPublicOnWebRoute';
 
     public function findOneBy(array $criteria, array $orderBy = null): ?Event
     {
@@ -66,7 +65,6 @@ class EventRepository extends EntityRepository
         $this->addSeriesQuery($queryBuilder, $opts);
         $this->addLocationQuery($queryBuilder, $opts);
         $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
-        $this->addOnlyPublicOnWebRouteQuery($queryBuilder, $opts);
         $this->addTypeOfTypeQuery($queryBuilder, $opts);
         $this->addTypeQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
@@ -161,13 +159,6 @@ class EventRepository extends EntityRepository
     {
         if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB])) {
             $queryBuilder->andWhere('e.publicOnWeb = true');
-        }
-    }
-
-    private function addOnlyPublicOnWebRouteQuery(QueryBuilder $queryBuilder, array $opts = []): void
-    {
-        if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB_ROUTE])) {
-            $queryBuilder->andWhere('e.publicOnWebRoute = true');
         }
     }
 
