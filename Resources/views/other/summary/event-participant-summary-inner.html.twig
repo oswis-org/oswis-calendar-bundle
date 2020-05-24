@@ -58,14 +58,12 @@
         {% endif %}
     </li>
 {% endfor %}
-{% if eventParticipant.contact.contactDetails|default %}
-    {% for contactDetail in eventParticipant.contact.contactDetails|filter(detail => detail.content|default|length > 0) %}
-        <li>
-            {{ contactDetail.contactType.name|default('Kontakt') }}: {{ contactDetail.content }}
-        </li>
-    {% endfor %}
-{% endif %}
-{% for note in eventParticipant.eventParticipantNotes|default|filter(note => note.textValue|length > 0) %}
+{% for detail in eventParticipant.contact.contactDetails|default|filter(detail => detail.content|default|length > 0) %}
+    <li>
+        {{ detail.contactType.name|default('Kontakt') }}: {{ contactDetail.content }}
+    </li>
+{% endfor %}
+{% for note in eventParticipant.participantNotes|default|filter(note => note.textValue|length > 0) %}
     <li>
         <b>Poznámka:</b>
         <p>

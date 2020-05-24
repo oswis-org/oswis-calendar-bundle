@@ -21,9 +21,10 @@ class EventParticipantFlagInEventConnection implements BasicInterface
     use ActiveTrait;
 
     /**
+     * Capacity (max amount of this flag in event).
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected ?int $maxAmountInEvent = null;
+    protected ?int $capacity = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -55,18 +56,18 @@ class EventParticipantFlagInEventConnection implements BasicInterface
      * @param EventParticipantFlag|null $eventParticipantFlag
      * @param Event|null                $event
      * @param EventParticipantType|null $eventParticipantType
-     * @param int|null                  $maxAmountInEvent
+     * @param int|null                  $capacity
      */
     public function __construct(
         ?EventParticipantFlag $eventParticipantFlag = null,
         ?Event $event = null,
         ?EventParticipantType $eventParticipantType = null,
-        ?int $maxAmountInEvent = null
+        ?int $capacity = null
     ) {
         $this->setEventParticipantFlag($eventParticipantFlag);
         $this->setEventParticipantType($eventParticipantType);
         $this->setEvent($event);
-        $this->setMaxAmountInEvent($maxAmountInEvent);
+        $this->setCapacity($capacity);
     }
 
     public function getEventParticipantType(): ?EventParticipantType
@@ -79,14 +80,14 @@ class EventParticipantFlagInEventConnection implements BasicInterface
         $this->eventParticipantType = $eventParticipantType;
     }
 
-    public function getMaxAmountInEvent(): ?int
+    public function getCapacity(): ?int
     {
-        return $this->maxAmountInEvent;
+        return $this->capacity;
     }
 
-    public function setMaxAmountInEvent(?int $maxAmountInEvent): void
+    public function setCapacity(?int $capacity): void
     {
-        $this->maxAmountInEvent = $maxAmountInEvent;
+        $this->capacity = $capacity;
     }
 
     public function getEvent(): ?Event

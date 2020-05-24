@@ -20,8 +20,8 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagInEventConnection;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventParticipantRepository;
@@ -654,7 +654,7 @@ class EventParticipantService
             $includeNotActivated,
             $recursiveDepth
         )->map(
-            fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
+            fn(EventParticipantFlagConnection $connection) => $connection->getEventParticipantFlag()
         );
         if (null !== $flag) {
             return $flags->filter(fn(EventParticipantFlag $f) => $f->getId() === $flag->getId());
@@ -681,7 +681,7 @@ class EventParticipantService
         foreach ($participants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
             $eventParticipant->getParticipantFlagConnections()->map(
-                fn(EventParticipantFlagNewConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
+                fn(EventParticipantFlagConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
             );
         }
 
@@ -753,7 +753,7 @@ class EventParticipantService
                     'shortName' => $participantType->getShortName(),
                 ];
                 foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
-                    assert($participantFlagConnection instanceof EventParticipantFlagNewConnection);
+                    assert($participantFlagConnection instanceof EventParticipantFlagConnection);
                     $flag = $participantFlagConnection->getEventParticipantFlag();
                     if (null !== $flag) {
                         $flagType = $flag->getEventParticipantFlagType();

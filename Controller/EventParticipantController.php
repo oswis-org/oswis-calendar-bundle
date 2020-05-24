@@ -25,7 +25,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
@@ -90,15 +90,15 @@ class EventParticipantController extends AbstractController
      * Process registration verification and appUser account activation.
      *
      * @param string $token
-     * @param int    $eventParticipantId
+     * @param int    $participantId
      *
      * @return Response
      */
-    public function verification(string $token, int $eventParticipantId): Response
+    public function verification(string $token, int $participantId): Response
     {
         // TODO: Check and refactor.
         try {
-            if (empty($token) || empty($eventParticipantId)) {
+            if (empty($token) || empty($participantId)) {
                 return $this->render(
                     '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     [
@@ -110,34 +110,34 @@ class EventParticipantController extends AbstractController
                     ]
                 );
             }
-            $eventParticipant = $this->participantService->getRepository()->findOneBy(['id' => $eventParticipantId]);
-            if (null === $eventParticipant || null === $eventParticipant->getContact()) {
-                $error = null === $eventParticipant ? ', přihláška nenalezena' : '';
-                $error .= !($eventParticipant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
+            $participant = $this->participantService->getRepository()->findOneBy(['id' => $participantId]);
+            if (null === $participant || null === $participant->getContact()) {
+                $error = null === $participant ? ', přihláška nenalezena' : '';
+                $error .= !($participant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
 
                 return $this->render(
                     '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                     array(
                         'type'    => 'error',
                         'title'   => 'Chyba!',
-                        'event'   => $eventParticipant->getEvent(),
-                        'message' => "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $eventParticipantId$error)",
+                        'event'   => $participant->getEvent(),
+                        'message' => "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $participantId$error)",
                     )
                 );
             }
-            $eventParticipant->removeEmptyEventParticipantNotes();
-            if (null !== $eventParticipant->getContact()) {
-                $eventParticipant->getContact()->removeEmptyDetails();
-                $eventParticipant->getContact()->removeEmptyNotes();
+            $participant->removeEmptyEventParticipantNotes();
+            if (null !== $participant->getContact()) {
+                $participant->getContact()->removeEmptyDetails();
+                $participant->getContact()->removeEmptyNotes();
             }
-            $this->participantService->sendMail($eventParticipant, true, $token);
+            $this->participantService->sendMail($participant, true, $token);
 
             return $this->render(
                 '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
                 [
                     'type'    => 'success',
                     'title'   => 'Hotovo!',
-                    'event'   => $eventParticipant->getEvent(),
+                    'event'   => $participant->getEvent(),
                     'message' => 'Ověření uživatele proběhlo úspěšně.',
                 ]
             );
@@ -409,7 +409,7 @@ class EventParticipantController extends AbstractController
             $flagTypeSlug = $flagsRow['flagType'] && $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType']->getSlug() : 0;
             $oneFlag = $form["flag_$flagTypeSlug"] ? $form["flag_$flagTypeSlug"]->getData() : null;
             if ($oneFlag instanceof EventParticipantFlag) {
-                $participant->addParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
+                $participant->addParticipantFlagConnection(new EventParticipantFlagConnection($oneFlag));
             }
         }
     }

@@ -45,7 +45,7 @@
                 <b><span itemprop="name">{{ eventParticipant.contact.fullName }}</span></b><br>
                 <small itemprop="email">({{ eventParticipant.contact.email }})</small>
             </li>
-            <li><b>Typ: </b> {{ eventParticipant.eventParticipantType.name|default('bez názvu') }}</li>
+            <li><b>Typ: </b> {{ eventParticipant.participantType.name|default('bez názvu') }}</li>
             <li>
                 <b>{{ event.name }}</b><br>
                 <small>

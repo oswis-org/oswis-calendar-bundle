@@ -181,7 +181,7 @@ class EventParticipant implements BasicInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagNewConnection",
+     *     targetEntity="EventParticipantFlagConnection",
      *     cascade={"all"},
      *     mappedBy="eventParticipant",
      *     fetch="EAGER"
@@ -377,11 +377,11 @@ class EventParticipant implements BasicInterface
     }
 
     /**
-     * @param EventParticipantFlagNewConnection|null $newConnection
+     * @param EventParticipantFlagConnection|null $newConnection
      *
      * @throws EventCapacityExceededException
      */
-    public function addParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
+    public function addParticipantFlagConnection(?EventParticipantFlagConnection $newConnection): void
     {
         if (null !== $newConnection && !$this->participantFlagConnections->contains($newConnection)) {
             $this->participantFlagConnections->add($newConnection);
@@ -390,11 +390,11 @@ class EventParticipant implements BasicInterface
     }
 
     /**
-     * @param EventParticipantFlagNewConnection|null $eventContactFlagConnection
+     * @param EventParticipantFlagConnection|null $eventContactFlagConnection
      *
      * @throws EventCapacityExceededException
      */
-    public function removeParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
+    public function removeParticipantFlagConnection(?EventParticipantFlagConnection $eventContactFlagConnection): void
     {
         if ($eventContactFlagConnection && $this->participantFlagConnections->removeElement($eventContactFlagConnection)) {
             $eventContactFlagConnection->setEventParticipant(null);
@@ -494,7 +494,7 @@ class EventParticipant implements BasicInterface
     public function getParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
         return $this->getParticipantFlagConnections($eventParticipantFlagType)->map(
-            fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
+            fn(EventParticipantFlagConnection $connection) => $connection->getEventParticipantFlag()
         );
     }
 
@@ -505,7 +505,7 @@ class EventParticipant implements BasicInterface
         }
 
         return $this->participantFlagConnections->filter(
-            static function (EventParticipantFlagNewConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
+            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
                 try {
                     $flag = $eventParticipantFlagConnection->getEventParticipantFlag();
                     $type = $flag ? $flag->getEventParticipantFlagType() : null;

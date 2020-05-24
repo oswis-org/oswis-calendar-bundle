@@ -18,7 +18,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_participant_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
-class EventParticipantFlagNewConnection implements BasicInterface
+class EventParticipantFlagConnection implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;

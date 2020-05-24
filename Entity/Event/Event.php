@@ -582,7 +582,7 @@ class Event implements NameableInterface
         $allowedAmount = 0;
         foreach ($this->getParticipantFlagInEventConnections($participantType, $participantFlag) as $flagInEventConnection) {
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
-            $allowedAmount += $flagInEventConnection->getActive() ? $flagInEventConnection->getMaxAmountInEvent() : 0;
+            $allowedAmount += $flagInEventConnection->getActive() ? $flagInEventConnection->getCapacity() : 0;
         }
 
         return $allowedAmount;
