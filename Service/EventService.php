@@ -272,7 +272,7 @@ class EventService
     private function checkFlagsRanges(array $flagsByTypes, array $allowedFlagsByTypes): void
     {
         foreach ($allowedFlagsByTypes as $flagsOfType) { // Check if flag amounts in participant belongs to flagType ranges (min and max).
-            $flagType = $flagsOfType['flagType'] && $flagsOfType['flagType'] instanceof EventParticipantFlagType ? $flagsOfType['flagType'] : null;
+            $flagType = $flagsOfType['flagType'] instanceof EventParticipantFlagType ? $flagsOfType['flagType'] : null;
             $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
             $flagsAmount = count($flagsByTypes[$flagTypeSlug]);
             $min = $flagType->getMinInEventParticipant() ?? 0;

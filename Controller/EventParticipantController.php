@@ -407,7 +407,7 @@ class EventParticipantController extends AbstractController
         $flagsRows = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
         foreach ($flagsRows as $flagsRow) {
             $flagTypeSlug = $flagsRow['flagType'] && $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType']->getSlug() : 0;
-            $oneFlag = $form["flag_$flagTypeSlug"]->getData(); // TODO
+            $oneFlag = $form["flag_$flagTypeSlug"]->getData();
             assert($oneFlag instanceof EventParticipantFlag);
             if (null !== $oneFlag) {
                 $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
