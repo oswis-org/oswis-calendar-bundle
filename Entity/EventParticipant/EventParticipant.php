@@ -381,7 +381,7 @@ class EventParticipant implements BasicInterface
      *
      * @throws EventCapacityExceededException
      */
-    public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
+    public function addParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
     {
         if (null !== $newConnection && !$this->participantFlagConnections->contains($newConnection)) {
             $this->participantFlagConnections->add($newConnection);
@@ -394,7 +394,7 @@ class EventParticipant implements BasicInterface
      *
      * @throws EventCapacityExceededException
      */
-    public function removeEventParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
+    public function removeParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
     {
         if ($eventContactFlagConnection && $this->participantFlagConnections->removeElement($eventContactFlagConnection)) {
             $eventContactFlagConnection->setEventParticipant(null);
@@ -418,14 +418,14 @@ class EventParticipant implements BasicInterface
         $this->participantNotes = $newEventParticipantNotes ?? new ArrayCollection();
     }
 
-    public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    public function removeParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote) {
             $this->participantNotes->removeElement($eventParticipantNote);
         }
     }
 
-    public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
+    public function addParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote && !$this->participantNotes->contains($eventParticipantNote)) {
             $this->participantNotes->add($eventParticipantNote);
@@ -529,12 +529,12 @@ class EventParticipant implements BasicInterface
         $newConnections ??= new ArrayCollection();
         foreach ($this->participantFlagConnections as $oldConnection) {
             if (!$newConnections->contains($oldConnection)) {
-                $this->removeEventParticipantFlagConnection($oldConnection);
+                $this->removeParticipantFlagConnection($oldConnection);
             }
         }
         foreach ($newConnections as $newConnection) {
             if (!$this->participantFlagConnections->contains($newConnection)) {
-                $this->addEventParticipantFlagConnection($newConnection);
+                $this->addParticipantFlagConnection($newConnection);
             }
         }
     }
@@ -579,12 +579,12 @@ class EventParticipant implements BasicInterface
         $newEventParticipantPayments = $newEventParticipantPayments ?? new ArrayCollection();
         foreach ($this->participantPayments as $oldPayment) {
             if (!$newEventParticipantPayments->contains($oldPayment)) {
-                $this->removeEventParticipantPayment($oldPayment);
+                $this->removeParticipantPayment($oldPayment);
             }
         }
         foreach ($newEventParticipantPayments as $newPayment) {
             if (!$this->participantPayments->contains($newPayment)) {
-                $this->addEventParticipantPayment($newPayment);
+                $this->addParticipantPayment($newPayment);
             }
         }
     }
@@ -645,14 +645,14 @@ class EventParticipant implements BasicInterface
         return $this->getPaidPrice() / $this->getPrice();
     }
 
-    public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
+    public function removeParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
         if ($eventParticipantPayment && $this->participantPayments->removeElement($eventParticipantPayment)) {
             $eventParticipantPayment->setEventParticipant(null);
         }
     }
 
-    public function addEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
+    public function addParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
         if ($eventParticipantPayment && !$this->participantPayments->contains($eventParticipantPayment)) {
             $this->participantPayments->add($eventParticipantPayment);

@@ -75,11 +75,11 @@ class EventParticipantFlagNewConnection implements BasicInterface
     public function setEventParticipant(?EventParticipant $eventParticipant): void
     {
         if ($this->eventParticipant && $eventParticipant !== $this->eventParticipant) {
-            $this->eventParticipant->removeEventParticipantFlagConnection($this);
+            $this->eventParticipant->removeParticipantFlagConnection($this);
         }
         if ($eventParticipant && $this->eventParticipant !== $eventParticipant) {
             $this->eventParticipant = $eventParticipant;
-            $eventParticipant->addEventParticipantFlagConnection($this);
+            $eventParticipant->addParticipantFlagConnection($this);
         }
     }
 

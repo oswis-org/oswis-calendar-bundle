@@ -194,7 +194,7 @@ class EventParticipantController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
         }
         $event = $this->getEvent($eventSlug);
-        $participant = $this->prepareEventParticipant($event, $this->getParticipantType($participantSlug));
+        $participant = $this->prepareParticipant($event, $this->getParticipantType($participantSlug));
         $participantType = $participant->getParticipantType();
         try {
             $range = $this->getRange($event, $participantType);
@@ -263,7 +263,7 @@ class EventParticipantController extends AbstractController
                 ]
             );
         } catch (Exception $e) {
-            $participant = $this->prepareEventParticipant($event);
+            $participant = $this->prepareParticipant($event);
             if (!isset($form)) {
                 $form = $this->createForm(\OswisOrg\OswisCalendarBundle\Form\EventParticipant\EventParticipantType::class, $participant);
                 $form->handleRequest($request);
@@ -315,7 +315,7 @@ class EventParticipantController extends AbstractController
      * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
      */
-    public function prepareEventParticipant(Event $event, ?EventParticipantType $participantType = null): EventParticipant
+    public function prepareParticipant(Event $event, ?EventParticipantType $participantType = null): EventParticipant
     {
         $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
         assert($contactDetailTypeRepository instanceof ContactDetailTypeRepository);
@@ -410,7 +410,7 @@ class EventParticipantController extends AbstractController
             $oneFlag = $form["flag_$flagTypeSlug"]->getData();
             assert($oneFlag instanceof EventParticipantFlag);
             if (null !== $oneFlag) {
-                $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
+                $participant->addParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
             }
         }
     }
