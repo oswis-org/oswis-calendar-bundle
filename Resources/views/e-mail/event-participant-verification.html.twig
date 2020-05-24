@@ -1,7 +1,7 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% set activationUrl = absolute_url(path(
-    'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
+    'oswis_org_oswis_calendar_web_event_participant_verification',
     {'token': contactPerson.appUser.activationRequestToken, 'eventParticipantId': eventParticipant.id}
     )) %}
 
