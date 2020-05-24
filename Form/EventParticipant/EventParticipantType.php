@@ -70,14 +70,15 @@ class EventParticipantType extends AbstractType
         $builder->add(
             'event',
             EntityType::class,
-            array(
+            [
                 'class'        => Event::class,
                 'label'        => 'Akce',
                 'required'     => true,
                 'choices'      => [$event],
                 'data'         => $event,
+                'choice_attr'  => fn() => ['disabled' => 'disabled'],
                 'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $this->eventService),
-            )
+            ]
         );
     }
 

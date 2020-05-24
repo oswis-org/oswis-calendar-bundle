@@ -1,6 +1,6 @@
 oswis_org_oswis_calendar_web_event_participant_verification:
     controller: oswis_org_oswis_calendar.event_participant_controller::verification
-    path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
+    path: "/potvrzeni-prihlasky/{token}/{participantId}"
 
 oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
