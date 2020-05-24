@@ -20,11 +20,11 @@ final class EventActionSubscriber implements EventSubscriberInterface
     public const TYPE_FEEDBACK = 'feedback';
     public const ALLOWED_ACTION_TYPES = [self::TYPE_INFOMAIL, self::TYPE_FEEDBACK];
 
-    private EventParticipantService $eventParticipantService;
+    private EventParticipantService $participantService;
 
     public function __construct(EventParticipantService $participantService)
     {
-        $this->eventParticipantService = $participantService;
+        $this->participantService = $participantService;
     }
 
     /**
@@ -81,13 +81,13 @@ final class EventActionSubscriber implements EventSubscriberInterface
         $event = $eventActionRequest->event ?? null;
         $count = $eventActionRequest->count ?? 0;
         $recursiveDepth = $eventActionRequest->recursiveDepth ?? 0;
-        $eventParticipantTypeOfType = $eventActionRequest->eventParticipantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
+        $participantTypeOfType = $eventActionRequest->participantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
-        $successCount = $this->eventParticipantService->sendInfoMails(
+        $successCount = $this->participantService->sendInfoMails(
             $event,
-            $eventParticipantTypeOfType,
+            $participantTypeOfType,
             $recursiveDepth,
             $count,
             'event-action-api-multiple'
@@ -103,11 +103,11 @@ final class EventActionSubscriber implements EventSubscriberInterface
         $startId = $eventActionRequest->startId ?? 0;
         $endId = $eventActionRequest->endId ?? 0;
         $recursiveDepth = $eventActionRequest->recursiveDepth ?? 0;
-        $eventParticipantTypeOfType = $eventActionRequest->eventParticipantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
+        $participantTypeOfType = $eventActionRequest->participantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
-        $successCount = $this->eventParticipantService->sendFeedBackMails($event, $eventParticipantTypeOfType, $recursiveDepth, $startId, $endId);
+        $successCount = $this->participantService->sendFeedBackMails($event, $participantTypeOfType, $recursiveDepth, $startId, $endId);
 
         return new JsonResponse("Zasláno $successCount zpráv z $count vyžádaných.", Response::HTTP_CREATED);
     }

@@ -75,8 +75,8 @@ class EventParticipantFlagType extends AbstractEventFlagType
     public function __construct(?Nameable $nameable = null, ?string $type = null, ?int $minFlagsAllowed = null, ?int $maxFlagsAllowed = null)
     {
         $this->setFieldsFromNameable($nameable);
-        $this->setMinInEventParticipant($minFlagsAllowed);
-        $this->setMaxInEventParticipant($maxFlagsAllowed);
+        $this->setMinInParticipant($minFlagsAllowed);
+        $this->setMaxInParticipant($maxFlagsAllowed);
         $this->setType($type);
     }
 

@@ -119,7 +119,7 @@ class EventParticipantType extends AbstractType
             [
                 'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
                 'help'         => $flagType ? $flagType->getDescription() : 'Ostatní příznaky, které nespadají do žádné kategorie.',
-                'required'     => $flagType ? $flagType->getMinInEventParticipant() > 1 : false,
+                'required'     => $flagType ? $flagType->getMinInParticipant() > 1 : false,
                 'choices'      => $flags,
                 'mapped'       => false,
                 'expanded'     => false,

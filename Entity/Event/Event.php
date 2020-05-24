@@ -230,10 +230,10 @@ class Event implements NameableInterface
     {
     }
 
-    public function addRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
+    public function addRegistrationRange(?EventRegistrationRange $registrationRange): void
     {
-        if (null !== $eventRegistrationRange && !$this->getRegistrationRanges()->contains($eventRegistrationRange)) {
-            $this->getRegistrationRanges()->add($eventRegistrationRange);
+        if (null !== $registrationRange && !$this->getRegistrationRanges()->contains($registrationRange)) {
+            $this->getRegistrationRanges()->add($registrationRange);
         }
     }
 
@@ -260,11 +260,11 @@ class Event implements NameableInterface
         return $this->subEvents ?? new ArrayCollection();
     }
 
-    public function addEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
+    public function addEventFlagConnection(?EventFlagConnection $eventFlagConnection): void
     {
-        if (null !== $eventContactFlagConnection && !$this->getEventFlagConnections()->contains($eventContactFlagConnection)) {
-            $this->getEventFlagConnections()->add($eventContactFlagConnection);
-            $eventContactFlagConnection->setEvent($this);
+        if (null !== $eventFlagConnection && !$this->getEventFlagConnections()->contains($eventFlagConnection)) {
+            $this->getEventFlagConnections()->add($eventFlagConnection);
+            $eventFlagConnection->setEvent($this);
         }
     }
 
@@ -397,10 +397,10 @@ class Event implements NameableInterface
         }
     }
 
-    public function removeRegistrationRange(?EventRegistrationRange $eventRegistrationRange): void
+    public function removeRegistrationRange(?EventRegistrationRange $registrationRange): void
     {
-        if (null !== $eventRegistrationRange) {
-            $this->registrationRanges->removeElement($eventRegistrationRange);
+        if (null !== $registrationRange) {
+            $this->registrationRanges->removeElement($registrationRange);
         }
     }
 
@@ -588,10 +588,10 @@ class Event implements NameableInterface
         return $allowedAmount;
     }
 
-    public function removeEventFlagConnection(?EventFlagConnection $eventContactFlagConnection): void
+    public function removeEventFlagConnection(?EventFlagConnection $eventFlagConnection): void
     {
-        if (null !== $eventContactFlagConnection && $this->getEventFlagConnections()->removeElement($eventContactFlagConnection)) {
-            $eventContactFlagConnection->setEvent(null);
+        if (null !== $eventFlagConnection && $this->getEventFlagConnections()->removeElement($eventFlagConnection)) {
+            $eventFlagConnection->setEvent(null);
         }
     }
 

@@ -55,25 +55,25 @@ final class EventParticipantPaymentActionSubscriber implements EventSubscriberIn
             return;
         }
         $output = null;
-        $reservationPaymentActionRequest = $event->getControllerResult();
-        $identifiers = $reservationPaymentActionRequest->identifiers;
-        $type = $reservationPaymentActionRequest->type;
+        $paymentActionRequest = $event->getControllerResult();
+        $identifiers = $paymentActionRequest->identifiers;
+        $type = $paymentActionRequest->type;
         if (!in_array($type, self::ALLOWED_ACTION_TYPES, true)) {
             $event->setResponse(new JsonResponse(null, Response::HTTP_NOT_IMPLEMENTED));
 
             return;
         }
         if ('csv' === $type) {
-            $event->setResponse($this->paymentCsvAction($reservationPaymentActionRequest));
+            $event->setResponse($this->paymentCsvAction($paymentActionRequest));
 
             return;
         }
         if ($identifiers && count($identifiers) > 0) {
-            $eventParticipantPaymentRepository = $this->em->getRepository(EventParticipantPayment::class);
+            $participantPaymentRepository = $this->em->getRepository(EventParticipantPayment::class);
             $processedActionsCount = 0;
             $reservations = new ArrayCollection();
             foreach ($identifiers as $id) {
-                $payment = $eventParticipantPaymentRepository->findOneBy(['id' => $id]);
+                $payment = $participantPaymentRepository->findOneBy(['id' => $id]);
                 if (!$payment) {
                     continue;
                 }

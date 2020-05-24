@@ -21,13 +21,13 @@ abstract class AbstractEventFlagType implements NameableInterface
      * Minimal amount of flags used in one EventParticipant.
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected ?int $minInEventParticipant = null;
+    protected ?int $minInParticipant = null;
 
     /**
      * Maximal amount of flags used in one EventParticipant.
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected ?int $maxInEventParticipant = null;
+    protected ?int $maxInParticipant = null;
 
     abstract public static function getAllowedTypesDefault(): array;
 
@@ -35,8 +35,8 @@ abstract class AbstractEventFlagType implements NameableInterface
 
     public function isInRangeInEventParticipant(int $amount): bool
     {
-        $min = $this->getMinInEventParticipant();
-        $max = $this->getMaxInEventParticipant();
+        $min = $this->getMinInParticipant();
+        $max = $this->getMaxInParticipant();
         if (null !== $min && $amount < $min) {
             return false;
         }
@@ -47,23 +47,23 @@ abstract class AbstractEventFlagType implements NameableInterface
         return true;
     }
 
-    public function getMinInEventParticipant(): ?int
+    public function getMinInParticipant(): ?int
     {
-        return $this->minInEventParticipant;
+        return $this->minInParticipant;
     }
 
-    public function setMinInEventParticipant(?int $minInEventParticipant): void
+    public function setMinInParticipant(?int $minInParticipant): void
     {
-        $this->minInEventParticipant = $minInEventParticipant;
+        $this->minInParticipant = $minInParticipant;
     }
 
-    public function getMaxInEventParticipant(): ?int
+    public function getMaxInParticipant(): ?int
     {
-        return $this->maxInEventParticipant;
+        return $this->maxInParticipant;
     }
 
-    public function setMaxInEventParticipant(?int $maxInEventParticipant): void
+    public function setMaxInParticipant(?int $maxInParticipant): void
     {
-        $this->maxInEventParticipant = $maxInEventParticipant;
+        $this->maxInParticipant = $maxInParticipant;
     }
 }
