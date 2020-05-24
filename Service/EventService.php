@@ -251,8 +251,10 @@ class EventService
     private function checkFlagsExistence(Event $event, array $flagsByTypes, array $allowedFlagsByTypes): void
     {
         foreach ($flagsByTypes as $flagsOfType) { // Check if flagType is allowed in event.
-            $firstFlagOfType = $flagsOfType[array_key_first($flagsOfType)];
-            assert($firstFlagOfType instanceof EventParticipantFlag);
+            $firstFlagOfType = $flagsOfType[array_key_first($flagsOfType)] ?? null;
+            if (!($firstFlagOfType instanceof EventParticipantFlag)) {
+                continue;
+            }
             $flagType = $firstFlagOfType->getEventParticipantFlagType();
             if ($flagType && !array_key_exists('flag_'.$flagType->getSlug(), $allowedFlagsByTypes)) {
                 $message = 'Příznak typu '.$flagType->getName().' není u události '.$event->getName().' povolen.';

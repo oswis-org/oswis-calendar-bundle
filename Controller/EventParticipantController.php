@@ -404,12 +404,11 @@ class EventParticipantController extends AbstractController
      */
     public function processFlags(EventParticipant $participant, FormInterface $form): void
     {
-        $flagsRows = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
-        foreach ($flagsRows as $flagsRow) {
+        $allowedFlagsByType = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
+        foreach ($allowedFlagsByType as $flagsRow) {
             $flagTypeSlug = $flagsRow['flagType'] && $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType']->getSlug() : 0;
-            $oneFlag = $form["flag_$flagTypeSlug"]->getData();
-            assert($oneFlag instanceof EventParticipantFlag);
-            if (null !== $oneFlag) {
+            $oneFlag = $form["flag_$flagTypeSlug"] ? $form["flag_$flagTypeSlug"]->getData() : null;
+            if ($oneFlag instanceof EventParticipantFlag) {
                 $participant->addParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
             }
         }
