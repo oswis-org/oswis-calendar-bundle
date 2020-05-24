@@ -254,7 +254,7 @@ class EventService
             $firstFlagOfType = $flagsOfType[array_key_first($flagsOfType)];
             assert($firstFlagOfType instanceof EventParticipantFlag);
             $flagType = $firstFlagOfType->getEventParticipantFlagType();
-            if ($flagType && !array_key_exists($flagType->getSlug(), $allowedFlagsByTypes)) {
+            if ($flagType && !array_key_exists('flag_'.$flagType->getSlug(), $allowedFlagsByTypes)) {
                 $message = 'Příznak typu '.$flagType->getName().' není u události '.$event->getName().' povolen.';
                 throw new EventCapacityExceededException($message);
             }
@@ -274,7 +274,7 @@ class EventService
         foreach ($allowedFlagsByTypes as $flagsOfType) { // Check if flag amounts in participant belongs to flagType ranges (min and max).
             $flagType = $flagsOfType['flagType'] instanceof EventParticipantFlagType ? $flagsOfType['flagType'] : null;
             $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
-            $flagsAmount = count($flagsByTypes[$flagTypeSlug]);
+            $flagsAmount = count($flagsByTypes["flag_$flagTypeSlug"]);
             $min = $flagType ? $flagType->getMinInParticipant() ?? 0 : null;
             $max = $flagType ? $flagType->getMaxInParticipant() : null;
             if (null !== $flagType && ($min > $flagsAmount || (null !== $max && $max < $flagsAmount))) {
