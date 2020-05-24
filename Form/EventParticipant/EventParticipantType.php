@@ -65,14 +65,10 @@ class EventParticipantType extends AbstractType
                 'data'         => $event,
                 'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $this->eventService),
             )
-        )->add(
-            'contact',
-            StudentPersonType::class,
-            array('label' => 'Účastník', 'required' => true)
-        );
+        )->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
         $this->addFlagsFields($builder, $event, $participant);
         $builder->add(
-            'eventParticipantNotes',
+            'participantNotes',
             CollectionType::class,
             array(
                 'label'         => false,
@@ -126,7 +122,7 @@ class EventParticipantType extends AbstractType
                     'expanded'     => false,
                     'multiple'     => false,
                     'choice_label' => fn(EventParticipantFlag $flag, $key, $value) => $this->getFlagNameWithPrice($flag),
-                    'group_by'     => static function (EventParticipantFlag $flag, $key, $value) use ($flagType) {
+                    'group_by'     => static function (EventParticipantFlag $flag) use ($flagType) {
                         if (!empty($flagType) && EventParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
                             return self::getTShirtGroupName($flag);
                         }
@@ -147,7 +143,7 @@ class EventParticipantType extends AbstractType
         return $label;
     }
 
-    public function getTShirtGroupName(EventParticipantFlag $flag): string
+    public static function getTShirtGroupName(EventParticipantFlag $flag): string
     {
         if (strpos($flag->getName(), 'Pán') !== false) {
             return '♂ Pánské tričko';
@@ -162,7 +158,7 @@ class EventParticipantType extends AbstractType
         return '⚪ Ostatní';
     }
 
-    public function getFlagPriceGroup(EventParticipantFlag $flag): string
+    public static function getFlagPriceGroup(EventParticipantFlag $flag): string
     {
         if ($flag->getPrice() > 0) {
             return '💰 S příplatkem';
