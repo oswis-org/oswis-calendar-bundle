@@ -94,7 +94,7 @@ class EventParticipantController extends AbstractController
      *
      * @return Response
      */
-    public function eventParticipantRegistrationConfirmAction(string $token, int $eventParticipantId): Response
+    public function registrationConfirmAction(string $token, int $eventParticipantId): Response
     {
         // TODO: Check and refactor.
         try {
@@ -184,7 +184,7 @@ class EventParticipantController extends AbstractController
      * @throws InvalidArgumentException
      * @throws OswisNotFoundException
      */
-    final public function eventParticipantRegistration(Request $request, ?string $eventSlug = null, ?string $participantSlug = null): Response
+    final public function participantRegistration(Request $request, ?string $eventSlug = null, ?string $participantSlug = null): Response
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
