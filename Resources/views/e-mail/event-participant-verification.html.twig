@@ -1,5 +1,10 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
+{% set activationUrl = absolute_url(path(
+    'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
+    {'token': contactPerson.appUser.activationRequestToken, 'eventParticipantId': eventParticipant.id}
+    )) %}
+
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
 
 {% block content_inner %}
@@ -27,32 +32,24 @@
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                     {% endif %}
                     úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name }}</b>,
-                    {% if eventParticipant.event.organizer is defined
-                        and eventParticipant.event.organizer
-                        and eventParticipant.event.organizer.contact
-                        and eventParticipant.event.organizer.contact.name %}
+                    {% if eventParticipant.event.organizer.contact.name|default %}
                         kterou pořádá {{ eventParticipant.event.organizer.contact.name }}.
-                    {% else %}
+                    {% elseif eventParticipant.event.startDateTime|default %}
                         která se koná od {{ eventParticipant.event.startDateTime|date("j. n. Y") }}.
+                    {%- else -%}
+                        .
                     {% endif %}
                 {% endblock message_message_inner %}
             </p>
         {% endblock message_message_outer %}
 
-        {% if contactPerson.appUser.accountActivationRequestToken is defined and contactPerson.appUser.accountActivationRequestToken %}
+        {% if contactPerson.appUser.activationRequestToken|default %}
             <p>
                 Ještě je nutné <b>přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
                 že zadaná adresa patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
             </p>
             <p>
-                <a href="{{ absolute_url(path(
-                    'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
-                    {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
-                ) }}" itemprop="confirmReservationUrl" title="Odkaz pro potvrzení přihlášky a aktivaci účtu" target="_blank">
-                    {{ absolute_url(path(
-                        'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
-                        {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
-                    ) }}</a>
+                <a href="{{ activationUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">{{ activationUrl }}</a>
                 <br>
                 <small>Odkaz je platný 24 hodin od vygenerování.</small>
             </p>
@@ -60,32 +57,17 @@
 
         <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
             <meta itemprop="name" content="Potvrdit"/>
-            <link itemprop="url" href="{{ absolute_url(path(
-                'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
-                {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
-            ) }}"/>
+            <link itemprop="url" href="{{ activationUrl }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
-                <link itemprop="url"
-                      href="{{ absolute_url(path(
-                          'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
-                          {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
-                      ) }}"/>
+                <link itemprop="url" href="{{ activationUrl }}">
             </div>
         </div>
 
         <div itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
             <meta itemprop="name" content="Potvrdit"/>
-            <link itemprop="url"
-                  href="{{ absolute_url(path(
-                      'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
-                      {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
-                  ) }}"/>
+            <link itemprop="url" href="{{ activationUrl }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
-                <link itemprop="url"
-                      href="{{ absolute_url(path(
-                          'oswis_org_oswis_calendar_web_event_participant_registration_confirm',
-                          {'token': contactPerson.appUser.accountActivationRequestToken, 'eventParticipantId': eventParticipant.id})
-                      ) }}"/>
+                <link itemprop="url" href="{{ activationUrl }}"/>
             </div>
         </div>
 
@@ -108,28 +90,28 @@
             <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
             <meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
             <meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
-            {% if event.location is defined and event.location %}
+            {% if event.location|default %}
                 <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
-                    {% if event.location.name is defined and event.location.name %}
+                    {% if event.location.name|default %}
                         <meta itemprop="name" content="{{ event.location.name }}"/>
                     {% endif %}
                     <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                        {% if event.location.name is defined and event.location.name %}
+                        {% if event.location.name|default %}
                             <meta itemprop="name" content="{{ event.location.name }}"/>
                         {% endif %}
-                        {% if event.location.streetAddress is defined and event.location.streetAddress %}
+                        {% if event.location.streetAddress|default %}
                             <meta itemprop="streetAddress" content="{{ event.location.streetAddress }}"/>
                         {% endif %}
-                        {% if event.location.city is defined and event.location.city %}
+                        {% if event.location.city|default %}
                             <meta itemprop="addressLocality" content="{{ event.location.city }}"/>
                         {% endif %}
-                        {% if event.location.postalCode is defined and event.location.postalCode %}
+                        {% if event.location.postalCode|default %}
                             <meta itemprop="postalCode" content="{{ event.location.postalCode }}"/>
                         {% endif %}
-                        {% if event.location.city is defined and event.location.city %}
+                        {% if event.location.city|default %}
                             <meta itemprop="addressRegion" content="{{ event.location.city }}"/>
                         {% endif %}
-                        {% if event.location.url is defined and event.location.url %}
+                        {% if event.location.url|default %}
                             <!--suppress HtmlUnknownAttribute -->
                             <meta itemprop="url" href="{{ event.location.url }}" content="{{ event.location.url }}"/>
                         {% endif %}

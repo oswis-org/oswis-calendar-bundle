@@ -1,7 +1,6 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Přijetí/vrácení/oprava platby') }}{% endblock %}
-{% block meta_description %}{{ block('html_title') }}{% endblock %}
 
 {% block content_inner %}
     <p>
@@ -20,7 +19,7 @@
         {% if payment.eventParticipant.remainingPrice > 0 %}
             <p>
                 Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ payment.eventParticipant.remainingPrice }},-&nbsp;Kč</b>, a&nbsp;to
-                {% if payment.eventParticipant.event.bankAccountComplete %}
+                {% if payment.eventParticipant.event.bankAccountComplete|default %}
                     na&nbsp;účet&nbsp;<b>{{ payment.eventParticipant.event.bankAccountComplete|default('') }}</b>
                     s&nbsp;variabilním symbolem <b>{{ payment.eventParticipant.variableSymbol|default('') }}</b>.
                 {% else %}

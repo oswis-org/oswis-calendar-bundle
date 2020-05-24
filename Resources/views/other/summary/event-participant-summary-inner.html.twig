@@ -5,7 +5,7 @@
         ({{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }})
     </small>
     {% if eventParticipant.createdDateTime|date("c") != eventParticipant.updatedDateTime|date("c") %}
-        <br><small>(změna {{ eventParticipant.updatedDateTime|date("j. n. Y, H:i") }})</small>
+        <br><small>(poslední změna {{ eventParticipant.updatedDateTime|date("j. n. Y, H:i") }})</small>
     {% endif %}
 </li>
 <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
@@ -46,10 +46,10 @@
 {% for flagConnection in eventParticipant.eventParticipantFlagConnections %}
     <li>
         {{ flagConnection.eventParticipantFlag.name }}
-        {% if flagConnection.textValue and flagConnection.textValue|length > 0 %}
+        {% if flagConnection.textValue|default('')|length > 0 %}
             ({{ flagConnection.textValue }})
         {% endif %}
-        {% if flagConnection.eventParticipantFlag.price is defined and flagConnection.eventParticipantFlag.price and flagConnection.eventParticipantFlag.price != 0 %}
+        {% if flagConnection.eventParticipantFlag.price|default(0) != 0 %}
             <small>
                 <b>
                     ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
@@ -58,29 +58,18 @@
         {% endif %}
     </li>
 {% endfor %}
-{% if eventParticipant.contact.contactDetails is defined and eventParticipant.contact.contactDetails %}
-    {% for contactDetail in eventParticipant.contact.contactDetails %}
-        {% if contactDetail.content|length > 0 %}
-            <li>
-                {% if contactDetail.contactType is defined and contactDetail.contactType.name is defined and contactDetail.contactType.name %}
-                    {{ contactDetail.contactType.name }}:
-                {% else %}
-                    Kontakt:
-                {% endif %}
-                {{ contactDetail.content }}
-            </li>
-        {% endif %}
+{% if eventParticipant.contact.contactDetails|default %}
+    {% for contactDetail in eventParticipant.contact.contactDetails|filter(detail => detail.content|default|length > 0) %}
+        <li>
+            {{ contactDetail.contactType.name|default('Kontakt') }}: {{ contactDetail.content }}
+        </li>
     {% endfor %}
 {% endif %}
-{% if eventParticipant.eventParticipantNotes is defined and eventParticipant.eventParticipantNotes %}
-    {% for note in eventParticipant.eventParticipantNotes %}
-        {% if note.textValue|length > 0 %}
-            <li>
-                <b>Poznámka:</b>
-                <p>
-                    <small>{{ note.textValue }}</small>
-                </p>
-            </li>
-        {% endif %}
-    {% endfor %}
-{% endif %}
+{% for note in eventParticipant.eventParticipantNotes|default|filter(note => note.textValue|length > 0) %}
+    <li>
+        <b>Poznámka:</b>
+        <p>
+            <small>{{ note.textValue }}</small>
+        </p>
+    </li>
+{% endfor %}

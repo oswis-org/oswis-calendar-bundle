@@ -1,7 +1,6 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Zrušení přihlášky') }}{% endblock %}
-{% block meta_description %}{{ block('html_title') }}{% endblock %}
 
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
