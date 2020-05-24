@@ -275,10 +275,10 @@ class EventService
             $flagType = $flagsOfType['flagType'] instanceof EventParticipantFlagType ? $flagsOfType['flagType'] : null;
             $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
             $flagsAmount = count($flagsByTypes[$flagTypeSlug]);
-            $min = $flagType->getMinInEventParticipant() ?? 0;
-            $max = $flagType->getMaxInEventParticipant();
-            $maxMessage = null === $max ? '' : "až $max";
+            $min = $flagType ? $flagType->getMinInEventParticipant() ?? 0 : null;
+            $max = $flagType ? $flagType->getMaxInEventParticipant() : null;
             if (null !== $flagType && ($min > $flagsAmount || (null !== $max && $max < $flagsAmount))) {
+                $maxMessage = null === $max ? '' : "až $max";
                 throw new EventCapacityExceededException("Musí být vybráno $min až $maxMessage příznaků typu ".$flagType->getName().".");
             }
         }
