@@ -34,7 +34,7 @@ class EventParticipantFlagNewConnection implements BasicInterface
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant",
-     *     inversedBy="eventParticipantFlagConnections"
+     *     inversedBy="participantFlagConnections"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */

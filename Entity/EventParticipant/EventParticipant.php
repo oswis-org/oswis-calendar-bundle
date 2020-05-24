@@ -152,7 +152,7 @@ class EventParticipant implements BasicInterface
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @MaxDepth(1)
      */
-    protected ?EventParticipantType $eventParticipantType = null;
+    protected ?EventParticipantType $participantType = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
@@ -166,7 +166,7 @@ class EventParticipant implements BasicInterface
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_participant_note_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $eventParticipantNotes = null;
+    protected ?Collection $participantNotes = null;
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
@@ -177,7 +177,7 @@ class EventParticipant implements BasicInterface
      * )
      * @MaxDepth(1)
      */
-    protected ?Collection $eventParticipantPayments = null;
+    protected ?Collection $participantPayments = null;
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
@@ -187,7 +187,7 @@ class EventParticipant implements BasicInterface
      *     fetch="EAGER"
      * )
      */
-    protected ?Collection $eventParticipantFlagConnections = null;
+    protected ?Collection $participantFlagConnections = null;
 
     /**
      * Related contact (person or organization).
@@ -236,30 +236,37 @@ class EventParticipant implements BasicInterface
     ) {
         $this->setContact($contact);
         $this->setEvent($event);
-        $this->setEventParticipantType($participantType);
-        $this->setEventParticipantNotes($participantNotes);
-        $this->setEventParticipantPayments(new ArrayCollection());
-        $this->setEventParticipantFlagConnections($participantFlagConnections);
+        $this->setParticipantType($participantType);
+        $this->setParticipantNotes($participantNotes);
+        $this->setParticipantPayments(new ArrayCollection());
+        $this->setParticipantFlagConnections($participantFlagConnections);
         $this->setDeleted($deleted);
         $this->setPriority($priority);
     }
 
-    public static function filterEventParticipants(Collection $participants, ?bool $includeNotActivated = true): Collection
+    public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
     {
-        $eventParticipants = new ArrayCollection();
+        $resultCollection = new ArrayCollection();
         foreach ($participants as $newEventParticipant) {
             assert($newEventParticipant instanceof self);
             if (!$includeNotActivated && !$newEventParticipant->hasActivatedContactUser()) {
                 continue;
             }
-            if (!$eventParticipants->contains($newEventParticipant)) {
-                $eventParticipants->add($newEventParticipant);
+            if (!$resultCollection->contains($newEventParticipant)) {
+                $resultCollection->add($newEventParticipant);
             }
         }
 
-        return $eventParticipants;
+        return $resultCollection;
     }
 
+    /**
+     * Checks if there is some activated user assigned to this participant.
+     *
+     * @param DateTime|null $referenceDateTime
+     *
+     * @return bool
+     */
     public function hasActivatedContactUser(?DateTime $referenceDateTime = null): bool
     {
         try {
@@ -279,7 +286,14 @@ class EventParticipant implements BasicInterface
         $this->contact = $contact;
     }
 
-    public static function sort(Collection $eventParticipants): Collection
+    /**
+     * Sort collection of event participants by name (and id).
+     *
+     * @param Collection $eventParticipants
+     *
+     * @return Collection
+     */
+    public static function sortCollection(Collection $eventParticipants): Collection
     {
         $participants = $eventParticipants->toArray();
         self::sortArray($participants);
@@ -287,6 +301,11 @@ class EventParticipant implements BasicInterface
         return new ArrayCollection($participants);
     }
 
+    /**
+     * Sort array of event participants by name (and id).
+     *
+     * @param array $eventParticipants
+     */
     public static function sortArray(array &$eventParticipants): void
     {
         usort(
@@ -306,23 +325,30 @@ class EventParticipant implements BasicInterface
         );
     }
 
+    /**
+     * Recognizes if participant must be addressed in a formal way.
+     *
+     * @param bool $recursive
+     *
+     * @return bool Participant must be addressed in a formal way.
+     */
     public function isFormal(bool $recursive = false): bool
     {
         if ($recursive && null === $this->formal) {
-            return $this->getEventParticipantType() ? $this->getEventParticipantType()->isFormal() : false;
+            return $this->getParticipantType() ? $this->getParticipantType()->isFormal() : false;
         }
 
         return (bool)$this->formal;
     }
 
-    public function getEventParticipantType(): ?EventParticipantType
+    public function getParticipantType(): ?EventParticipantType
     {
-        return $this->eventParticipantType;
+        return $this->participantType;
     }
 
-    public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    public function setParticipantType(?EventParticipantType $participantType): void
     {
-        $this->eventParticipantType = $eventParticipantType;
+        $this->participantType = $participantType;
     }
 
     public function setFormal(?bool $formal): void
@@ -330,12 +356,21 @@ class EventParticipant implements BasicInterface
         $this->formal = $formal;
     }
 
+    /**
+     * Checks if participant is marked as manager (by one of management participant types).
+     * @return bool
+     */
     public function isManager(): bool
     {
-        return false;
-        // return in_array($this->getType(), self::MANAGEMENT_TYPES, true);
+        $type = $this->getParticipantType();
+
+        return null !== $type ? in_array($type->getType(), EventParticipantType::MANAGEMENT_TYPES, true) : false;
     }
 
+    /**
+     * Get participants name from assigned contact.
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return null !== $this->getContact() ? $this->getContact()->getName() : null;
@@ -348,8 +383,8 @@ class EventParticipant implements BasicInterface
      */
     public function addEventParticipantFlagConnection(?EventParticipantFlagNewConnection $newConnection): void
     {
-        if (null !== $newConnection && !$this->eventParticipantFlagConnections->contains($newConnection)) {
-            $this->eventParticipantFlagConnections->add($newConnection);
+        if (null !== $newConnection && !$this->participantFlagConnections->contains($newConnection)) {
+            $this->participantFlagConnections->add($newConnection);
             $newConnection->setEventParticipant($this);
         }
     }
@@ -361,39 +396,39 @@ class EventParticipant implements BasicInterface
      */
     public function removeEventParticipantFlagConnection(?EventParticipantFlagNewConnection $eventContactFlagConnection): void
     {
-        if ($eventContactFlagConnection && $this->eventParticipantFlagConnections->removeElement($eventContactFlagConnection)) {
+        if ($eventContactFlagConnection && $this->participantFlagConnections->removeElement($eventContactFlagConnection)) {
             $eventContactFlagConnection->setEventParticipant(null);
         }
     }
 
     public function removeEmptyEventParticipantNotes(): void
     {
-        $this->setEventParticipantNotes(
-            $this->getEventParticipantNotes()->filter(fn(EventParticipantNote $note): bool => !empty($note->getTextValue()))
+        $this->setParticipantNotes(
+            $this->getParticipantNotes()->filter(fn(EventParticipantNote $note): bool => !empty($note->getTextValue()))
         );
     }
 
-    public function getEventParticipantNotes(): Collection
+    public function getParticipantNotes(): Collection
     {
-        return $this->eventParticipantNotes ?? new ArrayCollection();
+        return $this->participantNotes ?? new ArrayCollection();
     }
 
-    public function setEventParticipantNotes(?Collection $newEventParticipantNotes): void
+    public function setParticipantNotes(?Collection $newEventParticipantNotes): void
     {
-        $this->eventParticipantNotes = $newEventParticipantNotes ?? new ArrayCollection();
+        $this->participantNotes = $newEventParticipantNotes ?? new ArrayCollection();
     }
 
     public function removeEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
         if ($eventParticipantNote) {
-            $this->eventParticipantNotes->removeElement($eventParticipantNote);
+            $this->participantNotes->removeElement($eventParticipantNote);
         }
     }
 
     public function addEventParticipantNote(?EventParticipantNote $eventParticipantNote): void
     {
-        if ($eventParticipantNote && !$this->eventParticipantNotes->contains($eventParticipantNote)) {
-            $this->eventParticipantNotes->add($eventParticipantNote);
+        if ($eventParticipantNote && !$this->participantNotes->contains($eventParticipantNote)) {
+            $this->participantNotes->add($eventParticipantNote);
         }
     }
 
@@ -407,6 +442,7 @@ class EventParticipant implements BasicInterface
     }
 
     /**
+     * Gets part of price that is not marked as deposit.
      * @return int
      * @throws PriceInvalidArgumentException
      */
@@ -416,6 +452,7 @@ class EventParticipant implements BasicInterface
     }
 
     /**
+     * Get whole price of event for this participant (including flags price).
      * @return int
      * @throws PriceInvalidArgumentException
      */
@@ -424,11 +461,11 @@ class EventParticipant implements BasicInterface
         if (null === $this->getEvent()) {
             throw new PriceInvalidArgumentException(' (událost nezadána)');
         }
-        if (null === $this->getEventParticipantType()) {
+        if (null === $this->getParticipantType()) {
             throw new PriceInvalidArgumentException(' (typ uživatele nezadán)');
         }
         $dateTime = $this->getCreatedDateTime() ?? new DateTime();
-        $price = $this->getEvent()->getPrice($this->getEventParticipantType(), $dateTime) + $this->getFlagsPrice();
+        $price = $this->getEvent()->getPrice($this->getParticipantType(), $dateTime) + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
@@ -446,7 +483,7 @@ class EventParticipant implements BasicInterface
     public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int
     {
         $price = 0;
-        foreach ($this->getEventParticipantFlags($eventParticipantFlagType) as $flag) {
+        foreach ($this->getParticipantFlags($eventParticipantFlagType) as $flag) {
             assert($flag instanceof EventParticipantFlag);
             $price += $flag->getPrice();
         }
@@ -454,20 +491,20 @@ class EventParticipant implements BasicInterface
         return $price;
     }
 
-    public function getEventParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    public function getParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
-        return $this->getEventParticipantFlagConnections($eventParticipantFlagType)->map(
+        return $this->getParticipantFlagConnections($eventParticipantFlagType)->map(
             fn(EventParticipantFlagNewConnection $connection) => $connection->getEventParticipantFlag()
         );
     }
 
-    public function getEventParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    public function getParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
     {
         if (null === $eventParticipantFlagType) {
-            return $this->eventParticipantFlagConnections ?? new ArrayCollection();
+            return $this->participantFlagConnections ?? new ArrayCollection();
         }
 
-        return $this->eventParticipantFlagConnections->filter(
+        return $this->participantFlagConnections->filter(
             static function (EventParticipantFlagNewConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
                 try {
                     $flag = $eventParticipantFlagConnection->getEventParticipantFlag();
@@ -486,79 +523,98 @@ class EventParticipant implements BasicInterface
      *
      * @throws EventCapacityExceededException
      */
-    public function setEventParticipantFlagConnections(?Collection $newConnections): void
+    public function setParticipantFlagConnections(?Collection $newConnections): void
     {
-        $this->eventParticipantFlagConnections ??= new ArrayCollection();
+        $this->participantFlagConnections ??= new ArrayCollection();
         $newConnections ??= new ArrayCollection();
-        foreach ($this->eventParticipantFlagConnections as $oldConnection) {
+        foreach ($this->participantFlagConnections as $oldConnection) {
             if (!$newConnections->contains($oldConnection)) {
                 $this->removeEventParticipantFlagConnection($oldConnection);
             }
         }
         foreach ($newConnections as $newConnection) {
-            if (!$this->eventParticipantFlagConnections->contains($newConnection)) {
+            if (!$this->participantFlagConnections->contains($newConnection)) {
                 $this->addEventParticipantFlagConnection($newConnection);
             }
         }
     }
 
     /**
+     * Gets part of price that is marked as deposit.
      * @return int
      * @throws PriceInvalidArgumentException
      */
     public function getPriceDeposit(): ?int
     {
-        if (!$this->getEvent() || !$this->getEventParticipantType()) {
+        if (!$this->getEvent() || !$this->getParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()->getDeposit($this->getEventParticipantType());
+        $price = $this->getEvent()->getDeposit($this->getParticipantType());
 
         return $price < 0 ? 0 : $price;
     }
 
+    /**
+     * Gets part of price that was already paid.
+     * @return int
+     */
     public function getPaidPrice(): int
     {
         $paid = 0;
-        foreach ($this->getEventParticipantPayments() as $eventParticipantPayment) {
-            assert($eventParticipantPayment instanceof EventParticipantPayment);
-            $paid += $eventParticipantPayment->getNumericValue();
+        foreach ($this->getParticipantPayments() as $eventParticipantPayment) {
+            $paid += $eventParticipantPayment instanceof EventParticipantPayment ? $eventParticipantPayment->getNumericValue() : 0;
         }
 
         return $paid;
     }
 
-    public function getEventParticipantPayments(): ?Collection
+    public function getParticipantPayments(): ?Collection
     {
-        return $this->eventParticipantPayments ?? new ArrayCollection();
+        return $this->participantPayments ?? new ArrayCollection();
     }
 
-    public function setEventParticipantPayments(?Collection $newEventParticipantPayments): void
+    public function setParticipantPayments(?Collection $newEventParticipantPayments): void
     {
-        $this->eventParticipantPayments = $this->eventParticipantPayments ?? new ArrayCollection();
+        $this->participantPayments = $this->participantPayments ?? new ArrayCollection();
         $newEventParticipantPayments = $newEventParticipantPayments ?? new ArrayCollection();
-        foreach ($this->eventParticipantPayments as $oldPayment) {
+        foreach ($this->participantPayments as $oldPayment) {
             if (!$newEventParticipantPayments->contains($oldPayment)) {
                 $this->removeEventParticipantPayment($oldPayment);
             }
         }
         foreach ($newEventParticipantPayments as $newPayment) {
-            if (!$this->eventParticipantPayments->contains($newPayment)) {
+            if (!$this->participantPayments->contains($newPayment)) {
                 $this->addEventParticipantPayment($newPayment);
             }
         }
     }
 
+    /**
+     * Checks if participant contains given flag.
+     *
+     * @param EventParticipantFlag $flag
+     *
+     * @return bool
+     */
     public function hasFlag(EventParticipantFlag $flag): bool
     {
-        return $this->getEventParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flag->getId() === $f->getId());
-    }
-
-    public function hasFlagOfTypeOfType(?string $flagType): bool
-    {
-        return $this->getEventParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flagType && $flagType === $f->getTypeOfType());
+        return $this->getParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flag->getId() === $f->getId());
     }
 
     /**
+     * Checks if participant has some flag of given type (given by type string).
+     *
+     * @param string|null $flagType
+     *
+     * @return bool Participant contains some flag of given type.
+     */
+    public function hasFlagOfTypeOfType(?string $flagType): bool
+    {
+        return $this->getParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flagType && $flagType === $f->getTypeOfType());
+    }
+
+    /**
+     * Gets price remains to be paid.
      * @return int
      * @throws PriceInvalidArgumentException
      */
@@ -568,6 +624,7 @@ class EventParticipant implements BasicInterface
     }
 
     /**
+     * Gets price deposit that remains to be paid.
      * @return int
      * @throws PriceInvalidArgumentException
      */
@@ -579,51 +636,54 @@ class EventParticipant implements BasicInterface
     }
 
     /**
+     * Gets percentage of price paid (as float).
      * @return float
      * @throws PriceInvalidArgumentException
      */
-    public function getPaidPricePercent(): float
+    public function getPaidPricePercentage(): float
     {
         return $this->getPaidPrice() / $this->getPrice();
     }
 
     public function removeEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
-        if ($eventParticipantPayment && $this->eventParticipantPayments->removeElement($eventParticipantPayment)) {
+        if ($eventParticipantPayment && $this->participantPayments->removeElement($eventParticipantPayment)) {
             $eventParticipantPayment->setEventParticipant(null);
         }
     }
 
     public function addEventParticipantPayment(?EventParticipantPayment $eventParticipantPayment): void
     {
-        if ($eventParticipantPayment && !$this->eventParticipantPayments->contains($eventParticipantPayment)) {
-            $this->eventParticipantPayments->add($eventParticipantPayment);
+        if ($eventParticipantPayment && !$this->participantPayments->contains($eventParticipantPayment)) {
+            $this->participantPayments->add($eventParticipantPayment);
             $eventParticipantPayment->setEventParticipant($this);
         }
     }
 
     /**
-     * Get variable symbol of this eventParticipant (default is cropped phone number).
+     * Get variable symbol of this eventParticipant (default is cropped phone number or ID).
      */
     public function getVariableSymbol(): ?string
     {
-        $phone = preg_replace(
-            '/\s/',
-            '',
-            $this->getContact() ? $this->getContact()->getPhone() : null
-        );
+        $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
+        $symbol = preg_replace('/\s/', '', $phone);
+        $symbol = substr(trim($symbol), strlen(trim($symbol)) - 9, 9);
 
-        return substr(trim($phone), strlen(trim($phone)) - 9, 9);
+        return empty($symbol) ? ''.$this->getId() : $symbol;
     }
 
+    /**
+     * Gets array of flags aggregated by their types.
+     * @return array
+     */
     public function getFlagsAggregatedByType(): array
     {
         $flags = [];
-        foreach ($this->getEventParticipantFlags() as $flag) {
+        foreach ($this->getParticipantFlags() as $flag) {
             if ($flag instanceof EventParticipantFlag) {
-                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '';
-                $flags[$flagTypeId] ??= [];
-                $flags[$flagTypeId][] = $flag;
+                $flagTypeSlug = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '0';
+                $flags[$flagTypeSlug] ??= [];
+                $flags[$flagTypeSlug][] = $flag;
             }
         }
 

@@ -680,7 +680,7 @@ class EventParticipantService
         $participants = $this->getEventParticipants($opts, $includeNotActivated);
         foreach ($participants as $eventParticipant) {
             assert($eventParticipant instanceof EventParticipant);
-            $eventParticipant->getEventParticipantFlagConnections()->map(
+            $eventParticipant->getParticipantFlagConnections()->map(
                 fn(EventParticipantFlagNewConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
             );
         }
@@ -731,7 +731,7 @@ class EventParticipantService
         if ($participantType) {
             foreach ($participants as $participant) {
                 assert($participant instanceof EventParticipant);
-                foreach ($participant->getEventParticipantFlagConnections() as $participantFlagConnection) {
+                foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
                     assert($participantFlagConnection instanceof EventParticipantFlagInEventConnection);
                     $flag = $participantFlagConnection->getEventParticipantFlag();
                     if (null !== $flag) {
@@ -746,13 +746,13 @@ class EventParticipantService
         } else {
             foreach ($participants as $participant) {
                 assert($participant instanceof EventParticipant);
-                $participantType = $participant->getEventParticipantType();
+                $participantType = $participant->getParticipantType();
                 $participantTypeArray = [
                     'id'        => $participantType->getId(),
                     'name'      => $participantType->getName(),
                     'shortName' => $participantType->getShortName(),
                 ];
-                foreach ($participant->getEventParticipantFlagConnections() as $participantFlagConnection) {
+                foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
                     assert($participantFlagConnection instanceof EventParticipantFlagNewConnection);
                     $flag = $participantFlagConnection->getEventParticipantFlag();
                     if (null !== $flag) {
@@ -835,7 +835,7 @@ class EventParticipantService
         } else {
             foreach ($participants as $participant) {
                 assert($participant instanceof EventParticipant);
-                $participantType = $participant->getEventParticipantType();
+                $participantType = $participant->getParticipantType();
                 $person = $participant->getContact();
                 if ($person instanceof Person) { // Fix for organizations?
                     foreach ($person->getSchools() as $school) {

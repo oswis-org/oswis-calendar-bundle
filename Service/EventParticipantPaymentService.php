@@ -255,7 +255,7 @@ class EventParticipantPaymentService
 
                 return;
             }
-            $formal = $eventParticipant->getEventParticipantType() ? $eventParticipant->getEventParticipantType()->isFormal() : true;
+            $formal = $eventParticipant->getParticipantType() ? $eventParticipant->getParticipantType()->isFormal() : true;
             $contact = $eventParticipant->getContact();
             $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
             if ($contact instanceof Person) {

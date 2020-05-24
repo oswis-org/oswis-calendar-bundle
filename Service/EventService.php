@@ -15,6 +15,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
@@ -89,34 +90,6 @@ class EventService
         return $this->participantService;
     }
 
-    public function getRemainingCapacity(Event $event, ?EventParticipantType $eventParticipantType = null): ?int
-    {
-        $occupancy = $this->getOccupancy($event, $eventParticipantType);
-        $maximumCapacity = $event->getCapacity($eventParticipantType);
-        if (null !== $maximumCapacity) {
-            return ($maximumCapacity - $occupancy) > 0 ? ($maximumCapacity - $occupancy) : 0;
-        }
-
-        return null;
-    }
-
-    final public function getOccupancy(
-        Event $event,
-        ?EventParticipantType $participantType = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivated = true,
-        ?int $recursiveDepth = null
-    ): int {
-        $opts = [
-            EventParticipantRepository::CRITERIA_EVENT                 => $event,
-            EventParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
-            EventParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
-            EventParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
-        ];
-
-        return $this->participantService->getEventParticipants($opts, $includeNotActivated)->count();
-    }
-
     final public function containsAppUser(Event $event, AppUser $appUser, EventParticipantType $participantType = null): bool
     {
         $opts = [
@@ -153,15 +126,15 @@ class EventService
     {
         $newEvent = $newParticipant->getEvent();
         $newContact = $newParticipant->getContact();
-        $newParticipantType = $newParticipant->getEventParticipantType();
+        $newParticipantType = $newParticipant->getParticipantType();
         if (null === $newParticipantType || null === $newContact || null === $newEvent) {
             throw $this->checkEventParticipantConnections($newEvent, $newContact, $newParticipantType);
         }
         $oldEvent = $oldParticipant ? $oldParticipant->getEvent() : null;
         $oldContact = $oldParticipant ? $oldParticipant->getContact() : null;
-        $oldParticipantType = $oldParticipant ? $oldParticipant->getEventParticipantType() : null;
-        $newFlags = $newParticipant->getEventParticipantFlags();
-        $oldFlags = $oldParticipant ? $oldParticipant->getEventParticipantFlags() : new ArrayCollection();
+        $oldParticipantType = $oldParticipant ? $oldParticipant->getParticipantType() : null;
+        $newFlags = $newParticipant->getParticipantFlags();
+        $oldFlags = $oldParticipant ? $oldParticipant->getParticipantFlags() : new ArrayCollection();
         /// TODO: Check all conditions.
         if (null !== $oldContact && $newContact->getId() !== $oldContact->getId()) { // Contact was changed.
             throw new EventCapacityExceededException('Výměna účastníka v přihlášce není povolena.');
@@ -174,7 +147,7 @@ class EventService
             $this->checkCapacity($newEvent, $newParticipantType);
         }
         /// TODO: Check "isParentRequired".
-        $this->checkFlagsRanges($newParticipant, $newEvent, $newParticipantType);
+        $this->checkFlags($newParticipant, $newEvent, $newParticipantType);
         $this->checkFlagsCapacity($newEvent, $newParticipantType, $newFlags, $oldFlags);
     }
 
@@ -223,6 +196,34 @@ class EventService
         }
     }
 
+    public function getRemainingCapacity(Event $event, ?EventParticipantType $eventParticipantType = null): ?int
+    {
+        $occupancy = $this->getOccupancy($event, $eventParticipantType);
+        $maximumCapacity = $event->getCapacity($eventParticipantType);
+        if (null !== $maximumCapacity) {
+            return ($maximumCapacity - $occupancy) > 0 ? ($maximumCapacity - $occupancy) : 0;
+        }
+
+        return null;
+    }
+
+    final public function getOccupancy(
+        Event $event,
+        ?EventParticipantType $participantType = null,
+        ?bool $includeDeleted = false,
+        ?bool $includeNotActivated = true,
+        ?int $recursiveDepth = null
+    ): int {
+        $opts = [
+            EventParticipantRepository::CRITERIA_EVENT                 => $event,
+            EventParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
+            EventParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
+            EventParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
+        ];
+
+        return $this->participantService->getEventParticipants($opts, $includeNotActivated)->count();
+    }
+
     /**
      * @param EventParticipant     $participant
      * @param Event                $event
@@ -230,33 +231,62 @@ class EventService
      *
      * @throws EventCapacityExceededException
      */
-    public function checkFlagsRanges(EventParticipant $participant, Event $event, EventParticipantType $participantType): void
+    public function checkFlags(EventParticipant $participant, Event $event, EventParticipantType $participantType): void
     {
-        $participantFlagsByTypes = $participant->getFlagsAggregatedByType();
+        $flagsByTypes = $participant->getFlagsAggregatedByType();
         $allowedFlagsByTypes = $event->getAllowedFlagsAggregatedByType($participantType);
-        foreach ($participantFlagsByTypes as $oneTypeFlags) { // Check if flagType is allowed in event.
-            $flagOfType = $oneTypeFlags[array_key_first($oneTypeFlags)];
-            assert($flagOfType instanceof EventParticipantFlag);
-            $flagType = $flagOfType->getEventParticipantFlagType();
+        $this->checkFlagsExistence($event, $flagsByTypes, $allowedFlagsByTypes);
+        $this->checkFlagsRanges($flagsByTypes, $allowedFlagsByTypes);
+    }
+
+    /**
+     * Checks if type of each used flag can be used in event.
+     *
+     * @param Event $event
+     * @param array $flagsByTypes
+     * @param array $allowedFlagsByTypes
+     *
+     * @throws EventCapacityExceededException
+     */
+    private function checkFlagsExistence(Event $event, array $flagsByTypes, array $allowedFlagsByTypes): void
+    {
+        foreach ($flagsByTypes as $flagsOfType) { // Check if flagType is allowed in event.
+            $firstFlagOfType = $flagsOfType[array_key_first($flagsOfType)];
+            assert($firstFlagOfType instanceof EventParticipantFlag);
+            $flagType = $firstFlagOfType->getEventParticipantFlagType();
             if ($flagType && !array_key_exists($flagType->getSlug(), $allowedFlagsByTypes)) {
                 $message = 'Příznak typu '.$flagType->getName().' není u události '.$event->getName().' povolen.';
                 throw new EventCapacityExceededException($message);
             }
         }
-        foreach ($allowedFlagsByTypes as $oneTypeFlags) { // Check if flag amounts in participant belongs to flagType ranges (min and max).
-            $flagOfType = $oneTypeFlags[array_key_first($oneTypeFlags)];
-            assert($flagOfType instanceof EventParticipantFlag);
-            $flagType = $flagOfType->getEventParticipantFlagType();
-            if ($flagType && $flagType->getMinInEventParticipant() > count($participantFlagsByTypes[$flagType->getId()])) {
-                throw new EventCapacityExceededException('Musí být vybrán příznak typu '.$flagType->getName().'.');
-            }
-            if ($flagType && $flagType->getMaxInEventParticipant() < count($participantFlagsByTypes[$flagType->getId()])) {
-                throw new EventCapacityExceededException('Překročen počet příznaků typu '.$flagType->getName().'.');
+    }
+
+    /**
+     * Checks if the amount of flags of each type meets range of that type.
+     *
+     * @param array $flagsByTypes
+     * @param array $allowedFlagsByTypes
+     *
+     * @throws EventCapacityExceededException
+     */
+    private function checkFlagsRanges(array $flagsByTypes, array $allowedFlagsByTypes): void
+    {
+        foreach ($allowedFlagsByTypes as $flagsOfType) { // Check if flag amounts in participant belongs to flagType ranges (min and max).
+            $flagType = $flagsOfType['flagType'] && $flagsOfType['flagType'] instanceof EventParticipantFlagType ? $flagsOfType['flagType'] : null;
+            $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
+            $flagsAmount = count($flagsByTypes[$flagTypeSlug]);
+            $min = $flagType->getMinInEventParticipant() ?? 0;
+            $max = $flagType->getMaxInEventParticipant();
+            $maxMessage = null === $max ? '' : "až $max";
+            if (null !== $flagType && ($min > $flagsAmount || (null !== $max && $max < $flagsAmount))) {
+                throw new EventCapacityExceededException("Musí být vybráno $min až $maxMessage příznaků typu ".$flagType->getName().".");
             }
         }
     }
 
     /**
+     * Checks if amount of flags (used in participant) was not exceeded in event.
+     *
      * @param Event                $event
      * @param EventParticipantType $participantType
      * @param Collection           $newFlags
@@ -267,29 +297,41 @@ class EventService
     public function checkFlagsCapacity(Event $event, EventParticipantType $participantType, Collection $newFlags, ?Collection $oldFlags = null): void
     {
         $oldFlags ??= new ArrayCollection();
+        $eventName = $event->getShortName();
         foreach ($newFlags as $newFlag) {
-            assert($newFlag instanceof EventParticipantFlag);
-            $newFlagCount = $newFlags->filter(fn(EventParticipantFlag $flag) => $newFlag->getId() === $flag->getId())->count();
-            $oldFlagCount = $oldFlags->filter(fn(EventParticipantFlag $flag) => $newFlag->getId() === $flag->getId())->count();
-            if ($this->getAllowedEventParticipantFlagRemainingAmount($event, $newFlag, $participantType) < ($newFlagCount - $oldFlagCount)) {
-                $message = 'Kapacita příznaku '.$newFlag->getName().' u události '.$event->getName().' byla překročena.';
-                throw new EventCapacityExceededException($message);
+            $newFlagId = $newFlag instanceof EventParticipantFlag ? $newFlag->getId() : null;
+            $newFlagName = $newFlag instanceof EventParticipantFlag ? $newFlag->getName() : null;
+            $newFlagCount = $newFlags->filter(fn(EventParticipantFlag $flag) => $flag->getId() === $newFlagId)->count();
+            $oldFlagCount = $oldFlags->filter(fn(EventParticipantFlag $flag) => $flag->getId() === $newFlagId)->count();
+            if ($this->getAllowedParticipantFlagRemaining($event, $newFlag, $participantType) < ($newFlagCount - $oldFlagCount)) {
+                throw new EventCapacityExceededException("Kapacita příznaku $newFlagName u události $eventName byla překročena.");
             }
         }
     }
 
-    public function getAllowedEventParticipantFlagRemainingAmount(
+    /**
+     * Get remaining capacity of participant flag in event (by given participantType).
+     *
+     * @param Event                     $event
+     * @param EventParticipantFlag|null $participantFlag
+     * @param EventParticipantType|null $participantType
+     *
+     * @return int Remaining capacity of flag.
+     */
+    public function getAllowedParticipantFlagRemaining(
         Event $event,
         ?EventParticipantFlag $participantFlag,
         ?EventParticipantType $participantType
     ): int {
-        $allowedAmount = $event->getAllowedParticipantFlagAmount($participantFlag, $participantType);
+        $allowedAmount = $event->getParticipantFlagCapacity($participantFlag, $participantType);
         $actualAmount = $this->participantService->getEventParticipantFlags($event, $participantType, $participantFlag)->count();
 
         return ($allowedAmount - $actualAmount) < 0 ? 0 : ($allowedAmount - $actualAmount);
     }
 
     /**
+     * Checks if contact is participant in superEvent of event (if it's required).
+     *
      * @param Event                $newEvent
      * @param EventParticipantType $newParticipantType
      * @param AbstractContact      $newContact
@@ -311,6 +353,15 @@ class EventService
         }
     }
 
+    /**
+     * Checks if contact is participant in event as given participantType.
+     *
+     * @param Event                     $event
+     * @param AbstractContact           $contact
+     * @param EventParticipantType|null $participantType
+     *
+     * @return bool
+     */
     final public function containsContact(Event $event, AbstractContact $contact, EventParticipantType $participantType = null): bool
     {
         $opts = [

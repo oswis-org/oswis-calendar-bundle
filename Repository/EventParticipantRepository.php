@@ -35,20 +35,11 @@ class EventParticipantRepository extends EntityRepository
         return $result instanceof EventParticipant ? $result : null;
     }
 
-    public function getEventParticipants(
-        array $opts = [],
-        ?bool $includeNotActivated = true,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Collection {
+    public function getEventParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
+    {
         $queryBuilder = $this->getEventParticipantsQueryBuilder($opts, $limit, $offset);
 
-        return EventParticipant::filterEventParticipants(
-            new ArrayCollection(
-                $queryBuilder->getQuery()->getResult()
-            ),
-            $includeNotActivated
-        );
+        return EventParticipant::filterCollection(new ArrayCollection($queryBuilder->getQuery()->getResult()), $includeNotActivated);
     }
 
     public function getEventParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
@@ -92,7 +83,7 @@ class EventParticipantRepository extends EntityRepository
     private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof EventParticipantType) {
-            $queryBuilder->andWhere('ep.eventParticipantType = :type_id');
+            $queryBuilder->andWhere('ep.participantType = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
         }
     }
@@ -100,7 +91,7 @@ class EventParticipantRepository extends EntityRepository
     private function addParticipantTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE])) {
-            $queryBuilder->leftJoin('ep.eventParticipantType', 'type');
+            $queryBuilder->leftJoin('ep.participantType', 'type');
             $queryBuilder->andWhere('type.type = :type_type');
             $queryBuilder->setParameter('type_type', $opts[self::CRITERIA_PARTICIPANT_TYPE_OF_TYPE]);
         }

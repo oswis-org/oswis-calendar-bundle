@@ -170,26 +170,6 @@ class EventParticipantController extends AbstractController
     }
 
     /**
-     * @param EventParticipant $participant
-     * @param FormInterface    $form
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function processFlags(EventParticipant $participant, FormInterface $form): void
-    {
-        $flagsRows = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getEventParticipantType()) : new ArrayCollection();
-        foreach ($flagsRows as $flagsRow) {
-            $flagType = $flagsRow['flagType'];
-            assert($flagType instanceof EventParticipantFlagType);
-            $oneFlag = $form['flag_'.$flagType->getSlug()]->getData();
-            assert($oneFlag instanceof EventParticipantFlag);
-            if (null !== $oneFlag) {
-                $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
-            }
-        }
-    }
-
-    /**
      * Show or process registration form.
      *
      * Route shows registration form or process it if form was sent.
@@ -215,7 +195,7 @@ class EventParticipantController extends AbstractController
         }
         $event = $this->getEvent($eventSlug);
         $participant = $this->prepareEventParticipant($event, $this->getParticipantType($participantSlug));
-        $participantType = $participant->getEventParticipantType();
+        $participantType = $participant->getParticipantType();
         try {
             $range = $this->getRange($event, $participantType);
         } catch (PriceInvalidArgumentException $exception) {
@@ -298,7 +278,7 @@ class EventParticipantController extends AbstractController
                     'pageTitle'           => 'Přihláška na akci '.$event->getName(),
                     'event'               => $event,
                     'type'                => 'form',
-                    'registrationsActive' => $event->isRegistrationsAllowed($participant->getEventParticipantType()),
+                    'registrationsActive' => $event->isRegistrationsAllowed($participant->getParticipantType()),
                 ]
             );
         }
@@ -414,5 +394,24 @@ class EventParticipantController extends AbstractController
         }
 
         return $ranges->first();
+    }
+
+    /**
+     * @param EventParticipant $participant
+     * @param FormInterface    $form
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function processFlags(EventParticipant $participant, FormInterface $form): void
+    {
+        $flagsRows = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
+        foreach ($flagsRows as $flagsRow) {
+            $flagTypeSlug = $flagsRow['flagType'] && $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType']->getSlug() : 0;
+            $oneFlag = $form["flag_$flagTypeSlug"]->getData(); // TODO
+            assert($oneFlag instanceof EventParticipantFlag);
+            if (null !== $oneFlag) {
+                $participant->addEventParticipantFlagConnection(new EventParticipantFlagNewConnection($oneFlag));
+            }
+        }
     }
 }

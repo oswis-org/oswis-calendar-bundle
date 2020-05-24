@@ -49,7 +49,7 @@ class EventParticipantType extends AbstractType
         if (!($participant instanceof EventParticipant)) {
             throw new PriceInvalidArgumentException('účastník neexistuje');
         }
-        $participantType = $participant->getEventParticipantType();
+        $participantType = $participant->getParticipantType();
         $event = $participant->getEvent();
         if (null === $participantType || null === $event) {
             throw new PriceInvalidArgumentException((int)(null !== $participantType).', '.(int)(null !== $event));
@@ -109,7 +109,7 @@ class EventParticipantType extends AbstractType
 
     public function addFlagsFields(FormBuilderInterface $builder, Event $event, EventParticipant $participant): void
     {
-        $participantType = $participant->getEventParticipantType();
+        $participantType = $participant->getParticipantType();
         $flagsRows = $event->getAllowedFlagsAggregatedByType($participantType);
         foreach ($flagsRows as $flagsRow) {
             $flagType = $flagsRow['flagType'] instanceof EventParticipantFlagType ? $flagsRow['flagType'] : null;

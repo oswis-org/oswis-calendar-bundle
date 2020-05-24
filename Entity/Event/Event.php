@@ -519,9 +519,9 @@ class Event implements NameableInterface
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
             $flag = $flagInEventConnection->getEventParticipantFlag();
             if ($flag) {
-                $flagTypeId = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '0';
-                $flags[$flagTypeId]['flagType'] = $flag->getEventParticipantFlagType();
-                $flags[$flagTypeId]['flags'][] = $flag;
+                $flagTypeSlug = $flag->getEventParticipantFlagType() ? $flag->getEventParticipantFlagType()->getSlug() : '0';
+                $flags[$flagTypeSlug]['flagType'] = $flag->getEventParticipantFlagType();
+                $flags[$flagTypeSlug]['flags'][] = $flag;
             }
         }
 
@@ -569,7 +569,15 @@ class Event implements NameableInterface
         return $this->getName().($range ? ' ('.$range.')' : null);
     }
 
-    public function getAllowedParticipantFlagAmount(?EventParticipantFlag $participantFlag, ?EventParticipantType $participantType): int
+    /**
+     * Gets capacity of participant flag in event (for given participant type).
+     *
+     * @param EventParticipantFlag|null $participantFlag
+     * @param EventParticipantType|null $participantType
+     *
+     * @return int Capacity of flag in event for participant type.
+     */
+    public function getParticipantFlagCapacity(?EventParticipantFlag $participantFlag, ?EventParticipantType $participantType): int
     {
         $allowedAmount = 0;
         foreach ($this->getParticipantFlagInEventConnections($participantType, $participantFlag) as $flagInEventConnection) {
