@@ -1,5 +1,5 @@
 oswis_org_oswis_calendar_web_event_participant_registration_confirm:
-    controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistrationConfirmAction
+    controller: oswis_org_oswis_calendar.event_participant_controller::participantRegistrationConfirmAction
     path: "/potvrzeni-prihlasky/{token}/{eventParticipantId}"
 
 oswis_org_oswis_calendar_web_event_leaflet:
@@ -11,7 +11,7 @@ oswis_org_oswis_calendar_web_event_registrations:
     path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
 
 oswis_org_oswis_calendar_web_event_participant_registration:
-    controller: oswis_org_oswis_calendar.event_participant_controller::eventParticipantRegistration
+    controller: oswis_org_oswis_calendar.event_participant_controller::participantRegistration
     path: "/akce/prihlaska/{eventSlug?}/{participantType?}"
 
 oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????

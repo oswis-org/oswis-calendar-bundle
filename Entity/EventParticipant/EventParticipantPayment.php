@@ -54,50 +54,20 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     "id": "ASC",
  *     "dateTime",
  *     "createdDateTime",
- *     "numericValue",
- *     "eventParticipant.activeRevision.event.activeRevision.name",
- *     "eventParticipant.activeRevision.event.activeRevision.shortName",
- *     "eventParticipant.activeRevision.event.activeRevision.slug",
- *     "eventParticipant.activeRevision.event.activeRevision.color",
- *     "eventParticipant.activeRevision.contact.id",
- *     "eventParticipant.activeRevision.contact.contactName",
- *     "eventParticipant.activeRevision.contact.contactDetails.content",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
+ *     "numericValue"
  * })
  * @ApiFilter(SearchFilter::class, properties={
  *     "id": "iexact",
  *     "dateTime": "ipartial",
  *     "createdDateTime": "ipartial",
- *     "numericValue": "ipartial",
- *     "eventParticipant.activeRevision.event.activeRevision.name": "ipartial",
- *     "eventParticipant.activeRevision.event.activeRevision.shortName": "ipartial",
- *     "eventParticipant.activeRevision.event.activeRevision.slug": "ipartial",
- *     "eventParticipant.activeRevision.event.activeRevision.color": "ipartial",
- *     "eventParticipant.activeRevision.contact.id": "ipartial",
- *     "eventParticipant.activeRevision.contact.contactName": "ipartial",
- *     "eventParticipant.activeRevision.contact.contactDetails.content": "ipartial",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name": "ipartial",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName": "ipartial",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug": "ipartial"
+ *     "numericValue": "ipartial"
  * })
  * @ApiFilter(DateFilter::class, properties={"createdDtaeTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"})
  * @Searchable({
  *     "id",
  *     "dateTime",
  *     "createdDateTime",
- *     "numericValue",
- *     "eventParticipant.activeRevision.event.activeRevision.name",
- *     "eventParticipant.activeRevision.event.activeRevision.shortName",
- *     "eventParticipant.activeRevision.event.activeRevision.slug",
- *     "eventParticipant.activeRevision.event.activeRevision.color",
- *     "eventParticipant.activeRevision.contact.id",
- *     "eventParticipant.activeRevision.contact.contactName",
- *     "eventParticipant.activeRevision.contact.contactDetails.content",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.name",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.shortName",
- *     "eventParticipant.activeRevision.eventParticipantFlagConnections.eventParticipantFlag.slug"
+ *     "numericValue"
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_participant")
  */
