@@ -273,15 +273,15 @@ class EventService
      */
     private function checkFlagsRanges(array $flagsByTypes, array $allowedFlagsByTypes): void
     {
-        foreach ($allowedFlagsByTypes as $flagsOfType) { // Check if flag amounts in participant belongs to flagType ranges (min and max).
+        foreach ($allowedFlagsByTypes as $flagsOfType) {
             $flagType = $flagsOfType['flagType'] instanceof EventParticipantFlagType ? $flagsOfType['flagType'] : null;
             $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
             $flagsAmount = count($flagsByTypes[$flagTypeSlug] ?? []);
-            $min = $flagType ? $flagType->getMinInParticipant() ?? 0 : null;
+            $min = $flagType ? $flagType->getMinInParticipant() ?? 0 : 0;
             $max = $flagType ? $flagType->getMaxInParticipant() : null;
             if (null !== $flagType && ($min > $flagsAmount || (null !== $max && $max < $flagsAmount))) {
                 $maxMessage = null === $max ? '' : "až $max";
-                throw new EventCapacityExceededException("Musí být vybráno $min až $maxMessage příznaků typu ".$flagType->getName().".");
+                throw new EventCapacityExceededException("Musí být vybráno $min $maxMessage příznaků typu ".$flagType->getName().".");
             }
         }
     }
@@ -333,6 +333,8 @@ class EventService
 
     /**
      * Checks if contact is participant in superEvent of event (if it's required).
+     *
+     * Throws exception if participant is not present in superEvent and it's required.
      *
      * @param Event                $newEvent
      * @param EventParticipantType $newParticipantType

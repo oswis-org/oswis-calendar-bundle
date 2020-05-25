@@ -166,7 +166,7 @@ class EventParticipantType extends AbstractType
         EventService $eventService,
         Event $event
     ): bool {
-        return $eventService->getParticipantFlagRemainingCapacity($event, $flag, $participantType) < 1;
+        return $eventService->getParticipantFlagRemainingCapacity($event, $flag, $participantType) === 0;
     }
 
     public static function getFlagGroupName(?EventParticipantFlagType $flagType, EventParticipantFlag $flag): ?string

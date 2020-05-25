@@ -43,7 +43,7 @@
         {{ study.organization.name }}
     </li>
 {% endfor %}
-{% for flagConnection in eventParticipant.eventParticipantFlagConnections %}
+{% for flagConnection in eventParticipant.participantFlagConnections|default %}
     <li>
         {{ flagConnection.eventParticipantFlag.name }}
         {% if flagConnection.textValue|default('')|length > 0 %}
