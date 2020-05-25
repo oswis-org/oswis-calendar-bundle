@@ -103,7 +103,7 @@ class EventParticipantType extends AbstractType
                 'class'        => EventParticipantTypeEntity::class,
                 'label'        => 'Typ účastníka',
                 'required'     => true,
-                'choices'      => $event->getParticipantTypes()->filter(fn(EventParticipantTypeEntity $type) => $type->isPublicOnWeb()),
+                'choices'      => fn() => $event->getParticipantTypes(null, true),
                 'data'         => $participantType,
                 'choice_attr'  => fn() => ['readonly' => 'readonly'],
                 'choice_label' => fn(EventParticipantTypeEntity $type, $key, $value) => $type->getName(),
@@ -171,14 +171,14 @@ class EventParticipantType extends AbstractType
         Event $event
     ): array {
         $attributes = [];
-        if (self::isFlagDisabled($flag, $participantType, $eventService, $event)) {
+        if (self::isFlagCapacityExhausted($flag, $participantType, $eventService, $event)) {
             $attributes['disabled'] = 'disabled';
         }
 
         return $attributes;
     }
 
-    public static function isFlagDisabled(
+    public static function isFlagCapacityExhausted(
         EventParticipantFlag $flag,
         EventParticipantTypeEntity $participantType,
         EventService $eventService,

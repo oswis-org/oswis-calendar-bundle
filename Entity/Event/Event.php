@@ -273,16 +273,26 @@ class Event implements NameableInterface
         return $this->eventFlagConnections ?? new ArrayCollection();
     }
 
-    public function getParticipantTypes(?string $type = null): Collection
+    public function getParticipantTypes(?string $type = null, bool $onlyPublic = false): Collection
     {
-        return $this->getParticipantTypeInEventConnections()->map(
+        $types = $this->getParticipantTypeInEventConnections($onlyPublic)->map(
             fn(EventParticipantTypeInEventConnection $conn) => $conn->getEventParticipantType()
-        )->filter(fn(EventParticipantType $t) => empty($type) || $type === $t->getType());
+        );
+        if (!empty($type)) {
+            $types = $types->filter(fn(EventParticipantType $t) => empty($type) || $t->getType() === $type);
+        }
+
+        return $types;
     }
 
-    public function getParticipantTypeInEventConnections(): Collection
+    public function getParticipantTypeInEventConnections(bool $onlyPublic = false): Collection
     {
-        return $this->participantTypeInEventConnections ?? new ArrayCollection();
+        $connections = $this->participantTypeInEventConnections ?? new ArrayCollection();
+        if ($onlyPublic) {
+            $connections = $connections->filter(fn(EventParticipantTypeInEventConnection $conn) => $conn->isPublicOnWeb());
+        }
+
+        return $connections;
     }
 
     public function isRoot(): bool

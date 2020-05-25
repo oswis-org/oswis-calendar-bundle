@@ -10,9 +10,11 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -60,6 +62,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 class EventParticipantTypeInEventConnection implements BasicInterface
 {
     use BasicTrait;
+    use EntityPublicTrait;
 
     /**
      * Event contact type.
@@ -75,10 +78,11 @@ class EventParticipantTypeInEventConnection implements BasicInterface
      */
     protected ?Event $event = null;
 
-    public function __construct(?EventParticipantType $participantType = null, ?Event $event = null)
+    public function __construct(?EventParticipantType $participantType = null, ?Event $event = null, ?Publicity $publicity = null)
     {
         $this->setEventParticipantType($participantType);
         $this->setEvent($event);
+        $this->setFieldsFromPublicity($publicity);
     }
 
     public function getEvent(): ?Event
