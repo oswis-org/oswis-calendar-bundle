@@ -103,7 +103,7 @@ class EventParticipantType extends AbstractType
                 'class'        => EventParticipantTypeEntity::class,
                 'label'        => 'Typ účastníka',
                 'required'     => true,
-                'choices'      => fn() => $event->getParticipantTypes(null, true),
+                'choices'      => $event->getParticipantTypes(null, true),
                 'data'         => $participantType,
                 'choice_attr'  => fn() => ['readonly' => 'readonly'],
                 'choice_label' => fn(EventParticipantTypeEntity $type, $key, $value) => $type->getName(),
