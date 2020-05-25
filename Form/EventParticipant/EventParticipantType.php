@@ -58,6 +58,7 @@ class EventParticipantType extends AbstractType
             throw new PriceInvalidArgumentException($message);
         }
         $this->addEventField($builder, $event, $participantType);
+        self::addParticipantTypeField($builder, $event, $participantType);
         self::addContactField($builder);
         $this->addFlagTypeFields($builder, $event, $participant);
         self::addParticipantNotesFields($builder);
@@ -91,6 +92,23 @@ class EventParticipantType extends AbstractType
         $label .= $eventService->getRemainingCapacity($event, $participantType) === 0 ? ' [překročena kapacita]' : null;
 
         return $label;
+    }
+
+    public static function addParticipantTypeField(FormBuilderInterface $builder, Event $event, EventParticipantTypeEntity $participantType): void
+    {
+        $builder->add(
+            'participantType',
+            EntityType::class,
+            [
+                'class'        => EventParticipantTypeEntity::class,
+                'label'        => 'Typ účastníka',
+                'required'     => true,
+                'choices'      => $event->getParticipantTypes()->filter(fn(EventParticipantTypeEntity $type) => $type->isPublicOnWeb()),
+                'data'         => $participantType,
+                'choice_attr'  => fn() => ['readonly' => 'readonly'],
+                'choice_label' => fn(EventParticipantTypeEntity $type, $key, $value) => $type->getName(),
+            ]
+        );
     }
 
     public static function addContactField(FormBuilderInterface $builder): void
