@@ -215,14 +215,13 @@ class EventParticipantController extends AbstractController
                 assert($participant instanceof EventParticipant);
                 $this->em->persist($participant);
                 $person = $participant->getContact();
-                assert($person instanceof Person);
                 if (empty($participant)) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: $eventParticipant)');
                 }
                 if (!$participant->getEvent()) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Event)');
                 }
-                if (!$participant->getContact()) {
+                if (!($person instanceof Person)) { // TODO: Organization?
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Contact)');
                 }
                 $participant->getContact()->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));

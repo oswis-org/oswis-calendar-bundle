@@ -575,13 +575,16 @@ class Event implements NameableInterface
      * @param EventParticipantFlag|null $participantFlag
      * @param EventParticipantType|null $participantType
      *
-     * @return int Capacity of flag in event for participant type.
+     * @return int Capacity of flag in event for participant type (NULL if not limited).
      */
-    public function getParticipantFlagCapacity(?EventParticipantFlag $participantFlag, ?EventParticipantType $participantType): int
+    public function getParticipantFlagCapacity(?EventParticipantFlag $participantFlag, ?EventParticipantType $participantType): ?int
     {
         $allowedAmount = 0;
         foreach ($this->getParticipantFlagInEventConnections($participantType, $participantFlag) as $flagInEventConnection) {
             assert($flagInEventConnection instanceof EventParticipantFlagInEventConnection);
+            if ($flagInEventConnection->getActive() && null === $flagInEventConnection->getCapacity()) {
+                return null;
+            }
             $allowedAmount += $flagInEventConnection->getActive() ? $flagInEventConnection->getCapacity() : 0;
         }
 
