@@ -2,9 +2,9 @@
     <div class="col-12">
         {% if type == 'success' %}
             {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-sent.html.twig' %}
-        {% elseif registrationsActive == false %}
+        {% elseif disabled|default == true %}
             {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-comming-soon.html.twig' %}
-        {% elseif type == 'form' and registrationsActive == true %}
+        {% elseif type == 'form' %}
             {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-form.html.twig' %}
         {% else %}
             {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-error.html.twig' %}

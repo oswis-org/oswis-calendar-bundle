@@ -1,5 +1,5 @@
 <section class="row" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
-    {% if range is defined and range %}
+    {% if range|default %}
         <div class="col-12">
             <div class="card-deck">
                 <div class="card mt-2 mb-4">

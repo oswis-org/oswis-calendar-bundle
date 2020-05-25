@@ -10,7 +10,7 @@
 {% block body_breadcrumbs %}
     {% if event is defined and event %}
         {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' %}
-    {% elseif form.vars.value.event is defined and form.vars.value.event %}
+    {% elseif form.vars.value.event|default %}
         {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' with {'event': form.vars.value.event} %}
     {% elseif events|length == 1 %}
         {% include '@OswisOrgOswisCalendar/web/parts/event-subpages-breadcrumbs.html.twig' with {'event': events|first} %}
