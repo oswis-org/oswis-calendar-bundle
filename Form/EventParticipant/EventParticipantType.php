@@ -77,7 +77,7 @@ class EventParticipantType extends AbstractType
                 'required'     => true,
                 'choices'      => [$event],
                 'data'         => $event,
-                'attr'         => fn() => ['readonly' => 'readonly'],
+                'attr'         => ['readonly' => 'readonly'],
                 'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $this->eventService),
             ]
         );
@@ -103,7 +103,7 @@ class EventParticipantType extends AbstractType
                 'required'     => true,
                 'choices'      => $event->getParticipantTypes(null, true),
                 'data'         => $participantType,
-                'attr'         => fn() => ['readonly' => 'readonly'],
+                'attr'         => ['readonly' => 'readonly'],
                 'choice_label' => fn(EventParticipantTypeEntity $type, $key, $value) => $type->getName(),
             ]
         );
