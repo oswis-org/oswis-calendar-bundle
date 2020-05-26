@@ -572,10 +572,10 @@ class Event implements NameableInterface
     {
         $name = $this->getName();
         if ($range && !empty($rangeString = $this->getRangeAsText())) {
-            $name .= "($rangeString)";
+            $name .= " ($rangeString)";
         }
         if ($price && !empty($eventPrice = $this->getPrice($participantType))) {
-            $name .= "($eventPrice,- Kč)";
+            $name .= " ($eventPrice,- Kč)";
         }
 
         return $name;

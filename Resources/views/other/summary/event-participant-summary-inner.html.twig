@@ -13,7 +13,7 @@
     <small itemprop="email">({{ eventParticipant.contact.email }})</small>
 </li>
 <li>
-    <b>Typ: </b> {{ eventParticipant.participantType.name }}
+    <b>Typ: </b> {{ eventParticipant.participantType.name|default('neuveden') }}
 </li>
 <li>
     <b>Cena celkem: </b> {{ eventParticipant.price }},- Kč
@@ -32,20 +32,20 @@
     <small><b>Zbývá:</b>&nbsp;{{ eventParticipant.remainingPrice }},-&nbsp;Kč</small>
 </li>
 <li>
-    <b>{{ event.name }}</b><br>
+    <b>{{ eventParticipant.event.name }}</b><br>
     <small>
-        (od {{ event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
-        do {{ event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
+        (od {{ eventParticipant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
+        do {{ eventParticipant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
     </small>
 </li>
-{% for study in eventParticipant.contact.studies %}
+{% for study in eventParticipant.contact.studies|filter(s => s.name|default|length > 0) %}
     <li>
         {{ study.organization.name }}
     </li>
 {% endfor %}
-{% for flagConnection in eventParticipant.participantFlagConnections|default %}
+{% for flagConnection in eventParticipant.participantFlagConnections %}
     <li>
-        {{ flagConnection.eventParticipantFlag.name }}
+        {{ flagConnection.eventParticipantFlag.name|default }}
         {% if flagConnection.textValue|default('')|length > 0 %}
             ({{ flagConnection.textValue }})
         {% endif %}
@@ -58,12 +58,12 @@
         {% endif %}
     </li>
 {% endfor %}
-{% for detail in eventParticipant.contact.contactDetails|default|filter(detail => detail.content|default|length > 0) %}
+{% for detail in eventParticipant.contact.details|filter(detail => detail.content|default|length > 0) %}
     <li>
         {{ detail.contactType.name|default('Kontakt') }}: {{ contactDetail.content }}
     </li>
 {% endfor %}
-{% for note in eventParticipant.participantNotes|default|filter(note => note.textValue|length > 0) %}
+{% for note in eventParticipant.participantNotes|filter(note => note.textValue|length > 0) %}
     <li>
         <b>Poznámka:</b>
         <p>

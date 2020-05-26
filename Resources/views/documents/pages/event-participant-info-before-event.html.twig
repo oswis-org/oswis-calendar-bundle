@@ -71,18 +71,16 @@
                         {% endif %}
                     </li>
                 {% endfor %}
-                {% if data.eventParticipant.contact.contactDetails is defined and data.eventParticipant.contact.contactDetails %}
-                    {% for contactDetail in data.eventParticipant.contact.contactDetails|default|filter(detail => detail.content|length > 0) %}
-                        <li>
-                            {% if contactDetail.contactType is defined and contactDetail.contactType.name is defined and contactDetail.contactType.name %}
-                                {{ contactDetail.contactType.name }}:
-                            {% else %}
-                                Kontakt:
-                            {% endif %}
-                            {{ contactDetail.content }}
-                        </li>
-                    {% endfor %}
-                {% endif %}
+                {% for contactDetail in data.eventParticipant.contact.details|filter(detail => detail.content|length > 0) %}
+                    <li>
+                        {% if contactDetail.contactType is defined and contactDetail.contactType.name is defined and contactDetail.contactType.name %}
+                            {{ contactDetail.contactType.name }}:
+                        {% else %}
+                            Kontakt:
+                        {% endif %}
+                        {{ contactDetail.content }}
+                    </li>
+                {% endfor %}
                 {% for note in data.eventParticipant.eventParticipantNotes|default|filter(note => note.textValue|length > 0) %}
                     <li>
                         <b>Poznámka:</b>
