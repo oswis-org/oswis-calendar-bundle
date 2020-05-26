@@ -137,19 +137,39 @@ class EventParticipantService
         if ($participant->isDeleted()) {
             return $participant->getEMailDeleteConfirmationDateTime() ? true : $this->sendCancelConfirmation($participant);
         }
-        if ($participant->hasActivatedContactUser()) {
-            return $participant->getEMailConfirmationDateTime() ? true : $this->sendSummary($participant, $new);
+        if (!empty($token) || $participant->hasActivatedContactUser()) {
+            return $this->doVerificationAndSendSummary($participant, $new, $token);
         }
-        if (!empty($token)) {
-            foreach ($participant->getContact()->getContactPersons() as $contactPerson) {
-                assert($contactPerson instanceof Person);
-                if ($contactPerson->getAppUser() && $contactPerson->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
-                    return $this->sendSummary($participant, $new);
+
+        return $this->sendVerification($participant);
+    }
+
+    /**
+     * @param EventParticipant $participant
+     * @param bool             $new
+     * @param string|null      $token
+     *
+     * @return bool
+     * @throws OswisException
+     */
+    public function doVerificationAndSendSummary(EventParticipant $participant, bool $new, ?string $token = null): bool
+    {
+        if (null === $participant->getContact()) {
+            return false;
+        }
+        $result = false;
+        foreach ($participant->getContact()->getContactPersons() as $person) {
+            if (!($person instanceof Person) || (!$participant->hasActivatedContactUser() && (empty($token) || null === $person->getAppUser()))) {
+                continue;
+            }
+            if ($participant->hasActivatedContactUser() || $person->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
+                if ($this->sendSummary($participant, $new)) {
+                    $result = true;
                 }
             }
         }
 
-        return $this->sendVerification($participant);
+        return $result;
     }
 
     final public function sendCancelConfirmation(EventParticipant $participant): bool
@@ -249,7 +269,6 @@ class EventParticipantService
                 $mailData['password'] = $password;
                 $mailData['bankAccount'] = $event->getBankAccountComplete();
                 $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
-                $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
                 $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', '.$event->getSlug();
                 if ($depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true)) {
                     $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
@@ -260,6 +279,7 @@ class EventParticipantService
                     $mailData['restQr'] = 'cid:restQr';
                 }
                 try {
+                    $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
                     $this->mailer->send($email);
                     $participant->setMailConfirmationSend('event-participant-service');
                     $this->em->persist($participant);

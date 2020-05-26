@@ -60,7 +60,7 @@
 {% endfor %}
 {% for detail in eventParticipant.contact.details|filter(detail => detail.content|default|length > 0) %}
     <li>
-        {{ detail.contactType.name|default('Kontakt') }}: {{ contactDetail.content }}
+        {{ detail.contactType.name|default('Kontakt') }}: {{ detail.content }}
     </li>
 {% endfor %}
 {% for note in eventParticipant.participantNotes|filter(note => note.textValue|length > 0) %}
