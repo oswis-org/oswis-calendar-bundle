@@ -269,14 +269,12 @@ class EventParticipantService
                 $mailData['password'] = $password;
                 $mailData['bankAccount'] = $event->getBankAccountComplete();
                 $email = $this->getEmptyEmail($contactPerson, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
-                $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', '.$event->getSlug();
-                if ($depositPaymentQrPng = self::getQrPng($event, $participant, $qrComment, true)) {
-                    $email->embed($depositPaymentQrPng, 'depositQr', 'image/png');
-                    $mailData['depositQr'] = 'cid:depositQr';
-                }
-                if ($restPaymentQrPng = self::getQrPng($event, $participant, $qrComment, false)) {
-                    $email->embed($restPaymentQrPng, 'restQr', 'image/png');
-                    $mailData['restQr'] = 'cid:restQr';
+                $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', akce '.$event->getId();
+                foreach (['depositQr' => true, 'restQr' => false] as $key => $isDeposit) {
+                    if ($qrPng = self::getQrPng($event, $participant, $qrComment, $isDeposit)) {
+                        $email->embed($key, $qrPng, 'image/png');
+                        $mailData[$key] = "cid:$key";
+                    }
                 }
                 try {
                     $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant.html.twig')->context($mailData);
