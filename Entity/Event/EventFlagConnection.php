@@ -7,22 +7,15 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use DateTime;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
+use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagConnection;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_flag_new_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventFlagConnection implements BasicInterface
+class EventFlagConnection extends AbstractEventFlagConnection
 {
-    use BasicTrait;
-    use TextValueTrait;
-    use DateRangeTrait;
-
     /**
      * Event flag.
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlag", fetch="EAGER")
@@ -42,13 +35,11 @@ class EventFlagConnection implements BasicInterface
         ?Event $event = null,
         ?string $textValue = null,
         ?DateTime $startDateTime = null,
-        ?DateTime $endDateTie = null
+        ?DateTime $endDateTime = null
     ) {
+        parent::__construct($textValue, $startDateTime, $endDateTime);
         $this->setEventFlag($eventFlag);
         $this->setEvent($event);
-        $this->setTextValue($textValue);
-        $this->setStartDateTime($startDateTime);
-        $this->setEndDateTime($endDateTie);
     }
 
     public function getEvent(): ?Event

@@ -645,7 +645,8 @@ class EventParticipantService
         ?EventParticipantFlag $flag = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivated = true,
-        ?int $recursiveDepth = 1
+        ?int $recursiveDepth = 1,
+        ?bool $onlyActive = false
     ): Collection {
         $flags = $this->getEventParticipantFlagConnections(
             $event,
@@ -668,7 +669,8 @@ class EventParticipantService
         ?EventParticipantType $participantType = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivated = true,
-        ?int $recursiveDepth = null
+        ?int $recursiveDepth = null,
+        ?bool $onlyActive = false
     ): Collection {
         $connections = new ArrayCollection();
         $opts = [
@@ -679,7 +681,9 @@ class EventParticipantService
         ];
         $participants = $this->getEventParticipants($opts, $includeNotActivated);
         foreach ($participants as $eventParticipant) {
-            assert($eventParticipant instanceof EventParticipant);
+            if (!($eventParticipant instanceof EventParticipant)) {
+                continue;
+            }
             $eventParticipant->getParticipantFlagConnections()->map(
                 fn(EventParticipantFlagConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
             );
@@ -733,7 +737,7 @@ class EventParticipantService
                 assert($participant instanceof EventParticipant);
                 foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
                     assert($participantFlagConnection instanceof EventParticipantFlagInEventConnection);
-                    $flag = $participantFlagConnection->getEventParticipantFlag();
+                    $flag = $participantFlagConnection->getParticipantFlag();
                     if (null !== $flag) {
                         $flagType = $flag->getEventParticipantFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';

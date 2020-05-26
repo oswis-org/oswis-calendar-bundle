@@ -6,7 +6,6 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
@@ -53,18 +52,4 @@ use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  */
 class EventFlag extends AbstractEventFlag
 {
-    public function __construct(?Nameable $nameable = null)
-    {
-        $this->setFieldsFromNameable($nameable);
-    }
-
-    public static function getAllowedTypesDefault(): array
-    {
-        return [];
-    }
-
-    public static function getAllowedTypesCustom(): array
-    {
-        return [];
-    }
 }

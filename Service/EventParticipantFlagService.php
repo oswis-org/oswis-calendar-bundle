@@ -8,7 +8,6 @@ use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use Psr\Log\LoggerInterface;
 
 class EventParticipantFlagService
@@ -23,13 +22,10 @@ class EventParticipantFlagService
         $this->logger = $logger;
     }
 
-    final public function create(
-        ?Nameable $nameable = null,
-        ?EventParticipantFlagType $participantFlagType = null,
-        ?Publicity $publicity = null
-    ): ?EventParticipantFlag {
+    final public function create(?Nameable $nameable = null, ?EventParticipantFlagType $participantFlagType = null): ?EventParticipantFlag
+    {
         try {
-            $entity = new EventParticipantFlag($nameable, $participantFlagType, $publicity);
+            $entity = new EventParticipantFlag($nameable, $participantFlagType);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event participant flag (by service): '.$entity->getId().' '.$entity->getName().'.';

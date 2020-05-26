@@ -480,42 +480,43 @@ class EventParticipant implements BasicInterface
         $this->event = $event;
     }
 
-    public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null): int
+    public function getFlagsPrice(?EventParticipantFlagType $eventParticipantFlagType = null, bool $onlyActive = true): int
     {
         $price = 0;
-        foreach ($this->getParticipantFlags($eventParticipantFlagType) as $flag) {
-            assert($flag instanceof EventParticipantFlag);
-            $price += $flag->getPrice();
+        foreach ($this->getParticipantFlags($eventParticipantFlagType, $onlyActive) as $flag) {
+            $price += $flag instanceof EventParticipantFlag ? $flag->getPrice() : 0;
         }
 
         return $price;
     }
 
-    public function getParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    public function getParticipantFlags(?EventParticipantFlagType $eventParticipantFlagType = null, bool $onlyActive = false): Collection
     {
-        return $this->getParticipantFlagConnections($eventParticipantFlagType)->map(
+        return $this->getParticipantFlagConnections($eventParticipantFlagType, $onlyActive)->map(
             fn(EventParticipantFlagConnection $connection) => $connection->getEventParticipantFlag()
         );
     }
 
-    public function getParticipantFlagConnections(?EventParticipantFlagType $eventParticipantFlagType = null): Collection
+    public function getParticipantFlagConnections(?EventParticipantFlagType $participantFlagType = null, ?bool $onlyActive = false): Collection
     {
-        if (null === $eventParticipantFlagType) {
-            return $this->participantFlagConnections ?? new ArrayCollection();
-        }
-
-        return $this->participantFlagConnections->filter(
-            static function (EventParticipantFlagConnection $eventParticipantFlagConnection) use ($eventParticipantFlagType) {
-                try {
-                    $flag = $eventParticipantFlagConnection->getEventParticipantFlag();
+        $connections = $this->participantFlagConnections ?? new ArrayCollection();
+        if (null !== $participantFlagType) {
+            $connections = $connections->filter(
+                static function (EventParticipantFlagConnection $connection) use ($participantFlagType) {
+                    $flag = $connection->getEventParticipantFlag();
                     $type = $flag ? $flag->getEventParticipantFlagType() : null;
 
-                    return $type && $type->getId() === $eventParticipantFlagType->getId();
-                } catch (Exception $e) {
-                    return false;
+                    return null !== $type && $type->getId() === $participantFlagType->getId();
                 }
-            }
-        );
+            );
+        }
+        if ($onlyActive) {
+            $connections = $connections->filter(
+                fn(EventParticipantFlagConnection $conn) => $conn instanceof EventParticipantFlagConnection && $conn->isActive()
+            );
+        }
+
+        return $connections;
     }
 
     /**
@@ -593,24 +594,30 @@ class EventParticipant implements BasicInterface
      * Checks if participant contains given flag.
      *
      * @param EventParticipantFlag $flag
+     * @param bool                 $onlyActive
      *
      * @return bool
      */
-    public function hasFlag(EventParticipantFlag $flag): bool
+    public function hasFlag(EventParticipantFlag $flag, bool $onlyActive = true): bool
     {
-        return $this->getParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flag->getId() === $f->getId());
+        return $this->getParticipantFlags(null, $onlyActive)->exists(
+            fn(EventParticipantFlag $oneFlag) => $flag->getId() === $oneFlag->getId()
+        );
     }
 
     /**
      * Checks if participant has some flag of given type (given by type string).
      *
      * @param string|null $flagType
+     * @param bool        $onlyActive
      *
      * @return bool Participant contains some flag of given type.
      */
-    public function hasFlagOfTypeOfType(?string $flagType): bool
+    public function hasFlagOfTypeOfType(?string $flagType, bool $onlyActive = true): bool
     {
-        return $this->getParticipantFlags()->exists(fn(EventParticipantFlag $f) => $flagType && $flagType === $f->getTypeOfType());
+        return $this->getParticipantFlags(null, $onlyActive)->exists(
+            fn(EventParticipantFlag $f) => $flagType && $f->getTypeOfType() === $flagType
+        );
     }
 
     /**

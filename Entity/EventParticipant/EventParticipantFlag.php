@@ -1,6 +1,8 @@
-<?php /** @noinspection MethodShouldBeFinalInspection */
-
-/** @noinspection PhpUnused */
+<?php
+/**
+ * @noinspection MethodShouldBeFinalInspection
+ * @noinspection PhpUnused
+ */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
@@ -9,7 +11,6 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
@@ -72,11 +73,10 @@ class EventParticipantFlag extends AbstractEventFlag
      */
     protected ?int $price = null;
 
-    public function __construct(?Nameable $nameable = null, ?EventParticipantFlagType $participantFlagType = null, ?Publicity $publicity = null)
+    public function __construct(?Nameable $nameable = null, ?EventParticipantFlagType $participantFlagType = null)
     {
-        $this->setFieldsFromNameable($nameable);
+        parent::__construct($nameable);
         $this->setEventParticipantFlagType($participantFlagType);
-        $this->setFieldsFromPublicity($publicity);
     }
 
     public function getPrice(): int

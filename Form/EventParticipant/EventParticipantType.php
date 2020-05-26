@@ -77,7 +77,7 @@ class EventParticipantType extends AbstractType
                 'required'     => true,
                 'choices'      => [$event],
                 'data'         => $event,
-                'attr'  => fn() => ['readonly' => 'readonly'],
+                'attr'         => fn() => ['readonly' => 'readonly'],
                 'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType, $this->eventService),
             ]
         );
@@ -85,11 +85,9 @@ class EventParticipantType extends AbstractType
 
     public function getEventLabel(Event $event, EventParticipantTypeEntity $participantType, EventService $eventService): string
     {
-        $label = $event->getName().' ['.$event->getRangeAsText().']';
-        $price = $event->getPrice($participantType);
-        $label .= null !== $price ? ' ['.$price.',- Kč]' : '';
-        $label .= !$event->isRegistrationsAllowed($participantType) ? ' [přihlášky nejsou povoleny]' : null;
-        $label .= $eventService->getRemainingCapacity($event, $participantType) === 0 ? ' [překročena kapacita]' : null;
+        $label = $event->getExtendedName(true, true, $participantType);
+        $label .= !$event->isRegistrationsAllowed($participantType) ? ' (přihlášky nejsou povoleny)' : null;
+        $label .= $eventService->getRemainingCapacity($event, $participantType) === 0 ? ' (překročena kapacita)' : null;
 
         return $label;
     }
@@ -105,7 +103,7 @@ class EventParticipantType extends AbstractType
                 'required'     => true,
                 'choices'      => $event->getParticipantTypes(null, true),
                 'data'         => $participantType,
-                'attr'  => fn() => ['readonly' => 'readonly'],
+                'attr'         => fn() => ['readonly' => 'readonly'],
                 'choice_label' => fn(EventParticipantTypeEntity $type, $key, $value) => $type->getName(),
             ]
         );
@@ -118,7 +116,7 @@ class EventParticipantType extends AbstractType
 
     public function addFlagTypeFields(FormBuilderInterface $builder, Event $event, EventParticipant $participant): void
     {
-        foreach ($event->getAllowedFlagsAggregatedByType($participant->getParticipantType()) as $flagsOfType) {
+        foreach ($event->getAllowedFlagsAggregatedByType($participant->getParticipantType(), true) as $flagsOfType) {
             self::addFlagField($builder, $flagsOfType['flagType'], $flagsOfType['flags'], $this->eventService, $participant->getParticipantType(), $event);
         }
     }

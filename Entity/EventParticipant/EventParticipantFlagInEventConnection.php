@@ -6,9 +6,10 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\ActiveTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -18,10 +19,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 class EventParticipantFlagInEventConnection implements BasicInterface
 {
     use BasicTrait;
-    use ActiveTrait;
+    use EntityPublicTrait;
 
     /**
-     * Capacity (max amount of this flag in event).
+     * Capacity (max usages of this flag in event).
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $capacity = null;
@@ -33,7 +34,7 @@ class EventParticipantFlagInEventConnection implements BasicInterface
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventParticipantFlag $eventParticipantFlag = null;
+    protected ?EventParticipantFlag $participantFlag = null;
 
     /**
      * Event contact (connected to person or organization).
@@ -50,34 +51,37 @@ class EventParticipantFlagInEventConnection implements BasicInterface
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EventParticipantType $eventParticipantType = null;
+    protected ?EventParticipantType $participantType = null;
 
     /**
-     * @param EventParticipantFlag|null $eventParticipantFlag
+     * @param EventParticipantFlag|null $participantFlag
      * @param Event|null                $event
-     * @param EventParticipantType|null $eventParticipantType
+     * @param EventParticipantType|null $participantType
      * @param int|null                  $capacity
+     * @param Publicity|null            $publicity
      */
     public function __construct(
-        ?EventParticipantFlag $eventParticipantFlag = null,
+        ?EventParticipantFlag $participantFlag = null,
         ?Event $event = null,
-        ?EventParticipantType $eventParticipantType = null,
-        ?int $capacity = null
+        ?EventParticipantType $participantType = null,
+        ?int $capacity = null,
+        ?Publicity $publicity = null
     ) {
-        $this->setEventParticipantFlag($eventParticipantFlag);
-        $this->setEventParticipantType($eventParticipantType);
+        $this->setParticipantFlag($participantFlag);
+        $this->setParticipantType($participantType);
         $this->setEvent($event);
         $this->setCapacity($capacity);
+        $this->setFieldsFromPublicity($publicity);
     }
 
-    public function getEventParticipantType(): ?EventParticipantType
+    public function getParticipantType(): ?EventParticipantType
     {
-        return $this->eventParticipantType;
+        return $this->participantType;
     }
 
-    public function setEventParticipantType(?EventParticipantType $eventParticipantType): void
+    public function setParticipantType(?EventParticipantType $participantType): void
     {
-        $this->eventParticipantType = $eventParticipantType;
+        $this->participantType = $participantType;
     }
 
     public function getCapacity(): ?int
@@ -106,13 +110,13 @@ class EventParticipantFlagInEventConnection implements BasicInterface
         }
     }
 
-    public function getEventParticipantFlag(): ?EventParticipantFlag
+    public function getParticipantFlag(): ?EventParticipantFlag
     {
-        return $this->eventParticipantFlag;
+        return $this->participantFlag;
     }
 
-    public function setEventParticipantFlag(?EventParticipantFlag $eventParticipantFlag): void
+    public function setParticipantFlag(?EventParticipantFlag $participantFlag): void
     {
-        $this->eventParticipantFlag = $eventParticipantFlag;
+        $this->participantFlag = $participantFlag;
     }
 }
