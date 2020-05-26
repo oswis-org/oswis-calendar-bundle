@@ -653,7 +653,8 @@ class EventParticipantService
             $participantType,
             $includeDeleted,
             $includeNotActivated,
-            $recursiveDepth
+            $recursiveDepth,
+            $onlyActive
         )->map(
             fn(EventParticipantFlagConnection $connection) => $connection->getEventParticipantFlag()
         );
@@ -684,7 +685,7 @@ class EventParticipantService
             if (!($eventParticipant instanceof EventParticipant)) {
                 continue;
             }
-            $eventParticipant->getParticipantFlagConnections()->map(
+            $eventParticipant->getParticipantFlagConnections(null, $onlyActive)->map(
                 fn(EventParticipantFlagConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
             );
         }
