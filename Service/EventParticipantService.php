@@ -272,7 +272,7 @@ class EventParticipantService
                 $qrComment = $participantContact->getSlug().', ID '.$participant->getId().', akce '.$event->getId();
                 foreach (['depositQr' => true, 'restQr' => false] as $key => $isDeposit) {
                     if ($qrPng = self::getQrPng($event, $participant, $qrComment, $isDeposit)) {
-                        $email->embed($key, $qrPng, 'image/png');
+                        $email->embed($qrPng, $key, 'image/png');
                         $mailData[$key] = "cid:$key";
                     }
                 }
