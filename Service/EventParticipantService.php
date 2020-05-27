@@ -144,34 +144,6 @@ class EventParticipantService
         return $this->sendVerification($participant);
     }
 
-    /**
-     * @param EventParticipant $participant
-     * @param bool             $new
-     * @param string|null      $token
-     *
-     * @return bool
-     * @throws OswisException
-     */
-    public function doVerificationAndSendSummary(EventParticipant $participant, bool $new, ?string $token = null): bool
-    {
-        if (null === $participant->getContact()) {
-            return false;
-        }
-        $result = false;
-        foreach ($participant->getContact()->getContactPersons() as $person) {
-            if (!($person instanceof Person) || (!$participant->hasActivatedContactUser() && (empty($token) || null === $person->getAppUser()))) {
-                continue;
-            }
-            if ($participant->hasActivatedContactUser() || $person->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
-                if ($this->sendSummary($participant, $new)) {
-                    $result = true;
-                }
-            }
-        }
-
-        return $result;
-    }
-
     final public function sendCancelConfirmation(EventParticipant $participant): bool
     {
         try {
@@ -237,6 +209,34 @@ class EventParticipantService
     }
 
     /**
+     * @param EventParticipant $participant
+     * @param bool             $new
+     * @param string|null      $token
+     *
+     * @return bool
+     * @throws OswisException
+     */
+    public function doVerificationAndSendSummary(EventParticipant $participant, bool $new, ?string $token = null): bool
+    {
+        if (null === $participant->getContact()) {
+            return false;
+        }
+        $result = false;
+        foreach ($participant->getContact()->getContactPersons() as $person) {
+            if (!($person instanceof Person) || (!$participant->hasActivatedContactUser() && (empty($token) || null === $person->getAppUser()))) {
+                continue;
+            }
+            if ($participant->hasActivatedContactUser() || $person->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
+                if ($this->sendSummary($participant, $new)) {
+                    $result = true;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Send summary of eventParticipant. Includes appUser info is appUser exist.
      *
      * @param EventParticipant $participant
@@ -257,7 +257,9 @@ class EventParticipantService
             $contactPersons = $isOrganization ? $participantContact->getContactPersons() : new ArrayCollection([$participantContact]);
             $remaining = $contactPersons->count();
             foreach ($contactPersons as $contactPerson) {
-                assert($contactPerson instanceof Person);
+                if (!($contactPerson instanceof Person)) {
+                    continue;
+                }
                 $password = null;
                 if (null !== $contactPerson->getAppUser() && empty($contactPerson->getAppUser()->getPassword())) {
                     $password = StringUtils::generatePassword();

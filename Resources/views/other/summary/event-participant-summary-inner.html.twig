@@ -46,7 +46,7 @@
 {% for flagConnection in eventParticipant.participantFlagConnections %}
     <li>
         {{ flagConnection.eventParticipantFlag.name|default }}
-        {% if flagConnection.textValue|default('')|length > 0 %}
+        {% if flagConnection.textValue|default|length > 0 %}
             ({{ flagConnection.textValue }})
         {% endif %}
         {% if flagConnection.eventParticipantFlag.price|default(0) != 0 %}
@@ -60,10 +60,10 @@
 {% endfor %}
 {% for detail in eventParticipant.contact.details|filter(detail => detail.content|default|length > 0) %}
     <li>
-        {{ detail.contactType.name|default('Kontakt') }}: {{ detail.content }}
+        {{ detail.typeName|default('Kontakt') }}: {{ detail.content }}
     </li>
 {% endfor %}
-{% for note in eventParticipant.participantNotes|filter(note => note.textValue|length > 0) %}
+{% for note in eventParticipant.participantNotes|filter(note => note.textValue|default|length > 0) %}
     <li>
         <b>Poznámka:</b>
         <p>
