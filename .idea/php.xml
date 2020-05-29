@@ -157,9 +157,9 @@
       <path value="$PROJECT_DIR$/vendor/brick/math" />
       <path value="$PROJECT_DIR$/vendor/ramsey/collection" />
       <path value="$PROJECT_DIR$/vendor/oswis-org/oswis-address-book-bundle" />
-      <path value="$PROJECT_DIR$/vendor/oswis-org/oswis-core-bundle" />
       <path value="$PROJECT_DIR$/vendor/php-console/php-console" />
       <path value="$PROJECT_DIR$/vendor/doctrine/sql-formatter" />
+      <path value="$PROJECT_DIR$/vendor/oswis-org/oswis-core-bundle" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

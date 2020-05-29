@@ -226,7 +226,7 @@ class EventParticipantService
             if (!($person instanceof Person) || (!$participant->hasActivatedContactUser() && (empty($token) || null === $person->getAppUser()))) {
                 continue;
             }
-            if ($participant->hasActivatedContactUser() || $person->getAppUser()->checkAndDestroyAccountActivationRequestToken($token)) {
+            if ($participant->hasActivatedContactUser() || $person->getAppUser()->activateByToken($token)) {
                 if ($this->sendSummary($participant, $new)) {
                     $result = true;
                 }
@@ -284,8 +284,8 @@ class EventParticipantService
                     $participant->setMailConfirmationSend('event-participant-service');
                     $this->em->persist($participant);
                     $remaining--;
-                } catch (TransportExceptionInterface $e) {
-                    $this->logger->error($e->getMessage());
+                } catch (TransportExceptionInterface $exception) {
+                    $this->logger->error($exception->getMessage());
                 }
             }
             $this->em->flush();
@@ -294,19 +294,19 @@ class EventParticipantService
             }
 
             return true;
-        } catch (Exception $e) {
-            $this->logger->error($e->getMessage());
-            throw new OswisException('Problém s odesláním shrnutí přihlášky. '.$e->getMessage());
+        } catch (Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            throw new OswisException('Problém s odesláním shrnutí přihlášky. '.$exception->getMessage());
         }
     }
 
-    private static function getQrPng(Event $event, EventParticipant $eventParticipant, string $qrComment, bool $isDeposit): ?string
+    private static function getQrPng(Event $event, EventParticipant $participant, string $qrComment, bool $isDeposit): ?string
     {
         try {
             return (new QrPayment(
                 $event->getBankAccountNumber(), $event->getBankAccountBank(), [
-                    QrPaymentOptions::VARIABLE_SYMBOL => $eventParticipant->getVariableSymbol(),
-                    QrPaymentOptions::AMOUNT          => $isDeposit ? $eventParticipant->getPriceDeposit() : $eventParticipant->getPriceRest(),
+                    QrPaymentOptions::VARIABLE_SYMBOL => $participant->getVariableSymbol(),
+                    QrPaymentOptions::AMOUNT          => $isDeposit ? $participant->getPriceDeposit() : $participant->getPriceRest(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
                     QrPaymentOptions::COMMENT         => $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek'),
                 ]
@@ -343,7 +343,7 @@ class EventParticipantService
                     }
                     $contactPerson->setAppUser(new AppUser($contactPerson->getName(), null, $contactPerson->getEmail()));
                 }
-                $contactPerson->getAppUser()->generateAccountActivationRequestToken();
+                $contactPerson->getAppUser()->generateActivationRequestToken();
                 $email = $this->getEmptyEmail($contactPerson, 'Ověření přihlášky');
                 $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-verification.html.twig');
                 $email->context($this->getMailData($participant, $event, $contactPerson, $isOrganization));
@@ -358,8 +358,7 @@ class EventParticipantService
                 $this->em->flush();
             }
             if ($remaining > 0) {
-                $message = "Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').';
-                throw new OswisException($message);
+                throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').');
             }
 
             return true;
