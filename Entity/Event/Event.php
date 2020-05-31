@@ -14,9 +14,6 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
@@ -79,7 +76,9 @@ use function assert;
  */
 class Event implements NameableInterface
 {
-    use NameableTrait;
+    use NameableTrait {
+        setSlug as traitSetSlug;
+    }
     use DateRangeTrait;
     use ColorTrait;
     use BankAccountTrait;
@@ -132,31 +131,6 @@ class Event implements NameableInterface
     protected ?Collection $webContents = null;
 
     /**
-     * @var Collection<RegistrationsRange> $registrationRanges
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange",
-     *     cascade={"all"}
-     * )
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_event_registration_range_connection",
-     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_registration_range_id", referencedColumnName="id", unique=true)}
-     * )
-     */
-    protected ?Collection $registrationRanges = null;
-
-    /**
-     * @var Collection<ParticipantFlagRange> $participantFlagRanges
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange",
-     *     cascade={"all"},
-     *     mappedBy="event",
-     *     fetch="EAGER"
-     * )
-     */
-    protected ?Collection $participantFlagRanges = null;
-
-    /**
      * @Doctrine\ORM\Mapping\OneToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage", cascade={"all"}, fetch="EAGER")
      */
     protected ?EventImage $image = null;
@@ -180,12 +154,9 @@ class Event implements NameableInterface
         ?EventType $type = null,
         ?DateTimeRange $dateTimeRange = null,
         ?EventSeries $series = null,
-        ?string $color = null,
         ?Publicity $publicity = null
     ) {
         $this->subEvents = new ArrayCollection();
-        $this->registrationRanges = new ArrayCollection();
-        $this->participantFlagRanges = new ArrayCollection();
         $this->webContents = new ArrayCollection();
         $this->setType($type);
         $this->setSuperEvent($superEvent);
@@ -193,7 +164,6 @@ class Event implements NameableInterface
         $this->setFieldsFromNameable($nameable);
         $this->setLocation($location);
         $this->setDateTimeRange($dateTimeRange);
-        $this->setColor($color);
         $this->setFieldsFromPublicity($publicity);
     }
 
@@ -213,94 +183,9 @@ class Event implements NameableInterface
         $this->image = $image;
     }
 
-    public function destroyRevisions(): void
-    {
-    }
-
-    public function addRegistrationRange(?RegistrationsRange $registrationRange): void
-    {
-        if (null !== $registrationRange && !$this->getRegistrationRanges()->contains($registrationRange)) {
-            $this->getRegistrationRanges()->add($registrationRange);
-        }
-    }
-
-    public function getRegistrationRanges(
-        ?ParticipantType $participantType = null,
-        ?DateTime $dateTime = null,
-        ?bool $recursive = false,
-        ?bool $onlyPublic = false
-    ): Collection {
-        $ranges = $this->registrationRanges ?? new ArrayCollection();
-        if (null !== $participantType || null !== $dateTime) {
-            $ranges = $this->getRegistrationRanges()->filter(fn(RegistrationsRange $range) => $range->isApplicableByType($participantType, $dateTime));
-        }
-        if (true === $onlyPublic) {
-            $ranges = $ranges->filter(fn(RegistrationsRange $range) => $range->isPublicOnWeb());
-        }
-        if (true === $recursive) {
-            foreach ($this->getSubEvents() as $subEvent) {
-                assert($subEvent instanceof self);
-                $subEvent->getRegistrationRanges($participantType, $dateTime, $recursive)->map(
-                    fn(RegistrationsRange $range) => $ranges->contains($range) ? null : $ranges->add($range)
-                );
-            }
-        }
-
-        return $this->registrationRanges ?? new ArrayCollection();
-    }
-
     public function getSubEvents(): Collection
     {
         return $this->subEvents ?? new ArrayCollection();
-    }
-
-    public function addFlagConnection(?EventFlagConnection $flagConnection): void
-    {
-        if (null !== $flagConnection && !$this->getFlagConnections()->contains($flagConnection)) {
-            $this->getFlagConnections()->add($flagConnection);
-            $flagConnection->setEvent($this);
-        }
-    }
-
-    public function getFlagConnections(): Collection
-    {
-        return $this->flagConnections ?? new ArrayCollection();
-    }
-
-    public function getParticipantTypes(?string $type = null, bool $onlyPublic = false): Collection
-    {
-        $types = $this->getRegistrationRangesByTypeString($type, null, false, $onlyPublic)->map(
-            fn(RegistrationsRange $range) => $range->getParticipantType()
-        );
-        if (!empty($type)) {
-            $types = $types->filter(fn(ParticipantType $t) => empty($type) || $t->getType() === $type);
-        }
-
-        return $types;
-    }
-
-    /**
-     * @param string|null   $participantType
-     * @param DateTime|null $dateTime If set, results are limited only to items valid in this moment.
-     * @param bool|null     $recursive
-     *
-     * @param bool|null     $onlyPublic
-     *
-     * @return Collection<RegistrationsRange>
-     */
-    public function getRegistrationRangesByTypeString(
-        ?string $participantType = null,
-        ?DateTime $dateTime = null,
-        ?bool $recursive = false,
-        ?bool $onlyPublic = false
-    ): Collection {
-        if (null !== $participantType || null !== $dateTime || true === $onlyPublic) {
-            return $this->getRegistrationRanges(null, $dateTime, $recursive, $onlyPublic)->filter(
-                fn(RegistrationsRange $range) => $range->isApplicableByTypeOfType($participantType)
-            );
-        }
-
-        return $this->getRegistrationRanges();
     }
 
     public function isRoot(): bool
@@ -337,99 +222,6 @@ class Event implements NameableInterface
         if (null !== $event && $this->getSubEvents()->removeElement($event)) {
             $event->setSuperEvent(null);
         }
-    }
-
-    public function getCapacity(?ParticipantType $participantType = null, ?DateTime $dateTime = null): ?int
-    {
-        $capacity = null;
-        foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
-            assert($range instanceof RegistrationsRange);
-            if (null !== $range->getCapacity()) {
-                $capacity += $range->getCapacity();
-            }
-        }
-
-        return $capacity;
-    }
-
-    public function getMaxCapacity(?ParticipantType $participantType = null, ?DateTime $dateTime = null): ?int
-    {
-        $capacity = null;
-        foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
-            assert($range instanceof RegistrationsRange);
-            if (null !== $range->getCapacity() || null !== $range->getCapacityOverflowLimit()) {
-                $capacity += $range->getCapacity();
-                $capacity += $range->getCapacityOverflowLimit();
-            }
-        }
-
-        return $capacity;
-    }
-
-    public function addParticipantFlagInEventConnection(?ParticipantFlagRange $participantFlagInEventConnection): void
-    {
-        if ($participantFlagInEventConnection && !$this->getParticipantFlagRanges()->contains($participantFlagInEventConnection)) {
-            $this->getParticipantFlagRanges()->add($participantFlagInEventConnection);
-            $participantFlagInEventConnection->setEvent($this);
-        }
-    }
-
-    public function getParticipantFlagRanges(
-        ParticipantType $participantType = null,
-        ?ParticipantFlag $participantFlag = null,
-        bool $onlyPublic = false
-    ): Collection {
-        $connections = $this->participantFlagRanges ?? new ArrayCollection();
-        if (null !== $participantType) {
-            $connections = $connections->filter(
-                fn(ParticipantFlagRange $conn) => $conn->getParticipantType() && $participantType->getId() === $conn->getParticipantType()->getId()
-            );
-        }
-        if (null !== $participantFlag) {
-            $connections = $connections->filter(
-                fn(ParticipantFlagRange $conn) => $conn->getParticipantFlag() && $participantFlag->getId() === $conn->getParticipantFlag()->getId()
-            );
-        }
-        if ($onlyPublic) {
-            $connections = $connections->filter(fn(ParticipantFlagRange $conn) => $conn->isPublicOnWeb());
-        }
-
-        return $connections;
-    }
-
-    public function removeParticipantFlagInEventConnection(?ParticipantFlagRange $participantFlagInEventConnection): void
-    {
-        if ($participantFlagInEventConnection && $this->getParticipantFlagRanges()->removeElement($participantFlagInEventConnection)) {
-            $participantFlagInEventConnection->setEvent(null);
-        }
-    }
-
-    public function removeRegistrationRange(?RegistrationsRange $registrationRange): void
-    {
-        if (null !== $registrationRange) {
-            $this->registrationRanges->removeElement($registrationRange);
-        }
-    }
-
-    public function getDeposit(ParticipantType $eventParticipantType): ?int
-    {
-        return $this->getDepositOfEvent($eventParticipantType);
-    }
-
-    public function getDepositOfEvent(ParticipantType $participantType, ?DateTime $dateTime = null): ?int
-    {
-        $total = null;
-        foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
-            assert($range instanceof RegistrationsRange);
-            if (null !== $range->getDepositValue()) {
-                $total += $range->getDepositValue();
-            }
-            if ($range->isRelative() && null !== $this->getSuperEvent()) {
-                $total += $this->getSuperEvent()->getDeposit($participantType);
-            }
-        }
-
-        return null !== $total && $total <= 0 ? 0 : $total;
     }
 
     public function addWebContent(?EventWebContent $eventWebContent): void
@@ -503,106 +295,19 @@ class Event implements NameableInterface
         return $endDateTime === $minDateTime ? null : $endDateTime;
     }
 
-    public function getAllowedFlagsAggregatedByType(?ParticipantType $eventParticipantType = null, bool $onlyPublic = false): array
-    {
-        $flags = [];
-        foreach ($this->getParticipantFlagRanges($eventParticipantType, null, $onlyPublic) as $flagInEvent) {
-            if ($flagInEvent instanceof ParticipantFlagRange && $flag = $flagInEvent->getParticipantFlag()) {
-                $flagTypeSlug = $flag->getParticipantFlagType() ? $flag->getParticipantFlagType()->getSlug() : '0';
-                $flags[$flagTypeSlug]['flagType'] = $flag->getParticipantFlagType();
-                $flags[$flagTypeSlug]['flags'][] = $flag;
-            }
-        }
-
-        return $flags;
-    }
-
-    /**
-     * True if registrations for specified participant type (or any if not specified) is allowed in some datetime (or now if not specified).
-     *
-     * @param ParticipantType $participantType
-     * @param DateTime|null   $dateTime
-     *
-     * @return bool
-     */
-    public function isRegistrationsAllowed(?ParticipantType $participantType = null, ?DateTime $dateTime = null): bool
-    {
-        return $this->getRegistrationRanges($participantType, $dateTime)->count() > 0;
-    }
-
     public function __toString(): string
     {
         return $this->getExtendedName();
     }
 
-    /**
-     * @param bool                 $range
-     * @param bool                 $price
-     * @param ParticipantType|null $participantType
-     *
-     * @return string
-     * @noinspection IsEmptyFunctionUsageInspection
-     */
-    public function getExtendedName(bool $range = true, bool $price = false, ?ParticipantType $participantType = null): string
+    public function getExtendedName(bool $range = true): string
     {
         $name = $this->getName();
         if ($range && !empty($rangeString = $this->getRangeAsText())) {
             $name .= " ($rangeString)";
         }
-        if ($price && !empty($eventPrice = $this->getPrice($participantType))) {
-            $name .= " ($eventPrice,- Kč)";
-        }
 
         return $name;
-    }
-
-    public function getPrice(?ParticipantType $participantType, ?DateTime $dateTime = null): ?int
-    {
-        $total = null;
-        if (null === $participantType) {
-            return null;
-        }
-        foreach ($this->getRegistrationRanges($participantType, $dateTime) as $range) {
-            assert($range instanceof RegistrationsRange);
-            if (null !== $range->getNumericValue()) {
-                $total += $range->getNumericValue();
-            }
-            if ($range->isRelative() && null !== $this->getSuperEvent()) {
-                $total += $this->getSuperEvent()->getPrice($participantType);
-            }
-        }
-
-        return null !== $total && $total <= 0 ? 0 : $total;
-    }
-
-    /**
-     * Gets capacity of participant flag in event (for given participant type).
-     *
-     * @param ParticipantFlag|null $participantFlag
-     * @param ParticipantType|null $participantType
-     *
-     * @return int Capacity of flag in event for participant type (NULL if not limited).
-     */
-    public function getParticipantFlagCapacity(?ParticipantFlag $participantFlag, ?ParticipantType $participantType): ?int
-    {
-        $allowedAmount = 0;
-        foreach ($this->getParticipantFlagRanges($participantType, $participantFlag) as $flagInEventConnection) {
-            if ($flagInEventConnection instanceof ParticipantFlagRange) {
-                if (null === $flagInEventConnection->getCapacity()) {
-                    return null;
-                }
-                $allowedAmount += $flagInEventConnection->getCapacity();
-            }
-        }
-
-        return $allowedAmount;
-    }
-
-    public function removeFlagConnection(?EventFlagConnection $flagConnection): void
-    {
-        if (null !== $flagConnection && $this->getFlagConnections()->removeElement($flagConnection)) {
-            $flagConnection->setEvent(null);
-        }
     }
 
     public function getGeneratedSlug(): string /// TODO: Used somewhere?
@@ -665,7 +370,7 @@ class Event implements NameableInterface
         }
     }
 
-    public function isSuperEvent(?Event $event, ?bool $recursive = true): bool
+    public function isEventSuperEvent(?Event $event, ?bool $recursive = true): bool
     {
         return in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
     }
@@ -673,12 +378,5 @@ class Event implements NameableInterface
     public function getSuperEvents(): array
     {
         return null === $this->getSuperEvent() ? [...$this->getSuperEvents(), $this->getSuperEvent()] : [$this];
-    }
-
-    public function isSuperEventRequired(?ParticipantType $participantType, ?DateTime $dateTime = null): bool
-    {
-        return $this->getRegistrationRanges($participantType, $dateTime)->exists(
-            fn(RegistrationsRange $price) => $price->isSuperEventRequired()
-        );
     }
 }

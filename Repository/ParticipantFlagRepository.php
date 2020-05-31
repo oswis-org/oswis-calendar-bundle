@@ -11,36 +11,42 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
 
-class ParticipantTypeRepository extends EntityRepository
+class ParticipantFlagRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
+    public const CRITERIA_TYPE = 'participantType';
+    public const CRITERIA_EVENT = 'event';
     public const CRITERIA_TYPE_OF_TYPE = 'participantTypeOfType';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
+    public const CRITERIA_PARTICIPANT_TYPE_OF_TYPE = 'participantTypeOfType';
+    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
+    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantType
+    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantFlag
     {
-        $participantType = parent::findOneBy($criteria, $orderBy);
+        $participantFlag = parent::findOneBy($criteria, $orderBy);
 
-        return $participantType instanceof ParticipantType ? $participantType : null;
+        return $participantFlag instanceof ParticipantFlag ? $participantFlag : null;
     }
 
-    public function getParticipantType(?array $opts = []): ?ParticipantType
+    public function getParticipantFlag(?array $opts = []): ?ParticipantFlag
     {
         try {
-            $participantType = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $participantFlag = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
 
-        return $participantType instanceof ParticipantType ? $participantType : null;
+        return $participantFlag instanceof ParticipantFlag ? $participantFlag : null;
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
-        $queryBuilder = $this->createQueryBuilder('ept');
+        $queryBuilder = $this->createQueryBuilder('flag');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
         $this->addTypeOfTypeQuery($queryBuilder, $opts);

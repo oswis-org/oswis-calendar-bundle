@@ -70,13 +70,13 @@ class RegistrationService
      */
     final public function simulateRegistration(Participant $newParticipant, ?Participant $oldParticipant = null): void
     {
-        $newEvent = $newParticipant->getEvent();
+        $newEvent = $newParticipant->getRegistrationsRange();
         $newContact = $newParticipant->getContact();
         $newParticipantType = $newParticipant->getParticipantType();
         if (null === $newParticipantType || null === $newContact || null === $newEvent) {
             throw $this->missingRelations($newEvent, $newContact, $newParticipantType);
         }
-        $oldEvent = $oldParticipant ? $oldParticipant->getEvent() : null;
+        $oldEvent = $oldParticipant ? $oldParticipant->getRegistrationsRange() : null;
         $oldContact = $oldParticipant ? $oldParticipant->getContact() : null;
         $oldParticipantType = $oldParticipant ? $oldParticipant->getParticipantType() : null;
         $newFlags = $newParticipant->getParticipantFlags();
@@ -181,7 +181,7 @@ class RegistrationService
             if (!($firstFlagOfType instanceof ParticipantFlag)) {
                 continue;
             }
-            $flagType = $firstFlagOfType->getParticipantFlagType();
+            $flagType = $firstFlagOfType->getFlagType();
             if ($flagType && !array_key_exists($flagType->getSlug(), $allowedFlagsByTypes)) {
                 $message = 'Příznak typu '.$flagType->getName().' není u události '.$event->getName().' povolen.';
                 throw new EventCapacityExceededException($message);

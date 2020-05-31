@@ -51,7 +51,7 @@ class RegistrationFormType extends AbstractType
             throw new PriceInvalidArgumentException('[účastník neexistuje]');
         }
         $participantType = $participant->getParticipantType();
-        $event = $participant->getEvent();
+        $event = $participant->getRegistrationsRange();
         if (null === $participantType || null === $event) {
             $message = null === $participantType ? '[typ účastníka nezadán]' : '';
             $message .= null !== $event ? '[událost nezadána]' : '';

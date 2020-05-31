@@ -10,7 +10,7 @@ use DateTime;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
@@ -23,14 +23,14 @@ class ParticipantFlagConnection implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;
-    use DateRangeTrait;
+    use DeletedTrait;
 
     /**
      * Event contact flag.
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?ParticipantFlag $participantFlag = null;
+    protected ?ParticipantFlagRange $participantFlagRange = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -44,26 +44,20 @@ class ParticipantFlagConnection implements BasicInterface
     /**
      * FlagInEmployerInEvent constructor.
      *
-     * @param ParticipantFlag|null $participantFlag
-     * @param Participant|null     $participant
-     * @param string|null          $textValue
-     * @param DateTime|null        $startDateTime
-     * @param DateTime|null        $endDateTime
+     * @param ParticipantFlagRange|null $participantFlagRange
+     * @param Participant|null          $participant
+     * @param string|null               $textValue
      *
      * @throws EventCapacityExceededException
      */
     public function __construct(
-        ?ParticipantFlag $participantFlag = null,
+        ?ParticipantFlagRange $participantFlagRange = null,
         ?Participant $participant = null,
-        ?string $textValue = null,
-        ?DateTime $startDateTime = null,
-        ?DateTime $endDateTime = null
+        ?string $textValue = null
     ) {
-        $this->setParticipantFlag($participantFlag);
+        $this->setParticipantFlagRange($participantFlagRange);
         $this->setParticipant($participant);
         $this->setTextValue($textValue);
-        $this->setStartDateTime($startDateTime);
-        $this->setEndDate($endDateTime);
     }
 
     public function getParticipant(): ?Participant
@@ -87,18 +81,28 @@ class ParticipantFlagConnection implements BasicInterface
         }
     }
 
-    public function getParticipantFlag(): ?ParticipantFlag
+    public function getParticipantFlagRange(): ?ParticipantFlagRange
     {
-        return $this->participantFlag;
+        return $this->participantFlagRange;
     }
 
-    public function setParticipantFlag(?ParticipantFlag $participantFlag): void
+    public function setParticipantFlagRange(?ParticipantFlagRange $participantFlagRange): void
     {
-        $this->participantFlag = $participantFlag;
+        $this->participantFlagRange = $participantFlagRange;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool
     {
-        return $this->containsDateTimeInRange($referenceDateTime);
+        return !$this->isDeleted($referenceDateTime);
+    }
+
+    public function getPrice(): int
+    {
+        return $this->isActive() && $this->getParticipantFlagRange() ? $this->getParticipantFlagRange()->getPrice() : 0;
+    }
+
+    public function getDepositValue(): int
+    {
+        return $this->isActive() && $this->getParticipantFlagRange() ? $this->getParticipantFlagRange()->getDepositValue() : 0;
     }
 }

@@ -18,6 +18,7 @@ use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
@@ -143,18 +144,6 @@ class Participant implements BasicInterface
     use PriorityTrait;
 
     /**
-     * Type of relation between contact and event - attendee, staff....
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType",
-     *     cascade={"all"},
-     *     fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     * @MaxDepth(1)
-     */
-    protected ?ParticipantType $participantType = null;
-
-    /**
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantNote",
      *     cascade={"all"},
@@ -202,12 +191,12 @@ class Participant implements BasicInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Event $event = null;
+    protected ?RegistrationsRange $registrationsRange = null;
 
     /**
      * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
@@ -215,28 +204,25 @@ class Participant implements BasicInterface
     protected ?bool $formal = null;
 
     /**
-     * @param AbstractContact|null $contact
-     * @param Event|null           $event
-     * @param ParticipantType|null $participantType
-     * @param Collection|null      $participantFlagConnections
-     * @param Collection|null      $participantNotes
-     * @param DateTime|null        $deleted
-     * @param int|null             $priority
+     * @param AbstractContact|null    $contact
+     * @param RegistrationsRange|null $registrationsRange
+     * @param Collection|null         $participantFlagConnections
+     * @param Collection|null         $participantNotes
+     * @param DateTime|null           $deleted
+     * @param int|null                $priority
      *
      * @throws EventCapacityExceededException
      */
     public function __construct(
         ?AbstractContact $contact = null,
-        ?Event $event = null,
-        ?ParticipantType $participantType = null,
+        ?RegistrationsRange $registrationsRange = null,
         ?Collection $participantFlagConnections = null,
         ?Collection $participantNotes = null,
         ?DateTime $deleted = null,
         ?int $priority = null
     ) {
         $this->setContact($contact);
-        $this->setEvent($event);
-        $this->setParticipantType($participantType);
+        $this->setRegistrationsRange($registrationsRange);
         $this->setParticipantNotes($participantNotes);
         $this->setParticipantPayments(new ArrayCollection());
         $this->setParticipantFlagConnections($participantFlagConnections);
@@ -332,23 +318,18 @@ class Participant implements BasicInterface
      *
      * @return bool Participant must be addressed in a formal way.
      */
-    public function isFormal(bool $recursive = false): bool
+    public function isFormal(bool $recursive = false): ?bool
     {
         if ($recursive && null === $this->formal) {
-            return $this->getParticipantType() ? $this->getParticipantType()->isFormal() : false;
+            return $this->getParticipantType() ? $this->getParticipantType()->isFormal() : true;
         }
 
-        return (bool)$this->formal;
+        return $this->formal;
     }
 
     public function getParticipantType(): ?ParticipantType
     {
-        return $this->participantType;
-    }
-
-    public function setParticipantType(?ParticipantType $participantType): void
-    {
-        $this->participantType = $participantType;
+        return $this->getRegistrationsRange() ? $this->getRegistrationsRange()->getParticipantType() : null;
     }
 
     public function setFormal(?bool $formal): void
@@ -438,7 +419,7 @@ class Participant implements BasicInterface
      */
     public function getRemainingRest(): int
     {
-        return $this->getPriceRest() - $this->getPaidPrice() + $this->getPriceDeposit();
+        return $this->getPriceRest() - $this->getPaidPrice() + $this->getDepositValue();
     }
 
     /**
@@ -448,7 +429,7 @@ class Participant implements BasicInterface
      */
     public function getPriceRest(): int
     {
-        return $this->getPrice() - $this->getPriceDeposit();
+        return $this->getPrice() - $this->getDepositValue();
     }
 
     /**
@@ -458,33 +439,47 @@ class Participant implements BasicInterface
      */
     public function getPrice(): int
     {
-        if (null === $this->getEvent()) {
+        if (null === $this->getRegistrationsRange()) {
             throw new PriceInvalidArgumentException(' (událost nezadána)');
         }
         if (null === $this->getParticipantType()) {
             throw new PriceInvalidArgumentException(' (typ uživatele nezadán)');
         }
-        $dateTime = $this->getCreatedDateTime() ?? new DateTime();
-        $price = $this->getEvent()->getPrice($this->getParticipantType(), $dateTime) + $this->getFlagsPrice();
+        $price = $this->getRegistrationsRange()->getPrice() + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
 
-    public function getEvent(): ?Event
+    public function getRegistrationsRange(): ?RegistrationsRange
     {
-        return $this->event;
+        return $this->registrationsRange;
     }
 
-    public function setEvent(?Event $event): void
+    public function setRegistrationsRange(?RegistrationsRange $registrationsRange): void
     {
-        $this->event = $event;
+        $this->registrationsRange = $registrationsRange;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->getRegistrationsRange() ? $this->getRegistrationsRange()->getEvent() : null;
     }
 
     public function getFlagsPrice(?ParticipantFlagType $eventParticipantFlagType = null, bool $onlyActive = true): int
     {
         $price = 0;
-        foreach ($this->getParticipantFlags($eventParticipantFlagType, $onlyActive) as $flag) {
-            $price += $flag instanceof ParticipantFlag ? $flag->getPrice() : 0;
+        foreach ($this->getParticipantFlagConnections($eventParticipantFlagType, $onlyActive) as $flagConnection) {
+            $price += $flagConnection instanceof ParticipantFlagConnection ? $flagConnection->getPrice() : 0;
+        }
+
+        return $price;
+    }
+
+    public function getFlagsDepositValue(?ParticipantFlagType $eventParticipantFlagType = null, bool $onlyActive = true): int
+    {
+        $price = 0;
+        foreach ($this->getParticipantFlagConnections($eventParticipantFlagType, $onlyActive) as $flagConnection) {
+            $price += $flagConnection instanceof ParticipantFlagConnection ? $flagConnection->getDepositValue() : 0;
         }
 
         return $price;
@@ -493,7 +488,7 @@ class Participant implements BasicInterface
     public function getParticipantFlags(?ParticipantFlagType $participantFlagType = null, bool $onlyActive = false): Collection
     {
         return $this->getParticipantFlagConnections($participantFlagType, $onlyActive)->map(
-            fn(ParticipantFlagConnection $connection) => $connection->getParticipantFlag()
+            fn(ParticipantFlagConnection $connection) => $connection->getParticipantFlagRange()
         );
     }
 
@@ -503,8 +498,9 @@ class Participant implements BasicInterface
         if (null !== $participantFlagType) {
             $connections = $connections->filter(
                 static function (ParticipantFlagConnection $connection) use ($participantFlagType) {
-                    $flag = $connection->getParticipantFlag();
-                    $type = $flag ? $flag->getParticipantFlagType() : null;
+                    $flagRange = $connection->getParticipantFlagRange();
+                    $flag = $flagRange ? $flagRange->getFlag() : null;
+                    $type = $flag ? $flag->getFlagType() : null;
 
                     return null !== $type && $type->getId() === $participantFlagType->getId();
                 }
@@ -545,12 +541,12 @@ class Participant implements BasicInterface
      * @return int
      * @throws PriceInvalidArgumentException
      */
-    public function getPriceDeposit(): ?int
+    public function getDepositValue(): ?int
     {
-        if (!$this->getEvent() || !$this->getParticipantType()) {
+        if (!$this->getRegistrationsRange() || !$this->getParticipantType()) {
             throw new PriceInvalidArgumentException();
         }
-        $price = $this->getEvent()->getDeposit($this->getParticipantType());
+        $price = $this->getRegistrationsRange()->getDepositValue() + $this->getFlagsDepositValue();
 
         return $price < 0 ? 0 : $price;
     }
@@ -637,7 +633,7 @@ class Participant implements BasicInterface
      */
     public function getRemainingDeposit(): int
     {
-        $remaining = null !== $this->getPriceDeposit() ? $this->getPriceDeposit() - $this->getPaidPrice() : 0;
+        $remaining = null !== $this->getDepositValue() ? $this->getDepositValue() - $this->getPaidPrice() : 0;
 
         return $remaining > 0 ? $remaining : 0;
     }
@@ -688,7 +684,7 @@ class Participant implements BasicInterface
         $flags = [];
         foreach ($this->getParticipantFlags() as $flag) {
             if ($flag instanceof ParticipantFlag) {
-                $flagTypeSlug = $flag->getParticipantFlagType() ? $flag->getParticipantFlagType()->getSlug() : '0';
+                $flagTypeSlug = $flag->getFlagType() ? $flag->getFlagType()->getSlug() : '0';
                 $flags[$flagTypeSlug] ??= [];
                 $flags[$flagTypeSlug][] = $flag;
             }

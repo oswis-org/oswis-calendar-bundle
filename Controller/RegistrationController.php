@@ -123,7 +123,7 @@ class RegistrationController extends AbstractController
                     array(
                         'type'    => 'error',
                         'title'   => 'Chyba!',
-                        'event'   => $participant->getEvent(),
+                        'event'   => $participant->getRegistrationsRange(),
                         'message' => "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $participantId$error)",
                     )
                 );
@@ -140,7 +140,7 @@ class RegistrationController extends AbstractController
                 [
                     'type'    => 'success',
                     'title'   => 'Hotovo!',
-                    'event'   => $participant->getEvent(),
+                    'event'   => $participant->getRegistrationsRange(),
                     'message' => 'Ověření uživatele proběhlo úspěšně.',
                 ]
             );
@@ -211,7 +211,7 @@ class RegistrationController extends AbstractController
                 }
                 $this->em->persist($participant);
                 $contact = $participant->getContact();
-                if (!$participant->getEvent()) {
+                if (!$participant->getRegistrationsRange()) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Event)');
                 }
                 if (!($contact instanceof Person)) { // TODO: Organization?
@@ -356,13 +356,13 @@ class RegistrationController extends AbstractController
             ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             ParticipantTypeRepository::CRITERIA_SLUG               => $slug,
         ];
-        $type = $this->participantTypeService->getRepository()->getEventParticipantType($opts);
+        $type = $this->participantTypeService->getRepository()->getParticipantType($opts);
         if (null === $type) {
             $opts = [
                 ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
                 ParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
             ];
-            $type = $this->participantTypeService->getRepository()->getEventParticipantType($opts);
+            $type = $this->participantTypeService->getRepository()->getParticipantType($opts);
         }
 
         return $type;
@@ -396,7 +396,7 @@ class RegistrationController extends AbstractController
      */
     public function processFlags(Participant $participant, FormInterface $form): void
     {
-        $allowedFlagsByType = $participant->getEvent() ? $participant->getEvent()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
+        $allowedFlagsByType = $participant->getRegistrationsRange() ? $participant->getRegistrationsRange()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
         foreach ($allowedFlagsByType as $flagsRow) {
             $flagTypeSlug = $flagsRow['flagType'] && $flagsRow['flagType'] instanceof ParticipantFlagType ? $flagsRow['flagType']->getSlug() : 0;
             $oneFlag = $form["flag_$flagTypeSlug"] ? $form["flag_$flagTypeSlug"]->getData() : null;

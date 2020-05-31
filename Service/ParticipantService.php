@@ -155,7 +155,7 @@ class ParticipantService
             $infoMessage = 'CREATE: Created event participant (by service): ';
             $infoMessage .= $entity->getId().', ';
             $infoMessage .= ($entity->getContact() ? $entity->getContact()->getName() : '').', ';
-            $infoMessage .= ($entity->getEvent() ? $entity->getEvent()->getName() : '').'.';
+            $infoMessage .= ($entity->getRegistrationsRange() ? $entity->getRegistrationsRange()->getName() : '').'.';
             $this->logger ? $this->logger->info($infoMessage) : null;
 
             return $entity;
@@ -198,7 +198,7 @@ class ParticipantService
      */
     final public function sendMail(Participant $participant = null, ?bool $new = false, ?string $token = null): bool
     {
-        if (!$participant || !$participant->getEvent() || !$participant->getContact()) {
+        if (!$participant || !$participant->getRegistrationsRange() || !$participant->getContact()) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
         if ($participant->isDeleted()) {
@@ -214,7 +214,7 @@ class ParticipantService
     final public function sendCancelConfirmation(Participant $participant): bool
     {
         try {
-            $event = $participant->getEvent();
+            $event = $participant->getRegistrationsRange();
             $participantContact = $participant->getContact();
             if (null === $event || null === $participantContact) {
                 return false;
@@ -315,7 +315,7 @@ class ParticipantService
     final public function sendSummary(Participant $participant, bool $new = false): bool
     {
         try {
-            $event = $participant->getEvent();
+            $event = $participant->getRegistrationsRange();
             $participantContact = $participant->getContact();
             if (!($event instanceof Event) || !($participantContact instanceof AbstractContact)) {
                 return false;
@@ -373,7 +373,7 @@ class ParticipantService
             return (new QrPayment(
                 $event->getBankAccountNumber(), $event->getBankAccountBank(), [
                     QrPaymentOptions::VARIABLE_SYMBOL => $participant->getVariableSymbol(),
-                    QrPaymentOptions::AMOUNT          => $isDeposit ? $participant->getPriceDeposit() : $participant->getPriceRest(),
+                    QrPaymentOptions::AMOUNT          => $isDeposit ? $participant->getDepositValue() : $participant->getPriceRest(),
                     QrPaymentOptions::CURRENCY        => 'CZK',
                     QrPaymentOptions::COMMENT         => $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek'),
                 ]
@@ -392,7 +392,7 @@ class ParticipantService
     final public function sendVerification(Participant $participant): bool
     {
         try {
-            $event = $participant->getEvent();
+            $event = $participant->getRegistrationsRange();
             $participantContact = $participant->getContact();
             if (null === $event || null === $participantContact) {
                 return false;
@@ -587,7 +587,7 @@ class ParticipantService
     final public function sendInfoMail(Participant $participant, ?string $source = null, ?bool $force = false): bool
     {
         try {
-            $event = $participant->getEvent();
+            $event = $participant->getRegistrationsRange();
             $participantContact = $participant->getContact();
             if (null === $event || null === $participantContact) {
                 return false;
@@ -696,7 +696,7 @@ class ParticipantService
     final public function sendFeedBackMail(Participant $participant): bool
     {
         try {
-            $event = $participant->getEvent();
+            $event = $participant->getRegistrationsRange();
             $participantContact = $participant->getContact();
             if (null === $event || null === $participantContact) {
                 return false;
@@ -748,7 +748,7 @@ class ParticipantService
             $recursiveDepth,
             $onlyActive
         )->map(
-            fn(ParticipantFlagConnection $connection) => $connection->getParticipantFlag()
+            fn(ParticipantFlagConnection $connection) => $connection->getParticipantFlagRange()
         );
         if (null !== $flag) {
             return $flags->filter(fn(ParticipantFlag $f) => $f->getId() === $flag->getId());
@@ -830,9 +830,9 @@ class ParticipantService
                 assert($participant instanceof Participant);
                 foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
                     assert($participantFlagConnection instanceof ParticipantFlagRange);
-                    $flag = $participantFlagConnection->getParticipantFlag();
+                    $flag = $participantFlagConnection->getFlag();
                     if (null !== $flag) {
-                        $flagType = $flag->getParticipantFlagType();
+                        $flagType = $flag->getFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
                         $output[$flagTypeSlug]['flags'][$flag->getSlug()]['participants'][] = $participant;
                         $output[$flagTypeSlug]['flags'][$flag->getSlug()]['flag'] ??= $flag;
@@ -851,7 +851,7 @@ class ParticipantService
                 ];
                 foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
                     assert($participantFlagConnection instanceof ParticipantFlagConnection);
-                    $flag = $participantFlagConnection->getParticipantFlag();
+                    $flag = $participantFlagConnection->getParticipantFlagRange();
                     if (null !== $flag) {
                         $flagType = $flag->getParticipantFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
@@ -947,4 +947,6 @@ class ParticipantService
 
         return $output;
     }
+
+
 }

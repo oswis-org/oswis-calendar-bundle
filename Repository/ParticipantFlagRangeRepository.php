@@ -11,39 +11,46 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
 
-class ParticipantTypeRepository extends EntityRepository
+class ParticipantFlagRangeRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
+    public const CRITERIA_TYPE = 'participantType';
+    public const CRITERIA_EVENT = 'event';
     public const CRITERIA_TYPE_OF_TYPE = 'participantTypeOfType';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
+    public const CRITERIA_PARTICIPANT_TYPE_OF_TYPE = 'participantTypeOfType';
+    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
+    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantType
+    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantFlagRange
     {
-        $participantType = parent::findOneBy($criteria, $orderBy);
+        $flagRange = parent::findOneBy($criteria, $orderBy);
 
-        return $participantType instanceof ParticipantType ? $participantType : null;
+        return $flagRange instanceof ParticipantFlagRange ? $flagRange : null;
     }
 
-    public function getParticipantType(?array $opts = []): ?ParticipantType
+    public function getParticipantFlag(?array $opts = []): ?ParticipantFlagRange
     {
         try {
-            $participantType = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $flagRange = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
 
-        return $participantType instanceof ParticipantType ? $participantType : null;
+        return $flagRange instanceof ParticipantFlagRange ? $flagRange : null;
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
-        $queryBuilder = $this->createQueryBuilder('ept');
+        $queryBuilder = $this->createQueryBuilder('flagRange');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
-        $this->addTypeOfTypeQuery($queryBuilder, $opts);
+        $this->addParticipantTypeOfTypeQuery($queryBuilder, $opts);
         $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
         $this->addOrderBy($queryBuilder, true);
@@ -65,7 +72,7 @@ class ParticipantTypeRepository extends EntityRepository
         }
     }
 
-    private function addTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function addParticipantTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_TYPE_OF_TYPE])) {
             $queryBuilder->andWhere('ept.type = :type_type');

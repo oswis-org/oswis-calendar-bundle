@@ -21,14 +21,20 @@ trait EventCapacityTrait
      */
     protected ?int $capacity = null;
 
-    public function getMaxCapacity(): int
+    public function getMaxCapacity(): ?int
     {
-        return 0 + $this->getCapacity() + $this->getCapacityOverflowLimit();
+        return null === $this->getCapacity() ? null : (0 + $this->getCapacity() + $this->getCapacityOverflowLimit());
     }
 
-    public function getCapacity(): ?int
+    public function getCapacity(bool $withOverflow = false): ?int
     {
-        return $this->capacity;
+        $baseCapacity = $this->capacity;
+        $overflowLimit = $this->getCapacityOverflowLimit();
+        if (null === $baseCapacity || ($withOverflow && null === $overflowLimit)) {
+            return null;
+        }
+
+        return true === $withOverflow ? $baseCapacity + $overflowLimit : $baseCapacity;
     }
 
     public function setCapacity(?int $capacity): void
@@ -57,6 +63,16 @@ trait EventCapacityTrait
     public function getEventCapacity(): EventCapacity
     {
         return new EventCapacity($this->getCapacity(), $this->getCapacityOverflowLimit());
+    }
+
+    public function isCapacityUnlimited(): bool
+    {
+        return null === $this->getCapacity();
+    }
+
+    public function isCapacityOverflowUnlimited(): bool
+    {
+        return null === $this->getCapacityOverflowLimit();
     }
 
 }

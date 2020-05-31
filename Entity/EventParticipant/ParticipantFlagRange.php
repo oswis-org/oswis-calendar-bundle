@@ -1,11 +1,15 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
 
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventCapacity;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventPrice;
+use OswisOrg\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
+use OswisOrg\OswisCalendarBundle\Traits\Entity\EventPriceTrait;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
@@ -20,12 +24,8 @@ class ParticipantFlagRange implements BasicInterface
 {
     use BasicTrait;
     use EntityPublicTrait;
-
-    /**
-     * Capacity (max usages of this flag in event).
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
-     */
-    protected ?int $capacity = null;
+    use EventCapacityTrait;
+    use EventPriceTrait;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -34,89 +34,83 @@ class ParticipantFlagRange implements BasicInterface
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?ParticipantFlag $participantFlag = null;
+    protected ?ParticipantFlag $flag = null;
 
     /**
-     * Event contact (connected to person or organization).
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="participantFlagRanges"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @var int Number of usages of flag.
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
      */
-    protected ?Event $event = null;
+    protected int $usage = 0;
 
-    /**
-     * Event contact type.
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantType", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?ParticipantType $participantType = null;
-
-    /**
-     * @param ParticipantFlag|null $participantFlag
-     * @param Event|null           $event
-     * @param ParticipantType|null $participantType
-     * @param int|null             $capacity
-     * @param Publicity|null       $publicity
-     */
     public function __construct(
-        ?ParticipantFlag $participantFlag = null,
-        ?Event $event = null,
-        ?ParticipantType $participantType = null,
-        ?int $capacity = null,
+        ?ParticipantFlag $flag = null,
+        ?EventCapacity $eventCapacity = null,
+        ?EventPrice $eventPrice = null,
         ?Publicity $publicity = null
     ) {
-        $this->setParticipantFlag($participantFlag);
-        $this->setParticipantType($participantType);
-        $this->setEvent($event);
-        $this->setCapacity($capacity);
+        $this->setFlag($flag);
+        $this->setEventCapacity($eventCapacity);
+        $this->setEventPrice($eventPrice);
         $this->setFieldsFromPublicity($publicity);
     }
 
-    public function getParticipantType(): ?ParticipantType
+    public function getPrice(): int
     {
-        return $this->participantType;
+        return $this->price ?? 0;
     }
 
-    public function setParticipantType(?ParticipantType $participantType): void
+    public function getDepositValue(): int
     {
-        $this->participantType = $participantType;
+        return $this->depositValue ?? 0;
     }
 
-    public function getCapacity(): ?int
+    public function getFlag(): ?ParticipantFlag
     {
-        return $this->capacity;
+        return $this->flag;
     }
 
-    public function setCapacity(?int $capacity): void
+    public function setFlag(?ParticipantFlag $flag): void
     {
-        $this->capacity = $capacity;
+        $this->flag = $flag;
     }
 
-    public function getEvent(): ?Event
+    public function getRemainingCapacity(bool $includeOverflow = false): ?int
     {
-        return $this->event;
+        $capacity = $this->getCapacity($includeOverflow);
+
+        return null === $capacity ? null : ($capacity - $this->getUsage());
     }
 
-    public function setEvent(?Event $event): void
+    public function hasRemainingCapacity(bool $withOverflow = false): bool
     {
-        if ($this->event && $event !== $this->event) {
-            $this->event->removeParticipantFlagInEventConnection($this);
-        }
-        if ($event && $this->event !== $event) {
-            $this->event = $event;
-            $event->addParticipantFlagInEventConnection($this);
-        }
+        $remaining = $this->getRemainingCapacity($withOverflow);
+
+        return null === $remaining ? true : $remaining > 0;
     }
 
-    public function getParticipantFlag(): ?ParticipantFlag
+    public function getUsage(): int
     {
-        return $this->participantFlag;
+        return $this->usage;
     }
 
-    public function setParticipantFlag(?ParticipantFlag $participantFlag): void
+    public function setUsage(int $usage): void
     {
-        $this->participantFlag = $participantFlag;
+        $this->usage = $usage;
+    }
+
+    public function getFlagType(): ?ParticipantFlagType {
+        return $this->getFlag() ? $this->getFlag()->getFlagType() : null;
+    }
+
+    public function containsFlag(?ParticipantFlag $flag = null): bool {
+        return null === $flag ? true : $this->getFlag() && $this->getFlag() === $flag;
+    }
+
+    public function containsFlagOfType(?ParticipantFlagType $flagType = null): bool {
+        return null === $flagType ? true : $this->getFlagType() && $this->getFlagType() === $flagType;
+    }
+
+    public function containsFlagOfTypeString(?string $flagType = null): bool {
+        return null === $flagType ? true : $this->getFlagType() && $this->getFlagType()->getType() === $flagType;
     }
 }
