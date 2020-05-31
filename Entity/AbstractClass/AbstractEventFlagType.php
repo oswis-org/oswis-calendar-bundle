@@ -18,13 +18,13 @@ abstract class AbstractEventFlagType implements NameableInterface
     use ValueTrait;
 
     /**
-     * Minimal amount of flags used in one EventParticipant.
+     * Minimal amount of flags used in one Participant.
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $minInParticipant = null;
 
     /**
-     * Maximal amount of flags used in one EventParticipant.
+     * Maximal amount of flags used in one Participant.
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
     protected ?int $maxInParticipant = null;

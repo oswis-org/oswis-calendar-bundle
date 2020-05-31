@@ -2,7 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\AbstractClass;
 
-use DateTime;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
@@ -14,10 +14,9 @@ abstract class AbstractEventFlagConnection implements BasicInterface
     use TextValueTrait;
     use DateRangeTrait;
 
-    public function __construct(?string $textValue = null, ?DateTime $startDateTime = null, ?DateTime $endDateTime = null)
+    public function __construct(?string $textValue = null, ?DateTimeRange $dateTimeRange = null)
     {
         $this->setTextValue($textValue);
-        $this->setStartDateTime($startDateTime);
-        $this->setEndDateTime($endDateTime);
+        $this->setDateTimeRange($dateTimeRange);
     }
 }

@@ -22,12 +22,12 @@
             </p>
         {% endblock message_message_outer %}
 
-        {% block event_participant_summary %}
+        {% block participant_summary %}
             {% include '@OswisOrgOswisCalendar/other/summary/event-participant-summary.html.twig' %}
-        {% endblock event_participant_summary %}
-        {% block event_participant_event_summary %}
+        {% endblock participant_summary %}
+        {% block participant_event_summary %}
             {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' %}
-        {% endblock event_participant_event_summary %}
+        {% endblock participant_event_summary %}
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
         {% block message_footer %}{% endblock message_footer %}

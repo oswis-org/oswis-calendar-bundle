@@ -5,8 +5,8 @@ namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Api\Dto\EventActionRequest;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType;
-use OswisOrg\OswisCalendarBundle\Service\EventParticipantService;
+use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,9 +20,9 @@ final class EventActionSubscriber implements EventSubscriberInterface
     public const TYPE_FEEDBACK = 'feedback';
     public const ALLOWED_ACTION_TYPES = [self::TYPE_INFOMAIL, self::TYPE_FEEDBACK];
 
-    private EventParticipantService $participantService;
+    private ParticipantService $participantService;
 
-    public function __construct(EventParticipantService $participantService)
+    public function __construct(ParticipantService $participantService)
     {
         $this->participantService = $participantService;
     }
@@ -81,7 +81,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
         $event = $eventActionRequest->event ?? null;
         $count = $eventActionRequest->count ?? 0;
         $recursiveDepth = $eventActionRequest->recursiveDepth ?? 0;
-        $participantTypeOfType = $eventActionRequest->participantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
+        $participantTypeOfType = $eventActionRequest->participantTypeOfType ?? ParticipantType::TYPE_ATTENDEE;
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }
@@ -103,7 +103,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
         $startId = $eventActionRequest->startId ?? 0;
         $endId = $eventActionRequest->endId ?? 0;
         $recursiveDepth = $eventActionRequest->recursiveDepth ?? 0;
-        $participantTypeOfType = $eventActionRequest->participantTypeOfType ?? EventParticipantType::TYPE_ATTENDEE;
+        $participantTypeOfType = $eventActionRequest->participantTypeOfType ?? ParticipantType::TYPE_ATTENDEE;
         if (!$event) {
             return new JsonResponse('Zasláno 0 zpráv. Událost nenalezena.', Response::HTTP_NOT_FOUND);
         }

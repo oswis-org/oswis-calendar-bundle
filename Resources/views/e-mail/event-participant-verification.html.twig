@@ -1,6 +1,6 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
-{% set activationUrl = absolute_url(path('oswis_org_oswis_calendar_web_event_participant_verification',
+{% set activationUrl = absolute_url(path('oswis_org_oswis_calendar_web_participant_verification',
     {'token': contactPerson.appUser.activationRequestToken, 'participantId': eventParticipant.id})) %}
 
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}

@@ -1,0 +1,265 @@
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
+    attributes:
+        id:
+            groups: ['calendar_participants_get', 'calendar_participant_get']
+        createdDateTime:
+            groups: ['calendar_participant_get']
+        updatedDateTime:
+            groups: ['calendar_participant_get']
+        createdAppUser:
+            groups: ['calendar_participant_get']
+        updatedAppUser:
+            groups: ['calendar_participant_get']
+        deleted:
+            groups: ['calendar_participants_get', 'calendar_participant_get', 'calendar_participant_put']
+        eventParticipantType:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
+        eventParticipantNotes:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
+        contact:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
+        event:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
+        eventParticipantFlagConnections:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
+        priceRest:
+            groups: ['calendar_participants_get', 'calendar_participant_get']
+        priceDeposit:
+            groups: ['calendar_participants_get', 'calendar_participant_get']
+        price:
+            groups: ['calendar_participants_get', 'calendar_participant_get']
+        remainingPrice:
+            groups: ['calendar_participants_get', 'calendar_participant_get']
+        paidPrice:
+            groups: ['calendar_participants_get', 'calendar_participant_get']
+        webContents:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
+
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        createdDateTime:
+            groups: ['calendar_participant_get']
+        updatedDateTime:
+            groups: ['calendar_participant_get']
+        textValue:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        eventParticipantFlag:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        shortName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        description:
+            groups:
+                - 'calendar_participant_get'
+        note:
+            groups:
+                - 'calendar_participant_get'
+        internalNote:
+            groups:
+                - 'calendar_participant_get'
+        slug:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        valueAllowed:
+            groups:
+                - 'calendar_participant_get'
+        valueLabel:
+            groups:
+                - 'calendar_participant_get'
+        valueRegex:
+            groups:
+                - 'calendar_participant_get'
+        color:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        eventParticipantFlagType:
+            groups:
+                - 'calendar_participant_get'
+
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        shortName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        description:
+            groups:
+                - 'calendar_participant_get'
+        note:
+            groups:
+                - 'calendar_participant_get'
+        internalNote:
+            groups:
+                - 'calendar_participant_get'
+        slug:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        type:
+            groups:
+                - 'calendar_participant_get'
+
+OswisOrg\OswisCalendarBundle\Entity\Event\Event:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        shortName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        description:
+            groups:
+                - 'calendar_participant_get'
+        note:
+            groups:
+                - 'calendar_participant_get'
+        internalNote:
+            groups:
+                - 'calendar_participant_get'
+        slug:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        createdDateTime:
+            groups: ['calendar_participant_get']
+        updatedDateTime:
+            groups: ['calendar_participant_get']
+        textValue:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participant_get'
+        createdDateTime:
+            groups: ['calendar_participant_get']
+        updatedDateTime:
+            groups: ['calendar_participant_get']
+        numericValue:
+            groups:
+                - 'calendar_participant_get'
+        note:
+            groups:
+                - 'calendar_participant_get'
+        internalNote:
+            groups:
+                - 'calendar_participant_get'
+        dateTime:
+            groups:
+                - 'calendar_participant_get'
+        type:
+            groups:
+                - 'calendar_participant_get'
+        eMailConfirmationDateTime:
+            groups:
+                - 'calendar_participant_get'
+        eMailConfirmationCount:
+            groups:
+                - 'calendar_participant_get'
+        eMailConfirmationSource:
+            groups:
+                - 'calendar_participant_get'
+
+OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+        createdDateTime:
+            groups: ['calendar_participant_get']
+        updatedDateTime:
+            groups: ['calendar_participant_get']
+        textValue:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+
+OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        contactName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        phone:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        url:
+            groups:
+                - 'calendar_participant_get'
+        email:
+            groups:
+                - 'calendar_participant_get'
+
+

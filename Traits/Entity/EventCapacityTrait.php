@@ -6,6 +6,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventCapacity;
+
 trait EventCapacityTrait
 {
     /**
@@ -43,4 +45,18 @@ trait EventCapacityTrait
     {
         $this->capacityOverflowLimit = $capacityOverflowLimit;
     }
+
+    public function setEventCapacity(?EventCapacity $eventCapacity = null): void
+    {
+        if (null !== $eventCapacity) {
+            $this->setCapacity($eventCapacity->capacity);
+            $this->setCapacityOverflowLimit($eventCapacity->capacityOverflowLimit);
+        }
+    }
+
+    public function getEventCapacity(): EventCapacity
+    {
+        return new EventCapacity($this->getCapacity(), $this->getCapacityOverflowLimit());
+    }
+
 }

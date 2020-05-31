@@ -6,8 +6,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
-use DateTime;
 use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagConnection;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -25,7 +25,7 @@ class EventFlagConnection extends AbstractEventFlagConnection
 
     /**
      * Event.
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="eventFlagConnections")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="flagConnections")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $event = null;
@@ -34,10 +34,9 @@ class EventFlagConnection extends AbstractEventFlagConnection
         ?EventFlag $eventFlag = null,
         ?Event $event = null,
         ?string $textValue = null,
-        ?DateTime $startDateTime = null,
-        ?DateTime $endDateTime = null
+        ?DateTimeRange $dateTimeRange = null
     ) {
-        parent::__construct($textValue, $startDateTime, $endDateTime);
+        parent::__construct($textValue, $dateTimeRange);
         $this->setEventFlag($eventFlag);
         $this->setEvent($event);
     }
@@ -50,11 +49,11 @@ class EventFlagConnection extends AbstractEventFlagConnection
     public function setEvent(?Event $event): void
     {
         if ($this->event && $event !== $this->event) {
-            $this->event->removeEventFlagConnection($this);
+            $this->event->removeFlagConnection($this);
         }
         if ($event && $this->event !== $event) {
             $this->event = $event;
-            $event->addEventFlagConnection($this);
+            $event->addFlagConnection($this);
         }
     }
 

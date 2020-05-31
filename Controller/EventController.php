@@ -12,11 +12,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventRegistrationRange;
-use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
-use OswisOrg\OswisCalendarBundle\Service\EventParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,18 +32,12 @@ class EventController extends AbstractController
 
     protected EventService $eventService;
 
-    protected EventRepository $eventRepository;
+    protected ParticipantService $participantService;
 
-    protected EventParticipantTypeService $participantTypeService;
-
-    protected OswisCalendarSettingsProvider $calendarSettings;
-
-    public function __construct(EventService $eventService, EventParticipantTypeService $participantTypeService, OswisCalendarSettingsProvider $calendarSettings)
+    public function __construct(EventService $eventService, ParticipantService $participantService)
     {
         $this->eventService = $eventService;
-        $this->eventRepository = $eventService->getRepository();
-        $this->participantTypeService = $participantTypeService;
-        $this->calendarSettings = $calendarSettings;
+        $this->participantService = $participantService;
     }
 
     /**
@@ -72,7 +65,7 @@ class EventController extends AbstractController
             'description' => $event->getDescription(),
             'navEvents'   => $this->getNavigationEvents(),
             'event'       => $event,
-            'organizer'   => $this->eventService->getOrganizer($event),
+            'organizer'   => $this->participantService->getOrganizer($event),
         );
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);
@@ -141,7 +134,7 @@ class EventController extends AbstractController
             'title'       => $event->getShortName(),
             'description' => $event->getDescription(),
             'event'       => $event,
-            'organizer'   => $this->eventService->getOrganizer($event),
+            'organizer'   => $this->participantService->getOrganizer($event),
         );
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
         if ($this->get('twig')->getLoader()->exists($templatePath)) {
@@ -159,7 +152,12 @@ class EventController extends AbstractController
             EventRepository::CRITERIA_ONLY_ROOT          => true,
         ];
 
-        return $this->eventRepository->getEvents($opts);
+        return $this->getEventRepository()->getEvents($opts);
+    }
+
+    public function getEventRepository(): EventRepository
+    {
+        return $this->eventService->getRepository();
     }
 
     /**
@@ -223,7 +221,7 @@ class EventController extends AbstractController
             EventRepository::CRITERIA_SLUG               => $eventSlug,
         ];
 
-        return $this->eventRepository->getEvents($opts, $limit, $offset);
+        return $this->getEventRepository()->getEvents($opts, $limit, $offset);
     }
 
     /**
@@ -291,7 +289,7 @@ class EventController extends AbstractController
      * @param DateTime|null $dateTime        Reference dateTime.
      *
      * @return array [
-     *     eventId => ['event' => Event, 'ranges' => Collection<EventRegistrationRange>],
+     *     eventId => ['event' => Event, 'ranges' => Collection<RegistrationsRange>],
      * ]
      */
     public static function getRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true, ?DateTime $dateTime = null): array
@@ -299,9 +297,9 @@ class EventController extends AbstractController
         $ranges = [];
         foreach ($events as $event) {
             assert($event instanceof Event);
-            $eventRanges = $event->getRegistrationRangesByTypeOfType($participantType, $dateTime);
+            $eventRanges = $event->getRegistrationRangesByTypeString($participantType, $dateTime);
             if ($onlyPublicOnWeb) {
-                $eventRanges = $eventRanges->filter(fn(EventRegistrationRange $range) => $range->isPublicOnWeb());
+                $eventRanges = $eventRanges->filter(fn(RegistrationsRange $range) => $range->isPublicOnWeb());
             }
             $ranges[$event->getId()] ??= [
                 'event'  => $event,
