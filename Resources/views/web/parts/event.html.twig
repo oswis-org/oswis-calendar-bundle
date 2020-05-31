@@ -17,7 +17,7 @@
     <div class="col-lg-9">
         {{ render(controller('OswisOrg\\OswisCalendarBundle\\Controller\\EventController::showEventsNavigationChunk', {'eventSlug': event.slug})) }}
         <h3>
-            {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
+            {% if event.series|default and event.batchOrYear and event.getSeqId > 0 %}
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
                 {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
             {% else %} {# TODO: Create method event.getSubTitle() #}
@@ -33,7 +33,7 @@
             <h3>Zahrnuje akce:</h3>
             {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig' with {'subEvents': event.subEvents} %}
         {% endif %}
-        {% if event.superEvent is defined and event.superEvent %}
+        {% if event.superEvent|default %}
             <h3>Je součástí akce:</h3>
             <ul class="mt-2">
                 <li>
@@ -58,12 +58,12 @@
 <section class="row">
     <div class="col-12">
         <div class="card-deck">
-            {% if event.location(true) is defined and event.location(true) %}
+            {% if event.location(true)|default %}
                 <div class="col-12 col-md-6 col-lg-7 mt-2 mb-3 p-0">
                     {% include '@OswisOrgOswisCalendar/web/parts/event-location.html.twig' %}
                 </div>
             {% endif %}
-            {% if organizer is defined and organizer %}
+            {% if organizer|default %}
                 <div class="col-12 col-md-6 col-lg-5 mt-2 mb-3 p-0">
                     {% include '@OswisOrgOswisCalendar/web/parts/event-organizer.html.twig' %}
                 </div>
@@ -77,14 +77,14 @@
         <h3>Přihlášky</h3>
     </header>
 </section>
-{% for subEvent in [event]|merge(event.subEvents|default) %}
+{% for subEvent in [event]|merge(event.subEvents) %}
     {% for range in subEvent.registrationRangesByTypeOfType('attendee')|filter(r => r.publicOnWeb) %}
         {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' with {event: subEvent} %}
     {% endfor %}
 {% endfor %}
 
 <section class="row text-justify">
-    {% if event.webContent is defined and event.webContent.textValue is defined and event.webContent.textValue %}
+    {% if event.webContent.textValue|default %}
         {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
     {% endif %}
 </section>
