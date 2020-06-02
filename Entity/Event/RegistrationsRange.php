@@ -99,6 +99,12 @@ class RegistrationsRange implements NameableInterface
     protected int $usage = 0;
 
     /**
+     * @var int Number of usages of flag, including overflow (must be updated from service!).
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
+     */
+    protected int $fullUsage = 0;
+
+    /**
      * Indicates that participation on super event is required.
      * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      */
@@ -134,14 +140,24 @@ class RegistrationsRange implements NameableInterface
         $this->setSuperEventRequired($superEventRequired);
     }
 
-    public function getUsage(): int
+    public function getUsage(bool $max = false): int
     {
-        return $this->usage;
+        return $max ? $this->getFullUsage() : $this->usage;
     }
 
     public function setUsage(int $usage): void
     {
         $this->usage = $usage;
+    }
+
+    public function getFullUsage(): int
+    {
+        return $this->fullUsage;
+    }
+
+    public function setFullUsage(int $fulUsage): void
+    {
+        $this->fullUsage = $fulUsage;
     }
 
     public function getEvent(): ?Event
@@ -187,7 +203,7 @@ class RegistrationsRange implements NameableInterface
     {
         $capacity = $this->getCapacity($max);
 
-        return null === $capacity ? null : ($capacity - $this->getUsage());
+        return null === $capacity ? null : ($capacity - $this->getUsage($max));
     }
 
     public function getRequiredRangePrice(?ParticipantType $participantType = null): int

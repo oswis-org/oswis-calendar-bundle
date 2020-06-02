@@ -190,23 +190,22 @@ class RegistrationController extends AbstractController
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
-                if (null === $participant || !($participant instanceof Participant)) {
-                    throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: $eventParticipant)');
+                if (null === $participant || !($participant instanceof Participant) || null === ($range = $participant->getRegistrationsRange())) {
+                    throw new OswisException('Přihláška není kompletní nebo je poškozená.');
                 }
                 $this->em->persist($participant);
-                $contact = $participant->getContact();
-                if (!$participant->getRegistrationsRange()) {
-                    throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Event)');
+                if (null === ($event = $participant->getEvent())) {
+                    throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
                 }
-                if (!($contact instanceof Person)) { // TODO: Organization?
-                    throw new OswisException('Přihláška není kompletní nebo je poškozená. (1: Contact)');
+                if (!(($contact = $participant->getContact()) instanceof Person)) { // TODO: Organization?
+                    throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
                 }
                 $participant->removeEmptyParticipantNotes();
                 $contact->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
                 $contact->removeEmptyDetails();
                 $contact->removeEmptyNotes();
                 $selectedFlags = $this->extractSelectedFlags($participant, $form);
-                $participant->getRegistrationsRange()->simulateAdd($selectedFlags, null, null);
+                $range->simulateAdd($selectedFlags, null, null);
                 $this->registrationService->simulateRegistration($participant);
                 $this->getParticipantService()->sendMail($participant, true);
 

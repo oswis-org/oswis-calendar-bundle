@@ -83,22 +83,22 @@ class RegistrationService
      *
      * @throws EventCapacityExceededException
      */
-    final public function simulateRegistration(Participant $newParticipant, ?Participant $oldParticipant = null): void
+    public function simulateRegistration(Participant $newParticipant, ?Participant $oldParticipant = null): void
     {
-        $newEvent = $newParticipant->getRegistrationsRange();
+        $newRange = $newParticipant->getRegistrationsRange();
         $newContact = $newParticipant->getContact();
         $newParticipantType = $newParticipant->getParticipantType();
-        if (null === $newParticipantType || null === $newContact || null === $newEvent) {
-            throw $this->missingRelations($newEvent, $newContact, $newParticipantType);
+        if (null === $newParticipantType || null === $newContact || null === $newRange) {
+            throw $this->missingRelations($newRange, $newContact, $newParticipantType);
         }
-        $oldEvent = $oldParticipant ? $oldParticipant->getRegistrationsRange() : null;
+        $oldRange = $oldParticipant ? $oldParticipant->getRegistrationsRange() : null;
         $oldContact = $oldParticipant ? $oldParticipant->getContact() : null;
         $oldParticipantType = $oldParticipant ? $oldParticipant->getParticipantType() : null;
         $newFlags = $newParticipant->getParticipantFlags();
         $oldFlags = $oldParticipant ? $oldParticipant->getParticipantFlags() : new ArrayCollection();
         /// TODO: Check all conditions.
         if (null !== $oldContact && $newContact->getId() !== $oldContact->getId()) { // Contact was changed.
-            throw new EventCapacityExceededException('Výměna účastníka v přihlášce není povolena.');
+            throw new EventCapacityExceededException('Výměna účastníka v přihlášce není implementována.');
         }
         if (null !== $oldParticipantType && $newParticipantType->getId() !== $oldParticipantType->getId()) { // Participant type was changed.
             throw new EventCapacityExceededException('Změna typu účastníka není povolena.');
@@ -112,10 +112,10 @@ class RegistrationService
         $this->checkFlagsCapacity($newEvent, $newParticipantType, $newFlags, $oldFlags);
     }
 
-    public function missingRelations(?Event $event, ?AbstractContact $contact, ?ParticipantType $participantType): EventCapacityExceededException
+    public function missingRelations(?RegistrationsRange $range, ?AbstractContact $contact, ?ParticipantType $participantType): EventCapacityExceededException
     {
-        if (null === $event) {
-            return new EventCapacityExceededException('Událost nenalezena.');
+        if (null === $range) {
+            return new EventCapacityExceededException('Přihlašovací rozsah události nenalezen.');
         }
         if (null === $participantType) {
             return new EventCapacityExceededException('Neplatný typ uživatele.');
