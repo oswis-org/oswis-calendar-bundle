@@ -13,8 +13,8 @@ use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends EntityRepository

@@ -3,7 +3,7 @@
  * @noinspection PhpUnused
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;

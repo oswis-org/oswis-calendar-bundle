@@ -8,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantTypeRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
@@ -49,4 +49,28 @@ class ParticipantTypeService
             return null;
         }
     }
+
+    public function getParticipantTypeBySlug(?string $slug, bool $onlyPublic = true): ?ParticipantType
+    {
+        if (empty($slug)) {
+            return null;
+        }
+        $type = $this->getRepository()->getParticipantType(
+            [
+                ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
+                ParticipantTypeRepository::CRITERIA_SLUG               => $slug,
+            ]
+        );
+        if (null === $type) {
+            $type = $this->getRepository()->getParticipantType(
+                [
+                    ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
+                    ParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
+                ]
+            );
+        }
+
+        return $type;
+    }
+
 }

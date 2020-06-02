@@ -8,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Exception\OswisParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;

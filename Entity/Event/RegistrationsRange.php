@@ -10,12 +10,15 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventCapacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventPrice;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsAggregatedByType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\EventCapacityTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\EventPriceTrait;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
@@ -29,8 +32,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
  * Time range available for registrations of participants of some type to some event (with some price, capacity...).
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_registration_range")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_registrations_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
 class RegistrationsRange implements NameableInterface
@@ -66,7 +69,7 @@ class RegistrationsRange implements NameableInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -74,20 +77,32 @@ class RegistrationsRange implements NameableInterface
     protected ?ParticipantType $participantType = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange")
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange")
      * @Doctrine\ORM\Mapping\JoinTable(
      *      name="registrations_ranges_participant_flag_ranges",
      *      joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="registrations_range_id", referencedColumnName="id")},
      *      inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_flag_range_id", referencedColumnName="id")}
      * )
      */
-    protected ?Collection $allowedFlagRanges = null;
+    protected ?Collection $flagRanges = null;
 
     /**
-     * Indicates that price is relative to super event,
+     * Indicates that price is relative to required range.
      * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      */
     protected ?bool $relative = null;
+
+    /**
+     * @var int Number of usages of flag (must be updated from service!).
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
+     */
+    protected int $usage = 0;
+
+    /**
+     * Indicates that participation on super event is required.
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
+     */
+    protected ?bool $superEventRequired = null;
 
     public function __construct(
         ?Nameable $nameable = null,
@@ -98,12 +113,17 @@ class RegistrationsRange implements NameableInterface
         ?bool $isRelative = null,
         ?RegistrationsRange $requiredRange = null,
         ?EventCapacity $eventCapacity = null,
-        Publicity $publicity = null
+        Publicity $publicity = null,
+        ?bool $superEventRequired = null
     ) {
-        $this->allowedFlagRanges = new ArrayCollection();
+        $this->flagRanges = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
-        $this->setEvent($event);
-        $this->setParticipantType($participantType);
+        try {
+            $this->setEvent($event);
+            $this->setParticipantType($participantType);
+        } catch (OswisNotImplementedException $e) {
+            // Exception is thrown only when changing event, not when setting event in object constructor.
+        }
         $this->setEventPrice($eventPrice);
         $this->setStartDateTime($dateTimeRange ? $dateTimeRange->startDateTime : null);
         $this->setEndDateTime($dateTimeRange ? $dateTimeRange->endDateTime : null, true);
@@ -111,6 +131,17 @@ class RegistrationsRange implements NameableInterface
         $this->setRelative($isRelative);
         $this->setRequiredRange($requiredRange);
         $this->setFieldsFromPublicity($publicity);
+        $this->setSuperEventRequired($superEventRequired);
+    }
+
+    public function getUsage(): int
+    {
+        return $this->usage;
+    }
+
+    public function setUsage(int $usage): void
+    {
+        $this->usage = $usage;
     }
 
     public function getEvent(): ?Event
@@ -118,9 +149,20 @@ class RegistrationsRange implements NameableInterface
         return $this->event;
     }
 
+    /**
+     * @param Event|null $event
+     *
+     * @throws OswisNotImplementedException
+     */
     public function setEvent(?Event $event): void
     {
-        $this->event = $event;
+        if ($this->event === $event) {
+            return;
+        }
+        if (null === $this->event) {
+            $this->event = $event;
+        }
+        throw new OswisNotImplementedException('změna události', 'v rozsahu registrací');
     }
 
     /**
@@ -139,6 +181,13 @@ class RegistrationsRange implements NameableInterface
             }
         } catch (Exception $e) {
         }
+    }
+
+    public function getRemainingCapacity(bool $max = false): ?int
+    {
+        $capacity = $this->getCapacity($max);
+
+        return null === $capacity ? null : ($capacity - $this->getUsage());
     }
 
     public function getRequiredRangePrice(?ParticipantType $participantType = null): int
@@ -182,9 +231,57 @@ class RegistrationsRange implements NameableInterface
         return true;
     }
 
-    public function getCapacityWithOverflow(): ?int
+    /**
+     * Checks capacity of range and flag ranges.
+     *
+     * @param array|null $flags
+     * @param bool       $onlyPublic
+     * @param bool|false $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function simulateAdd(?array $flags = null, bool $onlyPublic = true, bool $max = false): void
     {
-        return null === $this->getCapacity() ? null : $this->getCapacity() + $this->getCapacityOverflowLimit();
+        $this->simulateParticipantAdd($onlyPublic, $max);
+        $this->simulateFlagsAdd($flags, $onlyPublic, $max);
+    }
+
+    /**
+     * Checks capacity of range.
+     *
+     * @param bool       $onlyPublic
+     * @param bool|false $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function simulateParticipantAdd(bool $onlyPublic = true, bool $max = false): void
+    {
+        $remainingCapacity = $this->getRemainingCapacity($max);
+        if ((null !== $remainingCapacity && 1 > $remainingCapacity) || ($onlyPublic && !$this->isPublicOnWeb())) {
+            throw new EventCapacityExceededException();
+        }
+    }
+
+    /**
+     * Checks capacity of flag ranges.
+     *
+     * @param array|null $flags
+     * @param bool       $onlyPublic
+     * @param bool|false $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function simulateFlagsAdd(?array $flags = null, bool $onlyPublic = true, bool $max = false): void
+    {
+        foreach ($flags as $typeSlug => $flagsOfType) {
+            foreach ($flagsOfType as $flagSlug => $aggregatedFlag) {
+                $flagRemainingCapacity = $this->getFlagRemainingCapacity($aggregatedFlag['flag'] ?? null, $onlyPublic, $max);
+                if (($aggregatedFlag['count'] ?? 0) > $flagRemainingCapacity) {
+                    $flagName = $aggregatedFlag['flag'] ? '"'.$aggregatedFlag['flag'].'"' : '';
+                    throw new EventCapacityExceededException("Kapacita příznaku $flagName byla vyčerpána.");
+                }
+            }
+        }
     }
 
     public function getParticipantType(): ?ParticipantType
@@ -192,9 +289,20 @@ class RegistrationsRange implements NameableInterface
         return $this->participantType;
     }
 
+    /**
+     * @param ParticipantType|null $participantType
+     *
+     * @throws OswisNotImplementedException
+     */
     public function setParticipantType(?ParticipantType $participantType): void
     {
-        $this->participantType = $participantType;
+        if ($this->participantType === $participantType) {
+            return;
+        }
+        if (null === $this->participantType) {
+            $this->participantType = $participantType;
+        }
+        throw new OswisNotImplementedException('změna typu účastníka', 'v rozsahu registrací');
     }
 
     public function isApplicableByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): bool
@@ -216,6 +324,16 @@ class RegistrationsRange implements NameableInterface
         $this->relative = $relative;
     }
 
+    public function isSuperEventRequired(): bool
+    {
+        return $this->superEventRequired ?? false;
+    }
+
+    public function setSuperEventRequired(?bool $superEventRequired): void
+    {
+        $this->superEventRequired = $superEventRequired;
+    }
+
     public function getRequiredRange(): ?RegistrationsRange
     {
         return $this->requiredRange;
@@ -226,14 +344,14 @@ class RegistrationsRange implements NameableInterface
         $this->requiredRange = $requiredRange;
     }
 
-    public function isRangeActive(): bool
+    public function isRangeActive(bool $max = false): bool
     {
-        return $this->containsDateTimeInRange() && (null === $this->getCapacity() || 0 < $this->getCapacity());
+        return $this->containsDateTimeInRange() && (null === $this->getCapacity($max) || 0 < $this->getCapacity($max));
     }
 
-    public function getAllowedFlagRanges(?ParticipantFlagType $flagType = null, ?ParticipantFlag $flag = null, ?bool $onlyPublic = false): Collection
+    public function getFlagRanges(?ParticipantFlagType $flagType = null, ?ParticipantFlag $flag = null, ?bool $onlyPublic = false): Collection
     {
-        $flagRanges = $this->allowedFlagRanges ?? new ArrayCollection();
+        $flagRanges = $this->flagRanges ?? new ArrayCollection();
         if (null !== $flag) {
             $flagRanges = $flagRanges->filter(fn(ParticipantFlagRange $range) => $range->containsFlag($flag));
         }
@@ -249,22 +367,22 @@ class RegistrationsRange implements NameableInterface
 
     public function getAllowedFlagRangesByTypeString(?string $flagType = null, ?ParticipantFlag $flag = null, ?bool $onlyPublic = false): Collection
     {
-        return $this->getAllowedFlagRanges(null, $flag, $onlyPublic)->filter(
+        return $this->getFlagRanges(null, $flag, $onlyPublic)->filter(
             fn(ParticipantFlagRange $range) => $range->containsFlagOfTypeString($flagType)
         );
     }
 
-    public function addAllowedFlagRange(?ParticipantFlagRange $flagRange): void
+    public function addFlagRange(?ParticipantFlagRange $flagRange): void
     {
-        if (null !== $flagRange && !$this->getAllowedFlagRanges()->contains($flagRange)) {
-            $this->getAllowedFlagRanges()->add($flagRange);
+        if (null !== $flagRange && !$this->getFlagRanges()->contains($flagRange)) {
+            $this->getFlagRanges()->add($flagRange);
         }
     }
 
-    public function getFlagRange(ParticipantFlag $flag, bool $withOverflow = false, bool $onlyPublic = false): ?ParticipantFlagRange
+    public function getFlagRange(ParticipantFlag $flag, bool $max = false, bool $onlyPublic = false): ?ParticipantFlagRange
     {
-        foreach ($this->getAllowedFlagRanges(null, $flag, $onlyPublic) as $range) {
-            if ($range instanceof ParticipantFlagRange && $range->hasRemainingCapacity($withOverflow)) {
+        foreach ($this->getFlagRanges(null, $flag, $onlyPublic) as $range) {
+            if ($range instanceof ParticipantFlagRange && $range->hasRemainingCapacity($max)) {
                 return $range;
             }
         }
@@ -277,7 +395,7 @@ class RegistrationsRange implements NameableInterface
      *
      * @throws OswisNotImplementedException
      */
-    public function removeAllowedFlagRange(?ParticipantFlagRange $flagRange): void
+    public function removeFlagRange(?ParticipantFlagRange $flagRange): void
     {
         if (null === $flagRange) {
             return;
@@ -285,6 +403,58 @@ class RegistrationsRange implements NameableInterface
         if ($flagRange->getUsage() > 0) {
             throw new OswisNotImplementedException('Nelze odebrat již využitý rozsah.');
         }
-        $this->getAllowedFlagRanges()->remove($flagRange);
+        $this->getFlagRanges()->remove($flagRange);
+    }
+
+    public function getFlagRemainingCapacity(ParticipantFlag $flag, bool $onlyPublic = false, bool $max = false): ?int
+    {
+        $remaining = null;
+        foreach ($this->getFlagRanges(null, $flag, $onlyPublic) as $flagRange) {
+            if (!($flagRange instanceof ParticipantFlagRange)) {
+                continue;
+            }
+            $remainingInRange = $flagRange->getRemainingCapacity($max);
+            if (null !== $remainingInRange) {
+                $remaining += $remainingInRange;
+            }
+        }
+
+        return $remaining;
+    }
+
+    public function isParticipantInSuperEvent(Participant $participant): bool
+    {
+        return $this->getEvent() && $this->getEvent()->isEventSuperEvent($participant->getEvent());
+    }
+
+    public function getFlags(
+        ?ParticipantFlagType $flagType = null,
+        ?ParticipantFlag $flag = null,
+        bool $onlyPublic = true,
+        bool $max = false
+    ): Collection {
+        $out = new ArrayCollection();
+        foreach ($this->getFlagRanges($flagType, $flag, $onlyPublic) as $flagRange) {
+            if ($flagRange instanceof ParticipantFlagRange) {
+                for ($i = 0; $i < $flagRange->getCapacity($max); $i++) {
+                    $out->add($flagRange->getFlag());
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Gets array of flags aggregated by their types.
+     *
+     * @param bool $onlyPublic
+     * @param bool $max
+     *
+     * @return array
+     */
+    public function getFlagsAggregatedByType(bool $onlyPublic = true, bool $max = false): array
+    {
+        return FlagsAggregatedByType::getFlagsAggregatedByType($this->getFlags(null, null, $onlyPublic, $max));
     }
 }

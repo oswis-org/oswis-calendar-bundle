@@ -4,7 +4,7 @@
  * @noinspection PhpUnused
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -62,7 +62,7 @@ use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 class ParticipantFlag extends AbstractEventFlag
 {
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?ParticipantFlagType $flagType = null;

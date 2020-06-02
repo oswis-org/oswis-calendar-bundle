@@ -11,9 +11,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 
 class ParticipantFlagRangeRepository extends EntityRepository
 {

@@ -5,7 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Api\Dto\EventActionRequest;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

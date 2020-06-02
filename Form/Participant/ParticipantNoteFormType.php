@@ -2,7 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantNote;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;

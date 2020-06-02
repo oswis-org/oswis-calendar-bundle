@@ -8,15 +8,13 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\StudentPersonType;
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\RegistrationService;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -48,65 +46,24 @@ class RegistrationFormType extends AbstractType
     {
         $participant = $builder->getData();
         if (!($participant instanceof Participant)) {
-            throw new PriceInvalidArgumentException('[účastník neexistuje]');
+            throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
         }
-        $participantType = $participant->getParticipantType();
-        $event = $participant->getRegistrationsRange();
+        $range = $participant->getRegistrationsRange();
+        if (!($range instanceof RegistrationsRange)) {
+            throw new PriceInvalidArgumentException('[nebyl nalezen rozsah pro vytváření přihlášek]');
+        }
+        $participantType = $range->getParticipantType();
+        $event = $range->getEvent();
         if (null === $participantType || null === $event) {
-            $message = null === $participantType ? '[typ účastníka nezadán]' : '';
-            $message .= null !== $event ? '[událost nezadána]' : '';
+            $message = null === $participantType ? '[typ účastníka nenastaven]' : '';
+            $message .= null !== $event ? '[událost nenastavena]' : '';
             throw new PriceInvalidArgumentException($message);
         }
-        $this->addEventField($builder, $event, $participantType);
-        self::addParticipantTypeField($builder, $event, $participantType);
         self::addContactField($builder);
-        $this->addFlagTypeFields($builder, $event, $participant);
+        $this->addFlagTypeFields($builder, $range);
         self::addParticipantNotesFields($builder);
         self::addGdprField($builder);
         self::addSubmitButton($builder);
-    }
-
-    public function addEventField(FormBuilderInterface $builder, Event $event, ParticipantType $participantType): void
-    {
-        $builder->add(
-            'event',
-            EntityType::class,
-            [
-                'class'        => Event::class,
-                'label'        => 'Akce',
-                'required'     => true,
-                'choices'      => [$event],
-                'data'         => $event,
-                'attr'         => ['readonly' => 'readonly'],
-                'choice_label' => fn(Event $e, $key, $value) => $this->getEventLabel($e, $participantType),
-            ]
-        );
-    }
-
-    public function getEventLabel(Event $event, ParticipantType $participantType): string
-    {
-        $label = $event->getExtendedName(true, true, $participantType);
-        $label .= !$event->isRegistrationsAllowed($participantType) ? ' (přihlášky nejsou povoleny)' : null;
-        $label .= $this->registrationService->getRemainingCapacity($event, $participantType) === 0 ? ' (překročena kapacita)' : null;
-
-        return $label;
-    }
-
-    public static function addParticipantTypeField(FormBuilderInterface $builder, Event $event, ParticipantType $participantType): void
-    {
-        $builder->add(
-            'participantType',
-            EntityType::class,
-            [
-                'class'        => ParticipantType::class,
-                'label'        => 'Typ účastníka',
-                'required'     => true,
-                'choices'      => $event->getParticipantTypes(null, true),
-                'data'         => $participantType,
-                'attr'         => ['readonly' => 'readonly'],
-                'choice_label' => fn(ParticipantType $type, $key, $value) => $type->getName(),
-            ]
-        );
     }
 
     public static function addContactField(FormBuilderInterface $builder): void
@@ -114,27 +71,18 @@ class RegistrationFormType extends AbstractType
         $builder->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
     }
 
-    public function addFlagTypeFields(FormBuilderInterface $builder, Event $event, Participant $participant): void
+    public function addFlagTypeFields(FormBuilderInterface $builder, RegistrationsRange $range): void
     {
-        foreach ($event->getAllowedFlagsAggregatedByType($participant->getParticipantType(), true) as $flagsOfType) {
-            self::addFlagField(
-                $builder,
-                $flagsOfType['flagType'],
-                $flagsOfType['flags'],
-                $this->registrationService,
-                $participant->getParticipantType(),
-                $event
-            );
+        foreach ($range->getFlagsAggregatedByType(true, false) as $flagsOfType) {
+            self::addFlagField($builder, $range, $flagsOfType['flagType'], $flagsOfType['flags']);
         }
     }
 
     public static function addFlagField(
         FormBuilderInterface $builder,
+        RegistrationsRange $range,
         ?ParticipantFlagType $flagType,
-        array $flags,
-        RegistrationService $registrationService,
-        ParticipantType $participantType,
-        Event $event
+        array $flags
     ): void {
         $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
         $builder->add(
@@ -148,9 +96,9 @@ class RegistrationFormType extends AbstractType
                 'mapped'       => false,
                 'expanded'     => false,
                 'multiple'     => false,
-                'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($flag),
-                'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($flag, $participantType, $registrationService, $event),
-                'group_by'     => fn(ParticipantFlag $flag, $key, $value) => self::getFlagGroupName($flagType, $flag),
+                'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
+                'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
+                'group_by'     => fn(ParticipantFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
             ]
         );
     }
@@ -158,41 +106,31 @@ class RegistrationFormType extends AbstractType
     /**
      * Get flag name and include (only non-zero) price.
      *
-     * @param ParticipantFlag $flag
+     * @param RegistrationsRange $registrationsRange
+     * @param ParticipantFlag    $flag
      *
      * @return string
      */
-    public static function getFlagNameWithPrice(ParticipantFlag $flag): string
+    public static function getFlagNameWithPrice(RegistrationsRange $registrationsRange, ParticipantFlag $flag): string
     {
-        $price = ' ['.($flag->getPrice() > 0 ? '+' : '').$flag->getPrice().',- Kč]';
+        $flagRange = $registrationsRange->getFlagRange($flag);
+        $price = $flagRange ? $flagRange->getPrice() : null;
+        $priceString = 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
 
-        return $flag->getName().(0 !== $flag->getPrice() ? $price : '');
+        return $flag->getName().$priceString;
     }
 
-    public static function getFlagAttributes(
-        ParticipantFlag $flag,
-        ParticipantType $participantType,
-        RegistrationService $registrationService,
-        Event $event
-    ): array {
+    public static function getFlagAttributes(RegistrationsRange $range, ParticipantFlag $flag): array
+    {
         $attributes = [];
-        if (self::isFlagCapacityExhausted($flag, $participantType, $registrationService, $event)) {
+        if (0 === $range->getFlagRemainingCapacity($flag, true, false)) {
             $attributes['disabled'] = 'disabled';
         }
 
         return $attributes;
     }
 
-    public static function isFlagCapacityExhausted(
-        ParticipantFlag $flag,
-        ParticipantType $participantType,
-        RegistrationService $registrationService,
-        Event $event
-    ): bool {
-        return $registrationService->getParticipantFlagRemainingCapacity($event, $flag, $participantType) === 0;
-    }
-
-    public static function getFlagGroupName(?ParticipantFlagType $flagType, ParticipantFlag $flag): ?string
+    public static function getFlagGroupName(RegistrationsRange $range, ?ParticipantFlagType $flagType, ParticipantFlag $flag): ?string
     {
         if (null === $flagType) {
             return null;
@@ -201,7 +139,7 @@ class RegistrationFormType extends AbstractType
             return self::getTShirtGroupName($flag);
         }
 
-        return self::getFlagPriceGroup($flag);
+        return self::getFlagPriceGroup($range, $flag);
     }
 
     public static function getTShirtGroupName(ParticipantFlag $flag): string
@@ -219,12 +157,14 @@ class RegistrationFormType extends AbstractType
         return '⚪ Ostatní';
     }
 
-    public static function getFlagPriceGroup(ParticipantFlag $flag): string
+    public static function getFlagPriceGroup(RegistrationsRange $registrationsRange, ParticipantFlag $flag): string
     {
-        if ($flag->getPrice() > 0) {
+        $flagRange = $registrationsRange->getFlagRange($flag);
+        $price = $flagRange ? $flagRange->getPrice() : null;
+        if ($price > 0) {
             return '💰 S příplatkem';
         }
-        if (empty($flag->getPrice())) {
+        if (null === $price || 0 === $price) {
             return '🆓 Bez příplatku';
         }
 
@@ -289,6 +229,6 @@ class RegistrationFormType extends AbstractType
 
     public function getName(): string
     {
-        return 'calendar_participant';
+        return 'calendar_participant_registration';
     }
 }

@@ -5,7 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
 

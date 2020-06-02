@@ -14,7 +14,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantTypeInEventConnection;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;

@@ -18,12 +18,12 @@ use OswisOrg\OswisAddressBookBundle\Entity\Organization;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagConnection;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Export\PdfExportList;
@@ -748,7 +748,7 @@ class ParticipantService
             $recursiveDepth,
             $onlyActive
         )->map(
-            fn(ParticipantFlagConnection $connection) => $connection->getParticipantFlagRange()
+            fn(ParticipantFlagRangeConnection $connection) => $connection->getFlagRange()
         );
         if (null !== $flag) {
             return $flags->filter(fn(ParticipantFlag $f) => $f->getId() === $flag->getId());
@@ -777,8 +777,8 @@ class ParticipantService
             if (!($eventParticipant instanceof Participant)) {
                 continue;
             }
-            $eventParticipant->getParticipantFlagConnections(null, $onlyActive)->map(
-                fn(ParticipantFlagConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
+            $eventParticipant->getFlagRangeConnections(null, $onlyActive)->map(
+                fn(ParticipantFlagRangeConnection $flagConn) => !$connections->contains($flagConn) ? $connections->add($flagConn) : null
             );
         }
 
@@ -828,7 +828,7 @@ class ParticipantService
         if ($participantType) {
             foreach ($participants as $participant) {
                 assert($participant instanceof Participant);
-                foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
+                foreach ($participant->getFlagRangeConnections() as $participantFlagConnection) {
                     assert($participantFlagConnection instanceof ParticipantFlagRange);
                     $flag = $participantFlagConnection->getFlag();
                     if (null !== $flag) {
@@ -849,9 +849,9 @@ class ParticipantService
                     'name'      => $participantType->getName(),
                     'shortName' => $participantType->getShortName(),
                 ];
-                foreach ($participant->getParticipantFlagConnections() as $participantFlagConnection) {
-                    assert($participantFlagConnection instanceof ParticipantFlagConnection);
-                    $flag = $participantFlagConnection->getParticipantFlagRange();
+                foreach ($participant->getFlagRangeConnections() as $participantFlagConnection) {
+                    assert($participantFlagConnection instanceof ParticipantFlagRangeConnection);
+                    $flag = $participantFlagConnection->getFlagRange();
                     if (null !== $flag) {
                         $flagType = $flag->getParticipantFlagType();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';

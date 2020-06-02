@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Api\Dto\ParticipantPaymentActionRequest;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

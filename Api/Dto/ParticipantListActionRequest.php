@@ -4,7 +4,7 @@ namespace OswisOrg\OswisCalendarBundle\Api\Dto;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 
 /**
  * @ApiResource(

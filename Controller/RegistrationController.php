@@ -2,12 +2,10 @@
 /**
  * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
- * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\Controller;
 
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -19,21 +17,21 @@ use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailType;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisAddressBookBundle\Entity\Position;
-use OswisOrg\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
 use OswisOrg\OswisAddressBookBundle\Service\AddressBookService;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagConnection;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantNote;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsAggregatedByType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\OswisParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\RegistrationFormType;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantTypeRepository;
+use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantTypeService;
@@ -49,7 +47,6 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use function assert;
 
 class RegistrationController extends AbstractController
 {
@@ -170,37 +167,24 @@ class RegistrationController extends AbstractController
      * Data from form is validated, user is created and than summary and activation e-mail is sent.
      *
      * @param Request     $request
-     * @param string      $eventSlug
-     * @param string|null $participantSlug
+     * @param string|null $rangeSlug
      *
      * @return Response
      * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
      * @throws OswisNotFoundException
+     * @throws OswisParticipantNotFoundException
      */
-    public function registration(Request $request, ?string $eventSlug = null, ?string $participantSlug = null): Response
+    public function registration(Request $request, ?string $rangeSlug = null): Response
     {
-        $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
-        if (null !== $defaultEvent) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_participant_registration', ['eventSlug' => $defaultEvent->getSlug()]);
+        if (null === $rangeSlug) {
+            return $this->redirectToDefaultRange();
         }
-        if (null === $eventSlug) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
+        $range = $this->getRangeBySlug($rangeSlug);
+        if (null === $range) {
+            throw new OswisNotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen.');
         }
-        $event = $this->getEvent($eventSlug);
-        $participant = $this->prepareParticipant($event, $this->getParticipantType($participantSlug));
-        $participantType = $participant->getParticipantType();
-        try {
-            $range = $this->getRange($event, $participantType);
-        } catch (PriceInvalidArgumentException $exception) {
-            return $this->redirectToRoute(
-                'oswis_org_oswis_calendar_web_event_registrations',
-                [
-                    'eventSlug'       => $event->getSlug(),
-                    'participantType' => $participantType ? $participantType->getType() : null,
-                ]
-            );
-        }
+        $participant = $this->getEmptyParticipant($range, null);
         try {
             $form = $this->createForm(RegistrationFormType::class, $participant);
             $form->handleRequest($request);
@@ -221,7 +205,8 @@ class RegistrationController extends AbstractController
                 $contact->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
                 $contact->removeEmptyDetails();
                 $contact->removeEmptyNotes();
-                $this->processFlags($participant, $form);
+                $selectedFlags = $this->extractSelectedFlags($participant, $form);
+                $participant->getRegistrationsRange()->simulateAdd($selectedFlags, null, null);
                 $this->registrationService->simulateRegistration($participant);
                 $this->getParticipantService()->sendMail($participant, true);
 
@@ -255,7 +240,7 @@ class RegistrationController extends AbstractController
                 ]
             );
         } catch (Exception $e) {
-            $participant = $this->prepareParticipant($event);
+            $participant = $this->getEmptyParticipant($event);
             if (!isset($form)) {
                 $form = $this->createForm(RegistrationFormType::class, $participant);
                 $form->handleRequest($request);
@@ -300,37 +285,54 @@ class RegistrationController extends AbstractController
     /**
      * Create empty eventParticipant for use in forms.
      *
-     * @param Event           $event
-     * @param ParticipantType $participantType
+     * @param RegistrationsRange   $range
+     *
+     * @param AbstractContact|null $contact
      *
      * @return Participant
      * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
+     * @throws OswisParticipantNotFoundException
      */
-    public function prepareParticipant(Event $event, ?ParticipantType $participantType = null): Participant
+    public function getEmptyParticipant(RegistrationsRange $range, ?AbstractContact $contact = null): Participant
     {
-        $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
-        assert($contactDetailTypeRepository instanceof ContactDetailTypeRepository);
-        $addressBook = $this->getAddressBook($event);
-        $participantType ??= $event->getParticipantTypes(ParticipantType::TYPE_ATTENDEE)[0] ?? null;
-        assert($participantType instanceof ParticipantType);
-        $contactDetailTypeEmail = $contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
-        $contactDetailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
-        $participantPerson = new Person(
-            null,
-            null,
-            Person::TYPE_PERSON,
-            null,
-            new ArrayCollection([new ContactDetail($contactDetailTypeEmail), new ContactDetail($contactDetailTypePhone)]),
-            null,
-            new ArrayCollection([new Position(null, null, Position::TYPE_STUDENT)]),
-            null,
-            null !== $addressBook ? new ArrayCollection([$addressBook]) : null
-        );
+        if (null === $range->getEvent()) {
+            throw new OswisParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazenou událost.');
+        }
+        if (null === $range->getParticipantType()) {
+            throw new OswisParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazený typ účastníka.');
+        }
 
         return new Participant(
-            $participantPerson, $event, $participantType, null, new ArrayCollection([new ParticipantNote()])
+            $this->getContact($range->getEvent(), $contact), $range, null, new ArrayCollection([new ParticipantNote()])
         );
+    }
+
+    /**
+     * @param Event                $event
+     * @param AbstractContact|null $contact
+     *
+     * @return AbstractContact
+     * @throws InvalidArgumentException
+     */
+    public function getContact(Event $event, ?AbstractContact $contact = null): AbstractContact
+    {
+        $addressBook = $this->getAddressBook($event);
+        $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
+        $contactDetailTypeEmail = $contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
+        $contactDetailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
+
+        return $contact ?? new Person(
+                null,
+                null,
+                Person::TYPE_PERSON,
+                null,
+                new ArrayCollection([new ContactDetail($contactDetailTypeEmail), new ContactDetail($contactDetailTypePhone)]),
+                null,
+                new ArrayCollection([new Position(null, null, Position::TYPE_STUDENT)]),
+                null,
+                null !== $addressBook ? new ArrayCollection([$addressBook]) : null
+            );
     }
 
     public function getAddressBook(Event $event): ?AddressBook
@@ -347,64 +349,71 @@ class RegistrationController extends AbstractController
         return $addressBook;
     }
 
-    public function getParticipantType(?string $slug): ?ParticipantType
-    {
-        if (empty($slug)) {
-            return null;
-        }
-        $opts = [
-            ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            ParticipantTypeRepository::CRITERIA_SLUG               => $slug,
-        ];
-        $type = $this->participantTypeService->getRepository()->getParticipantType($opts);
-        if (null === $type) {
-            $opts = [
-                ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-                ParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
-            ];
-            $type = $this->participantTypeService->getRepository()->getParticipantType($opts);
-        }
-
-        return $type;
-    }
-
     /**
-     * Finds correct registration range from event by eventParticipantType and reference date and time.
+     * Finds correct registration range by event and participantType.
      *
      * @param Event           $event           Event.
      * @param ParticipantType $participantType Type of participant.
-     * @param DateTime|null   $dateTime        Reference date and time.
      *
      * @return RegistrationsRange
-     * @throws PriceInvalidArgumentException
      */
-    public function getRange(Event $event, ?ParticipantType $participantType, ?DateTime $dateTime = null): RegistrationsRange
+    public function getRange(Event $event, ?ParticipantType $participantType): RegistrationsRange
     {
-        $ranges = $event->getRegistrationRanges($participantType, $dateTime)->filter(fn(RegistrationsRange $r) => $r->isPublicOnWeb());
-        if ($ranges->count() < 1 || !($ranges->first() instanceof RegistrationsRange)) {
-            throw new PriceInvalidArgumentException('Přihlášky na tuto akci nyní nejsou povoleny.');
-        }
+        return $this->registrationService->getRepository()->getRegistrationsRange(
+            [
+                RegistrationsRangeRepository::CRITERIA_EVENT            => $event,
+                RegistrationsRangeRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+                RegistrationsRangeRepository::CRITERIA_ONLY_ACTIVE      => true,
+                RegistrationsRangeRepository::CRITERIA_PUBLIC_ON_WEB    => true,
+            ]
+        );
+    }
 
-        return $ranges->first();
+    public function getRangeBySlug(string $rangeSlug): RegistrationsRange
+    {
+        return $this->registrationService->getRepository()->getRegistrationsRange(
+            [
+                RegistrationsRangeRepository::CRITERIA_SLUG          => $rangeSlug,
+                RegistrationsRangeRepository::CRITERIA_ONLY_ACTIVE   => true,
+                RegistrationsRangeRepository::CRITERIA_PUBLIC_ON_WEB => true,
+            ]
+        );
     }
 
     /**
-     * @param Participant   $participant
-     * @param FormInterface $form
-     *
-     * @throws EventCapacityExceededException
+     * @return Response
+     * @throws OswisNotFoundException
      */
-    public function processFlags(Participant $participant, FormInterface $form): void
+    public function redirectToDefaultRange(): Response
     {
-        $allowedFlagsByType = $participant->getRegistrationsRange() ? $participant->getRegistrationsRange()->getAllowedFlagsAggregatedByType($participant->getParticipantType()) : [];
-        foreach ($allowedFlagsByType as $flagsRow) {
-            $flagTypeSlug = $flagsRow['flagType'] && $flagsRow['flagType'] instanceof ParticipantFlagType ? $flagsRow['flagType']->getSlug() : 0;
-            $oneFlag = $form["flag_$flagTypeSlug"] ? $form["flag_$flagTypeSlug"]->getData() : null;
-            if ($oneFlag instanceof ParticipantFlag) {
-                $participant->addParticipantFlagConnection(new ParticipantFlagConnection($oneFlag));
-            }
+        $range = $this->registrationService->getRepository()->getRegistrationsRange(
+            [
+                RegistrationsRangeRepository::CRITERIA_EVENT                   => $this->eventService->getDefaultEvent(),
+                RegistrationsRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => ParticipantType::TYPE_ATTENDEE,
+                RegistrationsRangeRepository::CRITERIA_ONLY_ACTIVE             => true,
+                RegistrationsRangeRepository::CRITERIA_PUBLIC_ON_WEB           => true,
+            ]
+        );
+        if (null === $range || empty($range->getSlug())) {
+            throw new OswisNotFoundException('Výchozí rozsah pro vytváření přihlášek nebyl nalezen.');
         }
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration', ['rangeSlug' => $range->getSlug()]);
     }
 
+    public function extractSelectedFlags(RegistrationsRange $registrationsRange, FormInterface $form): array
+    {
+        $selectedFlags = new ArrayCollection();
+        $formFlagsByType = $registrationsRange->getFlagsAggregatedByType(true, false);
+        foreach ($formFlagsByType as $formFlagsOfType) {
+            $flagTypeSlug = $formFlagsOfType['flagType'] && $formFlagsOfType['flagType'] instanceof ParticipantFlagType ? $formFlagsOfType['flagType']->getSlug() : 0;
+            $oneFlag = $form["flag_$flagTypeSlug"] ? $form["flag_$flagTypeSlug"]->getData() : null;
+            if ($oneFlag instanceof ParticipantFlag) {
+                $selectedFlags->add($oneFlag);
+            }
+        }
+
+        return FlagsAggregatedByType::getFlagsAggregatedByType($selectedFlags);
+    }
 
 }

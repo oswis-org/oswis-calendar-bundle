@@ -4,7 +4,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventCapacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventPrice;
@@ -29,7 +29,7 @@ class ParticipantFlagRange implements BasicInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag",
      *     fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -37,7 +37,7 @@ class ParticipantFlagRange implements BasicInterface
     protected ?ParticipantFlag $flag = null;
 
     /**
-     * @var int Number of usages of flag.
+     * @var int Number of usages of flag (must be updated from service!).
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
      */
     protected int $usage = 0;
@@ -74,18 +74,11 @@ class ParticipantFlagRange implements BasicInterface
         $this->flag = $flag;
     }
 
-    public function getRemainingCapacity(bool $includeOverflow = false): ?int
+    public function getRemainingCapacity(bool $max = false): ?int
     {
-        $capacity = $this->getCapacity($includeOverflow);
+        $capacity = $this->getCapacity($max);
 
         return null === $capacity ? null : ($capacity - $this->getUsage());
-    }
-
-    public function hasRemainingCapacity(bool $withOverflow = false): bool
-    {
-        $remaining = $this->getRemainingCapacity($withOverflow);
-
-        return null === $remaining ? true : $remaining > 0;
     }
 
     public function getUsage(): int

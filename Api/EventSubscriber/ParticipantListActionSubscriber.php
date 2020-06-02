@@ -8,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

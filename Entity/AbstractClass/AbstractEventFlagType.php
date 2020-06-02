@@ -33,7 +33,7 @@ abstract class AbstractEventFlagType implements NameableInterface
 
     abstract public static function getAllowedTypesCustom(): array;
 
-    public function isInRangeInEventParticipant(int $amount): bool
+    public function isInRangeInParticipant(int $amount): bool
     {
         $min = $this->getMinInParticipant();
         $max = $this->getMaxInParticipant();

@@ -1,18 +1,18 @@
-oswis_org_oswis_calendar_web_participant_verification:
+oswis_org_oswis_calendar_web_registration_verification:
     controller: oswis_org_oswis_calendar.participant_controller::verification
     path: "/potvrzeni-prihlasky/{token}/{participantId}"
+
+oswis_org_oswis_calendar_web_registration_ranges:
+    controller: oswis_org_oswis_calendar.event_controller::showRegistrationRanges
+    path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
+
+oswis_org_oswis_calendar_web_registration:
+    controller: oswis_org_oswis_calendar.participant_controller::registration
+    path: "/akce/prihlaska/{rangeSlug?}"
 
 oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
     path: "/letak/{eventSlug?}"
-
-oswis_org_oswis_calendar_web_event_registrations:
-    controller: oswis_org_oswis_calendar.event_controller::showRegistrationRanges
-    path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
-
-oswis_org_oswis_calendar_web_participant_registration:
-    controller: oswis_org_oswis_calendar.participant_controller::registration
-    path: "/akce/prihlaska/{eventSlug?}/{participantType?}"
 
 oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????
     controller: oswis_org_oswis_calendar.event_controller::showEvents
@@ -42,7 +42,6 @@ oswis_org_oswis_calendar_web_events_past:
     path: "/minule-akce/{page?}"
     defaults:
         page: null
-
 
 oswis_org_oswis_calendar_web_event:
     controller: oswis_org_oswis_calendar.event_controller::showEvent

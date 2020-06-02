@@ -10,11 +10,11 @@ class EventCapacity
 {
     public ?int $capacity = null;
 
-    public ?int $capacityOverflowLimit = null;
+    public ?int $maxCapacity = null;
 
-    public function __construct(?int $capacity = null, ?int $capacityOverflowLimit = null)
+    public function __construct(?int $capacity = null, ?int $maxCapacity = null)
     {
         $this->capacity = $capacity;
-        $this->capacityOverflowLimit = $capacityOverflowLimit;
+        $this->maxCapacity = $maxCapacity;
     }
 }

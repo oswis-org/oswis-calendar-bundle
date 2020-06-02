@@ -13,13 +13,15 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Entity\EventParticipant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use Psr\Log\LoggerInterface;
 
@@ -31,23 +33,36 @@ class RegistrationService
 
     protected ParticipantService $participantService;
 
+    protected RegistrationsRangeRepository $registrationsRangeRepository;
+
     protected OswisCalendarSettingsProvider $calendarSettings;
 
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
         ParticipantService $participantService,
+        RegistrationsRangeRepository $registrationsRangeRepository,
         OswisCalendarSettingsProvider $calendarSettings
     ) {
         $this->em = $em;
         $this->logger = $logger;
         $this->participantService = $participantService;
+        $this->registrationsRangeRepository = $registrationsRangeRepository;
         $this->calendarSettings = $calendarSettings;
     }
 
     public function getParticipantService(): ParticipantService
     {
         return $this->participantService;
+    }
+
+
+    public function getRepository(): RegistrationsRangeRepository
+    {
+        $repository = $this->em->getRepository(RegistrationsRange::class);
+        assert($repository instanceof RegistrationsRangeRepository);
+
+        return $repository;
     }
 
 

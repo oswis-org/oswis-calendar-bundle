@@ -3,7 +3,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\EventParticipant;
+namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -76,7 +76,7 @@ class ParticipantPayment extends AbstractPayment
     /**
      * Event contact revision (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\EventParticipant\Participant",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant",
      *     inversedBy="participantPayments"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
