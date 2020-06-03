@@ -1,7 +1,7 @@
 <?php
 /**
- * @noinspection PhpUnusedParameterInspection
  * @noinspection PhpUnused
+ * @noinspection PhpUnusedParameterInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -92,33 +92,6 @@ class ParticipantService
         return $repository;
     }
 
-    /**
-     * @param Event                $event
-     * @param ParticipantType|null $participantType
-     * @param bool|null            $includeDeleted
-     * @param bool|null            $includeNotActivated
-     * @param int|null             $recursiveDepth
-     *
-     * @return int
-     * @todo Refactor! Use count() in DB.
-     */
-    final public function getOccupancy(
-        Event $event,
-        ?ParticipantType $participantType = null,
-        ?bool $includeDeleted = false,
-        ?bool $includeNotActivated = true,
-        ?int $recursiveDepth = null
-    ): int {
-        $opts = [
-            ParticipantRepository::CRITERIA_EVENT                 => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
-            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
-        ];
-
-        return $this->getEventParticipants($opts, $includeNotActivated)->count();
-    }
-
     public function getEventParticipants(
         array $opts = [],
         ?bool $includeNotActivated = true,
@@ -132,7 +105,7 @@ class ParticipantService
      * @param Participant $participant
      *
      * @return Participant|null
-     * @todo WTF
+     * @todo WTF? Refactor it.
      */
     final public function create(Participant $participant): ?Participant
     {
@@ -162,7 +135,7 @@ class ParticipantService
      *
      * @return bool
      */
-    final public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantType $participantType = null): bool
+    public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantType $participantType = null): bool
     {
         $opts = [
             ParticipantRepository::CRITERIA_EVENT            => $event,

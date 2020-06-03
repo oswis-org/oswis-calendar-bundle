@@ -53,11 +53,7 @@ class EventSeries implements NameableInterface
             return null;
         }
         $seqId = 1;
-        $events = $this->getEvents(
-            $event->getType()->getType(),
-            ($event->isBatch() ? $event->getStartYear() : null),
-            false
-        );
+        $events = $this->getEvents($event->getTypeString(), ($event->isBatch() ? $event->getStartYear() : null), false);
         foreach ($events as $e) {
             if ($e instanceof Event && $e->getStartDate() && $e->getId() !== $event->getId() && $e->getStartDate() < $event->getStartDate()) {
                 $seqId++;

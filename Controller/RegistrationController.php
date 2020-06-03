@@ -30,11 +30,9 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Exception\OswisParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\RegistrationFormType;
-use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantTypeService;
 use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -45,7 +43,6 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -53,39 +50,27 @@ class RegistrationController extends AbstractController
 
     public LoggerInterface $logger;
 
-    public UserPasswordEncoderInterface $encoder;
-
     public RegistrationsRangeService $registrationsRangeService;
 
     public ParticipantService $participantService;
-
-    public ParticipantTypeService $participantTypeService;
 
     public AddressBookService $addressBookService;
 
     public EventService $eventService;
 
-    public OswisCalendarSettingsProvider $calendarSettings;
-
     public function __construct(
         EntityManagerInterface $em,
         LoggerInterface $logger,
-        UserPasswordEncoderInterface $encoder,
         EventService $eventService,
-        ParticipantTypeService $participantTypeService,
         RegistrationsRangeService $registrationService,
         AddressBookService $addressBookService,
-        OswisCalendarSettingsProvider $calendarSettings,
         ParticipantService $participantService
     ) {
         $this->em = $em;
         $this->logger = $logger;
-        $this->encoder = $encoder;
         $this->eventService = $eventService;
-        $this->participantTypeService = $participantTypeService;
         $this->addressBookService = $addressBookService;
         $this->registrationsRangeService = $registrationService;
-        $this->calendarSettings = $calendarSettings;
         $this->participantService = $participantService;
     }
 
@@ -200,13 +185,13 @@ class RegistrationController extends AbstractController
                 if (null === $participant || !($participant instanceof Participant)) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená.');
                 }
-                $this->em->persist($participant);
                 if (null === ($event = $participant->getEvent())) {
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
                 }
                 if (!(($contact = $participant->getContact()) instanceof Person)) { // TODO: Organization?
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
                 }
+                $this->em->persist($participant);
                 $this->removeEmptyNotesAndDetails($participant, $contact);
                 $contact->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
                 $range->simulateParticipantAdd(true, false);
@@ -332,15 +317,15 @@ class RegistrationController extends AbstractController
         $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
         $detailTypeEmail = $contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
         assert($detailTypeEmail instanceof ContactDetailType);
-        $contactDetailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
-        assert($contactDetailTypePhone instanceof ContactDetailType);
+        $detailTypePhone = $contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
+        assert($detailTypePhone instanceof ContactDetailType);
 
         return $contact ?? new Person(
                 null,
                 null,
                 Person::TYPE_PERSON,
                 null,
-                new ArrayCollection([new ContactDetail($detailTypeEmail), new ContactDetail($contactDetailTypePhone)]),
+                new ArrayCollection([new ContactDetail($detailTypeEmail), new ContactDetail($detailTypePhone)]),
                 null,
                 new ArrayCollection([new Position(null, null, Position::TYPE_STUDENT)]),
                 null,

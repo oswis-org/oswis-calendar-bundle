@@ -20,9 +20,9 @@ class EventRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
-    public const CRITERIA_EVENT_TYPE = 'type';
-    public const CRITERIA_EVENT_TYPE_OF_TYPE = 'typeOfType';
-    public const CRITERIA_EVENT_SERIES = 'series';
+    public const CRITERIA_TYPE = 'type';
+    public const CRITERIA_TYPE_STRING = 'typeString';
+    public const CRITERIA_SERIES = 'series';
     public const CRITERIA_SUPER_EVENT = 'superEvent';
     public const CRITERIA_SUPER_EVENT_DEPTH = 'superEventDepth';
     public const CRITERIA_ONLY_ROOT = 'onlyRoot';
@@ -54,18 +54,18 @@ class EventRepository extends EntityRepository
     public function getEventsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('e');
-        $this->addSuperEventQuery($queryBuilder, $opts);
-        $this->addIdQuery($queryBuilder, $opts);
-        $this->addSlugQuery($queryBuilder, $opts);
-        $this->addStartQuery($queryBuilder, $opts);
-        $this->addEndQuery($queryBuilder, $opts);
-        $this->addIncludeDeletedQuery($queryBuilder, $opts);
-        $this->addOnlyRootQuery($queryBuilder, $opts);
-        $this->addOnlyWithoutDateQuery($queryBuilder, $opts);
-        $this->addSeriesQuery($queryBuilder, $opts);
-        $this->addLocationQuery($queryBuilder, $opts);
-        $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
-        $this->addTypeOfTypeQuery($queryBuilder, $opts);
+        $this->setSuperEventQuery($queryBuilder, $opts);
+        $this->setIdQuery($queryBuilder, $opts);
+        $this->setSlugQuery($queryBuilder, $opts);
+        $this->setStartQuery($queryBuilder, $opts);
+        $this->setEndQuery($queryBuilder, $opts);
+        $this->setIncludeDeletedQuery($queryBuilder, $opts);
+        $this->setOnlyRootQuery($queryBuilder, $opts);
+        $this->setOnlyWithoutDateQuery($queryBuilder, $opts);
+        $this->setSeriesQuery($queryBuilder, $opts);
+        $this->setLocationQuery($queryBuilder, $opts);
+        $this->setOnlyPublicOnWebQuery($queryBuilder, $opts);
+        $this->setTypeStringQuery($queryBuilder, $opts);
         $this->addTypeQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
         $this->addOrderBy($queryBuilder, true);
@@ -73,7 +73,7 @@ class EventRepository extends EntityRepository
         return $queryBuilder;
     }
 
-    private function addSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SUPER_EVENT]) && $opts[self::CRITERIA_SUPER_EVENT] instanceof Event) {
             $eventQuery = ' e.superEvent = :super_event_id ';
@@ -88,21 +88,21 @@ class EventRepository extends EntityRepository
         }
     }
 
-    private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
             $queryBuilder->andWhere(' e.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
-    private function addSlugQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setSlugQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SLUG])) {
             $queryBuilder->andWhere(' e.slug = :slug ')->setParameter('slug', $opts[self::CRITERIA_SLUG]);
         }
     }
 
-    private function addStartQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setStartQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_START])) {
             $startQuery = ' (e.startDateTime IS NULL) OR (:start < e.startDateTime) ';
@@ -110,7 +110,7 @@ class EventRepository extends EntityRepository
         }
     }
 
-    private function addEndQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setEndQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_END])) {
             $endQuery = ' (e.endDateTime IS NULL) OR (:end > e.endDateTime) ';
@@ -118,21 +118,21 @@ class EventRepository extends EntityRepository
         }
     }
 
-    private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
             $queryBuilder->andWhere('e.deleted IS NULL');
         }
     }
 
-    private function addOnlyRootQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setOnlyRootQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_ROOT])) {
             $queryBuilder->andWhere('e.superEvent IS NULL');
         }
     }
 
-    private function addOnlyWithoutDateQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setOnlyWithoutDateQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_WITHOUT_DATE])) {
             $queryBuilder->andWhere('e.startDateTime IS NULL');
@@ -140,42 +140,42 @@ class EventRepository extends EntityRepository
         }
     }
 
-    private function addSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_EVENT_SERIES]) && $opts[self::CRITERIA_END] instanceof EventSeries) {
+        if (!empty($opts[self::CRITERIA_SERIES]) && $opts[self::CRITERIA_END] instanceof EventSeries) {
             $queryBuilder->andWhere('e.series = :series_id');
-            $queryBuilder->setParameter('series_id', $opts[self::CRITERIA_EVENT_SERIES]->getId());
+            $queryBuilder->setParameter('series_id', $opts[self::CRITERIA_SERIES]->getId());
         }
     }
 
-    private function addLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_END] instanceof Place) {
             $queryBuilder->andWhere('e.location = :location_id')->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
         }
     }
 
-    private function addOnlyPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setOnlyPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB])) {
             $queryBuilder->andWhere('e.publicOnWeb = true');
         }
     }
 
-    private function addTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_EVENT_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_EVENT_TYPE_OF_TYPE])) {
+        if (!empty($opts[self::CRITERIA_TYPE_STRING]) && is_string($opts[self::CRITERIA_TYPE_STRING])) {
             $queryBuilder->leftJoin('e.type', 'type');
             $queryBuilder->andWhere('type.type = :type_of_type');
-            $queryBuilder->setParameter('type_of_type', $opts[self::CRITERIA_EVENT_TYPE_OF_TYPE]);
+            $queryBuilder->setParameter('type_of_type', $opts[self::CRITERIA_TYPE_STRING]);
         }
     }
 
     private function addTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_EVENT_TYPE]) && $opts[self::CRITERIA_EVENT_TYPE] instanceof EventType) {
+        if (!empty($opts[self::CRITERIA_TYPE]) && $opts[self::CRITERIA_TYPE] instanceof EventType) {
             $queryBuilder->andWhere('e.type = :type_id');
-            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_EVENT_TYPE]->getId());
+            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_TYPE]->getId());
         }
     }
 

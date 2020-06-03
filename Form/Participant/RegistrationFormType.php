@@ -12,8 +12,6 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Service\EventService;
-use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -26,16 +24,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class RegistrationFormType extends AbstractType
 {
-    protected EventService $eventService;
-
-    protected RegistrationsRangeService $registrationService;
-
-    public function __construct(EventService $eventService, RegistrationsRangeService $registrationService)
-    {
-        $this->eventService = $eventService;
-        $this->registrationService = $registrationService;
-    }
-
     /**
      * @param FormBuilderInterface $builder
      * @param array                $options

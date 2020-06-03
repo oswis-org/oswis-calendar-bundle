@@ -7,32 +7,10 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\NonPersistent;
 
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 
 class FlagsAggregatedByType
 {
-    public array $flagTypes = [];
-
-    public function __construct(?Collection $flags = null)
-    {
-        $this->addFlags($flags);
-    }
-
-    public function addFlags(?Collection $flags): void
-    {
-        foreach ($flags as $flag) {
-            if ($flag instanceof AbstractEventFlag) {
-                $this->addFlag($flag);
-            }
-        }
-    }
-
-    public function addFlag(?AbstractEventFlag $flag): void
-    {
-
-    }
-
     /**
      * Gets array of flags aggregated by their types.
      *
@@ -56,20 +34,4 @@ class FlagsAggregatedByType
 
         return $out;
     }
-
-    public function removeFlags(?Collection $flags): void
-    {
-        foreach ($flags as $flag) {
-            if ($flag instanceof AbstractEventFlag) {
-                $this->removeFlag($flag);
-            }
-        }
-    }
-
-    public function removeFlag(?AbstractEventFlag $flag): void
-    {
-
-    }
-
-
 }

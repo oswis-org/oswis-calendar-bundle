@@ -327,6 +327,11 @@ class Event implements NameableInterface
         return $this->type;
     }
 
+    public function getTypeString(): ?string
+    {
+        return $this->getType() ? $this->getType()->getType() : null;
+    }
+
     public function setType(?EventType $type): void
     {
         $this->type = $type;

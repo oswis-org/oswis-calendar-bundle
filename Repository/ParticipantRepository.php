@@ -56,21 +56,21 @@ class ParticipantRepository extends EntityRepository
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
-        $this->addSuperEventQuery($queryBuilder, $opts);
-        $this->addIdQuery($queryBuilder, $opts);
-        $this->addRangeQuery($queryBuilder, $opts);
-        $this->addParticipantTypeQuery($queryBuilder, $opts);
-        $this->addParticipantTypeStringQuery($queryBuilder, $opts);
-        $this->addIncludeDeletedQuery($queryBuilder, $opts);
-        $this->addContactQuery($queryBuilder, $opts);
-        $this->addAppUserQuery($queryBuilder, $opts);
-        $this->addLimit($queryBuilder, $limit, $offset);
-        $this->addOrderBy($queryBuilder, true, true);
+        $this->setSuperEventQuery($queryBuilder, $opts);
+        $this->setIdQuery($queryBuilder, $opts);
+        $this->setRangeQuery($queryBuilder, $opts);
+        $this->setParticipantTypeQuery($queryBuilder, $opts);
+        $this->setParticipantTypeStringQuery($queryBuilder, $opts);
+        $this->setIncludeDeletedQuery($queryBuilder, $opts);
+        $this->setContactQuery($queryBuilder, $opts);
+        $this->setAppUserQuery($queryBuilder, $opts);
+        $this->setLimit($queryBuilder, $limit, $offset);
+        $this->setOrderBy($queryBuilder, true, true);
 
         return $queryBuilder;
     }
 
-    private function addSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
             $queryBuilder->leftJoin('participant.range', 'range');
@@ -86,14 +86,14 @@ class ParticipantRepository extends EntityRepository
         }
     }
 
-    private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
             $queryBuilder->andWhere(' participant.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
-    private function addRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegistrationsRange) {
             $queryBuilder->andWhere('participant.range = :range_id');
@@ -101,7 +101,7 @@ class ParticipantRepository extends EntityRepository
         }
     }
 
-    private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantType) {
             $queryBuilder->leftJoin('participant.range', 'range');
@@ -110,7 +110,7 @@ class ParticipantRepository extends EntityRepository
         }
     }
 
-    private function addParticipantTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setParticipantTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING])) {
             $queryBuilder->leftJoin('participant.range', 'range');
@@ -120,21 +120,21 @@ class ParticipantRepository extends EntityRepository
         }
     }
 
-    private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
             $queryBuilder->andWhere('participant.deleted IS NULL');
         }
     }
 
-    private function addContactQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setContactQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_CONTACT]) && $opts[self::CRITERIA_CONTACT] instanceof AbstractContact) {
             $queryBuilder->andWhere('participant.contact = :contact_id')->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
         }
     }
 
-    private function addAppUserQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setAppUserQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_APP_USER]) && $opts[self::CRITERIA_APP_USER] instanceof AppUser) {
             $queryBuilder->leftJoin('participant.contact', 'contact');
@@ -143,7 +143,7 @@ class ParticipantRepository extends EntityRepository
         }
     }
 
-    private function addLimit(QueryBuilder $queryBuilder, ?int $limit = null, ?int $offset = null): void
+    private function setLimit(QueryBuilder $queryBuilder, ?int $limit = null, ?int $offset = null): void
     {
         if (null !== $limit) {
             $queryBuilder->setMaxResults($limit);
@@ -153,7 +153,7 @@ class ParticipantRepository extends EntityRepository
         }
     }
 
-    private function addOrderBy(QueryBuilder $queryBuilder, bool $priority = true, bool $name = true): void
+    private function setOrderBy(QueryBuilder $queryBuilder, bool $priority = true, bool $name = true): void
     {
         if ($priority) {
             $queryBuilder->addOrderBy('participant.priority', 'DESC');

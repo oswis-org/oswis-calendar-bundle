@@ -37,5 +37,5 @@ final class EventActionRequest
 
     public ?int $recursiveDepth = null;
 
-    public ?string $participantTypeOfType = null;
+    public ?string $participantTypeString = null;
 }
