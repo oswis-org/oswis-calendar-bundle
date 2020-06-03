@@ -89,7 +89,7 @@ class RegistrationsRange implements NameableInterface
      * @var int Number of usages of flag (must be updated from service!).
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
      */
-    protected int $usage = 0;
+    protected int $baseUsage = 0;
 
     /**
      * @var int Number of usages of flag, including overflow (must be updated from service!).
@@ -269,17 +269,17 @@ class RegistrationsRange implements NameableInterface
     {
         $capacity = $this->getCapacity($max);
 
-        return null === $capacity ? null : ($capacity - $this->getUsage($max));
+        return null === $capacity ? null : ($capacity - $this->getBaseUsage($max));
     }
 
-    public function getUsage(bool $max = false): int
+    public function getBaseUsage(bool $max = false): int
     {
-        return $max ? $this->getFullUsage() : $this->usage;
+        return $max ? $this->getFullUsage() : $this->baseUsage;
     }
 
-    public function setUsage(int $usage): void
+    public function setBaseUsage(int $baseUsage): void
     {
-        $this->usage = $usage;
+        $this->baseUsage = $baseUsage;
     }
 
     public function getFullUsage(): int
@@ -488,7 +488,7 @@ class RegistrationsRange implements NameableInterface
         if (null === $flagRange) {
             return;
         }
-        if ($flagRange->getUsage() > 0) {
+        if ($flagRange->getBaseUsage() > 0) {
             throw new OswisNotImplementedException('Nelze odebrat již využitý rozsah.');
         }
         $this->getFlagRanges()->remove($flagRange);

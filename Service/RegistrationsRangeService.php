@@ -54,7 +54,7 @@ class RegistrationsRangeService
     public function updateUsage(RegistrationsRange $range): void
     {
         $usage = $this->getRegistrationsRangeConnectionsByRange($range, false)->count();
-        $range->setUsage($usage);
+        $range->setBaseUsage($usage);
         $range->setFullUsage($usage);
         foreach ($range->getFlagRanges() as $flagRange) {
             $this->flagRangeService->updateUsage($flagRange);

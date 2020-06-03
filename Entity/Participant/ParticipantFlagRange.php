@@ -40,7 +40,7 @@ class ParticipantFlagRange implements BasicInterface
      * @var int Number of usages of flag (must be updated from service!).
      * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
      */
-    protected int $usage = 0;
+    protected int $baseUsage = 0;
 
     public function __construct(
         ?ParticipantFlag $flag = null,
@@ -68,17 +68,17 @@ class ParticipantFlagRange implements BasicInterface
     {
         $capacity = $this->getCapacity($max);
 
-        return null === $capacity ? null : ($capacity - $this->getUsage());
+        return null === $capacity ? null : ($capacity - $this->getBaseUsage());
     }
 
-    public function getUsage(): int
+    public function getBaseUsage(): int
     {
-        return $this->usage;
+        return $this->baseUsage;
     }
 
-    public function setUsage(int $usage): void
+    public function setBaseUsage(int $baseUsage): void
     {
-        $this->usage = $usage;
+        $this->baseUsage = $baseUsage;
     }
 
     public function containsFlag(?ParticipantFlag $flag = null): bool

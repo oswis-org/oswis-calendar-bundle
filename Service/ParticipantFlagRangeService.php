@@ -26,7 +26,7 @@ class ParticipantFlagRangeService
     public function updateUsage(ParticipantFlagRange $range): void
     {
         $usage = $this->getFlagRangeConnectionsByRange($range, false)->count();
-        $range->setUsage($usage);
+        $range->setBaseUsage($usage);
     }
 
     public function getFlagRangeConnectionsByRange(ParticipantFlagRange $flagRange, bool $includeDeleted = false): Collection
