@@ -91,7 +91,14 @@ class Event implements NameableInterface
 
     /**
      * @var Collection<EventFlagConnection> $flagConnections
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection", cascade={"all"}, fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection", cascade={"all"}, fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinTable(
+     *     name="calendar_event_flag_connection",
+     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_flag_id", referencedColumnName="id", unique=true)}
+     * )
      */
     protected ?Collection $flagConnections = null;
 
@@ -151,6 +158,7 @@ class Event implements NameableInterface
     ) {
         $this->subEvents = new ArrayCollection();
         $this->webContents = new ArrayCollection();
+        $this->flagConnections = new ArrayCollection();
         $this->setType($type);
         $this->setSuperEvent($superEvent);
         $this->setSeries($series);
@@ -271,6 +279,28 @@ class Event implements NameableInterface
     public function getSubEvents(): Collection
     {
         return $this->subEvents ?? new ArrayCollection();
+    }
+
+    public function addFlagConnection(EventFlagConnection $flagConnection): void
+    {
+        if (!$this->getFlagConnections()->contains($flagConnection)) {
+            $this->getFlagConnections()->add($flagConnection);
+        }
+    }
+
+    public function getFlagConnections(bool $onlyActive = false): Collection
+    {
+        $connections = $this->flagConnections ?? new ArrayCollection();
+        if ($onlyActive) {
+            $connections = $connections->filter(fn(EventFlagConnection $conn) => $conn->isActive());
+        }
+
+        return $connections;
+    }
+
+    public function removeFlagConnection(EventFlagConnection $flagConnection): void
+    {
+        $this->getFlagConnections()->remove($flagConnection);
     }
 
     public function getEndDateTimeRecursive(): ?DateTime

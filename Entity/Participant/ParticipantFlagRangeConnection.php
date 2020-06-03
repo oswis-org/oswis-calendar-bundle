@@ -15,7 +15,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
  * Flag assigned to event participant (ie. special food requirement...) through some "flag range".
- * @Doctrine\ORM\Mapping\Entity()
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeConnectionRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_range_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */

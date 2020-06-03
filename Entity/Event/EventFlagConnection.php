@@ -44,4 +44,9 @@ class EventFlagConnection implements BasicInterface
     {
         $this->eventFlag = $eventFlag;
     }
+
+    public function isActive(): bool
+    {
+        return !$this->isDeleted();
+    }
 }
