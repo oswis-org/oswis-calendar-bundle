@@ -95,7 +95,7 @@ class Event implements NameableInterface
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_event_flag_connection",
+     *     name="calendar_event_flag_connection_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_flag_id", referencedColumnName="id", unique=true)}
      * )
@@ -105,9 +105,7 @@ class Event implements NameableInterface
     /**
      * Parent event (if this is not top level event).
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
-     *     inversedBy="subEvents",
-     *     fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="subEvents", fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
