@@ -327,11 +327,6 @@ class Event implements NameableInterface
         return $this->type;
     }
 
-    public function getTypeString(): ?string
-    {
-        return $this->getType() ? $this->getType()->getType() : null;
-    }
-
     public function setType(?EventType $type): void
     {
         $this->type = $type;
@@ -366,6 +361,11 @@ class Event implements NameableInterface
         if (null !== $series && $this->series !== $series) {
             $series->addEvent($this);
         }
+    }
+
+    public function getTypeString(): ?string
+    {
+        return $this->getType() ? $this->getType()->getType() : null;
     }
 
     public function isEventSuperEvent(?Event $event, ?bool $recursive = true): bool

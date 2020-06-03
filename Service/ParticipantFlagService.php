@@ -38,7 +38,4 @@ class ParticipantFlagService
             return null;
         }
     }
-
-//    public function getFlagRanges(): Collection {
-//    }
 }

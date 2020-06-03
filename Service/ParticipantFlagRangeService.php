@@ -10,30 +10,17 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeConnectionRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeRepository;
-use Psr\Log\LoggerInterface;
 
 class ParticipantFlagRangeService
 {
     protected EntityManagerInterface $em;
 
-    protected LoggerInterface $logger;
-
-    protected ParticipantFlagRangeRepository $participantFlagRangeRepository;
-
-    protected ParticipantFlagRangeConnectionRepository $flagRangeConnectionRepository;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        LoggerInterface $logger,
-        ParticipantFlagRangeConnectionRepository $flagRangeConnectionRepository,
-        ParticipantFlagRangeRepository $participantFlagRangeRepository
-    ) {
+    public function __construct(EntityManagerInterface $em)
+    {
         $this->em = $em;
-        $this->logger = $logger;
-        $this->flagRangeConnectionRepository = $flagRangeConnectionRepository;
-        $this->participantFlagRangeRepository = $participantFlagRangeRepository;
     }
 
     public function updateUsage(ParticipantFlagRange $range): void
@@ -54,7 +41,10 @@ class ParticipantFlagRangeService
 
     public function getFlagRangeConnectionRepository(): ParticipantFlagRangeConnectionRepository
     {
-        return $this->flagRangeConnectionRepository;
+        $repo = $this->em->getRepository(ParticipantFlagRangeConnection::class);
+        assert($repo instanceof ParticipantFlagRangeConnectionRepository);
+
+        return $repo;
     }
 
     public function getRepository(): ParticipantFlagRangeRepository

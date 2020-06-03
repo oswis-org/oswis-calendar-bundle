@@ -1,14 +1,14 @@
 oswis_org_oswis_calendar_web_registration_verification:
-    controller: oswis_org_oswis_calendar.participant_controller::verification
+    controller: oswis_org_oswis_calendar.registration_controller::verification
     path: "/potvrzeni-prihlasky/{token}/{participantId}"
 
-oswis_org_oswis_calendar_web_registration_ranges:
-    controller: oswis_org_oswis_calendar.event_controller::showRegistrationRanges
-    path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
-
 oswis_org_oswis_calendar_web_registration:
-    controller: oswis_org_oswis_calendar.participant_controller::registration
+    controller: oswis_org_oswis_calendar.registration_controller::registration
     path: "/akce/prihlaska/{rangeSlug?}"
+
+oswis_org_oswis_calendar_web_registration_ranges:
+    controller: oswis_org_oswis_calendar.registration_controller::showRanges
+    path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
 
 oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet

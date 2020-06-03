@@ -7,10 +7,15 @@
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 
+use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use OswisOrg\OswisCalendarBundle\Controller\EventController;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use Psr\Log\LoggerInterface;
 
 class EventService
@@ -61,6 +66,44 @@ class EventService
         }
 
         return $this->defaultEvent = $event;
+    }
+
+    /**
+     * @param string|null   $range
+     * @param DateTime|null $start
+     * @param DateTime|null $end
+     * @param int|null      $limit
+     * @param int|null      $offset
+     * @param string|null   $eventSlug
+     * @param bool|null     $onlyRoot
+     *
+     * @return Collection
+     * @throws Exception
+     */
+    public function getEvents(
+        ?string $range = null,
+        ?DateTime $start = null,
+        ?DateTime $end = null,
+        ?int $limit = null,
+        ?int $offset = null,
+        ?string $eventSlug = null,
+        ?bool $onlyRoot = true
+    ): Collection {
+        $range ??= EventController::RANGE_ALL;
+        $limit = $limit < 1 ? null : $limit;
+        $offset = $offset < 1 ? null : $offset;
+        $start = DateTimeUtils::getDateTimeByRange($start, $range, false);
+        $end = DateTimeUtils::getDateTimeByRange($end, $range, true);
+        $opts = [
+            EventRepository::CRITERIA_START              => $start,
+            EventRepository::CRITERIA_END                => $end,
+            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_ONLY_ROOT          => $onlyRoot,
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
+        ];
+
+        return $this->getRepository()->getEvents($opts, $limit, $offset);
     }
 
     public function getRepository(): EventRepository

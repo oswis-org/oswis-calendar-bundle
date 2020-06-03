@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
  */
@@ -389,5 +390,36 @@ class RegistrationController extends AbstractController
 
         return $event;
     }
+
+    /**
+     * Renders page with list of registration ranges.
+     *
+     * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
+     *
+     * @param string      $eventSlug       Slug for selected event.
+     * @param string|null $participantType Restriction by participant type.
+     *
+     * @return Response Page with registration ranges.
+     * @throws Exception Error occurred when getting events.
+     */
+    public function showRanges(string $eventSlug = null, ?string $participantType = null): Response
+    {
+        $event = $eventSlug ? $this->eventService->getEvents(null, null, null, null, null, $eventSlug, false)[0] ?? null : null;
+        if (!empty($eventSlug) && empty($event)) {
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges');
+        }
+        $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->eventService->getEvents(null, null, null, null, null, null, false);
+        $shortTitle = 'Přihlášky';
+        $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
+        $context = [
+            'event'      => $event,
+            'events'     => $this->registrationsRangeService->getEventRegistrationRanges($events, $participantType, true),
+            'title'      => $title,
+            'shortTitle' => $shortTitle,
+        ];
+
+        return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
+    }
+
 
 }

@@ -59,8 +59,6 @@ class ParticipantService
 
     protected ExportService $exportService;
 
-    protected ParticipantRepository $participantRepository;
-
     protected UserPasswordEncoderInterface $encoder;
 
     public function __construct(
@@ -78,27 +76,7 @@ class ParticipantService
         $this->mailer = $mailer;
         $this->appUserService = $appUserService;
         $this->exportService = $exportService;
-        $this->participantRepository = $this->getRepository();
         $this->encoder = $encoder;
-        /// TODO: Encoder, createAppUser...
-        /// TODO: Throw exceptions!
-    }
-
-    final public function getRepository(): ParticipantRepository
-    {
-        $repository = $this->em->getRepository(Participant::class);
-        assert($repository instanceof ParticipantRepository);
-
-        return $repository;
-    }
-
-    public function getEventParticipants(
-        array $opts = [],
-        ?bool $includeNotActivated = true,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Collection {
-        return $this->participantRepository->getParticipants($opts, $includeNotActivated, $limit, $offset);
     }
 
     /**
@@ -144,6 +122,14 @@ class ParticipantService
         ];
 
         return $this->getRepository()->getParticipants($opts)->count() > 0;
+    }
+
+    final public function getRepository(): ParticipantRepository
+    {
+        $repository = $this->em->getRepository(Participant::class);
+        assert($repository instanceof ParticipantRepository);
+
+        return $repository;
     }
 
     /**
@@ -473,6 +459,15 @@ class ParticipantService
         );
     }
 
+    public function getEventParticipants(
+        array $opts = [],
+        ?bool $includeNotActivated = true,
+        ?int $limit = null,
+        ?int $offset = null
+    ): Collection {
+        return $this->getRepository()->getParticipants($opts, $includeNotActivated, $limit, $offset);
+    }
+
     /**
      * @param Event                $event
      * @param ParticipantType|null $participantType
@@ -709,7 +704,7 @@ class ParticipantService
 
     final public function containsAppUser(Event $event, AppUser $appUser, ParticipantType $participantType = null): bool
     {
-        return $this->participantRepository->getParticipants(
+        return $this->getRepository()->getParticipants(
                 [
                     ParticipantRepository::CRITERIA_EVENT            => $event,
                     ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,

@@ -11,31 +11,21 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRangeConnectionRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
-use Psr\Log\LoggerInterface;
 
 class RegistrationsRangeService
 {
     protected EntityManagerInterface $em;
 
-    protected LoggerInterface $logger;
-
     protected ParticipantFlagRangeService $flagRangeService;
 
-    protected ParticipantRangeConnectionRepository $participantRangeConnectionRepository;
-
-    public function __construct(
-        EntityManagerInterface $em,
-        LoggerInterface $logger,
-        ParticipantRangeConnectionRepository $participantRangeConnectionRepository,
-        ParticipantFlagRangeService $flagRangeService
-    ) {
+    public function __construct(EntityManagerInterface $em, ParticipantFlagRangeService $flagRangeService)
+    {
         $this->em = $em;
-        $this->logger = $logger;
-        $this->participantRangeConnectionRepository = $participantRangeConnectionRepository;
         $this->flagRangeService = $flagRangeService;
     }
 
@@ -51,12 +41,20 @@ class RegistrationsRangeService
 
     public function getRegistrationsRangeConnectionsByRange(RegistrationsRange $range, bool $includeDeleted = false): Collection
     {
-        return $this->participantRangeConnectionRepository->getRangesConnections(
+        return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
             [
                 ParticipantRepository::CRITERIA_RANGE           => $range,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ]
         );
+    }
+
+    public function getParticipantRangeConnectionRepository(): ParticipantRangeConnectionRepository
+    {
+        $repository = $this->em->getRepository(ParticipantRangeConnection::class);
+        assert($repository instanceof ParticipantRangeConnectionRepository);
+
+        return $repository;
     }
 
     public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): RegistrationsRange

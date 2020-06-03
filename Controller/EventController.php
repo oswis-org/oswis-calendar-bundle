@@ -17,7 +17,6 @@ use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
-use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -184,50 +183,12 @@ class EventController extends AbstractController
         ?int $offset = null
     ): Response {
         $context = [
-            'events'    => $this->getEvents($range, $start, $end, $limit, $offset),
+            'events'    => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
             'range'     => $range,
             'navEvents' => [],
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
-    }
-
-    /**
-     * @param string|null   $range
-     * @param DateTime|null $start
-     * @param DateTime|null $end
-     * @param int|null      $limit
-     * @param int|null      $offset
-     * @param string|null   $eventSlug
-     * @param bool|null     $onlyRoot
-     *
-     * @return Collection
-     * @throws Exception
-     */
-    public function getEvents(
-        ?string $range = null,
-        ?DateTime $start = null,
-        ?DateTime $end = null,
-        ?int $limit = null,
-        ?int $offset = null,
-        ?string $eventSlug = null,
-        ?bool $onlyRoot = true
-    ): Collection {
-        $range ??= self::RANGE_ALL;
-        $limit = $limit < 1 ? null : $limit;
-        $offset = $offset < 1 ? null : $offset;
-        $start = DateTimeUtils::getDateTimeByRange($start, $range, false);
-        $end = DateTimeUtils::getDateTimeByRange($end, $range, true);
-        $opts = [
-            EventRepository::CRITERIA_START              => $start,
-            EventRepository::CRITERIA_END                => $end,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => $onlyRoot,
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
-        ];
-
-        return $this->getEventRepository()->getEvents($opts, $limit, $offset);
     }
 
     /**
@@ -243,7 +204,7 @@ class EventController extends AbstractController
     {
         $start = new DateTime($rangeValue);
         $end = new DateTime($rangeValue);
-        $events = $this->getEvents($range, $start, $end);
+        $events = $this->eventService->getEvents($range, $start, $end);
         $context = [
             'range'     => $range,
             'start'     => $start,
@@ -253,36 +214,6 @@ class EventController extends AbstractController
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
-    }
-
-    /**
-     * Renders page with list of registration ranges.
-     *
-     * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
-     *
-     * @param string      $eventSlug       Slug for selected event.
-     * @param string|null $participantType Restriction by participant type.
-     *
-     * @return Response Page with registration ranges.
-     * @throws Exception Error occurred when getting events.
-     */
-    public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null): Response
-    {
-        $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug, false)[0] ?? null : null;
-        if (!empty($eventSlug) && empty($event)) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges');
-        }
-        $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->getEvents(null, null, null, null, null, null, false);
-        $shortTitle = 'Přihlášky';
-        $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
-        $context = [
-            'event'      => $event,
-            'events'     => $this->registrationsRangeService->getEventRegistrationRanges($events, $participantType, true),
-            'title'      => $title,
-            'shortTitle' => $shortTitle,
-        ];
-
-        return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
     }
 
     public function showCurrentEvent(): Response
