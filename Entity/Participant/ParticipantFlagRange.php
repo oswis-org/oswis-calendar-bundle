@@ -64,16 +64,6 @@ class ParticipantFlagRange implements BasicInterface
         return $this->depositValue ?? 0;
     }
 
-    public function getFlag(): ?ParticipantFlag
-    {
-        return $this->flag;
-    }
-
-    public function setFlag(?ParticipantFlag $flag): void
-    {
-        $this->flag = $flag;
-    }
-
     public function getRemainingCapacity(bool $max = false): ?int
     {
         $capacity = $this->getCapacity($max);
@@ -91,19 +81,33 @@ class ParticipantFlagRange implements BasicInterface
         $this->usage = $usage;
     }
 
-    public function getFlagType(): ?ParticipantFlagType {
-        return $this->getFlag() ? $this->getFlag()->getFlagType() : null;
-    }
-
-    public function containsFlag(?ParticipantFlag $flag = null): bool {
+    public function containsFlag(?ParticipantFlag $flag = null): bool
+    {
         return null === $flag ? true : $this->getFlag() && $this->getFlag() === $flag;
     }
 
-    public function containsFlagOfType(?ParticipantFlagType $flagType = null): bool {
+    public function getFlag(): ?ParticipantFlag
+    {
+        return $this->flag;
+    }
+
+    public function setFlag(?ParticipantFlag $flag): void
+    {
+        $this->flag = $flag;
+    }
+
+    public function containsFlagOfType(?ParticipantFlagType $flagType = null): bool
+    {
         return null === $flagType ? true : $this->getFlagType() && $this->getFlagType() === $flagType;
     }
 
-    public function containsFlagOfTypeString(?string $flagType = null): bool {
+    public function getFlagType(): ?ParticipantFlagType
+    {
+        return $this->getFlag() ? $this->getFlag()->getFlagType() : null;
+    }
+
+    public function containsFlagOfTypeString(?string $flagType = null): bool
+    {
         return null === $flagType ? true : $this->getFlagType() && $this->getFlagType()->getType() === $flagType;
     }
 }

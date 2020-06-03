@@ -1956,16 +1956,16 @@
     },
     {
       "name": "endroid/qr-code",
-      "version": "3.8.0",
+      "version": "3.8.1",
       "source": {
         "type": "git",
         "url": "https://github.com/endroid/qr-code.git",
-        "reference": "a44bae807b5f3722695920e4e494a466cbd79bec"
+        "reference": "a7e07d26fad46d7032b39a076f6c85e07757028d"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/endroid/qr-code/zipball/a44bae807b5f3722695920e4e494a466cbd79bec",
-        "reference": "a44bae807b5f3722695920e4e494a466cbd79bec",
+        "url": "https://api.github.com/repos/endroid/qr-code/zipball/a7e07d26fad46d7032b39a076f6c85e07757028d",
+        "reference": "a7e07d26fad46d7032b39a076f6c85e07757028d",
         "shasum": ""
       },
       "require": {
@@ -2021,7 +2021,7 @@
           "type": "github"
         }
       ],
-      "time": "2020-05-25T20:02:47+00:00"
+      "time": "2020-06-02T20:10:27+00:00"
     },
     {
       "name": "ezimuel/guzzlestreams",
@@ -3994,16 +3994,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.533",
+      "version": "v0.0.536",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "36c6fb8c734d46407120ed2892a30c49e99e5ede"
+        "reference": "379ee6e535ff422847d605362c74f9c5cbe8a79d"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/36c6fb8c734d46407120ed2892a30c49e99e5ede",
-        "reference": "36c6fb8c734d46407120ed2892a30c49e99e5ede",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/379ee6e535ff422847d605362c74f9c5cbe8a79d",
+        "reference": "379ee6e535ff422847d605362c74f9c5cbe8a79d",
         "shasum": ""
       },
       "require": {
@@ -4100,7 +4100,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-05-31T15:00:05+00:00"
+      "time": "2020-06-03T09:49:54+00:00"
     },
     {
       "name": "paragonie/random_compat",

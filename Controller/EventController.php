@@ -12,10 +12,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,10 +34,16 @@ class EventController extends AbstractController
 
     protected ParticipantService $participantService;
 
-    public function __construct(EventService $eventService, ParticipantService $participantService)
-    {
+    protected RegistrationsRangeService $registrationsRangeService;
+
+    public function __construct(
+        EventService $eventService,
+        ParticipantService $participantService,
+        RegistrationsRangeService $registrationsRangeService
+    ) {
         $this->eventService = $eventService;
         $this->participantService = $participantService;
+        $this->registrationsRangeService = $registrationsRangeService;
     }
 
     /**
@@ -254,60 +260,29 @@ class EventController extends AbstractController
      *
      * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
      *
-     * @param string        $eventSlug       Slug for selected event.
-     * @param string|null   $participantType Restriction by participant type.
-     * @param DateTime|null $dateTime        Reference dateTime ("now" if not selected).
+     * @param string      $eventSlug       Slug for selected event.
+     * @param string|null $participantType Restriction by participant type.
      *
      * @return Response Page with registration ranges.
      * @throws Exception Error occurred when getting events.
      */
-    public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null, ?DateTime $dateTime = null): Response
+    public function showRegistrationRanges(string $eventSlug = null, ?string $participantType = null): Response
     {
         $event = $eventSlug ? $this->getEvents(null, null, null, null, null, $eventSlug, false)[0] ?? null : null;
         if (!empty($eventSlug) && empty($event)) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_registrations');
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges');
         }
         $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->getEvents(null, null, null, null, null, null, false);
         $shortTitle = 'Přihlášky';
         $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
         $context = [
             'event'      => $event,
-            'events'     => self::getRegistrationRanges($events, $participantType, true, $dateTime),
+            'events'     => $this->registrationsRangeService->getEventRegistrationRanges($events, $participantType, true),
             'title'      => $title,
             'shortTitle' => $shortTitle,
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
-    }
-
-    /**
-     * Helper for getting structured array of registration ranges from given collection of events.
-     *
-     * @param Collection    $events          Collection of events to extract registration ranges.
-     * @param string|null   $participantType Restriction to event participant type.
-     * @param bool          $onlyPublicOnWeb Restriction only for web-public ranges.
-     * @param DateTime|null $dateTime        Reference dateTime.
-     *
-     * @return array [
-     *     eventId => ['event' => Event, 'ranges' => Collection<RegistrationsRange>],
-     * ]
-     */
-    public static function getRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true, ?DateTime $dateTime = null): array
-    {
-        $ranges = [];
-        foreach ($events as $event) {
-            assert($event instanceof Event);
-            $eventRanges = $event->getRegistrationRangesByTypeString($participantType, $dateTime);
-            if ($onlyPublicOnWeb) {
-                $eventRanges = $eventRanges->filter(fn(RegistrationsRange $range) => $range->isPublicOnWeb());
-            }
-            $ranges[$event->getId()] ??= [
-                'event'  => $event,
-                'ranges' => $eventRanges,
-            ];
-        }
-
-        return $ranges;
     }
 
     public function showCurrentEvent(): Response

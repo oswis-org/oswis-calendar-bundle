@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 
@@ -43,6 +44,8 @@ class RegistrationsRangeRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('range');
         $this->addIdQuery($queryBuilder, $opts);
+        $this->addSlugQuery($queryBuilder, $opts);
+        $this->addEventQuery($queryBuilder, $opts);
         $this->addParticipantTypeQuery($queryBuilder, $opts);
         $this->addParticipantTypeStringQuery($queryBuilder, $opts);
         $this->addOnlyActiveQuery($queryBuilder, $opts);
@@ -67,20 +70,19 @@ class RegistrationsRangeRepository extends EntityRepository
         }
     }
 
+    private function addEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
+        if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
+            $queryBuilder->andWhere('range.event = :event_id');
+            $queryBuilder->setParameter('event_id', $opts[self::CRITERIA_EVENT]->getId());
+        }
+    }
+
     private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantType) {
             $queryBuilder->andWhere('range.participantType = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
-        }
-    }
-
-    private function addOnlyActiveQuery(QueryBuilder $queryBuilder, array $opts = []): void
-    {
-        if (!empty($opts[self::CRITERIA_ONLY_ACTIVE]) && $opts[self::CRITERIA_ONLY_ACTIVE]) {
-            $startQuery = ' (range.startDateTime IS NULL) OR (:now > range.startDateTime) ';
-            $endQuery = ' (range.endDateTime IS NULL) OR (:now < range.endDateTime) ';
-            $queryBuilder->andWhere($startQuery)->andWhere($endQuery)->setParameter('now', new DateTime());
         }
     }
 
@@ -90,6 +92,15 @@ class RegistrationsRangeRepository extends EntityRepository
             $queryBuilder->leftJoin('range.participantType', 'type');
             $queryBuilder->andWhere('type.type = :type_string');
             $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]);
+        }
+    }
+
+    private function addOnlyActiveQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
+        if (!empty($opts[self::CRITERIA_ONLY_ACTIVE]) && $opts[self::CRITERIA_ONLY_ACTIVE]) {
+            $startQuery = ' (range.startDateTime IS NULL) OR (:now > range.startDateTime) ';
+            $endQuery = ' (range.endDateTime IS NULL) OR (:now < range.endDateTime) ';
+            $queryBuilder->andWhere($startQuery)->andWhere($endQuery)->setParameter('now', new DateTime());
         }
     }
 

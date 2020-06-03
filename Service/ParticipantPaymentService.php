@@ -221,7 +221,7 @@ class ParticipantPaymentService
             $entity = new ParticipantPayment($eventParticipant, $numericValue, $dateTime, $type, $note, $internalNote);
             $em->persist($entity);
             $em->flush();
-            if ($entity->getParticipant() && $entity->getParticipant()->getContact()) {
+            if (null !== $entity->getParticipant() && null !== $entity->getParticipant()->getContact()) {
                 $name = $entity->getParticipant()->getContact()->getName();
             } else {
                 $name = $entity->getParticipant()->getId();

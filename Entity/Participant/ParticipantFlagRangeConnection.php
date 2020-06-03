@@ -41,6 +41,21 @@ class ParticipantFlagRangeConnection implements BasicInterface
         }
     }
 
+    public function getFlagTypeString(): ?string
+    {
+        return $this->getFlagType() ? $this->getFlagType()->getType() : null;
+    }
+
+    public function getFlagType(): ?ParticipantFlagType
+    {
+        return $this->getFlag() ? $this->getFlag()->getFlagType() : null;
+    }
+
+    public function getFlag(): ?ParticipantFlag
+    {
+        return $this->getFlagRange() ? $this->getFlagRange()->getFlag() : null;
+    }
+
     public function getFlagRange(): ?ParticipantFlagRange
     {
         return $this->flagRange;
@@ -62,14 +77,14 @@ class ParticipantFlagRangeConnection implements BasicInterface
         throw new OswisNotImplementedException('změna příznaku', 'v přiřazení příznaku');
     }
 
-    public function isActive(?DateTime $referenceDateTime = null): bool
-    {
-        return !$this->isDeleted($referenceDateTime);
-    }
-
     public function getPrice(): int
     {
         return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getPrice() : 0;
+    }
+
+    public function isActive(?DateTime $referenceDateTime = null): bool
+    {
+        return !$this->isDeleted($referenceDateTime);
     }
 
     public function getDepositValue(): int

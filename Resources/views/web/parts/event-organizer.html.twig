@@ -3,7 +3,7 @@
         <small class="text-muted">Organizátor&nbsp;akce</small>
         <strong class="float-right align-middle text-muted"><i class="fas fa-users"></i></strong>
     </div>
-    {% if organizer.image %}{# TODO: Image.#}
+    {% if organizer.image %}{# TODO: Image. #}
         <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image" alt="{{ organizer.name }}"
              src="{{ absolute_url(preload(asset('img/web/og-image.jpg'), {as: 'image'}))|default }}">
     {% endif %}

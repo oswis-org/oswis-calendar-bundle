@@ -14,8 +14,8 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
@@ -76,9 +76,7 @@ use function assert;
  */
 class Event implements NameableInterface
 {
-    use NameableTrait {
-        setSlug as traitSetSlug;
-    }
+    use NameableTrait;
     use DateRangeTrait;
     use ColorTrait;
     use BankAccountTrait;
@@ -93,12 +91,7 @@ class Event implements NameableInterface
 
     /**
      * @var Collection<EventFlagConnection> $flagConnections
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection",
-     *     cascade={"all"},
-     *     mappedBy="event",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection", cascade={"all"}, fetch="EAGER")
      */
     protected ?Collection $flagConnections = null;
 
@@ -181,11 +174,6 @@ class Event implements NameableInterface
     public function setImage(?EventImage $image): void
     {
         $this->image = $image;
-    }
-
-    public function getSubEvents(): Collection
-    {
-        return $this->subEvents ?? new ArrayCollection();
     }
 
     public function isRoot(): bool
@@ -278,6 +266,11 @@ class Event implements NameableInterface
         }
 
         return $startDateTime === $maxDateTime ? null : $startDateTime;
+    }
+
+    public function getSubEvents(): Collection
+    {
+        return $this->subEvents ?? new ArrayCollection();
     }
 
     public function getEndDateTimeRecursive(): ?DateTime

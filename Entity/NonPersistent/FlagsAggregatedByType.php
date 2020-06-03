@@ -14,6 +14,25 @@ class FlagsAggregatedByType
 {
     public array $flagTypes = [];
 
+    public function __construct(?Collection $flags = null)
+    {
+        $this->addFlags($flags);
+    }
+
+    public function addFlags(?Collection $flags): void
+    {
+        foreach ($flags as $flag) {
+            if ($flag instanceof AbstractEventFlag) {
+                $this->addFlag($flag);
+            }
+        }
+    }
+
+    public function addFlag(?AbstractEventFlag $flag): void
+    {
+
+    }
+
     /**
      * Gets array of flags aggregated by their types.
      *
@@ -38,21 +57,6 @@ class FlagsAggregatedByType
         return $out;
     }
 
-
-    public function __construct(?Collection $flags = null)
-    {
-        $this->addFlags($flags);
-    }
-
-    public function addFlags(?Collection $flags): void
-    {
-        foreach ($flags as $flag) {
-            if ($flag instanceof AbstractEventFlag) {
-                $this->addFlag($flag);
-            }
-        }
-    }
-
     public function removeFlags(?Collection $flags): void
     {
         foreach ($flags as $flag) {
@@ -60,11 +64,6 @@ class FlagsAggregatedByType
                 $this->removeFlag($flag);
             }
         }
-    }
-
-    public function addFlag(?AbstractEventFlag $flag): void
-    {
-
     }
 
     public function removeFlag(?AbstractEventFlag $flag): void

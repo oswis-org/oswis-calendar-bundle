@@ -10,6 +10,7 @@ use DateTime;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\ActiveTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
@@ -21,6 +22,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 class ParticipantContactConnection implements BasicInterface
 {
     use BasicTrait;
+    use ActiveTrait;
     use DeletedTrait;
 
     /**

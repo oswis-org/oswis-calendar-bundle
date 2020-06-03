@@ -21,9 +21,17 @@ trait EventCapacityTrait
      */
     protected ?int $capacity = null;
 
-    public function getMaxCapacity(): ?int
+    public function setEventCapacity(?EventCapacity $eventCapacity = null): void
     {
-        return $this->maxCapacity;
+        if (null !== $eventCapacity) {
+            $this->setCapacity($eventCapacity->capacity);
+            $this->setMaxCapacity($eventCapacity->maxCapacity);
+        }
+    }
+
+    public function getEventCapacity(): EventCapacity
+    {
+        return new EventCapacity($this->getCapacity(), $this->getMaxCapacity());
     }
 
     public function getCapacity(bool $max = false): ?int
@@ -45,22 +53,14 @@ trait EventCapacityTrait
         }
     }
 
+    public function getMaxCapacity(): ?int
+    {
+        return $this->maxCapacity;
+    }
+
     public function setMaxCapacity(?int $maxCapacity): void
     {
         $this->maxCapacity = $maxCapacity;
-    }
-
-    public function setEventCapacity(?EventCapacity $eventCapacity = null): void
-    {
-        if (null !== $eventCapacity) {
-            $this->setCapacity($eventCapacity->capacity);
-            $this->setMaxCapacity($eventCapacity->maxCapacity);
-        }
-    }
-
-    public function getEventCapacity(): EventCapacity
-    {
-        return new EventCapacity($this->getCapacity(), $this->getMaxCapacity());
     }
 
     public function isCapacityUnlimited(bool $max = false): bool

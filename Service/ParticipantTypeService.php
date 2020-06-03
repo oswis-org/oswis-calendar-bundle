@@ -25,14 +25,6 @@ class ParticipantTypeService
         $this->logger = $logger;
     }
 
-    public function getRepository(): ParticipantTypeRepository
-    {
-        $repository = $this->em->getRepository(ParticipantType::class);
-        assert($repository instanceof ParticipantTypeRepository);
-
-        return $repository;
-    }
-
     public function create(?Nameable $nameable = null, ?string $type = null): ?ParticipantType
     {
         try {
@@ -71,6 +63,14 @@ class ParticipantTypeService
         }
 
         return $type;
+    }
+
+    public function getRepository(): ParticipantTypeRepository
+    {
+        $repository = $this->em->getRepository(ParticipantType::class);
+        assert($repository instanceof ParticipantTypeRepository);
+
+        return $repository;
     }
 
 }

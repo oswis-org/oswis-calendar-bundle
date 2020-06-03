@@ -13,7 +13,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
-use OswisOrg\OswisCalendarBundle\Service\RegistrationService;
+use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -28,9 +28,9 @@ class RegistrationFormType extends AbstractType
 {
     protected EventService $eventService;
 
-    protected RegistrationService $registrationService;
+    protected RegistrationsRangeService $registrationService;
 
-    public function __construct(EventService $eventService, RegistrationService $registrationService)
+    public function __construct(EventService $eventService, RegistrationsRangeService $registrationService)
     {
         $this->eventService = $eventService;
         $this->registrationService = $registrationService;
@@ -45,12 +45,8 @@ class RegistrationFormType extends AbstractType
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $participant = $builder->getData();
-        if (!($participant instanceof Participant)) {
+        if (!($participant instanceof Participant) || !(($range = $participant->getRange()) instanceof RegistrationsRange)) {
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
-        }
-        $range = $participant->getRegistrationsRange();
-        if (!($range instanceof RegistrationsRange)) {
-            throw new PriceInvalidArgumentException('[nebyl nalezen rozsah pro vytváření přihlášek]');
         }
         $participantType = $range->getParticipantType();
         $event = $range->getEvent();

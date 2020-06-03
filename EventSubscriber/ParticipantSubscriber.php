@@ -12,7 +12,6 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Exception\OswisParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
-use OswisOrg\OswisCalendarBundle\Service\RegistrationService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -21,11 +20,11 @@ use function in_array;
 
 final class ParticipantSubscriber implements EventSubscriberInterface
 {
-    private RegistrationService $registrationService;
+    private ParticipantService $participantService;
 
-    public function __construct(RegistrationService $registrationService)
+    public function __construct(ParticipantService $participantService)
     {
-        $this->registrationService = $registrationService;
+        $this->participantService = $participantService;
     }
 
     public static function getSubscribedEvents(): array
@@ -50,19 +49,12 @@ final class ParticipantSubscriber implements EventSubscriberInterface
         if (!($newParticipant instanceof Participant) || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
-        $oldParticipant = $this->getParticipantRepository()->getParticipant(['id' => $newParticipant->getId()]);
-        $this->registrationService->simulateRegistration($newParticipant, $oldParticipant);
         $this->getParticipantService()->sendMail($newParticipant, Request::METHOD_POST === $method);
-    }
-
-    public function getParticipantRepository(): ParticipantRepository
-    {
-        return $this->getParticipantService()->getRepository();
     }
 
     public function getParticipantService(): ParticipantService
     {
-        return $this->registrationService->getParticipantService();
+        return $this->participantService;
     }
 
     /**
@@ -88,5 +80,10 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     private function getExistingParticipant(Participant $newParticipant): ?Participant
     {
         return $this->getParticipantRepository()->getParticipant(['id' => $newParticipant->getId()]);
+    }
+
+    public function getParticipantRepository(): ParticipantRepository
+    {
+        return $this->getParticipantService()->getRepository();
     }
 }

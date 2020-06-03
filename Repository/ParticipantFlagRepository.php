@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 
 class ParticipantFlagRepository extends EntityRepository
 {
@@ -24,7 +23,6 @@ class ParticipantFlagRepository extends EntityRepository
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
     public const CRITERIA_PARTICIPANT_TYPE_OF_TYPE = 'participantTypeOfType';
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
-    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
     public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantFlag
     {

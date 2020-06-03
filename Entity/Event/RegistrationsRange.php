@@ -1,7 +1,7 @@
-<?php
+<?php /** @noinspection PhpUnused */
+
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
@@ -140,47 +140,6 @@ class RegistrationsRange implements NameableInterface
         $this->setSuperEventRequired($superEventRequired);
     }
 
-    public function getUsage(bool $max = false): int
-    {
-        return $max ? $this->getFullUsage() : $this->usage;
-    }
-
-    public function setUsage(int $usage): void
-    {
-        $this->usage = $usage;
-    }
-
-    public function getFullUsage(): int
-    {
-        return $this->fullUsage;
-    }
-
-    public function setFullUsage(int $fulUsage): void
-    {
-        $this->fullUsage = $fulUsage;
-    }
-
-    public function getEvent(): ?Event
-    {
-        return $this->event;
-    }
-
-    /**
-     * @param Event|null $event
-     *
-     * @throws OswisNotImplementedException
-     */
-    public function setEvent(?Event $event): void
-    {
-        if ($this->event === $event) {
-            return;
-        }
-        if (null === $this->event) {
-            $this->event = $event;
-        }
-        throw new OswisNotImplementedException('změna události', 'v rozsahu registrací');
-    }
-
     /**
      * Sets the end of registration range (can't be set to past).
      *
@@ -199,11 +158,14 @@ class RegistrationsRange implements NameableInterface
         }
     }
 
-    public function getRemainingCapacity(bool $max = false): ?int
+    public function setRelative(?bool $relative): void
     {
-        $capacity = $this->getCapacity($max);
+        $this->relative = $relative;
+    }
 
-        return null === $capacity ? null : ($capacity - $this->getUsage($max));
+    public function setSuperEventRequired(?bool $superEventRequired): void
+    {
+        $this->superEventRequired = $superEventRequired;
     }
 
     public function getRequiredRangePrice(?ParticipantType $participantType = null): int
@@ -211,93 +173,30 @@ class RegistrationsRange implements NameableInterface
         return (!$this->isRelative() || null === $this->getRequiredRange()) ? 0 : $this->getRequiredRange()->getPrice($participantType);
     }
 
-    public function getRequiredRangeDeposit(?ParticipantType $participantType = null): int
+    public function isRelative(): bool
     {
-        return (!$this->isRelative() || null === $this->getRequiredRange()) ? 0 : $this->getRequiredRange()->getDepositValue($participantType);
+        return $this->relative ?? false;
     }
 
-    public function getPrice(?ParticipantType $participantType): int
+    public function getRequiredRange(): ?RegistrationsRange
     {
+        return $this->requiredRange;
+    }
+
+    public function setRequiredRange(?RegistrationsRange $requiredRange): void
+    {
+        $this->requiredRange = $requiredRange;
+    }
+
+    public function getPrice(?ParticipantType $participantType = null): int
+    {
+        if (null === $participantType) {
+            return $this->traitGetPrice();
+        }
         $price = $this->getParticipantType() === $participantType ? $this->traitGetPrice() : 0;
         $price += $this->getRequiredRangePrice($participantType);
 
         return null !== $price && $price <= 0 ? 0 : $price;
-    }
-
-    public function getDepositValue(?ParticipantType $participantType): int
-    {
-        $price = $this->getParticipantType() === $participantType ? $this->traitGetDeposit() : 0;
-        $price += $this->getRequiredRangeDeposit($participantType);
-
-        return null !== $price && $price <= 0 ? 0 : $price;
-    }
-
-    public function isApplicableByType(?ParticipantType $participantType = null, ?DateTime $dateTime = null): bool
-    {
-        if (null !== $participantType && null === $this->getParticipantType()) {
-            return false;
-        }
-        if (null !== $participantType && $this->getParticipantType()->getId() !== $participantType->getId()) {
-            return false;
-        }
-        if (null !== $dateTime && !$this->containsDateTimeInRange($dateTime)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks capacity of range and flag ranges.
-     *
-     * @param array|null $flags
-     * @param bool       $onlyPublic
-     * @param bool|false $max
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function simulateAdd(?array $flags = null, bool $onlyPublic = true, bool $max = false): void
-    {
-        $this->simulateParticipantAdd($onlyPublic, $max);
-        $this->simulateFlagsAdd($flags, $onlyPublic, $max);
-    }
-
-    /**
-     * Checks capacity of range.
-     *
-     * @param bool       $onlyPublic
-     * @param bool|false $max
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function simulateParticipantAdd(bool $onlyPublic = true, bool $max = false): void
-    {
-        $remainingCapacity = $this->getRemainingCapacity($max);
-        if ((null !== $remainingCapacity && 1 > $remainingCapacity) || ($onlyPublic && !$this->isPublicOnWeb())) {
-            throw new EventCapacityExceededException();
-        }
-    }
-
-    /**
-     * Checks capacity of flag ranges.
-     *
-     * @param array|null $flags
-     * @param bool       $onlyPublic
-     * @param bool|false $max
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function simulateFlagsAdd(?array $flags = null, bool $onlyPublic = true, bool $max = false): void
-    {
-        foreach ($flags as $typeSlug => $flagsOfType) {
-            foreach ($flagsOfType as $flagSlug => $aggregatedFlag) {
-                $flagRemainingCapacity = $this->getFlagRemainingCapacity($aggregatedFlag['flag'] ?? null, $onlyPublic, $max);
-                if (($aggregatedFlag['count'] ?? 0) > $flagRemainingCapacity) {
-                    $flagName = $aggregatedFlag['flag'] ? '"'.$aggregatedFlag['flag'].'"' : '';
-                    throw new EventCapacityExceededException("Kapacita příznaku $flagName byla vyčerpána.");
-                }
-            }
-        }
     }
 
     public function getParticipantType(): ?ParticipantType
@@ -321,48 +220,164 @@ class RegistrationsRange implements NameableInterface
         throw new OswisNotImplementedException('změna typu účastníka', 'v rozsahu registrací');
     }
 
-    public function isApplicableByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): bool
+    public function getRequiredRangeDeposit(?ParticipantType $participantType = null): int
     {
-        if (null !== $participantType && (null === $this->getParticipantType() || $this->getParticipantType()->getType() !== $participantType)) {
-            return false;
+        return (!$this->isRelative() || null === $this->getRequiredRange()) ? 0 : $this->getRequiredRange()->getDepositValue($participantType);
+    }
+
+    public function getDepositValue(?ParticipantType $participantType = null): int
+    {
+        if (null === $participantType) {
+            return $this->traitGetDeposit();
+        }
+        $price = $this->getParticipantType() === $participantType ? $this->traitGetDeposit() : 0;
+        $price += $this->getRequiredRangeDeposit($participantType);
+
+        return null !== $price && $price <= 0 ? 0 : $price;
+    }
+
+    /**
+     * Checks capacity of range and flag ranges.
+     *
+     * @param Participant $participant
+     * @param bool        $onlyPublic
+     * @param bool|false  $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function simulateAdd(Participant $participant = null, bool $onlyPublic = true, bool $max = false): void
+    {
+        $this->simulateParticipantAdd($onlyPublic, $max);
+        if (null !== $participant) {
+            $this->simulateFlagsAdd($participant->getFlagsAggregatedByType(), $onlyPublic, $max);
+        }
+    }
+
+    /**
+     * Checks capacity of range.
+     *
+     * @param bool       $onlyPublic
+     * @param bool|false $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function simulateParticipantAdd(bool $onlyPublic = true, bool $max = false): void
+    {
+        if (!$this->containsDateTimeInRange()) {
+            $rangeText = $this->getRangeAsText();
+            throw new EventCapacityExceededException("Přihlášky v tomto rozsahu aktuálně nejsou povoleny ($rangeText).");
+        }
+        $remainingCapacity = $this->getRemainingCapacity($max);
+        if ((null !== $remainingCapacity && 1 > $remainingCapacity) || ($onlyPublic && !$this->isPublicOnWeb())) {
+            throw new EventCapacityExceededException();
+        }
+    }
+
+    public function getRemainingCapacity(bool $max = false): ?int
+    {
+        $capacity = $this->getCapacity($max);
+
+        return null === $capacity ? null : ($capacity - $this->getUsage($max));
+    }
+
+    public function getUsage(bool $max = false): int
+    {
+        return $max ? $this->getFullUsage() : $this->usage;
+    }
+
+    public function setUsage(int $usage): void
+    {
+        $this->usage = $usage;
+    }
+
+    public function getFullUsage(): int
+    {
+        return $this->fullUsage;
+    }
+
+    public function setFullUsage(int $fulUsage): void
+    {
+        $this->fullUsage = $fulUsage;
+    }
+
+    /**
+     * Checks capacity of flag ranges.
+     *
+     * @param array|null $flagsAggregatedByType
+     * @param bool       $onlyPublic
+     * @param bool|false $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function simulateFlagsAdd(?array $flagsAggregatedByType = null, bool $onlyPublic = true, bool $max = false): void
+    {
+        $this->checkFlagsExistence($flagsAggregatedByType, $this->getFlagsAggregatedByType());
+        $this->checkFlagsRanges($flagsAggregatedByType, $this->getFlagsAggregatedByType());
+        foreach ($flagsAggregatedByType as $typeSlug => $flagsOfType) {
+            foreach ($flagsOfType as $flagSlug => $aggregatedFlag) {
+                if ($flag = ($aggregatedFlag['flag'] instanceof ParticipantFlag ? $aggregatedFlag['flag'] : null)) {
+                    $flagRemainingCapacity = $this->getFlagRemainingCapacity($flag, $onlyPublic, $max);
+                    if (($aggregatedFlag['count'] ?? 0) > $flagRemainingCapacity) {
+                        $flagName = $flag->getName();
+                        throw new EventCapacityExceededException("Kapacita příznaku \"$flagName\" byla vyčerpána.");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if type of each used flag can be used in event.
+     *
+     * @param array $flagsByTypes
+     * @param array $allowedFlagsByTypes
+     *
+     * @throws EventCapacityExceededException
+     */
+    private function checkFlagsExistence(array $flagsByTypes, array $allowedFlagsByTypes): void
+    {
+        foreach ($flagsByTypes as $flagTypeSlug => $flagsOfType) {
+            $firstFlagOfType = $flagsOfType['flag'] ?? null;
+            if ($firstFlagOfType instanceof ParticipantFlag) {
+                $flagType = $firstFlagOfType->getFlagType();
+                if ($flagType && !array_key_exists($flagType->getSlug(), $allowedFlagsByTypes)) {
+                    $flagTypeName = $flagType->getName();
+                    $message = "Příznak typu $flagTypeName není u této přihlášky povolen.";
+                    throw new EventCapacityExceededException($message);
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets array of flags aggregated by their types.
+     *
+     * @param bool $onlyPublic
+     * @param bool $max
+     *
+     * @return array
+     */
+    public function getFlagsAggregatedByType(bool $onlyPublic = true, bool $max = false): array
+    {
+        return FlagsAggregatedByType::getFlagsAggregatedByType($this->getFlags(null, null, $onlyPublic, $max));
+    }
+
+    public function getFlags(
+        ?ParticipantFlagType $flagType = null,
+        ?ParticipantFlag $flag = null,
+        bool $onlyPublic = true,
+        bool $max = false
+    ): Collection {
+        $out = new ArrayCollection();
+        foreach ($this->getFlagRanges($flagType, $flag, $onlyPublic) as $flagRange) {
+            if ($flagRange instanceof ParticipantFlagRange) {
+                for ($i = 0; $i < $flagRange->getCapacity($max); $i++) {
+                    $out->add($flagRange->getFlag());
+                }
+            }
         }
 
-        return null === $dateTime || $this->containsDateTimeInRange($dateTime);
-    }
-
-    public function isRelative(): bool
-    {
-        return $this->relative ?? false;
-    }
-
-    public function setRelative(?bool $relative): void
-    {
-        $this->relative = $relative;
-    }
-
-    public function isSuperEventRequired(): bool
-    {
-        return $this->superEventRequired ?? false;
-    }
-
-    public function setSuperEventRequired(?bool $superEventRequired): void
-    {
-        $this->superEventRequired = $superEventRequired;
-    }
-
-    public function getRequiredRange(): ?RegistrationsRange
-    {
-        return $this->requiredRange;
-    }
-
-    public function setRequiredRange(?RegistrationsRange $requiredRange): void
-    {
-        $this->requiredRange = $requiredRange;
-    }
-
-    public function isRangeActive(bool $max = false): bool
-    {
-        return $this->containsDateTimeInRange() && (null === $this->getCapacity($max) || 0 < $this->getCapacity($max));
+        return $out;
     }
 
     public function getFlagRanges(?ParticipantFlagType $flagType = null, ?ParticipantFlag $flag = null, ?bool $onlyPublic = false): Collection
@@ -379,6 +394,68 @@ class RegistrationsRange implements NameableInterface
         }
 
         return $flagRanges;
+    }
+
+    /**
+     * Checks if the amount of flags of each type meets range of that type.
+     *
+     * @param array $flagsByTypes
+     * @param array $allowedFlagsByTypes
+     *
+     * @throws EventCapacityExceededException
+     */
+    private function checkFlagsRanges(array $flagsByTypes, array $allowedFlagsByTypes): void
+    {
+        foreach ($allowedFlagsByTypes as $flagsOfType) {
+            $flagType = $flagsOfType['flagType'] instanceof ParticipantFlagType ? $flagsOfType['flagType'] : null;
+            $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
+            $flagsOfTypeAmount = $flagsByTypes[$flagTypeSlug]['count'];
+            $min = $flagType ? $flagType->getMinInParticipant() ?? 0 : 0;
+            $max = $flagType ? $flagType->getMaxInParticipant() : null;
+            if (null !== $flagType && ($min > $flagsOfTypeAmount || (null !== $max && $max < $flagsOfTypeAmount))) {
+                $maxMessage = null === $max ? '' : "až $max";
+                throw new EventCapacityExceededException("Musí být vybráno $min $maxMessage příznaků typu ".$flagType->getName().".");
+            }
+        }
+    }
+
+    public function getFlagRemainingCapacity(ParticipantFlag $flag, bool $onlyPublic = false, bool $max = false): ?int
+    {
+        $remaining = null;
+        foreach ($this->getFlagRanges(null, $flag, $onlyPublic) as $flagRange) {
+            if (!($flagRange instanceof ParticipantFlagRange)) {
+                continue;
+            }
+            $remainingInRange = $flagRange->getRemainingCapacity($max);
+            if (null !== $remainingInRange) {
+                $remaining += $remainingInRange;
+            }
+        }
+
+        return $remaining;
+    }
+
+    public function isApplicableByTypeOfType(?string $participantType = null, ?DateTime $dateTime = null): bool
+    {
+        if (null !== $participantType && (null === $this->getParticipantType() || $this->getParticipantType()->getType() !== $participantType)) {
+            return false;
+        }
+
+        return null === $dateTime || $this->containsDateTimeInRange($dateTime);
+    }
+
+    /**
+     * @return bool
+     * @todo: Implement it.
+     */
+    public function isSuperEventRequired(): bool
+    {
+        return $this->superEventRequired ?? false;
+    }
+
+    public function isRangeActive(bool $max = false): bool
+    {
+        return $this->containsDateTimeInRange() && (null === $this->getCapacity($max) || 0 < $this->getCapacity($max));
     }
 
     public function getAllowedFlagRangesByTypeString(?string $flagType = null, ?ParticipantFlag $flag = null, ?bool $onlyPublic = false): Collection
@@ -398,7 +475,7 @@ class RegistrationsRange implements NameableInterface
     public function getFlagRange(ParticipantFlag $flag, bool $max = false, bool $onlyPublic = false): ?ParticipantFlagRange
     {
         foreach ($this->getFlagRanges(null, $flag, $onlyPublic) as $range) {
-            if ($range instanceof ParticipantFlagRange && $range->hasRemainingCapacity($max)) {
+            if ($range instanceof ParticipantFlagRange && $range->getRemainingCapacity($max) !== 0) {
                 return $range;
             }
         }
@@ -422,55 +499,29 @@ class RegistrationsRange implements NameableInterface
         $this->getFlagRanges()->remove($flagRange);
     }
 
-    public function getFlagRemainingCapacity(ParticipantFlag $flag, bool $onlyPublic = false, bool $max = false): ?int
-    {
-        $remaining = null;
-        foreach ($this->getFlagRanges(null, $flag, $onlyPublic) as $flagRange) {
-            if (!($flagRange instanceof ParticipantFlagRange)) {
-                continue;
-            }
-            $remainingInRange = $flagRange->getRemainingCapacity($max);
-            if (null !== $remainingInRange) {
-                $remaining += $remainingInRange;
-            }
-        }
-
-        return $remaining;
-    }
-
     public function isParticipantInSuperEvent(Participant $participant): bool
     {
         return $this->getEvent() && $this->getEvent()->isEventSuperEvent($participant->getEvent());
     }
 
-    public function getFlags(
-        ?ParticipantFlagType $flagType = null,
-        ?ParticipantFlag $flag = null,
-        bool $onlyPublic = true,
-        bool $max = false
-    ): Collection {
-        $out = new ArrayCollection();
-        foreach ($this->getFlagRanges($flagType, $flag, $onlyPublic) as $flagRange) {
-            if ($flagRange instanceof ParticipantFlagRange) {
-                for ($i = 0; $i < $flagRange->getCapacity($max); $i++) {
-                    $out->add($flagRange->getFlag());
-                }
-            }
-        }
-
-        return $out;
+    public function getEvent(): ?Event
+    {
+        return $this->event;
     }
 
     /**
-     * Gets array of flags aggregated by their types.
+     * @param Event|null $event
      *
-     * @param bool $onlyPublic
-     * @param bool $max
-     *
-     * @return array
+     * @throws OswisNotImplementedException
      */
-    public function getFlagsAggregatedByType(bool $onlyPublic = true, bool $max = false): array
+    public function setEvent(?Event $event): void
     {
-        return FlagsAggregatedByType::getFlagsAggregatedByType($this->getFlags(null, null, $onlyPublic, $max));
+        if ($this->event === $event) {
+            return;
+        }
+        if (null === $this->event) {
+            $this->event = $event;
+        }
+        throw new OswisNotImplementedException('změna události', 'v rozsahu registrací');
     }
 }
