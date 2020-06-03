@@ -155,7 +155,7 @@ class Participant implements BasicInterface
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_range_connection",
+     *     name="calendar_participant_range_connection_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_range_id", referencedColumnName="id", unique=true)}
      * )
