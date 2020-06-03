@@ -16,18 +16,40 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRangeConnectionRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
+use Psr\Log\LoggerInterface;
 
 class RegistrationsRangeService
 {
     protected EntityManagerInterface $em;
 
+    protected LoggerInterface $logger;
+
     protected ParticipantFlagRangeService $flagRangeService;
 
-    public function __construct(EntityManagerInterface $em, ParticipantFlagRangeService $flagRangeService)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantFlagRangeService $flagRangeService)
     {
         $this->em = $em;
         $this->flagRangeService = $flagRangeService;
+        $this->logger = $logger;
     }
+
+
+    final public function create(RegistrationsRange $range): ?RegistrationsRange
+    {
+        try {
+            $this->em->persist($range);
+            $this->em->flush();
+            $infoMessage = 'CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.';
+            $this->logger ? $this->logger->info($infoMessage) : null;
+
+            return $range;
+        } catch (Exception $e) {
+            $this->logger ? $this->logger->info('ERROR: Registrations range not created (by service): '.$e->getMessage()) : null;
+
+            return null;
+        }
+    }
+
 
     public function updateUsage(RegistrationsRange $range): void
     {

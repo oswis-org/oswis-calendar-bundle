@@ -212,6 +212,7 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
             - '@oswis_org_oswis_calendar.participant_flag_range_service'
     OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService:
         alias: oswis_org_oswis_calendar.registrations_range_service
