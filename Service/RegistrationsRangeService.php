@@ -9,6 +9,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection;
@@ -40,11 +41,11 @@ class RegistrationsRangeService
             $this->em->persist($range);
             $this->em->flush();
             $infoMessage = 'CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.';
-            $this->logger ? $this->logger->info($infoMessage) : null;
+            $this->logger->info($infoMessage);
 
             return $range;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Registrations range not created (by service): '.$e->getMessage()) : null;
+            $this->logger->info('ERROR: Registrations range not created (by service): '.$e->getMessage());
 
             return null;
         }

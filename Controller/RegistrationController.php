@@ -145,6 +145,35 @@ class RegistrationController extends AbstractController
         }
     }
 
+    public function getResponse(
+        ?string $type,
+        string $title,
+        bool $verification = false,
+        ?Event $event = null,
+        ?RegistrationsRange $range = null,
+        ?string $message = null,
+        ?FormView $formView = null
+    ): Response {
+        $template = '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig';
+        if ($verification) {
+            $template = '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig';
+        }
+
+        return $this->render(
+            $template,
+            [
+                'form'                => $formView,
+                'title'               => $title,
+                'pageTitle'           => $title,
+                'event'               => $event,
+                'range'               => $range,
+                'message'             => $message,
+                'type'                => $type,
+                'registrationsActive' => $range && $range->isRangeActive(),
+            ]
+        );
+    }
+
     public function getParticipantService(): ParticipantService
     {
         return $this->participantService;
@@ -211,7 +240,7 @@ class RegistrationController extends AbstractController
                 'form',
                 "Přihláška na akci ".($range->getEvent() ? $range->getEvent()->getShortName() : null),
                 false,
-                $range->getEvent,
+                $range->getEvent(),
                 $range,
                 null,
                 $form->createView()
@@ -228,35 +257,6 @@ class RegistrationController extends AbstractController
 
             return $this->getResponse('form', "Přihláška na akci $eventName", false, $event, $range, null, $form->createView());
         }
-    }
-
-    public function getResponse(
-        ?string $type,
-        string $title,
-        bool $verification = false,
-        ?Event $event = null,
-        ?RegistrationsRange $range = null,
-        ?string $message = null,
-        ?FormView $formView = null
-    ): Response {
-        $template = '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig';
-        if ($verification) {
-            $template = '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig';
-        }
-
-        return $this->render(
-            $template,
-            [
-                'form'                => $formView,
-                'title'               => $title,
-                'pageTitle'           => $title,
-                'event'               => $event,
-                'range'               => $range,
-                'message'             => $message,
-                'type'                => $type,
-                'registrationsActive' => $range && $range->isRangeActive(),
-            ]
-        );
     }
 
     /**
@@ -365,6 +365,54 @@ class RegistrationController extends AbstractController
         $contact->removeEmptyNotes();
     }
 
+    /**
+     * @param RegistrationsRange $range
+     * @param Participant        $participant
+     * @param array              $selectedFlags
+     * @param bool               $onlyPublic
+     * @param bool               $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function checkParticipant(
+        RegistrationsRange $range,
+        Participant $participant,
+        array $selectedFlags,
+        bool $onlyPublic = true,
+        bool $max = false
+    ): void {
+        $this->checkParticipantSuperEvent($range, $participant);
+        $range->simulateParticipantAdd($onlyPublic, $max);
+        $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
+    }
+
+    /**
+     * @param RegistrationsRange $range
+     * @param Participant        $participant
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function checkParticipantSuperEvent(RegistrationsRange $range, Participant $participant): void
+    {
+        if ($range->isSuperEventRequired()) {
+            $included = false;
+            $participantsOfContact = $this->participantService->getEventParticipants(
+                [
+                    ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+                ]
+            );
+            foreach ($participantsOfContact as $participantOfContact) {
+                if ($participantOfContact instanceof Participant && $range->isParticipantInSuperEvent($participantOfContact)) {
+                    $included = true;
+                }
+            }
+            if (!$included) {
+                throw new EventCapacityExceededException('Pro přihlášku v tomto rozsahu je nutné se zúčastnit i nadřazené akce.');
+            }
+        }
+    }
+
     public function extractSelectedFlags(RegistrationsRange $registrationsRange, FormInterface $form): array
     {
         $selectedFlags = new ArrayCollection();
@@ -429,53 +477,5 @@ class RegistrationController extends AbstractController
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
-    }
-
-    /**
-     * @param RegistrationsRange $range
-     * @param Participant        $participant
-     * @param array              $selectedFlags
-     * @param bool               $onlyPublic
-     * @param bool               $max
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function checkParticipant(
-        RegistrationsRange $range,
-        Participant $participant,
-        array $selectedFlags,
-        bool $onlyPublic = true,
-        bool $max = false
-    ): void {
-        $this->checkParticipantSuperEvent($range, $participant);
-        $range->simulateParticipantAdd($onlyPublic, $max);
-        $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
-    }
-
-    /**
-     * @param RegistrationsRange $range
-     * @param Participant        $participant
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function checkParticipantSuperEvent(RegistrationsRange $range, Participant $participant): void
-    {
-        if ($range->isSuperEventRequired()) {
-            $included = false;
-            $participantsOfContact = $this->participantService->getEventParticipants(
-                [
-                    ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
-                ]
-            );
-            foreach ($participantsOfContact as $participantOfContact) {
-                if ($participantOfContact instanceof Participant && $range->isParticipantInSuperEvent($participantOfContact)) {
-                    $included = true;
-                }
-            }
-            if (!$included) {
-                throw new EventCapacityExceededException('Pro přihlášku v tomto rozsahu je nutné se zúčastnit i nadřazené akce.');
-            }
-        }
     }
 }

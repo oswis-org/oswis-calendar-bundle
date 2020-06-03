@@ -228,12 +228,9 @@ class Participant implements BasicInterface
      * @return ParticipantContactConnection
      * @throws OswisException
      */
-    public function getContactConnection(): ParticipantContactConnection
+    public function getContactConnection(): ?ParticipantContactConnection
     {
         $connections = $this->getContactConnections(true);
-        if ($connections->count() < 1) {
-            throw new OswisException('Účastník není přiřazen k žádné události.');
-        }
         if ($connections->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
@@ -257,8 +254,8 @@ class Participant implements BasicInterface
     public function updateCachedColumns(): void
     {
         try {
-            $this->range = $this->getRangeConnection()->getRange();
-            $this->contact = $this->getContactConnection()->getContact();
+            $this->range = $this->getRangeConnection() ? $this->getRangeConnection()->getRange() : null;
+            $this->contact = $this->getContactConnection() ? $this->getContactConnection()->getContact() : null;
         } catch (OswisException $e) {
         }
     }
@@ -267,12 +264,9 @@ class Participant implements BasicInterface
      * @return ParticipantRangeConnection
      * @throws OswisException
      */
-    public function getRangeConnection(): ParticipantRangeConnection
+    public function getRangeConnection(): ?ParticipantRangeConnection
     {
         $connections = $this->getRangeConnections(true, false);
-        if ($connections->count() < 1) {
-            throw new OswisException('Účastník není přiřazen k žádné události.');
-        }
         if ($connections->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
