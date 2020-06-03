@@ -29,9 +29,11 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\OswisParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\RegistrationFormType;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
@@ -42,6 +44,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -88,15 +91,15 @@ class RegistrationController extends AbstractController
         // TODO: Check and refactor.
         try {
             if (empty($token) || empty($participantId)) {
-                return $this->render(
-                    '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                    [
-                        'type'    => 'error',
-                        'title'   => 'Chyba! URL nekompletní!',
-                        'message' => 'Formát adresy pro ověření je chybný.
+                return $this->getResponse(
+                    'error',
+                    'Chyba! URL nekompletní!',
+                    true,
+                    null,
+                    null,
+                    'Formát adresy pro ověření je chybný.
                             Zkuste odkaz otevřít znovu nebo jej zkopírovat celý do adresního řádku prohlížeče.
                             Pokud se to nepodaří, kontaktujte nás a společně to vyřešíme.',
-                    ]
                 );
             }
             $participant = $this->getParticipantService()->getRepository()->findOneBy(['id' => $participantId]);
@@ -104,16 +107,13 @@ class RegistrationController extends AbstractController
                 $error = null === $participant ? ', přihláška nenalezena' : '';
                 $error .= !($participant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
 
-                return $this->render(
-                    '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                    array(
-                        'type'        => 'error',
-                        'title'       => 'Chyba!',
-                        'participant' => $participant,
-                        'range'       => $participant->getRange(),
-                        'event'       => $participant->getEvent(),
-                        'message'     => "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $participantId$error)",
-                    )
+                return $this->getResponse(
+                    'error',
+                    'Chyba!',
+                    true,
+                    $participant->getEvent(),
+                    null,
+                    "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $participantId$error)"
                 );
             }
             $participant->removeEmptyParticipantNotes();
@@ -123,27 +123,24 @@ class RegistrationController extends AbstractController
             }
             $this->getParticipantService()->sendMail($participant, true, $token);
 
-            return $this->render(
-                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                [
-                    'type'        => 'success',
-                    'title'       => 'Hotovo!',
-                    'participant' => $participant,
-                    'range'       => $participant->getRange(),
-                    'event'       => $participant->getEvent(),
-                    'message'     => 'Ověření uživatele proběhlo úspěšně.',
-                ]
+            return $this->getResponse(
+                'success',
+                'Hotovo!',
+                true,
+                $participant->getEvent(),
+                null,
+                'Ověření uživatele proběhlo úspěšně.'
             );
         } catch (Exception $e) {
             $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
 
-            return $this->render(
-                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig',
-                [
-                    'type'    => 'error',
-                    'title'   => 'Neočekávaná chyba!',
-                    'message' => 'Registraci a přihlášku se nepodařilo potvrdit. Kontaktujte nás a společně to vyřešíme.',
-                ]
+            return $this->getResponse(
+                'error',
+                'Neočekávaná chyba!',
+                true,
+                null,
+                null,
+                'Registraci a přihlášku se nepodařilo potvrdit. Kontaktujte nás a společně to vyřešíme.'
             );
         }
     }
@@ -192,39 +189,32 @@ class RegistrationController extends AbstractController
                 if (!(($contact = $participant->getContact()) instanceof Person)) { // TODO: Organization?
                     throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
                 }
-                $this->em->persist($participant);
+                $eventName = $event->getShortName();
                 $this->removeEmptyNotesAndDetails($participant, $contact);
                 $contact->addNote(new ContactNote('Vytvořeno k přihlášce na akci ('.$event->getName().').'));
-                $range->simulateParticipantAdd(true, false);
-                $range->simulateFlagsAdd($this->extractSelectedFlags($range, $form), true, false);
+                $this->checkParticipant($range, $participant, $this->extractSelectedFlags($range, $form), true, false);
+                $this->em->persist($participant);
                 $this->getParticipantService()->sendMail($participant, true);
 
-                return $this->render(
-                    '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
-                    [
-                        'form'                => $form->createView(),
-                        'title'               => 'Přihláška odeslána!',
-                        'event'               => $event,
-                        'pageTitle'           => 'Přihláška odeslána!',
-                        'message'             => 'Tvoje přihláška byla úspěšně odeslána! Nyní je ovšem ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.',
-                        'type'                => 'success',
-                        'registrationsActive' => true,
-                    ]
+                return $this->getResponse(
+                    'success',
+                    'Přihláška odeslána!',
+                    false,
+                    $event,
+                    $range,
+                    "Tvoje přihláška na akci $eventName byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
+                    null,
                 );
             }
 
-            return $this->render(
-                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
-                [
-                    'form'                => $form->createView(),
-                    'title'               => 'Přihlaš se na Seznamovák UP právě teď!',
-                    'range'               => $range,
-                    'event'               => $range->getEvent(),
-                    'pageTitle'           => 'Přihláška na Seznamovák UP',
-                    'message'             => '',
-                    'type'                => 'form',
-                    'registrationsActive' => true,
-                ]
+            return $this->getResponse(
+                'form',
+                "Přihláška na akci ".($range->getEvent() ? $range->getEvent()->getShortName() : null),
+                false,
+                $range->getEvent,
+                $range,
+                null,
+                $form->createView()
             );
         } catch (Exception $e) {
             $participant = $this->getEmptyParticipant($range);
@@ -232,21 +222,41 @@ class RegistrationController extends AbstractController
                 $form = $this->createForm(RegistrationFormType::class, $participant);
                 $form->handleRequest($request);
             }
-            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte.  '.$e->getMessage().''));
+            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$e->getMessage().''));
             $event = $range->getEvent();
+            $eventName = $event ? $event->getShortName() : null;
 
-            return $this->render(
-                '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig',
-                [
-                    'form'                => $form->createView(),
-                    'title'               => 'Přihláška na akci '.($event ? $event->getName() : null),
-                    'pageTitle'           => 'Přihláška na akci '.($event ? $event->getName() : null),
-                    'event'               => $event,
-                    'type'                => 'form',
-                    'registrationsActive' => $range->isRangeActive(),
-                ]
-            );
+            return $this->getResponse('form', "Přihláška na akci $eventName", false, $event, $range, null, $form->createView());
         }
+    }
+
+    public function getResponse(
+        ?string $type,
+        string $title,
+        bool $verification = false,
+        ?Event $event = null,
+        ?RegistrationsRange $range = null,
+        ?string $message = null,
+        ?FormView $formView = null
+    ): Response {
+        $template = '@OswisOrgOswisCalendar/web/pages/event-participant-registration-form.html.twig';
+        if ($verification) {
+            $template = '@OswisOrgOswisCalendar/web/pages/event-participant-registration-confirmation.html.twig';
+        }
+
+        return $this->render(
+            $template,
+            [
+                'form'                => $formView,
+                'title'               => $title,
+                'pageTitle'           => $title,
+                'event'               => $event,
+                'range'               => $range,
+                'message'             => $message,
+                'type'                => $type,
+                'registrationsActive' => $range && $range->isRangeActive(),
+            ]
+        );
     }
 
     /**
@@ -419,5 +429,53 @@ class RegistrationController extends AbstractController
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
+    }
+
+    /**
+     * @param RegistrationsRange $range
+     * @param Participant        $participant
+     * @param array              $selectedFlags
+     * @param bool               $onlyPublic
+     * @param bool               $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function checkParticipant(
+        RegistrationsRange $range,
+        Participant $participant,
+        array $selectedFlags,
+        bool $onlyPublic = true,
+        bool $max = false
+    ): void {
+        $this->checkParticipantSuperEvent($range, $participant);
+        $range->simulateParticipantAdd($onlyPublic, $max);
+        $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
+    }
+
+    /**
+     * @param RegistrationsRange $range
+     * @param Participant        $participant
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function checkParticipantSuperEvent(RegistrationsRange $range, Participant $participant): void
+    {
+        if ($range->isSuperEventRequired()) {
+            $included = false;
+            $participantsOfContact = $this->participantService->getEventParticipants(
+                [
+                    ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+                ]
+            );
+            foreach ($participantsOfContact as $participantOfContact) {
+                if ($participantOfContact instanceof Participant && $range->isParticipantInSuperEvent($participantOfContact)) {
+                    $included = true;
+                }
+            }
+            if (!$included) {
+                throw new EventCapacityExceededException('Pro přihlášku v tomto rozsahu je nutné se zúčastnit i nadřazené akce.');
+            }
+        }
     }
 }

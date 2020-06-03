@@ -1,6 +1,6 @@
-<?php /** @noinspection PhpUnused */
-
+<?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -35,6 +35,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_registrations_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
+ * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
  */
 class RegistrationsRange implements NameableInterface
 {
@@ -50,28 +51,19 @@ class RegistrationsRange implements NameableInterface
     use EntityPublicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?RegistrationsRange $requiredRange;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $event = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType",
-     *     fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?ParticipantType $participantType = null;
@@ -89,6 +81,7 @@ class RegistrationsRange implements NameableInterface
     /**
      * Indicates that price is relative to required range.
      * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
+     * @todo Implement: Indicates that capacity is relative to required range too.
      */
     protected ?bool $relative = null;
 
@@ -152,7 +145,6 @@ class RegistrationsRange implements NameableInterface
             $now = new DateTime();
             if ($endDateTime !== $this->getEndDate()) {
                 $this->traitSetEnd(!$force && $endDateTime && $endDateTime < $now ? $now : $endDateTime);
-                // TODO: Probably better to test this in subscriber.
             }
         } catch (Exception $e) {
         }
@@ -445,8 +437,11 @@ class RegistrationsRange implements NameableInterface
     }
 
     /**
+     * Participation in super event is required before registration to this range.
+     *
+     * Must be checked in service/controller.
+     *
      * @return bool
-     * @todo: Implement it.
      */
     public function isSuperEventRequired(): bool
     {
