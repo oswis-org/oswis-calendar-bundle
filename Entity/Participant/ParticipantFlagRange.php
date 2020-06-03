@@ -17,7 +17,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_in_event_connection")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 class ParticipantFlagRange implements BasicInterface
