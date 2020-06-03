@@ -17,7 +17,7 @@
                             <small><a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
                         </h2>
                         <p class="card-text text-muted">
-                            {% if event.series is defined and event.batchOrYear and event.getSeqId > 0 %}
+                            {% if event.series|default and event.batchOrYear and event.getSeqId > 0 %}
                                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
                                 {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
                             {% else %}
@@ -38,7 +38,7 @@
                         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                     </div>
                     <div class="col-md-6">
-                        {% if event.location(true) is defined and event.location(true) %}
+                        {% if event.location(true)|default %}
                             <div itemprop="location" itemscope itemtype="http://schema.org/Place">
                                 {% if event.location(true).name is defined and event.location(true).name %}
                                     <div itemprop="name" content="{{ event.location(true).name }}">

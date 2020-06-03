@@ -1,39 +1,39 @@
 {% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
 
 {% set activationUrl = absolute_url(path('oswis_org_oswis_calendar_web_participant_verification',
-    {'token': contactPerson.appUser.activationRequestToken, 'participantId': eventParticipant.id})) %}
+    {'token': contactPerson.appUser.activationRequestToken, 'participantId': participant.id})) %}
 
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
 
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
         <link itemprop="reservationStatus" href="http://schema.org/Pending"/>
-        <meta itemprop="modifiedTime" content="{{ eventParticipant.updatedDateTime|date('c') }}"/>
-        <meta itemprop="bookingTime" content="{{ eventParticipant.createdDateTime|date("c") }}"/>
-        <meta itemprop="ticketToken" content="qrCode:{{ eventParticipant.id }}"/>{# TODO #}
-        <meta itemprop="ticketNumber" content="{{ eventParticipant.id }}"/>
-        <meta itemprop="reservationNumber" content="{{ eventParticipant.id }}"/>
+        <meta itemprop="modifiedTime" content="{{ participant.updatedDateTime|date('c') }}"/>
+        <meta itemprop="bookingTime" content="{{ participant.createdDateTime|date("c") }}"/>
+        <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>{# TODO #}
+        <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
+        <meta itemprop="reservationNumber" content="{{ participant.id }}"/>
         <meta itemprop="numSeats" content="1"/>
-        <span itemprop="totalPrice" content="{{ eventParticipant.price }}"></span>
+        <span itemprop="totalPrice" content="{{ participant.price }}"></span>
         <span itemprop="priceCurrency" content="CZK"></span>
         <span itemprop="underName" itemscope itemtype="http://schema.org/Person">
-            <span itemprop="name" content="{{ eventParticipant.contact.name }}"></span>
-            <span itemprop="email" content="{{ eventParticipant.contact.email }}"></span>
+            <span itemprop="name" content="{{ participant.contact.name }}"></span>
+            <span itemprop="email" content="{{ participant.contact.email }}"></span>
         </span>
 
         {% block message_message_outer %}
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
                     {% if isOrganization %}
-                        Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }}
+                        Vaše organizace {{ participant.contact.name }} byl{{ a }}
                     {% else %}
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                     {% endif %}
                     úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name }}</b>,
-                    {% if eventParticipant.event.organizer.contact.name|default %}
-                        kterou pořádá {{ eventParticipant.event.organizer.contact.name }}.
-                    {% elseif eventParticipant.event.startDateTime|default %}
-                        která se koná od {{ eventParticipant.event.startDateTime|date("j. n. Y") }}.
+                    {% if participant.event.organizer.contact.name|default %}
+                        kterou pořádá {{ participant.event.organizer.contact.name }}.
+                    {% elseif participant.event.startDateTime|default %}
+                        která se koná od {{ participant.event.startDateTime|date("j. n. Y") }}.
                     {%- else -%}
                         .
                     {% endif %}
@@ -71,8 +71,8 @@
 
         <p>
             Potvrzením registrace také souhlasí{{ f ? 'te' : 'š' }} se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
-            {% if eventParticipant.event.organizer.contact.name|default %}
-                Tyto údaje budou zpracovány subjektem {{ eventParticipant.event.organizer.contact.name }}
+            {% if participant.event.organizer.contact.name|default %}
+                Tyto údaje budou zpracovány subjektem {{ participant.event.organizer.contact.name }}
                 a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
                 <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank">našich webových stránkách</a>.
             {% else %}
@@ -117,7 +117,7 @@
                     </div>
                 </div>
             {% endif %}
-            {% if eventParticipant.event.organizer.contact.name|default %}
+            {% if participant.event.organizer.contact.name|default %}
                 <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
                     <meta itemprop="name" content="{{ event.organizer.contact.name }}"/>
                     <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>

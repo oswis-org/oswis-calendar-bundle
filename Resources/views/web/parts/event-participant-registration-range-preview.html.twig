@@ -4,12 +4,12 @@
             <div class="card-deck">
                 <div class="card mt-2 mb-4">
                     {% if range.rangeActive %}
-                        <a href="{{ path('oswis_org_oswis_calendar_web_participant_registration', {'eventSlug': event.slug}) }}" itemprop="url">
+                        <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'eventSlug': range.event.slug|default}) }}" itemprop="url">
                             <div class="card-header p-2">
                                 <h5 class="card-title mb-0 font-weight-bold font-1em">
                                     {% block range_preview_title %}
-                                        <span class="d-inline d-md-none">{{ range.shortName|default('Přihláška na '~event.shortName|default) }}</span>
-                                        <span class="d-none d-md-inline" itemprop="name">{{ range.name|default('Přihláška na akci '~event.name|default) }}</span>
+                                        <span class="d-inline d-md-none">{{ range.shortName|default('Přihláška na '~range.event.shortName|default) }}</span>
+                                        <span class="d-none d-md-inline" itemprop="name">{{ range.name|default('Přihláška na akci '~range.event.name|default) }}</span>
                                         <span class="float-right align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
                                     {% endblock range_preview_title %}
                                 </h5>
@@ -20,20 +20,21 @@
                     {% endif %}
                     <div class="card-body p-3">
                         {% if range.rangeAsText %}
-                            <h6 class="card-subtitle mb-2 text-muted"><strong>Rozmezí přihlášek:</strong> {{ range.rangeAsText|default }}</h6>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <stron is defined and eventg>Rozmezí přihlášek:</strong> {{ range.rangeAsText|default }}</h6>
                         {% endif %}
                         <h6 class="card-subtitle mb-2 text-muted">
                             <strong>Akce:</strong>
-                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}" title="{{ event }}" content="{{ event }}"
-                               itemprop="itemOffered" data-toggle="tooltip">
-                                {{ event.shortName }}
+                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug}) }}" title="{{ range.event|default }}"
+                               content="{{ range.event|default }}" itemprop="itemOffered" data-toggle="tooltip">
+                                {{ range.event.shortName|default }}
                             </a>
                         </h6>
-                        {% if event.rangeAsText %}
-                            <h6 class="card-subtitle mb-2 text-muted"><strong>Termín akce:</strong> {{ event.rangeAsText|default }}</h6>
+                        {% if range.event.rangeAsText|default %}
+                            <h6 class="card-subtitle mb-2 text-muted"><strong>Termín akce:</strong> {{ range.event.rangeAsText|default }}</h6>
                         {% endif %}
-                        {% if range.eventParticipantType %}
-                            <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.eventParticipantType.name }}</h6>
+                        {% if range.participantType|default %}
+                            <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.participantType.name|default }}</h6>
                         {% endif %}
                         {% if range.description %}
                             <div class="mt-2 mb-2" itemprop="description">{{ range.description }}</div>
@@ -42,7 +43,8 @@
                             <div class="text-muted mt-2 mb-2" itemprop="description">{{ range.note }}</div>
                         {% endif %}
                         {% if range.rangeActive %}
-                            <a href="{{ path('oswis_org_oswis_calendar_web_participant_registration', {'eventSlug': event.slug, 'participantType': range.eventParticipantType.slug}) }}">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_registration',
+                                {'eventSlug': range.event.slug|default, 'participantType': range.participantType.slug}) }}">
                                 <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
                             </a>
                         {% else %}
@@ -62,10 +64,10 @@
                         <div itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
                     </div>
                     <div class="card-footer row m-0">
-                        <div class="col-6 p-0"><strong>Záloha</strong><br>{{ event.deposit(range.eventParticipantType)|default(0) }},-&nbsp;Kč</div>
+                        <div class="col-6 p-0"><strong>Záloha</strong><br>{{ range.depositValue(range.participantType)|default(0) }},-&nbsp;Kč</div>
                         <div class="col-6 p-0">
                             <strong>Celkem</strong><br>
-                            <span itemprop="price">{{ event.price(range.eventParticipantType)|default(0) }}</span><span itemprop="priceCurrency" content="CZK">,-&nbsp;Kč</span>
+                            <span itemprop="price">{{ range.price(range.participantType)|default(0) }}</span><span itemprop="priceCurrency" content="CZK">,-&nbsp;Kč</span>
                         </div>
                     </div>
                 </div>

@@ -31,7 +31,7 @@
         </div>
     </div>
 {% endif %}
-{% if event.organizer.contact|default %}
+{% if event.organizer.contact|default %}{# TODO #}
     <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
         <meta itemprop="name" content="{{ event.organizer.contact.name|default('') }}"/>
         <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/>

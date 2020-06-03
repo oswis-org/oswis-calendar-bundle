@@ -420,6 +420,4 @@ class RegistrationController extends AbstractController
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event-registration-ranges.html.twig', $context);
     }
-
-
 }

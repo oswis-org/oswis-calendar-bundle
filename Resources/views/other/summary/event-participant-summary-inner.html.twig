@@ -1,49 +1,49 @@
 <li>
-    ID přihlášky: <span itemprop="reservationNumber">{{ eventParticipant.id }}</span><br>
-    <meta itemprop="reservationId" content="{{ eventParticipant.id }}"/>
-    <small itemprop="bookingTime" content="{{ eventParticipant.createdDateTime|date("c") }}">
-        ({{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }})
+    ID přihlášky: <span itemprop="reservationNumber">{{ participant.id }}</span><br>
+    <meta itemprop="reservationId" content="{{ participant.id }}"/>
+    <small itemprop="bookingTime" content="{{ participant.createdDateTime|date("c") }}">
+        ({{ participant.createdDateTime|date("j. n. Y, H:i") }})
     </small>
-    {% if eventParticipant.createdDateTime|date("c") != eventParticipant.updatedDateTime|date("c") %}
-        <br><small>(poslední změna {{ eventParticipant.updatedDateTime|date("j. n. Y, H:i") }})</small>
+    {% if participant.createdDateTime|date("c") != participant.updatedDateTime|date("c") %}
+        <br><small>(poslední změna {{ participant.updatedDateTime|date("j. n. Y, H:i") }})</small>
     {% endif %}
 </li>
 <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
-    <b><span itemprop="name">{{ eventParticipant.contact.fullName }}</span></b><br>
-    <small itemprop="email">({{ eventParticipant.contact.email }})</small>
+    <b><span itemprop="name">{{ participant.contact.fullName }}</span></b><br>
+    <small itemprop="email">({{ participant.contact.email }})</small>
 </li>
 <li>
-    <b>Typ: </b> {{ eventParticipant.participantType.name|default('neuveden') }}
+    <b>Typ: </b> {{ participant.participantType.name|default('neuveden') }}
 </li>
 <li>
-    <b>Cena celkem: </b> {{ eventParticipant.price }},- Kč
+    <b>Cena celkem: </b> {{ participant.price }},- Kč
     <br>
-    <small><b>Záloha:</b> {{ eventParticipant.priceDeposit }},- Kč</small>
+    <small><b>Záloha:</b> {{ participant.priceDeposit }},- Kč</small>
     <br>
-    <small><b>Doplatek:</b> {{ eventParticipant.priceRest }},- Kč</small>
-    {% if eventParticipant.variableSymbol %}<br>
-        <small><b>Variabilní symbol:</b> {{ eventParticipant.variableSymbol }}</small>{% endif %}
-    {% if eventParticipant.event.bankAccountComplete %}<br>
-        <small><b>Číslo účtu:</b> {{ eventParticipant.event.bankAccountComplete }}</small>
+    <small><b>Doplatek:</b> {{ participant.priceRest }},- Kč</small>
+    {% if participant.variableSymbol %}<br>
+        <small><b>Variabilní symbol:</b> {{ participant.variableSymbol }}</small>{% endif %}
+    {% if participant.event.bankAccountComplete %}<br>
+        <small><b>Číslo účtu:</b> {{ participant.event.bankAccountComplete }}</small>
     {% endif %}
 </li>
 <li>
-    <b>Zaplaceno:</b>&nbsp;{{ eventParticipant.paidPrice }},-&nbsp;Kč<br>
-    <small><b>Zbývá:</b>&nbsp;{{ eventParticipant.remainingPrice }},-&nbsp;Kč</small>
+    <b>Zaplaceno:</b>&nbsp;{{ participant.paidPrice }},-&nbsp;Kč<br>
+    <small><b>Zbývá:</b>&nbsp;{{ participant.remainingPrice }},-&nbsp;Kč</small>
 </li>
 <li>
-    <b>{{ eventParticipant.event.name }}</b><br>
+    <b>{{ participant.event.name }}</b><br>
     <small>
-        (od {{ eventParticipant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
-        do {{ eventParticipant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
+        (od {{ participant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
+        do {{ participant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
     </small>
 </li>
-{% for study in eventParticipant.contact.studies|filter(s => s.name|default|length > 0) %}
+{% for study in participant.contact.studies|filter(s => s.name|default|length > 0) %}
     <li>
         {{ study.organization.name }}
     </li>
 {% endfor %}
-{% for flagConnection in eventParticipant.participantFlagConnections %}
+{% for flagConnection in participant.participantFlagConnections %}
     <li>
         {{ flagConnection.eventParticipantFlag.name|default }}
         {% if flagConnection.textValue|default|length > 0 %}
@@ -58,12 +58,12 @@
         {% endif %}
     </li>
 {% endfor %}
-{% for detail in eventParticipant.contact.details|filter(detail => detail.content|default|length > 0) %}
+{% for detail in participant.contact.details|filter(detail => detail.content|default|length > 0) %}
     <li>
         {{ detail.typeName|default('Kontakt') }}: {{ detail.content }}
     </li>
 {% endfor %}
-{% for note in eventParticipant.participantNotes|filter(note => note.textValue|default|length > 0) %}
+{% for note in participant.participantNotes|filter(note => note.textValue|default|length > 0) %}
     <li>
         <b>Poznámka:</b>
         <p>

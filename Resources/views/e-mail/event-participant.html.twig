@@ -5,18 +5,18 @@
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
         <link itemprop="reservationStatus" href="http://schema.org/Confirmed"/>
-        <meta itemprop="modifiedTime" content="{{ eventParticipant.updatedDateTime|date('c') }}"/>
-        <meta itemprop="ticketToken" content="qrCode:{{ eventParticipant.id }}"/>{# TODO #}
-        <meta itemprop="ticketNumber" content="{{ eventParticipant.id }}"/>
+        <meta itemprop="modifiedTime" content="{{ participant.updatedDateTime|date('c') }}"/>
+        <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>{# TODO #}
+        <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
         <meta itemprop="numSeats" content="1"/>
 
         {% block message_message_outer %}
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
                     {% if isOrganization %}
-                        Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ eventParticipant.event.name }}</b>.
+                        Vaše organizace {{ participant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
                     {% else %}
-                        Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ eventParticipant.event.name }}</b>.
+                        Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
                     {% endif %}
                 {% endblock message_message_inner %}
             </p>
@@ -27,43 +27,42 @@
                 <p>
                     Uživatelské jméno u&nbsp;{{ f ? 'Vašeho' : 'Tvého' }} uživatelského účtu je
                     <b>{{ appUser.username|default(appUser.email) }}</b> a&nbsp;hlavní e-mail je nastaven na&nbsp;<b>{{ appUser.email }}</b>.
-                    {% if password is defined and password %}
+                    {% if password|default %}
                         U účtu bylo nastaveno nové, náhodně vygenerované, heslo&nbsp;<b>{{ password }}</b>.
                     {% endif %}
                     {% if portal|default %}{# TODO #}
                         Přihlašovací údaje slouží pro přihlášení do aplikace {{ portal }}, která bude již brzy dostupná na adrese:<br>
                         <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" title="{{ portal }}" target="_blank">
-                            {{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}
-                        </a>.
+                            {{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}</a>.
                     {% endif %}
                 </p>
             {% endif %}
         {% endblock message_app_user %}
 
         {% block message_payment_outer %}
-            {% if eventParticipant.priceDeposit > 0 or eventParticipant.priceRest > 0 %}
+            {% if participant.priceDeposit > 0 or participant.priceRest > 0 %}
                 <p>
-                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ eventParticipant.priceDeposit }},-&nbsp;Kč</b>,
+                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.priceDeposit }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
                     {% if event.bankAccountComplete|default %}
-                        na&nbsp;účet&nbsp;<b>{{ event.bankAccountComplete }}</b> s&nbsp;variabilním symbolem <b>{{ eventParticipant.variableSymbol }}</b>.
+                        na&nbsp;účet&nbsp;<b>{{ event.bankAccountComplete }}</b> s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
                         Samozřejmě počítáme s&nbsp;tím, že&nbsp;převod může pár dní trvat. :)
                     {% else %}
                         dle údajů uvedených na webových stránkách.
                     {% endif %}
                 </p>
 
-                {% if eventParticipant.priceRest > 0 %}
+                {% if participant.priceRest > 0 %}
                     <p>
-                        <b>Doplatek</b> ve&nbsp;výši <b>{{ eventParticipant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
                         úplně stejným způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
                     </p>
                 {% endif %}
 
-                {% if eventParticipant.priceDeposit > 0 and eventParticipant.priceRest > 0 %}
+                {% if participant.priceDeposit > 0 and participant.priceRest > 0 %}
                     <p>
                         Zálohu i doplatek můžeš zaplatit i v&nbsp;jedné společné platbě, potom jde o&nbsp;částku
-                        <span itemprop="totalPrice">{{ eventParticipant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
+                        <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
                     </p>
                 {% endif %}
             {% endif %}
