@@ -79,7 +79,7 @@ class RegistrationsRangeService
         return $repository;
     }
 
-    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): RegistrationsRange
+    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?RegistrationsRange
     {
         return $this->getRepository()->getRegistrationsRange(
             [

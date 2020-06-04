@@ -3,8 +3,8 @@
         <div class="col-12">
             <div class="card-deck">
                 <div class="card mt-2 mb-4">
-                    {% if range.rangeActive %}
-                        <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'eventSlug': range.event.slug|default}) }}" itemprop="url">
+                    {% if range.rangeActive|default %}
+                        <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}" itemprop="url">
                             <div class="card-header p-2">
                                 <h5 class="card-title mb-0 font-weight-bold font-1em">
                                     {% block range_preview_title %}
@@ -44,8 +44,7 @@
                             <div class="text-muted mt-2 mb-2" itemprop="description">{{ range.note }}</div>
                         {% endif %}
                         {% if range.rangeActive %}
-                            <a href="{{ path('oswis_org_oswis_calendar_web_registration',
-                                {'eventSlug': range.event.slug|default, 'participantType': range.participantType.slug}) }}">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
                                 <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
                             </a>
                         {% else %}

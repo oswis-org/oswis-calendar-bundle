@@ -28,7 +28,7 @@ class ParticipantController extends AbstractController
         return $this->render(
             '@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig',
             [
-                'footerPartners' => $this->participantService->getEventWebPartners(),
+                'footerPartners' => $this->participantService->getWebPartners(),
             ]
         );
     }

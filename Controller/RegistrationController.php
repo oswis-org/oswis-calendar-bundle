@@ -25,7 +25,6 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsAggregatedByType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContactConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
@@ -190,17 +189,15 @@ class RegistrationController extends AbstractController
      *
      * @return Response
      * @throws InvalidArgumentException
-     * @throws OswisException
-     * @throws OswisNotFoundException
-     * @throws OswisParticipantNotFoundException
+     * @throws OswisException|OswisNotFoundException|OswisParticipantNotFoundException|EventCapacityExceededException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {
         if (null === $rangeSlug) {
             return $this->redirectToDefaultRange();
         }
-        $range = $this->$this->registrationsRangeService->getRangeBySlug($rangeSlug, true, true);
-        if (null === $range || !($range instanceof RegistrationsRange)) {
+        $range = $this->registrationsRangeService->getRangeBySlug($rangeSlug, true, true);
+        if (null === $range || !($range instanceof RegistrationsRange) || !$range->isPublicOnWeb()) {
             throw new OswisNotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen.');
         }
         $participant = $this->getEmptyParticipant($range, null);
@@ -232,7 +229,7 @@ class RegistrationController extends AbstractController
                     $event,
                     $range,
                     "Tvoje přihláška na akci $eventName byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
-                    null,
+                    $form->createView()
                 );
             }
 
@@ -295,8 +292,7 @@ class RegistrationController extends AbstractController
      *
      * @return Participant
      * @throws InvalidArgumentException
-     * @throws OswisException
-     * @throws OswisParticipantNotFoundException
+     * @throws OswisException|OswisParticipantNotFoundException|EventCapacityExceededException
      */
     public function getEmptyParticipant(RegistrationsRange $range, ?AbstractContact $contact = null): Participant
     {
@@ -382,7 +378,7 @@ class RegistrationController extends AbstractController
         bool $max = false
     ): void {
         $this->checkParticipantSuperEvent($range, $participant);
-        $range->simulateParticipantAdd($onlyPublic, $max);
+        $range->simulateParticipantAdd($max);
         $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
     }
 
@@ -394,9 +390,9 @@ class RegistrationController extends AbstractController
      */
     public function checkParticipantSuperEvent(RegistrationsRange $range, Participant $participant): void
     {
-        if ($range->isSuperEventRequired()) {
+        if (true === $range->isSuperEventRequired()) {
             $included = false;
-            $participantsOfContact = $this->participantService->getEventParticipants(
+            $participantsOfContact = $this->participantService->getParticipants(
                 [
                     ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
                     ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
@@ -416,9 +412,8 @@ class RegistrationController extends AbstractController
     public function extractSelectedFlags(RegistrationsRange $registrationsRange, FormInterface $form): array
     {
         $selectedFlags = new ArrayCollection();
-        $formFlagsByType = $registrationsRange->getFlagsAggregatedByType(true, false);
-        foreach ($formFlagsByType as $formFlagsOfType) {
-            $flagTypeSlug = $formFlagsOfType['flagType'] && $formFlagsOfType['flagType'] instanceof ParticipantFlagType ? $formFlagsOfType['flagType']->getSlug() : 0;
+        $formFlagsByType = $registrationsRange->getFlagsAggregatedByType(null, null, true, false);
+        foreach ($formFlagsByType as $flagTypeSlug => $formFlagsOfType) {
             $oneFlag = $form["flag_$flagTypeSlug"] ? $form["flag_$flagTypeSlug"]->getData() : null;
             if ($oneFlag instanceof ParticipantFlag) {
                 $selectedFlags->add($oneFlag);

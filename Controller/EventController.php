@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
@@ -65,12 +66,19 @@ class EventController extends AbstractController
         if (!($event instanceof Event)) {
             throw new OswisNotFoundException('Událost nenalezena.');
         }
+        $rangesByEvent = $this->registrationsRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()]));
+        $ranges = [];
+        foreach ($rangesByEvent as $rangesOfEvent) {
+            $ranges = [...$ranges, ...$rangesOfEvent['ranges']];
+        }
+
         $data = array(
-            'title'       => $event->getShortName(),
-            'description' => $event->getDescription(),
-            'navEvents'   => $this->getNavigationEvents(),
-            'event'       => $event,
-            'organizer'   => $this->participantService->getOrganizer($event),
+            'title'              => $event->getShortName(),
+            'description'        => $event->getDescription(),
+            'registrationRanges' => $ranges,
+            'navEvents'          => $this->getNavigationEvents(),
+            'event'              => $event,
+            'organizer'          => $this->participantService->getOrganizer($event),
         );
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);

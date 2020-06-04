@@ -12,6 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -28,7 +29,7 @@ class RegistrationFormType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array                $options
      *
-     * @throws PriceInvalidArgumentException
+     * @throws PriceInvalidArgumentException|OswisException
      */
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -57,8 +58,8 @@ class RegistrationFormType extends AbstractType
 
     public function addFlagTypeFields(FormBuilderInterface $builder, RegistrationsRange $range): void
     {
-        foreach ($range->getFlagsAggregatedByType(true, false) as $flagsOfType) {
-            self::addFlagField($builder, $range, $flagsOfType['flagType'], $flagsOfType['flags']);
+        foreach ($range->getFlagsAggregatedByType(null, null, true, false) as $flagsOfType) {
+            self::addFlagField($builder, $range, $flagsOfType[array_key_first($flagsOfType)]['flagType'], $flagsOfType);
         }
     }
 
@@ -66,9 +67,15 @@ class RegistrationFormType extends AbstractType
         FormBuilderInterface $builder,
         RegistrationsRange $range,
         ?ParticipantFlagType $flagType,
-        array $flags
+        array $flagsOfType
     ): void {
         $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
+        $choices = [];
+        foreach ($flagsOfType as $item) {
+            if ($item['flag'] ?? false) {
+                $choices[] = $item['flag'];
+            }
+        }
         $builder->add(
             "flag_$flagTypeSlug",
             ChoiceType::class,
@@ -76,7 +83,7 @@ class RegistrationFormType extends AbstractType
                 'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
                 'help'         => $flagType ? $flagType->getDescription() : 'Ostatní příznaky, které nespadají do žádné kategorie.',
                 'required'     => $flagType ? $flagType->getMinInParticipant() > 1 : false,
-                'choices'      => $flags,
+                'choices'      => $choices,
                 'mapped'       => false,
                 'expanded'     => false,
                 'multiple'     => false,
@@ -158,7 +165,7 @@ class RegistrationFormType extends AbstractType
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
     {
         $builder->add(
-            'participantNotes',
+            'notes',
             CollectionType::class,
             array(
                 'label'         => false,

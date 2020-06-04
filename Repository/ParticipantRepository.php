@@ -23,7 +23,7 @@ class ParticipantRepository extends EntityRepository
     public const CRITERIA_ID = 'id';
     public const CRITERIA_EVENT = 'event';
     public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
-    public const CRITERIA_PARTICIPANT_TYPE_STRING = 'participantTypeOfType';
+    public const CRITERIA_PARTICIPANT_TYPE_STRING = 'participantTypeString';
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_RANGE = 'range';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
@@ -73,8 +73,7 @@ class ParticipantRepository extends EntityRepository
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
-            $queryBuilder->leftJoin('participant.range', 'range');
-            $eventQuery = ' range.event = :event_id ';
+            $eventQuery = ' participant.event = :event_id ';
             $queryBuilder->leftJoin('participant.event', 'e0');
             $recursiveDepth = !empty($opts[self::CRITERIA_EVENT_RECURSIVE_DEPTH]) ? $opts[self::CRITERIA_EVENT_RECURSIVE_DEPTH] : 0;
             for ($i = 0; $i < $recursiveDepth; $i++) {
@@ -104,8 +103,7 @@ class ParticipantRepository extends EntityRepository
     private function setParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantType) {
-            $queryBuilder->leftJoin('participant.range', 'range');
-            $queryBuilder->andWhere('range.participantType = :type_id');
+            $queryBuilder->andWhere('participant.participantType = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
         }
     }
@@ -113,9 +111,8 @@ class ParticipantRepository extends EntityRepository
     private function setParticipantTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING])) {
-            $queryBuilder->leftJoin('participant.range', 'range');
-            $queryBuilder->leftJoin('range.participantType', 'participantType');
-            $queryBuilder->andWhere('participantType.type = :type_string');
+            $queryBuilder->leftJoin('participant.participantType', 'participant_type_for_string');
+            $queryBuilder->andWhere('participant_type_for_string.type = :type_string');
             $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]);
         }
     }
@@ -123,7 +120,7 @@ class ParticipantRepository extends EntityRepository
     private function setIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('participant.deleted IS NULL');
+            $queryBuilder->andWhere('participant.range IS NOT NULL');
         }
     }
 
@@ -182,6 +179,4 @@ class ParticipantRepository extends EntityRepository
         return $participant instanceof Participant ? $participant : null;
     }
 }
-
-
 

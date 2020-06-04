@@ -90,6 +90,8 @@ class ParticipantService
         try {
             $this->em->persist($participant);
             $this->em->flush();
+            $participant->updateCachedColumns();
+            $this->em->flush();
             $infoMessage = 'CREATE: Created participant (by service) with ID [';
             $infoMessage .= $participant->getId().'] and contact name [';
             $infoMessage .= ($participant->getContact() ? $participant->getContact()->getName() : '').'] to range [';
@@ -428,30 +430,30 @@ class ParticipantService
 
     final public function getOrganizer(Event $event): ?AbstractContact
     {
-        $organizer = $this->getOrganizers($event)->map(fn(Participant $p) => $p->getContactConnection())->first();
-        if (empty($organizer)) {
+        $organizer = $this->getOrganizers($event)->map(fn(Participant $p) => $p->getContact())->first() ?: null;
+        if (null === $organizer) {
             $organizer = $event->getSuperEvent() ? $this->getOrganizer($event->getSuperEvent()) : null;
         }
 
-        return empty($organizer) ? null : $organizer;
+        return $organizer;
     }
 
     final public function getOrganizers(Event $event): Collection
     {
-        return $this->getEventParticipantsByTypeOfType($event, ParticipantType::TYPE_ORGANIZER);
+        return $this->getParticipantsByTypeString($event, ParticipantType::TYPE_ORGANIZER);
     }
 
-    public function getEventParticipantsByTypeOfType(
+    public function getParticipantsByTypeString(
         ?Event $event = null,
-        ?string $participantTypeOfType = ParticipantType::TYPE_ATTENDEE,
+        ?string $participantTypeString = ParticipantType::TYPE_ATTENDEE,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivated = true,
         ?int $depth = 1
     ): Collection {
-        return $this->getEventParticipants(
+        return $this->getParticipants(
             [
                 ParticipantRepository::CRITERIA_EVENT                   => $event,
-                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantTypeOfType,
+                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantTypeString,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED         => $includeDeleted,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH   => $depth,
             ],
@@ -459,7 +461,7 @@ class ParticipantService
         );
     }
 
-    public function getEventParticipants(
+    public function getParticipants(
         array $opts = [],
         ?bool $includeNotActivated = true,
         ?int $limit = null,
@@ -480,7 +482,7 @@ class ParticipantService
      * @throws OswisException
      * @throws RfcComplianceException
      */
-    public function sendEventParticipantList(
+    public function sendParticipantList(
         Event $event,
         ?ParticipantType $participantType = null,
         bool $detailed = false,
@@ -539,11 +541,11 @@ class ParticipantService
         }
     }
 
-    public function getEventWebPartners(array $opts = []): Collection
+    public function getWebPartners(array $opts = []): Collection
     {
         $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING] ??= ParticipantType::TYPE_PARTNER;
 
-        return $this->getEventParticipants($opts)->filter(
+        return $this->getParticipants($opts)->filter(
             fn(Participant $ep) => $ep->hasFlagOfTypeString(ParticipantFlagType::TYPE_PARTNER_HOMEPAGE)
         );
     }
@@ -563,7 +565,7 @@ class ParticipantService
      *
      * @return array
      */
-    public function getEventParticipantsAggregatedByFlags(
+    public function getParticipantsAggregatedByFlags(
         Event $event,
         ?ParticipantType $participantType = null,
         ?bool $includeDeleted = false,
@@ -578,7 +580,7 @@ class ParticipantService
             ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
         ];
-        $participants = $this->getEventParticipants($opts, $includeNotActivated);
+        $participants = $this->getParticipants($opts, $includeNotActivated);
         if ($participantType) {
             foreach ($participants as $participant) {
                 assert($participant instanceof Participant);
@@ -654,7 +656,7 @@ class ParticipantService
      * @return array
      * @throws Exception
      */
-    public function getActiveEventParticipantsAggregatedBySchool(
+    public function getActiveParticipantsAggregatedBySchool(
         Event $event,
         ?ParticipantType $participantType = null,
         ?bool $includeDeleted = false,
@@ -670,7 +672,7 @@ class ParticipantService
             ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $recursiveDepth,
         ];
-        $participants = $this->getEventParticipants($opts, $includeNotActivated);
+        $participants = $this->getParticipants($opts, $includeNotActivated);
         if (null !== $participantType) {
             foreach ($participants as $participant) {
                 assert($participant instanceof Participant);

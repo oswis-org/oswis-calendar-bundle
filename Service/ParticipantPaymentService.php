@@ -82,7 +82,7 @@ class ParticipantPaymentService
         $currencyAllowed = $currencyAllowed ?? 'CZK';
         $this->logger->info('CSV_PAYMENT_START');
         // $csvRow = null;
-        $eventParticipants = $this->participantService->getEventParticipantsByTypeOfType(
+        $eventParticipants = $this->participantService->getParticipantsByTypeString(
             $event,
             $eventParticipantTypeOfType,
             true,

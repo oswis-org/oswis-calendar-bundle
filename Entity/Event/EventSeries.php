@@ -40,6 +40,22 @@ class EventSeries implements NameableInterface
         }
     }
 
+    public function getEvents(?string $eventTypeString = null, ?int $year = null, bool $deleted = true): Collection
+    {
+        $events = $this->events ??= new ArrayCollection();
+        if (!$deleted) {
+            $events->filter(fn(Event $event) => !$event->isDeleted());
+        }
+        if (null !== $eventTypeString) {
+            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeString === $e->getTypeString());
+        }
+        if (null !== $year) {
+            $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());
+        }
+
+        return $events;
+    }
+
     public function removeEvent(?Event $contact): void
     {
         if ($contact && $this->getEvents()->removeElement($contact)) {
@@ -61,21 +77,5 @@ class EventSeries implements NameableInterface
         }
 
         return $seqId;
-    }
-
-    public function getEvents(?string $eventTypeString = null, ?int $year = null, bool $deleted = true): Collection
-    {
-        $events = $this->events ??= new ArrayCollection();
-        if (!$deleted) {
-            $events->filter(fn(Event $event) => !$event->isDeleted());
-        }
-        if (null !== $eventTypeString) {
-            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeString === $e->getTypeString());
-        }
-        if (null !== $year) {
-            $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());
-        }
-
-        return $events;
     }
 }

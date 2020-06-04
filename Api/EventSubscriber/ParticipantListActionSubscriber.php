@@ -56,7 +56,7 @@ final class ParticipantListActionSubscriber implements EventSubscriberInterface
         }
         try {
             assert($participantType instanceof ParticipantType);
-            $this->participantService->sendEventParticipantList($request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
+            $this->participantService->sendParticipantList($request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
         } catch (Exception $e) {
             $event->setResponse(new JsonResponse(['data' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR));
 

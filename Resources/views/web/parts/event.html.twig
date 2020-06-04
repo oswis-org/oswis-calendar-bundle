@@ -72,14 +72,16 @@
     </div>
 </section>
 
-<section class="row">
-    <header class="col-12">
-        <h3>Přihlášky</h3>
-    </header>
-</section>
-{% for range in registrationRanges %}
-    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
-{% endfor %}
+{% if registrationRanges|default and registrationRanges|length > 0 %}
+    <section class="row">
+        <header class="col-12">
+            <h3>Přihlášky</h3>
+        </header>
+    </section>
+    {% for range in registrationRanges %}
+        {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
+    {% endfor %}
+{% endif %}
 
 <section class="row text-justify">
     {% if event.webContent.textValue|default %}
