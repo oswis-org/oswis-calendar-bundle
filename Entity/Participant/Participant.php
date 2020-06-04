@@ -139,6 +139,12 @@ class Participant implements BasicInterface
     protected ?Event $event = null;
 
     /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?ParticipantType $participantType = null;
+
+    /**
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection", cascade={"all"}, fetch="EAGER"
      * )
@@ -186,7 +192,7 @@ class Participant implements BasicInterface
      * @param Collection|null                   $participantNotes
      * @param int|null                          $priority
      *
-     * @throws OswisException
+     * @throws OswisException|EventCapacityExceededException
      */
     public function __construct(
         ParticipantContactConnection $contactConnection = null,
@@ -195,6 +201,10 @@ class Participant implements BasicInterface
         ?Collection $participantNotes = null,
         ?int $priority = null
     ) {
+        $this->contactConnections = new ArrayCollection();
+        $this->rangeConnections = new ArrayCollection();
+        $this->notes = new ArrayCollection();
+        $this->flagRangeConnections = new ArrayCollection();
         $this->setContactConnection($contactConnection);
         $this->setRangeConnection($rangeConnection);
         $this->setNotes($participantNotes);
@@ -240,7 +250,7 @@ class Participant implements BasicInterface
 
     public function getContactConnections(bool $onlyActive = false, bool $onlyDeleted = false): Collection
     {
-        $connections = $this->contactConnections ?? new ArrayCollection();
+        $connections = $this->contactConnections ??= new ArrayCollection();
         if ($onlyActive) {
             $connections = $connections->filter(fn(ParticipantContactConnection $connection) => $connection->isActive());
         }
@@ -254,9 +264,32 @@ class Participant implements BasicInterface
     public function updateCachedColumns(): void
     {
         try {
-            $this->range = $this->getRangeConnection() ? $this->getRangeConnection()->getRange() : null;
-            $this->contact = $this->getContactConnection() ? $this->getContactConnection()->getContact() : null;
+            $this->range = $this->getRange();
+            $this->contact = $this->getContact();
+            $this->event = $this->getEvent();
+            $this->participantType = $this->getParticipantType();
         } catch (OswisException $e) {
+        }
+    }
+
+    /**
+     * @return RegistrationsRange|null
+     * @throws OswisException
+     */
+    public function getRange(): ?RegistrationsRange
+    {
+        return $this->getRangeConnection() ? $this->getRangeConnection()->getRange() : null;
+    }
+
+    /**
+     * @param RegistrationsRange|null $range
+     *
+     * @throws OswisException|EventCapacityExceededException
+     */
+    public function setRange(?RegistrationsRange $range): void
+    {
+        if ($this->getRange() !== $range) {
+            $this->setRangeConnection(new ParticipantRangeConnection($range));
         }
     }
 
@@ -271,7 +304,7 @@ class Participant implements BasicInterface
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
 
-        return $connections->first();
+        return $connections->first() ?: null;
     }
 
     public function getRangeConnections(bool $onlyActive = false, bool $onlyDeleted = false): Collection
@@ -287,29 +320,71 @@ class Participant implements BasicInterface
         return $connections;
     }
 
+    public function getContact(): ?AbstractContact
+    {
+        try {
+            return $this->getContactConnection() ? $this->getContactConnection()->getContact() : null;
+        } catch (OswisException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param AbstractContact $contact
+     *
+     * @throws OswisException
+     */
+    public function setContact(AbstractContact $contact): void
+    {
+        $this->setContactConnection(new ParticipantContactConnection($contact));
+    }
+
+    public function getEvent(): ?Event
+    {
+        try {
+            return $this->getRange() ? $this->getRange()->getEvent() : null;
+        } catch (OswisException $e) {
+            return null;
+        }
+    }
+
+    public function getParticipantType(): ?ParticipantType
+    {
+        try {
+            return $this->getRange() ? $this->getRange()->getParticipantType() : null;
+        } catch (OswisException $e) {
+            return null;
+        }
+    }
+
     /**
      * @param ParticipantRangeConnection|null $newRangeConnection
      *
+     * @throws EventCapacityExceededException
      * @throws OswisException
      */
     public function setRangeConnection(?ParticipantRangeConnection $newRangeConnection): void
     {
         $oldRangeConnection = $this->getRangeConnection();
-        $newRange = $newRangeConnection ? $newRangeConnection->getRange() : null;
         if ($oldRangeConnection !== $newRangeConnection) {
             foreach ($this->getRangeConnections(true) as $connection) {
                 if ($connection instanceof ParticipantRangeConnection) {
                     $connection->delete();
-                    $this->rangeConnections->remove($connection);
+                    $this->getRangeConnections()->remove($connection);
                 }
             }
             try {
-                if ($newRange) {
-                    $newRange->simulateAdd($this);
+                if ($newRangeConnection instanceof ParticipantRangeConnection) {
+                    if (null !== $newRangeConnection->getRange()) {
+                        $newRangeConnection->getRange()->simulateAdd($this);
+                    }
+                    $this->getRangeConnections()->add($newRangeConnection);
                 }
-                $this->rangeConnections->add($newRangeConnection);
-            } catch (EventCapacityExceededException $e) {
-                $this->rangeConnections->add($oldRangeConnection);
+            } catch (EventCapacityExceededException $exception) {
+                if ($oldRangeConnection instanceof ParticipantRangeConnection) {
+                    $this->getRangeConnections()->add($oldRangeConnection);
+                }
+                throw new $exception;
             }
         }
         $this->updateCachedColumns();
@@ -346,11 +421,6 @@ class Participant implements BasicInterface
     public function getContactPersons(DateTime $dateTime = null): Collection
     {
         return $this->getContact() ? $this->getContact()->getContactPersons($dateTime, true) : new ArrayCollection();
-    }
-
-    public function getContact(): ?AbstractContact
-    {
-        return $this->contact;
     }
 
     /**
@@ -394,34 +464,11 @@ class Participant implements BasicInterface
 
     public function isDeleted(): bool
     {
-        return !($this->getRange() && $this->getEvent() && $this->getParticipantType());
-    }
-
-    public function getRange(): ?RegistrationsRange
-    {
-        return $this->range;
-    }
-
-    /**
-     * @param RegistrationsRange|null $range
-     *
-     * @throws OswisException
-     */
-    public function setRange(?RegistrationsRange $range): void
-    {
-        if ($this->getRange() !== $range) {
-            $this->setRangeConnection(new ParticipantRangeConnection($range));
+        try {
+            return !($this->getRange() && $this->getEvent() && $this->getParticipantType());
+        } catch (OswisException $e) {
+            return false;
         }
-    }
-
-    public function getEvent(): ?Event
-    {
-        return $this->getRange() ? $this->getRange()->getEvent() : null;
-    }
-
-    public function getParticipantType(): ?ParticipantType
-    {
-        return $this->getRange() ? $this->getRange()->getParticipantType() : null;
     }
 
     /**
@@ -470,7 +517,7 @@ class Participant implements BasicInterface
 
     public function getNotes(): Collection
     {
-        return $this->notes ?? new ArrayCollection();
+        return $this->notes ??= new ArrayCollection();
     }
 
     public function setNotes(?Collection $notes): void
@@ -506,7 +553,7 @@ class Participant implements BasicInterface
         bool $onlyActive = false,
         bool $onlyDeleted = false,
         ?ParticipantFlagType $flagType = null,
-        ParticipantFlag $flag = null,
+        ?ParticipantFlag $flag = null,
         ?string $flagTypeString = null
     ): Collection {
         $connections = $this->flagRangeConnections ??= new ArrayCollection();
@@ -558,6 +605,7 @@ class Participant implements BasicInterface
 
     /**
      * @return int
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getRemainingRest(): int
@@ -568,6 +616,7 @@ class Participant implements BasicInterface
     /**
      * Gets part of price that is not marked as deposit.
      * @return int
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getPriceRest(): int
@@ -578,6 +627,7 @@ class Participant implements BasicInterface
     /**
      * Get whole price of event for this participant (including flags price).
      * @return int
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getPrice(): int
@@ -606,6 +656,7 @@ class Participant implements BasicInterface
     /**
      * Gets part of price that is marked as deposit.
      * @return int
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getDepositValue(): ?int
@@ -650,7 +701,7 @@ class Participant implements BasicInterface
     public function setPayments(?Collection $newParticipantPayments): void
     {
         $this->payments ??= new ArrayCollection();
-        $newParticipantPayments = $newParticipantPayments ?? new ArrayCollection();
+        $newParticipantPayments ??= new ArrayCollection();
         foreach ($this->getPayments() as $oldPayment) {
             if (!$newParticipantPayments->contains($oldPayment)) {
                 $this->removeParticipantPayment($oldPayment);
@@ -708,6 +759,7 @@ class Participant implements BasicInterface
     /**
      * Gets price remains to be paid.
      * @return int
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getRemainingPrice(): int
@@ -718,6 +770,7 @@ class Participant implements BasicInterface
     /**
      * Gets price deposit that remains to be paid.
      * @return int
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getRemainingDeposit(): int
@@ -730,6 +783,7 @@ class Participant implements BasicInterface
     /**
      * Gets percentage of price paid (as float).
      * @return float
+     * @throws OswisException
      * @throws PriceInvalidArgumentException
      */
     public function getPaidPricePercentage(): float
