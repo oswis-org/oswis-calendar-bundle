@@ -214,11 +214,11 @@ class Participant implements BasicInterface
             foreach ($this->getContactConnections(true) as $connection) {
                 if ($connection instanceof ParticipantContactConnection) {
                     $connection->delete();
-                    $this->contactConnections->remove($connection);
+                    $this->getContactConnections()->remove($connection);
                 }
             }
-            if (!$this->contactConnections->contains($contactConnection)) {
-                $this->contactConnections->add($contactConnection);
+            if (!$this->getContactConnections()->contains($contactConnection)) {
+                $this->getContactConnections()->add($contactConnection);
             }
             $this->updateCachedColumns();
         }
@@ -317,18 +317,18 @@ class Participant implements BasicInterface
 
     public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
     {
-        $resultCollection = new ArrayCollection();
+        $filtered = new ArrayCollection();
         foreach ($participants as $newParticipant) {
             assert($newParticipant instanceof self);
             if (!$includeNotActivated && !$newParticipant->hasActivatedContactUser()) {
                 continue;
             }
-            if (!$resultCollection->contains($newParticipant)) {
-                $resultCollection->add($newParticipant);
+            if (!$filtered->contains($newParticipant)) {
+                $filtered->add($newParticipant);
             }
         }
 
-        return $resultCollection;
+        return $filtered;
     }
 
     /**
@@ -485,8 +485,8 @@ class Participant implements BasicInterface
 
     public function addNote(?ParticipantNote $note): void
     {
-        if (null !== $note && !$this->notes->contains($note)) {
-            $this->notes->add($note);
+        if (null !== $note && !$this->getNotes()->contains($note)) {
+            $this->getNotes()->add($note);
         }
     }
 
@@ -496,8 +496,8 @@ class Participant implements BasicInterface
             foreach ($this->getFlagRangeConnections(true) as $connection) {
                 $this->removeFlagRangeConnection($connection);
             }
-            if (!$this->flagRangeConnections->contains($flagRangeConnection)) {
-                $this->flagRangeConnections->add($flagRangeConnection);
+            if (!$this->getFlagRangeConnections()->contains($flagRangeConnection)) {
+                $this->getFlagRangeConnections()->add($flagRangeConnection);
             }
         }
     }
@@ -509,7 +509,7 @@ class Participant implements BasicInterface
         ParticipantFlag $flag = null,
         ?string $flagTypeString = null
     ): Collection {
-        $connections = $this->flagRangeConnections ?? new ArrayCollection();
+        $connections = $this->flagRangeConnections ??= new ArrayCollection();
         if ($onlyActive) {
             $connections = $connections->filter(fn(ParticipantFlagRangeConnection $connection) => $connection->isActive());
         }
@@ -533,13 +533,13 @@ class Participant implements BasicInterface
     {
         $this->flagRangeConnections ??= new ArrayCollection();
         $newConnections ??= new ArrayCollection();
-        foreach ($this->flagRangeConnections as $oldConnection) {
+        foreach ($this->getFlagRangeConnections() as $oldConnection) {
             if (!$newConnections->contains($oldConnection)) {
                 $this->removeFlagRangeConnection($oldConnection);
             }
         }
         foreach ($newConnections as $newConnection) {
-            if (!$this->flagRangeConnections->contains($newConnection)) {
+            if (!$this->getFlagRangeConnections()->contains($newConnection)) {
                 $this->addFlagRangeConnection($newConnection);
             }
         }
@@ -552,7 +552,7 @@ class Participant implements BasicInterface
                 $flagRangeConnection->delete();
             } catch (Exception $e) {
             }
-            $this->flagRangeConnections->removeElement($flagRangeConnection);
+            $this->getFlagRangeConnections()->removeElement($flagRangeConnection);
         }
     }
 
@@ -642,22 +642,22 @@ class Participant implements BasicInterface
         return $paid;
     }
 
-    public function getPayments(): ?Collection
+    public function getPayments(): Collection
     {
-        return $this->payments ?? new ArrayCollection();
+        return $this->payments ??= new ArrayCollection();
     }
 
     public function setPayments(?Collection $newParticipantPayments): void
     {
-        $this->payments = $this->payments ?? new ArrayCollection();
+        $this->payments ??= new ArrayCollection();
         $newParticipantPayments = $newParticipantPayments ?? new ArrayCollection();
-        foreach ($this->payments as $oldPayment) {
+        foreach ($this->getPayments() as $oldPayment) {
             if (!$newParticipantPayments->contains($oldPayment)) {
                 $this->removeParticipantPayment($oldPayment);
             }
         }
         foreach ($newParticipantPayments as $newPayment) {
-            if (!$this->payments->contains($newPayment)) {
+            if (!$this->getPayments()->contains($newPayment)) {
                 $this->addParticipantPayment($newPayment);
             }
         }
@@ -746,8 +746,8 @@ class Participant implements BasicInterface
 
     public function addParticipantPayment(?ParticipantPayment $participantPayment): void
     {
-        if ($participantPayment && !$this->payments->contains($participantPayment)) {
-            $this->payments->add($participantPayment);
+        if ($participantPayment && !$this->getPayments()->contains($participantPayment)) {
+            $this->getPayments()->add($participantPayment);
             $participantPayment->setParticipant($this);
         }
     }

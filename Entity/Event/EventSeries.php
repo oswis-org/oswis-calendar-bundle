@@ -34,15 +34,15 @@ class EventSeries implements NameableInterface
 
     public function addEvent(?Event $event): void
     {
-        if ($event && !$this->events->contains($event)) {
-            $this->events->add($event);
+        if ($event && !$this->getEvents()->contains($event)) {
+            $this->getEvents()->add($event);
             $event->setSeries($this);
         }
     }
 
     public function removeEvent(?Event $contact): void
     {
-        if ($contact && $this->events->removeElement($contact)) {
+        if ($contact && $this->getEvents()->removeElement($contact)) {
             $contact->setSeries(null);
         }
     }
@@ -63,13 +63,14 @@ class EventSeries implements NameableInterface
         return $seqId;
     }
 
-    public function getEvents(?string $eventTypeOfType = null, ?int $year = null, ?bool $deleted = true): Collection
+    public function getEvents(?string $eventTypeString = null, ?int $year = null, bool $deleted = true): Collection
     {
-        $events = ($this->events ?? new ArrayCollection())->filter(fn(Event $e) => $deleted || !$e->isDeleted());
-        if (null !== $eventTypeOfType) {
-            $events = $events->filter(
-                fn(Event $e) => $e->getType() && $eventTypeOfType === $e->getType()->getType()
-            );
+        $events = $this->events ??= new ArrayCollection();
+        if (!$deleted) {
+            $events->filter(fn(Event $event) => !$event->isDeleted());
+        }
+        if (null !== $eventTypeString) {
+            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeString === $e->getTypeString());
         }
         if (null !== $year) {
             $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());
