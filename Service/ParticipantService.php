@@ -108,17 +108,13 @@ class ParticipantService
             }
             $eventName = $event->getName();
             $this->removeEmptyNotesAndDetails($participant, $contact);
-            $contact->addNote(new ContactNote("'Vytvořeno k přihlášce na akci ($eventName).'"));
-            $this->checkParticipant($range, $participant, $flags, true, false);
+            $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci ($eventName)."));
+            $this->checkParticipant($range, $participant, $flags, $onlyPublic, $max);
             $this->em->persist($participant);
             $participant->updateCachedColumns();
             $this->em->flush();
-            $infoMessage = 'CREATE: Created participant (by service) with ID [';
-            $infoMessage .= $participant->getId().'] and contact name [';
-            $infoMessage .= ($participant->getContact() ? $participant->getContact()->getName() : '').'] to range [';
-            $infoMessage .= ($participant->getRange() ? $participant->getRange()->getName() : '').'].';
             $mailSent = $this->sendMail($participant, true);
-            $infoMessage .= ' Mail '.(!$mailSent ? 'NOT' : '').' sent.';
+            $infoMessage = $this->getLogMessage($participant).' Mail '.(!$mailSent ? 'NOT' : '').' sent.';
             $this->logger ? $this->logger->info($infoMessage) : null;
             $this->em->flush();
 
@@ -439,7 +435,9 @@ class ParticipantService
             if (null === $event) {
                 return false;
             }
+            $participantId = $participant->getId();
             $contactPersons = $participant->getContactPersons();
+            $required = $contactPersons->count();
             $remaining = $contactPersons->count();
             $this->em->persist($participant);
             foreach ($contactPersons as $contactPerson) {
@@ -448,8 +446,10 @@ class ParticipantService
                 }
             }
             if ($remaining > 0) {
-                throw new OswisException("Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z ".$contactPersons->count().').');
+                $message = "Část ověřovacích zpráv se nepodařilo odeslat (chybí $remaining z $required) (přihláška $participantId).";
+                throw new OswisException($message);
             }
+            $this->logger->info("Odesláno $required ověřovacích zpráv k přihlášce $participantId.");
 
             return true;
         } catch (Exception $e) {
@@ -460,16 +460,13 @@ class ParticipantService
 
     /**
      * @param Person      $person
-     *
      * @param Participant $participant
      * @param Event       $event
      * @param bool        $new
      *
      * @return bool
-     * @throws LogicException
-     * @throws OswisException
-     * @throws OswisUserNotUniqueException
-     * @throws RfcComplianceException
+     * @throws LogicException|RfcComplianceException
+     * @throws OswisException|OswisUserNotUniqueException
      */
     public function sendVerification(Person $person, Participant $participant, Event $event, bool $new): bool
     {
@@ -792,5 +789,19 @@ class ParticipantService
                     ParticipantRepository::CRITERIA_APP_USER         => $appUser,
                 ]
             )->count() > 0;
+    }
+
+    private function getLogMessage(Participant $participant): string
+    {
+        $infoMessage = 'CREATE: Created participant (by service) with ';
+        $infoMessage .= 'ID ['.$participant->getId().']';
+        $infoMessage .= ' and contact name ';
+        $infoMessage .= '['.($participant->getContact() ? $participant->getContact()->getName() : '').']';
+        try {
+            $infoMessage .= ' to range ['.($participant->getRange() ? $participant->getRange()->getName() : '').'].';
+        } catch (OswisException $e) {
+        }
+
+        return $infoMessage;
     }
 }
