@@ -12,7 +12,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
@@ -71,7 +70,6 @@ class EventController extends AbstractController
         foreach ($rangesByEvent as $rangesOfEvent) {
             $ranges = [...$ranges, ...$rangesOfEvent['ranges']];
         }
-
         $data = array(
             'title'              => $event->getShortName(),
             'description'        => $event->getDescription(),

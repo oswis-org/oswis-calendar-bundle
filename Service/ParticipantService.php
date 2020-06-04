@@ -14,15 +14,18 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Mpdf\MpdfException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
 use OswisOrg\OswisAddressBookBundle\Entity\Organization;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Export\PdfExportList;
@@ -81,22 +84,43 @@ class ParticipantService
 
     /**
      * @param Participant $participant
+     * @param array|null  $flags
+     * @param bool        $onlyPublic
+     * @param bool        $max
      *
      * @return Participant|null
-     * @todo WTF? Refactor it.
+     * @todo WTF? Refactor it. Used is controller.
      */
-    final public function create(Participant $participant): ?Participant
+    public function create(?Participant $participant, ?array $flags = null, bool $onlyPublic = false, bool $max = false): ?Participant
     {
         try {
+            if (null === $participant || !($participant instanceof Participant)) {
+                throw new OswisException('Přihláška není kompletní nebo je poškozená.');
+            }
+            if (null === ($range = $participant->getRange())) {
+                throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrán žádný rozsah přihlášek.');
+            }
+            if (null === ($event = $participant->getEvent())) {
+                throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
+            }
+            if (!(($contact = $participant->getContact()) instanceof Person)) { // TODO: Organization?
+                throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
+            }
+            $eventName = $event->getName();
+            $this->removeEmptyNotesAndDetails($participant, $contact);
+            $contact->addNote(new ContactNote("'Vytvořeno k přihlášce na akci ($eventName).'"));
+            $this->checkParticipant($range, $participant, $flags, true, false);
             $this->em->persist($participant);
-            $this->em->flush();
             $participant->updateCachedColumns();
             $this->em->flush();
             $infoMessage = 'CREATE: Created participant (by service) with ID [';
             $infoMessage .= $participant->getId().'] and contact name [';
             $infoMessage .= ($participant->getContact() ? $participant->getContact()->getName() : '').'] to range [';
             $infoMessage .= ($participant->getRange() ? $participant->getRange()->getName() : '').'].';
+            $mailSent = $this->sendMail($participant, true);
+            $infoMessage .= ' Mail '.(!$mailSent ? 'NOT' : '').' sent.';
             $this->logger ? $this->logger->info($infoMessage) : null;
+            $this->em->flush();
 
             return $participant;
         } catch (Exception $e) {
@@ -106,24 +130,68 @@ class ParticipantService
         }
     }
 
-    /**
-     * Checks if contact is participant in event as given participantType.
-     *
-     * @param Event                $event
-     * @param AbstractContact      $contact
-     * @param ParticipantType|null $participantType
-     *
-     * @return bool
-     */
-    public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantType $participantType = null): bool
+    public function removeEmptyNotesAndDetails(Participant $participant, AbstractContact $contact): void
     {
-        $opts = [
-            ParticipantRepository::CRITERIA_EVENT            => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
-            ParticipantRepository::CRITERIA_CONTACT          => $contact,
-        ];
+        $participant->removeEmptyParticipantNotes();
+        $contact->removeEmptyDetails();
+        $contact->removeEmptyNotes();
+    }
 
-        return $this->getRepository()->getParticipants($opts)->count() > 0;
+    /**
+     * @param RegistrationsRange $range
+     * @param Participant        $participant
+     * @param array              $selectedFlags
+     * @param bool               $onlyPublic
+     * @param bool               $max
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function checkParticipant(
+        RegistrationsRange $range,
+        Participant $participant,
+        array $selectedFlags,
+        bool $onlyPublic = true,
+        bool $max = false
+    ): void {
+        $this->checkParticipantSuperEvent($range, $participant);
+        $range->simulateParticipantAdd($max);
+        $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
+    }
+
+    /**
+     * @param RegistrationsRange $range
+     * @param Participant        $participant
+     *
+     * @throws EventCapacityExceededException
+     */
+    public function checkParticipantSuperEvent(RegistrationsRange $range, Participant $participant): void
+    {
+        if (true === $range->isSuperEventRequired()) {
+            $included = false;
+            $participantsOfContact = $this->getParticipants(
+                [
+                    ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+                ]
+            );
+            foreach ($participantsOfContact as $participantOfContact) {
+                if ($participantOfContact instanceof Participant && $range->isParticipantInSuperEvent($participantOfContact)) {
+                    $included = true;
+                }
+            }
+            if (!$included) {
+                throw new EventCapacityExceededException('Pro přihlášku v tomto rozsahu je nutné se zúčastnit i nadřazené akce.');
+            }
+        }
+    }
+
+    public function getParticipants(
+        array $opts = [],
+        ?bool $includeNotActivated = true,
+        ?int $limit = null,
+        ?int $offset = null
+    ): Collection {
+        return $this->getRepository()->getParticipants($opts, $includeNotActivated, $limit, $offset);
     }
 
     final public function getRepository(): ParticipantRepository
@@ -428,6 +496,26 @@ class ParticipantService
         }
     }
 
+    /**
+     * Checks if contact is participant in event as given participantType.
+     *
+     * @param Event                $event
+     * @param AbstractContact      $contact
+     * @param ParticipantType|null $participantType
+     *
+     * @return bool
+     */
+    public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantType $participantType = null): bool
+    {
+        $opts = [
+            ParticipantRepository::CRITERIA_EVENT            => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+            ParticipantRepository::CRITERIA_CONTACT          => $contact,
+        ];
+
+        return $this->getRepository()->getParticipants($opts)->count() > 0;
+    }
+
     final public function getOrganizer(Event $event): ?AbstractContact
     {
         $organizer = $this->getOrganizers($event)->map(fn(Participant $p) => $p->getContact())->first() ?: null;
@@ -459,15 +547,6 @@ class ParticipantService
             ],
             $includeNotActivated
         );
-    }
-
-    public function getParticipants(
-        array $opts = [],
-        ?bool $includeNotActivated = true,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Collection {
-        return $this->getRepository()->getParticipants($opts, $includeNotActivated, $limit, $offset);
     }
 
     /**
