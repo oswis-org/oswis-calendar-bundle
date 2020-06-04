@@ -1,9 +1,4 @@
 <?php
-/**
- * @noinspection PhpUnusedParameterInspection
- * @noinspection PhpUnused
- * @noinspection MethodShouldBeFinalInspection
- */
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 

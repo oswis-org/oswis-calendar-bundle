@@ -235,7 +235,7 @@ class Participant implements BasicInterface
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
 
-        return $connections->first();
+        return $connections->first() ?: null;
     }
 
     public function getContactConnections(bool $onlyActive = false, bool $onlyDeleted = false): Collection

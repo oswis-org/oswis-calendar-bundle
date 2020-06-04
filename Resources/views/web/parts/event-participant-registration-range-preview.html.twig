@@ -19,14 +19,15 @@
                         {{ block('range_preview_title') }}
                     {% endif %}
                     <div class="card-body p-3">
-                        {% if range.rangeAsText %}
+                        {% if range.rangeAsText|default %}
                             <h6 class="card-subtitle mb-2 text-muted">
-                                <stron is defined and eventg>Rozmezí přihlášek:</strong> {{ range.rangeAsText|default }}</h6>
+                                <strong>Rozmezí přihlášek:</strong> {{ range.rangeAsText|default }}
+                            </h6>
                         {% endif %}
                         <h6 class="card-subtitle mb-2 text-muted">
                             <strong>Akce:</strong>
-                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug}) }}" title="{{ range.event|default }}"
-                               content="{{ range.event|default }}" itemprop="itemOffered" data-toggle="tooltip">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug|default}) }}" itemprop="itemOffered"
+                               title="{{ range.event|default }}" content="{{ range.event|default }}" data-toggle="tooltip">
                                 {{ range.event.shortName|default }}
                             </a>
                         </h6>

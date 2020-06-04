@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection RedundantDocCommentTagInspection
  * @noinspection PhpUnused
  */
 
