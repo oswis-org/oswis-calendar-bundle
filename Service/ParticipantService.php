@@ -89,41 +89,34 @@ class ParticipantService
      * @param bool        $max
      *
      * @return Participant|null
-     * @todo WTF? Refactor it. Used is controller.
+     * @throws OswisException|EventCapacityExceededException
      */
     public function create(?Participant $participant, ?array $flags = null, bool $onlyPublic = false, bool $max = false): ?Participant
     {
-        try {
-            if (null === $participant || !($participant instanceof Participant)) {
-                throw new OswisException('Přihláška není kompletní nebo je poškozená.');
-            }
-            if (null === ($range = $participant->getRange())) {
-                throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrán žádný rozsah přihlášek.');
-            }
-            if (null === ($event = $participant->getEvent())) {
-                throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
-            }
-            if (!(($contact = $participant->getContact()) instanceof Person)) { // TODO: Organization?
-                throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
-            }
-            $eventName = $event->getName();
-            $this->removeEmptyNotesAndDetails($participant, $contact);
-            $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci ($eventName)."));
-            $this->checkParticipant($range, $participant, $flags, $onlyPublic, $max);
-            $this->em->persist($participant);
-            $participant->updateCachedColumns();
-            $this->em->flush();
-            $mailSent = $this->sendMail($participant, true);
-            $infoMessage = $this->getLogMessage($participant).' Mail '.(!$mailSent ? 'NOT' : '').' sent.';
-            $this->logger ? $this->logger->info($infoMessage) : null;
-            $this->em->flush();
-
-            return $participant;
-        } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event participant not created (by service): '.$e->getMessage()) : null;
-
-            return null;
+        if (null === $participant || !($participant instanceof Participant)) {
+            throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
+        if (null === ($range = $participant->getRange())) {
+            throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrán žádný rozsah přihlášek.');
+        }
+        if (null === ($event = $participant->getEvent())) {
+            throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
+        }
+        if (!(($contact = $participant->getContact()) instanceof AbstractContact)) {
+            throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
+        }
+        $eventName = $event->getName();
+        $this->removeEmptyNotesAndDetails($participant, $contact);
+        $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci ($eventName)."));
+        $this->checkParticipant($range, $participant, $flags, $onlyPublic, $max);
+        $this->em->persist($participant);
+        $participant->updateCachedColumns();
+        $mailSent = $this->sendMail($participant, true);
+        $this->em->flush();
+        $infoMessage = $this->getLogMessage($participant).' Mail '.(!$mailSent ? 'NOT' : '').' sent.';
+        $this->logger->info($infoMessage);
+
+        return $participant;
     }
 
     public function removeEmptyNotesAndDetails(Participant $participant, AbstractContact $contact): void
@@ -145,13 +138,15 @@ class ParticipantService
     public function checkParticipant(
         RegistrationsRange $range,
         Participant $participant,
-        array $selectedFlags,
+        ?array $selectedFlags = null,
         bool $onlyPublic = true,
         bool $max = false
     ): void {
         $this->checkParticipantSuperEvent($range, $participant);
         $range->simulateParticipantAdd($max);
-        $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
+        if (is_array($selectedFlags)) {
+            $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
+        }
     }
 
     /**
@@ -294,14 +289,14 @@ class ParticipantService
     private function getMailData(Participant $participant, Event $event, Person $contactPerson, bool $isOrg = false): array
     {
         return [
-            'eventParticipant' => $participant,
-            'event'            => $event,
-            'contactPerson'    => $contactPerson,
-            'f'                => $participant->isFormal(),
-            'salutationName'   => $contactPerson->getSalutationName(),
-            'a'                => $contactPerson->getCzechSuffixA(),
-            'isOrganization'   => $isOrg,
-            'oswis'            => $this->coreSettings->getArray(),
+            'participant'    => $participant,
+            'event'          => $event,
+            'contactPerson'  => $contactPerson,
+            'f'              => $participant->isFormal(),
+            'salutationName' => $contactPerson->getSalutationName(),
+            'a'              => $contactPerson->getCzechSuffixA(),
+            'isOrganization' => $isOrg,
+            'oswis'          => $this->coreSettings->getArray(),
         ];
     }
 
@@ -331,7 +326,7 @@ class ParticipantService
     }
 
     /**
-     * Send summary of eventParticipant. Includes appUser info is appUser exist.
+     * Send summary of participant. Includes user info if user exist.
      *
      * @param Participant $participant
      * @param bool        $new
@@ -381,7 +376,7 @@ class ParticipantService
             $participantContact = $participant->getContact();
             $participantContactAppUser = $participantContact ? $participantContact->getAppUser() : null;
             $participantContactSlug = $participantContact ? $participantContact->getSlug() : null;
-            $mailData = $this->getMailData($participant, $event, $person);
+            $mailData = $this->getMailData($participant, $event, $person, $person->isOrganization());
             $mailData['appUser'] = $participantContactAppUser;
             $mailData['password'] = $password;
             $mailData['bankAccount'] = $event->getBankAccountComplete();
@@ -436,7 +431,7 @@ class ParticipantService
                 return false;
             }
             $participantId = $participant->getId();
-            $contactPersons = $participant->getContactPersons();
+            $contactPersons = $participant->getContactPersons(null, false);
             $required = $contactPersons->count();
             $remaining = $contactPersons->count();
             $this->em->persist($participant);
@@ -479,8 +474,8 @@ class ParticipantService
         }
         $person->getAppUser()->generateActivationRequestToken();
         $email = $this->getEmptyEmail($person, 'Ověření přihlášky');
+        $email->context($this->getMailData($participant, $event, $person, $person->isOrganization()));
         $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-verification.html.twig');
-        $email->context($this->getMailData($participant, $event, $person, $new));
         try {
             $this->em->flush();
             $this->mailer->send($email);
@@ -577,11 +572,11 @@ class ParticipantService
             }
         }
         $data = [
-            'title'                => $title,
-            'eventParticipantType' => $participantType,
-            'event'                => $event,
-            'events'               => $events,
-            'participantsService'  => $this,
+            'title'               => $title,
+            'participantType'     => $participantType,
+            'event'               => $event,
+            'events'              => $events,
+            'participantsService' => $this,
         ];
         $pdfString = null;
         $message = null;

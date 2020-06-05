@@ -18,7 +18,7 @@
 <li>
     <b>Cena celkem: </b> {{ participant.price }},- Kč
     <br>
-    <small><b>Záloha:</b> {{ participant.priceDeposit }},- Kč</small>
+    <small><b>Záloha:</b> {{ participant.depositValue }},- Kč</small>
     <br>
     <small><b>Doplatek:</b> {{ participant.priceRest }},- Kč</small>
     {% if participant.variableSymbol %}<br>
@@ -43,16 +43,16 @@
         {{ study.organization.name }}
     </li>
 {% endfor %}
-{% for flagConnection in participant.participantFlagConnections %}
+{% for flagConnection in participant.flagRangeConnections %}
     <li>
-        {{ flagConnection.eventParticipantFlag.name|default }}
+        {{ flagConnection.flag.name|default }}
         {% if flagConnection.textValue|default|length > 0 %}
             ({{ flagConnection.textValue }})
         {% endif %}
-        {% if flagConnection.eventParticipantFlag.price|default(0) != 0 %}
+        {% if flagConnection.flag.price|default(0) != 0 %}
             <small>
                 <b>
-                    ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
+                    ({{ flagConnection.flag.price > 0 ? '+' : '' }}{{ flagConnection.flag.price }},- Kč)
                 </b>
             </small>
         {% endif %}
@@ -63,7 +63,7 @@
         {{ detail.typeName|default('Kontakt') }}: {{ detail.content }}
     </li>
 {% endfor %}
-{% for note in participant.participantNotes|filter(note => note.textValue|default|length > 0) %}
+{% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
     <li>
         <b>Poznámka:</b>
         <p>

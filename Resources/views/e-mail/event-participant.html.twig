@@ -40,9 +40,9 @@
         {% endblock message_app_user %}
 
         {% block message_payment_outer %}
-            {% if participant.priceDeposit > 0 or participant.priceRest > 0 %}
+            {% if participant.depositValue > 0 or participant.price > 0 %}
                 <p>
-                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.priceDeposit }},-&nbsp;Kč</b>,
+                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
                     {% if event.bankAccountComplete|default %}
                         na&nbsp;účet&nbsp;<b>{{ event.bankAccountComplete }}</b> s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
@@ -52,14 +52,14 @@
                     {% endif %}
                 </p>
 
-                {% if participant.priceRest > 0 %}
+                {% if participant.price > 0 %}
                     <p>
-                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.price }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
                         úplně stejným způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
                     </p>
                 {% endif %}
 
-                {% if participant.priceDeposit > 0 and participant.priceRest > 0 %}
+                {% if participant.depositValue > 0 and participant.price > 0 %}
                     <p>
                         Zálohu i doplatek můžeš zaplatit i v&nbsp;jedné společné platbě, potom jde o&nbsp;částku
                         <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.

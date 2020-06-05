@@ -56,7 +56,7 @@
                         {{ study.organization.name }}
                     </li>
                 {% endfor %}
-                {% for flagConnection in data.eventParticipant.participantFlagConnections %}
+                {% for flagConnection in data.eventParticipant.flagRangeConnections %}
                     <li>
                         {{ flagConnection.eventParticipantFlag.name }}
                         {% if flagConnection.textValue and flagConnection.textValue|length > 0 %}

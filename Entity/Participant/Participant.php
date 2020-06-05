@@ -415,12 +415,12 @@ class Participant implements BasicInterface
      */
     public function hasActivatedContactUser(?DateTime $dateTime = null): bool
     {
-        return $this->getContactPersons($dateTime)->count() > 0;
+        return $this->getContactPersons($dateTime, true)->count() > 0;
     }
 
-    public function getContactPersons(DateTime $dateTime = null): Collection
+    public function getContactPersons(DateTime $dateTime = null, bool $onlyActivated = false): Collection
     {
-        return $this->getContact() ? $this->getContact()->getContactPersons($dateTime, true) : new ArrayCollection();
+        return $this->getContact() ? $this->getContact()->getContactPersons($dateTime, $onlyActivated) : new ArrayCollection();
     }
 
     /**
