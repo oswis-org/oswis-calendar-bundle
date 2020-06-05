@@ -205,7 +205,7 @@ class ParticipantService
             foreach ($flagsOfType as $flagSlug => $aggregatedFlag) {
                 if ($flag = ($aggregatedFlag['flag'] instanceof ParticipantFlag ? $aggregatedFlag['flag'] : null)) {
                     for ($index = 0; $index < ($aggregatedFlag['count'] ?? 0); $index++) {
-                        $flagRange = $range->getFlagRange($flag);
+                        $flagRange = $range->getFlagRange($flag, $max, $onlyPublic);
                         $participant->addFlagRangeConnection(new ParticipantFlagRangeConnection($flagRange));
                     }
                 }
