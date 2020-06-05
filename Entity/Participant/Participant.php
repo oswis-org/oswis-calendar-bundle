@@ -540,9 +540,6 @@ class Participant implements BasicInterface
     public function addFlagRangeConnection(?ParticipantFlagRangeConnection $flagRangeConnection): void
     {
         if (null !== $flagRangeConnection) {
-            foreach ($this->getFlagRangeConnections(true) as $connection) {
-                $this->removeFlagRangeConnection($connection);
-            }
             if (!$this->getFlagRangeConnections()->contains($flagRangeConnection)) {
                 $this->getFlagRangeConnections()->add($flagRangeConnection);
             }
@@ -597,9 +594,9 @@ class Participant implements BasicInterface
         if (null !== $flagRangeConnection) {
             try {
                 $flagRangeConnection->delete();
+                $this->getFlagRangeConnections()->removeElement($flagRangeConnection);
             } catch (Exception $e) {
             }
-            $this->getFlagRangeConnections()->removeElement($flagRangeConnection);
         }
     }
 
@@ -704,12 +701,12 @@ class Participant implements BasicInterface
         $newParticipantPayments ??= new ArrayCollection();
         foreach ($this->getPayments() as $oldPayment) {
             if (!$newParticipantPayments->contains($oldPayment)) {
-                $this->removeParticipantPayment($oldPayment);
+                $this->removePayment($oldPayment);
             }
         }
         foreach ($newParticipantPayments as $newPayment) {
             if (!$this->getPayments()->contains($newPayment)) {
-                $this->addParticipantPayment($newPayment);
+                $this->addPayment($newPayment);
             }
         }
     }
@@ -791,14 +788,14 @@ class Participant implements BasicInterface
         return $this->getPaidPrice() / $this->getPrice();
     }
 
-    public function removeParticipantPayment(?ParticipantPayment $participantPayment): void
+    public function removePayment(?ParticipantPayment $participantPayment): void
     {
         if ($participantPayment && $this->payments->removeElement($participantPayment)) {
             $participantPayment->setParticipant(null);
         }
     }
 
-    public function addParticipantPayment(?ParticipantPayment $participantPayment): void
+    public function addPayment(?ParticipantPayment $participantPayment): void
     {
         if ($participantPayment && !$this->getPayments()->contains($participantPayment)) {
             $this->getPayments()->add($participantPayment);

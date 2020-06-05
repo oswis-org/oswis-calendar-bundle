@@ -115,11 +115,11 @@ class ParticipantPayment extends AbstractPayment
     public function setParticipant(?Participant $participant): void
     {
         if ($this->participant && $participant !== $this->participant) {
-            $this->participant->removeParticipantPayment($this);
+            $this->participant->removePayment($this);
         }
         if ($participant && $this->participant !== $participant) {
             $this->participant = $participant;
-            $participant->addParticipantPayment($this);
+            $participant->addPayment($this);
         }
     }
 }
