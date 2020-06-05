@@ -54,7 +54,7 @@
 
                 {% if participant.price > 0 %}
                     <p>
-                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.price }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
+                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
                         úplně stejným způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
                     </p>
                 {% endif %}
