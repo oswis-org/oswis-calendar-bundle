@@ -3994,16 +3994,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.537",
+      "version": "v0.0.540",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "f93a184506bc7f25f8cc98b566a55739ed1a8075"
+        "reference": "0d8799fa3f418a719238fa889c2fc02b9c90583f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/f93a184506bc7f25f8cc98b566a55739ed1a8075",
-        "reference": "f93a184506bc7f25f8cc98b566a55739ed1a8075",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/0d8799fa3f418a719238fa889c2fc02b9c90583f",
+        "reference": "0d8799fa3f418a719238fa889c2fc02b9c90583f",
         "shasum": ""
       },
       "require": {
@@ -4033,6 +4033,7 @@
         "php": "^7.4",
         "php-console/php-console": "^3.1",
         "psr/event-dispatcher": "^1.0",
+        "rikudou/czqrpayment": "^4.0",
         "sensio/framework-extra-bundle": "^5.5",
         "symfony/asset": "^5.0",
         "symfony/browser-kit": "^5.0",
@@ -4100,7 +4101,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-06-03T22:34:54+00:00"
+      "time": "2020-06-05T13:19:48+00:00"
     },
     {
       "name": "paragonie/random_compat",

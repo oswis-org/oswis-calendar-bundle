@@ -539,10 +539,8 @@ class Participant implements BasicInterface
 
     public function addFlagRangeConnection(?ParticipantFlagRangeConnection $flagRangeConnection): void
     {
-        if (null !== $flagRangeConnection) {
-            if (!$this->getFlagRangeConnections()->contains($flagRangeConnection)) {
-                $this->getFlagRangeConnections()->add($flagRangeConnection);
-            }
+        if (null !== $flagRangeConnection && !$this->getFlagRangeConnections()->contains($flagRangeConnection)) {
+            $this->getFlagRangeConnections()->add($flagRangeConnection);
         }
     }
 

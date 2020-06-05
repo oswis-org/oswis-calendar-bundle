@@ -15,6 +15,7 @@ use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
@@ -78,7 +79,9 @@ class Event implements NameableInterface
     use NameableTrait;
     use DateRangeTrait;
     use ColorTrait;
-    use BankAccountTrait;
+    use BankAccountTrait {
+        getBankAccount as traitGetBankAccount;
+    }
     use DeletedTrait;
     use EntityPublicTrait;
 
@@ -89,7 +92,6 @@ class Event implements NameableInterface
     protected ?Place $location = null;
 
     /**
-     * @var Collection<EventFlagConnection> $flagConnections
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection", cascade={"all"}, fetch="EAGER"
      * )
@@ -254,6 +256,14 @@ class Event implements NameableInterface
     public function setLocation(?Place $event): void
     {
         $this->location = $event;
+    }
+
+    public function getBankAccount(bool $recursive = false): ?BankAccount
+    {
+        $fullBankAccount = $this->traitGetBankAccount();
+        $fullBankAccount ??= true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getBankAccount($recursive) : null;
+
+        return $fullBankAccount;
     }
 
     public function getStartDateTimeRecursive(): ?DateTime

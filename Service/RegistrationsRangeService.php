@@ -50,7 +50,6 @@ class RegistrationsRangeService
         }
     }
 
-
     public function updateUsage(RegistrationsRange $range): void
     {
         $usage = $this->getRegistrationsRangeConnectionsByRange($range, false)->count();

@@ -32,13 +32,12 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Export\PdfExportList;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
+use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Psr\Log\LoggerInterface;
-use rikudou\CzQrPayment\QrPayment;
-use rikudou\CzQrPayment\QrPaymentOptions;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -399,7 +398,6 @@ class ParticipantService
             $mailData = $this->getMailData($participant, $event, $person, $person->isOrganization());
             $mailData['appUser'] = $participantContactAppUser;
             $mailData['password'] = $password;
-            $mailData['bankAccount'] = $event->getBankAccountComplete();
             $email = $this->getEmptyEmail($person, !$new ? 'Změna přihlášky' : 'Shrnutí nové přihlášky');
             $qrComment = "$participantContactSlug, ID ".$participant->getId().', akce '.$event->getId();
             foreach (['depositQr' => true, 'restQr' => false] as $key => $isDeposit) {
@@ -424,15 +422,14 @@ class ParticipantService
     private static function getQrPng(Event $event, Participant $participant, string $qrComment, bool $isDeposit): ?string
     {
         try {
-            return (new QrPayment(
-                $event->getBankAccountNumber(), $event->getBankAccountBank(), [
-                    QrPaymentOptions::VARIABLE_SYMBOL => $participant->getVariableSymbol(),
-                    QrPaymentOptions::AMOUNT          => $isDeposit ? $participant->getDepositValue() : $participant->getPriceRest(),
-                    QrPaymentOptions::CURRENCY        => 'CZK',
-                    QrPaymentOptions::COMMENT         => $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek'),
-                ]
-            ))->getQrImage(true)->writeString();
-        } catch (Exception $e) {
+            $bankAccount = $event->getBankAccount(true);
+
+            return $bankAccount ? $bankAccount->getQrImage(
+                $isDeposit ? $participant->getDepositValue() : $participant->getPriceRest(),
+                $participant->getVariableSymbol(),
+                $qrComment.', '.($isDeposit ? 'záloha' : 'doplatek')
+            ) : null;
+        } catch (OswisException|PriceInvalidArgumentException $e) {
             return null;
         }
     }
