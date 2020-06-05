@@ -85,7 +85,6 @@ class RegistrationController extends AbstractController
      */
     public function verification(string $token, int $participantId): Response
     {
-        // TODO: Check and refactor.
         try {
             if (empty($token) || empty($participantId)) {
                 return $this->getResponse(
@@ -102,43 +101,19 @@ class RegistrationController extends AbstractController
             $participant = $this->getParticipantService()->getRepository()->findOneBy(['id' => $participantId]);
             if (null === $participant || null === $participant->getContact()) {
                 $error = null === $participant ? ', přihláška nenalezena' : '';
-                $error .= !($participant->getContact() instanceof AbstractContact) ? ', účastník nenalezen' : '';
+                $error .= !($participant->getContact() instanceof AbstractContact) ? ', kontakt nenalezen' : '';
+                $message = "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $participantId$error)";
 
-                return $this->getResponse(
-                    'error',
-                    'Chyba!',
-                    true,
-                    $participant->getEvent(),
-                    null,
-                    "Aktivace se nezdařila. Kontaktujte nás, prosím. (token $token, přihláška č. $participantId$error)"
-                );
+                return $this->getResponse('error', 'Chyba!', true, $participant->getEvent(), null, $message);
             }
-            $participant->removeEmptyParticipantNotes();
-            if (null !== $participant->getContact()) {
-                $participant->getContact()->removeEmptyDetails();
-                $participant->getContact()->removeEmptyNotes();
-            }
-            $this->getParticipantService()->sendMail($participant, true, $token);
+            $this->participantService->verify($participant, $token);
 
-            return $this->getResponse(
-                'success',
-                'Hotovo!',
-                true,
-                $participant->getEvent(),
-                null,
-                'Ověření uživatele proběhlo úspěšně.'
-            );
+            return $this->getResponse('success', 'Hotovo!', true, $participant->getEvent(), null, 'Ověření uživatele proběhlo úspěšně.');
         } catch (Exception $e) {
             $this->logger->notice('OSWIS_CONFIRM_ERROR: '.$e->getMessage());
+            $message = 'Registraci a přihlášku se nepodařilo potvrdit. Kontaktujte nás a společně to vyřešíme.';
 
-            return $this->getResponse(
-                'error',
-                'Neočekávaná chyba!',
-                true,
-                null,
-                null,
-                'Registraci a přihlášku se nepodařilo potvrdit. Kontaktujte nás a společně to vyřešíme.'
-            );
+            return $this->getResponse('error', 'Neočekávaná chyba!', true, null, null, $message);
         }
     }
 

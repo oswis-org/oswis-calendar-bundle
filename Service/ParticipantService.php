@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
@@ -88,10 +89,10 @@ class ParticipantService
      * @param bool        $onlyPublic
      * @param bool        $max
      *
-     * @return Participant|null
+     * @return Participant
      * @throws OswisException|EventCapacityExceededException
      */
-    public function create(?Participant $participant, ?array $flags = null, bool $onlyPublic = false, bool $max = false): ?Participant
+    public function create(?Participant $participant, ?array $flags = null, bool $onlyPublic = false, bool $max = false): Participant
     {
         if (null === $participant || !($participant instanceof Participant)) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
@@ -102,13 +103,14 @@ class ParticipantService
         if (null === ($event = $participant->getEvent())) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
         }
-        if (!(($contact = $participant->getContact()) instanceof AbstractContact)) {
+        if (null === ($contact = $participant->getContact())) {
             throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
         }
         $eventName = $event->getName();
         $this->removeEmptyNotesAndDetails($participant, $contact);
         $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci ($eventName)."));
         $this->checkParticipant($range, $participant, $flags, $onlyPublic, $max);
+        $this->processFlagsAdd($participant, $range, $flags, $onlyPublic, $max);
         $this->em->persist($participant);
         $participant->updateCachedColumns();
         $mailSent = $this->sendMail($participant, true);
@@ -143,7 +145,6 @@ class ParticipantService
         bool $max = false
     ): void {
         $this->checkParticipantSuperEvent($range, $participant);
-        $range->simulateParticipantAdd($max);
         if (is_array($selectedFlags)) {
             $range->simulateFlagsAdd($selectedFlags, $onlyPublic, $max);
         }
@@ -191,6 +192,25 @@ class ParticipantService
         assert($repository instanceof ParticipantRepository);
 
         return $repository;
+    }
+
+    public function processFlagsAdd(
+        Participant $participant,
+        RegistrationsRange $range,
+        ?array $flagsAggregatedByType = null,
+        bool $onlyPublic = false,
+        bool $max = false
+    ): void {
+        foreach ($flagsAggregatedByType as $typeSlug => $flagsOfType) {
+            foreach ($flagsOfType as $flagSlug => $aggregatedFlag) {
+                if ($flag = ($aggregatedFlag['flag'] instanceof ParticipantFlag ? $aggregatedFlag['flag'] : null)) {
+                    for ($index = 0; $index < ($aggregatedFlag['count'] ?? 0); $index++) {
+                        $flagRange = $range->getFlagRange($flag);
+                        $participant->addFlagRangeConnection(new ParticipantFlagRangeConnection($flagRange));
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -486,6 +506,34 @@ class ParticipantService
             $this->logger->error($e->getMessage());
             throw new OswisException('Odeslání ověřovacího e-mailu se nezdařilo ('.$e->getMessage().').');
         }
+    }
+
+    private function getLogMessage(Participant $participant): string
+    {
+        $infoMessage = 'CREATE: Created participant (by service) with ';
+        $infoMessage .= 'ID ['.$participant->getId().']';
+        $infoMessage .= ' and contact name ';
+        $infoMessage .= '['.($participant->getContact() ? $participant->getContact()->getName() : '').']';
+        try {
+            $infoMessage .= ' to range ['.($participant->getRange() ? $participant->getRange()->getName() : '').'].';
+        } catch (OswisException $e) {
+        }
+
+        return $infoMessage;
+    }
+
+    /**
+     * @param Participant $participant
+     * @param string|null $token
+     *
+     * @return bool
+     * @throws OswisException
+     */
+    public function verify(Participant $participant, ?string $token = null): bool
+    {
+        $this->removeEmptyNotesAndDetails($participant, $participant->getContact());
+
+        return $this->sendMail($participant, true, $token);
     }
 
     /**
@@ -784,19 +832,5 @@ class ParticipantService
                     ParticipantRepository::CRITERIA_APP_USER         => $appUser,
                 ]
             )->count() > 0;
-    }
-
-    private function getLogMessage(Participant $participant): string
-    {
-        $infoMessage = 'CREATE: Created participant (by service) with ';
-        $infoMessage .= 'ID ['.$participant->getId().']';
-        $infoMessage .= ' and contact name ';
-        $infoMessage .= '['.($participant->getContact() ? $participant->getContact()->getName() : '').']';
-        try {
-            $infoMessage .= ' to range ['.($participant->getRange() ? $participant->getRange()->getName() : '').'].';
-        } catch (OswisException $e) {
-        }
-
-        return $infoMessage;
     }
 }

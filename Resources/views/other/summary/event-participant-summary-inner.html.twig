@@ -51,23 +51,17 @@
         {% endif %}
         {% if flagConnection.flag.price|default(0) != 0 %}
             <small>
-                <b>
-                    ({{ flagConnection.flag.price > 0 ? '+' : '' }}{{ flagConnection.flag.price }},- Kč)
-                </b>
+                <b>({{ flagConnection.flag.price > 0 ? '+' : '' }}{{ flagConnection.flag.price }},- Kč)</b>
             </small>
         {% endif %}
     </li>
 {% endfor %}
 {% for detail in participant.contact.details|filter(detail => detail.content|default|length > 0) %}
-    <li>
-        {{ detail.typeName|default('Kontakt') }}: {{ detail.content }}
-    </li>
+    <li>{{ detail.typeName|default('Kontakt') }}: {{ detail.content }}</li>
 {% endfor %}
 {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
     <li>
         <b>Poznámka:</b>
-        <p>
-            <small>{{ note.textValue }}</small>
-        </p>
+        <p><small>{{ note.textValue }}</small></p>
     </li>
 {% endfor %}

@@ -111,13 +111,11 @@ class Event implements NameableInterface
     protected ?Event $superEvent = null;
 
     /**
-     * @var Collection<Event> $subEvents
      * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent")
      */
     protected ?Collection $subEvents = null;
 
     /**
-     * @var Collection<EventWebContent> $webContents
      * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_event_web_content_connection",
