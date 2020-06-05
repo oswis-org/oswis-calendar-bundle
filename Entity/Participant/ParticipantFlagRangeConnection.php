@@ -10,7 +10,7 @@ use DateTime;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
@@ -23,7 +23,7 @@ class ParticipantFlagRangeConnection implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;
-    use DeletedTrait;
+    use DeletedMailConfirmationTrait;
 
     /**
      * Event contact flag.
