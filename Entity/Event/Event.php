@@ -165,12 +165,6 @@ class Event implements NameableInterface
         $this->setFieldsFromPublicity($publicity);
     }
 
-    public function setBankAccount(?string $number, ?string $bank): void
-    {
-        $this->setBankAccountNumber($number);
-        $this->setBankAccountBank($bank);
-    }
-
     public function getImage(): ?EventImage
     {
         return $this->image;
@@ -260,10 +254,12 @@ class Event implements NameableInterface
 
     public function getBankAccount(bool $recursive = false): ?BankAccount
     {
-        $fullBankAccount = $this->traitGetBankAccount();
-        $fullBankAccount ??= true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getBankAccount($recursive) : null;
+        $bankAccount = $this->traitGetBankAccount();
+        if (empty($bankAccount->getFull())) {
+            $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()->getBankAccount($recursive) : null;
+        }
 
-        return $fullBankAccount;
+        return $bankAccount;
     }
 
     public function getStartDateTimeRecursive(): ?DateTime
