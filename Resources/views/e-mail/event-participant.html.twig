@@ -44,14 +44,14 @@
                 <p>
                     Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
-                    {% if event.bankAccount(true).full|default %}
-                        na&nbsp;účet&nbsp;<b>{{ event.bankAccount(true).full }}</b> s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
+                    {% if participant.event.getBankAccount(true)|default %}
+                        na&nbsp;účet&nbsp;<b>{{ participant.event.getBankAccount(true).getFull() }}</b>
+                        s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
                         Samozřejmě počítáme s&nbsp;tím, že&nbsp;převod může pár dní trvat. :)
                     {% else %}
                         dle údajů uvedených na webových stránkách.
                     {% endif %}
                 </p>
-
                 {% if participant.price > 0 %}
                     <p>
                         <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
@@ -82,7 +82,4 @@
         {% endblock message_footer %}
     </div>
 {% endblock %}
-
-
-
 
