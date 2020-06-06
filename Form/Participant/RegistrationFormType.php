@@ -76,6 +76,7 @@ class RegistrationFormType extends AbstractType
                 $choices[] = $item['flag'];
             }
         }
+        $multiple = $flagType ? $flagType->getMaxInParticipant() !== 1 : true;
         $builder->add(
             "flag_$flagTypeSlug",
             ChoiceType::class,
@@ -86,13 +87,27 @@ class RegistrationFormType extends AbstractType
                 'choices'      => $choices,
                 'mapped'       => false,
                 'expanded'     => false,
-                'multiple'     => $flagType ? $flagType->getMaxInParticipant() !== 1 : true,
+                'multiple'     => $multiple,
+                'attr'         => [
+                    'size' => $multiple ? self::getFlagsGroupNames($range, $flagType) : null,
+                ],
                 'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
                 'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
                 'group_by'     => fn(ParticipantFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
                 'placeholder'  => $flagType->getEmptyPlaceholder(),
             ]
         );
+    }
+
+    public static function getFlagsGroupNames(RegistrationsRange $range, ParticipantFlagType $flagType): array
+    {
+        $groups = [];
+        foreach ($range->getFlags($flagType, null, true, false) as $flag) {
+            $groupName = self::getFlagGroupName($range, $flagType, $flag);
+            $groups[$groupName] = ($groups[$groupName] ?? 0) + 1;
+        }
+
+        return $groups;
     }
 
     /**
