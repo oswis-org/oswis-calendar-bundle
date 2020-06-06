@@ -1,4 +1,4 @@
-{% if partner.contact is defined and partner.contact.image %}
+{% if partner.contact.image|default %}
     <div class="swiper-slide pt-1 pb-1 pl-1 pr-1">
         {% if partner.contact.url %}
             <a href="{{ partner.contact.url }}" target="_blank" title="{{ partner.name }}" data-toggle="tooltip" data-placement="top">

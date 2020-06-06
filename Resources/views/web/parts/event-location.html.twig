@@ -12,7 +12,12 @@
     <div class="card-body p-3">
         <h5 class="card-title" itemprop="name"><strong>{{ event.location(true).name }}</strong></h5>
         <h6 class="card-subtitle mb-2 text-muted">{{ event.location(true).fullAddress|default }}</h6>
-        <div class="card-text" itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+        {% if event.location(true).description|default %}
+            <div class="card-text" itemprop="description">
+                {{ event.location(true).description|default|u.truncate(200, '...', false)|markdown_to_html }}
+            </div>
+        {% endif %}
+        <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
             <meta itemprop="streetAddress" content="{{ event.location(true).streetAddress|default }}"/>
             <meta itemprop="addressLocality" content="{{ event.location(true).city|default }}"/>
             <meta itemprop="postalCode" content="{{ event.location(true).postalCode|default }}"/>

@@ -1,3 +1,5 @@
+{% set eventImage = absolute_url(asset(event.image(true) ? '/images/events/'~event.image(true) : 'img/web/og-image.jpg'))|default %}
+
 <div class="row text-justify" itemscope itemtype="http://schema.org/Event">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
@@ -6,9 +8,7 @@
             <div class="row no-gutters">
                 <div class="col-md-3">
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
-                        <img class="card-img" alt="{{ event.name }}" itemprop="image"
-                             content="{{ absolute_url(asset(event.image ? '/images/events/'~event.image : 'img/web/og-image.jpg'))|default }}"
-                             src="{{ absolute_url(asset(event.image ? '/images/events/'~event.image : 'img/web/og-image.jpg'))|default }}">
+                        <img class="card-img" alt="{{ event.name }}" itemprop="image" content="{{ eventImage }}" src="{{ eventImage }}">
                     </a>
                 </div>
                 <div class="col-md-9">

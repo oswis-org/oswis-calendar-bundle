@@ -76,19 +76,21 @@ class RegistrationFormType extends AbstractType
                 $choices[] = $item['flag'];
             }
         }
+        $formal = $range->getParticipantType() ? $range->getParticipantType()->isFormal() : true;
+        $youCan = $formal ? 'můžete' : 'můžeš';
         $expanded = false;
         $required = $flagType ? $flagType->getMinInParticipant() > 1 : false;
         $multiple = $flagType ? $flagType->getMaxInParticipant() !== 1 : true;
         $flagGroupNames = self::getFlagsGroupNames($range, $flagType);
         $label = $flagType ? $flagType->getName() : 'Ostatní příznaky';
         $help = $flagType ? $flagType->getDescription() : '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>';
-        $help .= !$expanded && $multiple ? "<p>Pro výběr více položek můžeš použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
+        $help .= !$expanded && $multiple ? "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
         $builder->add(
             "flag_$flagTypeSlug",
             ChoiceType::class,
             [
                 'label'        => $label,
-                'help_html' => true,
+                'help_html'    => true,
                 'help'         => $help,
                 'required'     => $required,
                 'choices'      => $choices,
@@ -115,33 +117,6 @@ class RegistrationFormType extends AbstractType
         }
 
         return $groups;
-    }
-
-    /**
-     * Get flag name and include (only non-zero) price.
-     *
-     * @param RegistrationsRange $registrationsRange
-     * @param ParticipantFlag    $flag
-     *
-     * @return string
-     */
-    public static function getFlagNameWithPrice(RegistrationsRange $registrationsRange, ParticipantFlag $flag): string
-    {
-        $flagRange = $registrationsRange->getFlagRange($flag);
-        $price = $flagRange ? $flagRange->getPrice() : null;
-        $priceString = 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
-
-        return $flag->getName().$priceString;
-    }
-
-    public static function getFlagAttributes(RegistrationsRange $range, ParticipantFlag $flag): array
-    {
-        $attributes = [];
-        if (0 === $range->getFlagRemainingCapacity($flag, true, false)) {
-            $attributes['disabled'] = 'disabled';
-        }
-
-        return $attributes;
     }
 
     public static function getFlagGroupName(RegistrationsRange $range, ?ParticipantFlagType $flagType, ParticipantFlag $flag): ?string
@@ -185,6 +160,33 @@ class RegistrationFormType extends AbstractType
         return '⊜ Bez příplatku';
     }
 
+    /**
+     * Get flag name and include (only non-zero) price.
+     *
+     * @param RegistrationsRange $registrationsRange
+     * @param ParticipantFlag    $flag
+     *
+     * @return string
+     */
+    public static function getFlagNameWithPrice(RegistrationsRange $registrationsRange, ParticipantFlag $flag): string
+    {
+        $flagRange = $registrationsRange->getFlagRange($flag);
+        $price = $flagRange ? $flagRange->getPrice() : null;
+        $priceString = 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
+
+        return $flag->getName().$priceString;
+    }
+
+    public static function getFlagAttributes(RegistrationsRange $range, ParticipantFlag $flag): array
+    {
+        $attributes = [];
+        if (0 === $range->getFlagRemainingCapacity($flag, true, false)) {
+            $attributes['disabled'] = 'disabled';
+        }
+
+        return $attributes;
+    }
+
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
     {
         $builder->add(
@@ -208,8 +210,10 @@ class RegistrationFormType extends AbstractType
             array(
                 'mapped'     => false,
                 'label'      => 'Uvedením údajů potvrzuji souhlas s evidencí těchto dat.',
-                'help'       => "Přečetl(a) jsem si a souhlasím s 
-                                <a href='/gdpr' target='_blank'><i class='fas fa-user-secret'></i> podmínkami zpracování osobních údajů</a>.",
+                'help'       => "<strong>
+                            Přečetl(a) jsem si a souhlasím s 
+                            <a href='/gdpr' target='_blank'><i class='fas fa-user-secret'></i> podmínkami pro zpracování osobních údajů</a>.
+                            </strong>",
                 'help_html'  => true,
                 'required'   => true,
                 'attr'       => [
