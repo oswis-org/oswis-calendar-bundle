@@ -6,34 +6,31 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
 
 class ParticipantFlagService
 {
     protected EntityManagerInterface $em;
 
-    protected ?LoggerInterface $logger;
+    protected LoggerInterface $logger;
 
-    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null, ?ParticipantFlagType $participantFlagType = null): ?ParticipantFlag
+    final public function create(ParticipantFlag $participantFlag): ?ParticipantFlag
     {
         try {
-            $entity = new ParticipantFlag($nameable, $participantFlagType);
-            $this->em->persist($entity);
+            $this->em->persist($participantFlag);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event participant flag (by service): '.$entity->getId().' '.$entity->getName().'.';
-            $this->logger ? $this->logger->info($infoMessage) : null;
+            $infoMessage = 'CREATE: Created participant flag (by service): '.$participantFlag->getId().' '.$participantFlag->getName().'.';
+            $this->logger->info($infoMessage);
 
-            return $entity;
+            return $participantFlag;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event participant flag not created (by service): '.$e->getMessage()) : null;
+            $this->logger->info('ERROR: Event participant flag not created (by service): '.$e->getMessage());
 
             return null;
         }
