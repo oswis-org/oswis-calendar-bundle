@@ -77,6 +77,7 @@ class RegistrationFormType extends AbstractType
             }
         }
         $multiple = $flagType ? $flagType->getMaxInParticipant() !== 1 : true;
+        $flagGroupNames = self::getFlagsGroupNames($range, $flagType);
         $builder->add(
             "flag_$flagTypeSlug",
             ChoiceType::class,
@@ -89,7 +90,7 @@ class RegistrationFormType extends AbstractType
                 'expanded'     => false,
                 'multiple'     => $multiple,
                 'attr'         => [
-                    'size' => $multiple ? self::getFlagsGroupNames($range, $flagType) : null,
+                    'size' => $multiple ? $flagGroupNames : null,
                 ],
                 'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
                 'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
@@ -169,13 +170,13 @@ class RegistrationFormType extends AbstractType
         $flagRange = $registrationsRange->getFlagRange($flag);
         $price = $flagRange ? $flagRange->getPrice() : null;
         if ($price > 0) {
-            return '💰 S příplatkem';
+            return '⊕ S příplatkem';
         }
-        if (null === $price || 0 === $price) {
-            return '🆓 Bez příplatku';
+        if ($price < 0) {
+            return '⊖ Se slevou';
         }
 
-        return '⬤ Ostatní';
+        return '⊜ Bez příplatku';
     }
 
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
