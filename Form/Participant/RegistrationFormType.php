@@ -76,21 +76,27 @@ class RegistrationFormType extends AbstractType
                 $choices[] = $item['flag'];
             }
         }
+        $expanded = false;
+        $required = $flagType ? $flagType->getMinInParticipant() > 1 : false;
         $multiple = $flagType ? $flagType->getMaxInParticipant() !== 1 : true;
         $flagGroupNames = self::getFlagsGroupNames($range, $flagType);
+        $label = $flagType ? $flagType->getName() : 'Ostatní příznaky';
+        $help = $flagType ? $flagType->getDescription() : '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>';
+        $help .= !$expanded && $multiple ? "<p>Pro výběr více položek můžeš použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
         $builder->add(
             "flag_$flagTypeSlug",
             ChoiceType::class,
             [
-                'label'        => $flagType ? $flagType->getName() : 'Ostatní příznaky',
-                'help'         => $flagType ? $flagType->getDescription() : 'Ostatní příznaky, které nespadají do žádné kategorie.',
-                'required'     => $flagType ? $flagType->getMinInParticipant() > 1 : false,
+                'label'        => $label,
+                'help_html' => true,
+                'help'         => $help,
+                'required'     => $required,
                 'choices'      => $choices,
                 'mapped'       => false,
-                'expanded'     => false,
+                'expanded'     => $expanded,
                 'multiple'     => $multiple,
                 'attr'         => [
-                    'size' => $multiple ? $flagGroupNames : null,
+                    'size' => $multiple ? count($choices) + count($flagGroupNames) : null,
                 ],
                 'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
                 'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
