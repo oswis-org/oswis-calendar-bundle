@@ -3,14 +3,19 @@
         <small class="text-muted">Organizátor&nbsp;akce</small>
         <strong class="float-right align-middle text-muted"><i class="fas fa-users"></i></strong>
     </div>
-    {% if organizer.image %}{# TODO: Image. #}
-        <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image" alt="{{ organizer.name }}"
-             src="{{ absolute_url(preload(asset('img/web/og-image.jpg'), {as: 'image'}))|default }}">
+    {% if organizer.image|default %}
+        {% set imgSrc = preload(asset('/images/contacts/'~contact.image), {as: 'image'}) %}
+        <img class="card-img-top border-0 rounded mx-auto d-block" itemprop="image" alt="{{ organizer.name }}" src="{{ imgSrc }}">
     {% endif %}
     <div class="card-body p-3">
         <h5 class="card-title" itemprop="name"><strong>{{ organizer.name|default }}</strong></h5>
         {% if organizer.organization and not organizer.identificationNumber|default is empty %}
             <h6 class="card-subtitle mb-2 text-muted" itemprop="identifier">{{ organizer.identificationNumber|default }}</h6>
+        {% endif %}
+        {% if organizer.description|default %}
+            <div class="small" itemprop="description">
+                {{ organizer.description|default|markdown_to_html }}
+            </div>
         {% endif %}
     </div>
     {% if organizer.url %}
