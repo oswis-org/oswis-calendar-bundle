@@ -200,7 +200,7 @@ class ParticipantService
         bool $onlyPublic = false,
         bool $max = false
     ): void {
-        foreach ($flagsAggregatedByType as $flagsOfType) {
+        foreach ($flagsAggregatedByType ?? [] as $flagsOfType) {
             foreach ($flagsOfType as $aggregatedFlag) {
                 if ($flag = ($aggregatedFlag['flag'] instanceof ParticipantFlag ? $aggregatedFlag['flag'] : null)) {
                     for ($index = 0; $index < ($aggregatedFlag['count'] ?? 0); $index++) {

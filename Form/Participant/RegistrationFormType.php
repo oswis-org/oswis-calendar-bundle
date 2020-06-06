@@ -86,7 +86,7 @@ class RegistrationFormType extends AbstractType
                 'choices'      => $choices,
                 'mapped'       => false,
                 'expanded'     => false,
-                'multiple'     => false,
+                'multiple'     => $flagType ? $flagType->getMaxInParticipant() !== 1 : true,
                 'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
                 'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
                 'group_by'     => fn(ParticipantFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
