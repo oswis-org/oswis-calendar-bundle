@@ -5,8 +5,8 @@
         <strong class="float-right align-middle text-muted"><i class="fas fa-map-marked-alt"></i></strong>
     </div>
     {% if event.location(true).geoLon and event.location(true).geoLat %}
-        {% set geoLon = event.location.geoLon|number_format(6, '.', '') %}
-        {% set geoLat = event.location.geoLat|number_format(6, '.', '') %}
+        {% set geoLon = event.location(true).geoLon|number_format(6, '.', '') %}
+        {% set geoLat = event.location(true).geoLat|number_format(6, '.', '') %}
         <iframe class="lazy card-img-top border-0" style="min-height: 200px;" loading="lazy" data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15"></iframe>
     {% endif %}
     <div class="card-body p-3">
