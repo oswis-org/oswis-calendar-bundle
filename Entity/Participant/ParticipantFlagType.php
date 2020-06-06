@@ -73,13 +73,19 @@ class ParticipantFlagType extends AbstractEventFlagType
      * @param int|null      $minFlagsAllowed
      * @param int|null      $maxFlagsAllowed
      *
+     * @param string|null   $emptyPlaceholder
+     *
      * @throws InvalidArgumentException
      */
-    public function __construct(?Nameable $nameable = null, ?string $type = null, ?int $minFlagsAllowed = null, ?int $maxFlagsAllowed = null)
-    {
+    public function __construct(
+        ?Nameable $nameable = null,
+        ?string $type = null,
+        ?int $minFlagsAllowed = null,
+        ?int $maxFlagsAllowed = null,
+        ?string $emptyPlaceholder = null
+    ) {
+        parent::__construct($minFlagsAllowed, $maxFlagsAllowed, $emptyPlaceholder);
         $this->setFieldsFromNameable($nameable);
-        $this->setMinInParticipant($minFlagsAllowed);
-        $this->setMaxInParticipant($maxFlagsAllowed);
         $this->setType($type);
     }
 

@@ -29,6 +29,18 @@ abstract class AbstractEventFlagType implements NameableInterface
      */
     protected ?int $maxInParticipant = null;
 
+    /**
+     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
+     */
+    protected ?string $emptyPlaceholder = null;
+
+    public function __construct(?int $minInParticipant = null, ?int $maxInParticipant = null, ?string $emptyPlaceholder = null)
+    {
+        $this->minInParticipant = $minInParticipant;
+        $this->maxInParticipant = $maxInParticipant;
+        $this->emptyPlaceholder = $emptyPlaceholder;
+    }
+
     abstract public static function getAllowedTypesDefault(): array;
 
     abstract public static function getAllowedTypesCustom(): array;
@@ -65,5 +77,15 @@ abstract class AbstractEventFlagType implements NameableInterface
     public function setMaxInParticipant(?int $maxInParticipant): void
     {
         $this->maxInParticipant = $maxInParticipant;
+    }
+
+    public function getEmptyPlaceholder(): ?string
+    {
+        return $this->emptyPlaceholder;
+    }
+
+    public function setEmptyPlaceholder(?string $emptyPlaceholder): void
+    {
+        $this->emptyPlaceholder = $emptyPlaceholder;
     }
 }

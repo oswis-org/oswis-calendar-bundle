@@ -42,12 +42,17 @@
         {% endblock message_message_outer %}
 
         {% if contactPerson.appUser.activationRequestToken|default %}
+            <h2>Ověření přihlášky</h2>
             <p>
-                Ještě je nutné <b>přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
+                <b>Ještě je nutné přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
                 že zadaná adresa patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
             </p>
             <p>
-                <a href="{{ activationUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">{{ activationUrl }}</a>
+                <strong>
+                    <a href="{{ activationUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">
+                        {{ activationUrl }}
+                    </a>
+                </strong>
                 <br>
                 <small>Odkaz je platný 24 hodin od vygenerování.</small>
             </p>

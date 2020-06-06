@@ -30,9 +30,9 @@
                     {% if password|default %}
                         U účtu bylo nastaveno nové, náhodně vygenerované, heslo&nbsp;<b>{{ password }}</b>.
                     {% endif %}
-                    {% if portal|default %}{# TODO #}
-                        Přihlašovací údaje slouží pro přihlášení do aplikace {{ portal }}, která bude již brzy dostupná na adrese:<br>
-                        <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" title="{{ portal }}" target="_blank">
+                    {% if oswis.app.portalName|default %}
+                        Přihlašovací údaje slouží pro přihlášení do aplikace {{ oswis.app.portalName }}, která bude již brzy dostupná na adrese:<br>
+                        <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" title="{{ oswis.app.portalName|default }}" target="_blank">
                             {{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}</a>.
                     {% endif %}
                 </p>

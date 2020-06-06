@@ -90,6 +90,7 @@ class RegistrationFormType extends AbstractType
                 'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
                 'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
                 'group_by'     => fn(ParticipantFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
+                'placeholder'  => $flagType->getEmptyPlaceholder(),
             ]
         );
     }
@@ -201,7 +202,7 @@ class RegistrationFormType extends AbstractType
 
     public static function addSubmitButton(FormBuilderInterface $builder): void
     {
-        $builder->add('save', SubmitType::class, ['label' => 'Registrovat se!', 'attr' => ['class' => 'btn-lg btn-primary btn-block'],]);
+        $builder->add('save', SubmitType::class, ['label' => 'Přihlásit se!', 'attr' => ['class' => 'btn-lg btn-primary btn-block'],]);
     }
 
     /**
