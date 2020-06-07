@@ -93,16 +93,14 @@ class EventController extends AbstractController
 
     public function getNavigationEvents(?Event $event = null): Collection
     {
-        if (null === $event) {
+        if (null === $event || null === ($series = $event->getSeries()) || null === ($typeString = $event->getTypeString())) {
             return new ArrayCollection();
         }
-        $series = $event->getSeries();
-        $type = $event->getType();
 
-        return null !== $series && null !== $type ? $series->getEvents(
-            ''.$type->getType(),
+        return $series->getEvents(
+            ''.$typeString,
             $event->isBatch() ? $event->getStartYear() : null
-        ) : new ArrayCollection();
+        );
     }
 
     public function showEventsNavigationChunk(?string $eventSlug = null): Response

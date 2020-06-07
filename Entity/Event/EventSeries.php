@@ -47,10 +47,10 @@ class EventSeries implements NameableInterface
             $events->filter(fn(Event $event) => !$event->isDeleted());
         }
         if (null !== $eventTypeString) {
-            $events = $events->filter(fn(Event $e) => $e->getType() && $eventTypeString === $e->getTypeString());
+            $events = $events->filter(fn(Event $eve) => $eve->getTypeString() === $eve->getTypeString());
         }
         if (null !== $year) {
-            $events = $events->filter(fn(Event $e) => $e->getStartYear() && $year === $e->getStartYear());
+            $events = $events->filter(fn(Event $eve) => $eve->getStartYear() && $year === $eve->getStartYear());
         }
 
         return $events;

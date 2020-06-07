@@ -72,6 +72,12 @@
     </div>
 </section>
 
+<section class="row text-justify">
+    {% if event.webContent.textValue|default %}
+        {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
+    {% endif %}
+</section>
+
 {% if registrationRanges|default and registrationRanges|length > 0 %}
     <section class="row">
         <header class="col-12">
@@ -82,10 +88,3 @@
         {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' %}
     {% endfor %}
 {% endif %}
-
-<section class="row text-justify">
-    {% if event.webContent.textValue|default %}
-        {% autoescape false %}{{ event.webContent.textValue }}{% endautoescape %}
-    {% endif %}
-</section>
-
