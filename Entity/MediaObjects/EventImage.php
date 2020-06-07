@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\File\File;
  *     },
  * })
  * @Vich\UploaderBundle\Mapping\Annotation\Uploadable()
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
 class EventImage extends AbstractImage
 {
