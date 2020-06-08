@@ -5,7 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
 use Psr\Log\LoggerInterface;
 
 class ParticipantFlagService
@@ -20,7 +20,7 @@ class ParticipantFlagService
         $this->logger = $logger;
     }
 
-    final public function create(ParticipantFlag $participantFlag): ?ParticipantFlag
+    final public function create(RegistrationFlag $participantFlag): ?RegistrationFlag
     {
         try {
             $this->em->persist($participantFlag);

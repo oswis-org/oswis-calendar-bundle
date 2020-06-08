@@ -1,10 +1,10 @@
-{% if navEvents|default|length > 0 %}
+{% if navEvents|default and navEvents|length > 0 %}
     <nav>
         <div class="badges clearfix text-wrap mb-3 font-1-5rem">
             {% block event_nav_pre %}
             {% endblock event_nav_pre %}
             {% block event_nav_loop %}
-                {% for navEvent in navEvents|default %}
+                {% for navEvent in navEvents|default([]) %}
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
                        class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
                         {% if navEvent.year and navEvent.startYear %}

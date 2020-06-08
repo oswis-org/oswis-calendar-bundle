@@ -11,8 +11,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory;
 
 class ParticipantFlagRangeConnectionRepository extends EntityRepository
 {
@@ -20,11 +20,11 @@ class ParticipantFlagRangeConnectionRepository extends EntityRepository
     public const CRITERIA_FLAG_RANGE = 'flagRange';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantFlagRangeConnection
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantFlagCategory
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof ParticipantFlagRangeConnection ? $result : null;
+        return $result instanceof ParticipantFlagCategory ? $result : null;
     }
 
     public function getFlagRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
@@ -55,7 +55,7 @@ class ParticipantFlagRangeConnectionRepository extends EntityRepository
 
     private function addFlagRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof ParticipantFlagRange) {
+        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof RegistrationsFlagRange) {
             $queryBuilder->andWhere('range_conn.flagRange = :flag_range_id');
             $queryBuilder->setParameter('flag_range_id', $opts[self::CRITERIA_FLAG_RANGE]->getId());
         }
@@ -83,7 +83,7 @@ class ParticipantFlagRangeConnectionRepository extends EntityRepository
         $queryBuilder->addOrderBy('range_conn.id', 'ASC');
     }
 
-    public function getFlagRangeConnection(?array $opts = []): ?ParticipantFlagRangeConnection
+    public function getFlagRangeConnection(?array $opts = []): ?ParticipantFlagCategory
     {
         try {
             $flagRangeConnection = $this->getFlagRangesConnectionsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -91,7 +91,7 @@ class ParticipantFlagRangeConnectionRepository extends EntityRepository
             return null;
         }
 
-        return $flagRangeConnection instanceof ParticipantFlagRangeConnection ? $flagRangeConnection : null;
+        return $flagRangeConnection instanceof ParticipantFlagCategory ? $flagRangeConnection : null;
     }
 }
 

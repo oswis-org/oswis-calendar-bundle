@@ -14,8 +14,9 @@ use Doctrine\Common\Collections\Collection;
 use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
-use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsAggregatedByType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -127,10 +128,10 @@ class Participant implements BasicInterface
     protected ?AbstractContact $contact = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationsRange $range = null;
+    protected ?RegistrationRange $range = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
@@ -139,26 +140,26 @@ class Participant implements BasicInterface
     protected ?Event $event = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?ParticipantType $participantType = null;
+    protected ?ParticipantCategory $participantType = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_flag_range_connection_connection",
+     *     name="calendar_participant_flag_category_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_flag_range_id", referencedColumnName="id", unique=true)}
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_flag_category_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $flagRangeConnections = null;
+    protected ?Collection $flagCategories = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_participant_range_connection_connection",
@@ -166,14 +167,14 @@ class Participant implements BasicInterface
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_range_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $rangeConnections = null;
+    protected ?Collection $ranges = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContactConnection", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="ParticipantContact", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_contact_connection_connection",
+     *     name="calendar_participant_contact_connection
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_contact_id", referencedColumnName="id", unique=true)}
      * )
@@ -186,43 +187,43 @@ class Participant implements BasicInterface
     protected ?bool $formal = null;
 
     /**
-     * @param ParticipantContactConnection|null $contactConnection
-     * @param ParticipantRangeConnection|null   $rangeConnection
-     * @param Collection|null                   $flagConnections
-     * @param Collection|null                   $participantNotes
-     * @param int|null                          $priority
+     * @param ParticipantContact|null $contactConnection
+     * @param ParticipantRange|null   $rangeConnection
+     * @param Collection|null         $flagConnections
+     * @param Collection|null         $participantNotes
+     * @param int|null                $priority
      *
      * @throws OswisException|EventCapacityExceededException
      */
     public function __construct(
-        ParticipantContactConnection $contactConnection = null,
-        ParticipantRangeConnection $rangeConnection = null,
+        ParticipantContact $contactConnection = null,
+        ParticipantRange $rangeConnection = null,
         ?Collection $flagConnections = null,
         ?Collection $participantNotes = null,
         ?int $priority = null
     ) {
         $this->contactConnections = new ArrayCollection();
-        $this->rangeConnections = new ArrayCollection();
+        $this->ranges = new ArrayCollection();
         $this->notes = new ArrayCollection();
-        $this->flagRangeConnections = new ArrayCollection();
+        $this->flagCategories = new ArrayCollection();
         $this->setContactConnection($contactConnection);
         $this->setRangeConnection($rangeConnection);
         $this->setNotes($participantNotes);
         $this->setPayments(new ArrayCollection());
-        $this->setFlagRangeConnections($flagConnections);
+        $this->setFlagCategories($flagConnections);
         $this->setPriority($priority);
     }
 
     /**
-     * @param ParticipantContactConnection|null $contactConnection
+     * @param ParticipantContact|null $contactConnection
      *
      * @throws OswisException
      */
-    public function setContactConnection(?ParticipantContactConnection $contactConnection): void
+    public function setContactConnection(?ParticipantContact $contactConnection): void
     {
         if ($this->getContactConnection() !== $contactConnection) {
             foreach ($this->getContactConnections(true) as $connection) {
-                if ($connection instanceof ParticipantContactConnection) {
+                if ($connection instanceof ParticipantContact) {
                     $connection->delete();
                     $this->getContactConnections()->remove($connection);
                 }
@@ -235,10 +236,10 @@ class Participant implements BasicInterface
     }
 
     /**
-     * @return ParticipantContactConnection
+     * @return ParticipantContact
      * @throws OswisException
      */
-    public function getContactConnection(): ?ParticipantContactConnection
+    public function getContactConnection(): ?ParticipantContact
     {
         $connections = $this->getContactConnections(true);
         if ($connections->count() > 1) {
@@ -252,10 +253,10 @@ class Participant implements BasicInterface
     {
         $connections = $this->contactConnections ??= new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(fn(ParticipantContactConnection $connection) => $connection->isActive());
+            $connections = $connections->filter(fn(ParticipantContact $connection) => $connection->isActive());
         }
         if ($onlyDeleted) {
-            $connections = $connections->filter(fn(ParticipantContactConnection $connection) => $connection->isDeleted());
+            $connections = $connections->filter(fn(ParticipantContact $connection) => $connection->isDeleted());
         }
 
         return $connections;
@@ -273,33 +274,33 @@ class Participant implements BasicInterface
     }
 
     /**
-     * @return RegistrationsRange|null
+     * @return RegistrationRange|null
      * @throws OswisException
      */
-    public function getRange(): ?RegistrationsRange
+    public function getRange(): ?RegistrationRange
     {
         return $this->getRangeConnection() ? $this->getRangeConnection()->getRange() : null;
     }
 
     /**
-     * @param RegistrationsRange|null $range
+     * @param RegistrationRange|null $range
      *
      * @throws OswisException|EventCapacityExceededException
      */
-    public function setRange(?RegistrationsRange $range): void
+    public function setRange(?RegistrationRange $range): void
     {
         if ($this->getRange() !== $range) {
-            $this->setRangeConnection(new ParticipantRangeConnection($range));
+            $this->setRangeConnection(new ParticipantRange($range));
         }
     }
 
     /**
-     * @return ParticipantRangeConnection
+     * @return ParticipantRange
      * @throws OswisException
      */
-    public function getRangeConnection(): ?ParticipantRangeConnection
+    public function getRangeConnection(): ?ParticipantRange
     {
-        $connections = $this->getRangeConnections(true, false);
+        $connections = $this->getRanges(true, false);
         if ($connections->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
@@ -307,14 +308,14 @@ class Participant implements BasicInterface
         return $connections->first() ?: null;
     }
 
-    public function getRangeConnections(bool $onlyActive = false, bool $onlyDeleted = false): Collection
+    public function getRanges(bool $onlyActive = false, bool $onlyDeleted = false): Collection
     {
-        $connections = $this->rangeConnections ?? new ArrayCollection();
+        $connections = $this->ranges ?? new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(fn(ParticipantRangeConnection $connection) => $connection->isActive());
+            $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isActive());
         }
         if ($onlyDeleted) {
-            $connections = $connections->filter(fn(ParticipantRangeConnection $connection) => $connection->isDeleted());
+            $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isDeleted());
         }
 
         return $connections;
@@ -336,7 +337,7 @@ class Participant implements BasicInterface
      */
     public function setContact(AbstractContact $contact): void
     {
-        $this->setContactConnection(new ParticipantContactConnection($contact));
+        $this->setContactConnection(new ParticipantContact($contact));
     }
 
     public function getEvent(): ?Event
@@ -348,7 +349,7 @@ class Participant implements BasicInterface
         }
     }
 
-    public function getParticipantType(): ?ParticipantType
+    public function getParticipantType(): ?ParticipantCategory
     {
         try {
             return $this->getRange() ? $this->getRange()->getParticipantType() : null;
@@ -358,31 +359,31 @@ class Participant implements BasicInterface
     }
 
     /**
-     * @param ParticipantRangeConnection|null $newRangeConnection
+     * @param ParticipantRange|null $newRangeConnection
      *
      * @throws EventCapacityExceededException
      * @throws OswisException
      */
-    public function setRangeConnection(?ParticipantRangeConnection $newRangeConnection): void
+    public function setRangeConnection(?ParticipantRange $newRangeConnection): void
     {
         $oldRangeConnection = $this->getRangeConnection();
         if ($oldRangeConnection !== $newRangeConnection) {
-            foreach ($this->getRangeConnections(true) as $connection) {
-                if ($connection instanceof ParticipantRangeConnection) {
+            foreach ($this->getRanges(true) as $connection) {
+                if ($connection instanceof ParticipantRange) {
                     $connection->delete();
-                    $this->getRangeConnections()->remove($connection);
+                    $this->getRanges()->remove($connection);
                 }
             }
             try {
-                if ($newRangeConnection instanceof ParticipantRangeConnection) {
+                if ($newRangeConnection instanceof ParticipantRange) {
                     if (null !== $newRangeConnection->getRange()) {
                         $newRangeConnection->getRange()->simulateAdd($this);
                     }
-                    $this->getRangeConnections()->add($newRangeConnection);
+                    $this->getRanges()->add($newRangeConnection);
                 }
             } catch (EventCapacityExceededException $exception) {
-                if ($oldRangeConnection instanceof ParticipantRangeConnection) {
-                    $this->getRangeConnections()->add($oldRangeConnection);
+                if ($oldRangeConnection instanceof ParticipantRange) {
+                    $this->getRanges()->add($oldRangeConnection);
                 }
                 throw new $exception;
             }
@@ -500,7 +501,7 @@ class Participant implements BasicInterface
     {
         $type = $this->getParticipantType();
 
-        return null !== $type ? in_array($type->getType(), ParticipantType::MANAGEMENT_TYPES, true) : false;
+        return null !== $type ? in_array($type->getType(), ParticipantCategory::MANAGEMENT_TYPES, true) : false;
     }
 
     public function getName(): ?string
@@ -537,64 +538,61 @@ class Participant implements BasicInterface
         }
     }
 
-    public function addFlagRangeConnection(?ParticipantFlagRangeConnection $flagRangeConnection): void
+    public function addFlagCategory(?ParticipantFlagCategory $flagCategory): void
     {
-        if (null !== $flagRangeConnection && !$this->getFlagRangeConnections()->contains($flagRangeConnection)) {
-            $this->getFlagRangeConnections()->add($flagRangeConnection);
+        if (null !== $flagCategory && !$this->getFlagCategories()->contains($flagCategory)) {
+            $this->getFlagCategories()->add($flagCategory);
         }
     }
 
-    public function getFlagRangeConnections(
+    public function getFlagCategories(
         bool $onlyActive = false,
         bool $onlyDeleted = false,
-        ?ParticipantFlagType $flagType = null,
-        ?ParticipantFlag $flag = null,
-        ?string $flagTypeString = null
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?RegistrationFlag $flag = null,
+        ?string $flagType = null
     ): Collection {
-        $connections = $this->flagRangeConnections ??= new ArrayCollection();
+        $connections = $this->flagCategories ??= new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(fn(ParticipantFlagRangeConnection $connection) => $connection->isActive());
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->isActive());
         }
         if ($onlyDeleted) {
-            $connections = $connections->filter(fn(ParticipantFlagRangeConnection $connection) => $connection->isDeleted());
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->isDeleted());
         }
         if (null !== $flag) {
-            $connections = $connections->filter(fn(ParticipantFlagRangeConnection $connection) => $connection->getFlag() === $flag);
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlag() === $flag);
+        }
+        if (null !== $flagCategory) {
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlagType() === $flagCategory);
         }
         if (null !== $flagType) {
-            $connections = $connections->filter(fn(ParticipantFlagRangeConnection $connection) => $connection->getFlagType() === $flagType);
-        }
-        if (null !== $flagTypeString) {
-            $connections = $connections->filter(fn(ParticipantFlagRangeConnection $connection) => $connection->getFlagTypeString() === $flagTypeString);
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlagTypeString() === $flagType);
         }
 
         return $connections;
     }
 
-    public function setFlagRangeConnections(?Collection $newConnections): void
+    public function setFlagCategories(?Collection $newFlagCategories): void
     {
-        $this->flagRangeConnections ??= new ArrayCollection();
-        $newConnections ??= new ArrayCollection();
-        foreach ($this->getFlagRangeConnections() as $oldConnection) {
-            if (!$newConnections->contains($oldConnection)) {
-                $this->removeFlagRangeConnection($oldConnection);
+        $this->flagCategories ??= new ArrayCollection();
+        $newFlagCategories ??= new ArrayCollection();
+        foreach ($this->getFlagCategories() as $oldFlagCategory) {
+            if (!$newFlagCategories->contains($oldFlagCategory)) {
+                $this->removeFlagCategory($oldFlagCategory);
             }
         }
-        foreach ($newConnections as $newConnection) {
-            if (!$this->getFlagRangeConnections()->contains($newConnection)) {
-                $this->addFlagRangeConnection($newConnection);
+        foreach ($newFlagCategories as $newFlagCategory) {
+            if (!$this->getFlagCategories()->contains($newFlagCategory)) {
+                $this->addFlagCategory($newFlagCategory);
             }
         }
     }
 
-    public function removeFlagRangeConnection(?ParticipantFlagRangeConnection $flagRangeConnection): void
+    public function removeFlagCategory(?ParticipantFlagCategory $flagCategory): void
     {
-        if (null !== $flagRangeConnection) {
-            try {
-                $flagRangeConnection->delete();
-                $this->getFlagRangeConnections()->removeElement($flagRangeConnection);
-            } catch (Exception $e) {
-            }
+        if (null !== $flagCategory) {
+            $flagCategory->delete();
+            $this->getFlagCategories()->removeElement($flagCategory);
         }
     }
 
@@ -638,11 +636,11 @@ class Participant implements BasicInterface
         return $price < 0 ? 0 : $price;
     }
 
-    public function getFlagsPrice(?ParticipantFlagType $flagType = null, bool $onlyActive = true): int
+    public function getFlagsPrice(?RegistrationFlagCategory $flagType = null, bool $onlyActive = true): int
     {
         $price = 0;
-        foreach ($this->getFlagRangeConnections($onlyActive, false, $flagType) as $flagConnection) {
-            $price += $flagConnection instanceof ParticipantFlagRangeConnection ? $flagConnection->getPrice() : 0;
+        foreach ($this->getFlagCategories($onlyActive, false, $flagType) as $flagConnection) {
+            $price += $flagConnection instanceof ParticipantFlagCategory ? $flagConnection->getPrice() : 0;
         }
 
         return $price;
@@ -664,11 +662,11 @@ class Participant implements BasicInterface
         return $price < 0 ? 0 : $price;
     }
 
-    public function getFlagsDepositValue(?ParticipantFlagType $flagType = null, bool $onlyActive = true): int
+    public function getFlagsDepositValue(?RegistrationFlagCategory $flagType = null, bool $onlyActive = true): int
     {
         $price = 0;
-        foreach ($this->getFlagRangeConnections($onlyActive, false, $flagType) as $flagConnection) {
-            $price += $flagConnection instanceof ParticipantFlagRangeConnection ? $flagConnection->getDepositValue() : 0;
+        foreach ($this->getFlagCategories($onlyActive, false, $flagType) as $flagConnection) {
+            $price += $flagConnection instanceof ParticipantFlagCategory ? $flagConnection->getDepositValue() : 0;
         }
 
         return $price;
@@ -712,27 +710,40 @@ class Participant implements BasicInterface
     /**
      * Checks if participant contains given flag.
      *
-     * @param ParticipantFlag $flag
-     * @param bool            $onlyActive
+     * @param RegistrationFlag $flag
+     * @param bool             $onlyActive
      *
      * @return bool
      */
-    public function hasFlag(ParticipantFlag $flag, bool $onlyActive = true): bool
+    public function hasFlag(RegistrationFlag $flag, bool $onlyActive = true): bool
     {
         return $this->getFlags(null, $onlyActive)->exists(
-            fn(ParticipantFlag $oneFlag) => $flag->getId() === $oneFlag->getId()
+            fn(RegistrationFlag $oneFlag) => $flag->getId() === $oneFlag->getId()
         );
     }
 
-    public function getFlags(?ParticipantFlagType $flagType = null, bool $onlyActive = true): Collection
-    {
-        return $this->getFlagRanges($flagType, $onlyActive)->map(fn(ParticipantFlagRange $range) => $range->getFlag());
+    public function getFlags(
+        ?RegistrationFlagCategory $flagCategory = null,
+        RegistrationFlag $flag = null,
+        ?string $flagType = null,
+        bool $onlyActive = true
+    ): Collection {
+        $participantFlags = new ArrayCollection();
+        foreach ($this->getFlagCategories($onlyActive, false, $flagCategory, $flag, $flagType) as $flagCategory) {
+            if (!($flagCategory instanceof ParticipantFlagCategory)) {
+                continue;
+            }
+            $flagCategory->get
+        }
+
+
+        return $this->getFlagRanges($flagCategory, $onlyActive)->map(fn(RegistrationsFlagRange $range) => $range->getFlag());
     }
 
-    public function getFlagRanges(?ParticipantFlagType $flagType = null, bool $onlyActive = true): Collection
+    public function getFlagRanges(?RegistrationFlagCategory $flagType = null, bool $onlyActive = true): Collection
     {
-        return $this->getFlagRangeConnections($onlyActive, false, $flagType)->map(
-            fn(ParticipantFlagRangeConnection $connection) => $connection->getFlagRange()
+        return $this->getFlagCategories($onlyActive, false, $flagType)->map(
+            fn(ParticipantFlagCategory $connection) => $connection->getFlagCategoryRange()
         );
     }
 
@@ -744,10 +755,10 @@ class Participant implements BasicInterface
      *
      * @return bool Participant contains some flag of given type.
      */
-    public function hasFlagOfTypeString(?string $flagType, bool $onlyActive = true): bool
+    public function hasFlagOfType(?string $flagType, bool $onlyActive = true): bool
     {
         return $this->getFlags(null, $onlyActive)->exists(
-            fn(ParticipantFlag $f) => $flagType && $f->getTypeOfType() === $flagType
+            fn(RegistrationFlag $f) => $flagType && $f->getTypeOfType() === $flagType
         );
     }
 
@@ -819,6 +830,6 @@ class Participant implements BasicInterface
      */
     public function getFlagsAggregatedByType(): array
     {
-        return FlagsAggregatedByType::getFlagsAggregatedByType($this->getFlags());
+        return FlagsByType::getFlagsAggregatedByType($this->getFlags());
     }
 }

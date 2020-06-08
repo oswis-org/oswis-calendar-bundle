@@ -7,7 +7,7 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
@@ -15,21 +15,21 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_range_connection")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantRangeConnection implements BasicInterface
+class ParticipantRange implements BasicInterface
 {
     use BasicTrait;
     use DeletedTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationsRange $range = null;
+    protected ?RegistrationRange $range = null;
 
-    public function __construct(?RegistrationsRange $range = null)
+    public function __construct(?RegistrationRange $range = null)
     {
         try {
             $this->setRange($range);
@@ -37,17 +37,17 @@ class ParticipantRangeConnection implements BasicInterface
         }
     }
 
-    public function getRange(): ?RegistrationsRange
+    public function getRange(): ?RegistrationRange
     {
         return $this->range;
     }
 
     /**
-     * @param RegistrationsRange|null $range
+     * @param RegistrationRange|null $range
      *
      * @throws OswisNotImplementedException
      */
-    public function setRange(?RegistrationsRange $range): void
+    public function setRange(?RegistrationRange $range): void
     {
         if ($this->range === $range) {
             return;

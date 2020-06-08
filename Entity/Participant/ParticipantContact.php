@@ -16,10 +16,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_contact_connection")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_contact")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantContactConnection implements BasicInterface
+class ParticipantContact implements BasicInterface
 {
     use BasicTrait;
     use ActiveTrait;

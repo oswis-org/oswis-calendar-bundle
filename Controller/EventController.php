@@ -93,7 +93,7 @@ class EventController extends AbstractController
 
     public function getNavigationEvents(?Event $event = null): Collection
     {
-        if (null === $event || null === ($series = $event->getSeries()) || null === ($typeString = $event->getTypeString())) {
+        if (null === $event || null === ($series = $event->getGroup()) || null === ($typeString = $event->getType())) {
             return new ArrayCollection();
         }
 

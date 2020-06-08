@@ -11,23 +11,23 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 
-class ParticipantTypeRepository extends EntityRepository
+class ParticipantCategoryRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_TYPE_OF_TYPE = 'participantTypeOfType';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantType
+    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantCategory
     {
         $participantType = parent::findOneBy($criteria, $orderBy);
 
-        return $participantType instanceof ParticipantType ? $participantType : null;
+        return $participantType instanceof ParticipantCategory ? $participantType : null;
     }
 
-    public function getParticipantType(?array $opts = []): ?ParticipantType
+    public function getParticipantType(?array $opts = []): ?ParticipantCategory
     {
         try {
             $participantType = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -35,7 +35,7 @@ class ParticipantTypeRepository extends EntityRepository
             return null;
         }
 
-        return $participantType instanceof ParticipantType ? $participantType : null;
+        return $participantType instanceof ParticipantCategory ? $participantType : null;
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder

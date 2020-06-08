@@ -18,9 +18,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
- * Type of Event.
+ * Category (type) of event (ie. year of event, batch of event, conference, lecture...).
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_type")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_category")
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -29,25 +29,25 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_types_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_categories_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_types_post"}}
+ *       "denormalization_context"={"groups"={"calendar_event_categories_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_type_get"}},
+ *       "normalization_context"={"groups"={"calendar_event_category_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_type_put"}}
+ *       "denormalization_context"={"groups"={"calendar_event_category_put"}}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_type_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_event_category_delete"}}
  *     }
  *   }
  * )
@@ -60,7 +60,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventType implements NameableInterface
+class EventCategory implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
@@ -106,9 +106,5 @@ class EventType implements NameableInterface
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    public function destroyRevisions(): void
-    {
     }
 }

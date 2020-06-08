@@ -6,10 +6,10 @@
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
-use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\EventPrice;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCoreBundle\Traits\Payment\DepositValueTrait;
 
-trait EventPriceTrait
+trait PriceTrait
 {
     use DepositValueTrait;
 
@@ -22,15 +22,15 @@ trait EventPriceTrait
      */
     protected ?int $price = null;
 
-    public function setEventPrice(?EventPrice $eventPrice): void
+    public function setEventPrice(?Price $eventPrice): void
     {
         $this->setPrice($eventPrice ? $eventPrice->price : null);
         $this->setDepositValue($eventPrice ? $eventPrice->deposit : null);
     }
 
-    public function getEventPrice(): EventPrice
+    public function getEventPrice(): Price
     {
-        return new EventPrice($this->getPrice(), $this->getDepositValue());
+        return new Price($this->getPrice(), $this->getDepositValue());
     }
 
     public function getPrice(): ?int

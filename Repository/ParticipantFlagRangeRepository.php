@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
 
 class ParticipantFlagRangeRepository extends EntityRepository
 {
@@ -25,14 +25,14 @@ class ParticipantFlagRangeRepository extends EntityRepository
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantFlagRange
+    public function findOneBy(array $criteria, array $orderBy = null): ?RegistrationsFlagRange
     {
         $flagRange = parent::findOneBy($criteria, $orderBy);
 
-        return $flagRange instanceof ParticipantFlagRange ? $flagRange : null;
+        return $flagRange instanceof RegistrationsFlagRange ? $flagRange : null;
     }
 
-    public function getParticipantFlag(?array $opts = []): ?ParticipantFlagRange
+    public function getParticipantFlag(?array $opts = []): ?RegistrationsFlagRange
     {
         try {
             $flagRange = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -40,7 +40,7 @@ class ParticipantFlagRangeRepository extends EntityRepository
             return null;
         }
 
-        return $flagRange instanceof ParticipantFlagRange ? $flagRange : null;
+        return $flagRange instanceof RegistrationsFlagRange ? $flagRange : null;
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder

@@ -17,11 +17,11 @@ class ParticipantAggregationService
         $this->participantService = $participantService;
     }
 
-//    public function getAllowedFlagsAggregatedByType(?ParticipantType $eventParticipantType = null, bool $onlyPublic = false): array
+//    public function getAllowedFlagsAggregatedByType(?ParticipantCategory $eventParticipantType = null, bool $onlyPublic = false): array
 //    {
 //        $flags = [];
 //        foreach ($this->getParticipantFlagRanges($eventParticipantType, null, $onlyPublic) as $flagInEvent) {
-//            if ($flagInEvent instanceof ParticipantFlagRange && $flag = $flagInEvent->getFlag()) {
+//            if ($flagInEvent instanceof RegistrationsFlagRange && $flag = $flagInEvent->getFlag()) {
 //                $flagTypeSlug = $flag->getFlagType() ? $flag->getFlagType()->getSlug() : '0';
 //                $flags[$flagTypeSlug]['flagType'] = $flag->getFlagType();
 //                $flags[$flagTypeSlug]['flags'][] = $flag;

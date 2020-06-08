@@ -7,8 +7,8 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeConnectionRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeRepository;
 
@@ -21,13 +21,13 @@ class ParticipantFlagRangeService
         $this->em = $em;
     }
 
-    public function updateUsage(ParticipantFlagRange $range): void
+    public function updateUsage(RegistrationsFlagRange $range): void
     {
         $usage = $this->getFlagRangeConnectionsByRange($range, false)->count();
         $range->setBaseUsage($usage);
     }
 
-    public function getFlagRangeConnectionsByRange(ParticipantFlagRange $flagRange, bool $includeDeleted = false): Collection
+    public function getFlagRangeConnectionsByRange(RegistrationsFlagRange $flagRange, bool $includeDeleted = false): Collection
     {
         return $this->getFlagRangeConnectionRepository()->getFlagRangesConnections(
             [
@@ -39,7 +39,7 @@ class ParticipantFlagRangeService
 
     public function getFlagRangeConnectionRepository(): ParticipantFlagRangeConnectionRepository
     {
-        $repo = $this->em->getRepository(ParticipantFlagRangeConnection::class);
+        $repo = $this->em->getRepository(ParticipantFlagCategory::class);
         assert($repo instanceof ParticipantFlagRangeConnectionRepository);
 
         return $repo;
@@ -47,7 +47,7 @@ class ParticipantFlagRangeService
 
     public function getRepository(): ParticipantFlagRangeRepository
     {
-        $repository = $this->em->getRepository(ParticipantFlagRange::class);
+        $repository = $this->em->getRepository(RegistrationsFlagRange::class);
         assert($repository instanceof ParticipantFlagRangeRepository);
 
         return $repository;

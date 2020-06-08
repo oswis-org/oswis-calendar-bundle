@@ -4,7 +4,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventSeries;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
@@ -21,10 +21,10 @@ class EventSeriesService
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null): ?EventSeries
+    final public function create(?Nameable $nameable = null): ?EventGroup
     {
         try {
-            $entity = new EventSeries($nameable);
+            $entity = new EventGroup($nameable);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event series (by service): '.$entity->getId().' '.$entity->getName().'.';

@@ -4,7 +4,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
@@ -21,10 +21,10 @@ class EventTypeService
         $this->logger = $logger;
     }
 
-    final public function create(?Nameable $nameable = null, ?string $type = null, ?string $color = null): ?EventType
+    final public function create(?Nameable $nameable = null, ?string $type = null, ?string $color = null): ?EventCategory
     {
         try {
-            $entity = new EventType($nameable, $type, $color);
+            $entity = new EventCategory($nameable, $type, $color);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event type (by service): '.$entity->getId().' '.$entity->getName().'.';

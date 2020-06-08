@@ -6,85 +6,114 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use DateTime;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRange;
+use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
- * Flag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
- *
- * @example Type of accommodation, food allergies, time of arrival/departure...
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag")
- * @ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_flags_get"}},
- *     },
- *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_flags_post"}}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_flag_get"}},
- *     },
- *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_flag_put"}}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_participant_flag_delete"}}
- *     }
- *   }
- * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
- *     "id",
- *     "name",
- *     "shortName",
- *     "description",
- *     "note"
- * })
+ * Flag assigned to event participant (ie. special food requirement...) through some "flag range".
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeConnectionRepository")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category_connection")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantFlag extends AbstractEventFlag
+class ParticipantFlag implements BasicInterface
 {
+    use BasicTrait;
+    use TextValueTrait;
+    use DeletedMailConfirmationTrait;
+
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType", fetch="EAGER")
+     * Event contact flag.
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?ParticipantFlagType $flagType = null;
+    protected ?RegistrationFlagRange $flagRange = null;
 
-    public function __construct(?Nameable $nameable = null, ?ParticipantFlagType $flagType = null)
+    /**
+     * Parent event (if this is not top level event).
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory", inversedBy="subEvents", fetch="EAGER"
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?ParticipantFlagCategory $participantFlagCategory = null;
+
+    public function __construct(?RegistrationsFlagRange $flagRange = null, ?string $textValue = null)
     {
-        parent::__construct($nameable);
-        $this->setFlagType($flagType);
+        $this->setFlagRange($flagRange);
+        $this->setTextValue($textValue);
     }
 
-    public function getTypeOfType(): ?string
+    public function getFlagType(): ?string
     {
-        return $this->getFlagType() ? $this->getFlagType()->getType() : null;
+        return $this->getFlagRange() ? $this->getFlagRange()->getType() : null;
     }
 
-    public function getFlagType(): ?ParticipantFlagType
+    public function getFlagCategory(): ?RegistrationFlagCategory
     {
-        return $this->flagType;
+        return $this->getFlagRange() ? $this->getFlagRange()->getCategory() : null;
     }
 
-    public function setFlagType(?ParticipantFlagType $flagType): void
+    public function getFlag(): ?RegistrationFlag
     {
-        $this->flagType = $flagType;
+        return $this->getFlagRange() ? $this->getFlagRange()->getFlag() : null;
+    }
+
+    public function getFlagRange(): ?RegistrationFlagRange
+    {
+        return $this->flagRange;
+    }
+
+    public function setFlagRange(?RegistrationsFlagRange $flagRange): void
+    {
+        if ($this->flagRange === $flagRange) {
+            return;
+        }
+        if (null === $this->flagRange) {
+            $this->flagRange = $flagRange;
+        }
+    }
+
+    public function getPrice(): int
+    {
+        return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getPrice() : 0;
+    }
+
+    public function getDepositValue(): int
+    {
+        return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getDepositValue() : 0;
+    }
+
+    public function isActive(?DateTime $referenceDateTime = null): bool
+    {
+        return !$this->isDeleted($referenceDateTime);
+    }
+
+    public function getParticipantFlagCategory(): ?ParticipantFlagCategory
+    {
+        return $this->participantFlagCategory;
+    }
+
+    /**
+     * @param ParticipantFlagCategory|null $participantFlagCategory
+     *
+     * @throws InvalidTypeException
+     */
+    public function setParticipantFlagCategory(?ParticipantFlagCategory $participantFlagCategory): void
+    {
+        if ($this->participantFlagCategory && $participantFlagCategory !== $this->participantFlagCategory) {
+            $this->participantFlagCategory->removeParticipantFlag($this);
+        }
+        $this->participantFlagCategory = $participantFlagCategory;
+        if ($this->participantFlagCategory) {
+            $this->participantFlagCategory->addParticipantFlag($this);
+        }
     }
 }

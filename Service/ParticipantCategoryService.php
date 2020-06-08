@@ -9,12 +9,12 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantTypeRepository;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantCategoryRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
 
-class ParticipantTypeService
+class ParticipantCategoryService
 {
     protected EntityManagerInterface $em;
 
@@ -26,10 +26,10 @@ class ParticipantTypeService
         $this->logger = $logger;
     }
 
-    public function create(?Nameable $nameable = null, ?string $type = null): ?ParticipantType
+    public function create(?Nameable $nameable = null, ?string $type = null): ?ParticipantCategory
     {
         try {
-            $entity = new ParticipantType($nameable, $type);
+            $entity = new ParticipantCategory($nameable, $type);
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event participant type (by service): '.$entity->getId().' '.$entity->getName().'.';
@@ -43,22 +43,22 @@ class ParticipantTypeService
         }
     }
 
-    public function getParticipantTypeBySlug(?string $slug, bool $onlyPublic = true): ?ParticipantType
+    public function getParticipantTypeBySlug(?string $slug, bool $onlyPublic = true): ?ParticipantCategory
     {
         if (empty($slug)) {
             return null;
         }
         $type = $this->getRepository()->getParticipantType(
             [
-                ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
-                ParticipantTypeRepository::CRITERIA_SLUG               => $slug,
+                ParticipantCategoryRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
+                ParticipantCategoryRepository::CRITERIA_SLUG               => $slug,
             ]
         );
         if (null === $type) {
             $type = $this->getRepository()->getParticipantType(
                 [
-                    ParticipantTypeRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
-                    ParticipantTypeRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
+                    ParticipantCategoryRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
+                    ParticipantCategoryRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
                 ]
             );
         }
@@ -66,10 +66,10 @@ class ParticipantTypeService
         return $type;
     }
 
-    public function getRepository(): ParticipantTypeRepository
+    public function getRepository(): ParticipantCategoryRepository
     {
-        $repository = $this->em->getRepository(ParticipantType::class);
-        assert($repository instanceof ParticipantTypeRepository);
+        $repository = $this->em->getRepository(ParticipantCategory::class);
+        assert($repository instanceof ParticipantCategoryRepository);
 
         return $repository;
     }

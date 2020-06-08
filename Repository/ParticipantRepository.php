@@ -13,9 +13,9 @@ use Doctrine\ORM\QueryBuilder;
 use Excparticipanttion;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends EntityRepository
@@ -94,7 +94,7 @@ class ParticipantRepository extends EntityRepository
 
     private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegistrationsRange) {
+        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegistrationRange) {
             $queryBuilder->andWhere('participant.range = :range_id');
             $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
         }
@@ -102,7 +102,7 @@ class ParticipantRepository extends EntityRepository
 
     private function setParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantType) {
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantCategory) {
             $queryBuilder->andWhere('participant.participantType = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
         }
@@ -111,8 +111,8 @@ class ParticipantRepository extends EntityRepository
     private function setParticipantTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING])) {
-            $queryBuilder->leftJoin('participant.participantType', 'participant_type_for_string');
-            $queryBuilder->andWhere('participant_type_for_string.type = :type_string');
+            $queryBuilder->leftJoin('participant.participantType', 'participant_category_for_string');
+            $queryBuilder->andWhere('participant_category_for_string.type = :type_string');
             $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]);
         }
     }

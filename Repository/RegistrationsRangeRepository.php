@@ -13,8 +13,8 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 
 class RegistrationsRangeRepository extends EntityRepository
 {
@@ -26,11 +26,11 @@ class RegistrationsRangeRepository extends EntityRepository
     public const CRITERIA_PUBLIC_ON_WEB = 'publicOnWeb';
     public const CRITERIA_ONLY_ACTIVE = 'onlyActive';
 
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?RegistrationsRange
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?RegistrationRange
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof RegistrationsRange ? $result : null;
+        return $result instanceof RegistrationRange ? $result : null;
     }
 
     public function getRegistrationsRanges(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
@@ -80,7 +80,7 @@ class RegistrationsRangeRepository extends EntityRepository
 
     private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantType) {
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantCategory) {
             $queryBuilder->andWhere('range.participantType = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
         }
@@ -126,7 +126,7 @@ class RegistrationsRangeRepository extends EntityRepository
         $queryBuilder->addOrderBy('range.id', 'ASC');
     }
 
-    public function getRegistrationsRange(?array $opts = []): ?RegistrationsRange
+    public function getRegistrationsRange(?array $opts = []): ?RegistrationRange
     {
         try {
             $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -134,7 +134,7 @@ class RegistrationsRangeRepository extends EntityRepository
             return null;
         }
 
-        return $registrationsRange instanceof RegistrationsRange ? $registrationsRange : null;
+        return $registrationsRange instanceof RegistrationRange ? $registrationsRange : null;
     }
 }
 

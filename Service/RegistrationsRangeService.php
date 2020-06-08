@@ -10,9 +10,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRangeConnection;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRangeConnectionRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
@@ -34,7 +34,7 @@ class RegistrationsRangeService
     }
 
 
-    final public function create(RegistrationsRange $range): ?RegistrationsRange
+    final public function create(RegistrationRange $range): ?RegistrationRange
     {
         try {
             $this->em->persist($range);
@@ -50,17 +50,17 @@ class RegistrationsRangeService
         }
     }
 
-    public function updateUsage(RegistrationsRange $range): void
+    public function updateUsage(RegistrationRange $range): void
     {
         $usage = $this->getRegistrationsRangeConnectionsByRange($range, false)->count();
-        $range->setBaseUsage($usage);
-        $range->setFullUsage($usage);
-        foreach ($range->getFlagRanges() as $flagRange) {
+        $range->setBaseCapacity($usage);
+        $range->setFullCapacity($usage);
+        foreach ($range->getFlagCategoryRanges() as $flagRange) {
             $this->flagRangeService->updateUsage($flagRange);
         }
     }
 
-    public function getRegistrationsRangeConnectionsByRange(RegistrationsRange $range, bool $includeDeleted = false): Collection
+    public function getRegistrationsRangeConnectionsByRange(RegistrationRange $range, bool $includeDeleted = false): Collection
     {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
             [
@@ -72,13 +72,13 @@ class RegistrationsRangeService
 
     public function getParticipantRangeConnectionRepository(): ParticipantRangeConnectionRepository
     {
-        $repository = $this->em->getRepository(ParticipantRangeConnection::class);
+        $repository = $this->em->getRepository(ParticipantRange::class);
         assert($repository instanceof ParticipantRangeConnectionRepository);
 
         return $repository;
     }
 
-    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?RegistrationsRange
+    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?RegistrationRange
     {
         return $this->getRepository()->getRegistrationsRange(
             [
@@ -91,7 +91,7 @@ class RegistrationsRangeService
 
     public function getRepository(): RegistrationsRangeRepository
     {
-        $repository = $this->em->getRepository(RegistrationsRange::class);
+        $repository = $this->em->getRepository(RegistrationRange::class);
         assert($repository instanceof RegistrationsRangeRepository);
 
         return $repository;
@@ -99,11 +99,11 @@ class RegistrationsRangeService
 
     public function getRange(
         Event $event,
-        ?ParticipantType $participantType,
+        ?ParticipantCategory $participantType,
         ?string $participantTypeString,
         bool $publicOnWeb = false,
         bool $onlyActive = true
-    ): ?RegistrationsRange {
+    ): ?RegistrationRange {
         return $this->getRepository()->getRegistrationsRange(
             [
                 RegistrationsRangeRepository::CRITERIA_EVENT                   => $event,

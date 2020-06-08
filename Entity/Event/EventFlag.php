@@ -5,8 +5,10 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlag;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -50,6 +52,13 @@ use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventFlag extends AbstractEventFlag
+class EventFlag
 {
+    use NameableTrait;
+    use ColorTrait;
+
+    public function __construct(?Nameable $nameable = null)
+    {
+        $this->setFieldsFromNameable($nameable);
+    }
 }

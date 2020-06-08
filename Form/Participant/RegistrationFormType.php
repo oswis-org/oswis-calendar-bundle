@@ -8,10 +8,10 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\StudentPersonType;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlagCategory;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
@@ -34,7 +34,7 @@ class RegistrationFormType extends AbstractType
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $participant = $builder->getData();
-        if (!($participant instanceof Participant) || !(($range = $participant->getRange()) instanceof RegistrationsRange)) {
+        if (!($participant instanceof Participant) || !(($range = $participant->getRange()) instanceof RegistrationRange)) {
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
         }
         $participantType = $range->getParticipantType();
@@ -56,7 +56,11 @@ class RegistrationFormType extends AbstractType
         $builder->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
     }
 
-    public function addFlagTypeFields(FormBuilderInterface $builder, RegistrationsRange $range): void
+
+
+
+
+    public function addFlagTypeFields(FormBuilderInterface $builder, RegistrationRange $range): void
     {
         foreach ($range->getFlagsAggregatedByType(null, null, true, false) as $flagsOfType) {
             self::addFlagField($builder, $range, $flagsOfType[array_key_first($flagsOfType)]['flagType'], $flagsOfType);
@@ -65,8 +69,8 @@ class RegistrationFormType extends AbstractType
 
     public static function addFlagField(
         FormBuilderInterface $builder,
-        RegistrationsRange $range,
-        ?ParticipantFlagType $flagType,
+        RegistrationRange $range,
+        ?RegistrationFlagCategory $flagType,
         array $flagsOfType
     ): void {
         $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
@@ -100,15 +104,15 @@ class RegistrationFormType extends AbstractType
                 'attr'         => [
                     'size' => $multiple ? count($choices) + count($flagGroupNames) : null,
                 ],
-                'choice_label' => fn(ParticipantFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
-                'choice_attr'  => fn(ParticipantFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
-                'group_by'     => fn(ParticipantFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
+                'choice_label' => fn(RegistrationFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
+                'choice_attr'  => fn(RegistrationFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
+                'group_by'     => fn(RegistrationFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
                 'placeholder'  => $flagType->getEmptyPlaceholder(),
             ]
         );
     }
 
-    public static function getFlagsGroupNames(RegistrationsRange $range, ParticipantFlagType $flagType): array
+    public static function getFlagsGroupNames(RegistrationRange $range, RegistrationFlagCategory $flagType): array
     {
         $groups = [];
         foreach ($range->getFlags($flagType, null, true, false) as $flag) {
@@ -119,19 +123,19 @@ class RegistrationFormType extends AbstractType
         return $groups;
     }
 
-    public static function getFlagGroupName(RegistrationsRange $range, ?ParticipantFlagType $flagType, ParticipantFlag $flag): ?string
+    public static function getFlagGroupName(RegistrationRange $range, ?RegistrationFlagCategory $flagType, RegistrationFlag $flag): ?string
     {
         if (null === $flagType) {
             return null;
         }
-        if (ParticipantFlagType::TYPE_T_SHIRT === $flagType->getType()) {
+        if (RegistrationFlagCategory::TYPE_T_SHIRT === $flagType->getType()) {
             return self::getTShirtGroupName($flag);
         }
 
         return self::getFlagPriceGroup($range, $flag);
     }
 
-    public static function getTShirtGroupName(ParticipantFlag $flag): string
+    public static function getTShirtGroupName(RegistrationFlag $flag): string
     {
         if (strpos($flag->getName(), 'Pán') !== false) {
             return '♂ Pánské tričko';
@@ -146,7 +150,7 @@ class RegistrationFormType extends AbstractType
         return '⚪ Ostatní';
     }
 
-    public static function getFlagPriceGroup(RegistrationsRange $registrationsRange, ParticipantFlag $flag): string
+    public static function getFlagPriceGroup(RegistrationRange $registrationsRange, RegistrationFlag $flag): string
     {
         $flagRange = $registrationsRange->getFlagRange($flag);
         $price = $flagRange ? $flagRange->getPrice() : null;
@@ -163,12 +167,12 @@ class RegistrationFormType extends AbstractType
     /**
      * Get flag name and include (only non-zero) price.
      *
-     * @param RegistrationsRange $registrationsRange
-     * @param ParticipantFlag    $flag
+     * @param RegistrationRange $registrationsRange
+     * @param RegistrationFlag  $flag
      *
      * @return string
      */
-    public static function getFlagNameWithPrice(RegistrationsRange $registrationsRange, ParticipantFlag $flag): string
+    public static function getFlagNameWithPrice(RegistrationRange $registrationsRange, RegistrationFlag $flag): string
     {
         $flagRange = $registrationsRange->getFlagRange($flag);
         $price = $flagRange ? $flagRange->getPrice() : null;
@@ -177,7 +181,7 @@ class RegistrationFormType extends AbstractType
         return $flag->getName().$priceString;
     }
 
-    public static function getFlagAttributes(RegistrationsRange $range, ParticipantFlag $flag): array
+    public static function getFlagAttributes(RegistrationRange $range, RegistrationFlag $flag): array
     {
         $attributes = [];
         if (0 === $range->getFlagRemainingCapacity($flag, true, false)) {
@@ -186,6 +190,10 @@ class RegistrationFormType extends AbstractType
 
         return $attributes;
     }
+
+
+
+
 
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
     {

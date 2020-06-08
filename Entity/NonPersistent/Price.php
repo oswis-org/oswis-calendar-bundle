@@ -2,7 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\NonPersistent;
 
-class EventPrice
+class Price
 {
     public ?int $price = null;
 

@@ -89,7 +89,7 @@ class Event implements NameableInterface
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisAddressBookBundle\Entity\Place", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Place $location = null;
+    protected ?Place $place = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
@@ -105,9 +105,7 @@ class Event implements NameableInterface
 
     /**
      * Parent event (if this is not top level event).
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="subEvents", fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="subEvents", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Event $superEvent = null;
@@ -118,14 +116,14 @@ class Event implements NameableInterface
     protected ?Collection $subEvents = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventWebContent", cascade={"all"})
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventContent", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_event_web_content_connection",
+     *     name="calendar_event_content",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_web_content_id", referencedColumnName="id", unique=true)}
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_content_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $webContents = null;
+    protected ?Collection $contents = null;
 
     /**
      * @Doctrine\ORM\Mapping\OneToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage", cascade={"all"}, fetch="EAGER")
@@ -133,34 +131,34 @@ class Event implements NameableInterface
     protected ?EventImage $image = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventType", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
      */
-    private ?EventType $type = null;
+    private ?EventCategory $category = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventSeries", inversedBy="events", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="EventGroup", inversedBy="events", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      */
-    private ?EventSeries $series = null;
+    private ?EventGroup $group = null;
 
     public function __construct(
         ?Nameable $nameable = null,
         ?Event $superEvent = null,
-        ?Place $location = null,
-        ?EventType $type = null,
+        ?Place $place = null,
+        ?EventCategory $category = null,
         ?DateTimeRange $dateTimeRange = null,
-        ?EventSeries $series = null,
+        ?EventGroup $group = null,
         ?Publicity $publicity = null
     ) {
         $this->subEvents = new ArrayCollection();
-        $this->webContents = new ArrayCollection();
+        $this->contents = new ArrayCollection();
         $this->flagConnections = new ArrayCollection();
-        $this->setType($type);
+        $this->setCategory($category);
         $this->setSuperEvent($superEvent);
-        $this->setSeries($series);
+        $this->setGroup($group);
         $this->setFieldsFromNameable($nameable);
-        $this->setLocation($location);
+        $this->setPlace($place);
         $this->setDateTimeRange($dateTimeRange);
         $this->setFieldsFromPublicity($publicity);
     }
@@ -215,45 +213,50 @@ class Event implements NameableInterface
         }
     }
 
-    public function addWebContent(?EventWebContent $eventWebContent): void
+    public function getSubEvents(): Collection
     {
-        if (null !== $eventWebContent && !$this->getWebContents()->contains($eventWebContent)) {
-            $this->removeWebContent($this->getWebContent($eventWebContent->getType()));
-            $this->getWebContents()->add($eventWebContent);
+        return $this->subEvents ?? new ArrayCollection();
+    }
+
+    public function addWebContent(?EventContent $eventWebContent): void
+    {
+        if (null !== $eventWebContent && !$this->getContents()->contains($eventWebContent)) {
+            $this->removeContent($this->getContent($eventWebContent->getType()));
+            $this->getContents()->add($eventWebContent);
         }
     }
 
-    public function getWebContents(?string $type = null, ?bool $recursive = false): Collection
+    public function getContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            $contents = $this->getWebContents()->filter(fn(EventWebContent $webContent) => $type === $webContent->getType());
+            $contents = $this->getContents()->filter(fn(EventContent $webContent) => $type === $webContent->getType());
 
-            return $recursive && $contents->count() < 1 && $this->getSuperEvent() ? $this->getSuperEvent()->getWebContents($type) : $contents;
+            return $recursive && $contents->count() < 1 && $this->getSuperEvent() ? $this->getSuperEvent()->getContents($type) : $contents;
         }
 
-        return $this->webContents ?? new ArrayCollection();
+        return $this->contents ?? new ArrayCollection();
     }
 
-    public function removeWebContent(?EventWebContent $eventWebContent): void
+    public function removeContent(?EventContent $eventContent): void
     {
-        $this->getWebContents()->removeElement($eventWebContent);
+        $this->getContents()->removeElement($eventContent);
     }
 
-    public function getWebContent(?string $type = 'html'): ?EventWebContent
+    public function getContent(?string $type = 'html'): ?EventContent
     {
-        $webContent = $this->getWebContents($type, true)->first();
+        $content = $this->getContents($type, true)->first();
 
-        return $webContent instanceof EventWebContent ? $webContent : null;
+        return $content instanceof EventContent ? $content : null;
     }
 
-    public function getLocation(?bool $recursive = false): ?Place
+    public function getPlace(?bool $recursive = false): ?Place
     {
-        return $this->location ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getLocation() : null) ?? null;
+        return $this->place ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getPlace() : null) ?? null;
     }
 
-    public function setLocation(?Place $event): void
+    public function setPlace(?Place $event): void
     {
-        $this->location = $event;
+        $this->place = $event;
     }
 
     public function getBankAccount(bool $recursive = false): ?BankAccount
@@ -279,11 +282,6 @@ class Event implements NameableInterface
         }
 
         return $startDateTime === $maxDateTime ? null : $startDateTime;
-    }
-
-    public function getSubEvents(): Collection
-    {
-        return $this->subEvents ?? new ArrayCollection();
     }
 
     public function addFlagConnection(EventFlagConnection $flagConnection): void
@@ -338,15 +336,6 @@ class Event implements NameableInterface
         return $name;
     }
 
-    public function getGeneratedSlug(): string /// TODO: Used somewhere?
-    {
-        if ($this->isBatchOrYear() && $this->getStartYear()) {
-            return $this->getStartYear().($this->isBatch() ? '-'.$this->getSeqId() : null);
-        }
-
-        return (string)$this->getId();
-    }
-
     public function isBatchOrYear(): bool
     {
         return $this->isYear() || $this->isBatch();
@@ -354,22 +343,22 @@ class Event implements NameableInterface
 
     public function isYear(): bool
     {
-        return null !== $this->getType() && EventType::YEAR_OF_EVENT === $this->getType()->getType();
+        return null !== $this->getCategory() && EventCategory::YEAR_OF_EVENT === $this->getCategory()->getType();
     }
 
-    public function getType(): ?EventType
+    public function getCategory(): ?EventCategory
     {
-        return $this->type;
+        return $this->category;
     }
 
-    public function setType(?EventType $type): void
+    public function setCategory(?EventCategory $category): void
     {
-        $this->type = $type;
+        $this->category = $category;
     }
 
     public function isBatch(): bool
     {
-        return $this->getType() && EventType::BATCH_OF_EVENT === $this->getType()->getType();
+        return $this->getCategory() && EventCategory::BATCH_OF_EVENT === $this->getCategory()->getType();
     }
 
     public function getStartYear(): ?int
@@ -379,28 +368,28 @@ class Event implements NameableInterface
 
     public function getSeqId(): ?int
     {
-        return $this->getSeries() ? $this->getSeries()->getSeqId($this) : null;
+        return $this->getGroup() ? $this->getGroup()->getSeqId($this) : null;
     }
 
-    public function getSeries(): ?EventSeries
+    public function getGroup(): ?EventGroup
     {
-        return $this->series;
+        return $this->group;
     }
 
-    public function setSeries(?EventSeries $series): void
+    public function setGroup(?EventGroup $group): void
     {
-        if (null !== $this->series && $series !== $this->series) {
-            $this->series->removeEvent($this);
+        if (null !== $this->group && $group !== $this->group) {
+            $this->group->removeEvent($this);
         }
-        $this->series = $series;
-        if (null !== $series && $this->series !== $series) {
-            $series->addEvent($this);
+        $this->group = $group;
+        if (null !== $group && $this->group !== $group) {
+            $group->addEvent($this);
         }
     }
 
-    public function getTypeString(): ?string
+    public function getType(): ?string
     {
-        return $this->getType() ? $this->getType()->getType() : null;
+        return $this->getCategory() ? $this->getCategory()->getType() : null;
     }
 
     public function isEventSuperEvent(?Event $event, ?bool $recursive = true): bool

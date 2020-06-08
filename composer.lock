@@ -3995,16 +3995,16 @@
         },
         {
             "name": "oswis-org/oswis-core-bundle",
-            "version": "v0.0.546",
+            "version": "v0.0.548",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-                "reference": "3944e6806d799c374b40f4eb2761d4ae0c41a146"
+                "reference": "faa1986fa69efc27c85012a5910a129edc6b5152"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/3944e6806d799c374b40f4eb2761d4ae0c41a146",
-                "reference": "3944e6806d799c374b40f4eb2761d4ae0c41a146",
+                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/faa1986fa69efc27c85012a5910a129edc6b5152",
+                "reference": "faa1986fa69efc27c85012a5910a129edc6b5152",
                 "shasum": ""
             },
             "require": {
@@ -4102,7 +4102,7 @@
                 "php",
                 "zakjakub"
             ],
-            "time": "2020-06-06T19:39:30+00:00"
+            "time": "2020-06-08T16:39:00+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -10947,16 +10947,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.25",
+            "version": "0.12.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "9619551d68b2d4c0d681a8df73f3c847c798ee64"
+                "reference": "f108dabe757a584fafc3baabc0fabf4d45e040f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9619551d68b2d4c0d681a8df73f3c847c798ee64",
-                "reference": "9619551d68b2d4c0d681a8df73f3c847c798ee64",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f108dabe757a584fafc3baabc0fabf4d45e040f1",
+                "reference": "f108dabe757a584fafc3baabc0fabf4d45e040f1",
                 "shasum": ""
             },
             "require": {
@@ -10999,7 +10999,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-10T20:36:16+00:00"
+            "time": "2020-06-07T22:01:45+00:00"
         },
         {
             "name": "roave/security-advisories",

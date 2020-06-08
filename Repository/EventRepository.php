@@ -13,8 +13,8 @@ use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventSeries;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventType;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 
 class EventRepository extends EntityRepository
 {
@@ -142,7 +142,7 @@ class EventRepository extends EntityRepository
 
     private function setSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_SERIES]) && $opts[self::CRITERIA_END] instanceof EventSeries) {
+        if (!empty($opts[self::CRITERIA_SERIES]) && $opts[self::CRITERIA_END] instanceof EventGroup) {
             $queryBuilder->andWhere('e.series = :series_id');
             $queryBuilder->setParameter('series_id', $opts[self::CRITERIA_SERIES]->getId());
         }
@@ -173,7 +173,7 @@ class EventRepository extends EntityRepository
 
     private function addTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_TYPE]) && $opts[self::CRITERIA_TYPE] instanceof EventType) {
+        if (!empty($opts[self::CRITERIA_TYPE]) && $opts[self::CRITERIA_TYPE] instanceof EventCategory) {
             $queryBuilder->andWhere('e.type = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_TYPE]->getId());
         }

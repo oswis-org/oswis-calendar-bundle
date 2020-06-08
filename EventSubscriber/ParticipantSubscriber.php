@@ -9,7 +9,7 @@ namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Exception\OswisParticipantNotFoundException;
+use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -71,7 +71,7 @@ final class ParticipantSubscriber implements EventSubscriberInterface
         }
         $oldParticipant = $this->getExistingParticipant($newParticipant);
         if (null === $oldParticipant) {
-            throw new OswisParticipantNotFoundException();
+            throw new ParticipantNotFoundException();
         }
         $newParticipant->setEMailConfirmationDateTime(null);
         $oldParticipant->setEMailConfirmationDateTime(null);

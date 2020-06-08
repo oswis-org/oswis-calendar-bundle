@@ -13,7 +13,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
@@ -61,7 +61,7 @@ class ParticipantPaymentService
     final public function createFromCsv(
         Event $event,
         string $csv,
-        ?string $eventParticipantTypeOfType = ParticipantType::TYPE_ATTENDEE,
+        ?string $eventParticipantTypeOfType = ParticipantCategory::TYPE_ATTENDEE,
         ?string $delimiter = ';',
         ?string $enclosure = '"',
         ?string $escape = '\\',
@@ -71,7 +71,7 @@ class ParticipantPaymentService
         ?string $currencyColumnName = 'Měna',
         ?string $currencyAllowed = 'CZK'
     ): int {
-        $eventParticipantTypeOfType = $eventParticipantTypeOfType ?? ParticipantType::TYPE_ATTENDEE;
+        $eventParticipantTypeOfType = $eventParticipantTypeOfType ?? ParticipantCategory::TYPE_ATTENDEE;
         $delimiter = $delimiter ?? ';';
         $enclosure = $enclosure ?? '"';
         $escape = $escape ?? '\\';

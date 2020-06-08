@@ -8,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -22,7 +22,7 @@ final class ParticipantListActionSubscriber implements EventSubscriberInterface
 {
     public const DEFAULT_EVENT_PARTICIPANT_TYPE = 'ucastnik';
 
-    // TODO: ParticipantType slug change!
+    // TODO: ParticipantCategory slug change!
     protected EntityManagerInterface $em;
 
     protected ExportService $exportService;
@@ -52,10 +52,10 @@ final class ParticipantListActionSubscriber implements EventSubscriberInterface
         $request = $event->getControllerResult();
         $participantType = $request->eventParticipantType;
         if (!$participantType) {
-            $participantType = $this->em->getRepository(ParticipantType::class)->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE]);
+            $participantType = $this->em->getRepository(ParticipantCategory::class)->findOneBy(['slug' => self::DEFAULT_EVENT_PARTICIPANT_TYPE]);
         }
         try {
-            assert($participantType instanceof ParticipantType);
+            assert($participantType instanceof ParticipantCategory);
             $this->participantService->sendParticipantList($request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
         } catch (Exception $e) {
             $event->setResponse(new JsonResponse(['data' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR));

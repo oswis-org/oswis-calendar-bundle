@@ -3,9 +3,9 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\NonPersistent;
 
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
 
-class FlagsAggregatedByType
+class FlagsByType
 {
     /**
      * Gets array of flags aggregated by their types.
@@ -18,11 +18,11 @@ class FlagsAggregatedByType
     {
         $out = [];
         foreach ($flags as $flag) {
-            if ($flag instanceof ParticipantFlag) {
-                $flagTypeSlug = $flag->getFlagType() ? $flag->getFlagType()->getSlug() : '0';
+            if ($flag instanceof RegistrationFlag) {
+                $flagTypeSlug = $flag->getCategory() ? $flag->getCategory()->getSlug() : '0';
                 $flagSlug = $flag->getSlug();
                 $out[$flagTypeSlug] ??= [];
-                $out[$flagTypeSlug][$flagSlug]['flagType'] = $flag->getFlagType();
+                $out[$flagTypeSlug][$flagSlug]['flagType'] = $flag->getCategory();
                 $out[$flagTypeSlug][$flagSlug]['flag'] = $flag;
                 $count = $out[$flagTypeSlug][$flagSlug]['count'] ?? false ? $out[$flagTypeSlug][$flagSlug]['count'] + 1 : 1;
                 $out[$flagTypeSlug][$flagSlug]['count'] = $count;

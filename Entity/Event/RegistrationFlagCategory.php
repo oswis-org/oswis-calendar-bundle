@@ -1,21 +1,19 @@
 <?php
-/**
- * @noinspection PhpUnused
- */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
+namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use InvalidArgumentException;
-use OswisOrg\OswisCalendarBundle\Entity\AbstractClass\AbstractEventFlagType;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_type")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category_category")
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -24,25 +22,21 @@ use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_flag_types_get"}},
+ *       "normalization_context"={"groups"={"calendar_participant_category_categories_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_flag_types_post"}}
+ *       "denormalization_context"={"groups"={"calendar_participant_category_categories_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_flag_type_get"}},
+ *       "normalization_context"={"groups"={"calendar_participant_category_category_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_flag_type_put"}}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_participant_flag_type_delete"}}
+ *       "denormalization_context"={"groups"={"calendar_participant_category_category_put"}}
  *     }
  *   }
  * )
@@ -55,8 +49,11 @@ use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantFlagType extends AbstractEventFlagType
+class RegistrationFlagCategory extends AbstractEventFlagCategory
 {
+    use NameableTrait;
+    use TypeTrait;
+
     public const TYPE_FOOD = 'food';
     public const TYPE_TRANSPORT = 'transport';
     public const TYPE_T_SHIRT = 't-shirt';
@@ -70,21 +67,10 @@ class ParticipantFlagType extends AbstractEventFlagType
     /**
      * @param Nameable|null $nameable
      * @param string|null   $type
-     * @param int|null      $minFlagsAllowed
-     * @param int|null      $maxFlagsAllowed
      *
-     * @param string|null   $emptyPlaceholder
-     *
-     * @throws InvalidArgumentException
+     * @throws InvalidTypeException
      */
-    public function __construct(
-        ?Nameable $nameable = null,
-        ?string $type = null,
-        ?int $minFlagsAllowed = null,
-        ?int $maxFlagsAllowed = null,
-        ?string $emptyPlaceholder = null
-    ) {
-        parent::__construct($minFlagsAllowed, $maxFlagsAllowed, $emptyPlaceholder);
+    public function __construct(?Nameable $nameable = null, ?string $type = null) {
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
     }

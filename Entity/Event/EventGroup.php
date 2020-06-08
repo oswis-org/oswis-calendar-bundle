@@ -14,10 +14,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_series")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_event_group")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
-class EventSeries implements NameableInterface
+class EventGroup implements NameableInterface
 {
     use NameableTrait;
 
@@ -36,7 +36,7 @@ class EventSeries implements NameableInterface
     {
         if ($event && !$this->getEvents()->contains($event)) {
             $this->getEvents()->add($event);
-            $event->setSeries($this);
+            $event->setGroup($this);
         }
     }
 
@@ -47,7 +47,7 @@ class EventSeries implements NameableInterface
             $events->filter(fn(Event $event) => !$event->isDeleted());
         }
         if (null !== $eventTypeString) {
-            $events = $events->filter(fn(Event $eve) => $eve->getTypeString() === $eve->getTypeString());
+            $events = $events->filter(fn(Event $eve) => $eve->getType() === $eve->getType());
         }
         if (null !== $year) {
             $events = $events->filter(fn(Event $eve) => $eve->getStartYear() && $year === $eve->getStartYear());
@@ -59,17 +59,17 @@ class EventSeries implements NameableInterface
     public function removeEvent(?Event $contact): void
     {
         if ($contact && $this->getEvents()->removeElement($contact)) {
-            $contact->setSeries(null);
+            $contact->setGroup(null);
         }
     }
 
     public function getSeqId(Event $event): ?int
     {
-        if (!$event->getType() || !$event->getStartDate() || !$event->isBatchOrYear()) {
+        if (!$event->getCategory() || !$event->getStartDate() || !$event->isBatchOrYear()) {
             return null;
         }
         $seqId = 1;
-        $events = $this->getEvents($event->getTypeString(), ($event->isBatch() ? $event->getStartYear() : null), false);
+        $events = $this->getEvents($event->getType(), ($event->isBatch() ? $event->getStartYear() : null), false);
         foreach ($events as $e) {
             if ($e instanceof Event && $e->getStartDate() && $e->getId() !== $event->getId() && $e->getStartDate() < $event->getStartDate()) {
                 $seqId++;

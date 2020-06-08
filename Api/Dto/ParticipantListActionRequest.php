@@ -4,7 +4,7 @@ namespace OswisOrg\OswisCalendarBundle\Api\Dto;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 
 /**
  * @ApiResource(
@@ -27,7 +27,7 @@ final class ParticipantListActionRequest
      */
     public ?Event $event = null;
 
-    public ?ParticipantType $eventParticipantType = null;
+    public ?ParticipantCategory $eventParticipantType = null;
 
     public ?string $title = null;
 

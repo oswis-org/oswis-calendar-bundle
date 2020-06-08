@@ -4,7 +4,7 @@ namespace OswisOrg\OswisCalendarBundle\Exception;
 
 use Exception;
 
-class OswisParticipantNotFoundException extends Exception
+class ParticipantNotFoundException extends Exception
 {
     public function __construct(?string $message = null)
     {

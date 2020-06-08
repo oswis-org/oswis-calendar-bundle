@@ -18,14 +18,14 @@ use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
 use OswisOrg\OswisAddressBookBundle\Entity\Organization;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationsRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagRangeConnection;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
@@ -128,16 +128,16 @@ class ParticipantService
     }
 
     /**
-     * @param RegistrationsRange $range
-     * @param Participant        $participant
-     * @param array              $selectedFlags
-     * @param bool               $onlyPublic
-     * @param bool               $max
+     * @param RegistrationRange $range
+     * @param Participant       $participant
+     * @param array             $selectedFlags
+     * @param bool              $onlyPublic
+     * @param bool              $max
      *
      * @throws EventCapacityExceededException
      */
     public function checkParticipant(
-        RegistrationsRange $range,
+        RegistrationRange $range,
         Participant $participant,
         ?array $selectedFlags = null,
         bool $onlyPublic = true,
@@ -150,12 +150,12 @@ class ParticipantService
     }
 
     /**
-     * @param RegistrationsRange $range
-     * @param Participant        $participant
+     * @param RegistrationRange $range
+     * @param Participant       $participant
      *
      * @throws EventCapacityExceededException
      */
-    public function checkParticipantSuperEvent(RegistrationsRange $range, Participant $participant): void
+    public function checkParticipantSuperEvent(RegistrationRange $range, Participant $participant): void
     {
         if (true === $range->isSuperEventRequired()) {
             $included = false;
@@ -195,17 +195,17 @@ class ParticipantService
 
     public function processFlagsAdd(
         Participant $participant,
-        RegistrationsRange $range,
+        RegistrationRange $range,
         ?array $flagsAggregatedByType = null,
         bool $onlyPublic = false,
         bool $max = false
     ): void {
         foreach ($flagsAggregatedByType ?? [] as $flagsOfType) {
             foreach ($flagsOfType as $aggregatedFlag) {
-                if ($flag = ($aggregatedFlag['flag'] instanceof ParticipantFlag ? $aggregatedFlag['flag'] : null)) {
+                if ($flag = ($aggregatedFlag['flag'] instanceof RegistrationFlag ? $aggregatedFlag['flag'] : null)) {
                     for ($index = 0; $index < ($aggregatedFlag['count'] ?? 0); $index++) {
                         $flagRange = $range->getFlagRange($flag, $max, $onlyPublic);
-                        $participant->addFlagRangeConnection(new ParticipantFlagRangeConnection($flagRange));
+                        $participant->addFlagCategory(new ParticipantFlagCategory($flagRange));
                     }
                 }
             }
@@ -536,13 +536,13 @@ class ParticipantService
     /**
      * Checks if contact is participant in event as given participantType.
      *
-     * @param Event                $event
-     * @param AbstractContact      $contact
-     * @param ParticipantType|null $participantType
+     * @param Event                    $event
+     * @param AbstractContact          $contact
+     * @param ParticipantCategory|null $participantType
      *
      * @return bool
      */
-    public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantType $participantType = null): bool
+    public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantCategory $participantType = null): bool
     {
         $opts = [
             ParticipantRepository::CRITERIA_EVENT            => $event,
@@ -565,12 +565,12 @@ class ParticipantService
 
     final public function getOrganizers(Event $event): Collection
     {
-        return $this->getParticipantsByTypeString($event, ParticipantType::TYPE_ORGANIZER);
+        return $this->getParticipantsByTypeString($event, ParticipantCategory::TYPE_ORGANIZER);
     }
 
     public function getParticipantsByTypeString(
         ?Event $event = null,
-        ?string $participantTypeString = ParticipantType::TYPE_ATTENDEE,
+        ?string $participantTypeString = ParticipantCategory::TYPE_ATTENDEE,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivated = true,
         ?int $depth = 1
@@ -587,12 +587,12 @@ class ParticipantService
     }
 
     /**
-     * @param Event                $event
-     * @param ParticipantType|null $participantType
-     * @param bool                 $detailed
-     * @param string               $title
+     * @param Event                    $event
+     * @param ParticipantCategory|null $participantType
+     * @param bool                     $detailed
+     * @param string                   $title
      *
-     * @param int|null             $recursiveDepth
+     * @param int|null                 $recursiveDepth
      *
      * @throws LogicException
      * @throws OswisException
@@ -600,7 +600,7 @@ class ParticipantService
      */
     public function sendParticipantList(
         Event $event,
-        ?ParticipantType $participantType = null,
+        ?ParticipantCategory $participantType = null,
         bool $detailed = false,
         string $title = null,
         ?int $recursiveDepth = 0
@@ -659,10 +659,10 @@ class ParticipantService
 
     public function getWebPartners(array $opts = []): Collection
     {
-        $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING] ??= ParticipantType::TYPE_PARTNER;
+        $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING] ??= ParticipantCategory::TYPE_PARTNER;
 
         return $this->getParticipants($opts)->filter(
-            fn(Participant $ep) => $ep->hasFlagOfTypeString(ParticipantFlagType::TYPE_PARTNER_HOMEPAGE)
+            fn(Participant $ep) => $ep->hasFlagOfType(RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE)
         );
     }
 
@@ -673,17 +673,17 @@ class ParticipantService
      * array[flagTypeSlug]['flags'][flagSlug]['flag']
      * array[flagTypeSlug]['flags'][flagSlug]['participants']
      *
-     * @param Event                $event
-     * @param ParticipantType|null $participantType
-     * @param bool|null            $includeDeleted
-     * @param bool|null            $includeNotActivated
-     * @param int|null             $recursiveDepth Default is 1 for root events, 0 for others.
+     * @param Event                    $event
+     * @param ParticipantCategory|null $participantType
+     * @param bool|null                $includeDeleted
+     * @param bool|null                $includeNotActivated
+     * @param int|null                 $recursiveDepth Default is 1 for root events, 0 for others.
      *
      * @return array
      */
     public function getParticipantsAggregatedByFlags(
         Event $event,
-        ?ParticipantType $participantType = null,
+        ?ParticipantCategory $participantType = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivated = true,
         ?int $recursiveDepth = 1
@@ -700,8 +700,8 @@ class ParticipantService
         if ($participantType) {
             foreach ($participants as $participant) {
                 assert($participant instanceof Participant);
-                foreach ($participant->getFlagRangeConnections() as $participantFlagConnection) {
-                    assert($participantFlagConnection instanceof ParticipantFlagRange);
+                foreach ($participant->getFlagCategories() as $participantFlagConnection) {
+                    assert($participantFlagConnection instanceof RegistrationsFlagRange);
                     $flag = $participantFlagConnection->getFlag();
                     if (null !== $flag) {
                         $flagType = $flag->getFlagType();
@@ -721,11 +721,11 @@ class ParticipantService
                     'name'      => $participantType->getName(),
                     'shortName' => $participantType->getShortName(),
                 ];
-                foreach ($participant->getFlagRangeConnections() as $participantFlagConnection) {
-                    assert($participantFlagConnection instanceof ParticipantFlagRangeConnection);
+                foreach ($participant->getFlagCategories() as $participantFlagConnection) {
+                    assert($participantFlagConnection instanceof ParticipantFlagCategory);
                     $flag = $participantFlagConnection->getFlag();
                     if (null !== $flag) {
-                        $flagType = $flag->getFlagType();
+                        $flagType = $flag->getCategory();
                         $flagTypeSlug = $flagType ? $flagType->getSlug() : '';
                         $flagArray = [
                             'id'        => $flag->getId(),
@@ -763,18 +763,18 @@ class ParticipantService
      * array[schoolSlug]['school']
      * array[schoolSlug]['participants'][]
      *
-     * @param Event                $event
-     * @param ParticipantType|null $participantType
-     * @param bool|null            $includeDeleted
-     * @param bool|null            $includeNotActivated
-     * @param int|null             $recursiveDepth Default is 1 for root events, 0 for others.
+     * @param Event                    $event
+     * @param ParticipantCategory|null $participantType
+     * @param bool|null                $includeDeleted
+     * @param bool|null                $includeNotActivated
+     * @param int|null                 $recursiveDepth Default is 1 for root events, 0 for others.
      *
      * @return array
      * @throws Exception
      */
     public function getActiveParticipantsAggregatedBySchool(
         Event $event,
-        ?ParticipantType $participantType = null,
+        ?ParticipantCategory $participantType = null,
         ?bool $includeDeleted = false,
         ?bool $includeNotActivated = false,
         ?int $recursiveDepth = null
@@ -820,7 +820,7 @@ class ParticipantService
         return $output;
     }
 
-    final public function containsAppUser(Event $event, AppUser $appUser, ParticipantType $participantType = null): bool
+    final public function containsAppUser(Event $event, AppUser $appUser, ParticipantCategory $participantType = null): bool
     {
         return $this->getRepository()->getParticipants(
                 [
