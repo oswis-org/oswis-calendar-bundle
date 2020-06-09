@@ -94,7 +94,8 @@ class RegistrationFlagRange implements NameableInterface
         return $this->depositValue ?? 0;
     }
 
-    public function hasRemainingCapacity(): bool {
+    public function hasRemainingCapacity(): bool
+    {
         return 0 === $this->getRemainingCapacity(false);
     }
 
@@ -140,13 +141,61 @@ class RegistrationFlagRange implements NameableInterface
         return null === $flagType ? true : $this->getType() === $flagType;
     }
 
+    public function getExtendedName(bool $addPrice = true, bool $addCapacityOverflow = true): ?string
+    {
+        $flagName = $this->getName();
+        if ($addPrice) {
+            $price = $this->getPrice();
+            $flagName .= 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
+        }
+        if ($addCapacityOverflow && !$this->hasRemainingCapacity()) {
+            $flagName .= ' (kapacita vyčerpána)';
+        }
+
+        return $flagName;
+    }
+
+    public function getFlagGroupName(): ?string
+    {
+        return RegistrationFlagRangeCategory::TYPE_T_SHIRT === $this->getType() ? $this->getTShirtGroup() : $this->getFlagPriceGroup();
+    }
+
+    public function getTShirtGroup(): string
+    {
+        $flagName = $this->getName();
+        if (strpos($flagName, 'Pán') !== false) {
+            return '♂ Pánské tričko';
+        }
+        if (strpos($flagName, 'Dám') !== false) {
+            return '♀ Dámské tričko';
+        }
+        if (strpos($flagName, 'Uni') !== false) {
+            return '⚲ Unisex tričko';
+        }
+
+        return '⚪ Ostatní';
+    }
+
+    public function getFlagPriceGroup(): string
+    {
+        $price = $this->getPrice();
+        if ($price > 0) {
+            return '⊕ S příplatkem';
+        }
+        if ($price < 0) {
+            return '⊖ Se slevou';
+        }
+
+        return '⊜ Bez příplatku';
+    }
+
     public function getName(): ?string
     {
-        return $this->getFlag() && $this->getFlag()->getName() ? $this->getFlag()->getName() : $this->traitGetName();
+        return $this->traitGetName() ?? ($this->getFlag() ? $this->getFlag()->getName() : null);
     }
 
     public function getShortName(): ?string
     {
-        return $this->getFlag() && $this->getFlag()->getShortName() ? $this->getFlag()->getShortName() : $this->traitGetShortName();
+        return $this->traitGetShortName() ?? ($this->getFlag() ? $this->getFlag()->getShortName() : null);
     }
 }

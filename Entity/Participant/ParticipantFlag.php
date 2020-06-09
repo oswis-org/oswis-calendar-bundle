@@ -45,7 +45,7 @@ class ParticipantFlag implements BasicInterface
      */
     protected ?ParticipantFlagCategory $participantFlagCategory = null;
 
-    public function __construct(?RegistrationsFlagRange $flagRange = null, ?string $textValue = null)
+    public function __construct(?RegistrationFlagRange $flagRange = null, ?string $textValue = null)
     {
         $this->setFlagRange($flagRange);
         $this->setTextValue($textValue);
@@ -71,7 +71,7 @@ class ParticipantFlag implements BasicInterface
         return $this->flagRange;
     }
 
-    public function setFlagRange(?RegistrationsFlagRange $flagRange): void
+    public function setFlagRange(?RegistrationFlagRange $flagRange): void
     {
         if ($this->flagRange === $flagRange) {
             return;

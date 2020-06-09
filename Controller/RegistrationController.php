@@ -22,11 +22,11 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\RegistrationFormType;
@@ -258,10 +258,7 @@ class RegistrationController extends AbstractController
         }
 
         return new Participant(
-            new ParticipantContact($this->getContact($range->getEvent(), $contact)),
-            new ParticipantRange($range),
-            null,
-            new ArrayCollection([new ParticipantNote()])
+            new ParticipantContact($this->getContact($range->getEvent(), $contact)), new ParticipantRange($range), null, new ArrayCollection([new ParticipantNote()])
         );
     }
 
@@ -289,7 +286,6 @@ class RegistrationController extends AbstractController
                 new ArrayCollection([new ContactDetail($detailTypeEmail), new ContactDetail($detailTypePhone)]),
                 null,
                 new ArrayCollection([new Position(null, null, Position::TYPE_STUDENT)]),
-                null,
                 null !== $addressBook ? new ArrayCollection([$addressBook]) : null
             );
     }

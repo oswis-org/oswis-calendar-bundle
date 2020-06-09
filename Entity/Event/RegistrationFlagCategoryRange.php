@@ -14,6 +14,8 @@ use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
+use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -25,6 +27,8 @@ class RegistrationFlagCategoryRange implements NameableInterface
     use NameableTrait;
     use EntityPublicTrait;
     use FlagAmountRangeTrait;
+    use FormValueTrait;
+    use TextValueTrait;
 
     /**
      * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
@@ -115,8 +119,24 @@ class RegistrationFlagCategoryRange implements NameableInterface
         return null === $flagType ? true : $this->getType() === $flagType;
     }
 
-    public function isFormValueAllowed(): bool
+    public function isCategoryValueAllowed(): bool
+    {
+        return $this->isFormValueAllowed();
+    }
+
+    public function hasFlagValueAllowed(): bool
     {
         return $this->getFlagRanges()->exists(fn(RegistrationFlagRange $flagRange) => $flagRange->isFormValueAllowed());
+    }
+
+    public function getFlagsGroupNames(): array
+    {
+        $groups = [];
+        foreach ($this->getFlagRanges(true) as $flagRange) {
+            $groupName = $flagRange->getFlagGroupName();
+            $groups[$groupName] = ($groups[$groupName] ?? 0) + 1;
+        }
+
+        return $groups;
     }
 }

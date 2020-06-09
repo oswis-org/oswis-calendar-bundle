@@ -91,6 +91,10 @@ class ParticipantFlagCategory implements BasicInterface
         return $this->getFlagCategoryRange() ? $this->getFlagCategoryRange()->getCategory() : null;
     }
 
+    public function isPublicOnWeb(): bool {
+        return $this->getFlagCategoryRange() ? $this->getFlagCategoryRange()->isPublicOnWeb() : false;
+    }
+
     public function getFlagCategoryRange(): ?RegistrationFlagCategoryRange
     {
         return $this->flagCategoryRange;
@@ -108,8 +112,12 @@ class ParticipantFlagCategory implements BasicInterface
 
     public function getPrice(): int
     {
-        // TODO
-        return $this->isActive() && $this->getFlagCategoryRange() ? $this->getFlagCategoryRange()->getPrice() : 0;
+        $price = 0;
+        foreach ($this->getParticipantFlags() as $flagRange) {
+            $price += $flagRange instanceof RegistrationFlagRange ? $flagRange->getPrice() : 0;
+        }
+
+        return $price;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool
@@ -119,8 +127,12 @@ class ParticipantFlagCategory implements BasicInterface
 
     public function getDepositValue(): int
     {
-        // TODO
-        return $this->isActive() && $this->getFlagCategoryRange() ? $this->getFlagCategoryRange()->getDepositValue() : 0;
+        $price = 0;
+        foreach ($this->getParticipantFlags() as $flagRange) {
+            $price += $flagRange instanceof RegistrationFlagRange ? $flagRange->getPrice() : 0;
+        }
+
+        return $price;
     }
 
     public function getParticipantFlags(bool $onlyActive = false, ?RegistrationFlag $flag = null): Collection
@@ -144,7 +156,6 @@ class ParticipantFlagCategory implements BasicInterface
     public function addParticipantFlag(?ParticipantFlag $participantFlag): void
     {
         // TODO: Do some checking.
-
         if (null !== $participantFlag && !$this->getParticipantFlags()->contains($participantFlag)) {
             if ($this->getFlagCategory() !== $participantFlag->getFlagCategory()) {
                 throw new InvalidTypeException('příznaku', 'v kategorii');
@@ -157,12 +168,16 @@ class ParticipantFlagCategory implements BasicInterface
     public function removeParticipantFlag(?ParticipantFlag $event): void
     {
         if (null !== $event && $this->getParticipantFlags()->removeElement($event)) {
-            $event->setParticipantFlagCategory(null);
+            try {
+                $event->setParticipantFlagCategory(null);
+            } catch (InvalidTypeException $e) {
+            }
         }
     }
 
-    public function getFlagRanges(): Collection {
-        return $this->getFlagCategoryRange() ? $this->getFlagCategoryRange()->getFlagRanges() : new ArrayCollection();
+    public function getAvailableFlagRanges(bool $onlyPublic = false): Collection
+    {
+        return $this->getFlagCategoryRange() ? $this->getFlagCategoryRange()->getFlagRanges($onlyPublic) : new ArrayCollection();
     }
 
 }

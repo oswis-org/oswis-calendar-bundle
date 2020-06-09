@@ -16,7 +16,6 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -45,7 +44,7 @@ class RegistrationFormType extends AbstractType
             throw new PriceInvalidArgumentException($message);
         }
         self::addContactField($builder);
-        $this->addFlagTypeFields($builder, $range);
+        $this->addFlagCategoryFields($builder, $participant);
         self::addParticipantNotesFields($builder);
         self::addGdprField($builder);
         self::addSubmitButton($builder);
@@ -56,147 +55,24 @@ class RegistrationFormType extends AbstractType
         $builder->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
     }
 
-
-
-
-
-    public function addFlagTypeFields(FormBuilderInterface $builder, RegistrationRange $range): void
+    public function addFlagCategoryFields(FormBuilderInterface $builder, Participant $participant): void
     {
-        foreach ($range->getFlagsAggregatedByType(null, null, true, false) as $flagsOfType) {
-            self::addFlagField($builder, $range, $flagsOfType[array_key_first($flagsOfType)]['flagType'], $flagsOfType);
-        }
-    }
-
-    public static function addFlagField(
-        FormBuilderInterface $builder,
-        RegistrationRange $range,
-        ?RegistrationFlagCategory $flagType,
-        array $flagsOfType
-    ): void {
-        $flagTypeSlug = $flagType ? $flagType->getSlug() : '0';
-        $choices = [];
-        foreach ($flagsOfType as $item) {
-            if ($item['flag'] ?? false) {
-                $choices[] = $item['flag'];
-            }
-        }
-        $formal = $range->getParticipantType() ? $range->getParticipantType()->isFormal() : true;
-        $youCan = $formal ? 'můžete' : 'můžeš';
-        $expanded = false;
-        $required = $flagType ? $flagType->getMinInParticipant() > 1 : false;
-        $multiple = $flagType ? $flagType->getMaxInParticipant() !== 1 : true;
-        $flagGroupNames = self::getFlagsGroupNames($range, $flagType);
-        $label = $flagType ? $flagType->getName() : 'Ostatní příznaky';
-        $help = $flagType ? $flagType->getDescription() : '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>';
-        $help .= !$expanded && $multiple ? "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
         $builder->add(
-            "flag_$flagTypeSlug",
-            ChoiceType::class,
-            [
-                'label'        => $label,
-                'help_html'    => true,
-                'help'         => $help,
-                'required'     => $required,
-                'choices'      => $choices,
-                'mapped'       => false,
-                'expanded'     => $expanded,
-                'multiple'     => $multiple,
-                'attr'         => [
-                    'size' => $multiple ? count($choices) + count($flagGroupNames) : null,
-                ],
-                'choice_label' => fn(RegistrationFlag $flag, $key, $value) => self::getFlagNameWithPrice($range, $flag),
-                'choice_attr'  => fn(RegistrationFlag $flag, $key, $value) => self::getFlagAttributes($range, $flag),
-                'group_by'     => fn(RegistrationFlag $flag, $key, $value) => self::getFlagGroupName($range, $flagType, $flag),
-                'placeholder'  => $flagType->getEmptyPlaceholder(),
-            ]
+            'flagCategories',
+            CollectionType::class,
+            array(
+                'label'      => false,
+                'entry_type' => ParticipantFlagCategoryType::class,
+                'entry_options' => [
+                    'participant' => $participant,
+                ]
+            )
         );
     }
 
-    public static function getFlagsGroupNames(RegistrationRange $range, RegistrationFlagCategory $flagType): array
-    {
-        $groups = [];
-        foreach ($range->getFlags($flagType, null, true, false) as $flag) {
-            $groupName = self::getFlagGroupName($range, $flagType, $flag);
-            $groups[$groupName] = ($groups[$groupName] ?? 0) + 1;
-        }
-
-        return $groups;
-    }
-
-    public static function getFlagGroupName(RegistrationRange $range, ?RegistrationFlagCategory $flagType, RegistrationFlag $flag): ?string
-    {
-        if (null === $flagType) {
-            return null;
-        }
-        if (RegistrationFlagCategory::TYPE_T_SHIRT === $flagType->getType()) {
-            return self::getTShirtGroupName($flag);
-        }
-
-        return self::getFlagPriceGroup($range, $flag);
-    }
-
-    public static function getTShirtGroupName(RegistrationFlag $flag): string
-    {
-        if (strpos($flag->getName(), 'Pán') !== false) {
-            return '♂ Pánské tričko';
-        }
-        if (strpos($flag->getName(), 'Dám') !== false) {
-            return '♀ Dámské tričko';
-        }
-        if (strpos($flag->getName(), 'Uni') !== false) {
-            return '⚲ Unisex tričko';
-        }
-
-        return '⚪ Ostatní';
-    }
-
-    public static function getFlagPriceGroup(RegistrationRange $registrationsRange, RegistrationFlag $flag): string
-    {
-        $flagRange = $registrationsRange->getFlagRange($flag);
-        $price = $flagRange ? $flagRange->getPrice() : null;
-        if ($price > 0) {
-            return '⊕ S příplatkem';
-        }
-        if ($price < 0) {
-            return '⊖ Se slevou';
-        }
-
-        return '⊜ Bez příplatku';
-    }
-
-    /**
-     * Get flag name and include (only non-zero) price.
-     *
-     * @param RegistrationRange $registrationsRange
-     * @param RegistrationFlag  $flag
-     *
-     * @return string
-     */
-    public static function getFlagNameWithPrice(RegistrationRange $registrationsRange, RegistrationFlag $flag): string
-    {
-        $flagRange = $registrationsRange->getFlagRange($flag);
-        $price = $flagRange ? $flagRange->getPrice() : null;
-        $priceString = 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
-
-        return $flag->getName().$priceString;
-    }
-
-    public static function getFlagAttributes(RegistrationRange $range, RegistrationFlag $flag): array
-    {
-        $attributes = [];
-        if (0 === $range->getFlagRemainingCapacity($flag, true, false)) {
-            $attributes['disabled'] = 'disabled';
-        }
-
-        return $attributes;
-    }
-
-
-
-
-
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
     {
+        // TODO: PRE_SUBMIT => Remove empty notes.
         $builder->add(
             'notes',
             CollectionType::class,
@@ -212,6 +88,7 @@ class RegistrationFormType extends AbstractType
 
     public static function addGdprField(FormBuilderInterface $builder): void
     {
+        // TODO: Refactor to flag.
         $builder->add(
             'agreeGDPR',
             CheckboxType::class,
