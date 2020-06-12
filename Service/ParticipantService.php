@@ -280,6 +280,8 @@ class ParticipantService
         $email = $this->getEmptyEmail($person, 'Zrušení přihlášky');
         $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-delete.html.twig');
         $email->context($this->getMailData($participant, $event, $person, false));
+//        $email->getHeaders()->addIdHeader('References', []);
+//        $email->getHeaders()->addIdHeader('In-Reply-To', '');
         $this->em->persist($participant);
         try {
             $this->mailer->send($email);

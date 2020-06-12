@@ -174,7 +174,7 @@ class Participant implements BasicInterface
      *     targetEntity="ParticipantContact", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_contact_connection
+     *     name="calendar_participant_contact_connection"
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_contact_id", referencedColumnName="id", unique=true)}
      * )
