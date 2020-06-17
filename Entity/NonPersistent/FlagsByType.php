@@ -3,7 +3,7 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\NonPersistent;
 
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlag;
 
 class FlagsByType
 {

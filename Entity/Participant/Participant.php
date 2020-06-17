@@ -15,6 +15,7 @@ use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
@@ -171,7 +172,7 @@ class Participant implements BasicInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="ParticipantContact", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_participant_contact_connection"
@@ -421,6 +422,7 @@ class Participant implements BasicInterface
 
     public function getContactPersons(DateTime $dateTime = null, bool $onlyActivated = false): Collection
     {
+        // TODO: Not use it!!!!!!!!!!!
         return $this->getContact() ? $this->getContact()->getContactPersons($dateTime, $onlyActivated) : new ArrayCollection();
     }
 
@@ -547,32 +549,24 @@ class Participant implements BasicInterface
 
     public function getFlagCategories(
         bool $onlyActive = false,
-        bool $onlyDeleted = false,
         ?RegistrationFlagCategory $flagCategory = null,
-        ?RegistrationFlag $flag = null,
         ?string $flagType = null
     ): Collection {
         $connections = $this->flagCategories ??= new ArrayCollection();
         if ($onlyActive) {
             $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->isActive());
         }
-        if ($onlyDeleted) {
-            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->isDeleted());
-        }
-        if (null !== $flag) {
-            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlag() === $flag);
-        }
         if (null !== $flagCategory) {
-            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlagType() === $flagCategory);
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlagCategory() === $flagCategory);
         }
         if (null !== $flagType) {
-            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlagTypeString() === $flagType);
+            $connections = $connections->filter(fn(ParticipantFlagCategory $connection) => $connection->getFlagType() === $flagType);
         }
 
         return $connections;
     }
 
-    public function setFlagCategories(?Collection $newFlagCategories): void
+    public function setFlagCategories(?Collection $newFlagCategories): void // TODO:???
     {
         $this->flagCategories ??= new ArrayCollection();
         $newFlagCategories ??= new ArrayCollection();
@@ -590,6 +584,7 @@ class Participant implements BasicInterface
 
     public function removeFlagCategory(?ParticipantFlagCategory $flagCategory): void
     {
+        // TODO: ????
         if (null !== $flagCategory) {
             $flagCategory->delete();
             $this->getFlagCategories()->removeElement($flagCategory);
@@ -636,11 +631,11 @@ class Participant implements BasicInterface
         return $price < 0 ? 0 : $price;
     }
 
-    public function getFlagsPrice(?RegistrationFlagCategory $flagType = null, bool $onlyActive = true): int
+    public function getFlagsPrice(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true): int
     {
         $price = 0;
-        foreach ($this->getFlagCategories($onlyActive, false, $flagType) as $flagConnection) {
-            $price += $flagConnection instanceof ParticipantFlagCategory ? $flagConnection->getPrice() : 0;
+        foreach ($this->getFlagCategories($onlyActive, $flagCategory, $flagType) as $category) {
+            $price += $category instanceof ParticipantFlagCategory ? $category->getPrice() : 0;
         }
 
         return $price;
@@ -662,11 +657,11 @@ class Participant implements BasicInterface
         return $price < 0 ? 0 : $price;
     }
 
-    public function getFlagsDepositValue(?RegistrationFlagCategory $flagType = null, bool $onlyActive = true): int
+    public function getFlagsDepositValue(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true): int
     {
         $price = 0;
-        foreach ($this->getFlagCategories($onlyActive, false, $flagType) as $flagConnection) {
-            $price += $flagConnection instanceof ParticipantFlagCategory ? $flagConnection->getDepositValue() : 0;
+        foreach ($this->getFlagCategories($onlyActive, $flagCategory, $flagType) as $category) {
+            $price += $category instanceof ParticipantFlagCategory ? $category->getDepositValue() : 0;
         }
 
         return $price;
@@ -707,58 +702,38 @@ class Participant implements BasicInterface
         }
     }
 
-    /**
-     * Checks if participant contains given flag.
-     *
-     * @param RegistrationFlag $flag
-     * @param bool             $onlyActive
-     *
-     * @return bool
-     */
-    public function hasFlag(RegistrationFlag $flag, bool $onlyActive = true): bool
+    public function hasFlag(RegistrationFlag $flag, bool $onlyActive = true, ?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null): bool
     {
-        return $this->getFlags(null, $onlyActive)->exists(
-            fn(RegistrationFlag $oneFlag) => $flag->getId() === $oneFlag->getId()
-        );
+        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive)->count() > 0;
     }
 
-    public function getFlags(
-        ?RegistrationFlagCategory $flagCategory = null,
-        RegistrationFlag $flag = null,
-        ?string $flagType = null,
-        bool $onlyActive = true
-    ): Collection {
+    public function getParticipantFlags(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true): Collection {
         $participantFlags = new ArrayCollection();
-        foreach ($this->getFlagCategories($onlyActive, false, $flagCategory, $flag, $flagType) as $flagCategory) {
-            if (!($flagCategory instanceof ParticipantFlagCategory)) {
+        foreach ($this->getFlagCategories($onlyActive, $flagCategory, $flagType) as $category) {
+            if (!($category instanceof ParticipantFlagCategory)) {
                 continue;
             }
-            $flagCategory->get
+            foreach ($category->getParticipantFlags() as $participantFlag) {
+                if (!($participantFlag instanceof ParticipantFlag)) {
+                    continue;
+                }
+                $participantFlags->add($participantFlag);
+            }
         }
 
-
-        return $this->getFlagRanges($flagCategory, $onlyActive)->map(fn(RegistrationsFlagRange $range) => $range->getFlag());
+        return $participantFlags;
     }
 
-    public function getFlagRanges(?RegistrationFlagCategory $flagType = null, bool $onlyActive = true): Collection
-    {
-        return $this->getFlagCategories($onlyActive, false, $flagType)->map(
-            fn(ParticipantFlagCategory $connection) => $connection->getFlagCategoryRange()
+    public function getRegistrationFlags(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true): Collection {
+        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive)->map(
+            fn (ParticipantFlag $participantFlag) => $participantFlag->getFlag()
         );
     }
 
-    /**
-     * Checks if participant has some flag of given type (given by type string).
-     *
-     * @param string|null $flagType
-     * @param bool        $onlyActive
-     *
-     * @return bool Participant contains some flag of given type.
-     */
-    public function hasFlagOfType(?string $flagType, bool $onlyActive = true): bool
+    public function getFlagRanges(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true): Collection
     {
-        return $this->getFlags(null, $onlyActive)->exists(
-            fn(RegistrationFlag $f) => $flagType && $f->getTypeOfType() === $flagType
+        return $this->getFlagCategories($onlyActive, $flagCategory, $flagType)->map(
+            fn(ParticipantFlagCategory $connection) => $connection->getFlagCategoryRange()
         );
     }
 
@@ -830,6 +805,6 @@ class Participant implements BasicInterface
      */
     public function getFlagsAggregatedByType(): array
     {
-        return FlagsByType::getFlagsAggregatedByType($this->getFlags());
+        return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
     }
 }

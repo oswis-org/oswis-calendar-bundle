@@ -49,7 +49,6 @@ class EventController extends AbstractController
      * @param string|null $eventSlug
      *
      * @return Response
-     * @throws NotFoundHttpException
      */
     final public function showEvent(?string $eventSlug = null): Response
     {
@@ -121,7 +120,6 @@ class EventController extends AbstractController
      * @param string|null $eventSlug
      *
      * @return Response
-     * @throws NotFoundHttpException
      */
     final public function showEventLeaflet(?string $eventSlug = null): Response
     {

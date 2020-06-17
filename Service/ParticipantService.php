@@ -62,16 +62,13 @@ class ParticipantService
 
     protected ExportService $exportService;
 
-    protected UserPasswordEncoderInterface $encoder;
-
     public function __construct(
         EntityManagerInterface $em,
         MailerInterface $mailer,
         OswisCoreSettingsProvider $oswisCoreSettings,
         ?LoggerInterface $logger,
         AppUserService $appUserService,
-        ExportService $exportService,
-        UserPasswordEncoderInterface $encoder
+        ExportService $exportService
     ) {
         $this->em = $em;
         $this->logger = $logger;
@@ -79,7 +76,6 @@ class ParticipantService
         $this->mailer = $mailer;
         $this->appUserService = $appUserService;
         $this->exportService = $exportService;
-        $this->encoder = $encoder;
     }
 
     /**
@@ -191,25 +187,6 @@ class ParticipantService
         assert($repository instanceof ParticipantRepository);
 
         return $repository;
-    }
-
-    public function processFlagsAdd(
-        Participant $participant,
-        RegistrationRange $range,
-        ?array $flagsAggregatedByType = null,
-        bool $onlyPublic = false,
-        bool $max = false
-    ): void {
-        foreach ($flagsAggregatedByType ?? [] as $flagsOfType) {
-            foreach ($flagsOfType as $aggregatedFlag) {
-                if ($flag = ($aggregatedFlag['flag'] instanceof RegistrationFlag ? $aggregatedFlag['flag'] : null)) {
-                    for ($index = 0; $index < ($aggregatedFlag['count'] ?? 0); $index++) {
-                        $flagRange = $range->getFlagRange($flag, $max, $onlyPublic);
-                        $participant->addFlagCategory(new ParticipantFlagCategory($flagRange));
-                    }
-                }
-            }
-        }
     }
 
     /**

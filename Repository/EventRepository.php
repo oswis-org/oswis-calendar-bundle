@@ -6,6 +6,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
@@ -16,7 +17,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 
-class EventRepository extends EntityRepository
+class EventRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
