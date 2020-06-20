@@ -16,11 +16,8 @@ class CapacityUsage
         $this->setUsage($baseUsage, $fullUsage);
     }
 
-    public function getUsage(bool $full = false): int {
-        return true === $full ? $this->getFullUsage() : $this->getBaseUsage();
-    }
-
-    public function setUsage(?int $baseUsage = null, ?int $fullUsage = null): void {
+    public function setUsage(?int $baseUsage = null, ?int $fullUsage = null): void
+    {
         $baseUsage ??= 0;
         $fullUsage ??= 0;
         $baseUsage = 1 > $baseUsage ? 0 : $baseUsage;
@@ -28,6 +25,22 @@ class CapacityUsage
         $fullUsage = $fullUsage < $baseUsage ? $baseUsage : $fullUsage;
         $this->setBaseUsage($baseUsage);
         $this->setFullUsage($fullUsage);
+    }
+
+    public function getUsage(bool $full = false): int
+    {
+        return true === $full ? $this->getFullUsage() : $this->getBaseUsage();
+    }
+
+    public function getFullUsage(): int
+    {
+        return $this->fullUsage;
+    }
+
+    public function setFullUsage(?int $fullUsage): void
+    {
+        $fullUsage ??= 0;
+        $this->fullUsage = 0 > $fullUsage ? 0 : $fullUsage;
     }
 
     public function getBaseUsage(): int
@@ -43,16 +56,5 @@ class CapacityUsage
     {
         $baseUsage ??= 0;
         $this->baseUsage = 0 > $baseUsage ? 0 : $baseUsage;
-    }
-
-    public function getFullUsage(): int
-    {
-        return $this->fullUsage;
-    }
-
-    public function setFullUsage(?int $fullUsage): void
-    {
-        $fullUsage ??= 0;
-        $this->fullUsage = 0 > $fullUsage ? 0 : $fullUsage;
     }
 }

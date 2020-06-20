@@ -137,7 +137,7 @@ services:
         alias: oswis_org_oswis_calendar.participant_category_range_service
         public: true
 
-    ### RegistrationFlag Service
+    ### Flag Service
     oswis_org_oswis_calendar.participant_category_service:
         class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagService
         autowire: true
@@ -217,6 +217,33 @@ services:
     OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService:
         alias: oswis_org_oswis_calendar.registrations_range_service
         public: true
+
+    ###
+    ###  REPOSITORY
+    ###
+
+    oswis_org_oswis_calendar.event_repository:
+        class: OswisOrg\OswisCalendarBundle\Repository\EventRepository
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine'
+    OswisOrg\OswisCalendarBundle\Repository\EventRepository:
+        alias: oswis_org_oswis_calendar.event_repository
+        public: true
+
+    oswis_org_oswis_calendar.participant_repository:
+        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine'
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository:
+        alias: oswis_org_oswis_calendar.participant_repository
+        public: true
+
+
+
 
 
 

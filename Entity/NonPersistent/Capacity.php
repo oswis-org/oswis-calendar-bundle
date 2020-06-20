@@ -16,11 +16,8 @@ class Capacity
         $this->setCapacity($baseCapacity, $fullCapacity);
     }
 
-    public function getCapacity(bool $full = false): int {
-        return true === $full ? $this->getFullCapacity() : $this->getBaseCapacity();
-    }
-
-    public function setCapacity(?int $baseCapacity = null, ?int $fullCapacity = null): void {
+    public function setCapacity(?int $baseCapacity = null, ?int $fullCapacity = null): void
+    {
         $baseCapacity ??= 0;
         $fullCapacity ??= 0;
         $baseCapacity = 1 > $baseCapacity ? 0 : $baseCapacity;
@@ -28,6 +25,22 @@ class Capacity
         $fullCapacity = $fullCapacity < $baseCapacity ? $baseCapacity : $fullCapacity;
         $this->setBaseCapacity($baseCapacity);
         $this->setFullCapacity($fullCapacity);
+    }
+
+    public function getCapacity(bool $full = false): int
+    {
+        return true === $full ? $this->getFullCapacity() : $this->getBaseCapacity();
+    }
+
+    public function getFullCapacity(): int
+    {
+        return $this->fullCapacity;
+    }
+
+    public function setFullCapacity(?int $fullCapacity): void
+    {
+        $fullCapacity ??= 0;
+        $this->fullCapacity = 0 > $fullCapacity ? 0 : $fullCapacity;
     }
 
     public function getBaseCapacity(): int
@@ -43,16 +56,5 @@ class Capacity
     {
         $baseCapacity ??= 0;
         $this->baseCapacity = 0 > $baseCapacity ? 0 : $baseCapacity;
-    }
-
-    public function getFullCapacity(): int
-    {
-        return $this->fullCapacity;
-    }
-
-    public function setFullCapacity(?int $fullCapacity): void
-    {
-        $fullCapacity ??= 0;
-        $this->fullCapacity = 0 > $fullCapacity ? 0 : $fullCapacity;
     }
 }

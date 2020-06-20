@@ -54,10 +54,10 @@ class ParticipantContact implements BasicInterface
         if ($this->contact === $contact) {
             return;
         }
-        if (null === $this->contact) {
-            $this->contact = $contact;
+        if (null !== $this->contact) {
+            throw new OswisNotImplementedException('změna kontaktu', 'v přiřazení kontaktu k události');
         }
-        throw new OswisNotImplementedException('změna kontaktu', 'v přiřazení kontaktu k události');
+        $this->contact = $contact;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool

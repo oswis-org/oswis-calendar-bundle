@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
 
 class ParticipantRangeConnectionRepository extends EntityRepository
@@ -55,7 +55,7 @@ class ParticipantRangeConnectionRepository extends EntityRepository
 
     private function addRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegistrationRange) {
+        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegRange) {
             $queryBuilder->andWhere('range_conn.range = :range_id');
             $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
         }

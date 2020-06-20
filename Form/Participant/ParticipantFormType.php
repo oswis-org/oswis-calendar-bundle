@@ -8,7 +8,7 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\StudentPersonType;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\RegRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlagCategory;
@@ -22,7 +22,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class RegistrationFormType extends AbstractType
+class ParticipantFormType extends AbstractType
 {
     /**
      * @param FormBuilderInterface $builder
@@ -33,7 +33,7 @@ class RegistrationFormType extends AbstractType
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $participant = $builder->getData();
-        if (!($participant instanceof Participant) || !(($range = $participant->getRange()) instanceof RegistrationRange)) {
+        if (!($participant instanceof Participant) || !(($range = $participant->getRegRange()) instanceof RegRange)) {
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
         }
         $participantType = $range->getParticipantType();
@@ -58,14 +58,14 @@ class RegistrationFormType extends AbstractType
     public function addFlagCategoryFields(FormBuilderInterface $builder, Participant $participant): void
     {
         $builder->add(
-            'flagCategories',
+            'flagGroups',
             CollectionType::class,
             array(
-                'label'      => false,
-                'entry_type' => ParticipantFlagCategoryType::class,
+                'label'         => false,
+                'entry_type'    => ParticipantFlagGroupType::class,
                 'entry_options' => [
                     'participant' => $participant,
-                ]
+                ],
             )
         );
     }
@@ -132,6 +132,6 @@ class RegistrationFormType extends AbstractType
 
     public function getName(): string
     {
-        return 'calendar_participant_registration';
+        return 'calendar_participant';
     }
 }

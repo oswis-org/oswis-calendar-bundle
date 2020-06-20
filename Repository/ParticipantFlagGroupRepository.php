@@ -11,20 +11,20 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory;
 
-class ParticipantFlagRangeConnectionRepository extends EntityRepository
+class ParticipantFlagGroupRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_FLAG_RANGE = 'flagRange';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantFlagCategory
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantFlagGroup
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof ParticipantFlagCategory ? $result : null;
+        return $result instanceof ParticipantFlagGroup ? $result : null;
     }
 
     public function getFlagRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
@@ -83,7 +83,7 @@ class ParticipantFlagRangeConnectionRepository extends EntityRepository
         $queryBuilder->addOrderBy('range_conn.id', 'ASC');
     }
 
-    public function getFlagRangeConnection(?array $opts = []): ?ParticipantFlagCategory
+    public function getFlagRangeConnection(?array $opts = []): ?ParticipantFlagGroup
     {
         try {
             $flagRangeConnection = $this->getFlagRangesConnectionsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -91,7 +91,7 @@ class ParticipantFlagRangeConnectionRepository extends EntityRepository
             return null;
         }
 
-        return $flagRangeConnection instanceof ParticipantFlagCategory ? $flagRangeConnection : null;
+        return $flagRangeConnection instanceof ParticipantFlagGroup ? $flagRangeConnection : null;
     }
 }
 

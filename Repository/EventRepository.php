@@ -9,16 +9,29 @@ namespace OswisOrg\OswisCalendarBundle\Repository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail\ParticipantEMailCategory;
 
 class EventRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     *
+     * @throws LogicException
+     */
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Event::class);
+    }
+
+
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_TYPE = 'type';

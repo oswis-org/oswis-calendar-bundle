@@ -177,11 +177,6 @@ class Event implements NameableInterface
         $this->image = $image;
     }
 
-    public function isRoot(): bool
-    {
-        return $this->getSuperEvent() ? false : true;
-    }
-
     public function getSuperEvent(): ?Event
     {
         return $this->superEvent;
@@ -196,6 +191,11 @@ class Event implements NameableInterface
         if ($this->superEvent) {
             $this->superEvent->addSubEvent($this);
         }
+    }
+
+    public function isRoot(): bool
+    {
+        return $this->getSuperEvent() ? false : true;
     }
 
     public function addSubEvent(?Event $event): void
@@ -213,12 +213,7 @@ class Event implements NameableInterface
         }
     }
 
-    public function getSubEvents(): Collection
-    {
-        return $this->subEvents ?? new ArrayCollection();
-    }
-
-    public function addWebContent(?EventContent $eventWebContent): void
+    public function addContent(?EventContent $eventWebContent): void
     {
         if (null !== $eventWebContent && !$this->getContents()->contains($eventWebContent)) {
             $this->removeContent($this->getContent($eventWebContent->getType()));
@@ -282,6 +277,11 @@ class Event implements NameableInterface
         }
 
         return $startDateTime === $maxDateTime ? null : $startDateTime;
+    }
+
+    public function getSubEvents(): Collection
+    {
+        return $this->subEvents ?? new ArrayCollection();
     }
 
     public function addFlagConnection(EventFlagConnection $flagConnection): void

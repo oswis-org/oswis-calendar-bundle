@@ -13,8 +13,8 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 
 class RegistrationsRangeRepository extends EntityRepository
 {
@@ -26,11 +26,11 @@ class RegistrationsRangeRepository extends EntityRepository
     public const CRITERIA_PUBLIC_ON_WEB = 'publicOnWeb';
     public const CRITERIA_ONLY_ACTIVE = 'onlyActive';
 
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?RegistrationRange
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?RegRange
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof RegistrationRange ? $result : null;
+        return $result instanceof RegRange ? $result : null;
     }
 
     public function getRegistrationsRanges(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
@@ -126,7 +126,7 @@ class RegistrationsRangeRepository extends EntityRepository
         $queryBuilder->addOrderBy('range.id', 'ASC');
     }
 
-    public function getRegistrationsRange(?array $opts = []): ?RegistrationRange
+    public function getRegistrationsRange(?array $opts = []): ?RegRange
     {
         try {
             $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -134,7 +134,7 @@ class RegistrationsRangeRepository extends EntityRepository
             return null;
         }
 
-        return $registrationsRange instanceof RegistrationRange ? $registrationsRange : null;
+        return $registrationsRange instanceof RegRange ? $registrationsRange : null;
     }
 }
 

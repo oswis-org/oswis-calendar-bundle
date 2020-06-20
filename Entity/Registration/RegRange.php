@@ -4,12 +4,13 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -34,7 +35,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
  */
-class RegistrationRange implements NameableInterface
+class RegRange implements NameableInterface
 {
     use NameableTrait;
     use PriceTrait {
@@ -49,10 +50,10 @@ class RegistrationRange implements NameableInterface
     use EntityPublicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationRange $requiredRange;
+    protected ?RegRange $requiredRange;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
@@ -67,14 +68,14 @@ class RegistrationRange implements NameableInterface
     protected ?ParticipantCategory $participantType = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagCategoryRange", cascade={"all"})
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
-     *      name="registration_range_flag_category_range",
-     *      joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="registration_range_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="registration_flag_category_range_id", referencedColumnName="id")}
+     *      name="calendar_reg_range_flag_group_range",
+     *      joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="reg_range_id", referencedColumnName="id")},
+     *      inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_group_range_id", referencedColumnName="id")}
      * )
      */
-    protected ?Collection $flagCategoryRanges = null;
+    protected ?Collection $flagGroupRanges = null;
 
     /**
      * Indicates that price is relative to required range.
@@ -98,7 +99,7 @@ class RegistrationRange implements NameableInterface
      * @param Price|null               $eventPrice
      * @param DateTimeRange|null       $dateTimeRange
      * @param bool|null                $isRelative
-     * @param RegistrationRange|null   $requiredRange
+     * @param RegRange|null            $requiredRange
      * @param Capacity|null            $eventCapacity
      * @param Publicity|null           $publicity
      * @param bool|null                $superEventRequired
@@ -112,12 +113,12 @@ class RegistrationRange implements NameableInterface
         ?Price $eventPrice = null,
         ?DateTimeRange $dateTimeRange = null,
         ?bool $isRelative = null,
-        ?RegistrationRange $requiredRange = null,
+        ?RegRange $requiredRange = null,
         ?Capacity $eventCapacity = null,
         Publicity $publicity = null,
         ?bool $superEventRequired = null
     ) {
-        $this->flagCategoryRanges = new ArrayCollection();
+        $this->flagGroupRanges = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEvent($event);
         $this->setParticipantType($participantType);
@@ -168,12 +169,12 @@ class RegistrationRange implements NameableInterface
         return $this->relative ?? false;
     }
 
-    public function getRequiredRange(): ?RegistrationRange
+    public function getRequiredRange(): ?RegRange
     {
         return $this->requiredRange;
     }
 
-    public function setRequiredRange(?RegistrationRange $requiredRange): void
+    public function setRequiredRange(?RegRange $requiredRange): void
     {
         $this->requiredRange = $requiredRange;
     }
@@ -273,34 +274,19 @@ class RegistrationRange implements NameableInterface
         return $max ? $this->getFullCapacity() : $this->baseUsage;
     }
 
-    public function setBaseCapacity(int $baseUsage): void
-    {
-        $this->baseUsage = $baseUsage;
-    }
-
     public function getFullCapacity(): int
     {
         return $this->fullUsage;
     }
 
+    public function setBaseCapacity(int $baseUsage): void
+    {
+        $this->baseUsage = $baseUsage;
+    }
+
     public function setFullCapacity(int $fulUsage): void
     {
         $this->fullUsage = $fulUsage;
-    }
-
-    public function getFlagCategoryRanges(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false): Collection {
-        $flagCategoryRanges = $this->flagCategoryRanges ??= new ArrayCollection();
-        if (true === $onlyPublic) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(RegistrationFlagCategoryRange $range) => $range->isPublicOnWeb());
-        }
-        if (null !== $flagCategory) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(RegistrationFlagCategoryRange $range) => $range->isCategory($flagCategory));
-        }
-        if (null !== $flagType) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(RegistrationFlagCategoryRange $range) => $range->isType($flagCategory));
-        }
-
-        return $flagCategoryRanges;
     }
 
     /**
@@ -324,15 +310,31 @@ class RegistrationRange implements NameableInterface
 
     public function addFlagRange(?RegistrationsFlagRange $flagRange): void
     {
-        if (null !== $flagRange && !$this->getFlagCategoryRanges()->contains($flagRange)) {
-            $this->getFlagCategoryRanges()->add($flagRange);
+        if (null !== $flagRange && !$this->getFlagGroupRanges()->contains($flagRange)) {
+            $this->getFlagGroupRanges()->add($flagRange);
         }
     }
 
-    public function getFlagRange(RegistrationFlag $flag, bool $max = false, bool $onlyPublic = false): ?RegistrationFlagRange
+    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false): Collection
     {
-        foreach ($this->getFlagCategoryRanges(null, $flag, $onlyPublic) as $range) {
-            if ($range instanceof RegistrationFlagRange && $range->getRemainingCapacity($max) !== 0) {
+        $flagCategoryRanges = $this->flagGroupRanges ??= new ArrayCollection();
+        if (true === $onlyPublic) {
+            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isPublicOnWeb());
+        }
+        if (null !== $flagCategory) {
+            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isCategory($flagCategory));
+        }
+        if (null !== $flagType) {
+            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isType($flagCategory));
+        }
+
+        return $flagCategoryRanges;
+    }
+
+    public function getFlagRange(Flag $flag, bool $max = false, bool $onlyPublic = false): ?FlagRange
+    {
+        foreach ($this->getFlagGroupRanges(null, $flag, $onlyPublic) as $range) {
+            if ($range instanceof FlagRange && $range->getRemainingCapacity($max) !== 0) {
                 return $range;
             }
         }
@@ -340,7 +342,7 @@ class RegistrationRange implements NameableInterface
         return null;
     }
 
-    public function removeFlagRange(?RegistrationFlagRange $flagRange): void
+    public function removeFlagRange(?FlagRange $flagRange): void
     {
         if (null === $flagRange) {
             return;
@@ -348,7 +350,7 @@ class RegistrationRange implements NameableInterface
         if ($flagRange->getBaseUsage() > 0) {
             throw new OswisNotImplementedException('Nelze odebrat již využitý rozsah.');
         }
-        $this->getFlagCategoryRanges()->remove($flagRange);
+        $this->getFlagGroupRanges()->remove($flagRange);
     }
 
     public function isParticipantInSuperEvent(Participant $participant): bool

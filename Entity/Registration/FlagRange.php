@@ -4,7 +4,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
@@ -21,11 +21,12 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 
 /**
+ * Date range when flag can be used (with some capacity).
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_registration_flag_range")
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_flag_range")
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_flag_range")
  */
-class RegistrationFlagRange implements NameableInterface
+class FlagRange implements NameableInterface
 {
     use NameableTrait {
         getName as traitGetName;
@@ -39,21 +40,13 @@ class RegistrationFlagRange implements NameableInterface
     use FormValueTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagCategoryRange", inversedBy="flagRanges", fetch="EAGER"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\Flag", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationFlagCategoryRange $categoryRange = null;
-
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlag", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
-    protected ?RegistrationFlag $flag = null;
+    protected ?Flag $flag = null;
 
     public function __construct(
-        ?RegistrationFlag $flag = null,
+        ?Flag $flag = null,
         ?Capacity $eventCapacity = null,
         ?Price $eventPrice = null,
         ?FlagAmountRange $flagAmountRange = null,
@@ -68,70 +61,32 @@ class RegistrationFlagRange implements NameableInterface
         $this->setFormValue($formValue ?? new FormValue(null, null));
     }
 
-    public function getCategoryRange(): ?RegistrationFlagCategoryRange
-    {
-        return $this->categoryRange;
-    }
-
-    public function setCategoryRange(?RegistrationFlagCategoryRange $categoryRange): void
-    {
-        if ($this->categoryRange && $categoryRange !== $this->categoryRange) {
-            $this->categoryRange->removeFlagRange($this);
-        }
-        $this->categoryRange = $categoryRange;
-        if ($this->categoryRange) {
-            $this->categoryRange->addFlagRange($this);
-        }
-    }
-
-    public function getPrice(): int
-    {
-        return $this->price ?? 0;
-    }
-
     public function getDepositValue(): int
     {
         return $this->depositValue ?? 0;
     }
 
-    public function hasRemainingCapacity(): bool
-    {
-        return 0 === $this->getRemainingCapacity(false);
-    }
-
-    public function getRemainingCapacity(bool $full = false): ?int
-    {
-        $capacity = $this->getCapacityInt($full);
-
-        return null === $capacity ? null : ($capacity - $this->getUsageInt($full));
-    }
-
-    public function isFlag(?RegistrationFlag $flag = null): bool
+    public function isFlag(?Flag $flag = null): bool
     {
         return null === $flag ? true : $this->getFlag() && $this->getFlag() === $flag;
     }
 
-    public function getFlag(): ?RegistrationFlag
+    public function getFlag(): ?Flag
     {
         return $this->flag;
     }
 
-    public function setFlag(?RegistrationFlag $flag): void
+    public function setFlag(?Flag $flag): void
     {
         $this->flag = $flag;
     }
 
-    public function isCategory(?RegistrationFlagCategory $category = null): bool
+    public function isCategory(?FlagCategory $category = null): bool
     {
         return null === $category ? true : $this->getCategory() && $this->getCategory() === $category;
     }
 
-    public function getType(): ?string
-    {
-        return $this->getFlag() ? $this->getFlag()->getType() : null;
-    }
-
-    public function getCategory(): ?RegistrationFlagCategory
+    public function getCategory(): ?FlagCategory
     {
         return $this->getFlag() ? $this->getFlag()->getCategory() : null;
     }
@@ -139,6 +94,11 @@ class RegistrationFlagRange implements NameableInterface
     public function isType(?string $flagType = null): bool
     {
         return null === $flagType ? true : $this->getType() === $flagType;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->getFlag() ? $this->getFlag()->getType() : null;
     }
 
     public function getExtendedName(bool $addPrice = true, bool $addCapacityOverflow = true): ?string
@@ -153,6 +113,28 @@ class RegistrationFlagRange implements NameableInterface
         }
 
         return $flagName;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->traitGetName() ?? ($this->getFlag() ? $this->getFlag()->getName() : null);
+    }
+
+    public function getPrice(): int
+    {
+        return $this->price ?? 0;
+    }
+
+    public function hasRemainingCapacity(): bool
+    {
+        return 0 === $this->getRemainingCapacity(false);
+    }
+
+    public function getRemainingCapacity(bool $full = false): ?int
+    {
+        $capacity = $this->getCapacityInt($full);
+
+        return null === $capacity ? null : ($capacity - $this->getUsageInt($full));
     }
 
     public function getFlagGroupName(): ?string
@@ -187,11 +169,6 @@ class RegistrationFlagRange implements NameableInterface
         }
 
         return '⊜ Bez příplatku';
-    }
-
-    public function getName(): ?string
-    {
-        return $this->traitGetName() ?? ($this->getFlag() ? $this->getFlag()->getName() : null);
     }
 
     public function getShortName(): ?string

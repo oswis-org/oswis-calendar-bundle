@@ -12,8 +12,8 @@ use OswisOrg\OswisAddressBookBundle\Entity\Organization;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
@@ -255,7 +255,7 @@ class ParticipantPaymentService
 
                 return;
             }
-            $formal = $eventParticipant->getParticipantType() ? $eventParticipant->getParticipantType()->isFormal() : true;
+            $formal = $eventParticipant->getParticipantCategory() ? $eventParticipant->getParticipantCategory()->isFormal() : true;
             $contact = $eventParticipant->getContact();
             $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
             if ($contact instanceof Person) {

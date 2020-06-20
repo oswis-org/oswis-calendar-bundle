@@ -7,9 +7,11 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
@@ -21,15 +23,16 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 class ParticipantRange implements BasicInterface
 {
     use BasicTrait;
+    use ActivatedTrait;
     use DeletedTrait;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationRange $range = null;
+    protected ?RegRange $range = null;
 
-    public function __construct(?RegistrationRange $range = null)
+    public function __construct(?RegRange $range = null)
     {
         try {
             $this->setRange($range);
@@ -37,17 +40,32 @@ class ParticipantRange implements BasicInterface
         }
     }
 
-    public function getRange(): ?RegistrationRange
+    public function isActive(?DateTime $referenceDateTime = null): bool
+    {
+        return $this->isActivated($referenceDateTime) && !$this->isDeleted($referenceDateTime);
+    }
+
+    public function getEventName(): ?string
+    {
+        return $this->getEvent() ? $this->getEvent()->getName() : null;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->getRange() ? $this->getRange()->getEvent() : null;
+    }
+
+    public function getRange(): ?RegRange
     {
         return $this->range;
     }
 
     /**
-     * @param RegistrationRange|null $range
+     * @param RegRange|null $range
      *
      * @throws OswisNotImplementedException
      */
-    public function setRange(?RegistrationRange $range): void
+    public function setRange(?RegRange $range): void
     {
         if ($this->range === $range) {
             return;
@@ -56,10 +74,5 @@ class ParticipantRange implements BasicInterface
             $this->range = $range;
         }
         throw new OswisNotImplementedException('změna rozsahu', 'v přiřazení rozsahu k účastníkovi');
-    }
-
-    public function isActive(?DateTime $referenceDateTime = null): bool
-    {
-        return !$this->isDeleted($referenceDateTime);
     }
 }

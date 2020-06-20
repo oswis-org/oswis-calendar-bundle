@@ -4,13 +4,14 @@
  * @noinspection PhpUnused
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
 
@@ -60,18 +61,18 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class RegistrationFlag
+class Flag
 {
     use NameableTrait;
-    use ValueTrait;
+    use ColorTrait;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlagCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationFlagCategory $category = null;
+    protected ?FlagCategory $category = null;
 
-    public function __construct(?Nameable $nameable = null, ?RegistrationFlagCategory $flagType = null)
+    public function __construct(?Nameable $nameable = null, ?FlagCategory $flagType = null)
     {
         $this->setFieldsFromNameable($nameable);
         $this->setCategory($flagType);
@@ -82,12 +83,12 @@ class RegistrationFlag
         return $this->getCategory() ? $this->getCategory()->getType() : null;
     }
 
-    public function getCategory(): ?RegistrationFlagCategory
+    public function getCategory(): ?FlagCategory
     {
         return $this->category;
     }
 
-    public function setCategory(?RegistrationFlagCategory $category): void
+    public function setCategory(?FlagCategory $category): void
     {
         $this->category = $category;
     }

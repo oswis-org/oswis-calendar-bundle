@@ -7,9 +7,9 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeConnectionRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagGroupRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeRepository;
 
 class ParticipantFlagRangeService
@@ -31,16 +31,16 @@ class ParticipantFlagRangeService
     {
         return $this->getFlagRangeConnectionRepository()->getFlagRangesConnections(
             [
-                ParticipantFlagRangeConnectionRepository::CRITERIA_FLAG_RANGE      => $flagRange,
-                ParticipantFlagRangeConnectionRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+                ParticipantFlagGroupRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+                ParticipantFlagGroupRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ]
         );
     }
 
-    public function getFlagRangeConnectionRepository(): ParticipantFlagRangeConnectionRepository
+    public function getFlagRangeConnectionRepository(): ParticipantFlagGroupRepository
     {
-        $repo = $this->em->getRepository(ParticipantFlagCategory::class);
-        assert($repo instanceof ParticipantFlagRangeConnectionRepository);
+        $repo = $this->em->getRepository(ParticipantFlagGroup::class);
+        assert($repo instanceof ParticipantFlagGroupRepository);
 
         return $repo;
     }

@@ -11,9 +11,16 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
-use InvalidArgumentException;
-use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractPayment;
+use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DateTimeTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\ExternalIdTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\InternalNoteTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\NumericValueTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
@@ -62,7 +69,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     "createdDateTime": "ipartial",
  *     "numericValue": "ipartial"
  * })
- * @ApiFilter(DateFilter::class, properties={"createdDtaeTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"})
+ * @ApiFilter(DateFilter::class, properties={"createddDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"})
  * @Searchable({
  *     "id",
  *     "dateTime",
@@ -71,10 +78,19 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantPayment extends AbstractPayment
+class ParticipantPayment
 {
+    use BasicTrait;
+    use NumericValueTrait;
+    use TypeTrait;
+    use NoteTrait;
+    use InternalNoteTrait;
+    use ExternalIdTrait;
+    use DateTimeTrait {
+        getDateTime as protected traitGetDateTime;
+    }
+
     /**
-     * Event contact revision (connected to person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="payments"
      * )
@@ -84,6 +100,8 @@ class ParticipantPayment extends AbstractPayment
     protected ?Participant $participant = null;
 
     /**
+     * ParticipantPayment constructor.
+     *
      * @param Participant|null $participant
      * @param int|null         $numericValue
      * @param DateTime|null    $dateTime
@@ -92,7 +110,7 @@ class ParticipantPayment extends AbstractPayment
      * @param string|null      $internalNote
      * @param string|null      $externalId
      *
-     * @throws InvalidArgumentException
+     * @throws NotImplementedException|InvalidTypeException
      */
     public function __construct(
         ?Participant $participant = null,
@@ -103,8 +121,48 @@ class ParticipantPayment extends AbstractPayment
         ?string $internalNote = null,
         ?string $externalId = null
     ) {
-        parent::__construct($numericValue, $type, $note, $internalNote, $externalId, $dateTime);
+        $this->setNumericValue($numericValue);
+        $this->setType($type);
+        $this->setNote($note);
+        $this->setInternalNote($internalNote);
+        $this->setExternalId($externalId);
+        $this->setDateTime($dateTime);
         $this->setParticipant($participant);
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @throws NotImplementedException
+     */
+    public function setDateTime(?DateTime $dateTime): void
+    {
+        if ($this->getDateTime() !== $dateTime) {
+            throw new NotImplementedException('změna data platby');
+        }
+    }
+
+    /**
+     * Date and time of payment.
+     *
+     * Date and time of creation is returned if it's not overwritten by dateTime property.
+     * This method overrides method from trait.
+     *
+     * @return DateTime|null
+     */
+    public function getDateTime(): ?DateTime
+    {
+        return $this->traitGetDateTime() ?? $this->getCreatedAt();
+    }
+
+    public static function getAllowedTypesDefault(): array
+    {
+        return ['', 'manual', 'csv'];
+    }
+
+    public static function getAllowedTypesCustom(): array
+    {
+        return [];
     }
 
     public function getParticipant(): ?Participant
@@ -112,14 +170,20 @@ class ParticipantPayment extends AbstractPayment
         return $this->participant;
     }
 
+    /**
+     * @param Participant|null $participant
+     *
+     * @throws NotImplementedException
+     */
     public function setParticipant(?Participant $participant): void
     {
-        if ($this->participant && $participant !== $this->participant) {
-            $this->participant->removePayment($this);
+        if ($this->participant === $participant) {
+            return;
         }
-        if ($participant && $this->participant !== $participant) {
-            $this->participant = $participant;
-            $participant->addPayment($this);
+        if (null !== $this->participant || null === $participant) {
+            throw new NotImplementedException('změna účastníka', 'u platby');
         }
+        $this->participant = $participant;
+        $participant->addPayment($this);
     }
 }

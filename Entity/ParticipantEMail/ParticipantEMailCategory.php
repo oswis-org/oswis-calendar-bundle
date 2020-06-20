@@ -1,7 +1,4 @@
 <?php
-/**
- * @noinspection MethodShouldBeFinalInspection
- */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail;
 

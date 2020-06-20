@@ -1,6 +1,6 @@
 <?php
 
-namespace OswisOrg\OswisCalendarBundle\Entity\Event;
+namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -8,12 +8,14 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
+use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
+ * Some category (type) of participant flags.
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category_category")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_category")
  * @ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -22,21 +24,21 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_category_categories_get"}},
+ *       "normalization_context"={"groups"={"calendar_participant_flag_categories_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_category_categories_post"}}
+ *       "denormalization_context"={"groups"={"calendar_participant_flag_categories_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_category_category_get"}},
+ *       "normalization_context"={"groups"={"calendar_participant_flag_category_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_category_category_put"}}
+ *       "denormalization_context"={"groups"={"calendar_participant_flag_category_put"}}
  *     }
  *   }
  * )
@@ -44,40 +46,58 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * @Searchable({
  *     "id",
  *     "name",
+ *     "shortName",
  *     "description",
- *     "note"
+ *     "note",
+ *     "internalNote",
+ *     "type",
+ *     "color"
  * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag")
  */
-class RegistrationFlagCategory extends AbstractEventFlagCategory
+class FlagCategory
 {
     use NameableTrait;
+    use ColorTrait;
     use TypeTrait;
 
     public const TYPE_FOOD = 'food';
     public const TYPE_TRANSPORT = 'transport';
-    public const TYPE_T_SHIRT = 't-shirt';
+    public const TYPE_T_SHIRT_SIZE = 't-shirt-size';
+    public const TYPE_T_SHIRT_HANDED_OVER = 't-shirt-handed-over';
     public const TYPE_ACCOMMODATION_TYPE = 'accommodation-type';
-
-    /**
-     * @var string Flag of this type says that partner might be rendered on homepage of web.
-     */
+    public const TYPE_ARRIVED = 'arrived';
+    public const TYPE_LEFT = 'left';
     public const TYPE_PARTNER_HOMEPAGE = 'partner-homepage';
+    public const TYPE_SCHOOL = 'school';
 
     /**
      * @param Nameable|null $nameable
      * @param string|null   $type
+     * @param string|null   $color
      *
      * @throws InvalidTypeException
      */
-    public function __construct(?Nameable $nameable = null, ?string $type = null) {
+    public function __construct(?Nameable $nameable = null, ?string $type = null, ?string $color = null)
+    {
         $this->setFieldsFromNameable($nameable);
         $this->setType($type);
+        $this->setColor($color);
     }
 
     public static function getAllowedTypesDefault(): array
     {
-        return [self::TYPE_FOOD, self::TYPE_TRANSPORT, self::TYPE_ACCOMMODATION_TYPE, self::TYPE_T_SHIRT, self::TYPE_PARTNER_HOMEPAGE];
+        return [
+            self::TYPE_FOOD,
+            self::TYPE_TRANSPORT,
+            self::TYPE_T_SHIRT_SIZE,
+            self::TYPE_T_SHIRT_HANDED_OVER,
+            self::TYPE_ACCOMMODATION_TYPE,
+            self::TYPE_ARRIVED,
+            self::TYPE_LEFT,
+            self::TYPE_PARTNER_HOMEPAGE,
+            self::TYPE_SCHOOL,
+        ];
     }
 
     public static function getAllowedTypesCustom(): array

@@ -6,11 +6,11 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Event\FlagRange;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRangeCategoryRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
 use Symfony\Component\Form\Exception\LogicException;
@@ -26,7 +26,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ParticipantFlagCategoryType extends AbstractType
+class ParticipantFlagGroupType extends AbstractType
 {
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -38,8 +38,8 @@ class ParticipantFlagCategoryType extends AbstractType
     {
         // TODO: Implement it. Can't be flags added directly to participant???
         $participantFlagCategory = $builder->getData();
-        assert($participantFlagCategory instanceof ParticipantFlagCategory);
-        $flagCategoryRange = $participantFlagCategory->getFlagCategoryRange();
+        assert($participantFlagCategory instanceof ParticipantFlagGroup);
+        $flagCategoryRange = $participantFlagCategory->getFlagGroupRange();
         $flagCategory = $participantFlagCategory->getFlagCategory();
         if (null === $flagCategoryRange || null === $flagCategory) {
             return;
@@ -55,14 +55,33 @@ class ParticipantFlagCategoryType extends AbstractType
         $this->addSelect($builder, $participantFlagCategory, $min, $max, $isFormal);
     }
 
+    public function addCheckboxes(FormBuilderInterface $builder, ParticipantFlagGroup $participantFlagCategory): void
+    {
+        $flagCategoryRange = $participantFlagCategory->getFlagGroupRange();
+        if (null === $flagCategoryRange) {
+            return;
+        }
+        $builder->add(
+            "participantFlags",
+            CollectionType::class,
+            [
+                'entry_type' => ParticipantFlagType::class,
+                'label'      => $flagCategoryRange->getName() ?? 'Ostatní příznaky',
+                'help'       => $flagCategoryRange->getDescription() ?? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>',
+                'help_html'  => true,
+            ]
+        );
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
+    }
+
     public function addSelect(
         FormBuilderInterface $builder,
-        ParticipantFlagCategory $participantFlagCategory,
+        ParticipantFlagGroup $participantFlagCategory,
         int $min,
         ?int $max,
         bool $isFormal = true
     ): void {
-        $flagCategoryRange = $participantFlagCategory->getFlagCategoryRange();
+        $flagCategoryRange = $participantFlagCategory->getFlagGroupRange();
         if (null === $flagCategoryRange) {
             return;
         }
@@ -84,9 +103,9 @@ class ParticipantFlagCategoryType extends AbstractType
                 'expanded'     => $expanded,
                 'multiple'     => $multiple,
                 'attr'         => ['size' => $multiple ? (count($choices) + count($flagCategoryRange->getFlagsGroupNames())) : null,],
-                'choice_label' => fn(RegistrationFlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
-                'choice_attr'  => fn(RegistrationFlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
-                'group_by'     => fn(RegistrationFlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
+                'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
+                'choice_attr'  => fn(FlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
+                'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
                 'placeholder'  => $flagCategoryRange->getEmptyPlaceholder(),
             ]
         );
@@ -102,23 +121,14 @@ class ParticipantFlagCategoryType extends AbstractType
         }
     }
 
-    public function addCheckboxes(FormBuilderInterface $builder, ParticipantFlagCategory $participantFlagCategory): void
+    public static function getChoiceAttributes(FlagRange $flagRange): array
     {
-        $flagCategoryRange = $participantFlagCategory->getFlagCategoryRange();
-        if (null === $flagCategoryRange) {
-            return;
+        $attributes = [];
+        if ($flagRange->hasRemainingCapacity()) {
+            $attributes['disabled'] = 'disabled';
         }
-        $builder->add(
-            "participantFlags",
-            CollectionType::class,
-            [
-                'entry_type' => ParticipantFlagType::class,
-                'label'      => $flagCategoryRange->getName() ?? 'Ostatní příznaky',
-                'help'       => $flagCategoryRange->getDescription() ?? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>',
-                'help_html'  => true,
-            ]
-        );
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
+
+        return $attributes;
     }
 
     /**
@@ -144,16 +154,6 @@ class ParticipantFlagCategoryType extends AbstractType
         $participantFlagsChild->setData($participantFlags);
     }
 
-    public static function getChoiceAttributes(RegistrationFlagRange $flagRange): array
-    {
-        $attributes = [];
-        if ($flagRange->hasRemainingCapacity()) {
-            $attributes['disabled'] = 'disabled';
-        }
-
-        return $attributes;
-    }
-
     /**
      * @param OptionsResolver $resolver
      *
@@ -163,7 +163,7 @@ class ParticipantFlagCategoryType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class'  => ParticipantFlagCategory::class,
+                'data_class'  => ParticipantFlagGroup::class,
                 'participant' => null,
                 // 'attr' => ['class' => 'col-md-6'],
             ]

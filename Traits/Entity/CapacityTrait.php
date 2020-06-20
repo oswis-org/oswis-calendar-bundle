@@ -28,6 +28,11 @@ trait CapacityTrait
         $this->setFullCapacity($capacity ? $capacity->getFullCapacity() : null);
     }
 
+    public function getCapacityInt(bool $full = false): int
+    {
+        return $this->getCapacity()->getCapacity($full);
+    }
+
     public function getCapacity(): Capacity
     {
         return new Capacity($this->getBaseCapacity(), $this->getFullCapacity());
@@ -53,10 +58,5 @@ trait CapacityTrait
     {
         $fullCapacity ??= 0;
         $this->fullCapacity = 0 > $fullCapacity ? 0 : $fullCapacity;
-    }
-
-    public function getCapacityInt(bool $full = false): int
-    {
-        return $this->getCapacity()->getCapacity($full);
     }
 }

@@ -19,7 +19,6 @@ use OswisOrg\OswisCalendarBundle\Service\RegistrationsRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EventController extends AbstractController
 {

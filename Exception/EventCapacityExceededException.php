@@ -8,6 +8,6 @@ class EventCapacityExceededException extends Exception
 {
     public function __construct(?string $eventName = null, ?string $message = null)
     {
-        parent::__construct($message ?? 'Kapacita akce byla překročena.');
+        parent::__construct($message ?? "Kapacita akce $eventName byla překročena.");
     }
 }

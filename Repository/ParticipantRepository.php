@@ -5,21 +5,34 @@
 
 namespace OswisOrg\OswisCalendarBundle\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use Excparticipanttion;
+use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail\ParticipantEMailCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
-class ParticipantRepository extends EntityRepository
+class ParticipantRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     *
+     * @throws LogicException
+     */
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ParticipantEMailCategory::class);
+    }
+
     public const CRITERIA_ID = 'id';
     public const CRITERIA_EVENT = 'event';
     public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
@@ -94,7 +107,7 @@ class ParticipantRepository extends EntityRepository
 
     private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegistrationRange) {
+        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegRange) {
             $queryBuilder->andWhere('participant.range = :range_id');
             $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
         }
