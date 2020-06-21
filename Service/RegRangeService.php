@@ -19,21 +19,20 @@ use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
 use Psr\Log\LoggerInterface;
 
-class RegistrationsRangeService
+class RegRangeService
 {
     protected EntityManagerInterface $em;
 
     protected LoggerInterface $logger;
 
-    protected ParticipantFlagRangeService $flagRangeService;
+    protected FlagRangeService $flagRangeService;
 
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantFlagRangeService $flagRangeService)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, FlagRangeService $flagRangeService)
     {
         $this->em = $em;
         $this->flagRangeService = $flagRangeService;
         $this->logger = $logger;
     }
-
 
     final public function create(RegRange $range): ?RegRange
     {

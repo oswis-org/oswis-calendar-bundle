@@ -1,4 +1,4 @@
-{% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
+{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
 
@@ -13,31 +13,15 @@
         {% block message_message_outer %}
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
-                    {% if isOrganization %}
-                        Vaše organizace {{ participant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                    {% if participant.contact.organization|default %}
+                        Vaše organizace {{ participant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }}
+                        na&nbsp;akci <b>{{ participant.event.name }}</b>.
                     {% else %}
                         Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
                     {% endif %}
                 {% endblock message_message_inner %}
             </p>
         {% endblock message_message_outer %}
-
-        {% block message_app_user %}
-            {% if appUser|default %}
-                <p>
-                    Uživatelské jméno u&nbsp;{{ f ? 'Vašeho' : 'Tvého' }} uživatelského účtu je
-                    <b>{{ appUser.username|default(appUser.email) }}</b> a&nbsp;hlavní e-mail je nastaven na&nbsp;<b>{{ appUser.email }}</b>.
-                    {% if password|default %}
-                        U účtu bylo nastaveno nové, náhodně vygenerované, heslo&nbsp;<b>{{ password }}</b>.
-                    {% endif %}
-                    {% if oswis.app.portalName|default %}
-                        Přihlašovací údaje slouží pro přihlášení do aplikace {{ oswis.app.portalName }}, která bude již brzy dostupná na adrese:<br>
-                        <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" title="{{ oswis.app.portalName|default }}" target="_blank">
-                            {{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}</a>.
-                    {% endif %}
-                </p>
-            {% endif %}
-        {% endblock message_app_user %}
 
         {% block message_payment_outer %}
             {% if participant.depositValue > 0 or participant.price > 0 %}
@@ -69,9 +53,9 @@
         {% endblock message_payment_outer %}
 
         {% include '@OswisOrgOswisCalendar/other/summary/event-participant-summary.html.twig' %}
-        {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %} {# TODO #}
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
-            {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' %}
+            {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with: {event: participant.event} %}
         </div>
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>

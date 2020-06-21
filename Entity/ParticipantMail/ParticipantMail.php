@@ -3,23 +3,19 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail;
+namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMail;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 
 /**
  * E-mail sent to some user included in participant.
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="core_app_user_e_mail")
- * @ApiResource(
+ * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_ADMIN')",
@@ -47,15 +43,18 @@ use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
  *     }
  *   }
  * )
- * @Searchable({
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "token"
  * })
  * @author Jakub Zak <mail@jakubzak.eu>
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="core_app_user")
  */
-class ParticipantEMail extends AbstractEMail
+class ParticipantMail extends AbstractMail
 {
+    public const TYPE_ACTIVATION_REQUEST = 'activation-request';
+    public const TYPE_ACTIVATION = 'activation';
+
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")
@@ -63,30 +62,29 @@ class ParticipantEMail extends AbstractEMail
     protected ?Participant $participant = null;
 
     /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(name="app_user_id", referencedColumnName="id")
+     */
+    protected ?AppUser $appUser = null;
+
+    /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUserToken", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="app_user_token_id", referencedColumnName="id")
      */
     protected ?ParticipantToken $participantToken = null;
 
-    /**
-     * @param Participant|null      $participant
-     * @param Nameable|null         $nameable
-     * @param string|null           $eMail
-     * @param string|null           $type
-     * @param ParticipantToken|null $token
-     *
-     * @throws OswisException|InvalidTypeException
-     */
     public function __construct(
-        ?Participant $participant = null,
-        ?Nameable $nameable = null,
-        ?string $eMail = null,
+        Participant $participant,
+        AppUser $appUser,
+        string $subject,
         ?string $type = null,
-        ParticipantToken $token = null
+        ParticipantToken $token = null,
+        ?string $messageId = null
     ) {
-        parent::__construct($nameable, $eMail, $type);
-        $this->setParticipantToken($token);
+        parent::__construct($subject, $this->appUser->getEmail(), $type, $this->appUser->getName(), $messageId);
+        $this->participantToken = $token;
         $this->participant = $participant;
+        $this->appUser = $appUser;
     }
 
     public function isParticipant(?Participant $participant): bool
@@ -99,17 +97,9 @@ class ParticipantEMail extends AbstractEMail
         return $this->participant;
     }
 
-    /**
-     * @param AppUser|null $participant
-     *
-     * @throws OswisException
-     */
-    public function setParticipant(?AppUser $participant): void
+    public function getAppUser(): ?AppUser
     {
-        if (null === $participant || null === $this->getParticipant()) {
-            $this->participant = $participant;
-        }
-        throw new OswisException('nelze změnit uživatele u odeslaného e-mailu');
+        return $this->appUser;
     }
 
     public function getParticipantToken(): ?ParticipantToken
@@ -117,16 +107,8 @@ class ParticipantEMail extends AbstractEMail
         return $this->participantToken;
     }
 
-    /**
-     * @param ParticipantToken|null $participantToken
-     *
-     * @throws OswisException
-     */
-    public function setParticipantToken(?ParticipantToken $participantToken): void
+    public static function getAllowedTypesDefault(): array
     {
-        if (null === $participantToken || null === $this->getParticipantToken()) {
-            $this->participantToken = $participantToken;
-        }
-        throw new OswisException('nelze změnit přiřazený token u odeslaného e-mailu');
+        return [...parent::getAllowedTypesDefault(), self::TYPE_ACTIVATION_REQUEST, self::TYPE_ACTIVATION];
     }
 }

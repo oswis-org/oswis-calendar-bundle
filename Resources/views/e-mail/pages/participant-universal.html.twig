@@ -1,0 +1,8 @@
+{% if 'summary' == type %}
+    {% extends '@OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig' %}
+{% elseif 'verification' == type %}
+    {% extends '@OswisOrgOswisCalendar/e-mail/pages/participant-verification.html.twig' %}
+{% else %}
+    {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+{% endif %}
+

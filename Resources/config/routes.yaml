@@ -1,6 +1,14 @@
-oswis_org_oswis_calendar_web_registration_verification:
-    controller: oswis_org_oswis_calendar.registration_controller::verification
-    path: "/potvrzeni-prihlasky/{token}/{participantId}"
+### Endpoint for token processing.
+oswis_org_oswis_calendar_participant_process_token:
+    controller: oswis_org_oswis_calendar.participant_controller::processToken
+    path: "/akce/prihlaska/token/{token}/{participantId}"
+    requirements:
+        participantId: '\d+'
+
+### Endpoint for (repeated) participant activation request.
+oswis_org_oswis_calendar_participant_activation_request:
+    controller: oswis_org_oswis_calendar.participant_controller::activationRequest
+    path: "/akce/prihlaska/overeni"
 
 oswis_org_oswis_calendar_web_registration:
     controller: oswis_org_oswis_calendar.registration_controller::registration
@@ -12,11 +20,11 @@ oswis_org_oswis_calendar_web_registration_ranges:
 
 oswis_org_oswis_calendar_web_event_leaflet:
     controller: oswis_org_oswis_calendar.event_controller::showEventLeaflet
-    path: "/letak/{eventSlug?}"
+    path: "/akce/letak/{eventSlug?}"
 
 oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????
     controller: oswis_org_oswis_calendar.event_controller::showEvents
-    path: "/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
+    path: "/akce/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
     defaults:
         range: null
         start: null
@@ -26,20 +34,20 @@ oswis_org_oswis_calendar_web_events: ## ??????????????????????????????????????
 
 oswis_org_oswis_calendar_web_events_calendar:
     controller: oswis_org_oswis_calendar.event_controller::showEvents
-    path: "/kalendar/{range?}/{rangeValue?}"
+    path: "/akce//kalendar/{range?}/{rangeValue?}"
     defaults:
         range: null
         rangeValue: null
 
 oswis_org_oswis_calendar_web_events_future:
     controller: oswis_org_oswis_calendar.event_controller::showFutureEvents
-    path: "/budouci-akce/{page?}"
+    path: "/akce/budouci/{page?}"
     defaults:
         page: null
 
 oswis_org_oswis_calendar_web_events_past:
     controller: oswis_org_oswis_calendar.event_controller::showPastEvents
-    path: "/minule-akce/{page?}"
+    path: "/akce/minule/{page?}"
     defaults:
         page: null
 

@@ -8,7 +8,6 @@ namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 
 trait FlagAmountRangeTrait
 {
@@ -33,7 +32,8 @@ trait FlagAmountRangeTrait
      *
      * @throws FlagOutOfRangeException
      */
-    public function checkInRange(int $count): void {
+    public function checkInRange(int $count): void
+    {
         $name = $this->getName();
         $min = $this->getMin();
         $max = $this->getMax();
@@ -46,11 +46,6 @@ trait FlagAmountRangeTrait
         }
     }
 
-    public function getFlagAmountRange(): FlagAmountRange
-    {
-        return new FlagAmountRange($this->getMin(), $this->getMax());
-    }
-
     public function getMin(): int
     {
         return $this->getFlagAmountRange()->getMin();
@@ -60,6 +55,11 @@ trait FlagAmountRangeTrait
     {
         $min ??= 0;
         $this->min = 0 > $min ? 0 : $min;
+    }
+
+    public function getFlagAmountRange(): FlagAmountRange
+    {
+        return new FlagAmountRange($this->getMin(), $this->getMax());
     }
 
     public function getMax(): ?int

@@ -17,12 +17,30 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail\ParticipantEMailCategory;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends ServiceEntityRepository
 {
+    public const CRITERIA_ID = 'id';
+
+    public const CRITERIA_EVENT = 'event';
+
+    public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
+
+    public const CRITERIA_PARTICIPANT_TYPE_STRING = 'participantTypeString';
+
+    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
+
+    public const CRITERIA_RANGE = 'range';
+
+    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
+
+    public const CRITERIA_CONTACT = 'contact';
+
+    public const CRITERIA_APP_USER = 'appUser';
+
     /**
      * @param ManagerRegistry $registry
      *
@@ -30,18 +48,8 @@ class ParticipantRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ParticipantEMailCategory::class);
+        parent::__construct($registry, ParticipantMailCategory::class);
     }
-
-    public const CRITERIA_ID = 'id';
-    public const CRITERIA_EVENT = 'event';
-    public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
-    public const CRITERIA_PARTICIPANT_TYPE_STRING = 'participantTypeString';
-    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
-    public const CRITERIA_RANGE = 'range';
-    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
-    public const CRITERIA_CONTACT = 'contact';
-    public const CRITERIA_APP_USER = 'appUser';
 
     final public function findOneBy(array $criteria, array $orderBy = null): ?Participant
     {

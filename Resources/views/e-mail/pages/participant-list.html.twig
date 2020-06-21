@@ -1,4 +1,4 @@
-{% extends '@OswisOrgOswisCore/e-mail/message.html.twig' %}
+{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Přehled přihlášek') }}{% endblock %}
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
@@ -9,6 +9,6 @@
             <p>{{ message }}</p>
         </div>
     {% endif %}
-    {% include '@OswisOrgOswisCalendar/other/event-participant-list/event-participant-list.html.twig' %}
+    {% include '@OswisOrgOswisCalendar/other/event-participant-list/participant-list.html.twig' %}
 {% endblock %}
 

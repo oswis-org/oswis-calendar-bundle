@@ -16,6 +16,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -25,7 +26,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\ManagerConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
 use function assert;
 
 /**
@@ -83,6 +86,8 @@ class Participant implements BasicInterface
     use BasicTrait;
     use PriorityTrait;
     use ActivatedTrait;
+    use UserConfirmationTrait;
+    use ManagerConfirmationTrait;
     use DeletedTrait;
 
     /**
@@ -332,10 +337,6 @@ class Participant implements BasicInterface
         }
     }
 
-    public function isActive(?DateTime $referenceDateTime = null): bool {
-        return $this->isActivated($referenceDateTime) && !$this->isDeleted($referenceDateTime);
-    }
-
     public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
     {
         $filtered = new ArrayCollection();
@@ -350,15 +351,6 @@ class Participant implements BasicInterface
         }
 
         return $filtered;
-    }
-
-    public function isRangeActivated(): bool
-    {
-        try {
-            return $this->getParticipantRange() ? $this->getParticipantRange()->isActivated() : false;
-        } catch (OswisException $e) {
-            return false;
-        }
     }
 
     public function hasActivatedContactUser(): bool
@@ -408,6 +400,152 @@ class Participant implements BasicInterface
                 return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
             }
         );
+    }
+
+    public function getAppUser(): ?AppUser
+    {
+        return $this->getContact() ? $this->getContact()->getAppUser() : null;
+    }
+
+    public function getQrPng(bool $deposit = true, bool $rest = true, string $qrComment = ''): ?string
+    {
+        if (null === ($event = $this->getEvent()) || null === ($bankAccount = $event->getBankAccount(true))) {
+            return null;
+        }
+        $value = null;
+        $typeString = null;
+        try {
+            if ($deposit && $rest) {
+                $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'celá částka';
+                $value = $this->getPrice();
+            }
+            if ($deposit && !$rest) {
+                $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'záloha';
+                $value = $this->getDepositValue();
+            }
+            if (!$deposit && $rest) {
+                $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'doplatek';
+                $value = $this->getPriceRest();
+            }
+
+            return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);
+        } catch (OswisException|PriceInvalidArgumentException $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * Get whole price of event for this participant (including flags price).
+     * @return int
+     * @throws OswisException|PriceInvalidArgumentException
+     */
+    public function getPrice(): int
+    {
+        if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
+            throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
+        }
+        $price = $this->getRegRange()->getPrice($this->getParticipantCategory()) + $this->getFlagsPrice();
+
+        return $price < 0 ? 0 : $price;
+    }
+
+    public function getFlagsPrice(?FlagCategory $flagCategory = null, ?string $flagType = null): int
+    {
+        $price = 0;
+        foreach ($this->getFlagGroups($flagCategory, $flagType) as $category) {
+            $price += $category instanceof ParticipantFlagGroup ? $category->getPrice() : 0;
+        }
+
+        return $price;
+    }
+
+    public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
+    {
+        $connections = $this->flagGroups ??= new ArrayCollection();
+        if (null !== $flagCategory) {
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
+        }
+        if (null !== $flagType) {
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
+        }
+
+        return $connections;
+    }
+
+    /**
+     * @param Collection|null $newFlagGroups
+     *
+     * @throws OswisException
+     */
+    public function setFlagGroups(?Collection $newFlagGroups): void
+    {
+        $newFlagGroups ??= new ArrayCollection();
+        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
+            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
+        }
+        $this->flagGroups = $newFlagGroups;
+    }
+
+    /**
+     * Gets part of price that is marked as deposit.
+     * @return int
+     * @throws OswisException
+     * @throws PriceInvalidArgumentException
+     */
+    public function getDepositValue(): ?int
+    {
+        if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
+            throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
+        }
+        $price = $this->getRegRange()->getDepositValue($this->getParticipantCategory()) + $this->getFlagsDepositValue();
+
+        return $price < 0 ? 0 : $price;
+    }
+
+    public function getFlagsDepositValue(?FlagCategory $flagCategory = null, ?string $flagType = null): int
+    {
+        $price = 0;
+        foreach ($this->getFlagGroups($flagCategory, $flagType) as $category) {
+            $price += $category instanceof ParticipantFlagGroup ? $category->getDepositValue() : 0;
+        }
+
+        return $price;
+    }
+
+    /**
+     * Gets part of price that is not marked as deposit.
+     * @return int
+     * @throws OswisException|PriceInvalidArgumentException
+     */
+    public function getPriceRest(): int
+    {
+        return $this->getPrice() - $this->getDepositValue();
+    }
+
+    /**
+     * Get variable symbol of this eventParticipant (default is cropped phone number or ID).
+     */
+    public function getVariableSymbol(): ?string
+    {
+        $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
+        $symbol = preg_replace('/\s/', '', $phone);
+        $symbol = substr(trim($symbol), strlen(trim($symbol)) - 9, 9);
+
+        return empty($symbol) ? ''.$this->getId() : $symbol;
+    }
+
+    public function isActive(?DateTime $referenceDateTime = null): bool
+    {
+        return $this->isActivated($referenceDateTime) && !$this->isDeleted($referenceDateTime);
+    }
+
+    public function isRangeActivated(): bool
+    {
+        try {
+            return $this->getParticipantRange() ? $this->getParticipantRange()->isActivated() : false;
+        } catch (OswisException $e) {
+            return false;
+        }
     }
 
     /**
@@ -547,33 +685,6 @@ class Participant implements BasicInterface
         );
     }
 
-    public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
-    {
-        $connections = $this->flagGroups ??= new ArrayCollection();
-        if (null !== $flagCategory) {
-            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
-        }
-        if (null !== $flagType) {
-            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
-        }
-
-        return $connections;
-    }
-
-    /**
-     * @param Collection|null $newFlagGroups
-     *
-     * @throws OswisException
-     */
-    public function setFlagGroups(?Collection $newFlagGroups): void
-    {
-        $newFlagGroups ??= new ArrayCollection();
-        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
-            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
-        }
-        $this->flagGroups = $newFlagGroups;
-    }
-
     /**
      * @return int
      * @throws OswisException|PriceInvalidArgumentException
@@ -581,67 +692,6 @@ class Participant implements BasicInterface
     public function getRemainingRest(): int
     {
         return $this->getPriceRest() - $this->getPaidPrice() + $this->getDepositValue();
-    }
-
-    /**
-     * Gets part of price that is not marked as deposit.
-     * @return int
-     * @throws OswisException|PriceInvalidArgumentException
-     */
-    public function getPriceRest(): int
-    {
-        return $this->getPrice() - $this->getDepositValue();
-    }
-
-    /**
-     * Get whole price of event for this participant (including flags price).
-     * @return int
-     * @throws OswisException|PriceInvalidArgumentException
-     */
-    public function getPrice(): int
-    {
-        if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
-            throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
-        }
-        $price = $this->getRegRange()->getPrice($this->getParticipantCategory()) + $this->getFlagsPrice();
-
-        return $price < 0 ? 0 : $price;
-    }
-
-    public function getFlagsPrice(?FlagCategory $flagCategory = null, ?string $flagType = null): int
-    {
-        $price = 0;
-        foreach ($this->getFlagGroups($flagCategory, $flagType) as $category) {
-            $price += $category instanceof ParticipantFlagGroup ? $category->getPrice() : 0;
-        }
-
-        return $price;
-    }
-
-    /**
-     * Gets part of price that is marked as deposit.
-     * @return int
-     * @throws OswisException
-     * @throws PriceInvalidArgumentException
-     */
-    public function getDepositValue(): ?int
-    {
-        if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
-            throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
-        }
-        $price = $this->getRegRange()->getDepositValue($this->getParticipantCategory()) + $this->getFlagsDepositValue();
-
-        return $price < 0 ? 0 : $price;
-    }
-
-    public function getFlagsDepositValue(?FlagCategory $flagCategory = null, ?string $flagType = null): int
-    {
-        $price = 0;
-        foreach ($this->getFlagGroups($flagCategory, $flagType) as $category) {
-            $price += $category instanceof ParticipantFlagGroup ? $category->getDepositValue() : 0;
-        }
-
-        return $price;
     }
 
     /**
@@ -752,18 +802,6 @@ class Participant implements BasicInterface
     }
 
     /**
-     * Get variable symbol of this eventParticipant (default is cropped phone number or ID).
-     */
-    public function getVariableSymbol(): ?string
-    {
-        $phone = $this->getContact() ? $this->getContact()->getPhone() : null;
-        $symbol = preg_replace('/\s/', '', $phone);
-        $symbol = substr(trim($symbol), strlen(trim($symbol)) - 9, 9);
-
-        return empty($symbol) ? ''.$this->getId() : $symbol;
-    }
-
-    /**
      * Gets array of flags aggregated by their types.
      * @return array
      */
@@ -771,4 +809,20 @@ class Participant implements BasicInterface
     {
         return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
     }
+
+    public function removeEmptyNotesAndDetails(): void
+    {
+        $this->removeEmptyParticipantNotes();
+        if (null !== $this->getContact()) {
+            $this->getContact()->removeEmptyDetails();
+            $this->getContact()->removeEmptyNotes();
+        }
+        foreach ($this->getContactPersons() as $contactPerson) {
+            if ($contactPerson instanceof AbstractContact) {
+                $contactPerson->removeEmptyDetails();
+                $contactPerson->removeEmptyNotes();
+            }
+        }
+    }
+
 }

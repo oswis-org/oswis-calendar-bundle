@@ -3,11 +3,12 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail;
+namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailGroup;
-use OswisOrg\OswisCoreBundle\Interfaces\EMail\EMailCategoryInterface;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
+use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 
 /**
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantEMailGroupRepository")
@@ -44,13 +45,13 @@ use OswisOrg\OswisCoreBundle\Interfaces\EMail\EMailCategoryInterface;
  * @author Jakub Zak <mail@jakubzak.eu>
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant_e_mail")
  */
-class ParticipantEMailGroup extends AbstractEMailGroup
+class ParticipantMailGroup extends AbstractMailGroup
 {
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail\ParticipantEMailCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?EMailCategoryInterface $category = null;
+    protected ?MailCategoryInterface $category = null;
 
     public function isApplicableByRestrictions(?object $entity): bool
     {

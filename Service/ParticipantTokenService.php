@@ -9,8 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Psr\Log\LoggerInterface;
 
 class ParticipantTokenService
@@ -19,14 +19,18 @@ class ParticipantTokenService
 
     protected LoggerInterface $logger;
 
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
+    protected ParticipantTokenRepository $participantTokenRepository;
+
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantTokenRepository $participantTokenRepository)
     {
         $this->em = $em;
         $this->logger = $logger;
+        $this->participantTokenRepository = $participantTokenRepository;
     }
 
     /**
      * @param Participant $participant
+     * @param AppUser     $appUser
      * @param string|null $type
      * @param bool|null   $multipleUseAllowed
      * @param int|null    $validHours
@@ -34,16 +38,21 @@ class ParticipantTokenService
      * @return ParticipantToken
      * @throws InvalidTypeException
      */
-    public function create(Participant $participant, ?string $type = null, ?bool $multipleUseAllowed = null, ?int $validHours = null): ParticipantToken
-    {
+    public function create(
+        Participant $participant,
+        AppUser $appUser,
+        ?string $type = null,
+        ?bool $multipleUseAllowed = null,
+        ?int $validHours = null
+    ): ParticipantToken {
         try {
-            // TODO: Complete refactoring needed.
-            $participantToken = new ParticipantToken($participant, $participant->getEmail(), $type, $multipleUseAllowed, $validHours);
+            // TODO: Complete refactoring needed. Or not???
+            $participantToken = new ParticipantToken($participant, $appUser, $type, $multipleUseAllowed, $validHours);
             $this->em->persist($participantToken);
             $this->em->flush();
             $tokenId = $participantToken->getId();
-            $appUserId = $participant->getId();
-            $this->logger->info("Created new token ($tokenId) of type '$type' for user '$appUserId'.");
+            $participantId = $participant->getId();
+            $this->logger->info("Created new token ($tokenId) of type '$type' for user '$participantId'.");
 
             return $participantToken;
         } catch (InvalidTypeException $exception) {
@@ -52,17 +61,13 @@ class ParticipantTokenService
         }
     }
 
-    /**
-     * @return ParticipantTokenRepository
-     * @throws OswisException
-     */
+    public function findToken(?string $token, ?int $participantId): ?ParticipantToken
+    {
+        return $this->getRepository()->findByToken($token, $participantId);
+    }
+
     public function getRepository(): ParticipantTokenRepository
     {
-        $repository = $this->em->getRepository(ParticipantToken::class);
-        if (!($repository instanceof ParticipantTokenRepository)) {
-            throw new OswisException('Nepodařilo se získat ParticipantTokenRepository.');
-        }
-
-        return $repository;
+        return $this->participantTokenRepository;
     }
 }

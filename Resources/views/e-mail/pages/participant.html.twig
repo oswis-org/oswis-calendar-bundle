@@ -1,0 +1,7 @@
+{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+
+{% set tokenUrl = participantToken|default and participantToken.appUser|default ? path('oswis_org_oswis_calendar_participant_process_token',
+    {'token': participantToken.token|default, 'appUserId': participantToken.appUser.id|default}) : null %}
+
+
+{% block html_title %}{{ email.subject|default('Přihláška na akci') }}{% endblock %}

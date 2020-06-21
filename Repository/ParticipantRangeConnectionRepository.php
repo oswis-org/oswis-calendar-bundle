@@ -11,8 +11,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 
 class ParticipantRangeConnectionRepository extends EntityRepository
 {

@@ -12,8 +12,10 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
@@ -90,6 +92,12 @@ class Event implements NameableInterface
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Place $place = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Participant $organizer = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
@@ -252,6 +260,21 @@ class Event implements NameableInterface
     public function setPlace(?Place $event): void
     {
         $this->place = $event;
+    }
+
+    public function getOrganizerContact(): ?AbstractContact
+    {
+        return $this->getOrganizer() ? $this->getOrganizer()->getContact() : null;
+    }
+
+    public function getOrganizer(?bool $recursive = false): ?Participant
+    {
+        return $this->organizer ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getOrganizer() : null) ?? null;
+    }
+
+    public function setOrganizer(?Participant $organizer): void
+    {
+        $this->organizer = $organizer;
     }
 
     public function getBankAccount(bool $recursive = false): ?BankAccount

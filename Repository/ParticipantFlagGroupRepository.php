@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 
 class ParticipantFlagGroupRepository extends EntityRepository
 {
@@ -55,7 +55,7 @@ class ParticipantFlagGroupRepository extends EntityRepository
 
     private function addFlagRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof RegistrationsFlagRange) {
+        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof FlagRange) {
             $queryBuilder->andWhere('range_conn.flagRange = :flag_range_id');
             $queryBuilder->setParameter('flag_range_id', $opts[self::CRITERIA_FLAG_RANGE]->getId());
         }

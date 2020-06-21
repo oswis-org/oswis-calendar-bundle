@@ -6,6 +6,7 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 /**
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository")
@@ -53,15 +54,22 @@ class ParticipantToken extends AbstractToken
      */
     protected ?Participant $participant = null;
 
+    /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(name="app_user_id", referencedColumnName="id")
+     */
+    protected ?AppUser $appUser = null;
+
     public function __construct(
         ?Participant $participant = null,
-        ?string $eMail = null,
+        ?AppUser $appUser = null,
         ?string $type = null,
         bool $multipleUseAllowed = false,
         ?int $validHours = null,
         ?int $level = null
     ) {
-        parent::__construct($eMail, $type, $multipleUseAllowed, $validHours, $level);
+        parent::__construct($appUser ? $appUser->getEmail() : null, $type, $multipleUseAllowed, $validHours, $level);
+        $this->appUser = $appUser;
         $this->participant = $participant;
     }
 
@@ -73,5 +81,15 @@ class ParticipantToken extends AbstractToken
     public function getParticipant(): ?Participant
     {
         return $this->participant;
+    }
+
+    public function isAppUser(AppUser $appUser): bool
+    {
+        return $this->getAppUser() === $appUser;
+    }
+
+    public function getAppUser(): ?AppUser
+    {
+        return $this->appUser;
     }
 }

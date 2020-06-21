@@ -10,7 +10,7 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
-use OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail\ParticipantEMailCategory;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 
 class ParticipantEMailCategoryRepository extends ServiceEntityRepository
 {
@@ -21,10 +21,10 @@ class ParticipantEMailCategoryRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ParticipantEMailCategory::class);
+        parent::__construct($registry, ParticipantMailCategory::class);
     }
 
-    final public function findByType(string $type): ?ParticipantEMailCategory
+    final public function findByType(string $type): ?ParticipantMailCategory
     {
         $queryBuilder = $this->createQueryBuilder('category');
         $queryBuilder->where("category.type = :type")->setParameter("type", $type);
@@ -37,10 +37,10 @@ class ParticipantEMailCategoryRepository extends ServiceEntityRepository
         }
     }
 
-    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantEMailCategory
+    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMailCategory
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof ParticipantEMailCategory ? $result : null;
+        return $result instanceof ParticipantMailCategory ? $result : null;
     }
 }

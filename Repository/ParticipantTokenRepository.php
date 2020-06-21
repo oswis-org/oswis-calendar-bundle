@@ -5,13 +5,25 @@
 
 namespace OswisOrg\OswisCalendarBundle\Repository;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 
-class ParticipantTokenRepository extends EntityRepository
+class ParticipantTokenRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry
+     *
+     * @throws LogicException
+     */
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ParticipantToken::class);
+    }
+
     final public function findByToken(string $token, int $participantId): ?ParticipantToken
     {
         $queryBuilder = $this->createQueryBuilder('token');

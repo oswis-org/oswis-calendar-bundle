@@ -1,8 +1,9 @@
 <?php
 
-namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail;
+namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailCategory;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
 
 /**
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantEMailCategoryRepository")
@@ -39,6 +40,6 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailCategory;
  * @author Jakub Zak <mail@jakubzak.eu>
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantEMailCategory extends AbstractEMailCategory
+class ParticipantMailCategory extends AbstractMailCategory
 {
 }

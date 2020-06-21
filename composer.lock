@@ -1439,16 +1439,16 @@
         },
         {
             "name": "doctrine/migrations",
-            "version": "3.0.0",
+            "version": "3.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/migrations.git",
-                "reference": "da238fb4e2311924e6e78089adbbe35cb02a89dc"
+                "reference": "69eaf2ca5bc48357b43ddbdc31ccdffc0e2a0882"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/migrations/zipball/da238fb4e2311924e6e78089adbbe35cb02a89dc",
-                "reference": "da238fb4e2311924e6e78089adbbe35cb02a89dc",
+                "url": "https://api.github.com/repos/doctrine/migrations/zipball/69eaf2ca5bc48357b43ddbdc31ccdffc0e2a0882",
+                "reference": "69eaf2ca5bc48357b43ddbdc31ccdffc0e2a0882",
                 "shasum": ""
             },
             "require": {
@@ -1534,7 +1534,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-13T09:28:57+00:00"
+            "time": "2020-06-21T08:55:42+00:00"
         },
         {
             "name": "doctrine/orm",
@@ -2186,6 +2186,72 @@
             "time": "2020-02-04T16:08:46+00:00"
         },
         {
+            "name": "hashids/hashids",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/vinkla/hashids.git",
+                "reference": "b6c61142bfe36d43740a5419d11c351dddac0458"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/vinkla/hashids/zipball/b6c61142bfe36d43740a5419d11c351dddac0458",
+                "reference": "b6c61142bfe36d43740a5419d11c351dddac0458",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.0"
+            },
+            "suggest": {
+                "ext-bcmath": "Required to use BC Math arbitrary precision mathematics (*).",
+                "ext-gmp": "Required to use GNU multiple precision mathematics (*)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Hashids\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ivan Akimov",
+                    "email": "ivan@barreleye.com",
+                    "homepage": "https://twitter.com/IvanAkimov"
+                },
+                {
+                    "name": "Vincent Klaiber",
+                    "email": "hello@vinkla.com",
+                    "homepage": "https://vinkla.com"
+                }
+            ],
+            "description": "Generate short, unique, non-sequential ids (like YouTube and Bitly) from numbers",
+            "homepage": "http://hashids.org/php",
+            "keywords": [
+                "bitly",
+                "decode",
+                "encode",
+                "hash",
+                "hashid",
+                "hashids",
+                "ids",
+                "obfuscate",
+                "youtube"
+            ],
+            "time": "2018-03-12T16:30:09+00:00"
+        },
+        {
             "name": "hirak/prestissimo",
             "version": "0.3.10",
             "source": {
@@ -2404,16 +2470,16 @@
         },
         {
             "name": "knplabs/doctrine-behaviors",
-            "version": "v2.0.4",
+            "version": "v2.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KnpLabs/DoctrineBehaviors.git",
-                "reference": "073578526538c9f889f773776217af59d8eba256"
+                "reference": "50deeda2871e9423904ab5b23bb0414cb2edddd6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/DoctrineBehaviors/zipball/073578526538c9f889f773776217af59d8eba256",
-                "reference": "073578526538c9f889f773776217af59d8eba256",
+                "url": "https://api.github.com/repos/KnpLabs/DoctrineBehaviors/zipball/50deeda2871e9423904ab5b23bb0414cb2edddd6",
+                "reference": "50deeda2871e9423904ab5b23bb0414cb2edddd6",
                 "shasum": ""
             },
             "require": {
@@ -2424,13 +2490,15 @@
                 "nette/utils": "^3.0",
                 "php": "^7.2",
                 "ramsey/uuid": "^3.9|^4.0",
+                "roukmoute/hashids-bundle": "^2.3",
                 "symfony/cache": "^4.4|^5.0",
                 "symfony/dependency-injection": "^4.4|^5.0",
                 "symfony/framework-bundle": "^4.4|^5.0",
                 "symfony/http-kernel": "^4.4|^5.0",
                 "symfony/security-core": "^4.4|^5.0",
                 "symfony/string": "^5.0",
-                "symplify/package-builder": "^7.2"
+                "symfony/translation-contracts": "^2.1",
+                "symplify/package-builder": "^8.0"
             },
             "require-dev": {
                 "doctrine/annotations": "^1.8",
@@ -2439,15 +2507,16 @@
                 "ext-pdo_pgsql": "*",
                 "ext-pdo_sqlite": "*",
                 "jakub-onderka/php-parallel-lint": "^1.0",
-                "phpstan/phpstan": "^0.12.14",
-                "phpstan/phpstan-doctrine": "^0.12.4",
-                "phpstan/phpstan-phpunit": "^0.12.2",
+                "phpstan/phpstan": "^0.12.28",
+                "phpstan/phpstan-doctrine": "^0.12.15",
+                "phpstan/phpstan-phpunit": "^0.12.11",
                 "phpunit/phpunit": "^8.5",
                 "psr/log": "^1.1",
-                "rector/rector": "^0.7.6",
-                "symplify/changelog-linker": "^7.2",
-                "symplify/easy-coding-standard": "^7.2",
-                "symplify/phpstan-extensions": "^7.2"
+                "rector/rector": "^0.7.33",
+                "slevomat/coding-standard": "dev-master",
+                "symplify/changelog-linker": "^8.0",
+                "symplify/easy-coding-standard": "^8.0",
+                "symplify/phpstan-extensions": "^8.0"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -2472,13 +2541,15 @@
                 "Blameable",
                 "behaviors",
                 "doctrine",
+                "hashid",
+                "hashidable",
                 "softdeletable",
                 "timestampable",
                 "translatable",
                 "tree",
                 "uuid"
             ],
-            "time": "2020-04-27T15:21:35+00:00"
+            "time": "2020-06-21T18:55:05+00:00"
         },
         {
             "name": "laminas/laminas-code",
@@ -2724,21 +2795,21 @@
         },
         {
             "name": "league/commonmark",
-            "version": "1.4.3",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/commonmark.git",
-                "reference": "412639f7cfbc0b31ad2455b2fe965095f66ae505"
+                "reference": "fc33ca12575e98e57cdce7d5f38b2ca5335714b3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/412639f7cfbc0b31ad2455b2fe965095f66ae505",
-                "reference": "412639f7cfbc0b31ad2455b2fe965095f66ae505",
+                "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/fc33ca12575e98e57cdce7d5f38b2ca5335714b3",
+                "reference": "fc33ca12575e98e57cdce7d5f38b2ca5335714b3",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": "^7.1"
+                "php": "^7.1 || ^8.0"
             },
             "conflict": {
                 "scrutinizer/ocular": "1.7.*"
@@ -2760,11 +2831,6 @@
                 "bin/commonmark"
             ],
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.4-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "League\\CommonMark\\": "src"
@@ -2820,7 +2886,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-04T22:15:21+00:00"
+            "time": "2020-06-21T20:50:13+00:00"
         },
         {
             "name": "league/csv",
@@ -3864,16 +3930,16 @@
         },
         {
             "name": "oswis-org/oswis-core-bundle",
-            "version": "v0.0.555",
+            "version": "v0.0.561",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-                "reference": "664acec5f510d6236dee5db442be4288e2cc7a68"
+                "reference": "beb8962ad95aa7ccce77d5f0bd6ba40187c7ebc8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/664acec5f510d6236dee5db442be4288e2cc7a68",
-                "reference": "664acec5f510d6236dee5db442be4288e2cc7a68",
+                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/beb8962ad95aa7ccce77d5f0bd6ba40187c7ebc8",
+                "reference": "beb8962ad95aa7ccce77d5f0bd6ba40187c7ebc8",
                 "shasum": ""
             },
             "require": {
@@ -3970,7 +4036,7 @@
                 "php",
                 "zakjakub"
             ],
-            "time": "2020-06-19T08:56:08+00:00"
+            "time": "2020-06-21T21:11:21+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -4643,6 +4709,59 @@
                 "qr"
             ],
             "time": "2020-03-29T01:44:12+00:00"
+        },
+        {
+            "name": "roukmoute/hashids-bundle",
+            "version": "v2.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/roukmoute/HashidsBundle.git",
+                "reference": "ce7ee2c4b89e5bce93cbf3e9f8c4b000a42d71f7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/roukmoute/HashidsBundle/zipball/ce7ee2c4b89e5bce93cbf3e9f8c4b000a42d71f7",
+                "reference": "ce7ee2c4b89e5bce93cbf3e9f8c4b000a42d71f7",
+                "shasum": ""
+            },
+            "require": {
+                "hashids/hashids": "^3.0",
+                "php": ">=7.1",
+                "sensio/framework-extra-bundle": "^5.1",
+                "symfony/http-kernel": "^4.0 || ^5.0"
+            },
+            "require-dev": {
+                "bossa/phpspec2-expect": "^3.0",
+                "phpspec/phpspec": "^4.3",
+                "roave/security-advisories": "dev-master",
+                "twig/twig": "^2.7"
+            },
+            "suggest": {
+                "twig/twig": "Allows to use hashids in Twig template engine"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Roukmoute\\HashidsBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mathias STRASSER",
+                    "email": "contact@roukmoute.fr"
+                }
+            ],
+            "description": "Integrates hashids/hashids in a Symfony project",
+            "time": "2019-12-23T19:11:58+00:00"
         },
         {
             "name": "sensio/framework-extra-bundle",
@@ -10028,16 +10147,16 @@
         },
         {
             "name": "symplify/package-builder",
-            "version": "v7.3.18",
+            "version": "v8.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/package-builder.git",
-                "reference": "f788a2846bfc53cf32bac91340e60eee6a869630"
+                "reference": "e2cd302cb6817edb5c686ac50adb7c267c0cff66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/package-builder/zipball/f788a2846bfc53cf32bac91340e60eee6a869630",
-                "reference": "f788a2846bfc53cf32bac91340e60eee6a869630",
+                "url": "https://api.github.com/repos/symplify/package-builder/zipball/e2cd302cb6817edb5c686ac50adb7c267c0cff66",
+                "reference": "e2cd302cb6817edb5c686ac50adb7c267c0cff66",
                 "shasum": ""
             },
             "require": {
@@ -10057,7 +10176,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "7.4-dev"
+                    "dev-master": "8.1-dev"
                 }
             },
             "autoload": {
@@ -10076,7 +10195,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-05-12T10:03:20+00:00"
+            "time": "2020-06-03T07:30:03+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -10772,16 +10891,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.29",
+            "version": "0.12.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "9771daaf6b95c6313b908d0bcdee0afcd51f838a"
+                "reference": "1f2c16d3fbb5eec6e55fbe2358e32570cefa20e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9771daaf6b95c6313b908d0bcdee0afcd51f838a",
-                "reference": "9771daaf6b95c6313b908d0bcdee0afcd51f838a",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/1f2c16d3fbb5eec6e55fbe2358e32570cefa20e5",
+                "reference": "1f2c16d3fbb5eec6e55fbe2358e32570cefa20e5",
                 "shasum": ""
             },
             "require": {
@@ -10824,7 +10943,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-14T14:10:59+00:00"
+            "time": "2020-06-21T14:08:19+00:00"
         },
         {
             "name": "roave/security-advisories",

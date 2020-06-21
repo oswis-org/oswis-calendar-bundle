@@ -11,8 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\ParticipantEMail\ParticipantEMailGroup;
-use OswisOrg\OswisCoreBundle\Interfaces\EMail\EMailCategoryInterface;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
+use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 
 class ParticipantEMailGroupRepository extends ServiceEntityRepository
 {
@@ -23,10 +23,10 @@ class ParticipantEMailGroupRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ParticipantEMailGroup::class);
+        parent::__construct($registry, ParticipantMailGroup::class);
     }
 
-    final public function findByUser(Participant $participant, EMailCategoryInterface $category): ?ParticipantEMailGroup
+    final public function findByUser(Participant $participant, MailCategoryInterface $category): ?ParticipantMailGroup
     {
         $queryBuilder = $this->createQueryBuilder('group');
         $queryBuilder->setParameter("category_id", $category->getId())->setParameter("now", new DateTime());
@@ -36,9 +36,9 @@ class ParticipantEMailGroupRepository extends ServiceEntityRepository
         $queryBuilder->orderBy("group.priority", "DESC");
         try {
             $appUserEMailGroups = $queryBuilder->getQuery()->getResult();
-            foreach ($appUserEMailGroups as $appUserEMailGroup) {
-                if ($appUserEMailGroup instanceof ParticipantEMailGroup && $appUserEMailGroup->isApplicable($participant)) {
-                    return $appUserEMailGroup;
+            foreach ($appUserEMailGroups as $appUserMailGroup) {
+                if ($appUserMailGroup instanceof ParticipantMailGroup && $appUserMailGroup->isApplicable($participant)) {
+                    return $appUserMailGroup;
                 }
             }
 
@@ -48,10 +48,10 @@ class ParticipantEMailGroupRepository extends ServiceEntityRepository
         }
     }
 
-    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantEMailGroup
+    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMailGroup
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof ParticipantEMailGroup ? $result : null;
+        return $result instanceof ParticipantMailGroup ? $result : null;
     }
 }

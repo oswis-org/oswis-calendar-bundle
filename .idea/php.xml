@@ -158,6 +158,8 @@
       <path value="$PROJECT_DIR$/vendor/oswis-org/oswis-core-bundle" />
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php80" />
       <path value="$PROJECT_DIR$/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/vendor/hashids/hashids" />
+      <path value="$PROJECT_DIR$/vendor/roukmoute/hashids-bundle" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

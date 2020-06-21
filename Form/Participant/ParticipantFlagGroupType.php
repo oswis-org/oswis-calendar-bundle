@@ -6,11 +6,10 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Event\FlagRange;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRangeCategoryRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
 use Symfony\Component\Form\Exception\LogicException;

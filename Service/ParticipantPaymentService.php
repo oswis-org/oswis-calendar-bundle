@@ -82,7 +82,7 @@ class ParticipantPaymentService
         $currencyAllowed = $currencyAllowed ?? 'CZK';
         $this->logger->info('CSV_PAYMENT_START');
         // $csvRow = null;
-        $eventParticipants = $this->participantService->getParticipantsByTypeString(
+        $eventParticipants = $this->participantService->getParticipantsByType(
             $event,
             $eventParticipantTypeOfType,
             true,
@@ -284,7 +284,7 @@ class ParticipantPaymentService
             $email = new TemplatedEmail();
             $email->to(new Address($eMail ?? '', self::mimeEnc($name ?? '') ?? ''));
             $email->bcc($archive)->subject(self::mimeEnc($title));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-payment.html.twig')->context($mailData);
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
             $payment->setMailConfirmationSend('event-participant-payment-service');
             $this->em->persist($payment);
@@ -330,7 +330,7 @@ class ParticipantPaymentService
             );
             $email = new TemplatedEmail();
             $email->to($archive)->subject(self::mimeEnc($title));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/event-participant-csv-payments-report.html.twig')->context($mailData);
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/participant-csv-payments-report.html.twig')->context($mailData);
             $this->mailer->send($email);
 
             return true;
