@@ -6,12 +6,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use InvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
@@ -20,7 +16,7 @@ use function in_array;
 /**
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantCategoryRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category")
- * @ApiResource(
+ * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
@@ -46,8 +42,8 @@ use function in_array;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "name",
  *     "description",

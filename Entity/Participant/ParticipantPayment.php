@@ -5,15 +5,9 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateTimeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ExternalIdTrait;
@@ -21,13 +15,12 @@ use OswisOrg\OswisCoreBundle\Traits\Common\InternalNoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NumericValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * Payment (or return - when numericValue is negative).
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_payment")
- * @ApiResource(
+ * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
@@ -57,20 +50,22 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class, properties={
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class, properties={
  *     "id": "ASC",
  *     "dateTime",
  *     "createdDateTime",
  *     "numericValue"
  * })
- * @ApiFilter(SearchFilter::class, properties={
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter::class, properties={
  *     "id": "iexact",
  *     "dateTime": "ipartial",
  *     "createdDateTime": "ipartial",
  *     "numericValue": "ipartial"
  * })
- * @ApiFilter(DateFilter::class, properties={"createddDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"})
- * @Searchable({
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter::class, properties={
+ *     "createddDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"
+ * })
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "dateTime",
  *     "createdDateTime",
@@ -95,13 +90,11 @@ class ParticipantPayment
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="payments"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     * @MaxDepth(1)
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
     protected ?Participant $participant = null;
 
     /**
-     * ParticipantPayment constructor.
-     *
      * @param Participant|null $participant
      * @param int|null         $numericValue
      * @param DateTime|null    $dateTime

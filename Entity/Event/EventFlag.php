@@ -2,18 +2,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_flag")
- * @ApiResource(
+ * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
@@ -43,8 +39,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "name",
  *     "description",

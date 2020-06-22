@@ -6,9 +6,6 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -21,7 +18,6 @@ use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
@@ -35,7 +31,7 @@ use function assert;
 /**
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\EventRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
- * @ApiResource(
+ * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
@@ -65,8 +61,8 @@ use function assert;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class)
- * @Searchable({
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "name",
  *     "description",

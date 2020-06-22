@@ -2,12 +2,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
-use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation as Searchable;
 use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
@@ -16,7 +12,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * Some category (type) of participant flags.
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_category")
- * @ApiResource(
+ * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_MANAGER')"
@@ -42,7 +38,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     }
  *   }
  * )
- * @ApiFilter(OrderFilter::class)
+ * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
  * @Searchable({
  *     "id",
  *     "name",
