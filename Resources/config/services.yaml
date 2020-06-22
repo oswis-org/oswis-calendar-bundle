@@ -153,10 +153,35 @@ services:
             - '@oswis_org_oswis_calendar.participant_repository'
             - '@monolog.logger'
             - '@oswis_org_oswis_core.app_user_service'
-            - '----------------------'
-            - '----------------------'
+            - '@oswis_org_oswis_calendar.participant_token_service'
+            - '@oswis_org_oswis_calendar.participant_mail_service'
     OswisOrg\OswisCalendarBundle\Service\ParticipantService:
         alias: oswis_org_oswis_calendar.participant_service
+        public: true
+
+    oswis_org_oswis_calendar.participant_token_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+            - '@oswis_org_oswis_calendar.participant_token_repository'
+    OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService:
+        alias: oswis_org_oswis_calendar.participant_token_service
+        public: true
+
+    oswis_org_oswis_calendar.participant_mail_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantMailService
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@monolog.logger'
+            - '@oswis_org_oswis_calendar.participant_mail_group_repository'
+            - '@oswis_org_oswis_calendar.participant_mail_category_repository'
+    OswisOrg\OswisCalendarBundle\Service\ParticipantMailService:
+        alias: oswis_org_oswis_calendar.participant_mail_service
         public: true
 
     oswis_org_oswis_calendar.participant_category_service:
