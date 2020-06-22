@@ -39,7 +39,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *   }
  * )
  * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
- * @Searchable({
+ * @@OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "name",
  *     "shortName",
