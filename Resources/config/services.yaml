@@ -25,7 +25,7 @@ services:
         arguments:
             - '@oswis_org_oswis_calendar.event_service'
             - '@oswis_org_oswis_calendar.participant_service'
-            - '@oswis_org_oswis_calendar.registrations_range_service'
+            - '@oswis_org_oswis_calendar.reg_range_service'
     OswisOrg\OswisCalendarBundle\Controller\EventController:
         alias: oswis_org_oswis_calendar.event_controller
         public: true
@@ -37,7 +37,7 @@ services:
         public: true
         arguments:
             - '@oswis_org_oswis_calendar.event_service'
-            - '@'
+            - '@oswis_org_oswis_calendar.reg_range_service'
             - '@oswis_org_oswis_calendar.participant_service'
     OswisOrg\OswisCalendarBundle\Controller\ParticipantController:
         alias: oswis_org_oswis_calendar.participant_controller
@@ -153,8 +153,8 @@ services:
             - '@oswis_org_oswis_calendar.participant_repository'
             - '@monolog.logger'
             - '@oswis_org_oswis_core.app_user_service'
-            - '@'
-            - '@'
+            - '----------------------'
+            - '----------------------'
     OswisOrg\OswisCalendarBundle\Service\ParticipantService:
         alias: oswis_org_oswis_calendar.participant_service
         public: true

@@ -273,7 +273,7 @@ class ParticipantController extends AbstractController
             'shortTitle' => $shortTitle,
         ];
 
-        return $this->render('registration-ranges.html.twig', $context);
+        return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', $context);
     }
 
     /**
