@@ -64,7 +64,7 @@ class ParticipantNote implements BasicInterface
 
     /**
      * Is note public?
-     * @Doctrine\ORM\Mapping\Column(type="boolean"
+     * @Doctrine\ORM\Mapping\Column(type="boolean")
      */
     protected bool $publicNote = false;
 
