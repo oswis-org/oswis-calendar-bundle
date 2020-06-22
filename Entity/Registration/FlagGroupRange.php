@@ -46,7 +46,7 @@ class FlagGroupRange implements NameableInterface
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_flag_group_range_flag_connection"
+     *     name="calendar_flag_group_range_flag_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_group_range_id", referencedColumnName="id")},
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_range_id", referencedColumnName="id", unique=true)}
      * )
