@@ -102,7 +102,7 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@monolog.logger_prototype'
+            - '@monolog.logger'
     OswisOrg\OswisCalendarBundle\Service\FlagRangeService:
         alias: oswis_org_oswis_calendar.flag_range_service
         public: true
