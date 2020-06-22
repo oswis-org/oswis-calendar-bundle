@@ -17,28 +17,19 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';
-
     public const CRITERIA_EVENT = 'event';
-
     public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
-
-    public const CRITERIA_PARTICIPANT_TYPE_STRING = 'participantTypeString';
-
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
-
-    public const CRITERIA_RANGE = 'range';
-
+    public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
+    public const CRITERIA_REG_RANGE = 'regRange';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
-
     public const CRITERIA_CONTACT = 'contact';
-
     public const CRITERIA_APP_USER = 'appUser';
 
     /**
@@ -48,7 +39,7 @@ class ParticipantRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ParticipantMailCategory::class);
+        parent::__construct($registry, Participant::class);
     }
 
     final public function findOneBy(array $criteria, array $orderBy = null): ?Participant
@@ -58,15 +49,6 @@ class ParticipantRepository extends ServiceEntityRepository
         return $result instanceof Participant ? $result : null;
     }
 
-    /**
-     * @param array     $opts
-     * @param bool|null $includeNotActivated
-     * @param int|null  $limit
-     * @param int|null  $offset
-     *
-     * @return Collection
-     * @noinspection PhpUnused
-     */
     public function getParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
@@ -80,8 +62,8 @@ class ParticipantRepository extends ServiceEntityRepository
         $this->setSuperEventQuery($queryBuilder, $opts);
         $this->setIdQuery($queryBuilder, $opts);
         $this->setRangeQuery($queryBuilder, $opts);
+        $this->setParticipantCategoryQuery($queryBuilder, $opts);
         $this->setParticipantTypeQuery($queryBuilder, $opts);
-        $this->setParticipantTypeStringQuery($queryBuilder, $opts);
         $this->setIncludeDeletedQuery($queryBuilder, $opts);
         $this->setContactQuery($queryBuilder, $opts);
         $this->setAppUserQuery($queryBuilder, $opts);
@@ -115,26 +97,26 @@ class ParticipantRepository extends ServiceEntityRepository
 
     private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegRange) {
+        if (!empty($opts[self::CRITERIA_REG_RANGE]) && $opts[self::CRITERIA_REG_RANGE] instanceof RegRange) {
             $queryBuilder->andWhere('participant.range = :range_id');
-            $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
+            $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_REG_RANGE]->getId());
+        }
+    }
+
+    private function setParticipantCategoryQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_CATEGORY]) && $opts[self::CRITERIA_PARTICIPANT_CATEGORY] instanceof ParticipantCategory) {
+            $queryBuilder->andWhere('participant.participantCategory = :type_id');
+            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_CATEGORY]->getId());
         }
     }
 
     private function setParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantCategory) {
-            $queryBuilder->andWhere('participant.participantType = :type_id');
-            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
-        }
-    }
-
-    private function setParticipantTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
-    {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING])) {
-            $queryBuilder->leftJoin('participant.participantType', 'participant_category_for_string');
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE])) {
+            $queryBuilder->leftJoin('participant.participantCategory', 'participant_category_for_string');
             $queryBuilder->andWhere('participant_category_for_string.type = :type_string');
-            $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]);
+            $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE]);
         }
     }
 

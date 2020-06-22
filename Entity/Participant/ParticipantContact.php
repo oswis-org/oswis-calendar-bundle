@@ -8,9 +8,9 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
-use OswisOrg\OswisCoreBundle\Traits\Common\ActiveTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
@@ -22,7 +22,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 class ParticipantContact implements BasicInterface
 {
     use BasicTrait;
-    use ActiveTrait;
+    use ActivatedTrait;
     use DeletedTrait;
 
     /**
@@ -35,7 +35,7 @@ class ParticipantContact implements BasicInterface
     {
         try {
             $this->setContact($contact);
-        } catch (OswisNotImplementedException $e) {
+        } catch (NotImplementedException $e) {
         }
     }
 
@@ -47,7 +47,7 @@ class ParticipantContact implements BasicInterface
     /**
      * @param AbstractContact|null $contact
      *
-     * @throws OswisNotImplementedException
+     * @throws NotImplementedException
      */
     public function setContact(?AbstractContact $contact): void
     {
@@ -55,13 +55,13 @@ class ParticipantContact implements BasicInterface
             return;
         }
         if (null !== $this->contact) {
-            throw new OswisNotImplementedException('změna kontaktu', 'v přiřazení kontaktu k události');
+            throw new NotImplementedException('změna kontaktu', 'v přiřazení kontaktu k události');
         }
         $this->contact = $contact;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool
     {
-        return !$this->isDeleted($referenceDateTime);
+        return $this->isActivated($referenceDateTime) && !$this->isDeleted($referenceDateTime);
     }
 }

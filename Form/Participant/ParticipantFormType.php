@@ -8,14 +8,11 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\StudentPersonType;
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -36,7 +33,7 @@ class ParticipantFormType extends AbstractType
         if (!($participant instanceof Participant) || !(($range = $participant->getRegRange()) instanceof RegRange)) {
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
         }
-        $participantType = $range->getParticipantType();
+        $participantType = $range->getParticipantCategory();
         $event = $range->getEvent();
         if (null === $participantType || null === $event) {
             $message = null === $participantType ? '[typ účastníka nenastaven]' : '';
@@ -46,7 +43,6 @@ class ParticipantFormType extends AbstractType
         self::addContactField($builder);
         $this->addFlagCategoryFields($builder, $participant);
         self::addParticipantNotesFields($builder);
-        self::addGdprField($builder);
         self::addSubmitButton($builder);
     }
 
@@ -82,31 +78,6 @@ class ParticipantFormType extends AbstractType
                 'entry_options' => array(
                     'label' => false,
                 ),
-            )
-        );
-    }
-
-    public static function addGdprField(FormBuilderInterface $builder): void
-    {
-        // TODO: Refactor to flag.
-        $builder->add(
-            'agreeGDPR',
-            CheckboxType::class,
-            array(
-                'mapped'     => false,
-                'label'      => 'Uvedením údajů potvrzuji souhlas s evidencí těchto dat.',
-                'help'       => "<strong>
-                            Přečetl(a) jsem si a souhlasím s 
-                            <a href='/gdpr' target='_blank'><i class='fas fa-user-secret'></i> podmínkami pro zpracování osobních údajů</a>.
-                            </strong>",
-                'help_html'  => true,
-                'required'   => true,
-                'attr'       => [
-                    'class' => 'custom-control-input',
-                ],
-                'label_attr' => [
-                    'class' => 'custom-control-label',
-                ],
             )
         );
     }

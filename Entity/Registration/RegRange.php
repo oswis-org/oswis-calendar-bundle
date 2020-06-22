@@ -21,7 +21,7 @@ use OswisOrg\OswisCalendarBundle\Traits\Entity\PriceTrait;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
@@ -49,10 +49,10 @@ class RegRange implements NameableInterface
     use EntityPublicTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegRange $requiredRange;
+    protected ?RegRange $requiredRegRange;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
@@ -61,10 +61,10 @@ class RegRange implements NameableInterface
     protected ?Event $event = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?ParticipantCategory $participantType = null;
+    protected ?ParticipantCategory $participantCategory = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange", cascade={"all"})
@@ -103,7 +103,7 @@ class RegRange implements NameableInterface
      * @param Publicity|null           $publicity
      * @param bool|null                $superEventRequired
      *
-     * @throws OswisNotImplementedException
+     * @throws NotImplementedException
      */
     public function __construct(
         ?Nameable $nameable = null,
@@ -120,26 +120,21 @@ class RegRange implements NameableInterface
         $this->flagGroupRanges = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEvent($event);
-        $this->setParticipantType($participantType);
+        $this->setParticipantCategory($participantType);
         $this->setEventPrice($eventPrice);
         $this->setStartDateTime($dateTimeRange ? $dateTimeRange->startDateTime : null);
         $this->setEndDateTime($dateTimeRange ? $dateTimeRange->endDateTime : null, true);
         $this->setCapacity($eventCapacity);
         $this->setRelative($isRelative);
-        $this->setRequiredRange($requiredRange);
+        $this->setRequiredRegRange($requiredRange);
         $this->setFieldsFromPublicity($publicity);
         $this->setSuperEventRequired($superEventRequired);
     }
 
-    /**
-     * Sets the end of registration range (can't be set to past).
-     *
-     * @param DateTime|null $endDateTime
-     * @param bool|null     $force
-     */
     public function setEndDateTime(?DateTime $endDateTime, ?bool $force = null): void
     {
         try {
+            // Sets the end of registration range (can't be set to past).
             $now = new DateTime();
             if ($endDateTime !== $this->getEndDate()) {
                 $this->traitSetEnd(!$force && $endDateTime && $endDateTime < $now ? $now : $endDateTime);
@@ -160,7 +155,7 @@ class RegRange implements NameableInterface
 
     public function getRequiredRangePrice(?ParticipantCategory $participantType = null): int
     {
-        return (!$this->isRelative() || null === $this->getRequiredRange()) ? 0 : $this->getRequiredRange()->getPrice($participantType);
+        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getPrice($participantType);
     }
 
     public function isRelative(): bool
@@ -168,14 +163,14 @@ class RegRange implements NameableInterface
         return $this->relative ?? false;
     }
 
-    public function getRequiredRange(): ?RegRange
+    public function getRequiredRegRange(): ?RegRange
     {
-        return $this->requiredRange;
+        return $this->requiredRegRange;
     }
 
-    public function setRequiredRange(?RegRange $requiredRange): void
+    public function setRequiredRegRange(?RegRange $requiredRegRange): void
     {
-        $this->requiredRange = $requiredRange;
+        $this->requiredRegRange = $requiredRegRange;
     }
 
     public function getPrice(?ParticipantCategory $participantType = null): int
@@ -183,35 +178,35 @@ class RegRange implements NameableInterface
         if (null === $participantType) {
             return $this->traitGetPrice();
         }
-        $price = $this->getParticipantType() === $participantType ? $this->traitGetPrice() : 0;
+        $price = $this->getParticipantCategory() === $participantType ? $this->traitGetPrice() : 0;
         $price += $this->getRequiredRangePrice($participantType);
 
         return null !== $price && $price <= 0 ? 0 : $price;
     }
 
-    public function getParticipantType(): ?ParticipantCategory
+    public function getParticipantCategory(): ?ParticipantCategory
     {
-        return $this->participantType;
+        return $this->participantCategory;
     }
 
     /**
-     * @param ParticipantCategory|null $participantType
+     * @param ParticipantCategory|null $participantCategory
      *
-     * @throws OswisNotImplementedException
+     * @throws NotImplementedException
      */
-    public function setParticipantType(?ParticipantCategory $participantType): void
+    public function setParticipantCategory(?ParticipantCategory $participantCategory): void
     {
-        if (null === $this->participantType || $this->participantType === $participantType) {
-            $this->participantType = $participantType;
+        if (null === $this->participantCategory || $this->participantCategory === $participantCategory) {
+            $this->participantCategory = $participantCategory;
 
             return;
         }
-        throw new OswisNotImplementedException('změna typu účastníka', 'v rozsahu registrací');
+        throw new NotImplementedException('změna typu účastníka', 'v rozsahu registrací');
     }
 
     public function getRequiredRangeDeposit(?ParticipantCategory $participantType = null): int
     {
-        return (!$this->isRelative() || null === $this->getRequiredRange()) ? 0 : $this->getRequiredRange()->getDepositValue($participantType);
+        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getDepositValue($participantType);
     }
 
     public function getDepositValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
@@ -219,7 +214,7 @@ class RegRange implements NameableInterface
         if (false === $recursive || null === $participantType) {
             return $this->traitGetDeposit();
         }
-        $price = $this->getParticipantType() === $participantType ? $this->traitGetDeposit() : 0;
+        $price = $this->getParticipantCategory() === $participantType ? $this->traitGetDeposit() : 0;
         $price += $this->getRequiredRangeDeposit($participantType);
 
         return null !== $price && $price <= 0 ? 0 : $price;
@@ -272,11 +267,9 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * Participation in super event is required before registration to this range.
-     *
-     * Must be checked in service/controller.
-     *
+     * Participation in super event is required before registration to this range. Must be checked in service/controller.
      * @return bool
+     * @todo Use it and check it!
      */
     public function isSuperEventRequired(): bool
     {
@@ -290,10 +283,10 @@ class RegRange implements NameableInterface
         return $this->isInDateRange() && (null === $capacity || 0 < $capacity);
     }
 
-    public function addFlagRange(?RegistrationsFlagRange $flagRange): void
+    public function addFlagGroupRange(?FlagGroupRange $flagGroupRange): void
     {
-        if (null !== $flagRange && !$this->getFlagGroupRanges()->contains($flagRange)) {
-            $this->getFlagGroupRanges()->add($flagRange);
+        if (null !== $flagGroupRange && !$this->getFlagGroupRanges()->contains($flagGroupRange)) {
+            $this->getFlagGroupRanges()->add($flagGroupRange);
         }
     }
 
@@ -307,32 +300,23 @@ class RegRange implements NameableInterface
             $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isType($flagCategory));
+            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isType($flagType));
         }
 
         return $flagCategoryRanges;
     }
 
-    public function getFlagRange(Flag $flag, bool $max = false, bool $onlyPublic = false): ?FlagRange
+    /**
+     * @param FlagGroupRange|null $flagGroupRange
+     *
+     * @throws NotImplementedException
+     */
+    public function removeFlagGroupRange(?FlagGroupRange $flagGroupRange): void
     {
-        foreach ($this->getFlagGroupRanges(null, $flag, $onlyPublic) as $range) {
-            if ($range instanceof FlagRange && $range->getRemainingCapacity($max) !== 0) {
-                return $range;
-            }
-        }
-
-        return null;
-    }
-
-    public function removeFlagRange(?FlagRange $flagRange): void
-    {
-        if (null === $flagRange) {
+        if (null === $flagGroupRange || !$this->getFlagGroupRanges()->contains($flagGroupRange)) {
             return;
         }
-        if ($flagRange->getBaseUsage() > 0) {
-            throw new OswisNotImplementedException('Nelze odebrat již využitý rozsah.');
-        }
-        $this->getFlagGroupRanges()->remove($flagRange);
+        throw new NotImplementedException('Nelze odebrat již využitý rozsah.');
     }
 
     public function isParticipantInSuperEvent(Participant $participant): bool
@@ -348,7 +332,7 @@ class RegRange implements NameableInterface
     /**
      * @param Event|null $event
      *
-     * @throws OswisNotImplementedException
+     * @throws NotImplementedException
      */
     public function setEvent(?Event $event): void
     {
@@ -357,6 +341,6 @@ class RegRange implements NameableInterface
 
             return;
         }
-        throw new OswisNotImplementedException('změna události', 'v rozsahu registrací');
+        throw new NotImplementedException('změna události', 'v rozsahu registrací');
     }
 }

@@ -7,11 +7,11 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
+use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagGroupRepository;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRangeRepository;
+use OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository;
 use Psr\Log\LoggerInterface;
 
 class FlagRangeService
@@ -44,32 +44,32 @@ class FlagRangeService
 
     public function updateUsage(FlagRange $range): void
     {
-        $usage = $this->getFlagRangeConnectionsByRange($range, false)->count();
+        $usage = $this->getParticipantFlags($range, false)->count();
         $range->setBaseUsage($usage);
     }
 
-    public function getFlagRangeConnectionsByRange(FlagRange $flagRange, bool $includeDeleted = false): Collection
+    public function getParticipantFlags(FlagRange $flagRange, bool $includeDeleted = false): Collection
     {
-        return $this->getFlagRangeConnectionRepository()->getFlagRangesConnections(
+        return $this->getParticipantFlagRepository()->getParticipantFlagGroups(
             [
-                ParticipantFlagGroupRepository::CRITERIA_FLAG_RANGE      => $flagRange,
-                ParticipantFlagGroupRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+                ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+                ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ]
         );
     }
 
-    public function getFlagRangeConnectionRepository(): ParticipantFlagGroupRepository
+    public function getParticipantFlagRepository(): ParticipantFlagRepository
     {
-        $repo = $this->em->getRepository(ParticipantFlagGroup::class);
-        assert($repo instanceof ParticipantFlagGroupRepository);
+        $repo = $this->em->getRepository(ParticipantFlag::class);
+        assert($repo instanceof ParticipantFlagRepository);
 
         return $repo;
     }
 
-    public function getRepository(): ParticipantFlagRangeRepository
+    public function getRepository(): FlagRangeRepository
     {
-        $repository = $this->em->getRepository(RegistrationsFlagRange::class);
-        assert($repository instanceof ParticipantFlagRangeRepository);
+        $repository = $this->em->getRepository(FlagRange::class);
+        assert($repository instanceof FlagRangeRepository);
 
         return $repository;
     }

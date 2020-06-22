@@ -13,14 +13,14 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagGroupRepository")
+ * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_group")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
@@ -42,10 +42,10 @@ class ParticipantFlagGroup implements BasicInterface
      */
     protected ?Collection $participantFlags = null;
 
-    public function __construct(?FlagGroupRange $flagCategoryRange = null)
+    public function __construct(?FlagGroupRange $flagGroupRange = null)
     {
         $this->participantFlags = new ArrayCollection();
-        $this->setFlagGroupRange($flagCategoryRange);
+        $this->flagGroupRange = $flagGroupRange;
     }
 
     public function getFlagType(): ?string
@@ -58,6 +58,11 @@ class ParticipantFlagGroup implements BasicInterface
         return $this->flagGroupRange;
     }
 
+    /**
+     * @param FlagGroupRange|null $flagGroupRange
+     *
+     * @throws NotImplementedException
+     */
     public function setFlagGroupRange(?FlagGroupRange $flagGroupRange): void
     {
         if ($this->flagGroupRange === $flagGroupRange || null === $this->flagGroupRange) {
@@ -65,7 +70,7 @@ class ParticipantFlagGroup implements BasicInterface
 
             return;
         }
-        throw new OswisNotImplementedException('změna kategorie příznaků', 'v přiřazení kategorie příznaků k účastníkovi');
+        throw new NotImplementedException('změna kategorie příznaků', 'v přiřazení kategorie příznaků k účastníkovi');
     }
 
     public function getFlagCategory(): ?FlagCategory

@@ -62,7 +62,7 @@ class RegRangeService
     {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
             [
-                ParticipantRepository::CRITERIA_RANGE           => $range,
+                ParticipantRepository::CRITERIA_REG_RANGE       => $range,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ]
         );

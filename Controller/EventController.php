@@ -16,7 +16,7 @@ use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,22 +32,20 @@ class EventController extends AbstractController
 
     protected ParticipantService $participantService;
 
-    protected RegRangeService $registrationsRangeService;
+    protected RegRangeService $regRangeService;
 
-    public function __construct(
-        EventService $eventService,
-        ParticipantService $participantService,
-        RegRangeService $registrationsRangeService
-    ) {
+    public function __construct(EventService $eventService, ParticipantService $participantService, RegRangeService $regRangeService)
+    {
         $this->eventService = $eventService;
         $this->participantService = $participantService;
-        $this->registrationsRangeService = $registrationsRangeService;
+        $this->regRangeService = $regRangeService;
     }
 
     /**
      * @param string|null $eventSlug
      *
      * @return Response
+     * @throws NotFoundException
      */
     final public function showEvent(?string $eventSlug = null): Response
     {
@@ -61,9 +59,9 @@ class EventController extends AbstractController
         $eventRepo = $this->eventService->getRepository();
         $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
         if (!($event instanceof Event)) {
-            throw new OswisNotFoundException('Událost nenalezena.');
+            throw new NotFoundException('Událost nenalezena.');
         }
-        $rangesByEvent = $this->registrationsRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()]));
+        $rangesByEvent = $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()]));
         $ranges = [];
         foreach ($rangesByEvent as $rangesOfEvent) {
             $ranges = [...$ranges, ...$rangesOfEvent['ranges']];
@@ -119,6 +117,7 @@ class EventController extends AbstractController
      * @param string|null $eventSlug
      *
      * @return Response
+     * @throws NotFoundException
      */
     final public function showEventLeaflet(?string $eventSlug = null): Response
     {
@@ -134,7 +133,7 @@ class EventController extends AbstractController
         ];
         $event = $eventRepo->getEvent($opts);
         if (!($event instanceof Event)) {
-            throw new OswisNotFoundException('Událost nenalezena.');
+            throw new NotFoundException('Událost nenalezena.');
         }
         $data = array(
             'title'       => $event->getShortName(),
@@ -146,7 +145,7 @@ class EventController extends AbstractController
         if ($this->get('twig')->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
-        throw new OswisNotFoundException('Leták nenalezen.');
+        throw new NotFoundException('Leták nenalezen.');
     }
 
     public function getMagicEvents(): Collection

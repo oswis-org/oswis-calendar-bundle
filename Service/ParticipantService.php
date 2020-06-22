@@ -33,7 +33,6 @@ use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
@@ -227,7 +226,7 @@ class ParticipantService
             $this->em->persist($participant);
             $this->em->flush();
             $this->logger->info('Successfully activated participant ('.$participant->getId().').');
-        } catch (OswisException|MimeLogicException|NotFoundException|InvalidTypeException $exception) {
+        } catch (OswisException|NotFoundException|InvalidTypeException $exception) {
             $this->logger->error('Participant ('.$participant->getId().') activation FAILED. '.$exception->getMessage());
             throw new OswisException("Aktivace přihlášky se nezdařila. ".$exception->getMessage());
         }
@@ -245,9 +244,9 @@ class ParticipantService
     public function isContactContainedInEvent(Event $event, AbstractContact $contact, ParticipantCategory $participantType = null): bool
     {
         $opts = [
-            ParticipantRepository::CRITERIA_EVENT            => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
-            ParticipantRepository::CRITERIA_CONTACT          => $contact,
+            ParticipantRepository::CRITERIA_EVENT                => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantType,
+            ParticipantRepository::CRITERIA_CONTACT              => $contact,
         ];
 
         return $this->getRepository()->getParticipants($opts)->count() > 0;
@@ -277,10 +276,10 @@ class ParticipantService
     ): Collection {
         return $this->getParticipants(
             [
-                ParticipantRepository::CRITERIA_EVENT                   => $event,
-                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
-                ParticipantRepository::CRITERIA_INCLUDE_DELETED         => $includeDeleted,
-                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH   => $depth,
+                ParticipantRepository::CRITERIA_EVENT                 => $event,
+                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
             ],
             $includeNotActivated
         );
@@ -288,19 +287,19 @@ class ParticipantService
 
     public function getWebPartners(array $opts = []): Collection
     {
-        $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE_STRING] ??= ParticipantCategory::TYPE_PARTNER;
+        $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE] ??= ParticipantCategory::TYPE_PARTNER;
 
         return $this->getParticipants($opts)->filter(
-            fn(Participant $participant) => $participant->hasFlag(null, null, null, FlagCategory::TYPE_PARTNER_HOMEPAGE)
+            fn(Participant $participant) => $participant->hasFlag(null, true, null, FlagCategory::TYPE_PARTNER_HOMEPAGE)
         );
     }
 
     final public function containsAppUser(Event $event, AppUser $appUser, ParticipantCategory $participantType = null): bool
     {
         $opts = [
-            ParticipantRepository::CRITERIA_EVENT            => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
-            ParticipantRepository::CRITERIA_APP_USER         => $appUser,
+            ParticipantRepository::CRITERIA_EVENT                => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantType,
+            ParticipantRepository::CRITERIA_APP_USER             => $appUser,
         ];
 
         return $this->getRepository()->getParticipants($opts)->count() > 0;
@@ -344,7 +343,7 @@ class ParticipantService
         if (null === $regRange->getEvent()) {
             throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazenou událost.');
         }
-        if (null === $regRange->getParticipantType()) {
+        if (null === $regRange->getParticipantCategory()) {
             throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazený typ účastníka.');
         }
 

@@ -139,7 +139,7 @@ class FlagRange implements NameableInterface
 
     public function getFlagGroupName(): ?string
     {
-        return RegistrationFlagRangeCategory::TYPE_T_SHIRT === $this->getType() ? $this->getTShirtGroup() : $this->getFlagPriceGroup();
+        return FlagCategory::TYPE_T_SHIRT_SIZE === $this->getType() ? $this->getTShirtGroup() : $this->getFlagPriceGroup();
     }
 
     public function getTShirtGroup(): string

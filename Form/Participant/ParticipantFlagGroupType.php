@@ -88,7 +88,7 @@ class ParticipantFlagGroupType extends AbstractType
         $youCan = $isFormal ? 'můžete' : 'můžeš';
         $multiple = null !== $max && $max > 1;
         $expanded = count($choices) <= 1;
-        $help = $flagCategoryRange ? $flagCategoryRange->getDescription() : '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>';
+        $help = $flagCategoryRange->getDescription();
         $help .= !$expanded && $multiple ? "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
         $builder->add(
             "participantFlags",
@@ -171,6 +171,6 @@ class ParticipantFlagGroupType extends AbstractType
 
     public function getName(): string
     {
-        return 'calendar_participant_category';
+        return 'calendar_participant_flag_group';
     }
 }

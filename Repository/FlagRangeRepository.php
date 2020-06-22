@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\Repository;
@@ -11,9 +10,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationsFlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 
-class ParticipantFlagRangeRepository extends EntityRepository
+class FlagRangeRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
@@ -25,14 +24,14 @@ class ParticipantFlagRangeRepository extends EntityRepository
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?RegistrationsFlagRange
+    public function findOneBy(array $criteria, array $orderBy = null): ?FlagRange
     {
         $flagRange = parent::findOneBy($criteria, $orderBy);
 
-        return $flagRange instanceof RegistrationsFlagRange ? $flagRange : null;
+        return $flagRange instanceof FlagRange ? $flagRange : null;
     }
 
-    public function getParticipantFlag(?array $opts = []): ?RegistrationsFlagRange
+    public function getParticipantFlag(?array $opts = []): ?FlagRange
     {
         try {
             $flagRange = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -40,7 +39,7 @@ class ParticipantFlagRangeRepository extends EntityRepository
             return null;
         }
 
-        return $flagRange instanceof RegistrationsFlagRange ? $flagRange : null;
+        return $flagRange instanceof FlagRange ? $flagRange : null;
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
@@ -59,21 +58,21 @@ class ParticipantFlagRangeRepository extends EntityRepository
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
-            $queryBuilder->andWhere(' ept.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
+            $queryBuilder->andWhere(' flagRange.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
     private function addSlugQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SLUG])) {
-            $queryBuilder->andWhere(' ept.slug = :slug ')->setParameter('slug', $opts[self::CRITERIA_SLUG]);
+            $queryBuilder->andWhere(' flagRange.slug = :slug ')->setParameter('slug', $opts[self::CRITERIA_SLUG]);
         }
     }
 
     private function addParticipantTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_TYPE_OF_TYPE])) {
-            $queryBuilder->andWhere('ept.type = :type_type');
+            $queryBuilder->andWhere('flagRange.type = :type_type');
             $queryBuilder->setParameter('type_type', $opts[self::CRITERIA_TYPE_OF_TYPE]);
         }
     }
@@ -81,7 +80,7 @@ class ParticipantFlagRangeRepository extends EntityRepository
     private function addOnlyPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB])) {
-            $queryBuilder->andWhere('ept.publicOnWeb = true');
+            $queryBuilder->andWhere('flagRange.publicOnWeb = true');
         }
     }
 
@@ -98,15 +97,13 @@ class ParticipantFlagRangeRepository extends EntityRepository
     private function addOrderBy(QueryBuilder $queryBuilder, bool $name = true): void
     {
         if ($name) {
-            $queryBuilder->addOrderBy('ept.name', 'ASC');
+            $queryBuilder->addOrderBy('flagRange.name', 'ASC');
         }
-        $queryBuilder->addOrderBy('ept.id', 'ASC');
+        $queryBuilder->addOrderBy('flagRange.id', 'ASC');
     }
 
-    public function getEventParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    public function getFlagRanges(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection(
-            $this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
-        );
+        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
     }
 }

@@ -331,7 +331,7 @@ class Participant implements BasicInterface
     public function getParticipantCategory(): ?ParticipantCategory
     {
         try {
-            return $this->getRegRange() ? $this->getRegRange()->getParticipantType() : null;
+            return $this->getRegRange() ? $this->getRegRange()->getParticipantCategory() : null;
         } catch (OswisException $e) {
             return null;
         }
@@ -706,12 +706,12 @@ class Participant implements BasicInterface
         return $this->payments ??= new ArrayCollection();
     }
 
-    public function hasFlag(Flag $flag, bool $onlyActive = true, ?FlagCategory $flagCategory = null, ?string $flagType = null): bool
+    public function hasFlag(?Flag $flag = null, bool $onlyActive = true, ?FlagCategory $flagCategory = null, ?string $flagType = null): bool
     {
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->count() > 0;
     }
 
-    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection
+    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
     {
         $participantFlags = new ArrayCollection();
         foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {

@@ -1,8 +1,6 @@
 <?php
 /**
- * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection RedundantDocCommentTagInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Controller;
@@ -23,8 +21,8 @@ use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService;
 use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
+use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -68,8 +66,7 @@ class ParticipantController extends AbstractController
      *
      * @return Response
      * @throws InvalidArgumentException
-     * @throws OswisException|OswisNotFoundException|ParticipantNotFoundException|EventCapacityExceededException
-     * @todo Refactor.
+     * @throws OswisException|NotFoundException|ParticipantNotFoundException|EventCapacityExceededException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {
@@ -78,7 +75,7 @@ class ParticipantController extends AbstractController
         }
         $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, true);
         if (null === $range || !($range instanceof RegRange) || !$range->isPublicOnWeb()) {
-            throw new OswisNotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen.');
+            throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
         $participant = $this->participantService->getEmptyParticipant($range, null);
         try {
@@ -126,13 +123,13 @@ class ParticipantController extends AbstractController
 
     /**
      * @return Response
-     * @throws OswisNotFoundException
+     * @throws NotFoundException
      */
     public function redirectToDefaultEventRanges(): Response
     {
         $defaultEvent = $this->eventService->getDefaultEvent();
         if (null === $defaultEvent) {
-            throw new OswisNotFoundException('Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.');
+            throw new NotFoundException('Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.');
         }
 
         return $this->redirectToRoute(
@@ -214,22 +211,22 @@ class ParticipantController extends AbstractController
     /**
      * Finds correct registration range by event and participantType.
      *
-     * @param Event               $event           Event.
-     * @param ParticipantCategory $participantType Type of participant.
-     * @param string|null         $participantTypeString
+     * @param Event               $event               Event.
+     * @param ParticipantCategory $participantCategory Type of participant.
+     * @param string|null         $participantType
      *
      * @return RegRange
      */
-    public function getRange(Event $event, ?ParticipantCategory $participantType, ?string $participantTypeString): ?RegRange
+    public function getRange(Event $event, ?ParticipantCategory $participantCategory, ?string $participantType): ?RegRange
     {
-        return $this->regRangeService->getRange($event, $participantType, $participantTypeString, true, true);
+        return $this->regRangeService->getRange($event, $participantCategory, $participantType, true, true);
     }
 
     /**
      * @param string $eventSlug
      *
      * @return Event
-     * @throws OswisNotFoundException
+     * @throws NotFoundException
      */
     public function getEvent(string $eventSlug): Event
     {
@@ -240,7 +237,7 @@ class ParticipantController extends AbstractController
             ]
         );
         if (null === $event) {
-            throw new OswisNotFoundException('Akce nebyla nalezena.');
+            throw new NotFoundException('Akce nebyla nalezena.');
         }
 
         return $event;
@@ -260,7 +257,7 @@ class ParticipantController extends AbstractController
     public function showRanges(string $eventSlug = null, ?string $participantType = null): Response
     {
         $event = $eventSlug ? $this->eventService->getEvents(null, null, null, null, null, $eventSlug, false)[0] ?? null : null;
-        if (!empty($eventSlug) && empty($event)) {
+        if (!empty($eventSlug) && null === $event) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges');
         }
         $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->eventService->getEvents(null, null, null, null, null, null, false);
@@ -276,17 +273,8 @@ class ParticipantController extends AbstractController
         return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', $context);
     }
 
-    /**
-     * Partners for homepage.
-     * @return Response
-     */
     public function partnersFooter(): Response
     {
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig',
-            [
-                'footerPartners' => $this->participantService->getWebPartners(),
-            ]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig', ['footerPartners' => $this->participantService->getWebPartners()]);
     }
 }

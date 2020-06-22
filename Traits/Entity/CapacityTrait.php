@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
@@ -11,16 +10,14 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 trait CapacityTrait
 {
     /**
-     * Capacity including overflow.
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected int $fullCapacity = 0;
+    protected ?int $fullCapacity = null;
 
     /**
-     * Capacity.
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
+     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
      */
-    protected int $baseCapacity = 0;
+    protected ?int $baseCapacity = null;
 
     public function setCapacity(?Capacity $capacity = null): void
     {
@@ -28,7 +25,7 @@ trait CapacityTrait
         $this->setFullCapacity($capacity ? $capacity->getFullCapacity() : null);
     }
 
-    public function getCapacityInt(bool $full = false): int
+    public function getCapacityInt(bool $full = false): ?int
     {
         return $this->getCapacity()->getCapacity($full);
     }
@@ -38,7 +35,7 @@ trait CapacityTrait
         return new Capacity($this->getBaseCapacity(), $this->getFullCapacity());
     }
 
-    public function getBaseCapacity(): int
+    public function getBaseCapacity(): ?int
     {
         return $this->getCapacity()->getBaseCapacity();
     }
@@ -49,14 +46,18 @@ trait CapacityTrait
         $this->baseCapacity = 0 > $baseCapacity ? 0 : $baseCapacity;
     }
 
-    public function getFullCapacity(): int
+    public function getFullCapacity(): ?int
     {
         return $this->getCapacity()->getFullCapacity();
     }
 
     public function setFullCapacity(?int $fullCapacity): void
     {
-        $fullCapacity ??= 0;
+        if (null === $fullCapacity) {
+            $this->fullCapacity = null;
+
+            return;
+        }
         $this->fullCapacity = 0 > $fullCapacity ? 0 : $fullCapacity;
     }
 }

@@ -36,7 +36,7 @@ class ParticipantRangeRepository extends EntityRepository
 
     public function getRangesConnectionsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
-        $queryBuilder = $this->createQueryBuilder('range_conn');
+        $queryBuilder = $this->createQueryBuilder('participant_range');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addRangeQuery($queryBuilder, $opts);
         $this->addIncludeDeletedQuery($queryBuilder, $opts);
@@ -49,14 +49,14 @@ class ParticipantRangeRepository extends EntityRepository
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
-            $queryBuilder->andWhere(' range_conn.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
+            $queryBuilder->andWhere(' participant_range.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
     private function addRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegRange) {
-            $queryBuilder->andWhere('range_conn.range = :range_id');
+            $queryBuilder->andWhere('participant_range.range = :range_id');
             $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
         }
     }
@@ -64,7 +64,7 @@ class ParticipantRangeRepository extends EntityRepository
     private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('range_conn.deleted IS NULL');
+            $queryBuilder->andWhere('participant_range.deleted IS NULL');
         }
     }
 
@@ -80,7 +80,7 @@ class ParticipantRangeRepository extends EntityRepository
 
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        $queryBuilder->addOrderBy('range_conn.id', 'ASC');
+        $queryBuilder->addOrderBy('participant_range.id', 'ASC');
     }
 
     public function getFlagRangeConnection(?array $opts = []): ?ParticipantRange

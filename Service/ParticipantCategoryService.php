@@ -48,17 +48,17 @@ class ParticipantCategoryService
         if (empty($slug)) {
             return null;
         }
-        $type = $this->getRepository()->getParticipantType(
+        $type = $this->getRepository()->getParticipantCategory(
             [
                 ParticipantCategoryRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
                 ParticipantCategoryRepository::CRITERIA_SLUG               => $slug,
             ]
         );
         if (null === $type) {
-            $type = $this->getRepository()->getParticipantType(
+            $type = $this->getRepository()->getParticipantCategory(
                 [
                     ParticipantCategoryRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
-                    ParticipantCategoryRepository::CRITERIA_TYPE_OF_TYPE       => $slug,
+                    ParticipantCategoryRepository::CRITERIA_TYPE               => $slug,
                 ]
             );
         }

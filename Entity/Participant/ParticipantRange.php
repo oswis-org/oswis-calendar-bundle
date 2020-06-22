@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
@@ -9,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 use DateTime;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
@@ -36,7 +35,7 @@ class ParticipantRange implements BasicInterface
     {
         try {
             $this->setRange($range);
-        } catch (OswisNotImplementedException $e) {
+        } catch (NotImplementedException $e) {
         }
     }
 
@@ -63,7 +62,7 @@ class ParticipantRange implements BasicInterface
     /**
      * @param RegRange|null $range
      *
-     * @throws OswisNotImplementedException
+     * @throws NotImplementedException
      */
     public function setRange(?RegRange $range): void
     {
@@ -73,6 +72,6 @@ class ParticipantRange implements BasicInterface
         if (null === $this->range) {
             $this->range = $range;
         }
-        throw new OswisNotImplementedException('změna rozsahu', 'v přiřazení rozsahu k účastníkovi');
+        throw new NotImplementedException('změna rozsahu', 'v přiřazení rozsahu k účastníkovi');
     }
 }

@@ -11,7 +11,6 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisNotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
@@ -21,8 +20,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
  * Flag assigned to event participant (ie. special food requirement...) through some "flag range".
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagGroupRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category_connection")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 class ParticipantFlag implements BasicInterface
