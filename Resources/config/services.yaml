@@ -126,7 +126,7 @@ services:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
     OswisOrg\OswisCalendarBundle\Service\FlagCategoryService:
-        alias: oswis_org_oswis_calendar.participant_flag_category_service
+        alias: oswis_org_oswis_calendar.flag_category_service
         public: true
 
     ### ParticipantPayment Service
