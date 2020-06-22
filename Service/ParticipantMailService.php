@@ -6,13 +6,14 @@
 namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantEMailCategoryRepository;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantEMailGroupRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
@@ -29,20 +30,43 @@ class ParticipantMailService
 
     protected MailService $mailService;
 
-    protected ParticipantEMailGroupRepository $groupRepository;
+    protected ParticipantMailGroupRepository $groupRepository;
 
-    protected ParticipantEMailCategoryRepository $categoryRepository;
+    protected ParticipantMailCategoryRepository $categoryRepository;
 
     public function __construct(
         EntityManagerInterface $em,
         MailService $mailService,
-        ParticipantEMailGroupRepository $groupRepository,
-        ParticipantEMailCategoryRepository $categoryRepository
+        ParticipantMailGroupRepository $groupRepository,
+        ParticipantMailCategoryRepository $categoryRepository
     ) {
         $this->em = $em;
         $this->mailService = $mailService;
         $this->groupRepository = $groupRepository;
         $this->categoryRepository = $categoryRepository;
+    }
+
+    /**
+     * @param Participant $participant
+     *
+     * @throws OswisException
+     */
+    public function sendActivated(Participant $participant): void
+    {
+        $sent = 0;
+        foreach ($participant->getContactPersons(true) as $contactPerson) {
+            if (!($contactPerson instanceof AbstractContact)) {
+                continue;
+            }
+            try {
+                $this->sendUserMail($participant, $contactPerson->getAppUser(), ParticipantMail::TYPE_ACTIVATION);
+            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $e) {
+            }
+            $sent++;
+        }
+        if (1 > $sent) {
+            throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail.");
+        }
     }
 
     /**
@@ -88,6 +112,16 @@ class ParticipantMailService
         $this->em->flush();
     }
 
+    public function getMailCategoryByType(?string $type): ?ParticipantMailCategory
+    {
+        return $this->categoryRepository->findByType($type);
+    }
+
+    public function getMailGroup(Participant $participant, MailCategoryInterface $category): ?ParticipantMailGroup
+    {
+        return $this->groupRepository->findByUser($participant, $category);
+    }
+
     public function embedQrPayments(TemplatedEmail $templatedEmail, Participant $participant, array $mailData): array
     {
         $participantId = $participant->getId();
@@ -102,16 +136,6 @@ class ParticipantMailService
         }
 
         return $mailData;
-    }
-
-    public function getMailCategoryByType(?string $type): ?ParticipantMailCategory
-    {
-        return $this->categoryRepository->findByType($type);
-    }
-
-    public function getMailGroup(Participant $participant, MailCategoryInterface $category): ?ParticipantMailGroup
-    {
-        return $this->groupRepository->findByUser($participant, $category);
     }
 
 }

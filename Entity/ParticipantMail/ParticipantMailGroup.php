@@ -11,8 +11,8 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
 use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantEMailGroupRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_e_mail_group")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_mail_group")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},

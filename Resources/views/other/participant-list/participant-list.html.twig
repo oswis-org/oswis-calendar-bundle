@@ -53,10 +53,10 @@
 <div>
     <h2>Přehled přihlášek</h2>
     <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
-        {% include '@OswisOrgOswisCalendar/other/event-participant-list/parts/event-participant-list-head.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for eventParticipant in data.event.getActiveEventParticipants(null, data.eventParticipantType, true, true, 1) %}
             {% if not eventParticipant.deleted %}
-                {% include '@OswisOrgOswisCalendar/other/event-participant-list/parts/event-participant-list-inner.html.twig' %}
+                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
             {% endif %}
         {% endfor %}
     </table>
@@ -67,10 +67,10 @@
 <div>
     <h2>Přehled zrušených přihlášek</h2>
     <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
-        {% include '@OswisOrgOswisCalendar/other/event-participant-list/parts/event-participant-list-head.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for eventParticipant in data.event.getActiveEventParticipants(null, data.eventParticipantType, true, true, 1) %}
             {% if eventParticipant.deleted %}
-                {% include '@OswisOrgOswisCalendar/other/event-participant-list/parts/event-participant-list-inner.html.twig' %}
+                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
             {% endif %}
         {% endfor %}
     </table>

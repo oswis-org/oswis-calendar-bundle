@@ -16,7 +16,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 
-class RegistrationsRangeRepository extends EntityRepository
+class RegRangeRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';

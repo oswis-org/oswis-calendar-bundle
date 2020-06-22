@@ -14,7 +14,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 
-class ParticipantEMailGroupRepository extends ServiceEntityRepository
+class ParticipantMailGroupRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry

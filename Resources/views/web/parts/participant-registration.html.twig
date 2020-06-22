@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-12">
+        {% if type == 'success' %}
+            {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-sent.html.twig' %}
+        {% elseif disabled|default == true %}
+            {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-comming-soon.html.twig' %}
+        {% elseif type == 'form' %}
+            {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-form.html.twig' %}
+        {% else %}
+            {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-error.html.twig' %}
+        {% endif %}
+    </div>
+</div>
+
+{% block structured_data %}
+{% endblock structured_data %}

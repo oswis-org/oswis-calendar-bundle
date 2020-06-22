@@ -14,7 +14,7 @@ use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 
-class ParticipantRangeConnectionRepository extends EntityRepository
+class ParticipantRangeRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_RANGE = 'range';

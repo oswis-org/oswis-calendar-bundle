@@ -286,7 +286,7 @@ class ParticipantPaymentService
             $email->bcc($archive)->subject(self::mimeEnc($title));
             $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/participant-payment.html.twig')->context($mailData);
             $this->mailer->send($email);
-            $payment->setMailConfirmationSend('event-participant-payment-service');
+            // $payment->setMailConfirmationSend('event-participant-payment-service');
             $this->em->persist($payment);
             $this->em->flush();
         } catch (TransportExceptionInterface $e) {

@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -30,8 +29,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
  * Time range available for registrations of participants of some type to some event (with some price, capacity...).
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_registrations_range")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\RegRangeRepository")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_reg_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
  */
@@ -224,23 +223,6 @@ class RegRange implements NameableInterface
         $price += $this->getRequiredRangeDeposit($participantType);
 
         return null !== $price && $price <= 0 ? 0 : $price;
-    }
-
-    /**
-     * Checks capacity of range and flag ranges.
-     *
-     * @param Participant $participant
-     * @param bool        $onlyPublic
-     * @param bool|false  $max
-     *
-     * @throws EventCapacityExceededException
-     */
-    public function simulateAdd(Participant $participant = null, bool $onlyPublic = true, bool $max = false): void
-    {
-        $this->simulateParticipantAdd($max);
-        if (null !== $participant) {
-            $this->simulateFlagsAdd($participant->getFlagsAggregatedByType(), $onlyPublic, $max);
-        }
     }
 
     /**

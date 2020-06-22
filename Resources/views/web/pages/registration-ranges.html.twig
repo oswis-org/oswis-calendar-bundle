@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 {% for range in eventRanges.ranges %}
-                    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' with {'event': eventRanges.event} %}
+                    {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' with {'event': eventRanges.event} %}
                 {% endfor %}
             {% endif %}
         {% endfor %}

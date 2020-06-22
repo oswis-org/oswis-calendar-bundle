@@ -56,12 +56,12 @@ final class ParticipantListActionSubscriber implements EventSubscriberInterface
         }
         try {
             assert($participantType instanceof ParticipantCategory);
-            $this->participantService->sendParticipantList($request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
+            // $this->participantService->sendParticipantList($request->event, $participantType, $request->detailed ?? false, $request->title ?? null);
         } catch (Exception $e) {
             $event->setResponse(new JsonResponse(['data' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR));
 
             return;
         }
-        $event->setResponse(new JsonResponse(['data' => 'Odesláno.'], Response::HTTP_CREATED));
+        $event->setResponse(new JsonResponse(['data' => 'NEOdesláno. NEImplementováno.'], Response::HTTP_CREATED));
     }
 }

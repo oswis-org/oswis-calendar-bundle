@@ -1,0 +1,8 @@
+{% extends '@OswisOrgOswisCore/export/pdf/document.pdf.html.twig' %}
+
+{% block css %}{% include '@OswisOrgOswisCalendar/documents/pages/participant-list.css.twig' %}{% endblock %}
+{% block title %}{{ title|default('Seznam přihlášek') }}{% endblock %}
+
+{% block content_inner %}
+    {% include '@OswisOrgOswisCalendar/other/participant-list/participant-list.html.twig' %}
+{% endblock %}

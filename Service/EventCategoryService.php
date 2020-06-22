@@ -9,7 +9,7 @@ use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
 
-class EventTypeService
+class EventCategoryService
 {
     protected EntityManagerInterface $em;
 

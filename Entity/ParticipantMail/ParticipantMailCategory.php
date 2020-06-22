@@ -6,8 +6,8 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailCategory;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantEMailCategoryRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_e_mail_template")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_mail_category")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},

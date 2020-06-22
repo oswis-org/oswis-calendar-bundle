@@ -52,7 +52,7 @@
             {% endif %}
         {% endblock message_payment_outer %}
 
-        {% include '@OswisOrgOswisCalendar/other/summary/event-participant-summary.html.twig' %}
+        {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
         {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %} {# TODO #}
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with: {event: participant.event} %}

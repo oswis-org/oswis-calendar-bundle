@@ -2,7 +2,7 @@
 <header>
     <h2 class="text-uppercase mb-2">Nový účastník</h2>
 
-    {% include '@OswisOrgOswisCalendar/web/parts/event-participant-registration-range-preview.html.twig' with {'event': e} %}
+    {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' with {'event': e} %}
 
     {% if e.subEvents|default|length > 0 %}
         <div class="mt-2 mb-2">

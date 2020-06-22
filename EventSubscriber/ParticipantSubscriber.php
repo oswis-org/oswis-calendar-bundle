@@ -49,12 +49,8 @@ final class ParticipantSubscriber implements EventSubscriberInterface
         if (!($newParticipant instanceof Participant) || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
-        $this->getParticipantService()->sendMail($newParticipant, Request::METHOD_POST === $method);
-    }
-
-    public function getParticipantService(): ParticipantService
-    {
-        return $this->participantService;
+        // TODO:
+        // $this->getParticipantService()->sendMail($newParticipant, Request::METHOD_POST === $method);
     }
 
     /**
@@ -73,8 +69,7 @@ final class ParticipantSubscriber implements EventSubscriberInterface
         if (null === $oldParticipant) {
             throw new ParticipantNotFoundException();
         }
-        $newParticipant->setEMailConfirmationDateTime(null);
-        $oldParticipant->setEMailConfirmationDateTime(null);
+        // TODO
     }
 
     private function getExistingParticipant(Participant $newParticipant): ?Participant
@@ -85,5 +80,10 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     public function getParticipantRepository(): ParticipantRepository
     {
         return $this->getParticipantService()->getRepository();
+    }
+
+    public function getParticipantService(): ParticipantService
+    {
+        return $this->participantService;
     }
 }

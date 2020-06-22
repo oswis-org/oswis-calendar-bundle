@@ -5,18 +5,27 @@
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetail;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailType;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
+use OswisOrg\OswisAddressBookBundle\Entity\Position;
+use OswisOrg\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUserToken;
@@ -28,10 +37,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisUserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
-use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mime\Exception\LogicException;
 
 class ParticipantService
 {
@@ -47,16 +53,13 @@ class ParticipantService
 
     protected ParticipantMailService $participantMailService;
 
-    protected ExportService $exportService;
-
     public function __construct(
         EntityManagerInterface $em,
         ParticipantRepository $participantRepository,
         LoggerInterface $logger,
         AppUserService $appUserService,
         ParticipantTokenService $participantTokenService,
-        ParticipantMailService $participantMailService,
-        ExportService $exportService
+        ParticipantMailService $participantMailService
     ) {
         $this->em = $em;
         $this->participantRepository = $participantRepository;
@@ -64,7 +67,11 @@ class ParticipantService
         $this->appUserService = $appUserService;
         $this->tokenService = $participantTokenService;
         $this->participantMailService = $participantMailService;
-        $this->exportService = $exportService;
+    }
+
+    public function getTokenService(): ParticipantTokenService
+    {
+        return $this->tokenService;
     }
 
     /**
@@ -99,6 +106,53 @@ class ParticipantService
         $this->logger->info($this->getLogMessage($participant));
 
         return $participant;
+    }
+
+    /**
+     * @param Participant|null $participant
+     *
+     * @throws OswisException|NotFoundException
+     */
+    public function requestActivation(?Participant $participant): void
+    {
+        if (null === $participant) {
+            $this->logger->error('Participant (empty) activation request FAILED.');
+            throw new NotFoundException('Přihláška nenalezena.');
+        }
+        $participantId = $participant->getId();
+        $sent = 0;
+        foreach ($participant->getContactPersons() as $contactPerson) {
+            if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
+                continue;
+            }
+            try {
+                $this->requestActivationForUser($participant, $appUser);
+                $sent++;
+            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+                $this->logger->error("Participant ($participantId) activation request FAILED. ".$exception->getMessage());
+            }
+        }
+        $this->em->persist($participant);
+        if ($sent < 1) {
+            $this->logger->error("None activation e-mail was sent for participant ($participantId)!");
+            throw new OswisException("Nepodařilo se odeslat aktivační e-mail k přihlášce.");
+        }
+    }
+
+    /**
+     * @param Participant $participant
+     * @param AppUser     $appUser
+     *
+     * @throws InvalidTypeException
+     * @throws NotFoundException
+     * @throws NotImplementedException
+     * @throws OswisException
+     */
+    private function requestActivationForUser(Participant $participant, AppUser $appUser): void
+    {
+        $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
+        $this->participantMailService->sendUserMail($participant, $appUser, ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
+        $this->logger->info('Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.');
     }
 
     private function getLogMessage(Participant $participant): string
@@ -153,53 +207,6 @@ class ParticipantService
     }
 
     /**
-     * @param Participant|null $participant
-     *
-     * @throws OswisException|NotFoundException
-     */
-    public function requestActivation(?Participant $participant): void
-    {
-        if (null === $participant) {
-            $this->logger->error('Participant (empty) activation request FAILED.');
-            throw new NotFoundException('Přihláška nenalezena.');
-        }
-        $participantId = $participant->getId();
-        $sent = 0;
-        foreach ($participant->getContactPersons() as $contactPerson) {
-            if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
-                continue;
-            }
-            try {
-                $this->requestActivationForUser($participant, $appUser);
-                $sent++;
-            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
-                $this->logger->error("Participant ($participantId) activation request FAILED. ".$exception->getMessage());
-            }
-        }
-        $this->em->persist($participant);
-        if ($sent < 1) {
-            $this->logger->error("None activation e-mail was sent for participant ($participantId)!");
-            throw new OswisException("Nepodařilo se odeslat aktivační e-mail k přihlášce.");
-        }
-    }
-
-    /**
-     * @param Participant $participant
-     * @param AppUser     $appUser
-     *
-     * @throws InvalidTypeException
-     * @throws NotFoundException
-     * @throws NotImplementedException
-     * @throws OswisException
-     */
-    private function requestActivationForUser(Participant $participant, AppUser $appUser): void
-    {
-        $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
-        $this->participantMailService->sendUserMail($participant, $appUser, ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
-        $this->logger->info('Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.');
-    }
-
-    /**
      * @param Participant      $participant
      * @param ParticipantToken $participantToken
      * @param bool             $sendConfirmation
@@ -209,15 +216,18 @@ class ParticipantService
     public function activate(Participant $participant, ParticipantToken $participantToken, bool $sendConfirmation = true): void
     {
         try {
-            $this->appUserService->activate($participantToken->getAppUser(), $sendConfirmation);
-            $participant->setUserConfirmed($participantToken->getAppUser());
+            if (null === ($appUser = $participantToken->getAppUser())) {
+                throw new NotFoundException('Uživatel nenalezen.');
+            }
+            $this->appUserService->activate($appUser, $sendConfirmation);
+            $participant->setUserConfirmed($appUser);
             if ($sendConfirmation) {
-                $this->participantMailService->sendUserMail($participant, ParticipantMail::TYPE_ACTIVATION, $participantToken);
+                $this->participantMailService->sendActivated($participant);
             }
             $this->em->persist($participant);
             $this->em->flush();
             $this->logger->info('Successfully activated participant ('.$participant->getId().').');
-        } catch (OswisException|LogicException|MimeLogicException|TransportExceptionInterface|NotFoundException|InvalidTypeException $exception) {
+        } catch (OswisException|MimeLogicException|NotFoundException|InvalidTypeException $exception) {
             $this->logger->error('Participant ('.$participant->getId().') activation FAILED. '.$exception->getMessage());
             throw new OswisException("Aktivace přihlášky se nezdařila. ".$exception->getMessage());
         }
@@ -317,6 +327,55 @@ class ParticipantService
     public function getToken(string $token, int $participantId): ?ParticipantToken
     {
         return $this->tokenService->findToken($token, $participantId);
+    }
+
+    /**
+     * Create empty eventParticipant for use in forms.
+     *
+     * @param RegRange             $regRange
+     * @param AbstractContact|null $contact
+     *
+     * @return Participant
+     * @throws InvalidArgumentException
+     * @throws OswisException|ParticipantNotFoundException|EventCapacityExceededException
+     */
+    public function getEmptyParticipant(RegRange $regRange, ?AbstractContact $contact = null): Participant
+    {
+        if (null === $regRange->getEvent()) {
+            throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazenou událost.');
+        }
+        if (null === $regRange->getParticipantType()) {
+            throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazený typ účastníka.');
+        }
+
+        return new Participant($regRange, $this->getContact($contact), new ArrayCollection([new ParticipantNote()]), null);
+    }
+
+    /**
+     * @param AbstractContact|null $contact
+     *
+     * @return AbstractContact
+     * @throws InvalidArgumentException
+     */
+    public function getContact(?AbstractContact $contact = null): AbstractContact
+    {
+        $contactDetails = new ArrayCollection();
+        if (null !== $contactDetailTypeRepo = $this->getContactDetailTypeRepository()) {
+            $detailTypeEmail = $contactDetailTypeRepo->findOneBy(['slug' => 'e-mail']);
+            $detailTypePhone = $contactDetailTypeRepo->findOneBy(['slug' => 'phone']);
+            $contactDetails->add(new ContactDetail($detailTypeEmail));
+            $contactDetails->add(new ContactDetail($detailTypePhone));
+        }
+        $positions = new ArrayCollection([new Position(null, null, null, Position::TYPE_STUDENT)]);
+
+        return $contact ?? new Person(null, null, $contactDetails, null, $positions);
+    }
+
+    public function getContactDetailTypeRepository(): ?ContactDetailTypeRepository
+    {
+        $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
+
+        return $contactDetailTypeRepository instanceof ContactDetailTypeRepository ? $contactDetailTypeRepository : null;
     }
 
 }

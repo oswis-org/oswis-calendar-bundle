@@ -87,6 +87,11 @@ class ParticipantMail extends AbstractMail
         $this->appUser = $appUser;
     }
 
+    public static function getAllowedTypesDefault(): array
+    {
+        return [...parent::getAllowedTypesDefault(), self::TYPE_ACTIVATION_REQUEST, self::TYPE_ACTIVATION];
+    }
+
     public function isParticipant(?Participant $participant): bool
     {
         return $this->getParticipant() === $participant;
@@ -105,10 +110,5 @@ class ParticipantMail extends AbstractMail
     public function getParticipantToken(): ?ParticipantToken
     {
         return $this->participantToken;
-    }
-
-    public static function getAllowedTypesDefault(): array
-    {
-        return [...parent::getAllowedTypesDefault(), self::TYPE_ACTIVATION_REQUEST, self::TYPE_ACTIVATION];
     }
 }

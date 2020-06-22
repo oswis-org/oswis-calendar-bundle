@@ -636,23 +636,6 @@ class Participant implements BasicInterface
         return null !== $this->getContact() ? $this->getContact()->getName() : null;
     }
 
-    public function removeEmptyParticipantNotes(): void
-    {
-        $this->setNotes(
-            $this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue()))
-        );
-    }
-
-    public function getNotes(): Collection
-    {
-        return $this->notes ??= new ArrayCollection();
-    }
-
-    public function setNotes(?Collection $notes): void
-    {
-        $this->notes = $notes ?? new ArrayCollection();
-    }
-
     public function removeNote(?ParticipantNote $note): void
     {
         null !== $note && $this->notes->removeElement($note);
@@ -663,6 +646,16 @@ class Participant implements BasicInterface
         if (null !== $note && !$this->getNotes()->contains($note)) {
             $this->getNotes()->add($note);
         }
+    }
+
+    public function getNotes(): Collection
+    {
+        return $this->notes ??= new ArrayCollection();
+    }
+
+    public function setNotes(?Collection $notes): void
+    {
+        $this->notes = $notes ?? new ArrayCollection();
     }
 
     /**
@@ -823,6 +816,13 @@ class Participant implements BasicInterface
                 $contactPerson->removeEmptyNotes();
             }
         }
+    }
+
+    public function removeEmptyParticipantNotes(): void
+    {
+        $this->setNotes(
+            $this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue()))
+        );
     }
 
 }

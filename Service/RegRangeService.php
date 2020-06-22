@@ -14,9 +14,9 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CapacityUsage;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantRangeConnectionRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantRangeRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Repository\RegistrationsRangeRepository;
+use OswisOrg\OswisCalendarBundle\Repository\RegRangeRepository;
 use Psr\Log\LoggerInterface;
 
 class RegRangeService
@@ -68,10 +68,10 @@ class RegRangeService
         );
     }
 
-    public function getParticipantRangeConnectionRepository(): ParticipantRangeConnectionRepository
+    public function getParticipantRangeConnectionRepository(): ParticipantRangeRepository
     {
         $repository = $this->em->getRepository(ParticipantRange::class);
-        assert($repository instanceof ParticipantRangeConnectionRepository);
+        assert($repository instanceof ParticipantRangeRepository);
 
         return $repository;
     }
@@ -80,17 +80,17 @@ class RegRangeService
     {
         return $this->getRepository()->getRegistrationsRange(
             [
-                RegistrationsRangeRepository::CRITERIA_SLUG          => $rangeSlug,
-                RegistrationsRangeRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
-                RegistrationsRangeRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
+                RegRangeRepository::CRITERIA_SLUG          => $rangeSlug,
+                RegRangeRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
+                RegRangeRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
             ]
         );
     }
 
-    public function getRepository(): RegistrationsRangeRepository
+    public function getRepository(): RegRangeRepository
     {
         $repository = $this->em->getRepository(RegRange::class);
-        assert($repository instanceof RegistrationsRangeRepository);
+        assert($repository instanceof RegRangeRepository);
 
         return $repository;
     }
@@ -104,11 +104,11 @@ class RegRangeService
     ): ?RegRange {
         return $this->getRepository()->getRegistrationsRange(
             [
-                RegistrationsRangeRepository::CRITERIA_EVENT                   => $event,
-                RegistrationsRangeRepository::CRITERIA_PARTICIPANT_TYPE        => $participantCategory,
-                RegistrationsRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
-                RegistrationsRangeRepository::CRITERIA_ONLY_ACTIVE             => $onlyActive,
-                RegistrationsRangeRepository::CRITERIA_PUBLIC_ON_WEB           => $publicOnWeb,
+                RegRangeRepository::CRITERIA_EVENT                   => $event,
+                RegRangeRepository::CRITERIA_PARTICIPANT_TYPE        => $participantCategory,
+                RegRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
+                RegRangeRepository::CRITERIA_ONLY_ACTIVE             => $onlyActive,
+                RegRangeRepository::CRITERIA_PUBLIC_ON_WEB           => $publicOnWeb,
             ]
         );
     }
@@ -131,9 +131,9 @@ class RegRangeService
             }
             $eventRanges = $this->getRepository()->getRegistrationsRanges(
                 [
-                    RegistrationsRangeRepository::CRITERIA_EVENT                   => $event,
-                    RegistrationsRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
-                    RegistrationsRangeRepository::CRITERIA_PUBLIC_ON_WEB           => $onlyPublicOnWeb,
+                    RegRangeRepository::CRITERIA_EVENT                   => $event,
+                    RegRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
+                    RegRangeRepository::CRITERIA_PUBLIC_ON_WEB           => $onlyPublicOnWeb,
                 ]
             );
             $ranges[$event->getId()] ??= [
