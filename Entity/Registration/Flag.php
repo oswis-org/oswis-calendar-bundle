@@ -62,7 +62,7 @@ class Flag
     use ColorTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlagCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?FlagCategory $category = null;
