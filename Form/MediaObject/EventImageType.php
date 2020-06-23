@@ -3,9 +3,9 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Form\MediaObjects;
+namespace OswisOrg\OswisCalendarBundle\Form\MediaObject;
 
-use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
+use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use OswisOrg\OswisCoreBundle\Form\AbstractClass\AbstractImageType;
 
 class EventImageType extends AbstractImageType

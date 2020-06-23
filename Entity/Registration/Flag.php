@@ -12,10 +12,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
 
 /**
  * Flag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
- *
  * @example Type of accommodation, food allergies, time of arrival/departure...
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_flag")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},

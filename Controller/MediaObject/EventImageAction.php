@@ -1,12 +1,12 @@
 <?php
 
-namespace OswisOrg\OswisCalendarBundle\Controller\MediaObjects;
+namespace OswisOrg\OswisCalendarBundle\Controller\MediaObject;
 
-use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
+use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use OswisOrg\OswisCoreBundle\Controller\AbstractClass\AbstractImageAction;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
 
-final class CreateEventImageAction extends AbstractImageAction
+final class EventImageAction extends AbstractImageAction
 {
 
     public static function getFileClassName(): string

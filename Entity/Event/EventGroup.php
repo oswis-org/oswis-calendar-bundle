@@ -22,7 +22,7 @@ class EventGroup implements NameableInterface
     use NameableTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="series")
+     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="group")
      */
     protected ?Collection $events = null;
 

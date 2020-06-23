@@ -211,9 +211,9 @@ class ParticipantController extends AbstractController
     /**
      * Finds correct registration range by event and participantType.
      *
-     * @param Event               $event               Event.
-     * @param ParticipantCategory $participantCategory Type of participant.
-     * @param string|null         $participantType
+     * @param Event                    $event               Event.
+     * @param ParticipantCategory|null $participantCategory Type of participant.
+     * @param string|null              $participantType
      *
      * @return RegRange
      */

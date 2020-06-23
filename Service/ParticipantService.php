@@ -74,11 +74,12 @@ class ParticipantService
     }
 
     /**
-     * @param Participant $participant
+     * @param Participant|null $participant
      *
      * @return Participant
-     * @throws OswisException
      * @throws NotFoundException
+     * @throws OswisException
+     * @throws UserNotUniqueException
      */
     public function create(?Participant $participant): Participant
     {

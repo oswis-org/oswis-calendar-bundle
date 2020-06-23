@@ -26,7 +26,7 @@ class ParticipantRange implements BasicInterface
     use DeletedTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?RegRange $range = null;

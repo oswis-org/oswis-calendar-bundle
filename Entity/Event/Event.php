@@ -11,7 +11,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
-use OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage;
+use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventFile;
+use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
@@ -122,7 +123,7 @@ class Event implements NameableInterface
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventContent", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_event_content",
+     *     name="calendar_event_content_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_content_id", referencedColumnName="id", unique=true)}
      * )
@@ -130,9 +131,18 @@ class Event implements NameableInterface
     protected ?Collection $contents = null;
 
     /**
-     * @Doctrine\ORM\Mapping\OneToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObjects\EventImage", cascade={"all"}, fetch="EAGER")
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventImage", mappedBy="event", cascade={"all"}, orphanRemoval=true
+     * )
      */
-    protected ?EventImage $image = null;
+    protected ?Collection $images = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventFile", mappedBy="event", cascade={"all"}, orphanRemoval=true
+     * )
+     */
+    protected ?Collection $files = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory", fetch="EAGER")
@@ -141,7 +151,7 @@ class Event implements NameableInterface
     private ?EventCategory $category = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="EventGroup", inversedBy="events", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup", inversedBy="events", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
      */
     private ?EventGroup $group = null;
@@ -158,6 +168,8 @@ class Event implements NameableInterface
         $this->subEvents = new ArrayCollection();
         $this->contents = new ArrayCollection();
         $this->flagConnections = new ArrayCollection();
+        $this->images = new ArrayCollection();
+        $this->files = new ArrayCollection();
         $this->setCategory($category);
         $this->setSuperEvent($superEvent);
         $this->setGroup($group);
@@ -167,18 +179,21 @@ class Event implements NameableInterface
         $this->setFieldsFromPublicity($publicity);
     }
 
-    public function getImage(bool $recursive = false): ?EventImage
+    public function getImage(bool $recursive = false, ?string $type = null): ?EventImage
     {
-        if (true === $recursive && empty($this->image) && $this->getSuperEvent()) {
-            return $this->getSuperEvent()->getImage(true);
+        $image = $this->getImages($type)->first();
+        if ($image instanceof EventImage) {
+            return $image;
         }
 
-        return $this->image;
+        return true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getImage(true, $type) : null;
     }
 
-    public function setImage(?EventImage $image): void
+    public function getImages(?string $type = null): Collection
     {
-        $this->image = $image;
+        $images = $this->images ?? new ArrayCollection();
+
+        return empty($type) ? $images : $images->filter(fn(EventImage $eventImage) => $eventImage->getType() === $type);
     }
 
     public function getSuperEvent(): ?Event
@@ -194,6 +209,53 @@ class Event implements NameableInterface
         $this->superEvent = $event;
         if ($this->superEvent) {
             $this->superEvent->addSubEvent($this);
+        }
+    }
+
+    public function getFile(bool $recursive = false, ?string $type = null): ?EventFile
+    {
+        $file = $this->getFiles($type)->first();
+        if ($file instanceof EventFile) {
+            return $file;
+        }
+
+        return true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getFile(true, $type) : null;
+    }
+
+    public function getFiles(?string $type = null): Collection
+    {
+        $files = $this->files ?? new ArrayCollection();
+
+        return empty($type) ? $files : $files->filter(fn(EventFile $eventFile) => $eventFile->getType() === $type);
+    }
+
+    public function addImage(?EventImage $image): void
+    {
+        if (null !== $image && !$this->getImages()->contains($image)) {
+            $this->getImages()->add($image);
+            $image->setEvent($this);
+        }
+    }
+
+    public function removeImage(?EventImage $image): void
+    {
+        if (null !== $image && $this->getImages()->removeElement($image)) {
+            $image->setEvent(null);
+        }
+    }
+
+    public function addFile(?EventFile $file): void
+    {
+        if (null !== $file && !$this->getFiles()->contains($file)) {
+            $this->getFiles()->add($file);
+            $file->setEvent($this);
+        }
+    }
+
+    public function removeFile(?EventFile $file): void
+    {
+        if (null !== $file && $this->getFiles()->removeElement($file)) {
+            $file->setEvent(null);
         }
     }
 
