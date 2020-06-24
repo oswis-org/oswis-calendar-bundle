@@ -46,7 +46,7 @@ class EventImage extends AbstractImage
      * @Vich\UploaderBundle\Mapping\Annotation\UploadableField(
      *     mapping="calendar_event_image",
      *     fileNameProperty="contentName",
-     *     dimensions={"contentDimensionsWidth", "contentDimensionsHeight"},
+     *     dimensions="contentDimensions",
      *     mimeType="contentMimeType"
      * )
      */
