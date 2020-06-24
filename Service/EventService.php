@@ -28,11 +28,16 @@ class EventService
 
     protected ?Event $defaultEvent = null;
 
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, OswisCalendarSettingsProvider $calendarSettings)
-    {
+    protected EventRepository $eventRepository;
+
+    public function __construct(
+        EntityManagerInterface $em, LoggerInterface $logger, OswisCalendarSettingsProvider $calendarSettings,
+    EventRepository $eventRepository
+    ) {
         $this->em = $em;
         $this->logger = $logger;
         $this->calendarSettings = $calendarSettings;
+        $this->eventRepository = $eventRepository;
         $this->setDefaultEvent();
     }
 
@@ -108,9 +113,6 @@ class EventService
 
     public function getRepository(): EventRepository
     {
-        $repository = $this->em->getRepository(Event::class);
-        assert($repository instanceof EventRepository);
-
-        return $repository;
+        return $this->eventRepository;
     }
 }

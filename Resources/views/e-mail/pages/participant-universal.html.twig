@@ -1,8 +1,8 @@
 {% if 'summary' == type %}
-    {% extends '@OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig' %}
+    {% set parentTemplate = extends '@OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig' %}
 {% elseif 'verification' == type %}
-    {% extends '@OswisOrgOswisCalendar/e-mail/pages/participant-verification.html.twig' %}
+    {% set parentTemplate = '@OswisOrgOswisCalendar/e-mail/pages/participant-verification.html.twig' %}
 {% else %}
-    {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+    {% set parentTemplate = extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 {% endif %}
-
+{% extends parentTemplate %}
