@@ -246,26 +246,6 @@ class RegRange implements NameableInterface
         return null === $capacity ? null : ($capacity - $this->getUsageInt($full));
     }
 
-    public function getBaseCapacity(bool $max = false): int
-    {
-        return $max ? $this->getFullCapacity() : $this->baseUsage;
-    }
-
-    public function getFullCapacity(): int
-    {
-        return $this->fullUsage;
-    }
-
-    public function setBaseCapacity(int $baseUsage): void
-    {
-        $this->baseUsage = $baseUsage;
-    }
-
-    public function setFullCapacity(int $fulUsage): void
-    {
-        $this->fullUsage = $fulUsage;
-    }
-
     /**
      * Participation in super event is required before registration to this range. Must be checked in service/controller.
      * @return bool
