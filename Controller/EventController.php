@@ -60,18 +60,14 @@ class EventController extends AbstractController
             throw new NotFoundException('Událost nenalezena.');
         }
         $rangesByEvent = $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()]));
-        $ranges = [];
-        foreach ($rangesByEvent as $rangesOfEvent) {
-            $ranges = [...$ranges, ...$rangesOfEvent['ranges']];
-        }
-        $data = array(
-            'title'              => $event->getShortName(),
-            'description'        => $event->getDescription(),
-            'registrationRanges' => $ranges,
-            'navEvents'          => $this->getNavigationEvents(),
-            'event'              => $event,
-            'organizer'          => $this->participantService->getOrganizer($event),
-        );
+        $data = [
+            'title'           => $event->getShortName(),
+            'description'     => $event->getDescription(),
+            'eventsRegRanges' => $rangesByEvent,
+            'navEvents'       => $this->getNavigationEvents(),
+            'event'           => $event,
+            'organizer'       => $this->participantService->getOrganizer($event),
+        ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);
     }
