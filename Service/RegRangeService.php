@@ -135,10 +135,10 @@ class RegRangeService
                     RegRangeRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
                 ]
             );
-            $ranges[$event->getId()] ??= [
-                'event'  => $event,
-                'ranges' => $eventRanges,
-            ];
+            $ranges[$event->getId()] ??= [];
+            $ranges[$event->getId()]['event'] ??= $event;
+            $existingRanges = $ranges[$event->getId()]['ranges'] ?? [];
+            $ranges[$event->getId()]['ranges'] = [...$existingRanges, ...$eventRanges];
         }
 
         return $ranges;

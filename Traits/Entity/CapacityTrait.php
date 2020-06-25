@@ -32,7 +32,7 @@ trait CapacityTrait
 
     public function getCapacity(): Capacity
     {
-        return new Capacity($this->getBaseCapacity(), $this->getFullCapacity());
+        return new Capacity($this->baseCapacity, $this->fullCapacity);
     }
 
     public function getBaseCapacity(): ?int

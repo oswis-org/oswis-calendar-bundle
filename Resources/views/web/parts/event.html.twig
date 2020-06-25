@@ -78,16 +78,21 @@
     {% endif %}
 </section>
 
-{% if eventsRegRanges|default and eventsRegRanges|length > 0 %}
+
+{% if rangesByEvents|default and rangesByEvents|length > 0 %}
     <section class="row">
         <header class="col-12">
             <h3>Přihlášky</h3>
         </header>
     </section>
-    {% for eventRegRanges in eventsRegRanges|default([]) %}
-        <h4 class="d-inline d-md-none">{{ eventRegRanges.event.shortName|default(eventRegRanges.event.slug) }}</h4>
-        <h4 class="d-none d-md-inline">{{ eventRegRanges.event.name|default(eventRegRanges.event.slug) }}</h4>
-        {% for range in eventRegRanges.ranges|default([]) %}
+    {% for rangesByEvent in rangesByEvents|filter(rangesByEvent => rangesByEvent.ranges|length > 0) %}
+        <section class="row">
+            <header class="col-12">
+                <h4 class="d-inline d-md-none">{{ rangesByEvent.event.shortName|default(rangesByEvent.event.slug|default) }}</h4>
+                <h4 class="d-none d-md-inline">{{ rangesByEvent.event.name|default(rangesByEvent.event.slug|default) }}</h4>
+            </header>
+        </section>
+        {% for range in rangesByEvent.ranges %}
             {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' %}
         {% endfor %}
     {% endfor %}
