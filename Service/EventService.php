@@ -31,8 +31,10 @@ class EventService
     protected EventRepository $eventRepository;
 
     public function __construct(
-        EntityManagerInterface $em, LoggerInterface $logger, OswisCalendarSettingsProvider $calendarSettings,
-    EventRepository $eventRepository
+        EntityManagerInterface $em,
+        LoggerInterface $logger,
+        OswisCalendarSettingsProvider $calendarSettings,
+        EventRepository $eventRepository
     ) {
         $this->em = $em;
         $this->logger = $logger;

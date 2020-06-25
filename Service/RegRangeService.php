@@ -39,8 +39,7 @@ class RegRangeService
         try {
             $this->em->persist($range);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.';
-            $this->logger->info($infoMessage);
+            $this->logger->info('CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.');
 
             return $range;
         } catch (Exception $e) {

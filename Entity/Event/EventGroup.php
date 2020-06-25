@@ -28,8 +28,8 @@ class EventGroup implements NameableInterface
 
     public function __construct(?Nameable $nameable = null)
     {
-        $this->setFieldsFromNameable($nameable);
         $this->events = new ArrayCollection();
+        $this->setFieldsFromNameable($nameable);
     }
 
     public function addEvent(?Event $event): void

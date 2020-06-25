@@ -19,27 +19,27 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
  *   attributes={
  *     "filters"={"search"},
  *     "access_control"="is_granted('ROLE_ADMIN')",
- *     "normalization_context"={"groups"={"app_user_e_mails_get"}, "enable_max_depth"=true},
- *     "denormalization_context"={"groups"={"app_user_e_mails_post"}, "enable_max_depth"=true}
+ *     "normalization_context"={"groups"={"app_user_mails_get"}, "enable_max_depth"=true},
+ *     "denormalization_context"={"groups"={"app_user_mails_post"}, "enable_max_depth"=true}
  *   },
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"app_user_e_mails_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"app_user_mails_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"app_user_e_mails_post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"app_user_mails_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"app_user_e_mail_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"app_user_mail_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"app_user_e_mail_put"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"app_user_mail_put"}, "enable_max_depth"=true}
  *     }
  *   }
  * )
@@ -48,7 +48,7 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
  *     "token"
  * })
  * @author Jakub Zak <mail@jakubzak.eu>
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="core_app_user")
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant_mail")
  */
 class ParticipantMail extends AbstractMail
 {

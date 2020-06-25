@@ -13,9 +13,9 @@ class EventFlagService
 {
     protected EntityManagerInterface $em;
 
-    protected ?LoggerInterface $logger;
+    protected LoggerInterface $logger;
 
-    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->logger = $logger;
@@ -28,11 +28,11 @@ class EventFlagService
             $this->em->persist($entity);
             $this->em->flush();
             $infoMessage = 'CREATE: Created event flag (by service): '.$entity->getId().' '.$entity->getName().'.';
-            $this->logger ? $this->logger->info($infoMessage) : null;
+            $this->logger->info($infoMessage);
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event flag not created (by service): '.$e->getMessage()) : null;
+            $this->logger->info('ERROR: Event event flag not created (by service): '.$e->getMessage());
 
             return null;
         }

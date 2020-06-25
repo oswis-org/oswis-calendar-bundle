@@ -18,9 +18,9 @@ class ParticipantCategoryService
 {
     protected EntityManagerInterface $em;
 
-    protected ?LoggerInterface $logger;
+    protected LoggerInterface $logger;
 
-    public function __construct(EntityManagerInterface $em, ?LoggerInterface $logger = null)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->logger = $logger;
@@ -32,12 +32,11 @@ class ParticipantCategoryService
             $entity = new ParticipantCategory($nameable, $type);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event participant type (by service): '.$entity->getId().' '.$entity->getName().'.';
-            $this->logger ? $this->logger->info($infoMessage) : null;
+            $this->logger->info('CREATE: Created event participant type (by service): '.$entity->getId().' '.$entity->getName().'.');
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger ? $this->logger->info('ERROR: Event event participant type not created (by service): '.$e->getMessage()) : null;
+            $this->logger->info('ERROR: Event event participant type not created (by service): '.$e->getMessage());
 
             return null;
         }

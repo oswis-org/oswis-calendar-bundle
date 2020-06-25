@@ -53,7 +53,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
  *     "description",
  *     "note"
  * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag")
  */
 class Flag
 {

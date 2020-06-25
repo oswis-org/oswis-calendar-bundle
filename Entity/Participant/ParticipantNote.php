@@ -54,9 +54,7 @@ class ParticipantNote implements BasicInterface
     use DeletedTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="notes"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="notes")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */

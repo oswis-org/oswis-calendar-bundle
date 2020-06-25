@@ -20,7 +20,7 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_flag_group_range")
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
+ * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag_range")
  */
 class FlagGroupRange implements NameableInterface
 {
