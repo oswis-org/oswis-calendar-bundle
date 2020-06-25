@@ -50,15 +50,13 @@ class EventController extends AbstractController
     final public function showEvent(?string $eventSlug = null): Response
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
-        if (null !== $defaultEvent) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]);
-        }
-        if (null === $eventSlug) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
-        }
-        $eventRepo = $this->eventService->getRepository();
-        $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
-        if (!($event instanceof Event)) {
+//        if (null !== $defaultEvent) {
+//            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]);
+//        }
+//        if (null === $eventSlug) {
+//            return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
+//        }
+        if (!(($event = $this->eventService->getRepository()->getEvent($this->getWebPublicEventOpts($eventSlug))) instanceof Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
         $rangesByEvent = $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()]));
