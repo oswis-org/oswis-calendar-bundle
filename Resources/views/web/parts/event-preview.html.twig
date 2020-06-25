@@ -17,11 +17,11 @@
                             <small><a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
                         </h2>
                         <p class="card-text text-muted">
-                            {% if event.series|default and event.batchOrYear and event.getSeqId > 0 %}
+                            {% if event.group|default and event.batchOrYear and event.getSeqId > 0 %}
                                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
-                                {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
+                                {{ event.group.shortName }} {{ event.batch ? event.startYear : null }}
                             {% else %}
-                                {{ event.type ? event.type.shortName~', ' : null }} {{ event.series ? event.series.shortName : null }}
+                                {{ event.type ? event.type.shortName~', ' : null }} {{ event.group ? event.group.shortName : null }}
                             {% endif %}
                         </p>
                         {% if event.description %}

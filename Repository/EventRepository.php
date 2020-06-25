@@ -155,7 +155,7 @@ class EventRepository extends ServiceEntityRepository
     private function setSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_SERIES]) && $opts[self::CRITERIA_END] instanceof EventGroup) {
-            $queryBuilder->andWhere('e.series = :series_id');
+            $queryBuilder->andWhere('e.group = :series_id');
             $queryBuilder->setParameter('series_id', $opts[self::CRITERIA_SERIES]->getId());
         }
     }

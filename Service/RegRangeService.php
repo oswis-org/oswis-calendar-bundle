@@ -103,11 +103,11 @@ class RegRangeService
     ): ?RegRange {
         return $this->getRepository()->getRegistrationsRange(
             [
-                RegRangeRepository::CRITERIA_EVENT                   => $event,
-                RegRangeRepository::CRITERIA_PARTICIPANT_TYPE        => $participantCategory,
-                RegRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
-                RegRangeRepository::CRITERIA_ONLY_ACTIVE             => $onlyActive,
-                RegRangeRepository::CRITERIA_PUBLIC_ON_WEB           => $publicOnWeb,
+                RegRangeRepository::CRITERIA_EVENT                => $event,
+                RegRangeRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantCategory,
+                RegRangeRepository::CRITERIA_PARTICIPANT_TYPE     => $participantType,
+                RegRangeRepository::CRITERIA_ONLY_ACTIVE          => $onlyActive,
+                RegRangeRepository::CRITERIA_PUBLIC_ON_WEB        => $publicOnWeb,
             ]
         );
     }
@@ -130,9 +130,9 @@ class RegRangeService
             }
             $eventRanges = $this->getRepository()->getRegistrationsRanges(
                 [
-                    RegRangeRepository::CRITERIA_EVENT                   => $event,
-                    RegRangeRepository::CRITERIA_PARTICIPANT_TYPE_STRING => $participantType,
-                    RegRangeRepository::CRITERIA_PUBLIC_ON_WEB           => $onlyPublicOnWeb,
+                    RegRangeRepository::CRITERIA_EVENT            => $event,
+                    RegRangeRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+                    RegRangeRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
                 ]
             );
             $ranges[$event->getId()] ??= [

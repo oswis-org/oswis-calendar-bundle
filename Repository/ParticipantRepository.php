@@ -98,8 +98,8 @@ class ParticipantRepository extends ServiceEntityRepository
     private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_REG_RANGE]) && $opts[self::CRITERIA_REG_RANGE] instanceof RegRange) {
-            $queryBuilder->andWhere('participant.range = :range_id');
-            $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_REG_RANGE]->getId());
+            $queryBuilder->andWhere('participant.regRange = :regRange_id');
+            $queryBuilder->setParameter('regRange_id', $opts[self::CRITERIA_REG_RANGE]->getId());
         }
     }
 
@@ -123,7 +123,7 @@ class ParticipantRepository extends ServiceEntityRepository
     private function setIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('participant.range IS NOT NULL');
+            $queryBuilder->andWhere('participant.regRange IS NOT NULL');
         }
     }
 

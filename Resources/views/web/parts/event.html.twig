@@ -17,11 +17,11 @@
     <div class="col-lg-9">
         {{ render(controller('OswisOrg\\OswisCalendarBundle\\Controller\\EventController::showEventsNavigationChunk', {'eventSlug': event.slug})) }}
         <h3>
-            {% if event.series|default and event.batchOrYear and event.getSeqId > 0 %}
+            {% if event.group|default and event.batchOrYear and event.getSeqId > 0 %}
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
-                {{ event.series.shortName }} {{ event.batch ? event.startYear : null }}
+                {{ event.group.shortName }} {{ event.batch ? event.startYear : null }}
             {% else %} {# TODO: Create method event.getSubTitle() #}
-                {{ event.type ? event.type.shortName~', ' : null }} {{ event.series ? event.series.shortName : null }}
+                {{ event.type ? event.type.shortName~', ' : null }} {{ event.group ? event.group.shortName : null }}
             {% endif %}
         </h3>
         <h3 class="mb-3 p-1">

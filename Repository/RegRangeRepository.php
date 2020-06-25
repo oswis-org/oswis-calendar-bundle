@@ -21,8 +21,8 @@ class RegRangeRepository extends EntityRepository
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_EVENT = 'event';
-    public const CRITERIA_PARTICIPANT_TYPE_STRING = 'participantTypeString';
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
+    public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
     public const CRITERIA_PUBLIC_ON_WEB = 'publicOnWeb';
     public const CRITERIA_ONLY_ACTIVE = 'onlyActive';
 
@@ -46,8 +46,8 @@ class RegRangeRepository extends EntityRepository
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
         $this->addEventQuery($queryBuilder, $opts);
+        $this->addParticipantCategoryQuery($queryBuilder, $opts);
         $this->addParticipantTypeQuery($queryBuilder, $opts);
-        $this->addParticipantTypeStringQuery($queryBuilder, $opts);
         $this->addOnlyActiveQuery($queryBuilder, $opts);
         $this->addPublicOnWebQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
@@ -78,20 +78,20 @@ class RegRangeRepository extends EntityRepository
         }
     }
 
-    private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function addParticipantCategoryQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && $opts[self::CRITERIA_PARTICIPANT_TYPE] instanceof ParticipantCategory) {
-            $queryBuilder->andWhere('range.participantType = :type_id');
-            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_TYPE]->getId());
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_CATEGORY]) && $opts[self::CRITERIA_PARTICIPANT_CATEGORY] instanceof ParticipantCategory) {
+            $queryBuilder->andWhere('range.participantCategory = :type_id');
+            $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_CATEGORY]->getId());
         }
     }
 
-    private function addParticipantTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE_STRING])) {
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE])) {
             $queryBuilder->leftJoin('range.participantType', 'type');
             $queryBuilder->andWhere('type.type = :type_string');
-            $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE_STRING]);
+            $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE]);
         }
     }
 
