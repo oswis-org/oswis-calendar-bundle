@@ -89,7 +89,7 @@ class RegRangeRepository extends EntityRepository
     private function addParticipantTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_PARTICIPANT_TYPE]) && is_string($opts[self::CRITERIA_PARTICIPANT_TYPE])) {
-            $queryBuilder->leftJoin('range.participantType', 'type');
+            $queryBuilder->leftJoin('range.participantCategory', 'type');
             $queryBuilder->andWhere('type.type = :type_string');
             $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_PARTICIPANT_TYPE]);
         }
