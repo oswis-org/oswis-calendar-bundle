@@ -10,6 +10,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -19,6 +20,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ParticipantFormType extends AbstractType
 {
+    protected LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * @param FormBuilderInterface $builder
      * @param array                $options
@@ -28,8 +36,13 @@ class ParticipantFormType extends AbstractType
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $participant = $builder->getData();
-        if (!($participant instanceof Participant) || !(($range = $participant->getRegRange()) instanceof RegRange)) {
+        if (!($participant instanceof Participant)) {
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
+        }
+        $this->logger->info("Form data:");
+        $this->logger->info((int)!empty($participant->getContact()));
+        if (!(($range = $participant->getRegRange(false)) instanceof RegRange)) {
+            throw new PriceInvalidArgumentException('[špatný rozsah přihlášek]');
         }
         $participantType = $range->getParticipantCategory();
         $event = $range->getEvent();

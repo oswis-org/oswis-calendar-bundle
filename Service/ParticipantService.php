@@ -52,13 +52,16 @@ class ParticipantService
 
     protected ParticipantMailService $participantMailService;
 
+    protected ContactDetailTypeRepository $contactDetailTypeRepository;
+
     public function __construct(
         EntityManagerInterface $em,
         ParticipantRepository $participantRepository,
         LoggerInterface $logger,
         AppUserService $appUserService,
         ParticipantTokenService $participantTokenService,
-        ParticipantMailService $participantMailService
+        ParticipantMailService $participantMailService,
+        ContactDetailTypeRepository $contactDetailTypeRepository
     ) {
         $this->em = $em;
         $this->participantRepository = $participantRepository;
@@ -66,6 +69,7 @@ class ParticipantService
         $this->appUserService = $appUserService;
         $this->tokenService = $participantTokenService;
         $this->participantMailService = $participantMailService;
+        $this->contactDetailTypeRepository = $contactDetailTypeRepository;
     }
 
     public function getTokenService(): ParticipantTokenService
@@ -361,21 +365,19 @@ class ParticipantService
      */
     public function getContact(?AbstractContact $contact = null): AbstractContact
     {
-        if (null === $contactDetailTypeRepo = $this->getContactDetailTypeRepository()) {
-            throw new OswisException('Nepodařilo se získat repozoitář typů kontaktních údajů.');
+        if (null !== $contact) {
+            return $contact;
         }
-        $detailTypeEmail = $contactDetailTypeRepo->findOneBy(['slug' => 'e-mail']);
-        $detailTypePhone = $contactDetailTypeRepo->findOneBy(['slug' => 'phone']);
+        $detailTypeEmail = $this->contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
+        $detailTypePhone = $this->contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
         $contactDetails = new ArrayCollection([new ContactDetail($detailTypeEmail), new ContactDetail($detailTypePhone)]);
         $positions = new ArrayCollection([new Position(null, null, null, Position::TYPE_STUDENT)]);
 
-        return $contact ?? new Person(null, null, $contactDetails, null, $positions);
+        return new Person(null, null, $contactDetails, null, $positions);
     }
 
-    public function getContactDetailTypeRepository(): ?ContactDetailTypeRepository
+    public function getContactDetailTypeRepository(): ContactDetailTypeRepository
     {
-        $contactDetailTypeRepository = $this->em->getRepository(ContactDetailType::class);
-
-        return $contactDetailTypeRepository instanceof ContactDetailTypeRepository ? $contactDetailTypeRepository : null;
+        return $this->contactDetailTypeRepository;
     }
 }

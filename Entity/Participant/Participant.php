@@ -182,15 +182,19 @@ class Participant implements BasicInterface
      *
      * @throws OswisException|EventCapacityExceededException
      */
-    public function __construct(RegRange $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null, ?int $priority = null)
+    public function __construct(RegRange $regRange, AbstractContact $contact, ?Collection $participantNotes = null, ?int $priority = null)
     {
         $this->participantContacts = new ArrayCollection();
         $this->participantRanges = new ArrayCollection();
         $this->notes = new ArrayCollection();
         $this->flagGroups = new ArrayCollection();
         $this->payments = new ArrayCollection();
-        $this->setRegRange($regRange);
-        $this->setParticipantContact(new ParticipantContact($contact));
+        $participantContact = new ParticipantContact($contact);
+        $participantContact->activate(new DateTime());
+        $this->setParticipantContact($participantContact);
+        $participantRange = new ParticipantRange($regRange);
+        $participantRange->activate(new DateTime());
+        $this->setParticipantRange($participantRange);
         $this->setNotes($participantNotes);
         $this->setPriority($priority);
     }
@@ -207,7 +211,6 @@ class Participant implements BasicInterface
         }
         if (null !== $participantContact && $this->getParticipantContacts()->isEmpty()) {
             $this->getParticipantContacts()->add($participantContact);
-            $participantContact->activate();
             $this->updateCachedColumns();
 
             return;
@@ -219,9 +222,9 @@ class Participant implements BasicInterface
      * @return ParticipantContact
      * @throws OswisException
      */
-    public function getParticipantContact(): ?ParticipantContact
+    public function getParticipantContact(bool $onlyActive = true): ?ParticipantContact
     {
-        $connections = $this->getParticipantContacts(true);
+        $connections = $this->getParticipantContacts($onlyActive);
         if ($connections->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více kontaktům najednou.');
         }
@@ -232,10 +235,10 @@ class Participant implements BasicInterface
     public function getParticipantContacts(bool $onlyActive = false, bool $onlyDeleted = false): Collection
     {
         $connections = $this->participantContacts ??= new ArrayCollection();
-        if ($onlyActive) {
+        if (true === $onlyActive) {
             $connections = $connections->filter(fn(ParticipantContact $connection) => $connection->isActive());
         }
-        if ($onlyDeleted) {
+        if (true === $onlyDeleted) {
             $connections = $connections->filter(fn(ParticipantContact $connection) => $connection->isDeleted());
         }
 
@@ -307,10 +310,10 @@ class Participant implements BasicInterface
         return $connections;
     }
 
-    public function getContact(): ?AbstractContact
+    public function getContact(bool $onlyActive = true): ?AbstractContact
     {
         try {
-            return $this->getParticipantContact() ? $this->getParticipantContact()->getContact() : null;
+            return $this->getParticipantContact($onlyActive) ? $this->getParticipantContact($onlyActive)->getContact() : null;
         } catch (OswisException $e) {
             return null;
         }
