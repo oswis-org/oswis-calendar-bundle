@@ -35,7 +35,7 @@ trait CapacityUsageTrait
 
     public function getUsage(): CapacityUsage
     {
-        return new CapacityUsage($this->getBaseUsage(), $this->getFullUsage());
+        return new CapacityUsage($this->baseUsage, $this->fullUsage);
     }
 
     public function getBaseUsage(): int

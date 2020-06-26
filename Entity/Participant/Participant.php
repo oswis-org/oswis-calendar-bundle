@@ -205,8 +205,9 @@ class Participant implements BasicInterface
         if ($this->getParticipantContact() === $participantContact) {
             return;
         }
-        if ($this->getParticipantContacts()->isEmpty()) {
+        if (null !== $participantContact && $this->getParticipantContacts()->isEmpty()) {
             $this->getParticipantContacts()->add($participantContact);
+            $participantContact->activate();
             $this->updateCachedColumns();
 
             return;
@@ -253,12 +254,14 @@ class Participant implements BasicInterface
     }
 
     /**
+     * @param bool $onlyActive
+     *
      * @return RegRange|null
      * @throws OswisException
      */
-    public function getRegRange(): ?RegRange
+    public function getRegRange(bool $onlyActive = true): ?RegRange
     {
-        return $this->getParticipantRange() ? $this->getParticipantRange()->getRange() : null;
+        return $this->getParticipantRange($onlyActive) ? $this->getParticipantRange($onlyActive)->getRange() : null;
     }
 
     /**
@@ -268,23 +271,27 @@ class Participant implements BasicInterface
      */
     public function setRegRange(?RegRange $regRange): void
     {
-        if ($this->getRegRange() !== $regRange) {
+        if ($this->getRegRange(false) !== $regRange) {
             $this->setParticipantRange(new ParticipantRange($regRange));
+
+            return;
         }
     }
 
     /**
+     * @param bool $onlyActive
+     *
      * @return ParticipantRange
      * @throws OswisException
      */
-    public function getParticipantRange(): ?ParticipantRange
+    public function getParticipantRange(bool $onlyActive = true): ?ParticipantRange
     {
-        $connections = $this->getParticipantRanges(true);
-        if ($connections->count() > 1) {
+        $participantRanges = $this->getParticipantRanges($onlyActive);
+        if ($participantRanges->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
 
-        return $connections->first() ?: null;
+        return $participantRanges->first() ?: null;
     }
 
     public function getParticipantRanges(bool $onlyActive = false, bool $onlyDeleted = false): Collection
@@ -556,11 +563,12 @@ class Participant implements BasicInterface
      */
     public function setParticipantRange(?ParticipantRange $participantRange, bool $admin = false): void
     {
-        if ($this->getParticipantRange() === $participantRange) {
+        if ($this->getParticipantRange(false) === $participantRange) {
             return;
         }
         if (null !== $participantRange && null !== $participantRange->getRange() && $this->getParticipantRanges()->isEmpty()) {
-            if ($participantRange->getRange()->getRemainingCapacity($admin) === 0) {
+            $participantRange->getRange()->getRemainingCapacity($admin);
+            if (0 === $participantRange->getRange()->getRemainingCapacity($admin)) {
                 throw new EventCapacityExceededException($participantRange->getEventName());
             }
             $this->getParticipantRanges()->add($participantRange);
@@ -586,7 +594,7 @@ class Participant implements BasicInterface
             throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
         }
         $this->getRegRange()->getFlagGroupRanges(null, null, true)->map(
-            fn(FlagGroupRange $flagGroupRange) => $this->getFlagGroupRanges()->add($flagGroupRange)
+            fn(FlagGroupRange $flagGroupRange) => !$this->getFlagGroupRanges()->contains($flagGroupRange) ? $this->getFlagGroupRanges()->add($flagGroupRange) : null
         );
     }
 
@@ -820,9 +828,6 @@ class Participant implements BasicInterface
 
     public function removeEmptyParticipantNotes(): void
     {
-        $this->setNotes(
-            $this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue()))
-        );
+        $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));
     }
-
 }

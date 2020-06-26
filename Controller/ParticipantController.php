@@ -24,6 +24,7 @@ use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormView;
@@ -38,11 +39,14 @@ class ParticipantController extends AbstractController
 
     public EventService $eventService;
 
-    public function __construct(EventService $eventService, RegRangeService $regRangeService, ParticipantService $participantService)
+    protected LoggerInterface $logger;
+
+    public function __construct(EventService $eventService, RegRangeService $regRangeService, ParticipantService $participantService, LoggerInterface $logger)
     {
         $this->eventService = $eventService;
         $this->participantService = $participantService;
         $this->regRangeService = $regRangeService;
+        $this->logger = $logger;
     }
 
     public function getTokenService(): ParticipantTokenService
@@ -70,14 +74,24 @@ class ParticipantController extends AbstractController
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {
+        $this->logger->info("START REGISTRATION");
         if (null === $rangeSlug) {
             return $this->redirectToDefaultEventRanges();
         }
+        //
         $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, true);
+        $this->logger->info("GOT RANGE");
+        //
         if (null === $range || !($range instanceof RegRange) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
-        $participant = $this->participantService->getEmptyParticipant($range, null);
+        try {
+            $participant = $this->participantService->getEmptyParticipant($range, null);
+        } catch (Exception $exception) {
+            $this->logger->info("!!!!!!ERRORR!!!!!!!!!RRR!!!");
+            $this->logger->info($exception->getMessage());
+        }
+        $this->logger->info("GOT EMPTY PARTICIPANT");
         try {
             $form = $this->createForm(ParticipantFormType::class, $participant);
             $form->handleRequest($request);

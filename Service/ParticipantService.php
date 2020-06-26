@@ -347,6 +347,7 @@ class ParticipantService
         if (null === $regRange->getParticipantCategory()) {
             throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazený typ účastníka.');
         }
+        $this->logger->info('Creating empty participant.');
 
         return new Participant($regRange, $this->getContact($contact), new ArrayCollection([new ParticipantNote()]), null);
     }
@@ -356,16 +357,16 @@ class ParticipantService
      *
      * @return AbstractContact
      * @throws InvalidArgumentException
+     * @throws OswisException
      */
     public function getContact(?AbstractContact $contact = null): AbstractContact
     {
-        $contactDetails = new ArrayCollection();
-        if (null !== $contactDetailTypeRepo = $this->getContactDetailTypeRepository()) {
-            $detailTypeEmail = $contactDetailTypeRepo->findOneBy(['slug' => 'e-mail']);
-            $detailTypePhone = $contactDetailTypeRepo->findOneBy(['slug' => 'phone']);
-            $contactDetails->add(new ContactDetail($detailTypeEmail));
-            $contactDetails->add(new ContactDetail($detailTypePhone));
+        if (null === $contactDetailTypeRepo = $this->getContactDetailTypeRepository()) {
+            throw new OswisException('Nepodařilo se získat repozoitář typů kontaktních údajů.');
         }
+        $detailTypeEmail = $contactDetailTypeRepo->findOneBy(['slug' => 'e-mail']);
+        $detailTypePhone = $contactDetailTypeRepo->findOneBy(['slug' => 'phone']);
+        $contactDetails = new ArrayCollection([new ContactDetail($detailTypeEmail), new ContactDetail($detailTypePhone)]);
         $positions = new ArrayCollection([new Position(null, null, null, Position::TYPE_STUDENT)]);
 
         return $contact ?? new Person(null, null, $contactDetails, null, $positions);
@@ -377,5 +378,4 @@ class ParticipantService
 
         return $contactDetailTypeRepository instanceof ContactDetailTypeRepository ? $contactDetailTypeRepository : null;
     }
-
 }
