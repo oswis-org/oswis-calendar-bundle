@@ -85,12 +85,7 @@ class ParticipantController extends AbstractController
         if (null === $range || !($range instanceof RegRange) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
-        try {
-            $participant = $this->participantService->getEmptyParticipant($range, null);
-        } catch (Exception $exception) {
-            $this->logger->info("!!!!!!ERRORR!!!!!!!!!RRR!!!");
-            $this->logger->info($exception->getMessage());
-        }
+        $participant = $this->participantService->getEmptyParticipant($range, null);
         $this->logger->info("GOT EMPTY PARTICIPANT");
         try {
             $form = $this->createForm(ParticipantFormType::class, $participant);
