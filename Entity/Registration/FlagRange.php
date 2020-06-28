@@ -125,9 +125,9 @@ class FlagRange implements NameableInterface
         return $this->price ?? 0;
     }
 
-    public function hasRemainingCapacity(): bool
+    public function hasRemainingCapacity(bool $full = false): bool
     {
-        return 0 === $this->getRemainingCapacity(false);
+        return 0 !== $this->getRemainingCapacity($full);
     }
 
     public function getRemainingCapacity(bool $full = false): ?int

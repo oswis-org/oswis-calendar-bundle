@@ -85,12 +85,15 @@ class ParticipantFlagGroupType extends AbstractType
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
         $choices = $flagGroupRange->getFlagRanges();
-        $youCan = $isFormal ? 'můžete' : 'můžeš';
         $multiple = null === $max || $max > 1;
         $expanded = count($choices) <= 1;
         $help = $flagGroupRange->getDescription();
-        $help = empty($help) ? $flagCategory ? $flagCategory->getDescription() : '' : $help;
-        $help .= !$expanded && $multiple ? "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
+        $flagCategoryName = $flagCategory ? $flagCategory->getDescription() : '';
+        $help = empty($help) ? $flagCategoryName : $help;
+        if (!$expanded && $multiple) {
+            $youCan = $isFormal ? 'můžete' : 'můžeš';
+            $help .= "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
+        }
         $options = [
             'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
             'help_html'    => true,
@@ -99,7 +102,7 @@ class ParticipantFlagGroupType extends AbstractType
             'choices'      => $choices,
             'expanded'     => $expanded,
             'multiple'     => $multiple,
-            'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null,],
+            'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null],
             'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
             'choice_attr'  => fn(FlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
             'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
@@ -124,7 +127,7 @@ class ParticipantFlagGroupType extends AbstractType
     public static function getChoiceAttributes(FlagRange $flagRange): array
     {
         $attributes = [];
-        if ($flagRange->hasRemainingCapacity()) {
+        if (!$flagRange->hasRemainingCapacity()) {
             $attributes['disabled'] = 'disabled';
         }
 
