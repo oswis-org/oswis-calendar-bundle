@@ -49,11 +49,13 @@
                     {% else %}
                         <div class="badge badge-dark pt-1 pb-1 pl-2 pr-2 mt-1">Aktuálně neaktivní.</div>
                     {% endif %}
+                    {#
                     {% if range.startDateTime and date(range.startDateTime).diff(date()).days > 0 %}
                         <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">
                             Začíná za {{ date(range.startDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
+                    #}
                     {% if range.endDateTime and date(range.endDateTime).diff(date()).days > 0 %}
                         <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">
                             Zbývá {{ date(range.endDateTime).diff(date()).days }} dní.
