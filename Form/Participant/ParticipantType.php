@@ -18,7 +18,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class ParticipantFormType extends AbstractType
+class ParticipantType extends AbstractType
 {
     protected LoggerInterface $logger;
 
@@ -40,7 +40,7 @@ class ParticipantFormType extends AbstractType
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
         }
         $this->logger->info("Form data:");
-        $this->logger->info((int)!empty($participant->getContact()));
+        $this->logger->info((int)null !== $participant->getContact());
         if (!(($range = $participant->getRegRange(false)) instanceof RegRange)) {
             throw new PriceInvalidArgumentException('[špatný rozsah přihlášek]');
         }

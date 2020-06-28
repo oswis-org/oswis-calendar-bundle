@@ -2726,16 +2726,16 @@
     },
     {
       "name": "league/commonmark",
-      "version": "1.5.0",
+      "version": "1.5.1",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "fc33ca12575e98e57cdce7d5f38b2ca5335714b3"
+        "reference": "6d74caf6abeed5fd85d6ec20da23d7269cd0b46f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/fc33ca12575e98e57cdce7d5f38b2ca5335714b3",
-        "reference": "fc33ca12575e98e57cdce7d5f38b2ca5335714b3",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/6d74caf6abeed5fd85d6ec20da23d7269cd0b46f",
+        "reference": "6d74caf6abeed5fd85d6ec20da23d7269cd0b46f",
         "shasum": ""
       },
       "require": {
@@ -2817,7 +2817,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-06-21T20:50:13+00:00"
+      "time": "2020-06-27T12:50:08+00:00"
     },
     {
       "name": "league/csv",
@@ -3058,29 +3058,29 @@
     },
     {
       "name": "liip/imagine-bundle",
-      "version": "2.3.0",
+      "version": "2.3.1",
       "source": {
         "type": "git",
         "url": "https://github.com/liip/LiipImagineBundle.git",
-        "reference": "06740a0a0e9c0054d3e0589472fd19b975784c52"
+        "reference": "d0819fc9b1cd4e9e16db204467b6fe1a5316a163"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/liip/LiipImagineBundle/zipball/06740a0a0e9c0054d3e0589472fd19b975784c52",
-        "reference": "06740a0a0e9c0054d3e0589472fd19b975784c52",
+        "url": "https://api.github.com/repos/liip/LiipImagineBundle/zipball/d0819fc9b1cd4e9e16db204467b6fe1a5316a163",
+        "reference": "d0819fc9b1cd4e9e16db204467b6fe1a5316a163",
         "shasum": ""
       },
       "require": {
         "imagine/imagine": "^0.7.1|^1.1",
         "php": "^7.1",
-        "symfony/asset": "^3.4|^4.3|^5.0",
         "symfony/filesystem": "^3.4|^4.3|^5.0",
         "symfony/finder": "^3.4|^4.3|^5.0",
         "symfony/framework-bundle": "^3.4|^4.3|^5.0",
+        "symfony/mime": "^4.3|^5.0",
         "symfony/options-resolver": "^3.4|^4.3|^5.0",
         "symfony/process": "^3.4|^4.3|^5.0",
         "symfony/templating": "^3.4|^4.3|^5.0",
-        "symfony/translation": "^3.4|^4.3|^5.0"
+        "twig/twig": "^1.40|^2.9|^3.0"
       },
       "require-dev": {
         "amazonwebservices/aws-sdk-for-php": "^1.0",
@@ -3098,8 +3098,7 @@
         "symfony/form": "^3.4|^4.3|^5.0",
         "symfony/phpunit-bridge": "^4.3|^5.0",
         "symfony/validator": "^3.4|^4.3|^5.0",
-        "symfony/yaml": "^3.4|^4.3|^5.0",
-        "twig/twig": "^1.34|^2.4|^3.0"
+        "symfony/yaml": "^3.4|^4.3|^5.0"
       },
       "suggest": {
         "alcaeus/mongo-php-adapter": "required on PHP >= 7.0 to use mongo components with mongodb extension",
@@ -3114,8 +3113,7 @@
         "ext-mongo": "required for mongodb components on PHP <7.0",
         "ext-mongodb": "required for mongodb components on PHP >=7.0",
         "league/flysystem": "required to use FlySystem data loader or cache resolver",
-        "monolog/monolog": "A psr/log compatible logger is required to enable logging",
-        "twig/twig": "required to use the provided Twig extension. Version 1.12 or greater needed"
+        "monolog/monolog": "A psr/log compatible logger is required to enable logging"
       },
       "type": "symfony-bundle",
       "extra": {
@@ -3155,7 +3153,7 @@
         "symfony",
         "transformation"
       ],
-      "time": "2020-01-07T13:29:56+00:00"
+      "time": "2020-06-26T05:55:54+00:00"
     },
     {
       "name": "lorenzo/pinky",
@@ -3806,16 +3804,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.264",
+      "version": "v0.0.266",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "df2c3bdfb1973eb24bef1183cdf4bf01231be4df"
+        "reference": "1be307b422302d5c4a00a3d251bc305aa5226125"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/df2c3bdfb1973eb24bef1183cdf4bf01231be4df",
-        "reference": "df2c3bdfb1973eb24bef1183cdf4bf01231be4df",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/1be307b422302d5c4a00a3d251bc305aa5226125",
+        "reference": "1be307b422302d5c4a00a3d251bc305aa5226125",
         "shasum": ""
       },
       "require": {
@@ -3857,20 +3855,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-06-25T14:01:01+00:00"
+      "time": "2020-06-27T20:33:06+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.579",
+      "version": "v0.0.580",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "b34d538e1206732a31c1c82e69b8b8e97b4afe99"
+        "reference": "ab39e4bf4890bfcd2b719f750e5a90121750007e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/b34d538e1206732a31c1c82e69b8b8e97b4afe99",
-        "reference": "b34d538e1206732a31c1c82e69b8b8e97b4afe99",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/ab39e4bf4890bfcd2b719f750e5a90121750007e",
+        "reference": "ab39e4bf4890bfcd2b719f750e5a90121750007e",
         "shasum": ""
       },
       "require": {
@@ -3967,7 +3965,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-06-25T10:51:21+00:00"
+      "time": "2020-06-26T13:38:21+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -4067,25 +4065,25 @@
     },
     {
       "name": "phpdocumentor/reflection-common",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "source": {
         "type": "git",
         "url": "https://github.com/phpDocumentor/ReflectionCommon.git",
-        "reference": "6568f4687e5b41b054365f9ae03fcb1ed5f2069b"
+        "reference": "1d01c49d4ed62f25aa84a747ad35d5a16924662b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/6568f4687e5b41b054365f9ae03fcb1ed5f2069b",
-        "reference": "6568f4687e5b41b054365f9ae03fcb1ed5f2069b",
+        "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/1d01c49d4ed62f25aa84a747ad35d5a16924662b",
+        "reference": "1d01c49d4ed62f25aa84a747ad35d5a16924662b",
         "shasum": ""
       },
       "require": {
-        "php": ">=7.1"
+        "php": "^7.2 || ^8.0"
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "2.x-dev"
+          "dev-2.x": "2.x-dev"
         }
       },
       "autoload": {
@@ -4112,7 +4110,7 @@
         "reflection",
         "static analysis"
       ],
-      "time": "2020-04-27T09:25:28+00:00"
+      "time": "2020-06-27T09:03:43+00:00"
     },
     {
       "name": "phpdocumentor/reflection-docblock",
@@ -4169,25 +4167,24 @@
     },
     {
       "name": "phpdocumentor/type-resolver",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "source": {
         "type": "git",
         "url": "https://github.com/phpDocumentor/TypeResolver.git",
-        "reference": "30441f2752e493c639526b215ed81d54f369d693"
+        "reference": "e878a14a65245fbe78f8080eba03b47c3b705651"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/30441f2752e493c639526b215ed81d54f369d693",
-        "reference": "30441f2752e493c639526b215ed81d54f369d693",
+        "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/e878a14a65245fbe78f8080eba03b47c3b705651",
+        "reference": "e878a14a65245fbe78f8080eba03b47c3b705651",
         "shasum": ""
       },
       "require": {
-        "php": "^7.2",
+        "php": "^7.2 || ^8.0",
         "phpdocumentor/reflection-common": "^2.0"
       },
       "require-dev": {
-        "ext-tokenizer": "^7.2",
-        "mockery/mockery": "~1"
+        "ext-tokenizer": "*"
       },
       "type": "library",
       "extra": {
@@ -4211,7 +4208,7 @@
         }
       ],
       "description": "A PSR-5 based resolver of Class names, Types and Structural Element Names",
-      "time": "2020-06-19T20:22:09+00:00"
+      "time": "2020-06-27T10:12:23+00:00"
     },
     {
       "name": "psr/cache",
@@ -9175,98 +9172,6 @@
         }
       ],
       "time": "2020-05-28T08:20:44+00:00"
-    },
-    {
-      "name": "symfony/translation",
-      "version": "v5.1.2",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/symfony/translation.git",
-        "reference": "d387f07d4c15f9c09439cf3f13ddbe0b2c5e8be2"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/symfony/translation/zipball/d387f07d4c15f9c09439cf3f13ddbe0b2c5e8be2",
-        "reference": "d387f07d4c15f9c09439cf3f13ddbe0b2c5e8be2",
-        "shasum": ""
-      },
-      "require": {
-        "php": ">=7.2.5",
-        "symfony/polyfill-mbstring": "~1.0",
-        "symfony/polyfill-php80": "^1.15",
-        "symfony/translation-contracts": "^2"
-      },
-      "conflict": {
-        "symfony/config": "<4.4",
-        "symfony/dependency-injection": "<5.0",
-        "symfony/http-kernel": "<5.0",
-        "symfony/twig-bundle": "<5.0",
-        "symfony/yaml": "<4.4"
-      },
-      "provide": {
-        "symfony/translation-implementation": "2.0"
-      },
-      "require-dev": {
-        "psr/log": "~1.0",
-        "symfony/config": "^4.4|^5.0",
-        "symfony/console": "^4.4|^5.0",
-        "symfony/dependency-injection": "^5.0",
-        "symfony/finder": "^4.4|^5.0",
-        "symfony/http-kernel": "^5.0",
-        "symfony/intl": "^4.4|^5.0",
-        "symfony/service-contracts": "^1.1.2|^2",
-        "symfony/yaml": "^4.4|^5.0"
-      },
-      "suggest": {
-        "psr/log-implementation": "To use logging capability in translator",
-        "symfony/config": "",
-        "symfony/yaml": ""
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "5.1-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Symfony\\Component\\Translation\\": ""
-        },
-        "exclude-from-classmap": [
-          "/Tests/"
-        ]
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Fabien Potencier",
-          "email": "fabien@symfony.com"
-        },
-        {
-          "name": "Symfony Community",
-          "homepage": "https://symfony.com/contributors"
-        }
-      ],
-      "description": "Symfony Translation Component",
-      "homepage": "https://symfony.com",
-      "funding": [
-        {
-          "url": "https://symfony.com/sponsor",
-          "type": "custom"
-        },
-        {
-          "url": "https://github.com/fabpot",
-          "type": "github"
-        },
-        {
-          "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-          "type": "tidelift"
-        }
-      ],
-      "time": "2020-05-30T20:35:19+00:00"
     },
     {
       "name": "symfony/translation-contracts",

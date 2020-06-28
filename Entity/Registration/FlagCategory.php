@@ -11,7 +11,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 /**
  * Some category (type) of participant flags.
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_category")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_flag_category")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},

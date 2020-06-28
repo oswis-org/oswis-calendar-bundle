@@ -15,7 +15,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
-use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantFormType;
+use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
@@ -88,7 +88,7 @@ class ParticipantController extends AbstractController
         $participant = $this->participantService->getEmptyParticipant($range, null);
         $this->logger->info("GOT EMPTY PARTICIPANT");
         try {
-            $form = $this->createForm(ParticipantFormType::class, $participant);
+            $form = $this->createForm(ParticipantType::class, $participant);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
@@ -119,7 +119,7 @@ class ParticipantController extends AbstractController
         } catch (Exception $e) {
             $participant = $this->participantService->getEmptyParticipant($range);
             if (!isset($form)) {
-                $form = $this->createForm(ParticipantFormType::class, $participant);
+                $form = $this->createForm(ParticipantType::class, $participant);
                 $form->handleRequest($request);
             }
             $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$e->getMessage().''));

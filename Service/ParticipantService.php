@@ -10,12 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisAddressBookBundle\Entity\ContactDetail;
-use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailType;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
-use OswisOrg\OswisAddressBookBundle\Entity\Person;
-use OswisOrg\OswisAddressBookBundle\Entity\Position;
-use OswisOrg\OswisAddressBookBundle\Repository\ContactDetailTypeRepository;
+use OswisOrg\OswisAddressBookBundle\Service\AbstractContactService;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
@@ -52,7 +48,7 @@ class ParticipantService
 
     protected ParticipantMailService $participantMailService;
 
-    protected ContactDetailTypeRepository $contactDetailTypeRepository;
+    protected AbstractContactService $abstractContactService;
 
     public function __construct(
         EntityManagerInterface $em,
@@ -61,7 +57,7 @@ class ParticipantService
         AppUserService $appUserService,
         ParticipantTokenService $participantTokenService,
         ParticipantMailService $participantMailService,
-        ContactDetailTypeRepository $contactDetailTypeRepository
+        AbstractContactService $abstractContactService
     ) {
         $this->em = $em;
         $this->participantRepository = $participantRepository;
@@ -69,7 +65,7 @@ class ParticipantService
         $this->appUserService = $appUserService;
         $this->tokenService = $participantTokenService;
         $this->participantMailService = $participantMailService;
-        $this->contactDetailTypeRepository = $contactDetailTypeRepository;
+        $this->abstractContactService = $abstractContactService;
     }
 
     public function getTokenService(): ParticipantTokenService
@@ -353,31 +349,8 @@ class ParticipantService
         }
         $this->logger->info('Creating empty participant.');
 
-        return new Participant($regRange, $this->getContact($contact), new ArrayCollection([new ParticipantNote()]), null);
-    }
-
-    /**
-     * @param AbstractContact|null $contact
-     *
-     * @return AbstractContact
-     * @throws InvalidArgumentException
-     * @throws OswisException
-     */
-    public function getContact(?AbstractContact $contact = null): AbstractContact
-    {
-        if (null !== $contact) {
-            return $contact;
-        }
-        $detailTypeEmail = $this->contactDetailTypeRepository->findOneBy(['slug' => 'e-mail']);
-        $detailTypePhone = $this->contactDetailTypeRepository->findOneBy(['slug' => 'phone']);
-        $contactDetails = new ArrayCollection([new ContactDetail($detailTypeEmail), new ContactDetail($detailTypePhone)]);
-        $positions = new ArrayCollection([new Position(null, null, null, Position::TYPE_STUDENT)]);
-
-        return new Person(null, null, $contactDetails, null, $positions);
-    }
-
-    public function getContactDetailTypeRepository(): ContactDetailTypeRepository
-    {
-        return $this->contactDetailTypeRepository;
+        return new Participant(
+            $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'phone']), new ArrayCollection([new ParticipantNote()]), null
+        );
     }
 }

@@ -175,8 +175,8 @@ class Participant implements BasicInterface
     protected ?bool $formal = null;
 
     /**
-     * @param RegRange|null        $regRange
-     * @param AbstractContact|null $contact
+     * @param RegRange        $regRange
+     * @param AbstractContact $contact
      * @param Collection|null      $participantNotes
      * @param int|null             $priority
      *
@@ -219,6 +219,8 @@ class Participant implements BasicInterface
     }
 
     /**
+     * @param bool $onlyActive
+     *
      * @return ParticipantContact
      * @throws OswisException
      */
@@ -347,6 +349,83 @@ class Participant implements BasicInterface
         }
     }
 
+    /**
+     * @param ParticipantRange|null $participantRange
+     * @param bool                  $admin
+     *
+     * @throws OswisException|NotImplementedException|EventCapacityExceededException
+     */
+    public function setParticipantRange(?ParticipantRange $participantRange, bool $admin = false): void
+    {
+        if ($this->getParticipantRange(false) === $participantRange) {
+            return;
+        }
+        if (null !== $participantRange && null !== $participantRange->getRange() && $this->getParticipantRanges()->isEmpty()) {
+            $participantRange->getRange()->getRemainingCapacity($admin);
+            if (0 === $participantRange->getRange()->getRemainingCapacity($admin)) {
+                throw new EventCapacityExceededException($participantRange->getEventName());
+            }
+            $this->getParticipantRanges()->add($participantRange);
+            $this->setFlagGroupsFromRegRange();
+            $this->updateCachedColumns();
+
+            return;
+        }
+        throw new NotImplementedException('změna události', 'u přihlášky');
+    }
+
+    /**
+     * @throws NotImplementedException
+     * @throws OswisException
+     */
+    public function setFlagGroupsFromRegRange(): void
+    {
+        // TODO: This is only temporary implementation.
+        if (null === $this->getRegRange(false)) {
+            return;
+        }
+        if (!$this->getFlagGroups()->isEmpty()) {
+            throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
+        }
+        $this->getRegRange(false)->getFlagGroupRanges(null, null, true)->map(
+            fn(FlagGroupRange $flagGroupRange) => !$this->getFlagGroupRanges()->contains($flagGroupRange) ? $this->getFlagGroupRanges()->add($flagGroupRange) : null
+        );
+    }
+
+    public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
+    {
+        $connections = $this->flagGroups ??= new ArrayCollection();
+        if (null !== $flagCategory) {
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
+        }
+        if (null !== $flagType) {
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
+        }
+
+        return $connections;
+    }
+
+    /**
+     * @param Collection|null $newFlagGroups
+     *
+     * @throws OswisException
+     */
+    public function setFlagGroups(?Collection $newFlagGroups): void
+    {
+        $newFlagGroups ??= new ArrayCollection();
+        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
+            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
+        }
+        $this->flagGroups = $newFlagGroups;
+    }
+
+    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
+    {
+        return $this->getFlagGroups($flagCategory, $flagType)->map(
+            fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupRange()
+        );
+    }
+
     public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
     {
         $filtered = new ArrayCollection();
@@ -469,33 +548,6 @@ class Participant implements BasicInterface
         return $price;
     }
 
-    public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
-    {
-        $connections = $this->flagGroups ??= new ArrayCollection();
-        if (null !== $flagCategory) {
-            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
-        }
-        if (null !== $flagType) {
-            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
-        }
-
-        return $connections;
-    }
-
-    /**
-     * @param Collection|null $newFlagGroups
-     *
-     * @throws OswisException
-     */
-    public function setFlagGroups(?Collection $newFlagGroups): void
-    {
-        $newFlagGroups ??= new ArrayCollection();
-        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
-            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
-        }
-        $this->flagGroups = $newFlagGroups;
-    }
-
     /**
      * Gets part of price that is marked as deposit.
      * @return int
@@ -556,49 +608,6 @@ class Participant implements BasicInterface
         } catch (OswisException $e) {
             return false;
         }
-    }
-
-    /**
-     * @param ParticipantRange|null $participantRange
-     * @param bool                  $admin
-     *
-     * @throws OswisException|NotImplementedException|EventCapacityExceededException
-     */
-    public function setParticipantRange(?ParticipantRange $participantRange, bool $admin = false): void
-    {
-        if ($this->getParticipantRange(false) === $participantRange) {
-            return;
-        }
-        if (null !== $participantRange && null !== $participantRange->getRange() && $this->getParticipantRanges()->isEmpty()) {
-            $participantRange->getRange()->getRemainingCapacity($admin);
-            if (0 === $participantRange->getRange()->getRemainingCapacity($admin)) {
-                throw new EventCapacityExceededException($participantRange->getEventName());
-            }
-            $this->getParticipantRanges()->add($participantRange);
-            $this->setFlagGroupsFromRegRange();
-            $this->updateCachedColumns();
-
-            return;
-        }
-        throw new NotImplementedException('změna události', 'u přihlášky');
-    }
-
-    /**
-     * @throws NotImplementedException
-     * @throws OswisException
-     */
-    public function setFlagGroupsFromRegRange(): void
-    {
-        // TODO: This is only temporary implementation.
-        if (null === $this->getRegRange()) {
-            return;
-        }
-        if (!$this->getFlagGroups()->isEmpty()) {
-            throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
-        }
-        $this->getRegRange()->getFlagGroupRanges(null, null, true)->map(
-            fn(FlagGroupRange $flagGroupRange) => !$this->getFlagGroupRanges()->contains($flagGroupRange) ? $this->getFlagGroupRanges()->add($flagGroupRange) : null
-        );
     }
 
     public function isRangeDeleted(): bool
@@ -680,13 +689,6 @@ class Participant implements BasicInterface
         if ($this->getFlagGroupRanges() !== $newRanges) {
             throw new NotImplementedException('změna skupin příznaků', 'u účastníka');
         }
-    }
-
-    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
-    {
-        return $this->getFlagGroups($flagCategory, $flagType)->map(
-            fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupRange()
-        );
     }
 
     /**
