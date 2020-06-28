@@ -377,6 +377,7 @@ class Participant implements BasicInterface
     /**
      * @throws NotImplementedException
      * @throws OswisException
+     * @noinspection PhpVoidFunctionResultUsedInspection
      */
     public function setFlagGroupsFromRegRange(): void
     {
@@ -388,14 +389,8 @@ class Participant implements BasicInterface
             throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
         }
         $regRange->getFlagGroupRanges(null, null, true, true)->map(
-            fn(FlagGroupRange $flagGroupRange) => $this->getFlagGroupRanges()->contains($flagGroupRange) ? null :  $this->addFlagGroupRange($flagGroupRange)
+            fn(FlagGroupRange $flagGroupRange) => $this->getFlagGroupRanges()->contains($flagGroupRange) ? null : $this->addFlagGroupRange($flagGroupRange)
         );
-    }
-
-    public function addFlagGroupRange(FlagGroupRange $flagGroupRange): void {
-        if (!$this->getFlagGroupRanges()->contains($flagGroupRange)) {
-            $this->getFlagGroups()->add(new ParticipantFlagGroup($flagGroupRange));
-        }
     }
 
     public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
@@ -430,6 +425,13 @@ class Participant implements BasicInterface
         return $this->getFlagGroups($flagCategory, $flagType)->map(
             fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupRange()
         );
+    }
+
+    public function addFlagGroupRange(FlagGroupRange $flagGroupRange): void
+    {
+        if (!$this->getFlagGroupRanges()->contains($flagGroupRange)) {
+            $this->getFlagGroups()->add(new ParticipantFlagGroup($flagGroupRange));
+        }
     }
 
     public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection

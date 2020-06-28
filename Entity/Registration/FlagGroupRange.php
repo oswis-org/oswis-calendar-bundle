@@ -134,6 +134,11 @@ class FlagGroupRange implements NameableInterface
         return $this->isFormValueAllowed();
     }
 
+    public function isFlagValueAllowed(bool $onlyPublic = false, ?Flag $flag = null): bool
+    {
+        return $this->getFlagRanges($onlyPublic, $flag)->filter(fn(FlagRange $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
+    }
+
     public function hasFlagValueAllowed(): bool
     {
         return $this->getFlagRanges()->exists(fn(FlagRange $flagRange) => $flagRange->isFormValueAllowed());
