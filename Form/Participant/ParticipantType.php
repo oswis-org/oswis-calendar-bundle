@@ -40,7 +40,7 @@ class ParticipantType extends AbstractType
             throw new PriceInvalidArgumentException('[nepodařilo se vytvořit účastníka]');
         }
         $this->logger->info("Form data:");
-        $this->logger->info((int)null !== $participant->getContact());
+        $this->logger->info(null !== $participant->getContact() ? 'Contact OK.' : 'Without contact!');
         if (!(($range = $participant->getRegRange(false)) instanceof RegRange)) {
             throw new PriceInvalidArgumentException('[špatný rozsah přihlášek]');
         }
