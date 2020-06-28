@@ -52,7 +52,7 @@ class ParticipantType extends AbstractType
             throw new PriceInvalidArgumentException($message);
         }
         self::addContactField($builder);
-        $this->addFlagCategoryFields($builder, $participant);
+        $this->addParticipantFlagGroupFields($builder, $participant);
         self::addParticipantNotesFields($builder);
         self::addSubmitButton($builder);
     }
@@ -62,7 +62,7 @@ class ParticipantType extends AbstractType
         $builder->add('contact', PersonType::class, array('label' => 'Účastník', 'required' => true));
     }
 
-    public function addFlagCategoryFields(FormBuilderInterface $builder, Participant $participant): void
+    public function addParticipantFlagGroupFields(FormBuilderInterface $builder, Participant $participant): void
     {
         $builder->add(
             'flagGroups',

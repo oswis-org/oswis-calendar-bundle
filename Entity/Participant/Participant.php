@@ -381,15 +381,21 @@ class Participant implements BasicInterface
     public function setFlagGroupsFromRegRange(): void
     {
         // TODO: This is only temporary implementation.
-        if (null === $this->getRegRange(false)) {
+        if (null === $regRange = $this->getRegRange(false)) {
             return;
         }
         if (!$this->getFlagGroups()->isEmpty()) {
             throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
         }
-        $this->getRegRange(false)->getFlagGroupRanges(null, null, true)->map(
-            fn(FlagGroupRange $flagGroupRange) => !$this->getFlagGroupRanges()->contains($flagGroupRange) ? $this->getFlagGroupRanges()->add($flagGroupRange) : null
+        $regRange->getFlagGroupRanges(null, null, true, true)->map(
+            fn(FlagGroupRange $flagGroupRange) => $this->getFlagGroupRanges()->contains($flagGroupRange) ? null :  $this->addFlagGroupRange($flagGroupRange)
         );
+    }
+
+    public function addFlagGroupRange(FlagGroupRange $flagGroupRange): void {
+        if (!$this->getFlagGroupRanges()->contains($flagGroupRange)) {
+            $this->getFlagGroups()->add(new ParticipantFlagGroup($flagGroupRange));
+        }
     }
 
     public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection

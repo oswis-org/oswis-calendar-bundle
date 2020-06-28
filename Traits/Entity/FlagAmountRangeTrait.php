@@ -59,7 +59,7 @@ trait FlagAmountRangeTrait
 
     public function getFlagAmountRange(): FlagAmountRange
     {
-        return new FlagAmountRange($this->getMin(), $this->getMax());
+        return new FlagAmountRange($this->min, $this->max);
     }
 
     public function getMax(): ?int

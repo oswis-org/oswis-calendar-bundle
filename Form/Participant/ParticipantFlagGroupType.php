@@ -22,45 +22,46 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ParticipantFlagGroupType extends AbstractType
 {
-    final public function buildForm(FormBuilderInterface $builder, array $options): void
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $participant = $options['participant'] ?? null;
-        $this->addCategoryField($builder, $participant);
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'preSetData']);
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
     }
 
-    public function addCategoryField(FormBuilderInterface $builder, ?Participant $participant): void
+    public function onPreSetData(FormEvent $event): void
     {
-        // TODO: Implement it. Can't be flags added directly to participant???
-        $participantFlagCategory = $builder->getData();
-        assert($participantFlagCategory instanceof ParticipantFlagGroup);
-        $flagCategoryRange = $participantFlagCategory->getFlagGroupRange();
-        $flagCategory = $participantFlagCategory->getFlagCategory();
-        if (null === $flagCategoryRange || null === $flagCategory) {
+        $participantFlagGroup = $event->getData();
+        assert($participantFlagGroup instanceof ParticipantFlagGroup);
+        $participant = $event->getForm()->getConfig()->getOption('participant');
+        $flagGroupRange = $participantFlagGroup->getFlagGroupRange();
+        $flagCategory = $participantFlagGroup->getFlagCategory();
+        if (null === $flagGroupRange || null === $flagCategory) {
             return;
         }
         $isFormal = $participant ? $participant->isFormal() : true;
-        $min = $flagCategoryRange->getMin();
-        $max = $flagCategoryRange->getMax();
-        if (!$flagCategoryRange->isCategoryValueAllowed()) {
-            $this->addCheckboxes($builder, $participantFlagCategory);
+        $min = $flagGroupRange->getMin();
+        $max = $flagGroupRange->getMax();
+        if (!$flagGroupRange->isCategoryValueAllowed()) {
+            self::addCheckboxes($event->getForm(), $participantFlagGroup);
 
             return;
         }
-        $this->addSelect($builder, $participantFlagCategory, $min, $max, $isFormal);
+        self::addSelect($event->getForm(), $participantFlagGroup, $min, $max, $isFormal);
     }
 
-    public function addCheckboxes(FormBuilderInterface $builder, ParticipantFlagGroup $participantFlagCategory): void
+    public static function addCheckboxes(FormInterface $form, ParticipantFlagGroup $participantFlagCategory): void
     {
         $flagCategoryRange = $participantFlagCategory->getFlagGroupRange();
         if (null === $flagCategoryRange) {
             return;
         }
-        $builder->add(
+        $form->add(
             "participantFlags",
             CollectionType::class,
             [
@@ -70,11 +71,10 @@ class ParticipantFlagGroupType extends AbstractType
                 'help_html'  => true,
             ]
         );
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
     }
 
-    public function addSelect(
-        FormBuilderInterface $builder,
+    public static function addSelect(
+        FormInterface $form,
         ParticipantFlagGroup $participantFlagCategory,
         int $min,
         ?int $max,
@@ -90,7 +90,7 @@ class ParticipantFlagGroupType extends AbstractType
         $expanded = count($choices) <= 1;
         $help = $flagCategoryRange->getDescription();
         $help .= !$expanded && $multiple ? "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
-        $builder->add(
+        $form->add(
             "participantFlags",
             ChoiceType::class,
             [
@@ -109,7 +109,7 @@ class ParticipantFlagGroupType extends AbstractType
             ]
         );
         if ($flagCategoryRange->isCategoryValueAllowed()) {
-            $builder->add(
+            $form->add(
                 "textValue",
                 TextType::class,
                 [

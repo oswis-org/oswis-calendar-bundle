@@ -270,20 +270,23 @@ class RegRange implements NameableInterface
         }
     }
 
-    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false): Collection
+    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false, bool $recursive = false): Collection
     {
-        $flagCategoryRanges = $this->flagGroupRanges ??= new ArrayCollection();
+        $flagGroupRanges = $this->flagGroupRanges ??= new ArrayCollection();
         if (true === $onlyPublic) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isPublicOnWeb());
+            $flagGroupRanges = $flagGroupRanges->filter(fn(FlagGroupRange $range) => $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isCategory($flagCategory));
+            $flagGroupRanges = $flagGroupRanges->filter(fn(FlagGroupRange $range) => $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
-            $flagCategoryRanges = $flagCategoryRanges->filter(fn(FlagGroupRange $range) => $range->isType($flagType));
+            $flagGroupRanges = $flagGroupRanges->filter(fn(FlagGroupRange $range) => $range->isType($flagType));
+        }
+        if (true === $recursive && null !== $this->getRequiredRegRange()) {
+            $flagGroupRanges = new ArrayCollection([...$flagGroupRanges, ...$this->getRequiredRegRange()->getFlagGroupRanges()]);
         }
 
-        return $flagCategoryRanges;
+        return $flagGroupRanges;
     }
 
     /**
