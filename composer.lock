@@ -3370,20 +3370,20 @@
     },
     {
       "name": "myclabs/deep-copy",
-      "version": "1.9.5",
+      "version": "1.10.0",
       "source": {
         "type": "git",
         "url": "https://github.com/myclabs/DeepCopy.git",
-        "reference": "b2c28789e80a97badd14145fda39b545d83ca3ef"
+        "reference": "5796d127b0c4ff505b77455148ea9d5269d99758"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/b2c28789e80a97badd14145fda39b545d83ca3ef",
-        "reference": "b2c28789e80a97badd14145fda39b545d83ca3ef",
+        "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/5796d127b0c4ff505b77455148ea9d5269d99758",
+        "reference": "5796d127b0c4ff505b77455148ea9d5269d99758",
         "shasum": ""
       },
       "require": {
-        "php": "^7.1"
+        "php": "^7.1 || ^8.0"
       },
       "replace": {
         "myclabs/deep-copy": "self.version"
@@ -3414,7 +3414,13 @@
         "object",
         "object graph"
       ],
-      "time": "2020-01-17T21:11:47+00:00"
+      "funding": [
+        {
+          "url": "https://tidelift.com/funding/github/packagist/myclabs/deep-copy",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2020-06-28T07:02:41+00:00"
     },
     {
       "name": "myclabs/php-enum",
@@ -3804,16 +3810,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.266",
+      "version": "v0.0.269",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "1be307b422302d5c4a00a3d251bc305aa5226125"
+        "reference": "1e35de9eb3a74a62c5342ba4025f4a039d7d90ba"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/1be307b422302d5c4a00a3d251bc305aa5226125",
-        "reference": "1be307b422302d5c4a00a3d251bc305aa5226125",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/1e35de9eb3a74a62c5342ba4025f4a039d7d90ba",
+        "reference": "1e35de9eb3a74a62c5342ba4025f4a039d7d90ba",
         "shasum": ""
       },
       "require": {
@@ -3855,7 +3861,7 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-06-27T20:33:06+00:00"
+      "time": "2020-06-28T11:57:39+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",

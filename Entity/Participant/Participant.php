@@ -177,8 +177,8 @@ class Participant implements BasicInterface
     /**
      * @param RegRange        $regRange
      * @param AbstractContact $contact
-     * @param Collection|null      $participantNotes
-     * @param int|null             $priority
+     * @param Collection|null $participantNotes
+     * @param int|null        $priority
      *
      * @throws OswisException|EventCapacityExceededException
      */

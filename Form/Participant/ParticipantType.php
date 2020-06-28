@@ -5,7 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
-use OswisOrg\OswisAddressBookBundle\Form\StudentPersonType;
+use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -59,7 +59,7 @@ class ParticipantType extends AbstractType
 
     public static function addContactField(FormBuilderInterface $builder): void
     {
-        $builder->add('contact', StudentPersonType::class, array('label' => 'Účastník', 'required' => true));
+        $builder->add('contact', PersonType::class, array('label' => 'Účastník', 'required' => true));
     }
 
     public function addFlagCategoryFields(FormBuilderInterface $builder, Participant $participant): void

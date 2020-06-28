@@ -237,7 +237,7 @@ class ParticipantPaymentService
     }
 
     /**
-     * @param ParticipantPayment $payment
+     * @param ParticipantPayment|null $payment
      *
      * @return void
      * @throws OswisException

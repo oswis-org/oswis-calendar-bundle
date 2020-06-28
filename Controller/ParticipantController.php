@@ -257,7 +257,7 @@ class ParticipantController extends AbstractController
      *
      * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
      *
-     * @param string      $eventSlug       Slug for selected event.
+     * @param string|null $eventSlug       Slug for selected event.
      * @param string|null $participantType Restriction by participant type.
      *
      * @return Response Page with registration ranges.
