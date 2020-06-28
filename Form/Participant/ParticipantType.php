@@ -71,6 +71,7 @@ class ParticipantType extends AbstractType
                 'label'         => false,
                 'entry_type'    => ParticipantFlagGroupType::class,
                 'entry_options' => [
+                    'label'       => false,
                     'participant' => $participant,
                 ],
             )

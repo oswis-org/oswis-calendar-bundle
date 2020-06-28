@@ -6,9 +6,12 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use Doctrine\Common\Collections\Collection;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
 use Symfony\Component\Form\Exception\LogicException;
@@ -29,7 +32,7 @@ class ParticipantFlagGroupType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'preSetData']);
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
     }
 
@@ -37,13 +40,16 @@ class ParticipantFlagGroupType extends AbstractType
     {
         $participantFlagGroup = $event->getData();
         assert($participantFlagGroup instanceof ParticipantFlagGroup);
-        $participant = $event->getForm()->getConfig()->getOption('participant');
+        $participant = $event->getForm()->getConfig()->getOptions()['participant'];
+        if (!($participant instanceof Participant)) {
+            throw new OswisException('Neexistuje Participant...!!!!!!!');
+        }
         $flagGroupRange = $participantFlagGroup->getFlagGroupRange();
         $flagCategory = $participantFlagGroup->getFlagCategory();
         if (null === $flagGroupRange || null === $flagCategory) {
             return;
         }
-        $isFormal = $participant ? $participant->isFormal() : true;
+        $isFormal = $participant && false === $participant->isFormal() ? false : true;
         $min = $flagGroupRange->getMin();
         $max = $flagGroupRange->getMax();
         if ($flagGroupRange->isFlagValueAllowed()) {
@@ -77,30 +83,32 @@ class ParticipantFlagGroupType extends AbstractType
         if (null === $flagGroupRange = $participantFlagGroup->getFlagGroupRange()) {
             return;
         }
+        $flagCategory = $flagGroupRange->getFlagCategory();
         $choices = $flagGroupRange->getFlagRanges();
         $youCan = $isFormal ? 'můžete' : 'můžeš';
-        $multiple = null !== $max && $max > 1;
+        $multiple = null === $max || $max > 1;
         $expanded = count($choices) <= 1;
         $help = $flagGroupRange->getDescription();
+        $help = empty($help) ? $flagCategory ? $flagCategory->getDescription() : '' : $help;
         $help .= !$expanded && $multiple ? "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>" : '';
-        $form->add(
-            "participantFlags",
-            ChoiceType::class,
-            [
-                'label'        => $flagGroupRange->getName() ?? 'Ostatní příznaky',
-                'help_html'    => true,
-                'help'         => $help,
-                'required'     => !empty($min),
-                'choices'      => $choices,
-                'expanded'     => $expanded,
-                'multiple'     => $multiple,
-                'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null,],
-                'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
-                'choice_attr'  => fn(FlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
-                'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
-                'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
-            ]
-        );
+        $options = [
+            'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
+            'help_html'    => true,
+            'help'         => $help,
+            'required'     => !empty($min),
+            'choices'      => $choices,
+            'expanded'     => $expanded,
+            'multiple'     => $multiple,
+            'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null,],
+            'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
+            'choice_attr'  => fn(FlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
+            'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
+            'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
+        ];
+        if ($multiple) {
+            $options['class'] = FlagRange::class;
+        }
+        $form->add("participantFlags", $multiple ? EntityType::class : ChoiceType::class, $options);
         if ($flagGroupRange->isCategoryValueAllowed()) {
             $form->add(
                 "textValue",
