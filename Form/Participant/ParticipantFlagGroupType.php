@@ -39,7 +39,10 @@ class ParticipantFlagGroupType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('participantFlags', CollectionType::class, ['entry_type' => ParticipantFlag::class]);
+        $builder->add('participantFlags', CollectionType::class, [
+            'entry_type' => ParticipantFlag::class,
+            'allow_extra_fields' => true,
+        ]);
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
         // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
         $builder->addEventListener(
@@ -47,15 +50,14 @@ class ParticipantFlagGroupType extends AbstractType
             function (FormEvent $event) {
                 $data = $event->getData();
                 $form = $event->getForm();
-                $participantFlags = new ArrayCollection();
+                $participantFlags = [];
                 $flagRanges = isset($data['flagRanges']) ? $data['flagRanges'] : [];
                 if (is_string($flagRanges)) {
                     $flagRanges = [$flagRanges];
                 }
                 if (is_array($flagRanges)) {
                     foreach ($flagRanges as $flagRangeId) {
-                        $flagRange = $this->flagRangeRepository->getFlagRange(['id' => (int)$flagRangeId]);
-                        $participantFlags->add($flagRange);
+                        $participantFlags[] = new ParticipantFlag($this->flagRangeRepository->getFlagRange(['id' => (int)$flagRangeId]));
                     }
                     $data['participantFlags'] = $participantFlags;
                     $event->setData($data);
@@ -177,7 +179,6 @@ class ParticipantFlagGroupType extends AbstractType
      */
     public function onSubmit(FormEvent $event): void
     {
-
 //        $formData = $event->getForm()->getData();
 //        $participantFlagsChild = $event->getForm()->get('participantFlags');
 //        $flagRangesChild = $event->getForm()->get('flagRanges');
