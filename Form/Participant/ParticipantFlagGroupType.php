@@ -12,13 +12,13 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
 use Symfony\Component\Form\Exception\LogicException;
 use Symfony\Component\Form\Exception\OutOfBoundsException;
 use Symfony\Component\Form\Exception\RuntimeException;
 use Symfony\Component\Form\Exception\TransformationFailedException;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -48,7 +48,7 @@ class ParticipantFlagGroupType extends AbstractType
                 $data = $event->getData();
                 $form = $event->getForm();
                 $participantFlags = new ArrayCollection();
-                $flagRanges = $data['flagRanges'] ?? [];
+                $flagRanges = isset($data['flagRanges']) ? $data['flagRanges'] : [];
                 if (is_string($flagRanges)) {
                     $flagRanges = [$flagRanges];
                 }
@@ -77,7 +77,7 @@ class ParticipantFlagGroupType extends AbstractType
         if (null === $flagGroupRange || null === $flagCategory) {
             return;
         }
-        $isFormal = false !== $participant->isFormal();
+        $isFormal = $participant && false === $participant->isFormal() ? false : true;
         $min = $flagGroupRange->getMin();
         $max = $flagGroupRange->getMax();
         if ($flagGroupRange->isFlagValueAllowed()) {
@@ -123,6 +123,7 @@ class ParticipantFlagGroupType extends AbstractType
             $help .= "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
         }
         $options = [
+            'class'        => FlagRange::class,
             'mapped'       => false,
             'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
             'help_html'    => true,
@@ -142,7 +143,7 @@ class ParticipantFlagGroupType extends AbstractType
             // $options['class'] = ParticipantFlag::class;
         }
         // $form->add("participantFlags", $multiple ? EntityType::class : ChoiceType::class, $options);
-        $form->add("flagRanges", ChoiceType::class, $options);
+        $form->add("flagRanges", EntityType::class, $options);
         if ($flagGroupRange->isCategoryValueAllowed()) {
             $form->add(
                 "textValue",
