@@ -5,14 +5,18 @@
 
 namespace OswisOrg\OswisCalendarBundle\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use LogicException;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 
-class FlagRangeRepository extends EntityRepository
+class FlagRangeRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
@@ -21,6 +25,16 @@ class FlagRangeRepository extends EntityRepository
     public const CRITERIA_TYPE_OF_TYPE = 'participantTypeOfType';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
+
+    /**
+     * @param ManagerRegistry $registry
+     *
+     * @throws LogicException
+     */
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, FlagRange::class);
+    }
 
     public function findOneBy(array $criteria, array $orderBy = null): ?FlagRange
     {

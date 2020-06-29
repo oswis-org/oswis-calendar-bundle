@@ -224,6 +224,18 @@ services:
         alias: oswis_org_oswis_calendar.event_repository
         public: true
 
+    oswis_org_oswis_calendar.flag_range_repository:
+        class: OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine'
+        tags:
+            - '@doctrine.repository_service'
+    OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository:
+        alias: oswis_org_oswis_calendar.flag_range_repository
+        public: true
+
     oswis_org_oswis_calendar.participant_repository:
         class: OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository
         autowire: true
