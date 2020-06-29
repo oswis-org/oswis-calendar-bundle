@@ -20,8 +20,6 @@ class FlagRangeRepository extends EntityRepository
     public const CRITERIA_EVENT = 'event';
     public const CRITERIA_TYPE_OF_TYPE = 'participantTypeOfType';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
-    public const CRITERIA_PARTICIPANT_TYPE_OF_TYPE = 'participantTypeOfType';
-    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
     public function findOneBy(array $criteria, array $orderBy = null): ?FlagRange
@@ -31,7 +29,7 @@ class FlagRangeRepository extends EntityRepository
         return $flagRange instanceof FlagRange ? $flagRange : null;
     }
 
-    public function getParticipantFlag(?array $opts = []): ?FlagRange
+    public function getFlagRange(?array $opts = []): ?FlagRange
     {
         try {
             $flagRange = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
@@ -47,7 +45,6 @@ class FlagRangeRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('flagRange');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
-        $this->addParticipantTypeOfTypeQuery($queryBuilder, $opts);
         $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
         $this->addOrderBy($queryBuilder, true);
@@ -66,14 +63,6 @@ class FlagRangeRepository extends EntityRepository
     {
         if (!empty($opts[self::CRITERIA_SLUG])) {
             $queryBuilder->andWhere(' flagRange.slug = :slug ')->setParameter('slug', $opts[self::CRITERIA_SLUG]);
-        }
-    }
-
-    private function addParticipantTypeOfTypeQuery(QueryBuilder $queryBuilder, array $opts = []): void
-    {
-        if (!empty($opts[self::CRITERIA_TYPE_OF_TYPE]) && is_string($opts[self::CRITERIA_TYPE_OF_TYPE])) {
-            $queryBuilder->andWhere('flagRange.type = :type_type');
-            $queryBuilder->setParameter('type_type', $opts[self::CRITERIA_TYPE_OF_TYPE]);
         }
     }
 
