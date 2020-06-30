@@ -37,7 +37,7 @@ class ParticipantFlagGroup implements BasicInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag", mappedBy="participantFlagGroup"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag", mappedBy="participantFlagGroup", cascade={"all"}
      * )
      */
     protected ?Collection $participantFlags = null;
