@@ -66,6 +66,7 @@ class FlagCategory
     public const TYPE_LEFT = 'left';
     public const TYPE_PARTNER_HOMEPAGE = 'partner-homepage';
     public const TYPE_SCHOOL = 'school';
+    public const TYPE_CONFIRMATIONS = 'confirmations';
 
     /**
      * @param Nameable|null $nameable
