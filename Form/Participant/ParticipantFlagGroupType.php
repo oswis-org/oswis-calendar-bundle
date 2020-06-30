@@ -49,22 +49,14 @@ class ParticipantFlagGroupType extends AbstractType
             FormEvents::PRE_SUBMIT,
             function (FormEvent $event) {
                 $data = $event->getData();
-                $flagRanges = $data['flagRanges'] ?? [];
-                // $data['flagRanges'] = is_string($data['flagRanges']) ? [$data['flagRanges']] : $data['flagRanges'];
-                $data['tempFlagRanges'] = is_string($data['flagRanges']) ? [$data['flagRanges']] : $data['flagRanges'];
-//                $data['tempFlagRanges'] ??= new ArrayCollection();
-//                if (is_string($flagRanges)) {
-//                    $flagRange = $this->flagRangeRepository->getFlagRange(['id' => (int)$flagRanges]);
-//                    $data['tempFlagRanges']->add($flagRange);
-//                }
-//                if (is_array($flagRanges)) {
-//                    foreach ($flagRanges as $flagRangeId) {
-//                        $flagRange = $this->flagRangeRepository->getFlagRange(['id' => (int)$flagRangeId]);
-//                        $data['tempFlagRanges']->add($flagRange);
-//                    }
-//                }
+                if (empty($data)) {
+                    return;
+                }
+                $this->logger->info("Export".var_export($data, true));
+                $flagRanges = (!empty($data) ? ($data['flagRanges'] ?? []) : []) ?? [];
+                $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
                 $this->logger->info("Temporary flag ranges (PRE_SUBMIT):");
-                foreach ($data['tempFlagRanges'] as $tempFlagRange) {
+                foreach (!empty($data) ? $data['tempFlagRanges'] : [] as $tempFlagRange) {
                     $this->logger->info($tempFlagRange);
                 }
                 $this->logger->info("----------------------");
@@ -92,22 +84,6 @@ class ParticipantFlagGroupType extends AbstractType
                     $this->logger->info("Participant flag: ".$pFlag->getFlagRange()->getName());
                 }
                 $this->logger->info("############################");
-//                $tempFlagRanges = $participantFlagGroup->tempFlagRanges ?? new ArrayCollection();
-//                $participantFlags = new ArrayCollection();
-//                foreach ($tempFlagRanges as $tempFlagRange) {
-//                    // $participantFlags->add(new ParticipantFlag($tempFlagRange));
-//                }
-//                $this->logger->info("PARTICIPANT FLAGS (in SUBMIT event):");
-//                foreach ($participantFlags as $item) {
-//                    assert($item instanceof ParticipantFlag);
-//                    $this->logger->info($item->getFlag()->getName());
-//                }
-//                $this->logger->info("::::::END:::::");
-//                $participantFlagGroup->setParticipantFlags($participantFlags);
-//                $event->setData($participantFlagGroup);
-//                $this->logger->info("Count (in submit):");
-//                $this->logger->info(count($event->getData()->getParticipantFlags()));
-//                $this->logger->info("::::::END:::::");
             }
         );
     }
@@ -168,7 +144,7 @@ class ParticipantFlagGroupType extends AbstractType
         $help = empty($help) ? $flagCategoryName : $help;
         if (!$expanded && $multiple) {
             $youCan = $isFormal ? 'můžete' : 'můžeš';
-            $help .= "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
+            $help .= "<p>Pro výběr více položek nebo zrušení výběru $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
         }
         $form->add(
             "tempFlagRanges",
@@ -227,44 +203,6 @@ class ParticipantFlagGroupType extends AbstractType
         }
 
         return $attributes;
-    }
-
-    /**
-     * @param FormEvent $event
-     *
-     * @throws AlreadySubmittedException
-     * @throws LogicException
-     * @throws OutOfBoundsException
-     * @throws RuntimeException
-     * @throws TransformationFailedException
-     */
-    public function onSubmit(FormEvent $event): void
-    {
-//        $formData = $event->getForm()->getData();
-//        $participantFlagsChild = $event->getForm()->get('participantFlags');
-//        $flagRangesChild = $event->getForm()->get('flagRanges');
-//        try {
-//            $textValueChild = $event->getForm()->get('textValue');
-//            $textValue = $textValueChild ? $textValueChild->getData() : null;
-//        } catch (OutOfBoundsException $exception) {
-//            $textValue = null;
-//        }
-//        error_log('Text value is: '. $textValue);
-//        if (null === $flagRangesChild || null === $participantFlagsChild) {
-//            error_log('Childs empty!!!');
-//            return;
-//        }
-//        $flagRanges = $flagRangesChild->getData();
-//        if ($flagRanges instanceof FlagRange) {
-//            $flagRanges = new ArrayCollection([$flagRanges]);
-//        }
-//        $participantFlags = new ArrayCollection();
-//        foreach ($flagRanges as $flagRange) {
-//            assert($flagRange instanceof FlagRange);
-//            error_log('Processing flag range: ' . $flagRange->getId());
-//            $participantFlags->add(new ParticipantFlag($flagRange, $textValue));
-//        }
-//        $participantFlagsChild->setData($participantFlags);
     }
 
     /**

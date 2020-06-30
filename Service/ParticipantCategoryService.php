@@ -26,15 +26,14 @@ class ParticipantCategoryService
         $this->logger = $logger;
     }
 
-    public function create(?Nameable $nameable = null, ?string $type = null): ?ParticipantCategory
+    public function create(ParticipantCategory $participantCategory): ?ParticipantCategory
     {
         try {
-            $entity = new ParticipantCategory($nameable, $type);
-            $this->em->persist($entity);
+            $this->em->persist($participantCategory);
             $this->em->flush();
-            $this->logger->info('CREATE: Created event participant type (by service): '.$entity->getId().' '.$entity->getName().'.');
+            $this->logger->info('CREATE: Created event participant type (by service): '.$participantCategory->getId().' '.$participantCategory->getName().'.');
 
-            return $entity;
+            return $participantCategory;
         } catch (Exception $e) {
             $this->logger->info('ERROR: Event event participant type not created (by service): '.$e->getMessage());
 

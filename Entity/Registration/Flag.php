@@ -66,10 +66,25 @@ class Flag
      */
     protected ?FlagCategory $category = null;
 
+    /**
+     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
+     */
+    protected ?string $flagFormGroup = null;
+
     public function __construct(?Nameable $nameable = null, ?FlagCategory $flagType = null)
     {
         $this->setFieldsFromNameable($nameable);
         $this->setCategory($flagType);
+    }
+
+    public function getFlagFormGroup(): ?string
+    {
+        return $this->flagFormGroup;
+    }
+
+    public function setFlagFormGroup(?string $flagFormGroup): void
+    {
+        $this->flagFormGroup = $flagFormGroup;
     }
 
     public function getType(): ?string

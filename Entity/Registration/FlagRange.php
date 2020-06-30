@@ -6,6 +6,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use Doctrine\ORM\Mapping as ORM;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
@@ -46,6 +47,11 @@ class FlagRange implements NameableInterface
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?Flag $flag = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
+     */
+    protected ?string $flagFormGroup = null;
 
     public function __construct(
         ?Flag $flag = null,
@@ -141,7 +147,30 @@ class FlagRange implements NameableInterface
 
     public function getFlagGroupName(): ?string
     {
-        return FlagCategory::TYPE_T_SHIRT_SIZE === $this->getType() ? $this->getTShirtGroup() : $this->getFlagPriceGroup();
+        if (null !== $this->getFlagFormGroup()) {
+            return $this->getFlagFormGroup();
+        }
+        if ($this->getFlag() && null !== $this->getFlag()->getFlagFormGroup()) {
+            return $this->getFlag()->getFlagFormGroup();
+        }
+        if (FlagCategory::TYPE_T_SHIRT_SIZE === $this->getType()) {
+            return $this->getTShirtGroup();
+        }
+        if (FlagCategory::TYPE_SCHOOL === $this->getType()) {
+            return null;
+        }
+
+        return $this->getFlagPriceGroup();
+    }
+
+    public function getFlagFormGroup(): ?string
+    {
+        return $this->flagFormGroup;
+    }
+
+    public function setFlagFormGroup(?string $flagFormGroup): void
+    {
+        $this->flagFormGroup = $flagFormGroup;
     }
 
     public function getTShirtGroup(): string
