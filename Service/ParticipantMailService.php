@@ -89,11 +89,8 @@ class ParticipantMailService
         if (null === ($mailCategory = $this->getMailCategoryByType($type))) {
             throw new NotImplementedException($type, 'u e-mailů k přihláškám');
         }
-        if (null === ($group = $this->getMailGroup($participant, $mailCategory))) {
-            throw new NotFoundException('Skupina e-mailů nebyla nalezena.');
-        }
-        if (null === ($twigTemplate = $group->getTwigTemplate())) {
-            throw new NotFoundException('Šablona e-mailu nebyla nalezena.');
+        if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
+            throw new NotFoundException('Skupina nebo šablona e-mailů nebyla nalezena.');
         }
         $appUser = $participantToken ? $participantToken->getAppUser() : null ?? $participant ? $participant->getAppUser() : null;
         if (null === $appUser) {
@@ -141,5 +138,4 @@ class ParticipantMailService
 
         return $mailData;
     }
-
 }
