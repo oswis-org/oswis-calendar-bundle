@@ -83,20 +83,32 @@ class ParticipantService
      */
     public function create(?Participant $participant): Participant
     {
+        $this->logger->debug("Will create new participant.");
         if (null === $participant || !($participant instanceof Participant)) {
+            $this->logger->error("Participant was NOT created because Participant is missing.");
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
         if (null === ($event = $participant->getEvent())) {
+            $this->logger->error("Participant was NOT created because Event is missing.");
             throw new OswisException('Přihláška není kompletní nebo je poškozená. Není vybrána žádná událost.');
         }
+        $eventName = $event->getName();
         if (null === ($contact = $participant->getContact())) {
+            $this->logger->error("Participant was NOT created because Contact is missing.");
             throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
         }
-        if (null !== ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = $appUser->getEmail())) {
+        $participantMailAddress = $contact->getEmail();
+        $participantName = $contact->getName();
+        if (null === ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = $appUser->getEmail())) {
             $this->logger->error("User not unique with string '$eMail' and participant was NOT created!");
             throw new UserNotUniqueException('Uživatel se stejným e-mailem nebo jménem již existuje!');
         }
-        $eventName = $event->getName();
+        if (null === $appUser) {
+            $this->logger->info("Creating new AppUser for participant with name '$participantName' and e-mail '$participantMailAddress'.");
+            $newAppUser = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress);
+            $contact->setAppUser($this->appUserService->create($newAppUser, false, true, false));
+            $this->logger->debug("New AppUser for participant '$participantMailAddress' created.");
+        }
         $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci '$eventName'."));
         $participant->removeEmptyNotesAndDetails();
         $this->em->persist($participant);
@@ -115,14 +127,21 @@ class ParticipantService
      */
     public function requestActivation(?Participant $participant): void
     {
-        if (null === $participant) {
+        if (null === $participant || null === $participant->getContact(false)) {
             $this->logger->error('Participant (empty) activation request FAILED.');
             throw new NotFoundException('Přihláška nenalezena.');
         }
+        $this->em->persist($participant);
+        $this->em->flush();
         $participantId = $participant->getId();
         $sent = 0;
-        foreach ($participant->getContactPersons() as $contactPerson) {
+        $contactPersonsCount = $participant->getContactPersons(false)->count();
+        $this->logger->info("Will send verification e-mail to $contactPersonsCount contact persons of participant $participantId.");
+        foreach ($participant->getContactPersons(false) as $contactPerson) {
             if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
+                $this->logger->notice("Contact person is not AbstractPerson or doesn't have AppUser assigned.");
+                $this->logger->notice("Contact person is of type ".get_class($contactPerson)."and is ".$contactPerson instanceof AbstractContact." AbstractContact");
+                $this->logger->notice("AppUser is ".(!empty($appUser) ? $appUser->getId() : 'empty') . '.');
                 continue;
             }
             try {
@@ -132,7 +151,6 @@ class ParticipantService
                 $this->logger->error("Participant ($participantId) activation request FAILED. ".$exception->getMessage());
             }
         }
-        $this->em->persist($participant);
         if ($sent < 1) {
             $this->logger->error("None activation e-mail was sent for participant ($participantId)!");
             throw new OswisException("Nepodařilo se odeslat aktivační e-mail k přihlášce.");

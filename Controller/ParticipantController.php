@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService;
 use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
