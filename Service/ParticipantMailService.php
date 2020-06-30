@@ -83,11 +83,11 @@ class ParticipantMailService
     public function sendUserMail(Participant $participant, AppUser $appUser, string $type, ?ParticipantToken $participantToken = null): void
     {
         $isIS = false;
-        if (null !== $participantToken && (!$participantToken->isParticipant($participant) || $participantToken->isAppUser($appUser))) {
+        if (null !== $participantToken && (!$participantToken->isParticipant($participant) || !$participantToken->isAppUser($appUser))) {
             throw new OswisException('Token není kompatibilní s přihláškou.');
         }
         if (null === ($mailCategory = $this->getMailCategoryByType($type))) {
-            throw new NotImplementedException($type, 'u přihlášek');
+            throw new NotImplementedException($type, 'u e-mailů k přihláškám');
         }
         if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Šablona e-mailu nebyla nalezena.');

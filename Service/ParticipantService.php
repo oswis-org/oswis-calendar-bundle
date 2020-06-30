@@ -99,7 +99,7 @@ class ParticipantService
         }
         $participantMailAddress = $contact->getEmail();
         $participantName = $contact->getName();
-        if (null === ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = $appUser->getEmail())) {
+        if (null === ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = $contact->getEmail())) {
             $this->logger->error("User not unique with string '$eMail' and participant was NOT created!");
             throw new UserNotUniqueException('Uživatel se stejným e-mailem nebo jménem již existuje!');
         }
