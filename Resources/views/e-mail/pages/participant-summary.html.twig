@@ -55,7 +55,7 @@
         {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
         {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %} {# TODO #}
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
-            {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with {'participant.event': participant.event} %}
+            {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with {'event': participant.event} %}
         </div>
         <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>

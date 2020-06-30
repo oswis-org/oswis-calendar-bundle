@@ -95,8 +95,9 @@ class ParticipantMailService
         if (null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Šablona e-mailu nebyla nalezena.');
         }
-        if (null === ($appUser = $participantToken->getAppUser() ?? $participant->getAppUser())) {
-            throw new NotFoundException('Kontakt nebyl nalezen.');
+        $appUser = $participantToken ? $participantToken->getAppUser() : null ?? $participant ? $participant->getAppUser() : null;
+        if (null === $appUser) {
+            throw new NotFoundException('Uživatel nebyl nalezen.');
         }
         $title = $twigTemplate->getName() ?? 'Přihláška na akci';
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
