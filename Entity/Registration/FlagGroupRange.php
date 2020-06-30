@@ -24,7 +24,12 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  */
 class FlagGroupRange implements NameableInterface
 {
-    use NameableTrait;
+    use NameableTrait {
+        getName as traitGetName;
+        getShortName as traitGetShortName;
+        getDescription as traitGetDescription;
+        getNote as traitGetNote;
+    }
     use EntityPublicTrait;
     use FlagAmountRangeTrait;
     use FormValueTrait;
@@ -157,5 +162,25 @@ class FlagGroupRange implements NameableInterface
         }
 
         return $groups;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->traitGetName() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getName() : null);
+    }
+
+    public function getShortName(): ?string
+    {
+        return $this->traitGetShortName() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getShortName() : null);
+    }
+
+    public function getDescription(): string
+    {
+        return $this->traitGetDescription() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getDescription() : '');
+    }
+
+    public function getNote(): string
+    {
+        return $this->traitGetNote() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getNote() : '');
     }
 }

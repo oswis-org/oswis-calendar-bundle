@@ -1,6 +1,86 @@
-<h3>
-    Shrnutí {{ f ? 'Vaší' : 'Tvé' }} přihlášky
-</h3>
+<h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} přihlášky</h2>
+
+<h3>Základní údaje</h3>
 <ul>
-    {% include '@OswisOrgOswisCalendar/other/summary/participant-summary-inner.html.twig' %}
+    <li>ID přihlášky: <span itemprop="reservationNumber">{{ participant.id }}</span></li>
+    <meta itemprop="reservationId" content="{{ participant.id }}"/>
+    <li>
+        <span itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</span>
+    </li>
+    {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}
+        <li><small>(poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small></li>
+    {% endif %}
 </ul>
+
+<h3>Účastník</h3>
+<ul>
+    <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
+        <b><span itemprop="name">{{ participant.contact.fullName }}</span></b><br>
+        <small itemprop="email">({{ participant.contact.email }})</small>
+    </li>
+    <li><b>Typ přihlášky: </b> {{ participant.participantCategory.name|default('neuveden') }}</li>
+    <li>
+        <b>Cena celkem: {{ participant.price }},- Kč</b><br>
+        <small>V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení přihlášky.</small>
+    </li>
+    <li><small>Záloha: {{ participant.depositValue }},- Kč + Doplatek: {{ participant.priceRest }},- Kč</small></li>
+    {% if participant.variableSymbol %}
+        <li><small>Variabilní symbol: {{ participant.variableSymbol }}</small></li>
+    {% endif %}
+    {% if participant.event.bankAccount(true).full %}
+        <li><small><b>Číslo účtu:</b> {{ participant.event.bankAccount(true).full }}</small></li>
+    {% endif %}
+    <li>Zaplaceno:&nbsp;{{ participant.paidPrice }},-&nbsp;Kč</li>
+    <li><b>Zbývá:&nbsp;{{ participant.remainingPrice }},-&nbsp;Kč</b></li>
+</ul>
+
+<h3>Událost</h3>
+<ul>
+    <li><b>{{ participant.event.name }}</b></li>
+    <li>
+        <small>
+            (od {{ participant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
+            do {{ participant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
+        </small>
+    </li>
+</ul>
+
+<h3>Kontaktní údaje</h3>
+<ul>
+    {% for detail in participant.contact.details|filter(detail => detail.content|default|length > 0) %}
+        <li>{{ detail.categoryName|default('Kontakt') }}: {{ detail.content }}</li>
+    {% endfor %}
+</ul>
+
+{% if participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0)|length > 0 %}
+    <h3>Další informace <small>(příznaky přihlášky)</small></h3>
+    <ul>
+        {% for participantFlagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
+            <li>
+                {{ participantFlagGroup.flagGroupRange.name|default('Ostatní příznaky') }}
+                <ul style="font-size: small;">
+                    {% for participantFlag in participantFlagGroup.participantFlags %}
+                        <li>
+                            {{ participantFlag.flagRange.name|default }}
+                            {% if participantFlag.textValue|default|length > 0 %}
+                                ({{ participantFlag.textValue }})
+                            {% endif %}
+                            {% if participantFlag.flagRange.price|default(0) != 0 %}
+                                <b>({{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč )</b>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if participant.notes|filter(note => note.textValue|default|length > 0)|length > 0 %}
+    <h3>Poznámky</h3>
+    <ul>
+        {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
+            <li><p><small>{{ note.textValue }}</small></p></li>
+        {% endfor %}
+    </ul>
+{% endif %}
