@@ -13,7 +13,7 @@
         {% block message_message_outer %}
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
-                    {% if isOrganization %}
+                    {% if eventParticipant.contact.organization %}
                         Vaše organizace {{ eventParticipant.contact.name }} byl{{ a }}
                         {{ eventParticipant.deleted|date("j. n. Y")|default('') }}
                         úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ eventParticipant.event.name }}</b>.

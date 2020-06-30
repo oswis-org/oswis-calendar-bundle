@@ -21,12 +21,12 @@
         {% block message_message_outer %}
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
-                    {% if isOrganization %}
+                    {% if participant.contact.organization|default %}
                         Vaše organizace {{ participant.contact.name }} byl{{ a }}
                     {% else %}
                         Byl{{ a }} js{{ f ? 'te' : 'i' }}
                     {% endif %}
-                    úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name }}</b>,
+                    úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>,
                     {% if participant.event.organizer.contact.name|default %}
                         kterou pořádá {{ participant.event.organizer.contact.name }}.
                     {% elseif participant.event.startDateTime|default %}
@@ -38,16 +38,16 @@
             </p>
         {% endblock message_message_outer %}
 
-        {% if contactPerson.appUser.activationRequestToken|default %}
-            <h2>Ověření přihlášky</h2>
+        {% if tokenUrl|default %}
+            <h3>Ověření přihlášky</h3>
             <p>
                 <b>Ještě je nutné přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
                 že zadaná adresa patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
             </p>
             <p>
                 <strong>
-                    <a href="{{ activationUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">
-                        {{ activationUrl }}
+                    <a href="{{ tokenUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">
+                        {{ tokenUrl }}
                     </a>
                 </strong>
                 <br>
@@ -57,17 +57,17 @@
 
         <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
             <meta itemprop="name" content="Potvrdit"/>
-            <link itemprop="url" href="{{ activationUrl }}"/>
+            <link itemprop="url" href="{{ tokenUrl }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
-                <link itemprop="url" href="{{ activationUrl }}">
+                <link itemprop="url" href="{{ tokenUrl }}">
             </div>
         </div>
 
         <div itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
             <meta itemprop="name" content="Potvrdit"/>
-            <link itemprop="url" href="{{ activationUrl }}"/>
+            <link itemprop="url" href="{{ tokenUrl }}"/>
             <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
-                <link itemprop="url" href="{{ activationUrl }}"/>
+                <link itemprop="url" href="{{ tokenUrl }}"/>
             </div>
         </div>
 
@@ -86,34 +86,34 @@
         <p>Pro zrušení nebo změnu přihlášky nás kontaktuj{{ f ? 'te' : '' }} odpovědí na tuto zprávu.</p>
 
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
-            <meta itemprop="name" content="{{ event.name }}"/>
-            <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
-            <meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
-            <meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
-            {% if event.place(true)|default %}
-                <div itemprop="event.place" itemscope itemtype="http://schema.org/Place">
-                    {% if event.place(true).name|default %}
-                        <meta itemprop="name" content="{{ event.place(true).name }}"/>
+            <meta itemprop="name" content="{{ participant.event.name }}"/>
+            <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
+            <meta itemprop="startDate" content="{{ participant.event.startDate|date("c") }}"/>
+            <meta itemprop="endDate" content="{{ participant.event.endDate|date("c") }}"/>
+            {% if participant.event.place(true)|default %}
+                <div itemprop="participant.event.place" itemscope itemtype="http://schema.org/Place">
+                    {% if participant.event.place(true).name|default %}
+                        <meta itemprop="name" content="{{ participant.event.place(true).name }}"/>
                     {% endif %}
                     <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                        {% if event.place(true).name|default %}
-                            <meta itemprop="name" content="{{ event.place(true).name }}"/>
+                        {% if participant.event.place(true).name|default %}
+                            <meta itemprop="name" content="{{ participant.event.place(true).name }}"/>
                         {% endif %}
-                        {% if event.place(true).streetAddress|default %}
-                            <meta itemprop="streetAddress" content="{{ event.place(true).streetAddress }}"/>
+                        {% if participant.event.place(true).streetAddress|default %}
+                            <meta itemprop="streetAddress" content="{{ participant.event.place(true).streetAddress }}"/>
                         {% endif %}
-                        {% if event.place(true).city|default %}
-                            <meta itemprop="addressLocality" content="{{ event.place(true).city }}"/>
+                        {% if participant.event.place(true).city|default %}
+                            <meta itemprop="addressLocality" content="{{ participant.event.place(true).city }}"/>
                         {% endif %}
-                        {% if event.place(true).postalCode|default %}
-                            <meta itemprop="postalCode" content="{{ event.place(true).postalCode }}"/>
+                        {% if participant.event.place(true).postalCode|default %}
+                            <meta itemprop="postalCode" content="{{ participant.event.place(true).postalCode }}"/>
                         {% endif %}
-                        {% if event.place(true).city|default %}
-                            <meta itemprop="addressRegion" content="{{ event.place(true).city }}"/>
+                        {% if participant.event.place(true).city|default %}
+                            <meta itemprop="addressRegion" content="{{ participant.event.place(true).city }}"/>
                         {% endif %}
-                        {% if event.place(true).url|default %}
+                        {% if participant.event.place(true).url|default %}
                             <!--suppress HtmlUnknownAttribute -->
-                            <meta itemprop="url" href="{{ event.place(true).url }}" content="{{ event.place(true).url }}"/>
+                            <meta itemprop="url" href="{{ participant.event.place(true).url }}" content="{{ participant.event.place(true).url }}"/>
                         {% endif %}
                         <meta itemprop=Country" content="CZ"/>
                     </div>
@@ -121,13 +121,13 @@
             {% endif %}
             {% if participant.event.organizer.contact.name|default %}
                 <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
-                    <meta itemprop="name" content="{{ event.organizer.contact.name }}"/>
+                    <meta itemprop="name" content="{{ participant.event.organizer.contact.name }}"/>
                     <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
                     <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
                 </div>
             {% endif %}
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_events')) }}"/>
+        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
     </div>
 {% endblock content_inner %}
