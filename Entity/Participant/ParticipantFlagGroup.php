@@ -132,6 +132,11 @@ class ParticipantFlagGroup implements BasicInterface
             $this->checkAvailableFlagRange($availFlagRange, $newParticipantFlags, $admin);
         }
         if (!$onlySimulate) {
+            foreach ($newParticipantFlags as $newParticipantFlag) {
+                if ($newParticipantFlag instanceof ParticipantFlag) {
+                    $newParticipantFlag->activate();
+                }
+            }
             $this->participantFlags = $newParticipantFlags;
         }
     }
