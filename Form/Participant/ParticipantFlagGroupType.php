@@ -12,6 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
@@ -32,36 +33,84 @@ class ParticipantFlagGroupType extends AbstractType
 {
     protected FlagRangeRepository $flagRangeRepository;
 
-    public function __construct(FlagRangeRepository $flagRangeRepository)
+    protected LoggerInterface $logger;
+
+    public function __construct(FlagRangeRepository $flagRangeRepository, LoggerInterface $logger)
     {
         $this->flagRangeRepository = $flagRangeRepository;
+        $this->logger = $logger;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('participantFlags', CollectionType::class, [
-            'entry_type' => ParticipantFlag::class,
-            'allow_extra_fields' => true,
-        ]);
+
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
         // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
             function (FormEvent $event) {
                 $data = $event->getData();
-                $form = $event->getForm();
-                $participantFlags = [];
-                $flagRanges = isset($data['flagRanges']) ? $data['flagRanges'] : [];
-                if (is_string($flagRanges)) {
-                    $flagRanges = [$flagRanges];
+                $flagRanges = $data['flagRanges'] ?? [];
+                // $data['flagRanges'] = is_string($data['flagRanges']) ? [$data['flagRanges']] : $data['flagRanges'];
+                $data['tempFlagRanges'] = is_string($data['flagRanges']) ? [$data['flagRanges']] : $data['flagRanges'];
+//                $data['tempFlagRanges'] ??= new ArrayCollection();
+//                if (is_string($flagRanges)) {
+//                    $flagRange = $this->flagRangeRepository->getFlagRange(['id' => (int)$flagRanges]);
+//                    $data['tempFlagRanges']->add($flagRange);
+//                }
+//                if (is_array($flagRanges)) {
+//                    foreach ($flagRanges as $flagRangeId) {
+//                        $flagRange = $this->flagRangeRepository->getFlagRange(['id' => (int)$flagRangeId]);
+//                        $data['tempFlagRanges']->add($flagRange);
+//                    }
+//                }
+
+                $this->logger->info("Temporary flag ranges (PRE_SUBMIT):");
+                foreach ($data['tempFlagRanges'] as $tempFlagRange) {
+                    $this->logger->info($tempFlagRange);
                 }
-                if (is_array($flagRanges)) {
-                    foreach ($flagRanges as $flagRangeId) {
-                        $participantFlags[] = new ParticipantFlag($this->flagRangeRepository->getFlagRange(['id' => (int)$flagRangeId]));
-                    }
-                    $data['participantFlags'] = $participantFlags;
-                    $event->setData($data);
+                $this->logger->info("----------------------");
+                $event->setData($data);
+            }
+        );
+        $builder->addEventListener(
+            FormEvents::SUBMIT,
+            function (FormEvent $event) {
+                $participantFlagGroup = $event->getData();
+                assert($participantFlagGroup instanceof ParticipantFlagGroup);
+
+                $this->logger->info("Temporary flag ranges (SUBMIT):");
+                $participantFlags = new ArrayCollection();
+                foreach ($participantFlagGroup->tempFlagRanges as $tempFlagRange) {
+                    assert($tempFlagRange instanceof FlagRange);
+                    $this->logger->info("Adding flag range: ".$tempFlagRange->getName());
+                    $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
+                    $participantFlags->add($participantFlag);
+                    $this->logger->info("Added participant flag: ".$participantFlag->getFlagRange()->getName());
                 }
+                $this->logger->info('$participantFlagGroup->setParticipantFlags($participantFlags);');
+                $participantFlagGroup->setParticipantFlags($participantFlags);
+                $this->logger->info("----------------------");
+                foreach ($event->getData()->getParticipantFlags() as $pFlag) {
+                    $this->logger->info("Participant flag: ".$pFlag->getFlagRange()->getName());
+                }
+                $this->logger->info("############################");
+//                $tempFlagRanges = $participantFlagGroup->tempFlagRanges ?? new ArrayCollection();
+//                $participantFlags = new ArrayCollection();
+//                foreach ($tempFlagRanges as $tempFlagRange) {
+//                    // $participantFlags->add(new ParticipantFlag($tempFlagRange));
+//                }
+//                $this->logger->info("PARTICIPANT FLAGS (in SUBMIT event):");
+//                foreach ($participantFlags as $item) {
+//                    assert($item instanceof ParticipantFlag);
+//                    $this->logger->info($item->getFlag()->getName());
+//                }
+//                $this->logger->info("::::::END:::::");
+//                $participantFlagGroup->setParticipantFlags($participantFlags);
+//                $event->setData($participantFlagGroup);
+//                $this->logger->info("Count (in submit):");
+//                $this->logger->info(count($event->getData()->getParticipantFlags()));
+//                $this->logger->info("::::::END:::::");
             }
         );
     }
@@ -124,6 +173,22 @@ class ParticipantFlagGroupType extends AbstractType
             $youCan = $isFormal ? 'můžete' : 'můžeš';
             $help .= "<p>Pro výběr více položek nebo zrušení $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
         }
+        $form->add(
+            "tempFlagRanges",
+            EntityType::class,
+            [
+                'class'              => FlagRange::class,
+                'label'              => false,
+                'required'           => false,
+                'help_html'          => true,
+                'choices'            => $flagGroupRange->getFlagRanges(),
+                'empty_data'         => new ArrayCollection(),
+                'multiple'           => true,
+                'attr'               => [],
+                'choice_label'       => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
+                'allow_extra_fields' => true,
+            ]
+        );
         $options = [
             'class'        => FlagRange::class,
             'mapped'       => false,
@@ -141,10 +206,6 @@ class ParticipantFlagGroupType extends AbstractType
             'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
             'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
         ];
-        if ($multiple) {
-            // $options['class'] = ParticipantFlag::class;
-        }
-        // $form->add("participantFlags", $multiple ? EntityType::class : ChoiceType::class, $options);
         $form->add("flagRanges", EntityType::class, $options);
         if ($flagGroupRange->isCategoryValueAllowed()) {
             $form->add(

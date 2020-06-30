@@ -11,6 +11,8 @@ use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
@@ -94,6 +96,14 @@ class ParticipantController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
                 assert($participant instanceof Participant);
+                foreach ($participant->getFlagGroups() as $flagGroup) {
+                    assert($flagGroup instanceof ParticipantFlagGroup);
+                    $this->logger->info("ParticipantFlagGroup: ".$flagGroup->getFlagCategory()->getName());
+                    foreach ($flagGroup->getParticipantFlags() as $participantFlag) {
+                        assert($participantFlag instanceof ParticipantFlag);
+                        $this->logger->info("-->ParticipantFlag: ".$participantFlag->getFlagRange()->getName());
+                    }
+                }
                 $participant = $this->participantService->create($participant);
                 $eventName = $participant->getEvent() ? $participant->getEvent()->getShortName() : null;
 

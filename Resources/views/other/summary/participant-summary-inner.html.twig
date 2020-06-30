@@ -8,13 +8,16 @@
         <br><small>(poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small>
     {% endif %}
 </li>
+
 <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
     <b><span itemprop="name">{{ participant.contact.fullName }}</span></b><br>
     <small itemprop="email">({{ participant.contact.email }})</small>
 </li>
+
 <li>
     <b>Typ: </b> {{ participant.participantCategory.name|default('neuveden') }}
 </li>
+
 <li>
     <b>Cena celkem: </b> {{ participant.price }},- Kč
     <br>
@@ -27,10 +30,12 @@
         <small><b>Číslo účtu:</b> {{ participant.event.bankAccount(true).full }}</small>
     {% endif %}
 </li>
+
 <li>
     <b>Zaplaceno:</b>&nbsp;{{ participant.paidPrice }},-&nbsp;Kč<br>
     <small><b>Zbývá:</b>&nbsp;{{ participant.remainingPrice }},-&nbsp;Kč</small>
 </li>
+
 <li>
     <b>{{ participant.event.name }}</b><br>
     <small>
@@ -38,25 +43,39 @@
         do {{ participant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
     </small>
 </li>
-{% for participantFlag in participant.participantFlags %}
+
+{% for participantFlagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
     <li>
-        {{ participantFlag.flagRange.name|default }}
-        {% if participantFlag.textValue|default|length > 0 %}
-            ({{ participantFlag.textValue }})
-        {% endif %}
-        {% if participantFlag.flagRange.price|default(0) != 0 %}
-            <small>
-                <b>({{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč)</b>
-            </small>
-        {% endif %}
+        {{ flagGroup.flagGroupRange.name|default('Ostatní příznaky') }}
+        <ul style="font-size: small;">
+            {% for participantFlag in flagGroup.participantFlags %}
+                <li>
+                    {{ participantFlag.flagRange.name|default }}
+                    {% if participantFlag.textValue|default|length > 0 %}
+                        ({{ participantFlag.textValue }})
+                    {% endif %}
+                    {% if participantFlag.flagRange.price|default(0) != 0 %}
+                        <b>({{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč )</b>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
     </li>
 {% endfor %}
+
 {% for detail in participant.contact.details|filter(detail => detail.content|default|length > 0) %}
-    <li>{{ detail.typeName|default('Kontakt') }}: {{ detail.content }}</li>
+    <li>{{ detail.categoryName|default('Kontakt') }}: {{ detail.content }}</li>
 {% endfor %}
-{% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
+
+{% if participant.notes|filter(note => note.textValue|default|length > 0)|length > 0 %}
     <li>
-        <b>Poznámka:</b>
-        <p><small>{{ note.textValue }}</small></p>
+        Poznámky:
+        <ul>
+            {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
+                <li>
+                    <p><small>{{ note.textValue }}</small></p>
+                </li>
+            {% endfor %}
+        </ul>
     </li>
-{% endfor %}
+{% endif %}

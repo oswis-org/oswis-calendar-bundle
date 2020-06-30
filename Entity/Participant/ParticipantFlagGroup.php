@@ -13,11 +13,14 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
+use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
+use function Symfony\Component\String\u;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -35,6 +38,8 @@ class ParticipantFlagGroup implements BasicInterface
      */
     protected ?FlagGroupRange $flagGroupRange = null;
 
+    public ?Collection $tempFlagRanges = null;
+
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag", mappedBy="participantFlagGroup", cascade={"all"}
@@ -45,6 +50,7 @@ class ParticipantFlagGroup implements BasicInterface
     public function __construct(?FlagGroupRange $flagGroupRange = null)
     {
         $this->participantFlags = new ArrayCollection();
+        $this->tempFlagRanges = new ArrayCollection();
         $this->flagGroupRange = $flagGroupRange;
     }
 
@@ -120,9 +126,9 @@ class ParticipantFlagGroup implements BasicInterface
             return; // Lists are same.
         }
         // 1. All flags are of allowed category.
-        if (!$newParticipantFlags->forAll(fn(ParticipantFlag $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
-            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
-        }
+//        if (!$newParticipantFlags->forAll(fn(ParticipantFlag $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
+//            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
+//        }
         // 2. Number of flags is in range of minInParticipant and maxInParticipant of FlagGroupRange. OK
         if (null !== $this->getFlagGroupRange()) {
             $this->getFlagGroupRange()->checkInRange($newParticipantFlags->count());
@@ -133,8 +139,13 @@ class ParticipantFlagGroup implements BasicInterface
         }
         if (!$onlySimulate) {
             foreach ($newParticipantFlags as $newParticipantFlag) {
-                if ($newParticipantFlag instanceof ParticipantFlag) {
-                    $newParticipantFlag->activate();
+                if (!($newParticipantFlag instanceof ParticipantFlag)) {
+                    throw new OswisException("Příznak není typu ParticipantFlag (je typu '".gettype($newParticipantFlag).", ".get_class($newParticipantFlag)."'). ");
+                }
+                $newParticipantFlag->activate();
+                try {
+                    $newParticipantFlag->setParticipantFlagGroup($this);
+                } catch (NotImplementedException $e) {
                 }
             }
             $this->participantFlags = $newParticipantFlags;

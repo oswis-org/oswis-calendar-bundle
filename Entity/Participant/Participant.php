@@ -138,9 +138,9 @@ class Participant implements BasicInterface
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_flag_range_connection",
+     *     name="calendar_participant_flag_group_connection",
      *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_flag_category_id", referencedColumnName="id", unique=true)}
+     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_flag_group_id", referencedColumnName="id", unique=true)}
      * )
      */
     protected ?Collection $flagGroups = null;
@@ -546,11 +546,11 @@ class Participant implements BasicInterface
         return $price < 0 ? 0 : $price;
     }
 
-    public function getFlagsPrice(?FlagCategory $flagCategory = null, ?string $flagType = null): int
+    public function getFlagsPrice(?FlagCategory $flagCategory = null, ?string $flagType = null, ?Flag $flag = null): int
     {
         $price = 0;
-        foreach ($this->getFlagGroups($flagCategory, $flagType) as $category) {
-            $price += $category instanceof ParticipantFlagGroup ? $category->getPrice() : 0;
+        foreach ($this->getParticipantFlags($flagCategory, $flagType, true, $flag) as $participantFlag) {
+            $price += $participantFlag instanceof ParticipantFlag ? $participantFlag->getPrice() : 0;
         }
 
         return $price;

@@ -46,8 +46,12 @@ class ParticipantFlag implements BasicInterface
      */
     protected ?ParticipantFlagGroup $participantFlagGroup = null;
 
-    public function __construct(?FlagRange $flagRange = null, ?string $textValue = null)
+    public function __construct(?FlagRange $flagRange = null, ParticipantFlagGroup $participantFlagGroup = null, ?string $textValue = null)
     {
+        try {
+            $this->setParticipantFlagGroup($participantFlagGroup);
+        } catch (NotImplementedException $e) {
+        }
         $this->setFlagRange($flagRange);
         $this->setTextValue($textValue);
     }
