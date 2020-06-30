@@ -94,6 +94,7 @@ class FlagCategory
             self::TYPE_LEFT,
             self::TYPE_PARTNER_HOMEPAGE,
             self::TYPE_SCHOOL,
+            self::TYPE_CONFIRMATIONS,
         ];
     }
 

@@ -43,7 +43,6 @@ class ParticipantFlagGroupType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
         // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
         $builder->addEventListener(
@@ -64,7 +63,6 @@ class ParticipantFlagGroupType extends AbstractType
 //                        $data['tempFlagRanges']->add($flagRange);
 //                    }
 //                }
-
                 $this->logger->info("Temporary flag ranges (PRE_SUBMIT):");
                 foreach ($data['tempFlagRanges'] as $tempFlagRange) {
                     $this->logger->info($tempFlagRange);
@@ -78,7 +76,6 @@ class ParticipantFlagGroupType extends AbstractType
             function (FormEvent $event) {
                 $participantFlagGroup = $event->getData();
                 assert($participantFlagGroup instanceof ParticipantFlagGroup);
-
                 $this->logger->info("Temporary flag ranges (SUBMIT):");
                 $participantFlags = new ArrayCollection();
                 foreach ($participantFlagGroup->tempFlagRanges as $tempFlagRange) {
@@ -141,8 +138,8 @@ class ParticipantFlagGroupType extends AbstractType
 
     public static function addCheckboxes(FormInterface $form, ParticipantFlagGroup $participantFlagCategory): void
     {
-        $flagCategoryRange = $participantFlagCategory->getFlagGroupRange();
-        if (null === $flagCategoryRange) {
+        $flagGroupRange = $participantFlagCategory->getFlagGroupRange();
+        if (null === $flagGroupRange) {
             return;
         }
         $form->add(
@@ -150,8 +147,8 @@ class ParticipantFlagGroupType extends AbstractType
             CollectionType::class,
             [
                 'entry_type' => ParticipantFlagType::class,
-                'label'      => $flagCategoryRange->getName() ?? 'Ostatní příznaky',
-                'help'       => $flagCategoryRange->getDescription() ?? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>',
+                'label'      => $flagGroupRange->getName() ?? 'Ostatní příznaky',
+                'help'       => $flagGroupRange->getDescription() ?? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>',
                 'help_html'  => true,
             ]
         );
@@ -184,29 +181,32 @@ class ParticipantFlagGroupType extends AbstractType
                 'choices'            => $flagGroupRange->getFlagRanges(),
                 'empty_data'         => new ArrayCollection(),
                 'multiple'           => true,
-                'attr'               => [],
+                'attr'               => ['style' => 'display:none'],
                 'choice_label'       => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
                 'allow_extra_fields' => true,
             ]
         );
-        $options = [
-            'class'        => FlagRange::class,
-            'mapped'       => false,
-            'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
-            'help_html'    => true,
-            'help'         => $help,
-            'required'     => !empty($min),
-            'choices'      => $choices,
-            'expanded'     => $expanded,
-            'empty_data'   => new ArrayCollection(),
-            'multiple'     => $multiple,
-            'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null],
-            'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
-            'choice_attr'  => fn(FlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
-            'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
-            'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
-        ];
-        $form->add("flagRanges", EntityType::class, $options);
+        $form->add(
+            "flagRanges",
+            EntityType::class,
+            [
+                'class'        => FlagRange::class,
+                'mapped'       => false,
+                'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
+                'help_html'    => true,
+                'help'         => $help,
+                'required'     => !empty($min),
+                'choices'      => $choices,
+                'expanded'     => $expanded,
+                'empty_data'   => new ArrayCollection(),
+                'multiple'     => $multiple,
+                'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null],
+                'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
+                'choice_attr'  => fn(FlagRange $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
+                'group_by'     => fn(FlagRange $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
+                'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
+            ]
+        );
         if ($flagGroupRange->isCategoryValueAllowed()) {
             $form->add(
                 "textValue",

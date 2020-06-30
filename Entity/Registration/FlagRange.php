@@ -31,6 +31,7 @@ class FlagRange implements NameableInterface
     use NameableTrait {
         getName as traitGetName;
         getShortName as traitGetShortName;
+        getDescription as traitGetDescription;
     }
     use EntityPublicTrait;
     use CapacityTrait;
@@ -174,5 +175,10 @@ class FlagRange implements NameableInterface
     public function getShortName(): ?string
     {
         return $this->traitGetShortName() ?? ($this->getFlag() ? $this->getFlag()->getShortName() : null);
+    }
+
+    public function getDescription(): string
+    {
+        return $this->traitGetDescription() ?? ($this->getFlag() ? $this->getFlag()->getDescription() : '');
     }
 }

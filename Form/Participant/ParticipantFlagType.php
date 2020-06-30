@@ -5,8 +5,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRangeCategoryRange;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -25,7 +28,10 @@ class ParticipantFlagType extends AbstractType
 
     public function onPreSetData(FormEvent $event): void
     {
-        if (null === ($participantFlag = $event->getData()) || null === ($flagRange = $participantFlag->getFlagRange())) {
+        if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof ParticipantFlag)) {
+            return;
+        }
+        if (null === ($flagRange = $participantFlag->getFlagRange()) || !($flagRange instanceof FlagRange)) {
             return;
         }
         $event->getForm()->add(
