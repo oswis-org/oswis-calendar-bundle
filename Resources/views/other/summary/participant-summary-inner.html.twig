@@ -1,11 +1,11 @@
 <li>
     ID přihlášky: <span itemprop="reservationNumber">{{ participant.id }}</span><br>
     <meta itemprop="reservationId" content="{{ participant.id }}"/>
-    <small itemprop="bookingTime" content="{{ participant.createdDateTime|date("c") }}">
-        ({{ participant.createdDateTime|date("j. n. Y, H:i") }})
+    <small itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">
+        ({{ participant.createdAt|date("j. n. Y, H:i") }})
     </small>
-    {% if participant.createdDateTime|date("c") != participant.updatedDateTime|date("c") %}
-        <br><small>(poslední změna {{ participant.updatedDateTime|date("j. n. Y, H:i") }})</small>
+    {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}
+        <br><small>(poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small>
     {% endif %}
 </li>
 <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
@@ -13,7 +13,7 @@
     <small itemprop="email">({{ participant.contact.email }})</small>
 </li>
 <li>
-    <b>Typ: </b> {{ participant.participantType.name|default('neuveden') }}
+    <b>Typ: </b> {{ participant.participantCategory.name|default('neuveden') }}
 </li>
 <li>
     <b>Cena celkem: </b> {{ participant.price }},- Kč
@@ -38,20 +38,15 @@
         do {{ participant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
     </small>
 </li>
-{% for study in participant.contact.studies|filter(s => s.name|default|length > 0) %}
+{% for participantFlag in participant.participantFlags %}
     <li>
-        {{ study.organization.name }}
-    </li>
-{% endfor %}
-{% for flagConnection in participant.flagRangeConnections %}
-    <li>
-        {{ flagConnection.flag.name|default }}
-        {% if flagConnection.textValue|default|length > 0 %}
-            ({{ flagConnection.textValue }})
+        {{ participantFlag.flagRange.name|default }}
+        {% if participantFlag.textValue|default|length > 0 %}
+            ({{ participantFlag.textValue }})
         {% endif %}
-        {% if flagConnection.flag.price|default(0) != 0 %}
+        {% if participantFlag.flagRange.price|default(0) != 0 %}
             <small>
-                <b>({{ flagConnection.flag.price > 0 ? '+' : '' }}{{ flagConnection.flag.price }},- Kč)</b>
+                <b>({{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč)</b>
             </small>
         {% endif %}
     </li>

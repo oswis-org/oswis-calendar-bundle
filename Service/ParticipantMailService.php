@@ -89,7 +89,10 @@ class ParticipantMailService
         if (null === ($mailCategory = $this->getMailCategoryByType($type))) {
             throw new NotImplementedException($type, 'u e-mailů k přihláškám');
         }
-        if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
+        if (null === ($group = $this->getMailGroup($participant, $mailCategory))) {
+            throw new NotFoundException('Skupina e-mailů nebyla nalezena.');
+        }
+        if (null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Šablona e-mailu nebyla nalezena.');
         }
         if (null === ($appUser = $participantToken->getAppUser() ?? $participant->getAppUser())) {
@@ -107,7 +110,7 @@ class ParticipantMailService
         $templatedEmail = $participantMail->getTemplatedEmail();
         $data = $this->embedQrPayments($templatedEmail, $participant, $data);
         $this->em->persist($participantMail);
-        $templateName = $twigTemplate->getTemplateName() ?? '@OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig';
+        $templateName = $twigTemplate->getTemplateName() ?? '@OswisOrgOswisCalendar/e-mail/pages/participant-universal.html.twig';
         $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();
     }

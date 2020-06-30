@@ -68,8 +68,8 @@ class ParticipantMail extends AbstractMail
     protected ?AppUser $appUser = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUserToken", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="app_user_token_id", referencedColumnName="id")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(name="participant_token_id", referencedColumnName="id")
      */
     protected ?ParticipantToken $participantToken = null;
 
@@ -81,7 +81,7 @@ class ParticipantMail extends AbstractMail
         ParticipantToken $token = null,
         ?string $messageId = null
     ) {
-        parent::__construct($subject, $this->appUser->getEmail(), $type, $this->appUser->getName(), $messageId);
+        parent::__construct($subject, $appUser->getEmail(), $type, $appUser->getName(), $messageId);
         $this->participantToken = $token;
         $this->participant = $participant;
         $this->appUser = $appUser;

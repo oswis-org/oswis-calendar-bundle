@@ -2,30 +2,30 @@
 <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'slug': event.slug})) }}"/>
 <meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
 <meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
-{% if event.location|default %}
+{% if event.place(true)|default %}
     <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
-        {% if event.location.name|default %}
-            <meta itemprop="name" content="{{ event.location.name }}"/>
+        {% if event.place(true).name|default %}
+            <meta itemprop="name" content="{{ event.place(true).name }}"/>
         {% endif %}
         <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-            {% if event.location.name|default %}
-                <meta itemprop="name" content="{{ event.location.name }}"/>
+            {% if event.place(true).name|default %}
+                <meta itemprop="name" content="{{ event.place(true).name }}"/>
             {% endif %}
-            {% if event.location.streetAddress|default %}
-                <meta itemprop="streetAddress" content="{{ event.location.streetAddress }}"/>
+            {% if event.place(true).streetAddress|default %}
+                <meta itemprop="streetAddress" content="{{ event.place(true).streetAddress }}"/>
             {% endif %}
-            {% if event.location.city|default %}
-                <meta itemprop="addressLocality" content="{{ event.location.city }}"/>
+            {% if event.place(true).city|default %}
+                <meta itemprop="addressLocality" content="{{ event.place(true).city }}"/>
             {% endif %}
-            {% if event.location.postalCode|default %}
-                <meta itemprop="postalCode" content="{{ event.location.postalCode }}"/>
+            {% if event.place(true).postalCode|default %}
+                <meta itemprop="postalCode" content="{{ event.place(true).postalCode }}"/>
             {% endif %}
-            {% if event.location.city|default %}
-                <meta itemprop="addressRegion" content="{{ event.location.city }}"/>
+            {% if event.place(true).city|default %}
+                <meta itemprop="addressRegion" content="{{ event.place(true).city }}"/>
             {% endif %}
-            {% if event.location.url|default %}
+            {% if event.place(true).url|default %}
                 <!--suppress HtmlUnknownAttribute -->
-                <meta itemprop="url" href="{{ event.location.url }}" content="{{ event.location.url }}"/>
+                <meta itemprop="url" href="{{ event.place(true).url }}" content="{{ event.place(true).url }}"/>
             {% endif %}
             <meta itemprop=Country" content="CZ"/>
         </div>
