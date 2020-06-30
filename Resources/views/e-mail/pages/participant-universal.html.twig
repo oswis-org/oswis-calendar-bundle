@@ -1,6 +1,6 @@
-{% if 'summary' == type %}
+{% if 'activation' == type %}
     {% set parentTemplate = '@OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig' %}
-{% elseif 'verification' == type %}
+{% elseif 'activation-request' == type %}
     {% set parentTemplate = '@OswisOrgOswisCalendar/e-mail/pages/participant-verification.html.twig' %}
 {% else %}
     {% set parentTemplate = '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
