@@ -43,7 +43,12 @@
             <p>
                 <b>Ještě je nutné přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
                 že zadaná adresa patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
+                <a href="{{ tokenUrl }}" class="token-box" title="Odkaz pro aktivaci účtu" target="_blank">{{ tokenUrl }}</a>
+                {% if participantToken.validHours|default %}
+                    <br><small>Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.</small>
+                {% endif %}
             </p>
+
             <p>
                 <strong>
                     <a href="{{ tokenUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">

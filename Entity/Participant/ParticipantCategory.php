@@ -89,7 +89,7 @@ class ParticipantCategory implements NameableInterface
 
     public function setFormal(?bool $formal): void
     {
-        $this->formal = $formal ?? false;
+        $this->formal = $formal;
     }
 
     public static function getAllowedTypesDefault(): array
@@ -109,9 +109,9 @@ class ParticipantCategory implements NameableInterface
         return [];
     }
 
-    public function isFormal(): bool
+    public function isFormal(): ?bool
     {
-        return (bool)$this->formal;
+        return $this->formal;
     }
 
     public function isManager(): bool
