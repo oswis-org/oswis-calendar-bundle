@@ -42,6 +42,7 @@
                     {% if range.note %}
                         <div class="text-muted mt-2 mb-2" itemprop="description">{{ range.note }}</div>
                     {% endif %}
+                    <div style="font-size: 1.3em;">
                     {% if range.rangeActive %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
                             <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
@@ -61,6 +62,7 @@
                             Zbývá {{ date(range.endDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
+                    </div>
                     <span itemprop="availability" content="http://schema.org/InStock"></span>
                     <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
                     <div itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
