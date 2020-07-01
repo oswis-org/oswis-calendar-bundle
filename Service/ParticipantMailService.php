@@ -112,7 +112,9 @@ class ParticipantMailService
             'isIS'             => $isIS,
         ];
         $templatedEmail = $participantMail->getTemplatedEmail();
-        $data = $this->embedQrPayments($templatedEmail, $participant, $data);
+        if (ParticipantMail::TYPE_ACTIVATION === $type) {
+            $data = $this->embedQrPayments($templatedEmail, $participant, $data);
+        }
         $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName() ?? '@OswisOrgOswisCalendar/e-mail/pages/participant-universal.html.twig';
         $this->mailService->sendEMail($participantMail, $templateName, $data);
