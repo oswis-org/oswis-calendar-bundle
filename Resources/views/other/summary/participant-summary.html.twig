@@ -56,11 +56,11 @@
     <h3>Další informace <small>(příznaky přihlášky)</small></h3>
     <ul>
         {% for participantFlagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
-            <li>
+            <li style="color: {{ participantFlagGroup.flagCategory.color|default('inherit') }}">
                 {{ participantFlagGroup.flagGroupRange.name|default('Ostatní příznaky') }}
                 <ul style="font-size: small;">
                     {% for participantFlag in participantFlagGroup.participantFlags %}
-                        <li>
+                        <li style="color: {{ participantFlag.flag.color|default('inherit') }}">
                             {{ participantFlag.flagRange.name|default }}
                             {% if participantFlag.textValue|default|length > 0 %}
                                 ({{ participantFlag.textValue }})

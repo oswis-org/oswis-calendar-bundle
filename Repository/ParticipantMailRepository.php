@@ -10,12 +10,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\Persistence\ManagerRegistry;
-use Exception;
 use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
-use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
-use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMail;
 
 class ParticipantMailRepository extends ServiceEntityRepository
 {

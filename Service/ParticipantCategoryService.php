@@ -11,7 +11,6 @@ use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantCategoryRepository;
-use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Psr\Log\LoggerInterface;
 
 class ParticipantCategoryService
