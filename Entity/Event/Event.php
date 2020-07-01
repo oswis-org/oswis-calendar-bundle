@@ -179,7 +179,7 @@ class Event implements NameableInterface
         $this->setFieldsFromPublicity($publicity);
     }
 
-    public function getImage(bool $recursive = false, ?string $type = null): ?EventImage
+    public function getImage(bool $recursive = false, string $type = EventImage::TYPE_IMAGE): ?EventImage
     {
         $image = $this->getImages($type)->first();
         if ($image instanceof EventImage) {
