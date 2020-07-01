@@ -5,6 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\MediaObject;
 
+use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken;
 use OswisOrg\OswisCalendarBundle\Controller\MediaObject\EventImageAction;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
@@ -36,6 +37,13 @@ use Symfony\Component\HttpFoundation\File\File;
  */
 class EventImage extends AbstractImage
 {
+    public const TYPE_LEAFLET = 'leaflet';
+    public const TYPE_IMAGE = 'image';
+    public const TYPE_SOCIAL = 'social';
+    public const TYPE_MAP = 'map';
+    public const TYPE_POSTER = 'poster';
+    public const TYPE_GALLERY = 'gallery';
+
     use BasicTrait;
     use TypeTrait;
     use PriorityTrait;
@@ -85,5 +93,17 @@ class EventImage extends AbstractImage
         if (null !== $event && $this->event !== $event) {
             $event->addImage($this);
         }
+    }
+    
+    public static function getAllowedTypesDefault(): array
+    {
+        return [
+         self::TYPE_LEAFLET,
+         self::TYPE_IMAGE,
+         self::TYPE_SOCIAL,
+         self::TYPE_MAP,
+         self::TYPE_POSTER,
+         self::TYPE_GALLERY,
+        ];
     }
 }
