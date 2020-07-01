@@ -377,7 +377,6 @@ class Participant implements BasicInterface
     /**
      * @throws NotImplementedException
      * @throws OswisException
-     * @noinspection PhpVoidFunctionResultUsedInspection
      */
     public function setFlagGroupsFromRegRange(): void
     {
@@ -388,9 +387,11 @@ class Participant implements BasicInterface
         if (!$this->getFlagGroups()->isEmpty()) {
             throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
         }
-        $regRange->getFlagGroupRanges(null, null, true, true)->map(
-            fn(FlagGroupRange $flagGroupRange) => $this->getFlagGroupRanges()->contains($flagGroupRange) ? null : $this->addFlagGroupRange($flagGroupRange)
-        );
+        foreach ($regRange->getFlagGroupRanges(null, null, true, true) as $flagGroupRange) {
+            if ($flagGroupRange instanceof FlagGroupRange) {
+                $this->addFlagGroupRange($flagGroupRange);
+            }
+        }
     }
 
     public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
@@ -680,15 +681,16 @@ class Participant implements BasicInterface
         return null !== $this->getContact() ? $this->getContact()->getName() : null;
     }
 
+    /**
+     * @param ParticipantNote|null $note
+     *
+     * @throws NotImplementedException
+     */
     public function removeNote(?ParticipantNote $note): void
     {
-        null !== $note && $this->notes->removeElement($note);
-    }
-
-    public function addNote(?ParticipantNote $note): void
-    {
-        if (null !== $note && !$this->getNotes()->contains($note)) {
-            $this->getNotes()->add($note);
+        if (null !== $note) {
+            $this->getNotes()->removeElement($note);
+            $note->setParticipant(null);
         }
     }
 
@@ -697,9 +699,38 @@ class Participant implements BasicInterface
         return $this->notes ??= new ArrayCollection();
     }
 
-    public function setNotes(?Collection $notes): void
+    /**
+     * @param Collection|null $newNotes
+     *
+     * @throws NotImplementedException
+     */
+    public function setNotes(?Collection $newNotes): void
     {
-        $this->notes = $notes ?? new ArrayCollection();
+        $this->notes ??= new ArrayCollection();
+        $newNotes ??= new ArrayCollection();
+        foreach ($this->notes as $oldNote) {
+            if (!$newNotes->contains($oldNote)) {
+                $this->removeNote($oldNote);
+            }
+        }
+        foreach ($newNotes as $newNote) {
+            if (!$this->notes->contains($newNote)) {
+                $this->addNote($newNote);
+            }
+        }
+    }
+
+    /**
+     * @param ParticipantNote|null $note
+     *
+     * @throws NotImplementedException
+     */
+    public function addNote(?ParticipantNote $note): void
+    {
+        if (null !== $note && !$this->getNotes()->contains($note)) {
+            $this->getNotes()->add($note);
+            $note->setParticipant($this);
+        }
     }
 
     /**
@@ -824,6 +855,9 @@ class Participant implements BasicInterface
         return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
     }
 
+    /**
+     * @throws NotImplementedException
+     */
     public function removeEmptyNotesAndDetails(): void
     {
         $this->removeEmptyParticipantNotes();
@@ -839,6 +873,9 @@ class Participant implements BasicInterface
         }
     }
 
+    /**
+     * @throws NotImplementedException
+     */
     public function removeEmptyParticipantNotes(): void
     {
         $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));

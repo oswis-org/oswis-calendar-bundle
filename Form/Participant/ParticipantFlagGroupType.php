@@ -45,6 +45,8 @@ class ParticipantFlagGroupType extends AbstractType
             function (FormEvent $event) {
                 $data = $event->getData();
                 if (empty($data)) {
+                    $data = ['flagRanges' => new ArrayCollection()];
+
                     return;
                 }
                 $this->logger->info("Export".var_export($data, true));
@@ -149,7 +151,7 @@ class ParticipantFlagGroupType extends AbstractType
                 'required'           => false,
                 'help_html'          => true,
                 'choices'            => $flagGroupRange->getFlagRanges(),
-                'empty_data'         => new ArrayCollection(),
+                // 'empty_data'         => null,
                 'multiple'           => true,
                 'attr'               => ['style' => 'display:none'],
                 'choice_label'       => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),
@@ -168,7 +170,7 @@ class ParticipantFlagGroupType extends AbstractType
                 'required'     => !empty($min),
                 'choices'      => $choices,
                 'expanded'     => $expanded,
-                'empty_data'   => new ArrayCollection(),
+                // 'empty_data'   => new ArrayCollection(),
                 'multiple'     => $multiple,
                 'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null],
                 'choice_label' => fn(FlagRange $flagRange, $key, $value) => $flagRange->getExtendedName(),

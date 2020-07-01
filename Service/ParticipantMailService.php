@@ -97,7 +97,7 @@ class ParticipantMailService
         if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Skupina nebo šablona e-mailů nebyla nalezena.');
         }
-        $appUser = $participantToken ? $participantToken->getAppUser() : null ?? $participant ? $participant->getAppUser() : null;
+        $appUser = ($participantToken ? $participantToken->getAppUser() : null) ?? $participant->getAppUser();
         if (null === $appUser) {
             throw new NotFoundException('Uživatel nebyl nalezen.');
         }

@@ -7,7 +7,6 @@ namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
@@ -16,8 +15,6 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -58,21 +55,6 @@ class ParticipantType extends AbstractType
         $this->addParticipantFlagGroupFields($builder, $participant);
         self::addParticipantNotesFields($builder);
         self::addSubmitButton($builder);
-        $builder->addEventListener(
-            FormEvents::POST_SUBMIT,
-            function (FormEvent $event) {
-                $data = $event->getData();
-                $this->logger->info("DataType: ".get_class($data));
-                assert($data instanceof Participant);
-                foreach ($data->getFlagGroups() as $flagGroup) {
-                    assert($flagGroup instanceof ParticipantFlagGroup);
-                    $this->logger->info("FLAG_GROUP: ".$flagGroup->getFlagCategory()->getName());
-                    $this->logger->info(" -> : ".$flagGroup->getParticipantFlags(false)->count());
-                }
-            }
-        );
-
-
     }
 
     public static function addContactField(FormBuilderInterface $builder): void

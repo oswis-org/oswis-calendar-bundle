@@ -5,7 +5,6 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\MediaObject;
 
-use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken;
 use OswisOrg\OswisCalendarBundle\Controller\MediaObject\EventImageAction;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
@@ -79,6 +78,18 @@ class EventImage extends AbstractImage
         $this->setFieldsFromPublicity($publicity);
     }
 
+    public static function getAllowedTypesDefault(): array
+    {
+        return [
+            self::TYPE_LEAFLET,
+            self::TYPE_IMAGE,
+            self::TYPE_SOCIAL,
+            self::TYPE_MAP,
+            self::TYPE_POSTER,
+            self::TYPE_GALLERY,
+        ];
+    }
+
     public function getEvent(): ?Event
     {
         return $this->event;
@@ -93,17 +104,5 @@ class EventImage extends AbstractImage
         if (null !== $event && $this->event !== $event) {
             $event->addImage($this);
         }
-    }
-    
-    public static function getAllowedTypesDefault(): array
-    {
-        return [
-         self::TYPE_LEAFLET,
-         self::TYPE_IMAGE,
-         self::TYPE_SOCIAL,
-         self::TYPE_MAP,
-         self::TYPE_POSTER,
-         self::TYPE_GALLERY,
-        ];
     }
 }
