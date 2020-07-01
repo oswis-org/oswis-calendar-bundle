@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
@@ -104,8 +105,11 @@ class ParticipantMailService
         $title = $twigTemplate->getName() ?? 'Přihláška na akci';
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
         $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+        $contact = $participant->getContact();
         $data = [
             'participant'      => $participant,
+            'contact'          => $contact,
+            'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
             'category'         => $mailCategory,
             'type'             => $type,
             'participantToken' => $participantToken,

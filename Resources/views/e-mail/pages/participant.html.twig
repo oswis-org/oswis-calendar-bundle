@@ -1,8 +1,8 @@
 {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 {% set contact = participant is defined ? participant.contact : null %}
-{% set f = f is defined ? f : (contact.formal is defined ? contact.formal : true) %}
+{% set f = f is defined ? f : (participant.formal is defined ? participant.formal : true) %}
 {% set a = a is defined ? a : (contact.czechSuffixA is defined ? contact.czechSuffixA : '') %}
-{% set salName = salutationName|default %}
+{% set salName = salutationName|default(contact.salutationName|default) %}
 
 {% set tokenUrl = participantToken|default and participantToken.appUser|default
     ? absolute_url(path('oswis_org_oswis_calendar_participant_process_token',

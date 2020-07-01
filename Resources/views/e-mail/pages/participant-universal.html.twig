@@ -1,3 +1,8 @@
+{% set contact = participant is defined ? participant.contact : null %}
+{% set f = f is defined ? f : (participant.formal is defined ? participant.formal : true) %}
+{% set a = a is defined ? a : (contact.czechSuffixA is defined ? contact.czechSuffixA : '') %}
+{% set salName = salutationName|default(contact.salutationName|default) %}
+
 {% if 'activation' == type %}
     {% set parentTemplate = '@OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig' %}
 {% elseif 'activation-request' == type %}
