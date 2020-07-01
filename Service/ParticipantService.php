@@ -154,7 +154,7 @@ class ParticipantService
                 $this->logger->error("Participant ($participantId) activation request FAILED. ".$exception->getMessage());
             }
         }
-        if ($sent < 1) {
+        if ($sent < 1 && $contactPersonsCount > 0) {
             $this->logger->error("None activation e-mail was sent for participant ($participantId)!");
             throw new OswisException("Nepodařilo se odeslat aktivační e-mail k přihlášce.");
         }
