@@ -48,16 +48,6 @@
                     <br><small>Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.</small>
                 {% endif %}
             </p>
-
-            <p>
-                <strong>
-                    <a href="{{ tokenUrl }}" itemprop="confirmReservationUrl" title="Potvrzení přihlášky" target="_blank">
-                        {{ tokenUrl }}
-                    </a>
-                </strong>
-                <br>
-                <small>Odkaz je platný 24 hodin od vygenerování.</small>
-            </p>
         {% endif %}
 
         <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
