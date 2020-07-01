@@ -30,7 +30,6 @@
         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         {% if event.subEvents|length > 0 %}
-            <h3>Zahrnuje akce:</h3>
             {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig' with {'subEvents': event.subEvents} %}
         {% endif %}
         {% if event.superEvent|default %}
