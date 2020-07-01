@@ -9,8 +9,11 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
+use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -40,7 +43,26 @@ class EventGroup implements NameableInterface
         }
     }
 
-    public function getEvents(?string $eventType = null, ?int $year = null, bool $deleted = true): Collection
+    public static function sortArray(array &$items): void {
+        usort(
+            $items,
+            static function (Event $arg1, Event $arg2) {
+                return DateTimeUtils::cmpDate($arg2->getStartDateTime(), $arg1->getStartDateTime());
+            }
+        );
+    }
+
+    public static function sortCollection(Collection $items, bool $reverse = false): Collection {
+        $itemsArray = $items->toArray();
+        self::sortArray($itemsArray);
+        if ($reverse) {
+            $itemsArray = array_reverse($reverse);
+        }
+
+        return new ArrayCollection($itemsArray);
+    }
+
+    public function getEvents(?string $eventType = null, ?int $year = null, bool $deleted = true, bool $sort = false): Collection
     {
         $events = $this->events ??= new ArrayCollection();
         if (!$deleted) {
@@ -53,7 +75,7 @@ class EventGroup implements NameableInterface
             $events = $events->filter(fn(Event $event) => $event->getStartYear() && $year === $event->getStartYear());
         }
 
-        return $events;
+        return $sort ? self::sortCollection($events) : $events;
     }
 
     public function removeEvent(?Event $contact): void
