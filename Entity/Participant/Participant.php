@@ -556,6 +556,22 @@ class Participant implements BasicInterface
         return $price;
     }
 
+    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
+    {
+        $participantFlags = new ArrayCollection();
+        foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
+            if ($flagGroup instanceof ParticipantFlagGroup) {
+                foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
+                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
+                        $participantFlags->add($participantFlag);
+                    }
+                }
+            }
+        }
+
+        return $participantFlags;
+    }
+
     /**
      * Gets part of price that is marked as deposit.
      * @return int
@@ -730,22 +746,6 @@ class Participant implements BasicInterface
     public function hasFlag(?Flag $flag = null, bool $onlyActive = true, ?FlagCategory $flagCategory = null, ?string $flagType = null): bool
     {
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->count() > 0;
-    }
-
-    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
-    {
-        $participantFlags = new ArrayCollection();
-        foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
-            if ($flagGroup instanceof ParticipantFlagGroup) {
-                foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
-                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
-                        $participantFlags->add($participantFlag);
-                    }
-                }
-            }
-        }
-
-        return $participantFlags;
     }
 
     public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection

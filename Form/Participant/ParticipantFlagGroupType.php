@@ -15,11 +15,6 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Exception\AlreadySubmittedException;
-use Symfony\Component\Form\Exception\LogicException;
-use Symfony\Component\Form\Exception\OutOfBoundsException;
-use Symfony\Component\Form\Exception\RuntimeException;
-use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -101,7 +96,7 @@ class ParticipantFlagGroupType extends AbstractType
         if (null === $flagGroupRange || null === $flagCategory) {
             return;
         }
-        $isFormal = $participant && false === $participant->isFormal() ? false : true;
+        $isFormal = false !== $participant->isFormal();
         $min = $flagGroupRange->getMin();
         $max = $flagGroupRange->getMax();
         if ($flagGroupRange->isFlagValueAllowed()) {

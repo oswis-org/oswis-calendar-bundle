@@ -96,14 +96,6 @@ class ParticipantController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
                 assert($participant instanceof Participant);
-                foreach ($participant->getFlagGroups() as $flagGroup) {
-                    assert($flagGroup instanceof ParticipantFlagGroup);
-                    $this->logger->info("ParticipantFlagGroup: ".$flagGroup->getFlagCategory()->getName());
-                    foreach ($flagGroup->getParticipantFlags() as $participantFlag) {
-                        assert($participantFlag instanceof ParticipantFlag);
-                        $this->logger->info("-->ParticipantFlag: ".$participantFlag->getFlagRange()->getName());
-                    }
-                }
                 $participant = $this->participantService->create($participant);
                 $eventName = $participant->getEvent() ? $participant->getEvent()->getShortName() : null;
 

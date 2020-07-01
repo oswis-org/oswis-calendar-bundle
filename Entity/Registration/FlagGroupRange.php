@@ -149,8 +149,14 @@ class FlagGroupRange implements NameableInterface
         return $this->getFlagRanges()->exists(fn(FlagRange $flagRange) => $flagRange->isFormValueAllowed());
     }
 
-    public function getFlagGroupName(): ?string {
+    public function getFlagGroupName(): ?string
+    {
         return $this->getName() ?? $this->getFlagCategory() ? $this->getFlagCategory()->getName() : null;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->traitGetName() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getName() : null);
     }
 
     public function getFlagsGroupNames(): array
@@ -162,11 +168,6 @@ class FlagGroupRange implements NameableInterface
         }
 
         return $groups;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->traitGetName() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getName() : null);
     }
 
     public function getShortName(): ?string

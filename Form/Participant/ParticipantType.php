@@ -7,7 +7,6 @@ namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -59,21 +58,19 @@ class ParticipantType extends AbstractType
         $this->addParticipantFlagGroupFields($builder, $participant);
         self::addParticipantNotesFields($builder);
         self::addSubmitButton($builder);
-
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
             function (FormEvent $event) {
                 $data = $event->getData();
-                $this->logger->info("DataType: " . get_class($data));
+                $this->logger->info("DataType: ".get_class($data));
                 assert($data instanceof Participant);
                 foreach ($data->getFlagGroups() as $flagGroup) {
                     assert($flagGroup instanceof ParticipantFlagGroup);
-                    $this->logger->info("FLAG_GROUP: " . $flagGroup->getFlagCategory()->getName());
-                    $this->logger->info(" -> : " . $flagGroup->getParticipantFlags(false)->count());
+                    $this->logger->info("FLAG_GROUP: ".$flagGroup->getFlagCategory()->getName());
+                    $this->logger->info(" -> : ".$flagGroup->getParticipantFlags(false)->count());
                 }
             }
         );
-
 
 
     }
@@ -89,11 +86,11 @@ class ParticipantType extends AbstractType
             'flagGroups',
             CollectionType::class,
             array(
-                'label'         => false,
-                'entry_type'    => ParticipantFlagGroupType::class,
-                'mapped' => true,
+                'label'              => false,
+                'entry_type'         => ParticipantFlagGroupType::class,
+                'mapped'             => true,
                 'allow_extra_fields' => true,
-                'entry_options' => [
+                'entry_options'      => [
                     'label'       => false,
                     'participant' => $participant,
                 ],

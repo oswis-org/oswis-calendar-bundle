@@ -14,6 +14,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
@@ -30,6 +31,8 @@ class ParticipantMailService
 
     protected MailService $mailService;
 
+    protected ParticipantMailRepository $participantMailRepository;
+
     protected ParticipantMailGroupRepository $groupRepository;
 
     protected ParticipantMailCategoryRepository $categoryRepository;
@@ -38,12 +41,14 @@ class ParticipantMailService
         EntityManagerInterface $em,
         MailService $mailService,
         ParticipantMailGroupRepository $groupRepository,
-        ParticipantMailCategoryRepository $categoryRepository
+        ParticipantMailCategoryRepository $categoryRepository,
+        ParticipantMailRepository $participantMailRepository
     ) {
         $this->em = $em;
         $this->mailService = $mailService;
         $this->groupRepository = $groupRepository;
         $this->categoryRepository = $categoryRepository;
+        $this->participantMailRepository = $participantMailRepository;
     }
 
     /**
@@ -98,6 +103,7 @@ class ParticipantMailService
         }
         $title = $twigTemplate->getName() ?? 'Přihláška na akci';
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
+        $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
         $data = [
             'participant'      => $participant,
             'category'         => $mailCategory,

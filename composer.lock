@@ -2892,16 +2892,16 @@
         },
         {
             "name": "league/html-to-markdown",
-            "version": "4.9.1",
+            "version": "4.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/html-to-markdown.git",
-                "reference": "1dcd0f85de786f46a7f224a27cc3d709ddd2a68c"
+                "reference": "0868ae7a552e809e5cd8f93ba022071640408e88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/html-to-markdown/zipball/1dcd0f85de786f46a7f224a27cc3d709ddd2a68c",
-                "reference": "1dcd0f85de786f46a7f224a27cc3d709ddd2a68c",
+                "url": "https://api.github.com/repos/thephpleague/html-to-markdown/zipball/0868ae7a552e809e5cd8f93ba022071640408e88",
+                "reference": "0868ae7a552e809e5cd8f93ba022071640408e88",
                 "shasum": ""
             },
             "require": {
@@ -2952,7 +2952,25 @@
                 "html",
                 "markdown"
             ],
-            "time": "2019-12-28T01:32:28+00:00"
+            "funding": [
+                {
+                    "url": "https://www.colinodell.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://www.paypal.me/colinpodell/10.00",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/colinodell",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/colinodell",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2020-07-01T00:34:03+00:00"
         },
         {
             "name": "lexik/jwt-authentication-bundle",
@@ -3370,16 +3388,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.10.0",
+            "version": "1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "5796d127b0c4ff505b77455148ea9d5269d99758"
+                "reference": "969b211f9a51aa1f6c01d1d2aef56d3bd91598e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/5796d127b0c4ff505b77455148ea9d5269d99758",
-                "reference": "5796d127b0c4ff505b77455148ea9d5269d99758",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/969b211f9a51aa1f6c01d1d2aef56d3bd91598e5",
+                "reference": "969b211f9a51aa1f6c01d1d2aef56d3bd91598e5",
                 "shasum": ""
             },
             "require": {
@@ -3420,7 +3438,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-28T07:02:41+00:00"
+            "time": "2020-06-29T13:22:24+00:00"
         },
         {
             "name": "myclabs/php-enum",
@@ -3865,16 +3883,16 @@
         },
         {
             "name": "oswis-org/oswis-core-bundle",
-            "version": "v0.0.580",
+            "version": "v0.0.583",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-                "reference": "ab39e4bf4890bfcd2b719f750e5a90121750007e"
+                "reference": "a17eb77f3c104e54963143a239faf1bf0c8cac28"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/ab39e4bf4890bfcd2b719f750e5a90121750007e",
-                "reference": "ab39e4bf4890bfcd2b719f750e5a90121750007e",
+                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/a17eb77f3c104e54963143a239faf1bf0c8cac28",
+                "reference": "a17eb77f3c104e54963143a239faf1bf0c8cac28",
                 "shasum": ""
             },
             "require": {
@@ -3971,7 +3989,7 @@
                 "php",
                 "zakjakub"
             ],
-            "time": "2020-06-26T13:38:21+00:00"
+            "time": "2020-07-01T13:16:39+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -10720,16 +10738,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.31",
+            "version": "0.12.32",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "776c8056b401e1b67f277b9e9fb334d1a274671d"
+                "reference": "d03863f504c8432b3de4d1881f73f6acb8c0e67c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/776c8056b401e1b67f277b9e9fb334d1a274671d",
-                "reference": "776c8056b401e1b67f277b9e9fb334d1a274671d",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d03863f504c8432b3de4d1881f73f6acb8c0e67c",
+                "reference": "d03863f504c8432b3de4d1881f73f6acb8c0e67c",
                 "shasum": ""
             },
             "require": {
@@ -10772,7 +10790,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-24T20:55:29+00:00"
+            "time": "2020-07-01T11:57:52+00:00"
         },
         {
             "name": "roave/security-advisories",

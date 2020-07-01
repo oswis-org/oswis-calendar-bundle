@@ -30,6 +30,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
+use OswisOrg\OswisCoreBundle\Exceptions\UserNotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use Psr\Log\LoggerInterface;
@@ -77,9 +78,12 @@ class ParticipantService
      * @param Participant|null $participant
      *
      * @return Participant
+     * @throws InvalidTypeException
      * @throws NotFoundException
+     * @throws NotImplementedException
      * @throws OswisException
      * @throws UserNotUniqueException
+     * @throws UserNotFoundException
      */
     public function create(?Participant $participant): Participant
     {

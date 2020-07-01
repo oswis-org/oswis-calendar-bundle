@@ -6,7 +6,6 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
-use Doctrine\ORM\Mapping as ORM;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;

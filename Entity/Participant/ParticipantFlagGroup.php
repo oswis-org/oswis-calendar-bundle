@@ -13,14 +13,12 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
-use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
-use function Symfony\Component\String\u;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -32,13 +30,13 @@ class ParticipantFlagGroup implements BasicInterface
     use BasicTrait;
     use TextValueTrait;
 
+    public ?Collection $tempFlagRanges = null;
+
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?FlagGroupRange $flagGroupRange = null;
-
-    public ?Collection $tempFlagRanges = null;
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
