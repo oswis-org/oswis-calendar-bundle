@@ -106,7 +106,7 @@ class ParticipantService
         if (null === $appUser) {
             $this->logger->info("Creating new AppUser for participant with name '$participantName' and e-mail '$participantMailAddress'.");
             $newAppUser = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress);
-            $contact->setAppUser($this->appUserService->create($newAppUser, false, true, false));
+            $contact->setAppUser($this->appUserService->create($newAppUser, false, false, false));
             $this->logger->debug("New AppUser for participant '$participantMailAddress' created.");
         }
         $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci '$eventName'."));
@@ -141,7 +141,6 @@ class ParticipantService
             if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
                 $this->logger->notice("Contact person is not AbstractPerson or doesn't have AppUser assigned.");
                 $this->logger->notice("Contact person is of type ".get_class($contactPerson)."and is ".$contactPerson instanceof AbstractContact." AbstractContact");
-                $this->logger->notice("AppUser is ".(!empty($appUser) ? $appUser->getId() : 'empty') . '.');
                 continue;
             }
             try {
