@@ -48,7 +48,6 @@ class ParticipantFlagGroupType extends AbstractType
                     return;
                 }
                 $this->logger->info("Export".var_export($data, true));
-                $flagRanges = (!empty($data) ? ($data['flagRanges'] ?? []) : []) ?? [];
                 $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
                 $this->logger->info("Temporary flag ranges (PRE_SUBMIT):");
                 foreach (!empty($data) ? $data['tempFlagRanges'] : [] as $tempFlagRange) {

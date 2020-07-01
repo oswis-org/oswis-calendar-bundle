@@ -115,7 +115,9 @@ class ParticipantFlagGroup implements BasicInterface
      * @param bool|false      $admin
      * @param bool            $onlySimulate
      *
-     * @throws FlagOutOfRangeException|FlagCapacityExceededException
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws OswisException
      */
     public function setParticipantFlags(?Collection $newParticipantFlags, bool $admin = false, bool $onlySimulate = false): void
     {
