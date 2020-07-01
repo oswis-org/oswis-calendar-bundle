@@ -1,4 +1,5 @@
 {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+{% set contact = participant is defined ? participant.contact : null %}
 {% set f = f is defined ? f : (contact.formal is defined ? contact.formal : true) %}
 {% set a = a is defined ? a : (contact.czechSuffixA is defined ? contact.czechSuffixA : '') %}
 {% set salName = salutationName|default %}

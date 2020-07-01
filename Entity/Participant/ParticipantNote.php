@@ -100,10 +100,12 @@ class ParticipantNote implements BasicInterface
         if ($this->participant === $participant) {
             return;
         }
-        if (null !== $this->participant || null === $participant) {
+        if (null !== $this->participant || null !== $participant) {
             throw new NotImplementedException('změna účastníka', 'u poznámky');
         }
         $this->participant = $participant;
-        $participant->addNote($this);
+        if (null !== $participant) {
+            $participant->addNote($this);
+        }
     }
 }
