@@ -11,7 +11,6 @@ use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
-use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()

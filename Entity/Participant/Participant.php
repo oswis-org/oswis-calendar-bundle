@@ -421,18 +421,18 @@ class Participant implements BasicInterface
         $this->flagGroups = $newFlagGroups;
     }
 
-    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
-    {
-        return $this->getFlagGroups($flagCategory, $flagType)->map(
-            fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupRange()
-        );
-    }
-
     public function addFlagGroupRange(FlagGroupRange $flagGroupRange): void
     {
         if (!$this->getFlagGroupRanges()->contains($flagGroupRange)) {
             $this->getFlagGroups()->add(new ParticipantFlagGroup($flagGroupRange));
         }
+    }
+
+    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
+    {
+        return $this->getFlagGroups($flagCategory, $flagType)->map(
+            fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupRange()
+        );
     }
 
     public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
@@ -779,7 +779,8 @@ class Participant implements BasicInterface
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->count() > 0;
     }
 
-    public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, Flag $flag = null): Collection {
+    public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, Flag $flag = null): Collection
+    {
         $flagRanges = new ArrayCollection();
         foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
             assert($participantFlag instanceof ParticipantFlag);

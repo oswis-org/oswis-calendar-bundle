@@ -9,6 +9,9 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRangeCategoryRange
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Exception\AlreadySubmittedException;
+use Symfony\Component\Form\Exception\LogicException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -24,6 +27,13 @@ class ParticipantFlagType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
     }
 
+    /**
+     * @param FormEvent $event
+     *
+     * @throws AlreadySubmittedException
+     * @throws LogicException
+     * @throws UnexpectedTypeException
+     */
     public function onPreSetData(FormEvent $event): void
     {
         if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof ParticipantFlag)) {

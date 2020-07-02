@@ -13,12 +13,8 @@
             </div>
         </div>
         <div class="row">
-            {% for eventRanges in events %}
-                {% if eventRanges.ranges|length > 0 %}
-                    {% for range in eventRanges.ranges %}
-                        {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' with {'event': eventRanges.event} %}
-                    {% endfor %}
-                {% endif %}
+            {% for range in ranges %}
+                {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' %}
             {% endfor %}
         </div>
     </main>

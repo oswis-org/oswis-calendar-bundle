@@ -5,8 +5,8 @@
             {% endblock event_nav_pre %}
             {% block event_nav_parent %}
                 {% if event.superEvent|default %}
-                    <a  href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" class="badge badge-info"
-                        data-toggle="tooltip" itemprop="superEvent" content="{{ event.superEvent.name }}" title="{{ event.superEvent.name }}">
+                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" class="badge badge-info"
+                       data-toggle="tooltip" itemprop="superEvent" content="{{ event.superEvent.name }}" title="{{ event.superEvent.name }}">
                         <i class="fas fa-arrow-up"></i> {{ event.superEvent.shortName }}
                     </a>
                 {% endif %}

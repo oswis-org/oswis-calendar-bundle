@@ -43,18 +43,18 @@ class FlagRangeService
         }
     }
 
-    public function updateUsage(FlagRange $flagRange): void
-    {
-        $usage = $this->getParticipantFlags($flagRange, false)->count();
-        $flagRange->setBaseUsage($usage);
-        $flagRange->setFullUsage($usage);
-    }
-
     public function updateUsages(Participant $participant): void
     {
         foreach ($participant->getFlagRanges(null, null, false) as $flagRange) {
             $this->updateUsage($flagRange);
         }
+    }
+
+    public function updateUsage(FlagRange $flagRange): void
+    {
+        $usage = $this->getParticipantFlags($flagRange, false)->count();
+        $flagRange->setBaseUsage($usage);
+        $flagRange->setFullUsage($usage);
     }
 
     public function getParticipantFlags(FlagRange $flagRange, bool $includeDeleted = false): Collection

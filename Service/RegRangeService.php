@@ -120,7 +120,7 @@ class RegRangeService
      * @param string|null $participantType Restriction to event participant type.
      * @param bool        $onlyPublicOnWeb Restriction only for web-public ranges.
      *
-     * @return array [eventId => ['event' => Event, 'ranges' => Collection<RegistrationsRange>]]
+     * @return Collection
      */
     public function getEventRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true): Collection
     {

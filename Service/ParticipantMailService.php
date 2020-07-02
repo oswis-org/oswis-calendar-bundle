@@ -108,6 +108,7 @@ class ParticipantMailService
         $contact = $participant->getContact();
         $data = [
             'participant'      => $participant,
+            'appUser'          => $appUser,
             'contact'          => $contact,
             'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
             'category'         => $mailCategory,

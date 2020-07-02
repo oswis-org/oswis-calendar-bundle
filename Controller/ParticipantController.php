@@ -272,14 +272,16 @@ class ParticipantController extends AbstractController
         $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->eventService->getEvents(null, null, null, null, null, null, false);
         $shortTitle = 'Přihlášky';
         $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
-        $context = [
-            'event'      => $event,
-            'events'     => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
-            'title'      => $title,
-            'shortTitle' => $shortTitle,
-        ];
 
-        return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', $context);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig',
+            [
+                'event'      => $event,
+                'ranges'     => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
+                'title'      => $title,
+                'shortTitle' => $shortTitle,
+            ]
+        );
     }
 
     public function partnersFooter(): Response

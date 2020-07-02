@@ -52,6 +52,25 @@
             {% endif %}
         {% endblock message_payment_outer %}
 
+        {% if appUser|default %}
+            <p>
+                Uživatelské jméno u uživatelského účtu pro přístup do aplikace
+                <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" target="_blank">{{ oswis.app.name }}</a> je
+                <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>a&nbsp;hlavní e-mail je
+                <strong>{{ appUser.email|default }}</strong>.
+            </p>
+            <p>
+                {% if appUser.plainPassword|default %}
+                    Bylo nastaveno nové, náhodně vygenerované, heslo: <span class="token-box">{{ appUser.plainPassword }}</span>
+                {% elseif appUser.password|default %}
+                    Heslo bylo nastaveno uživatelem při registraci nebo aktivaci uživatele.
+                {% else %}
+                    Heslo si nastaví{{ f ? 'te' : 'š' }} při aktivaci účtu.
+                {% endif %}
+            </p>
+            <p>Pokud heslo zapomene{{ f ? 'te' : 'š' }}, může{{ f ? 'te' : 'š' }} jej obnovit pomocí tlačítka na přihlašovací stránce aplikace.</p>
+        {% endif %}
+
         {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
         {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %} {# TODO #}
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">

@@ -245,7 +245,7 @@ class ParticipantService
             if (null === ($appUser = $participantToken->getAppUser())) {
                 throw new NotFoundException('Uživatel nenalezen.');
             }
-            $this->appUserService->activate($appUser, $sendConfirmation);
+            $this->appUserService->activate($appUser, false);
             $participant->setUserConfirmed($appUser);
             if ($sendConfirmation) {
                 $this->participantMailService->sendActivated($participant);

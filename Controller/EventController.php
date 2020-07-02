@@ -83,18 +83,6 @@ class EventController extends AbstractController
         ];
     }
 
-    public function getNavigationEvents(?Event $event = null): Collection
-    {
-        if (null === $event || null === ($series = $event->getGroup()) || null === ($typeString = $event->getType())) {
-            return new ArrayCollection();
-        }
-
-        return $series->getEvents(
-            ''.$typeString,
-            $event->isBatch() ? $event->getStartYear() : null
-        );
-    }
-
     public function showEventsNavigationChunk(?string $eventSlug = null): Response
     {
         $eventRepo = $this->eventService->getRepository();
@@ -106,6 +94,18 @@ class EventController extends AbstractController
                 'event'     => $event,
                 'navEvents' => $this->getNavigationEvents($event),
             ]
+        );
+    }
+
+    public function getNavigationEvents(?Event $event = null): Collection
+    {
+        if (null === $event || null === ($series = $event->getGroup()) || null === ($typeString = $event->getType())) {
+            return new ArrayCollection();
+        }
+
+        return $series->getEvents(
+            ''.$typeString,
+            $event->isBatch() ? $event->getStartYear() : null
         );
     }
 
@@ -162,6 +162,15 @@ class EventController extends AbstractController
     }
 
     /**
+     * @return Response
+     * @throws Exception
+     */
+    public function showPastEvents(): Response
+    {
+        return $this->showEvents(null, null, new DateTime());
+    }
+
+    /**
      * @param string|null   $range
      * @param DateTime|null $start
      * @param DateTime|null $end
@@ -180,15 +189,6 @@ class EventController extends AbstractController
         ];
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
-    }
-
-    /**
-     * @return Response
-     * @throws Exception
-     */
-    public function showPastEvents(): Response
-    {
-        return $this->showEvents(null, null, new DateTime());
     }
 
     /**

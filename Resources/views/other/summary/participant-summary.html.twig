@@ -2,8 +2,10 @@
 
 <h3>Základní údaje</h3>
 <ul>
-    <li>ID přihlášky: <span itemprop="reservationNumber">{{ participant.id }}</span></li>
-    <meta itemprop="reservationId" content="{{ participant.id }}"/>
+    <li>
+        ID přihlášky: <span itemprop="reservationNumber">{{ participant.id }}</span>
+        <meta itemprop="reservationId" content="{{ participant.id }}"/>
+    </li>
     <li>
         <span itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</span>
         {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}

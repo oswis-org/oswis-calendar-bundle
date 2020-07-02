@@ -15,6 +15,9 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Exception\AlreadySubmittedException;
+use Symfony\Component\Form\Exception\LogicException;
+use Symfony\Component\Form\Exception\UnexpectedTypeException;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -42,48 +45,36 @@ class ParticipantFlagGroupType extends AbstractType
         // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
         $builder->addEventListener(
             FormEvents::PRE_SUBMIT,
-            function (FormEvent $event) {
+            static function (FormEvent $event) {
                 $data = $event->getData();
-                if (empty($data)) {
-                    $data = ['flagRanges' => new ArrayCollection()];
-
-                    return;
-                }
-                $this->logger->info("Export".var_export($data, true));
                 $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
-                $this->logger->info("Temporary flag ranges (PRE_SUBMIT):");
-                foreach (!empty($data) ? $data['tempFlagRanges'] : [] as $tempFlagRange) {
-                    $this->logger->info($tempFlagRange);
-                }
-                $this->logger->info("----------------------");
                 $event->setData($data);
             }
         );
         $builder->addEventListener(
             FormEvents::SUBMIT,
-            function (FormEvent $event) {
+            static function (FormEvent $event) {
                 $participantFlagGroup = $event->getData();
                 assert($participantFlagGroup instanceof ParticipantFlagGroup);
-                $this->logger->info("Temporary flag ranges (SUBMIT):");
                 $participantFlags = new ArrayCollection();
                 foreach ($participantFlagGroup->tempFlagRanges as $tempFlagRange) {
                     assert($tempFlagRange instanceof FlagRange);
-                    $this->logger->info("Adding flag range: ".$tempFlagRange->getName());
                     $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
                     $participantFlags->add($participantFlag);
-                    $this->logger->info("Added participant flag: ".$participantFlag->getFlagRange()->getName());
                 }
-                $this->logger->info('$participantFlagGroup->setParticipantFlags($participantFlags);');
                 $participantFlagGroup->setParticipantFlags($participantFlags);
-                $this->logger->info("----------------------");
-                foreach ($event->getData()->getParticipantFlags() as $pFlag) {
-                    $this->logger->info("Participant flag: ".$pFlag->getFlagRange()->getName());
-                }
-                $this->logger->info("############################");
             }
         );
     }
 
+    /**
+     * @param FormEvent $event
+     *
+     * @throws AlreadySubmittedException
+     * @throws LogicException
+     * @throws OswisException
+     * @throws UnexpectedTypeException
+     */
     public function onPreSetData(FormEvent $event): void
     {
         $participantFlagGroup = $event->getData();
@@ -108,6 +99,14 @@ class ParticipantFlagGroupType extends AbstractType
         self::addSelect($event->getForm(), $participantFlagGroup, $min, $max, $isFormal);
     }
 
+    /**
+     * @param FormInterface        $form
+     * @param ParticipantFlagGroup $participantFlagCategory
+     *
+     * @throws AlreadySubmittedException
+     * @throws LogicException
+     * @throws UnexpectedTypeException
+     */
     public static function addCheckboxes(FormInterface $form, ParticipantFlagGroup $participantFlagCategory): void
     {
         $flagGroupRange = $participantFlagCategory->getFlagGroupRange();
@@ -126,6 +125,17 @@ class ParticipantFlagGroupType extends AbstractType
         );
     }
 
+    /**
+     * @param FormInterface        $form
+     * @param ParticipantFlagGroup $participantFlagGroup
+     * @param int                  $min
+     * @param int|null             $max
+     * @param bool                 $isFormal
+     *
+     * @throws AlreadySubmittedException
+     * @throws LogicException
+     * @throws UnexpectedTypeException
+     */
     public static function addSelect(FormInterface $form, ParticipantFlagGroup $participantFlagGroup, int $min, ?int $max, bool $isFormal = true): void
     {
         if (null === $flagGroupRange = $participantFlagGroup->getFlagGroupRange()) {
