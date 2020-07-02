@@ -140,8 +140,12 @@ class FlagRange implements NameableInterface
     public function getRemainingCapacity(bool $full = false): ?int
     {
         $capacity = $this->getCapacityInt($full);
+        if (null === $capacity) {
+            return null;
+        }
+        $remaining = $capacity - $this->getUsageInt($full);
 
-        return null === $capacity ? null : ($capacity - $this->getUsageInt($full));
+        return $remaining < 1 ? 0 : $remaining;
     }
 
     public function getFlagGroupName(): ?string
