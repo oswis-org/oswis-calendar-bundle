@@ -22,6 +22,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EventController extends AbstractController
 {
+    public const PAGINATION = 10;
+
     public const RANGE_ALL = null;
     public const RANGE_YEAR = 'year';
     public const RANGE_MONTH = 'month';
@@ -59,16 +61,17 @@ class EventController extends AbstractController
         if (!(($event = $this->eventService->getRepository()->getEvent($this->getWebPublicEventOpts($eventSlug))) instanceof Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
-        $data = [
-            'title'          => $event->getShortName(),
-            'description'    => $event->getDescription(),
-            'rangesByEvents' => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()])),
-            'navEvents'      => $this->getNavigationEvents(),
-            'event'          => $event,
-            'organizer'      => $this->participantService->getOrganizer($event),
-        ];
 
-        return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', $data);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/pages/event.html.twig',
+            [
+                'title'       => $event->getShortName(),
+                'description' => $event->getDescription(),
+                'ranges'      => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()])),
+                'event'       => $event,
+                'organizer'   => $this->participantService->getOrganizer($event),
+            ]
+        );
     }
 
     public function getWebPublicEventOpts(?string $eventSlug = null): array
@@ -168,13 +171,8 @@ class EventController extends AbstractController
      * @return Response
      * @throws Exception
      */
-    public function showEvents(
-        ?string $range = null,
-        ?DateTime $start = null,
-        ?DateTime $end = null,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Response {
+    public function showEvents(?string $range = null, ?DateTime $start = null, ?DateTime $end = null, ?int $limit = null, ?int $offset = null): Response
+    {
         $context = [
             'events'    => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
             'range'     => $range,
@@ -188,33 +186,26 @@ class EventController extends AbstractController
      * @return Response
      * @throws Exception
      */
-    public function showPastEvents(): Response {
+    public function showPastEvents(): Response
+    {
         return $this->showEvents(null, null, new DateTime());
     }
 
     /**
-     * Renders list of events
-     *
-     * @param string|null $range
-     * @param string|null $rangeValue
+     * @param int|null $page
      *
      * @return Response
      * @throws Exception
      */
-    public function showFutureEvents(?string $range = null, ?string $rangeValue = null): Response
+    public function showFutureEvents(?int $page = 0): Response
     {
-        $start = new DateTime($rangeValue);
-        $end = new DateTime($rangeValue);
-        $events = $this->eventService->getEvents($range, $start, $end);
-        $context = [
-            'range'     => $range,
-            'start'     => $start,
-            'end'       => $end,
-            'events'    => $events,
-            'navRanges' => [], /////////
-        ];
+        $pageSize = self::PAGINATION;
+        $page ??= 0;
 
-        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig', $context);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/pages/events.html.twig',
+            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]
+        );
     }
 
     public function showCurrentEvent(): Response

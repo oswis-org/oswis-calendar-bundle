@@ -77,17 +77,13 @@
     </div>
 </section>
 
-{% if rangesByEvents|default and rangesByEvents|length > 0 %}
+{% if ranges|default and ranges|length > 0 %}
     <section class="row">
-        <header class="col-12">
-            <h3>Přihlášky</h3>
-        </header>
+        <header class="col-12"><h3>Přihlášky</h3></header>
     </section>
     <section class="row">
-        {% for rangesByEvent in rangesByEvents|filter(rangesByEvent => rangesByEvent.ranges|length > 0) %}
-            {% for range in rangesByEvent.ranges %}
-                {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' %}
-            {% endfor %}
+        {% for range in ranges %}
+            {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' with {'range': range} %}
         {% endfor %}
     </section>
 {% endif %}

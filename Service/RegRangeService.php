@@ -6,6 +6,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -121,26 +122,24 @@ class RegRangeService
      *
      * @return array [eventId => ['event' => Event, 'ranges' => Collection<RegistrationsRange>]]
      */
-    public function getEventRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true): array
+    public function getEventRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true): Collection
     {
         $ranges = [];
         foreach ($events as $event) {
-            if (!($event instanceof Event)) {
-                continue;
+            if ($event instanceof Event) {
+                $ranges = [
+                    ...$ranges,
+                    ...$this->getRepository()->getRegistrationsRanges(
+                        [
+                            RegRangeRepository::CRITERIA_EVENT            => $event,
+                            RegRangeRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+                            RegRangeRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
+                        ]
+                    ),
+                ];
             }
-            $eventRanges = $this->getRepository()->getRegistrationsRanges(
-                [
-                    RegRangeRepository::CRITERIA_EVENT            => $event,
-                    RegRangeRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
-                    RegRangeRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
-                ]
-            );
-            $ranges[$event->getId()] ??= [];
-            $ranges[$event->getId()]['event'] ??= $event;
-            $existingRanges = $ranges[$event->getId()]['ranges'] ?? [];
-            $ranges[$event->getId()]['ranges'] = [...$existingRanges, ...$eventRanges];
         }
 
-        return $ranges;
+        return new ArrayCollection($ranges);
     }
 }
