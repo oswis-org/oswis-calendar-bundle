@@ -779,7 +779,17 @@ class Participant implements BasicInterface
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->count() > 0;
     }
 
-    public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection
+    public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, Flag $flag = null): Collection {
+        $flagRanges = new ArrayCollection();
+        foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
+            assert($participantFlag instanceof ParticipantFlag);
+            $flagRanges->add($participantFlag->getFlagRange());
+        }
+
+        return $flagRanges;
+    }
+
+    public function getFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection
     {
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(
             fn(ParticipantFlag $participantFlag) => $participantFlag->getFlag()

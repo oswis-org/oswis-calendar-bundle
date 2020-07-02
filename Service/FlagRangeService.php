@@ -8,6 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository;
@@ -42,10 +43,17 @@ class FlagRangeService
         }
     }
 
-    public function updateUsage(FlagRange $range): void
+    public function updateUsage(FlagRange $flagRange): void
     {
-        $usage = $this->getParticipantFlags($range, false)->count();
-        $range->setBaseUsage($usage);
+        $usage = $this->getParticipantFlags($flagRange, false)->count();
+        $flagRange->setBaseUsage($usage);
+    }
+
+    public function updateUsages(Participant $participant): void
+    {
+        foreach ($participant->getFlagRanges(null, null, false) as $flagRange) {
+            $this->updateUsage($flagRange);
+        }
     }
 
     public function getParticipantFlags(FlagRange $flagRange, bool $includeDeleted = false): Collection

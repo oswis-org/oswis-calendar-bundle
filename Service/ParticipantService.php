@@ -51,6 +51,8 @@ class ParticipantService
 
     protected AbstractContactService $abstractContactService;
 
+    protected FlagRangeService $flagRangeService;
+
     public function __construct(
         EntityManagerInterface $em,
         ParticipantRepository $participantRepository,
@@ -58,7 +60,8 @@ class ParticipantService
         AppUserService $appUserService,
         ParticipantTokenService $participantTokenService,
         ParticipantMailService $participantMailService,
-        AbstractContactService $abstractContactService
+        AbstractContactService $abstractContactService,
+        FlagRangeService $flagRangeService
     ) {
         $this->em = $em;
         $this->participantRepository = $participantRepository;
@@ -67,6 +70,7 @@ class ParticipantService
         $this->tokenService = $participantTokenService;
         $this->participantMailService = $participantMailService;
         $this->abstractContactService = $abstractContactService;
+        $this->flagRangeService = $flagRangeService;
     }
 
     public function getTokenService(): ParticipantTokenService
@@ -118,6 +122,7 @@ class ParticipantService
         $this->em->persist($participant);
         $participant->updateCachedColumns();
         $this->requestActivation($participant);
+        $this->flagRangeService->updateUsages($participant);
         $this->em->flush();
         $this->logger->info($this->getLogMessage($participant));
 

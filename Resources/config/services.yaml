@@ -156,6 +156,7 @@ services:
             - '@oswis_org_oswis_calendar.participant_token_service'
             - '@oswis_org_oswis_calendar.participant_mail_service'
             - '@oswis_org_oswis_address_book.abstract_contact_service'
+            - '@oswis_org_oswis_calendar.flag_range_service'
     OswisOrg\OswisCalendarBundle\Service\ParticipantService:
         alias: oswis_org_oswis_calendar.participant_service
         public: true
