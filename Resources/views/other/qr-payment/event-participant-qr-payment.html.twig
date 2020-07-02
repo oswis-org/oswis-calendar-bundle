@@ -1,29 +1,42 @@
 <!--suppress ALL -->
 {% if depositQr|default or restQr|default %}
-    <div style="display:block;width: 100%;margin: 0; padding: 0;overflow: auto;">
-        <div style='display:table;page-break-inside:avoid; float:left;width:65%;margin:1em 20%;margin-right:30%;height:auto;max-height:550px;padding:0.8em;max-width:600px;margin-bottom:1.5em;padding-bottom:0;vertical-align:middle;border:3px solid #006FAD;'>
-            <div style='page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;width:500px;margin:0 auto;padding:5px; width:95%; height:auto; max-height:720px; min-width:220px; max-width: 650px;text-align:center;vertical-align:middle;'>
-                <small style='page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;display:block;width:100%;overflow:hidden;'>
+    <container style="border: 3px solid #006FAD;">
+        <row class="no-gutter">
+            <columns small="12">
+                <h3 class="black text-center no-gutter">QR&nbsp;PLATBA</h3>
+            </columns>
+        </row>
+        <row class="no-gutter">
+            <columns small="1" large="1"></columns>
+            <columns small="10" large="4">
+                <h4 class="text-center no-gutter">Záloha</h4>
+                <center>
+                    <img src='{{ depositQr|default }}' alt='Záloha - QR Platba' title='Záloha - QR Platba'>
+                </center>
+                {% if participant.depositValue|default %}
+                    <h5 class="text-center small dark-gray no-gutter">{{ participant.depositValue }},-&nbsp;Kč</h5>
+                {% endif %}
+            </columns>
+            <columns small="0" large="2"></columns>
+            <columns small="12" large="4">
+                <h4 class="text-center no-gutter">Doplatek</h4>
+                <center>
+                    <img src='{{ restQr|default }}' alt='Doplatek - QR Platba' title='Doplatek - QR Platba'>
+                </center>
+                {% if participant.priceRest|default %}
+                    <h5 class="text-center small dark-gray no-gutter">{{ participant.priceRest }},-&nbsp;Kč</h5>
+                {% endif %}
+            </columns>
+            <columns small="1" large="1"></columns>
+        </row>
+        <row class="no-gutter">
+            <columns small="12">
+                <p class="text-center small dark-gray no-gutter">
                     Pro zaslání zálohy i&nbsp;doplatku můžeš použít
                     <b><a href='http://qr-platba.cz/pro-uzivatele/' title='Co je QR platba?' target='_blank'>QR&nbsp;platbu</a></b>.
                     <br>Naskenuj kód do&nbsp;aplikace tvé&nbsp;banky a&nbsp;všechny údaje se ti předvyplní.
-                </small>
-                <div style='page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;width:50%;float:left;margin:0;margin-top:0.5em;padding:0;text-align:center;vertical-align:middle;'>
-                    <b style='page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;margin:0;padding:0;'>
-                        <small style='font-size:0.8em;margin:0;padding:0;'>Záloha</small>
-                    </b>
-                    <img src='{{ depositQr|default }}' alt='Záloha - QR Platba' title='Záloha - QR Platba'
-                         style='page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;width:99%; margin:0 auto;padding:0;margin-bottom:0.5em;'>
-                </div>
-                <div style='width:50%;float:left;margin:0;margin-top:0.5em;padding:0;text-align:center;vertical-align:middle;page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;'>
-                    <b style='margin:0;padding:0;'>
-                        <small style='font-size:0.8em;margin:0;padding:0;page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;'>Doplatek</small>
-                    </b>
-                    <img src='{{ restQr|default }}' alt='Doplatek - QR Platba' title='Doplatek - QR Platba'
-                         style='width:99%;page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid; margin:0 auto;padding:0;margin-bottom:0.5em;'>
-                </div>
-                <b style='page-break-inside:avoid;page-break-before:avoid;page-break-after:avoid;display:block;width:100%;overflow:hidden;font-size:1.6em;'>QR Platba</b>
-            </div>
-        </div>
-    </div>
+                </p>
+            </columns>
+        </row>
+    </container>
 {% endif %}
