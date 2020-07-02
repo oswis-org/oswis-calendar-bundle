@@ -376,7 +376,7 @@ class ParticipantService
         $this->logger->info('Creating empty participant.');
 
         return new Participant(
-            $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'phone']), new ArrayCollection([new ParticipantNote()]), null
+            $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']), new ArrayCollection([new ParticipantNote()]), null
         );
     }
 }

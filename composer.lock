@@ -3828,16 +3828,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.273",
+      "version": "v0.0.276",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "28ba4928e5affe0b8cddddb2516f96fae84980f0"
+        "reference": "2e92af73ff27eb09ee5dfd10804bfed7843d607a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/28ba4928e5affe0b8cddddb2516f96fae84980f0",
-        "reference": "28ba4928e5affe0b8cddddb2516f96fae84980f0",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/2e92af73ff27eb09ee5dfd10804bfed7843d607a",
+        "reference": "2e92af73ff27eb09ee5dfd10804bfed7843d607a",
         "shasum": ""
       },
       "require": {
@@ -3879,20 +3879,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-06-28T17:20:27+00:00"
+      "time": "2020-07-02T13:15:39+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.585",
+      "version": "v0.0.591",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "6381a4155a79cd3df24dbfc55bd1fd4ad12bc776"
+        "reference": "b29328f3954b9404263808a753352bfe43fc1b94"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/6381a4155a79cd3df24dbfc55bd1fd4ad12bc776",
-        "reference": "6381a4155a79cd3df24dbfc55bd1fd4ad12bc776",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/b29328f3954b9404263808a753352bfe43fc1b94",
+        "reference": "b29328f3954b9404263808a753352bfe43fc1b94",
         "shasum": ""
       },
       "require": {
@@ -3989,7 +3989,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-07-01T14:15:04+00:00"
+      "time": "2020-07-02T20:50:39+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -10798,12 +10798,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "6d2e5ab854782830911ddd33b7d4649b9f18c10f"
+        "reference": "9ec84501a85a3b0c7b260042ae81a8efb2f234ce"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/6d2e5ab854782830911ddd33b7d4649b9f18c10f",
-        "reference": "6d2e5ab854782830911ddd33b7d4649b9f18c10f",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/9ec84501a85a3b0c7b260042ae81a8efb2f234ce",
+        "reference": "9ec84501a85a3b0c7b260042ae81a8efb2f234ce",
         "shasum": ""
       },
       "conflict": {
@@ -10898,7 +10898,7 @@
         "monolog/monolog": ">=1.8,<1.12",
         "namshi/jose": "<2.2",
         "nzo/url-encryptor-bundle": ">=4,<4.3.2|>=5,<5.0.1",
-        "october/october": ">=1.0.319,<1.0.466",
+        "october/october": ">=1.0.319,<1.0.467",
         "onelogin/php-saml": "<2.10.4",
         "oneup/uploader-bundle": "<1.9.3|>=2,<2.1.5",
         "openid/php-openid": "<2.3",
@@ -11075,7 +11075,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-06-19T13:23:43+00:00"
+      "time": "2020-07-02T17:01:23+00:00"
     }
   ],
   "aliases": [],
