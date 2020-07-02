@@ -6,43 +6,64 @@
     <meta itemprop="reservationId" content="{{ participant.id }}"/>
     <li>
         <span itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</span>
+        {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}
+            <small> (poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small>
+        {% endif %}
     </li>
-    {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}
-        <li><small>(poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small></li>
-    {% endif %}
 </ul>
 
 <h3>Účastník</h3>
 <ul>
     <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
-        <b><span itemprop="name">{{ participant.contact.fullName }}</span></b><br>
+        <b><span itemprop="name">{{ participant.contact.fullName }}</span> </b>
         <small itemprop="email">({{ participant.contact.email }})</small>
     </li>
-    <li><b>Typ přihlášky: </b> {{ participant.participantCategory.name|default('neuveden') }}</li>
+    <li>Typ přihlášky: {{ participant.participantCategory.name|default('neuveden') }}</li>
     <li>
         <b>Cena celkem: {{ participant.price }},- Kč</b><br>
         <small>V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení přihlášky.</small>
     </li>
     <li><small>Záloha: {{ participant.depositValue }},- Kč + Doplatek: {{ participant.priceRest }},- Kč</small></li>
-    {% if participant.variableSymbol %}
-        <li><small>Variabilní symbol: {{ participant.variableSymbol }}</small></li>
-    {% endif %}
-    {% if participant.event.bankAccount(true).full %}
-        <li><small><b>Číslo účtu:</b> {{ participant.event.bankAccount(true).full }}</small></li>
-    {% endif %}
-    <li>Zaplaceno:&nbsp;{{ participant.paidPrice }},-&nbsp;Kč</li>
-    <li><b>Zbývá:&nbsp;{{ participant.remainingPrice }},-&nbsp;Kč</b></li>
+    <li>
+        {% if participant.variableSymbol|default %}
+            <small><b>Variabilní symbol:</b> {{ participant.variableSymbol }}</small>
+        {%- endif -%}
+        {{- participant.variableSymbol|default and participant.event.bankAccount(true).full|default ? ', ' : '' }}
+        {% if participant.event.bankAccount(true).full|default %}
+            <small><b>Číslo účtu:</b> {{ participant.event.bankAccount(true).full }}</small>
+        {% endif %}
+    </li>
+    <li>
+        Zaplaceno:&nbsp;{{ participant.paidPrice }},-&nbsp;Kč,
+        <b>Zbývá:&nbsp;{{ participant.remainingPrice }},-&nbsp;Kč</b>
+    </li>
 </ul>
 
 <h3>Událost</h3>
 <ul>
-    <li><b>{{ participant.event.name }}</b></li>
+    <li>
+        <b>
+            <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}" target="_blank">
+                {{ participant.event.name }}
+            </a>
+        </b>
+    </li>
     <li>
         <small>
             (od {{ participant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
             do {{ participant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
         </small>
     </li>
+    {% if participant.event.place(true)|default %}
+        {% set place = participant.event.place(true) %}
+        <li>
+            {% if place.url|default %}
+                <a href="{{ place.url }}" title="{{ place.name }}" target="_blank">{{ place.name }}</a>
+            {% else %}
+                {{ place.name }}
+            {% endif %}
+        </li>
+    {% endif %}
 </ul>
 
 <h3>Kontaktní údaje</h3>
