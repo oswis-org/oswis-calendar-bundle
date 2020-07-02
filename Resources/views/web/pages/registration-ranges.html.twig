@@ -12,23 +12,15 @@
                 </header>
             </div>
         </div>
-        {% for eventRanges in events %}
-            {% if eventRanges.ranges|length > 0 %}
-                <div class="row">
-                    <div class="col-12 mt-3">
-                        <h3>
-                            <a href="{{ path('oswis_org_oswis_calendar_web_registration_ranges', {'eventSlug': eventRanges.event.slug}) }}">
-                                <span class="d-block d-md-none">{{ eventRanges.event.shortName|default }}</span>
-                                <span class="d-none d-md-block">{{ eventRanges.event.name|default }}</span>
-                            </a>
-                        </h3>
-                    </div>
-                </div>
-                {% for range in eventRanges.ranges %}
-                    {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' with {'event': eventRanges.event} %}
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
+        <div class="row">
+            {% for eventRanges in events %}
+                {% if eventRanges.ranges|length > 0 %}
+                    {% for range in eventRanges.ranges %}
+                        {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' with {'event': eventRanges.event} %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
     </main>
 {% endblock %}
 

@@ -10,7 +10,7 @@
     </div>
 </section>
 
-<section class="row text-justify">
+<section class="row text-justify mb-4">
     <meta itemprop="name" content="{{ event.name }}">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
@@ -54,6 +54,12 @@
     </div>
 </section>
 
+<section class="row text-justify">
+    {% if event.content.textValue|default %}
+        {% autoescape false %}{{ event.content.textValue }}{% endautoescape %}
+    {% endif %}
+</section>
+
 <section class="row">
     <div class="col-12">
         <div class="card-deck">
@@ -71,28 +77,17 @@
     </div>
 </section>
 
-<section class="row text-justify">
-    {% if event.content.textValue|default %}
-        {% autoescape false %}{{ event.content.textValue }}{% endautoescape %}
-    {% endif %}
-</section>
-
-
 {% if rangesByEvents|default and rangesByEvents|length > 0 %}
     <section class="row">
         <header class="col-12">
             <h3>Přihlášky</h3>
         </header>
     </section>
-    {% for rangesByEvent in rangesByEvents|filter(rangesByEvent => rangesByEvent.ranges|length > 0) %}
-        <section class="row">
-            <header class="col-12">
-                <h4 class="d-inline d-md-none">{{ rangesByEvent.event.shortName|default(rangesByEvent.event.slug|default) }}</h4>
-                <h4 class="d-none d-md-inline">{{ rangesByEvent.event.name|default(rangesByEvent.event.slug|default) }}</h4>
-            </header>
-        </section>
-        {% for range in rangesByEvent.ranges %}
-            {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' %}
+    <section class="row">
+        {% for rangesByEvent in rangesByEvents|filter(rangesByEvent => rangesByEvent.ranges|length > 0) %}
+            {% for range in rangesByEvent.ranges %}
+                {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' %}
+            {% endfor %}
         {% endfor %}
-    {% endfor %}
+    </section>
 {% endif %}

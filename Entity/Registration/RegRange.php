@@ -220,6 +220,11 @@ class RegRange implements NameableInterface
         return null !== $price && $price <= 0 ? 0 : $price;
     }
 
+    public function getRestValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
+    {
+        return $this->getPrice($participantType) - $this->getDepositValue($participantType, $recursive);
+    }
+
     /**
      * Checks capacity of range.
      *

@@ -185,6 +185,14 @@ class EventController extends AbstractController
     }
 
     /**
+     * @return Response
+     * @throws Exception
+     */
+    public function showPastEvents(): Response {
+        return $this->showEvents(null, null, new DateTime());
+    }
+
+    /**
      * Renders list of events
      *
      * @param string|null $range

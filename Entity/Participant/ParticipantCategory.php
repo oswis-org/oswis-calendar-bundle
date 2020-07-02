@@ -109,6 +109,14 @@ class ParticipantCategory implements NameableInterface
         return [];
     }
 
+    public static function getDefaultCategoryType(): ?string {
+        return self::TYPE_ATTENDEE;
+    }
+
+    public function isDefaultType(): bool {
+        return self::getDefaultCategoryType() === $this->getType();
+    }
+
     public function isFormal(): ?bool
     {
         return $this->formal;
