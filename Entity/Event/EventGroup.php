@@ -41,7 +41,7 @@ class EventGroup implements NameableInterface
         }
     }
 
-    public function getEvents(?string $eventType = null, ?int $year = null, bool $deleted = true, bool $sort = false): Collection
+    public function getEvents(?string $eventType = null, ?int $year = null, bool $deleted = true): Collection
     {
         $events = $this->events ??= new ArrayCollection();
         if (!$deleted) {
@@ -54,28 +54,7 @@ class EventGroup implements NameableInterface
             $events = $events->filter(fn(Event $event) => $event->getStartYear() && $year === $event->getStartYear());
         }
 
-        return $sort ? self::sortCollection($events) : $events;
-    }
-
-    public static function sortCollection(Collection $items, bool $reverse = false): Collection
-    {
-        $itemsArray = $items->toArray();
-        self::sortArray($itemsArray);
-        if ($reverse) {
-            $itemsArray = array_reverse($itemsArray);
-        }
-
-        return new ArrayCollection($itemsArray);
-    }
-
-    public static function sortArray(array &$items): void
-    {
-        usort(
-            $items,
-            static function (Event $arg1, Event $arg2) {
-                return DateTimeUtils::cmpDate($arg2->getStartDateTime(), $arg1->getStartDateTime());
-            }
-        );
+        return $events;
     }
 
     public function removeEvent(?Event $contact): void

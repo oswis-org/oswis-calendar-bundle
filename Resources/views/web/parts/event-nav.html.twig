@@ -3,8 +3,16 @@
         <div class="badges clearfix text-wrap mb-3 font-1-5rem">
             {% block event_nav_pre %}
             {% endblock event_nav_pre %}
+            {% block event_nav_parent %}
+                {% if event.superEvent|default %}
+                    <a  href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" class="badge badge-info"
+                        data-toggle="tooltip" itemprop="superEvent" content="{{ event.superEvent.name }}" title="{{ event.superEvent.name }}">
+                        <i class="fas fa-arrow-up"></i> {{ event.superEvent.shortName }}
+                    </a>
+                {% endif %}
+            {% endblock event_nav_parent %}
             {% block event_nav_loop %}
-                {% for navEvent in navEvents|default([]) %}
+                {% for navEvent in navEvents|sort((a, b) => event.year ? b.startYear <=> a.startYear : a.seqId <=> b.seqId) %}
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
                        class="badge {{ event is defined and navEvent.slug == event.slug ? 'badge-success' : 'badge-light' }}">
                         {% if navEvent.year and navEvent.startYear %}
