@@ -33,8 +33,10 @@
 {% endif %}
 {% if event.organizer.contact|default %}{# TODO #}
     <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
-        <meta itemprop="name" content="{{ event.organizer.contact.name|default('') }}"/>
+        <meta itemprop="name" content="{{ event.organizer.contact.name|default }}"/>
         <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg'))|default('') }}"/>
+        <link itemprop="url"
+              href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': event.organizer.contact.slug|default})) }}"/>
         <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
     </div>
 {% endif %}

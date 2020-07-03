@@ -68,6 +68,19 @@
             {% endif %}
         </li>
     {% endif %}
+    {% if participant.event.organizer.contact|default %}
+        {% set org = participant.event.organizer.contact %}
+        <li>
+            {% if org.url|default %}
+                <a href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': org.slug|default})) }}" target="_blank">
+                    {{ org.name }}
+                </a>
+            {% else %}
+                {{ org.name }}
+            {% endif %}
+        </li>
+    {% endif %}
+
 </ul>
 
 <h3>Kontaktní údaje</h3>

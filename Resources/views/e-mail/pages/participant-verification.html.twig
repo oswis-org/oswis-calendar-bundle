@@ -4,7 +4,7 @@
 
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
-        <link itemprop="reservationStatus" href="http://schema.org/Pending"/>
+        <link itemprop="reservationStatus" href="http://schema.org/ReservationPending"/>
         <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
         <meta itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}"/>
         <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>{# TODO #}
@@ -119,6 +119,9 @@
                     <meta itemprop="name" content="{{ participant.event.organizer.contact.name }}"/>
                     <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
                     <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
+                    <link itemprop="url"
+                          href="{{ absolute_url(path('oswis_org_oswis_address_book_organization',
+                              {'slug': participant.event.organizer.contact.slug|default})) }}"/>
                 </div>
             {% endif %}
         </div>
