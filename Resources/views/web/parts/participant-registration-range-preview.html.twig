@@ -3,15 +3,15 @@
         <div class="card mt-2 mb-4">
             {% if range.rangeActive|default %}
                 <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}" itemprop="url">
-                    <div class="card-header p-2">
-                        <h5 class="card-title mb-0 font-weight-bold font-1em">
-                            {% block range_preview_title %}
+                    {% block range_preview_title %}
+                        <div class="card-header p-2">
+                            <h5 class="card-title mb-0 font-weight-bold font-1em">
                                 <span class="d-inline d-xl-none">{{ range.shortName|default('Přihláška na '~range.event.shortName|default) }}</span>
                                 <span class="d-none d-xl-inline" itemprop="name">{{ range.name|default('Přihláška na akci '~range.event.name|default) }}</span>
                                 <span class="float-right align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
-                            {% endblock range_preview_title %}
-                        </h5>
-                    </div>
+                            </h5>
+                        </div>
+                    {% endblock range_preview_title %}
                 </a>
             {% else %}
                 {{ block('range_preview_title') }}
