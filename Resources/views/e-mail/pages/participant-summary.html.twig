@@ -56,8 +56,10 @@
             <p>
                 Uživatelské jméno u uživatelského účtu pro přístup do aplikace
                 <a href="{{ absolute_url(path('oswis_org_oswis_core_web_portal')) }}" target="_blank">{{ oswis.app.name }}</a> je
-                <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>a&nbsp;hlavní e-mail je
-                <strong>{{ appUser.email|default }}</strong>.
+                <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>
+                {%- if appUser.email|default and appUser.email|default != appUser.username|default %}
+                a&nbsp;hlavní e-mail je <strong>{{ appUser.email|default }}</strong>
+                {%- endif -%}.
             </p>
             <p>
                 {% if appUser.plainPassword|default %}

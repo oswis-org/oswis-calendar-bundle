@@ -20,7 +20,9 @@
         <b><span itemprop="name">{{ participant.contact.fullName }}</span> </b>
         <small itemprop="email">({{ participant.contact.email }})</small>
     </li>
-    <li>Typ přihlášky: {{ participant.participantCategory.name|default('neuveden') }}</li>
+    {% if participant.participantCategory.defaultType %}
+        <li>Typ přihlášky: {{ participant.participantCategory.name|default('neuveden') }}</li>
+    {% endif %}
     <li>
         <b>Cena celkem: {{ participant.price }},- Kč</b><br>
         <small>V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení přihlášky.</small>
