@@ -18,9 +18,9 @@
 <ul>
     <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
         <b><span itemprop="name">{{ participant.contact.fullName }}</span> </b>
-        <small itemprop="email">({{ participant.contact.email }})</small>
+        <small itemprop="email"> ({{ participant.contact.email }})</small>
     </li>
-    {% if participant.participantCategory.defaultType %}
+    {% if not participant.participantCategory.defaultType %}
         <li>Typ přihlášky: {{ participant.participantCategory.name|default('neuveden') }}</li>
     {% endif %}
     <li>
