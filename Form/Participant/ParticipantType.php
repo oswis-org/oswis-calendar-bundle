@@ -98,7 +98,14 @@ class ParticipantType extends AbstractType
 
     public static function addSubmitButton(FormBuilderInterface $builder): void
     {
-        $builder->add('save', SubmitType::class, ['label' => 'Přihlásit se!', 'attr' => ['class' => 'btn-lg btn-primary btn-block'],]);
+        $builder->add(
+            'save',
+            SubmitType::class,
+            [
+                'label' => 'Přihlásit se',
+                'attr' => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
+            ]
+        );
     }
 
     /**
