@@ -40,24 +40,14 @@ class ParticipantCategoryService
         }
     }
 
-    public function getParticipantTypeBySlug(?string $slug, bool $onlyPublic = true): ?ParticipantCategory
+    public function getParticipantTypeBySlug(?string $slug): ?ParticipantCategory
     {
         if (empty($slug)) {
             return null;
         }
-        $type = $this->getRepository()->getParticipantCategory(
-            [
-                ParticipantCategoryRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
-                ParticipantCategoryRepository::CRITERIA_SLUG               => $slug,
-            ]
-        );
+        $type = $this->getRepository()->getParticipantCategory([ParticipantCategoryRepository::CRITERIA_SLUG => $slug]);
         if (null === $type) {
-            $type = $this->getRepository()->getParticipantCategory(
-                [
-                    ParticipantCategoryRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => $onlyPublic,
-                    ParticipantCategoryRepository::CRITERIA_TYPE               => $slug,
-                ]
-            );
+            $type = $this->getRepository()->getParticipantCategory([ParticipantCategoryRepository::CRITERIA_TYPE => $slug]);
         }
 
         return $type;

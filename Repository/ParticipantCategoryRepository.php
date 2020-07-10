@@ -17,7 +17,6 @@ class ParticipantCategoryRepository extends EntityRepository
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_TYPE = 'participantType';
-    public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
 
     public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantCategory
     {
@@ -43,7 +42,6 @@ class ParticipantCategoryRepository extends EntityRepository
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
         $this->addTypeQuery($queryBuilder, $opts);
-        $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
         $this->addOrderBy($queryBuilder, true);
 
@@ -69,13 +67,6 @@ class ParticipantCategoryRepository extends EntityRepository
         if (!empty($opts[self::CRITERIA_TYPE]) && is_string($opts[self::CRITERIA_TYPE])) {
             $queryBuilder->andWhere('ept.type = :type_string');
             $queryBuilder->setParameter('type_string', $opts[self::CRITERIA_TYPE]);
-        }
-    }
-
-    private function addOnlyPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
-    {
-        if (!empty($opts[self::CRITERIA_ONLY_PUBLIC_ON_WEB])) {
-            $queryBuilder->andWhere('ept.publicOnWeb = true');
         }
     }
 

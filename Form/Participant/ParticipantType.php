@@ -103,7 +103,7 @@ class ParticipantType extends AbstractType
             SubmitType::class,
             [
                 'label' => 'Přihlásit se',
-                'attr' => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
+                'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
             ]
         );
     }
