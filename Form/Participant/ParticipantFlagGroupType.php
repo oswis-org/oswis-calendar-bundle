@@ -47,7 +47,9 @@ class ParticipantFlagGroupType extends AbstractType
             FormEvents::PRE_SUBMIT,
             static function (FormEvent $event) {
                 $data = $event->getData();
-                $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
+                if (!empty($data)) {
+                    $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
+                }
                 $event->setData($data);
             }
         );

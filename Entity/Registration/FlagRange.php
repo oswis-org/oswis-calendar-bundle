@@ -207,7 +207,8 @@ class FlagRange implements NameableInterface
 
     public function getShortName(): ?string
     {
-        return $this->traitGetShortName() ?? ($this->getFlag() ? $this->getFlag()->getShortName() : null);
+        // TODO: !!!
+        return $this->shortName ?? ($this->getFlag() ? $this->getFlag()->getShortName() : null);
     }
 
     public function getDescription(): string
