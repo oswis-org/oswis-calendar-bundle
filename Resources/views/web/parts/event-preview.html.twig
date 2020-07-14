@@ -32,14 +32,14 @@
             </div>
             <div class="card-footer">
                 <div class="row no-gutters">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-4 text-md-left">
                         <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-2">{{ event.rangeAsText|default }}</small>
                         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-4 text-md-center">
                         {% if event.place(true)|default %}
-                            <div itemprop="place" itemscope itemtype="http://schema.org/Place">
+                            <div itemprop="location" itemscope itemtype="http://schema.org/Place">
                                 {% if event.place(true).name is defined and event.place(true).name %}
                                     <div itemprop="name" content="{{ event.place(true).name }}">
                                         <i class="fas fa-map-marked-alt text-muted"></i>&nbsp;
@@ -76,6 +76,10 @@
                                 </div>
                             </div>
                         {% endif %}
+                    </div>
+                    <div class="col-12 col-md-4 text-md-right" itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                        <i class="fas fa-users-cog text-muted"></i>&nbsp;<small class="p-2" itemprop="name">{{ event.organizer(true).contact.name|default }}</small>
+                        <meta itemprop="url" content="{{ event.organizer(true).contact.url|default }}"/>
                     </div>
                 </div>
             </div>

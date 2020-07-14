@@ -35,13 +35,24 @@
         {% if event.superEvent|default %}
             <h3>Je součástí akce:</h3>
             <ul class="mt-2">
-                <li>
-                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
+                <li itemprop="superEvent" itemscope itemtype="http://schema.org/Event">
+                    <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
                         <i class="fas fa-calendar-week"></i>
                         <strong class="d-inline d-md-none">{{ event.superEvent.shortName }}</strong>
-                        <strong class="d-none d-md-inline">{{ event.superEvent.name }}</strong>
+                        <strong class="d-none d-md-inline" itemprop="name">{{ event.superEvent.name }}</strong>
                     </a>
+                    <wbr class="d-inline">
                     {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
+                    <meta itemprop="startDate" content="{{ event.superEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+                    <meta itemprop="endDate" content="{{ event.superEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+                    <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                        <meta itemprop="name" content="{{ event.superEvent.organizer(true).contact.name|default }}"/>
+                        <meta itemprop="url" content="{{ event.superEvent.organizer(true).contact.url|default }}"/>
+                    </div>
+                    <div itemprop="location" itemscope itemtype="http://schema.org/Place">
+                        <meta itemprop="name" content="{{ event.superEvent.place(true).name|default }}"/>
+                        <meta itemprop="address" content="{{ event.place(true).fullAddress|default }}"/>
+                    </div>
                 </li>
             </ul>
         {% endif %}

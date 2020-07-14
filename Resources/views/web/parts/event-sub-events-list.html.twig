@@ -1,13 +1,23 @@
 <ul class="mt-2 mb-2">
     {% for subEvent in subEvents %}
-        <li>
-            <a itemprop="subEvent" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
+        <li itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
+            <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
                 <i class="fas fa-calendar-week"></i>
                 <strong class="d-inline d-md-none">{{ subEvent.shortName }}</strong>
-                <strong class="d-none d-md-inline">{{ subEvent.name }}</strong>
+                <strong class="d-none d-md-inline" itemprop="name">{{ subEvent.name }}</strong>
             </a>
-            <wbr class="d-inline d-md-none">
+            <wbr>
             {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
+            <meta itemprop="startDate" content="{{ subEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+            <meta itemprop="endDate" content="{{ subEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+            <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                <meta itemprop="name" content="{{ subEvent.organizer(true).contact.name|default }}"/>
+                <meta itemprop="url" content="{{ subEvent.organizer(true).contact.url|default }}"/>
+            </div>
+            <div itemprop="location" itemscope itemtype="http://schema.org/Place">
+                <meta itemprop="name" content="{{ subEvent.place(true).name|default }}"/>
+                <meta itemprop="address" content="{{ event.place(true).fullAddress|default }}"/>
+            </div>
         </li>
     {% endfor %}
 </ul>
