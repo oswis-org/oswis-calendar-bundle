@@ -6,6 +6,7 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
+use OswisOrg\OswisCalendarBundle\Traits\Entity\VariableSymbolTrait;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
@@ -84,6 +85,7 @@ class ParticipantPayment
     use DateTimeTrait {
         getDateTime as protected traitGetDateTime;
     }
+    use VariableSymbolTrait;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -95,32 +97,19 @@ class ParticipantPayment
     protected ?Participant $participant = null;
 
     /**
-     * @param Participant|null $participant
-     * @param int|null         $numericValue
-     * @param DateTime|null    $dateTime
-     * @param string|null      $type
-     * @param string|null      $note
-     * @param string|null      $internalNote
-     * @param string|null      $externalId
+     * @param int|null      $numericValue
+     * @param DateTime|null $dateTime
+     * @param string|null   $type
      *
-     * @throws NotImplementedException|InvalidTypeException
+     * @throws InvalidTypeException
      */
-    public function __construct(
-        ?Participant $participant = null,
-        ?int $numericValue = null,
-        ?DateTime $dateTime = null,
-        ?string $type = null,
-        ?string $note = null,
-        ?string $internalNote = null,
-        ?string $externalId = null
-    ) {
+    public function __construct(?int $numericValue = null, ?DateTime $dateTime = null, ?string $type = null)
+    {
         $this->setNumericValue($numericValue);
         $this->setType($type);
-        $this->setNote($note);
-        $this->setInternalNote($internalNote);
-        $this->setExternalId($externalId);
-        $this->setDateTime($dateTime);
-        $this->setParticipant($participant);
+        try {
+            $this->setDateTime($dateTime);
+        } catch (NotImplementedException $exception) {}
     }
 
     /**
@@ -130,7 +119,8 @@ class ParticipantPayment
      */
     public function setDateTime(?DateTime $dateTime): void
     {
-        if ($this->getDateTime() !== $dateTime) {
+        $oldDateTime = $this->getDateTime();
+        if (null !== $oldDateTime && $oldDateTime !== $dateTime) {
             throw new NotImplementedException('změna data platby');
         }
     }
@@ -150,7 +140,7 @@ class ParticipantPayment
 
     public static function getAllowedTypesDefault(): array
     {
-        return ['', 'manual', 'csv'];
+        return ['', 'cash', 'bank-transfer', 'card', 'on-line'];
     }
 
     public static function getAllowedTypesCustom(): array

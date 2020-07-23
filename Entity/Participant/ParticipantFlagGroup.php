@@ -91,7 +91,7 @@ class ParticipantFlagGroup implements BasicInterface
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof FlagRange ? $flagRange->getPrice() : 0;
+            $price += $flagRange instanceof FlagRange ? $flagRange->getVariableSymbol() : 0;
         }
 
         return $price;
@@ -179,7 +179,7 @@ class ParticipantFlagGroup implements BasicInterface
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof FlagRange ? $flagRange->getPrice() : 0;
+            $price += $flagRange instanceof FlagRange ? $flagRange->getVariableSymbol() : 0;
         }
 
         return $price;

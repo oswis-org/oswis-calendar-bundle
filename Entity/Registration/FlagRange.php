@@ -112,7 +112,7 @@ class FlagRange implements NameableInterface
     {
         $flagName = $this->getName();
         if ($addPrice) {
-            $price = $this->getPrice();
+            $price = $this->getVariableSymbol();
             $flagName .= 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
         }
         if ($addCapacityOverflow && !$this->hasRemainingCapacity()) {
@@ -127,7 +127,7 @@ class FlagRange implements NameableInterface
         return $this->traitGetName() ?? ($this->getFlag() ? $this->getFlag()->getName() : null);
     }
 
-    public function getPrice(): int
+    public function getVariableSymbol(): int
     {
         return $this->price ?? 0;
     }
@@ -194,7 +194,7 @@ class FlagRange implements NameableInterface
 
     public function getFlagPriceGroup(): string
     {
-        $price = $this->getPrice();
+        $price = $this->getVariableSymbol();
         if ($price > 0) {
             return '⊕ S příplatkem';
         }

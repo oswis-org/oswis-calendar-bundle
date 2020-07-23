@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection MethodShouldBeFinalInspection */
+
 /**
  * @noinspection RedundantDocCommentTagInspection
  */
@@ -10,9 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisAddressBookBundle\Entity\Organization;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -58,90 +58,60 @@ class ParticipantPaymentService
         $this->participantService = $participantService;
     }
 
-    final public function createFromCsv(
-        Event $event,
-        string $csv,
-        ?string $eventParticipantTypeOfType = ParticipantCategory::TYPE_ATTENDEE,
-        ?string $delimiter = ';',
-        ?string $enclosure = '"',
-        ?string $escape = '\\',
-        ?string $variableSymbolColumnName = 'VS',
-        ?string $dateColumnName = 'Datum',
-        ?string $valueColumnName = 'Objem',
-        ?string $currencyColumnName = 'Měna',
-        ?string $currencyAllowed = 'CZK'
-    ): int {
-        $eventParticipantTypeOfType = $eventParticipantTypeOfType ?? ParticipantCategory::TYPE_ATTENDEE;
-        $delimiter = $delimiter ?? ';';
-        $enclosure = $enclosure ?? '"';
-        $escape = $escape ?? '\\';
-        $variableSymbolColumnName = $variableSymbolColumnName ?? 'VS';
-        $dateColumnName = $dateColumnName ?? 'Datum';
-        $valueColumnName = $valueColumnName ?? 'Objem';
-        $currencyColumnName = $currencyColumnName ?? 'Měna';
-        $currencyAllowed = $currencyAllowed ?? 'CZK';
-        $this->logger->info('CSV_PAYMENT_START');
-        // $csvRow = null;
-        $eventParticipants = $this->participantService->getParticipantsByType(
-            $event,
-            $eventParticipantTypeOfType,
-            true,
-            true,
-            1
-        );
-        // $csvPayments = str_getcsv($csv, $delimiter, $enclosure, $escape);
-        // $csvArray = array_map('str_getcsv', file($file));
-        $eventParticipantsCount = $eventParticipants->count();
-        $eventName = $event->getSlug();
-        $this->logger->info("Creating payments from CSV. Searching in $eventParticipantsCount participants of event $eventName.");
-        $csvPayments = array_map(
-            static function ($row) use ($delimiter, $enclosure, $escape) {
-                return str_getcsv($row, $delimiter, $enclosure, $escape);
-            },
-            str_getcsv($csv, "\n")
+    /**
+     * Find participant by variable symbol and value.
+     *
+     * @param array                    $csvPaymentRow
+     * @param CsvPaymentImportSettings $csvSettings
+     * @param string                   $csvRow
+     *
+     * @return Participant|null
+     */
+    public function getParticipantByPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings, string $csvRow): ?Participant
+    {
+        return null;
+    }
+
+    public function makePayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings, string $csvRow): ParticipantPayment
+    {
+        $csvDate = $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings, $dateKey);
+        $csvValue = (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0);
+        $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
+
+        $payment = new ParticipantPayment(null, null, null);
+
+        throw new OswisException("Nepodařilo se vytvořit platbu.");
+    }
+
+    final public function createFromCsv(string $csv, ?CsvPaymentImportSettings $csvSettings = null): int
+    {
+        $csvSettings ??= new CsvPaymentImportSettings();
+        $currencyAllowed = $csvSettings->getCurrencyAllowed();
+        $this->logger->info('START: PROCESSING CSV PAYMENTS');
+        $csvRows = str_getcsv($csv, "\n");
+        $csvPaymentRows = array_map(
+            fn($row) => str_getcsv($row, $csvSettings->getDelimiter(), $csvSettings->getEnclosure(), $csvSettings->getEscape()),
+            $csvRows
         );
         $successfulPayments = [];
         $failedPayments = [];
-        array_walk(
-            $csvPayments,
-            static function (&$a) use ($csvPayments) {
-                $a = array_combine($csvPayments[0], $a);
-            }
-        );
-        array_shift($csvPayments); # remove column header
-        $dateKey = preg_grep('/.*Datum.*/', array_keys($csvPayments[0]))[0] ?? null;
-        foreach ($csvPayments as $csvPayment) {
-            $csvRow = null;
+        array_walk($csvPaymentRows, fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
+        array_shift($csvPaymentRows); # remove column header
+        foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
+            $csvRow = $csvRows[$csvPaymentRowKey];
             try {
-                $csvVariableSymbol = $csvPayment[$variableSymbolColumnName];
-                if (array_key_exists($dateColumnName, $csvPayment)) {
-                    $csvDate = new DateTime($csvPayment[$dateColumnName]);
-                } elseif (array_key_exists('"'.$dateColumnName.'"', $csvPayment)) {
-                    $csvDate = new DateTime($csvPayment['"'.$dateColumnName.'"']);
-                } elseif (array_key_exists('\"'.$dateColumnName.'\"', $csvPayment)) {
-                    $csvDate = new DateTime($csvPayment['\"'.$dateColumnName.'\"']);
-                } elseif (array_key_exists($dateKey, $csvPayment)) {
-                    $csvDate = new DateTime($csvPayment[$dateKey]);
-                } else {
-                    $csvDate = new DateTime();
-                }
-                $csvValue = (int)($csvPayment[$valueColumnName] ?? 0);
-                $csvCurrency = $csvPayment[$currencyColumnName] ?? null;
-                $csvRow = implode('; ', $csvPayment);
+                $csvDate = $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings, $dateKey);
+                $csvValue = (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0);
+                $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
+                $csvRow = implode('; ', $csvPaymentRow);
                 if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
-                    $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: Wrong currency ('$csvCurrency'' instead of '$currencyAllowed'); CSV: $csvRow;");
+                    $this->logger->notice(
+                        "ERROR: CSV_PAYMENT_FAILED: Wrong payment currency ('$csvCurrency' instead of '$currencyAllowed'). Original CSV: ".$
+                    );
                     $failedPayments[] = $csvRow.' [CURRENCY not allowed]';
                     continue;
                 }
-                if ($csvVariableSymbol && strlen($csvVariableSymbol) > 5) {
-                    $csvVariableSymbol = preg_replace('/\s/', '', $csvVariableSymbol);
-                    $csvVariableSymbol = substr(trim($csvVariableSymbol), strlen(trim($csvVariableSymbol)) - 9, 9);
-                }
-                if (!$csvVariableSymbol || strlen($csvVariableSymbol) < 6) {
-                    $this->logger->notice("CSV_PAYMENT_FAILED: ERROR: VS ($csvVariableSymbol) in CSV is too short; CSV: $csvRow;");
-                    $failedPayments[] = $csvRow.' [VS short]';
-                    continue;
-                }
+                $csvVariableSymbol = $this->getVariableSymbolFromPayment($csvPaymentRow, $csvSettings, $csvRow);
                 $filteredEventParticipants = $eventParticipants->filter(
                     fn(Participant $p) => !$p->isDeleted() && $p->getVariableSymbol() === $csvVariableSymbol
                 );
@@ -196,7 +166,7 @@ class ParticipantPaymentService
             }
         }
         $this->logger->error(
-            'CSV_PAYMENT_END: added '.count($successfulPayments).' from '.count($csvPayments).' (+ '.count($failedPayments).' failed).'
+            'CSV_PAYMENT_END: added '.count($successfulPayments).' from '.count($csvPaymentRows).' (+ '.count($failedPayments).' failed).'
         );
         try {
             $this->sendCsvReport($successfulPayments, $failedPayments);
@@ -208,29 +178,41 @@ class ParticipantPaymentService
         return count($successfulPayments);
     }
 
-    final public function create(
-        Participant $eventParticipant,
-        int $numericValue = 0,
-        DateTime $dateTime = null,
-        string $type = null,
-        string $note = null,
-        string $internalNote = null
-    ): ?ParticipantPayment {
+    private function getDateFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?DateTime
+    {
         try {
-            $em = $this->em;
-            $entity = new ParticipantPayment($eventParticipant, $numericValue, $dateTime, $type, $note, $internalNote);
-            $em->persist($entity);
-            $em->flush();
-            if (null !== $entity->getParticipant() && null !== $entity->getParticipant()->getContact()) {
-                $name = $entity->getParticipant()->getContact()->getName();
-            } else {
-                $name = $entity->getParticipant()->getId();
+            $dateKey = preg_grep('/.*Datum.*/', array_keys($csvPaymentRow))[0] ?? null;
+            if (array_key_exists($csvSettings->getDateColumnName(), $csvPaymentRow)) {
+                return new DateTime($csvPaymentRow[$csvSettings->getDateColumnName()]);
             }
-            $this->logger->info('CREATE: Created event participant payment (by service): '.$entity->getId().' '.$name.'.');
+            if (array_key_exists('"'.$csvSettings->getDateColumnName().'"', $csvPaymentRow)) {
+                return new DateTime($csvPaymentRow['"'.$csvSettings->getDateColumnName().'"']);
+            }
+            if (array_key_exists('\"'.$csvSettings->getDateColumnName().'\"', $csvPaymentRow)) {
+                return new DateTime($csvPaymentRow['\"'.$csvSettings->getDateColumnName().'\"']);
+            }
+            if (array_key_exists($dateKey, $csvPaymentRow)) {
+                return new DateTime($csvPaymentRow[$dateKey]);
+            }
 
-            return $entity;
+            return new DateTime();
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Event participant payment not created (by service): '.$e->getMessage());
+            return null;
+        }
+    }
+
+    public function create(ParticipantPayment $payment): ?ParticipantPayment {
+        try {
+            $this->em->persist($payment);
+            $this->em->flush();
+            $id = $payment->getId();
+            $value = $payment->getNumericValue();
+            $vs = $payment->getVariableSymbol();
+            $this->logger->info("CREATE: Created event participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
+
+            return $payment;
+        } catch (Exception $e) {
+            $this->logger->notice('ERROR: Event participant payment not created (by service): '.$e->getMessage());
 
             return null;
         }
@@ -339,5 +321,22 @@ class ParticipantPaymentService
         } catch (TransportExceptionInterface $e) {
             throw new OswisException('Problém s odesláním reportu o CSV platbách.  '.$e->getMessage());
         }
+    }
+
+    public function getVariableSymbolFromPayment(
+        array $csvPaymentRow,
+        CsvPaymentImportSettings $csvSettings,
+        string $csvRow
+    ): ?string {
+        $csvVariableSymbol = $csvPaymentRow[$csvSettings->getVariableSymbolColumnName()];
+        if (empty($csvVariableSymbol)) {
+            $this->logger->warning("ERROR: CSV_PAYMENT_FAILED: Variable symbol missing. CSV: ".$csvRow);
+            $failedPayments[] = $csvRow.' [VS short]';
+
+            return null;
+        }
+        $csvVariableSymbol = preg_replace('/\s/', '', $csvVariableSymbol);
+
+        return substr(trim($csvVariableSymbol), strlen(trim($csvVariableSymbol)) - 9, 9);
     }
 }

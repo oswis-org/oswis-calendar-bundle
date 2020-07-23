@@ -38,7 +38,7 @@ class RegRange implements NameableInterface
 {
     use NameableTrait;
     use PriceTrait {
-        getPrice as protected traitGetPrice;
+        getVariableSymbol as protected traitGetPrice;
         getDepositValue as protected traitGetDeposit;
     }
     use CapacityTrait;
@@ -155,7 +155,7 @@ class RegRange implements NameableInterface
 
     public function getRequiredRangePrice(?ParticipantCategory $participantType = null): int
     {
-        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getPrice($participantType);
+        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getVariableSymbol($participantType);
     }
 
     public function isRelative(): bool
@@ -173,7 +173,7 @@ class RegRange implements NameableInterface
         $this->requiredRegRange = $requiredRegRange;
     }
 
-    public function getPrice(?ParticipantCategory $participantType = null): int
+    public function getVariableSymbol(?ParticipantCategory $participantType = null): int
     {
         if (null === $participantType) {
             return $this->traitGetPrice();
@@ -222,7 +222,7 @@ class RegRange implements NameableInterface
 
     public function getRestValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
     {
-        return $this->getPrice($participantType) - $this->getDepositValue($participantType, $recursive);
+        return $this->getVariableSymbol($participantType) - $this->getDepositValue($participantType, $recursive);
     }
 
     /**

@@ -24,21 +24,21 @@ trait PriceTrait
 
     public function setEventPrice(?Price $eventPrice): void
     {
-        $this->setPrice($eventPrice ? $eventPrice->price : null);
+        $this->setVariableSymbol($eventPrice ? $eventPrice->price : null);
         $this->setDepositValue($eventPrice ? $eventPrice->deposit : null);
     }
 
     public function getEventPrice(): Price
     {
-        return new Price($this->getPrice(), $this->getDepositValue());
+        return new Price($this->getVariableSymbol(), $this->getDepositValue());
     }
 
-    public function getPrice(): ?int
+    public function getVariableSymbol(): ?int
     {
         return $this->price;
     }
 
-    public function setPrice(?int $price): void
+    public function setVariableSymbol(?int $price): void
     {
         $this->price = $price;
     }

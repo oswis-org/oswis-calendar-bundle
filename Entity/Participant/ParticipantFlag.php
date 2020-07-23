@@ -88,7 +88,7 @@ class ParticipantFlag implements BasicInterface
 
     public function getPrice(): int
     {
-        return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getPrice() : 0;
+        return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getVariableSymbol() : 0;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool

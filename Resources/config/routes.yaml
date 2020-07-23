@@ -1,11 +1,9 @@
-### Endpoint for token processing.
 oswis_org_oswis_calendar_participant_process_token:
     controller: oswis_org_oswis_calendar.participant_controller::processToken
     path: "/akce/prihlaska/token/{token}/{participantId}"
     requirements:
         participantId: '\d+'
 
-### Endpoint for (repeated) participant activation request.
 oswis_org_oswis_calendar_participant_activation_request:
     controller: oswis_org_oswis_calendar.participant_controller::activationRequest
     path: "/akce/prihlaska/overeni"

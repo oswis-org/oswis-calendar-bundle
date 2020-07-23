@@ -542,7 +542,7 @@ class Participant implements BasicInterface
         if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
             throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
         }
-        $price = $this->getRegRange()->getPrice($this->getParticipantCategory()) + $this->getFlagsPrice();
+        $price = $this->getRegRange()->getVariableSymbol($this->getParticipantCategory()) + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
