@@ -5,10 +5,12 @@
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
@@ -150,5 +152,47 @@ class ParticipantMailService
         }
 
         return $mailData;
+    }
+
+    /**
+     * @param ParticipantPayment $payment
+     * @param AppUser            $appUser
+     *
+     * @throws InvalidTypeException
+     * @throws NotFoundException
+     * @throws NotImplementedException
+     */
+    public function sendPaymentConfirmation(ParticipantPayment $payment, AppUser $appUser): void
+    {
+        $participant = $payment->getParticipant();
+        if (null === $participant) {
+            return;
+        }
+        if (null === ($mailCategory = $this->getMailCategoryByType(ParticipantMail::TYPE_PAYMENT))) {
+            throw new NotImplementedException(ParticipantMail::TYPE_PAYMENT, 'u e-mailů k přihláškám');
+        }
+        if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
+            throw new NotFoundException('Skupina nebo šablona e-mailů nebyla nalezena.');
+        }
+        $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
+        $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
+        $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+        $contact = $participant->getContact();
+        $data = [
+            'payment'        => $payment,
+            'participant'    => $participant,
+            'appUser'        => $appUser,
+            'contact'        => $contact,
+            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
+            'category'       => $mailCategory,
+            'type'           => ParticipantMail::TYPE_PAYMENT,
+            'isIS'           => false,
+        ];
+        $this->em->persist($participantMail);
+        $this->em->persist($payment);
+        $templateName = $twigTemplate->getTemplateName() ?? '@OswisOrgOswisCalendar/e-mail/pages/participant-payment.html.twig';
+        $this->mailService->sendEMail($participantMail, $templateName, $data);
+        $payment->setConfirmedByMailAt(new DateTime());
+        $this->em->flush();
     }
 }

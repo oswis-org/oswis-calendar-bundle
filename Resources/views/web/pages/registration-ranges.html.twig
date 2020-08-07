@@ -13,7 +13,7 @@
             </div>
         </div>
         <div class="row">
-            {% for range in ranges %}
+            {% for range in ranges|sort((a, b) => a.priority >= b.priority) %}
                 {% include '@OswisOrgOswisCalendar/web/parts/participant-registration-range-preview.html.twig' %}
             {% endfor %}
         </div>

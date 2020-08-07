@@ -11,7 +11,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\SiteMapItem;
-use OswisOrg\OswisCoreBundle\Interfaces\Common\SiteMapExtenderInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Web\SiteMapExtenderInterface;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
@@ -31,9 +31,11 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
 
     public function getItems(): Collection
     {
-        $itemsData = new ArrayCollection([
-            ['path' => '', 'changeFrequency' => SiteMapItem::CHANGE_FREQUENCY_DAILY],
-        ]);
+        $itemsData = new ArrayCollection(
+            [
+                ['path' => '', 'changeFrequency' => SiteMapItem::CHANGE_FREQUENCY_DAILY],
+            ]
+        );
         $items = $itemsData->map(fn(array $data) => new SiteMapItem($data['path'] ?? null, $data['changeFrequency'] ?? null));
         foreach ($this->eventService->getRepository()->getEvents([EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true]) as $event) {
             if (!($event instanceof Event)) {

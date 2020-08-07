@@ -24,12 +24,14 @@ use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
+use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class ParticipantController extends AbstractController
 {
@@ -287,5 +289,32 @@ class ParticipantController extends AbstractController
     public function partnersFooter(): Response
     {
         return $this->render('@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig', ['footerPartners' => $this->participantService->getWebPartners()]);
+    }
+
+    /**
+     * @param Request                   $request
+     * @param OswisCoreSettingsProvider $coreSettings
+     * @param int|null                  $limit
+     * @param int|null                  $offset
+     *
+     * @return Response
+     * @throws AccessDeniedHttpException
+     */
+    public function updateParticipants(Request $request, OswisCoreSettingsProvider $coreSettings, ?int $limit = null, ?int $offset = null): Response
+    {
+        $coreSettings->checkAdminIP($request->getClientIp());
+        foreach ($this->participantService->getParticipants([], true, $limit, $offset) as $participant) {
+            if ($participant instanceof Participant) {
+                $participant->updateCachedColumns();
+            }
+        }
+
+        return $this->render(
+            "@OswisOrgOswisCore/web/pages/message.html.twig",
+            [
+                'title'   => 'Přihlášky aktualizovány!',
+                'message' => 'Přihlášky byly úspěšně aktualizovány.',
+            ]
+        );
     }
 }

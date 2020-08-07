@@ -11,7 +11,7 @@ class CsvPaymentImportSettings
     public const DEFAULT_ENCLOSURE = '"';
     public const DEFAULT_ESCAPE = '\\';
     public const DEFAULT_VARIABLE_SYMBOL_COLUMN_NAME = 'VS';
-    public const DEFAULT_IDENTIFIER_COLUMN_NAME = 'ID';
+    public const DEFAULT_IDENTIFIER_COLUMN_NAME = 'ID operace';
     public const DEFAULT_DATE_COLUMN_NAME = 'Datum';
     public const DEFAULT_VALUE_COLUMN_NAME = 'Objem';
     public const DEFAULT_CURRENCY_COLUMN_NAME = 'Měna';

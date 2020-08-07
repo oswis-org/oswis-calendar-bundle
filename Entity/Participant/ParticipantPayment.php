@@ -6,6 +6,7 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
+use OswisOrg\OswisCalendarBundle\Traits\Entity\MailConfirmationTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\VariableSymbolTrait;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
@@ -64,7 +65,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     "numericValue": "ipartial"
  * })
  * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter::class, properties={
- *     "createddDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"
+ *     "createdDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"
  * })
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
@@ -86,6 +87,14 @@ class ParticipantPayment
         getDateTime as protected traitGetDateTime;
     }
     use VariableSymbolTrait;
+    use MailConfirmationTrait;
+
+    public const TYPE_BANK_TRANSFER = 'bank-transfer';
+    public const TYPE_CARD = 'card';
+    public const TYPE_CASH = 'cash';
+    public const TYPE_ON_LINE = 'on-line';
+
+    public const ALLOWED_TYPES = ['', self::TYPE_CASH, self::TYPE_CARD, self::TYPE_BANK_TRANSFER, self::TYPE_ON_LINE];
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -97,19 +106,28 @@ class ParticipantPayment
     protected ?Participant $participant = null;
 
     /**
-     * @param int|null      $numericValue
-     * @param DateTime|null $dateTime
-     * @param string|null   $type
-     *
-     * @throws InvalidTypeException
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport")
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
+    protected ?ParticipantPaymentsImport $import = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
+     */
+    protected ?string $errorMessage = null;
+
     public function __construct(?int $numericValue = null, ?DateTime $dateTime = null, ?string $type = null)
     {
         $this->setNumericValue($numericValue);
-        $this->setType($type);
+        try {
+            $this->setType($type);
+        } catch (InvalidTypeException $exception) {
+        }
         try {
             $this->setDateTime($dateTime);
-        } catch (NotImplementedException $exception) {}
+        } catch (NotImplementedException $exception) {
+        }
     }
 
     /**
@@ -140,12 +158,22 @@ class ParticipantPayment
 
     public static function getAllowedTypesDefault(): array
     {
-        return ['', 'cash', 'bank-transfer', 'card', 'on-line'];
+        return self::ALLOWED_TYPES;
     }
 
     public static function getAllowedTypesCustom(): array
     {
         return [];
+    }
+
+    public function getErrorMessage(): ?string
+    {
+        return $this->errorMessage;
+    }
+
+    public function setErrorMessage(?string $errorMessage): void
+    {
+        $this->errorMessage = $errorMessage;
     }
 
     public function getParticipant(): ?Participant
@@ -168,5 +196,15 @@ class ParticipantPayment
         }
         $this->participant = $participant;
         $participant->addPayment($this);
+    }
+
+    public function getImport(): ?ParticipantPaymentsImport
+    {
+        return $this->import;
+    }
+
+    public function setImport(?ParticipantPaymentsImport $import): void
+    {
+        $this->import = $import;
     }
 }

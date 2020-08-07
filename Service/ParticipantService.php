@@ -149,7 +149,9 @@ class ParticipantService
         foreach ($participant->getContactPersons(false) as $contactPerson) {
             if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
                 $this->logger->notice("Contact person is not AbstractPerson or doesn't have AppUser assigned.");
-                $this->logger->notice("Contact person is of type ".get_class($contactPerson)."and is ".$contactPerson instanceof AbstractContact." AbstractContact");
+                $this->logger->notice(
+                    "Contact person is of type ".get_class($contactPerson)." and is ".($contactPerson instanceof AbstractContact ? '' : 'NOT')." AbstractContact"
+                );
                 continue;
             }
             try {

@@ -36,15 +36,18 @@
                     <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.participantCategory.name|default }}</h6>
                 {% endif %}
                 {% if range.description %}
-                    <div class="mt-2 mb-2" itemprop="description">{{ range.description }}</div>
+                    <div class="mt-2 mb-2 small text-justify" itemprop="description">{{ range.description }}</div>
                 {% endif %}
                 {% if range.note %}
                     <div class="text-muted mt-2 mb-2" itemprop="description">{{ range.note }}</div>
                 {% endif %}
                 <div style="font-size: 1.3em;">
                     {% if range.rangeActive %}
+                        {% set badgeClassColor = range.surrogate ? 'warning' : 'success' %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
-                            <div class="badge badge-success pt-1 pb-1 pl-2 pr-2 mt-1">Přihlas se nyní!</div>
+                            <div class="badge badge-{{ badgeClassColor }} pt-1 pb-1 pl-2 pr-2 mt-1">
+                                Přihlas se nyní{{- range.surrogate ? ' (jako náhradník)' : '' -}}!
+                            </div>
                         </a>
                     {% else %}
                         <div class="badge badge-dark pt-1 pb-1 pl-2 pr-2 mt-1">Aktuálně neaktivní.</div>

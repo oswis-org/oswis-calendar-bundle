@@ -221,7 +221,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\EventRepository:
         alias: oswis_org_oswis_calendar.event_repository
         public: true
@@ -233,7 +233,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository:
         alias: oswis_org_oswis_calendar.flag_range_repository
         public: true
@@ -245,7 +245,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository:
         alias: oswis_org_oswis_calendar.participant_repository
         public: true
@@ -257,7 +257,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository:
         alias: oswis_org_oswis_calendar.participant_token_repository
         public: true
@@ -269,7 +269,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository:
         alias: oswis_org_oswis_calendar.participant_mail_repository
         public: true
@@ -281,7 +281,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository:
         alias: oswis_org_oswis_calendar.participant_mail_category_repository
         public: true
@@ -293,7 +293,7 @@ services:
         arguments:
             - '@doctrine'
         tags:
-            - '@doctrine.repository_service'
+            - 'doctrine.repository_service'
     OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository:
         alias: oswis_org_oswis_calendar.participant_mail_group_repository
         public: true

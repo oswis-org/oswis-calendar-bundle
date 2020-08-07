@@ -7,7 +7,6 @@
 namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -30,25 +29,9 @@ final class ParticipantPaymentSubscriber implements EventSubscriberInterface
     {
         return [
             KernelEvents::VIEW => [
-                ['postWrite', EventPriorities::POST_WRITE],
                 ['postValidate', EventPriorities::POST_VALIDATE],
             ],
         ];
-    }
-
-    /**
-     * @param ViewEvent $event
-     *
-     * @throws Exception
-     */
-    public function postWrite(ViewEvent $event): void
-    {
-        $participantPayment = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
-        if (!$participantPayment instanceof ParticipantPayment || Request::METHOD_POST !== $method) {
-            return;
-        }
-        $this->paymentService->sendConfirmation($participantPayment);
     }
 
     /**
@@ -67,5 +50,6 @@ final class ParticipantPaymentSubscriber implements EventSubscriberInterface
         if (Request::METHOD_PUT === $method) {
             throw new OswisException('Změna platby není povolena.');
         }
+        $this->paymentService->create($participantPayment);
     }
 }

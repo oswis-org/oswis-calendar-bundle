@@ -54,6 +54,7 @@ class ParticipantMail extends AbstractMail
 {
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
     public const TYPE_ACTIVATION = 'activation';
+    public const TYPE_PAYMENT = 'payment';
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
@@ -74,14 +75,16 @@ class ParticipantMail extends AbstractMail
     protected ?ParticipantToken $participantToken = null;
 
     public function __construct(
-        Participant $participant,
-        AppUser $appUser,
-        string $subject,
+        Participant $participant = null,
+        AppUser $appUser = null,
+        string $subject = null,
         ?string $type = null,
         ParticipantToken $token = null,
         ?string $messageId = null
     ) {
-        parent::__construct($subject, $appUser->getEmail(), $type, $appUser->getName(), $messageId);
+        if ($appUser) {
+            parent::__construct($subject, $appUser->getEmail(), $type, $appUser->getName(), $messageId);
+        }
         $this->participantToken = $token;
         $this->participant = $participant;
         $this->appUser = $appUser;

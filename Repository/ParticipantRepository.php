@@ -31,6 +31,7 @@ class ParticipantRepository extends ServiceEntityRepository
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
     public const CRITERIA_CONTACT = 'contact';
     public const CRITERIA_APP_USER = 'appUser';
+    public const CRITERIA_VARIABLE_SYMBOL = 'variableSymbol';
 
     /**
      * @param ManagerRegistry $registry
@@ -67,6 +68,7 @@ class ParticipantRepository extends ServiceEntityRepository
         $this->setIncludeDeletedQuery($queryBuilder, $opts);
         $this->setContactQuery($queryBuilder, $opts);
         $this->setAppUserQuery($queryBuilder, $opts);
+        $this->setVSQuery($queryBuilder, $opts);
         $this->setLimit($queryBuilder, $limit, $offset);
         $this->setOrderBy($queryBuilder, true, true);
 
@@ -140,6 +142,14 @@ class ParticipantRepository extends ServiceEntityRepository
             $queryBuilder->leftJoin('participant.contact', 'contact');
             $queryBuilder->andWhere('contact.appUser = :app_user_id');
             $queryBuilder->setParameter('app_user_id', $opts[self::CRITERIA_APP_USER]->getId());
+        }
+    }
+
+    private function setVSQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
+        if (!empty($opts[self::CRITERIA_VARIABLE_SYMBOL])) {
+            $queryBuilder->andWhere(' participant.variableSymbol = :variableSymbol ');
+            $queryBuilder->setParameter('variableSymbol', $opts[self::CRITERIA_VARIABLE_SYMBOL]);
         }
     }
 

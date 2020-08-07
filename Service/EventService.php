@@ -43,6 +43,11 @@ class EventService
         $this->setDefaultEvent();
     }
 
+    public function getCalendarSettings(): OswisCalendarSettingsProvider
+    {
+        return $this->calendarSettings;
+    }
+
     public function create(Event $event): Event
     {
         $this->em->persist($event);
