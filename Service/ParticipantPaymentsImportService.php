@@ -87,12 +87,12 @@ class ParticipantPaymentsImportService
         return $participant;
     }
 
-    public static function cmpParticipantsByPayment(int $value, Participant $p1, Participant $p2): int
+    public static function cmpParticipantsByPayment(int $value, Participant $participant1, Participant $participant2): int
     {
-        if ($p1->differenceFromPayment($value) === $p2->differenceFromPayment($value)) {
+        if ($participant1->differenceFromPayment($value) === $participant2->differenceFromPayment($value)) {
             return 0;
         }
 
-        return $p1->differenceFromPayment($value) > $p2->differenceFromPayment($value) ? 1 : -1;
+        return $participant1->differenceFromPayment($value) > $participant2->differenceFromPayment($value) ? 1 : -1;
     }
 }
