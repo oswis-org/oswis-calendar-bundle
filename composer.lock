@@ -3843,16 +3843,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.278",
+      "version": "v0.0.279",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "1fbbc7157e40d73e8daad28dae9d5200df03c71d"
+        "reference": "56d9b4e45779965eb1c8bff7166bd1d3e57e579e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/1fbbc7157e40d73e8daad28dae9d5200df03c71d",
-        "reference": "1fbbc7157e40d73e8daad28dae9d5200df03c71d",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/56d9b4e45779965eb1c8bff7166bd1d3e57e579e",
+        "reference": "56d9b4e45779965eb1c8bff7166bd1d3e57e579e",
         "shasum": ""
       },
       "require": {
@@ -3894,20 +3894,20 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-08-05T20:50:25+00:00"
+      "time": "2020-08-08T15:43:32+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.619",
+      "version": "v0.0.620",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "c6df919e50a58ab528c4082ecbca71a7ef7491da"
+        "reference": "9f4c3e2954333aa358f460a3f450361d47b1864c"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/c6df919e50a58ab528c4082ecbca71a7ef7491da",
-        "reference": "c6df919e50a58ab528c4082ecbca71a7ef7491da",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/9f4c3e2954333aa358f460a3f450361d47b1864c",
+        "reference": "9f4c3e2954333aa358f460a3f450361d47b1864c",
         "shasum": ""
       },
       "require": {
@@ -4004,7 +4004,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-08-08T13:53:22+00:00"
+      "time": "2020-08-08T15:23:27+00:00"
     },
     {
       "name": "paragonie/random_compat",

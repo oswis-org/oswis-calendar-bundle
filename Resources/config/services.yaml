@@ -162,7 +162,7 @@ services:
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@oswis_org_oswis_calendar.participant_repository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository'
             - '@monolog.logger'
             - '@oswis_org_oswis_core.app_user_service'
             - '@oswis_org_oswis_calendar.participant_token_service'
@@ -180,7 +180,7 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-            - '@oswis_org_oswis_calendar.participant_token_repository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository'
     OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService:
         alias: oswis_org_oswis_calendar.participant_token_service
         public: true
@@ -192,9 +192,9 @@ services:
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@oswis_org_oswis_core.mail_service'
-            - '@oswis_org_oswis_calendar.participant_mail_group_repository'
-            - '@oswis_org_oswis_calendar.participant_mail_category_repository'
-            - '@oswis_org_oswis_calendar.participant_mail_repository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository'
     OswisOrg\OswisCalendarBundle\Service\ParticipantMailService:
         alias: oswis_org_oswis_calendar.participant_mail_service
         public: true
@@ -226,7 +226,7 @@ services:
     ###  REPOSITORY
     ###
 
-    oswis_org_oswis_calendar.event_repository:
+    OswisOrg\OswisCalendarBundle\Repository\EventRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\EventRepository
         autowire: true
         public: true
@@ -234,11 +234,8 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\EventRepository:
-        alias: oswis_org_oswis_calendar.event_repository
-        public: true
 
-    oswis_org_oswis_calendar.flag_range_repository:
+    OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository
         autowire: true
         public: true
@@ -246,11 +243,8 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository:
-        alias: oswis_org_oswis_calendar.flag_range_repository
-        public: true
 
-    oswis_org_oswis_calendar.participant_repository:
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository
         autowire: true
         public: true
@@ -258,11 +252,8 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository:
-        alias: oswis_org_oswis_calendar.participant_repository
-        public: true
 
-    oswis_org_oswis_calendar.participant_token_repository:
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository
         autowire: true
         public: true
@@ -270,11 +261,8 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository:
-        alias: oswis_org_oswis_calendar.participant_token_repository
-        public: true
 
-    oswis_org_oswis_calendar.participant_mail_repository:
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository
         autowire: true
         public: true
@@ -282,11 +270,8 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository:
-        alias: oswis_org_oswis_calendar.participant_mail_repository
-        public: true
 
-    oswis_org_oswis_calendar.participant_mail_category_repository:
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository
         autowire: true
         public: true
@@ -294,11 +279,8 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository:
-        alias: oswis_org_oswis_calendar.participant_mail_category_repository
-        public: true
 
-    oswis_org_oswis_calendar.participant_mail_group_repository:
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository
         autowire: true
         public: true
@@ -306,11 +288,6 @@ services:
             - '@doctrine'
         tags:
             - 'doctrine.repository_service'
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository:
-        alias: oswis_org_oswis_calendar.participant_mail_group_repository
-        public: true
-
-
 
     ###
     ### SUBSCRIBERS
