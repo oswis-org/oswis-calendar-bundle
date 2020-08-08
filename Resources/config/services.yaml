@@ -129,7 +129,6 @@ services:
         alias: oswis_org_oswis_calendar.flag_category_service
         public: true
 
-    ### ParticipantPayment Service
     oswis_org_oswis_calendar.participant_payment_service:
         class: OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService
         autowire: true
@@ -140,8 +139,21 @@ services:
             - '@monolog.logger'
             - '@oswis_org_oswis_core.oswis_core_settings_provider'
             - '@oswis_org_oswis_calendar.participant_service'
+            - '@oswis_org_oswis_calendar.participant_mail_service'
     OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService:
         alias: oswis_org_oswis_calendar.participant_payment_service
+        public: true
+
+    oswis_org_oswis_calendar.participant_payments_import_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService
+        autowire: true
+        public: true
+        arguments:
+            - '@monolog.logger'
+            - '@oswis_org_oswis_calendar.participant_service'
+            - '@oswis_org_oswis_calendar.participant_payment_service'
+    OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService:
+        alias: oswis_org_oswis_calendar.participant_payments_import_service
         public: true
 
     oswis_org_oswis_calendar.participant_service:
@@ -304,7 +316,6 @@ services:
     ### SUBSCRIBERS
     ###
 
-    ## Participant payment subscriber (checks etc.)
     oswis_org_oswis_calendar.participant_payment_subscriber:
         class: OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantPaymentSubscriber
         autowire: true
@@ -312,32 +323,19 @@ services:
         arguments:
             - '@oswis_org_oswis_calendar.participant_payment_service'
 
-    ## Participant subscriber (checks etc.)
+    oswis_org_oswis_calendar.participant_payments_import_subscriber:
+        class: OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantPaymentsImportSubscriber
+        autowire: true
+        public: true
+        arguments:
+            - '@oswis_org_oswis_calendar.participant_payments_import_service'
+
     oswis_org_oswis_calendar.participant_subscriber:
         class: OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantSubscriber
         autowire: true
         public: true
         arguments:
             - '@oswis_org_oswis_calendar.participant_service'
-
-    ## Participant payment action (/participant_payment_action)
-    oswis_org_oswis_calendar.participant_payment_action_request:
-        class: OswisOrg\OswisCalendarBundle\Api\Dto\ParticipantPaymentActionRequest
-        autowire: true
-        public: true
-    OswisOrg\OswisCalendarBundle\Api\Dto\ParticipantPaymentActionRequest:
-        alias: oswis_org_oswis_calendar.participant_payment_action_request
-        public: true
-    oswis_org_oswis_calendar.participant_payment_action_subscriber:
-        class: OswisOrg\OswisCalendarBundle\Api\EventSubscriber\ParticipantPaymentActionSubscriber
-        autowire: true
-        public: true
-        arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@oswis_org_oswis_calendar.participant_payment_service'
-    OswisOrg\OswisCalendarBundle\Api\EventSubscriber\ParticipantPaymentActionSubscriber:
-        alias: oswis_org_oswis_calendar.participant_payment_action_subscriber
-        public: true
 
     ## Participant list action (/participant_list_action)
     ## Sends pdf with Participants by e-mail.

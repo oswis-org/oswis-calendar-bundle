@@ -188,7 +188,10 @@ class Participant implements BasicInterface
      * @param Collection|null $participantNotes
      * @param int|null        $priority
      *
-     * @throws OswisException|EventCapacityExceededException
+     * @throws EventCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
+     * @throws OswisException
      */
     public function __construct(RegRange $regRange, AbstractContact $contact, ?Collection $participantNotes = null, ?int $priority = null)
     {
@@ -281,7 +284,10 @@ class Participant implements BasicInterface
     /**
      * @param RegRange|null $regRange
      *
-     * @throws OswisException|NotImplementedException|EventCapacityExceededException
+     * @throws EventCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
+     * @throws OswisException
      */
     public function setRegRange(?RegRange $regRange): void
     {
@@ -373,7 +379,10 @@ class Participant implements BasicInterface
      * @param ParticipantRange|null $participantRange
      * @param bool                  $admin
      *
-     * @throws OswisException|NotImplementedException|EventCapacityExceededException
+     * @throws EventCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
+     * @throws OswisException
      */
     public function setParticipantRange(?ParticipantRange $participantRange, bool $admin = false): void
     {

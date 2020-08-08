@@ -1,6 +1,6 @@
-<?php /** @noinspection MethodShouldBeFinalInspection */
-
+<?php
 /**
+ * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
  */
 
@@ -57,14 +57,6 @@ class ParticipantPaymentsImportService
         }
     }
 
-    public static function cmpParticipantsByPayment(int $value, Participant $p1, Participant $p2): int {
-        if ($p1->differenceFromPayment($value) === $p2->differenceFromPayment($value)) {
-            return 0;
-        }
-
-        return $p1->differenceFromPayment($value) > $p2->differenceFromPayment($value) ? 1 : -1;
-    }
-
     public function getParticipantByPayment(ParticipantPayment $payment, bool $isSecondTry = false): ?Participant
     {
         $value = $payment->getNumericValue();
@@ -93,5 +85,14 @@ class ParticipantPaymentsImportService
         $this->logger->info("Found participant '$participantString' for payment with VS '$vs' and value '$value'.");
 
         return $participant;
+    }
+
+    public static function cmpParticipantsByPayment(int $value, Participant $p1, Participant $p2): int
+    {
+        if ($p1->differenceFromPayment($value) === $p2->differenceFromPayment($value)) {
+            return 0;
+        }
+
+        return $p1->differenceFromPayment($value) > $p2->differenceFromPayment($value) ? 1 : -1;
     }
 }

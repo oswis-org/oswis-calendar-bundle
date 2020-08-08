@@ -331,12 +331,6 @@ class RegRange implements NameableInterface
         throw new NotImplementedException('změna události', 'v rozsahu registrací');
     }
 
-    /**
-     * @param FlagRange $oldFlagRange
-     *
-     * @return FlagRange
-     * @throws FlagOutOfRangeException
-     */
     public function getCompatibleFlagRange(FlagRange $oldFlagRange): ?FlagRange
     {
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
