@@ -203,9 +203,11 @@ class Participant implements BasicInterface
         $participantContact = new ParticipantContact($contact);
         $participantContact->activate(new DateTime());
         $this->setParticipantContact($participantContact);
-        $participantRange = new ParticipantRange($regRange);
-        $participantRange->activate(new DateTime());
-        $this->setParticipantRange($participantRange);
+        if ($regRange) {
+            $participantRange = new ParticipantRange($regRange);
+            $participantRange->activate(new DateTime());
+            $this->setParticipantRange($participantRange);
+        }
         $this->setNotes($participantNotes);
         $this->setPriority($priority);
     }
@@ -400,7 +402,9 @@ class Participant implements BasicInterface
 
             return;
         }
-        $this->changeFlagsByNewRegRange($participantRange->getRange());
+        if ($participantRange->getRange()) {
+            $this->changeFlagsByNewRegRange($participantRange->getRange());
+        }
         throw new NotImplementedException('změna události', 'u přihlášky');
     }
 
