@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection MethodShouldBeFinalInspection
- * @noinspection RedundantDocCommentTagInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Service;

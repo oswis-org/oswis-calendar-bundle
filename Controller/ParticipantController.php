@@ -14,6 +14,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
@@ -22,6 +23,7 @@ use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService;
 use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -71,8 +73,13 @@ class ParticipantController extends AbstractController
      * @param string|null $rangeSlug
      *
      * @return Response
+     * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
-     * @throws OswisException|NotFoundException|ParticipantNotFoundException|EventCapacityExceededException
+     * @throws NotFoundException
+     * @throws OswisException
+     * @throws ParticipantNotFoundException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {

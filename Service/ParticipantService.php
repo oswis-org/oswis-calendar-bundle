@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
@@ -364,8 +365,12 @@ class ParticipantService
      * @param AbstractContact|null $contact
      *
      * @return Participant
+     * @throws EventCapacityExceededException
      * @throws InvalidArgumentException
-     * @throws OswisException|ParticipantNotFoundException|EventCapacityExceededException
+     * @throws NotImplementedException
+     * @throws OswisException
+     * @throws ParticipantNotFoundException
+     * @throws FlagOutOfRangeException
      */
     public function getEmptyParticipant(RegRange $regRange, ?AbstractContact $contact = null): Participant
     {

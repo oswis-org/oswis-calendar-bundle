@@ -15,7 +15,6 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\CapacityTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\CapacityUsageTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\PriceTrait;

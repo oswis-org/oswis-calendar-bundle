@@ -183,17 +183,17 @@ class Participant implements BasicInterface
     protected ?string $variableSymbol = null;
 
     /**
-     * @param RegRange        $regRange
-     * @param AbstractContact $contact
-     * @param Collection|null $participantNotes
-     * @param int|null        $priority
+     * @param RegRange|null        $regRange
+     * @param AbstractContact|null $contact
+     * @param Collection|null      $participantNotes
+     * @param int|null             $priority
      *
      * @throws EventCapacityExceededException
      * @throws FlagOutOfRangeException
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function __construct(RegRange $regRange, AbstractContact $contact, ?Collection $participantNotes = null, ?int $priority = null)
+    public function __construct(RegRange $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null, ?int $priority = null)
     {
         $this->participantContacts = new ArrayCollection();
         $this->participantRanges = new ArrayCollection();
