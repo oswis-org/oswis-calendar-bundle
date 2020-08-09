@@ -8,16 +8,15 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\Revisions\AbstractRevision;
@@ -178,7 +177,7 @@ class Participant implements BasicInterface
     protected ?bool $formal = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
      */
     protected ?string $variableSymbol = null;
 
@@ -186,14 +185,14 @@ class Participant implements BasicInterface
      * @param RegRange|null        $regRange
      * @param AbstractContact|null $contact
      * @param Collection|null      $participantNotes
-     * @param int|null             $priority
      *
      * @throws EventCapacityExceededException
+     * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function __construct(RegRange $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null, ?int $priority = null)
+    public function __construct(RegRange $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null)
     {
         $this->participantContacts = new ArrayCollection();
         $this->participantRanges = new ArrayCollection();
@@ -209,7 +208,6 @@ class Participant implements BasicInterface
             $this->setParticipantRange($participantRange);
         }
         $this->setNotes($participantNotes);
-        $this->setPriority($priority);
     }
 
     /**
@@ -287,6 +285,7 @@ class Participant implements BasicInterface
      * @param RegRange|null $regRange
      *
      * @throws EventCapacityExceededException
+     * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
      * @throws NotImplementedException
      * @throws OswisException
@@ -378,54 +377,82 @@ class Participant implements BasicInterface
     }
 
     /**
-     * @param ParticipantRange|null $participantRange
+     * @param ParticipantRange|null $newParticipantRange
      * @param bool                  $admin
      *
      * @throws EventCapacityExceededException
+     * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function setParticipantRange(?ParticipantRange $participantRange, bool $admin = false): void
+    public function setParticipantRange(?ParticipantRange $newParticipantRange, bool $admin = false): void
     {
-        if ($this->getParticipantRange(false) === $participantRange) {
+        $oldParticipantRange = $this->getParticipantRange(true);
+        $oldRegRange = $this->getRegRange(false);
+        $newRegRange = $newParticipantRange ? $newParticipantRange->getRange() : null;
+        //
+        // CASE 1: RegRange is same. Do nothing.
+        if ($oldRegRange === $newRegRange) {
             return;
         }
-        if (null !== $participantRange && null !== $participantRange->getRange() && $this->getParticipantRanges()->isEmpty()) {
-            $participantRange->getRange()->getRemainingCapacity($admin);
-            if (0 === $participantRange->getRange()->getRemainingCapacity($admin)) {
-                throw new EventCapacityExceededException($participantRange->getEventName());
+        //
+        // CASE 2: New RegRange is not set.
+        //   --> Set participant as deleted.
+        //   --> Set participant flags as deleted.
+        if (null === $newRegRange) {
+            if ($oldParticipantRange) {
+                $this->deleteParticipantFlags();
+                $oldParticipantRange->delete();
             }
-            $this->getParticipantRanges()->add($participantRange);
-            $this->setFlagGroupsFromRegRange();
-            $this->updateCachedColumns();
 
             return;
         }
-        if ($participantRange->getRange()) {
-            $this->changeFlagsByNewRegRange($participantRange->getRange());
+        //
+        // Check capacity of new range.
+        $remainingCapacity = $newRegRange->getRemainingCapacity($admin);
+        if (0 === $remainingCapacity || -1 >= $remainingCapacity) {
+            throw new EventCapacityExceededException($newParticipantRange->getEventName());
         }
-        throw new NotImplementedException('změna události', 'u přihlášky');
+        //
+        // CASE 3: RegRange is not set yet, set initial RegRange and set new flags by range.
+        if (null === $oldRegRange) {
+            $this->setFlagGroupsFromRegRange($newRegRange);
+        }
+        //
+        // CASE 4: RegRange is already set, change it and change flags by new range.
+        if (null !== $oldRegRange) {
+            $this->changeFlagsByNewRegRange($newRegRange, true);
+            $this->changeFlagsByNewRegRange($newRegRange, false);
+        }
+        // Finally, add participant range.
+        $this->getParticipantRanges()->add($newParticipantRange);
+        $this->updateCachedColumns();
     }
 
-    /**
-     * @throws NotImplementedException
-     * @throws OswisException
-     */
-    public function setFlagGroupsFromRegRange(): void
+    public function deleteParticipantFlags(): void
     {
-        // TODO: This is only temporary implementation.
-        if (null === $regRange = $this->getRegRange(false)) {
-            return;
-        }
-        if (!$this->getFlagGroups()->isEmpty()) {
-            throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
-        }
-        foreach ($regRange->getFlagGroupRanges(null, null, true, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof FlagGroupRange) {
-                $this->addFlagGroupRange($flagGroupRange);
+        foreach ($this->getParticipantFlags() as $participantFlag) {
+            if ($participantFlag instanceof ParticipantFlag) {
+                $participantFlag->delete();
             }
         }
+    }
+
+    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
+    {
+        $participantFlags = new ArrayCollection();
+        foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
+            if ($flagGroup instanceof ParticipantFlagGroup) {
+                foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
+                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
+                        $participantFlags->add($participantFlag);
+                    }
+                }
+            }
+        }
+
+        return $participantFlags;
     }
 
     public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
@@ -455,6 +482,23 @@ class Participant implements BasicInterface
         $this->flagGroups = $newFlagGroups;
     }
 
+    /**
+     * @param RegRange $regRange
+     *
+     * @throws NotImplementedException
+     */
+    public function setFlagGroupsFromRegRange(RegRange $regRange): void
+    {
+        if (!$this->getFlagGroups()->isEmpty()) {
+            throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
+        }
+        foreach ($regRange->getFlagGroupRanges(null, null, true, true) as $flagGroupRange) {
+            if ($flagGroupRange instanceof FlagGroupRange) {
+                $this->addFlagGroupRange($flagGroupRange);
+            }
+        }
+    }
+
     public function addFlagGroupRange(FlagGroupRange $flagGroupRange): void
     {
         if (!$this->getFlagGroupRanges()->contains($flagGroupRange)) {
@@ -471,52 +515,24 @@ class Participant implements BasicInterface
 
     /**
      * @param RegRange $newRange
+     * @param bool     $onlySimulate
+     * @param bool     $admin
      *
+     * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
      */
-    private function changeFlagsByNewRegRange(RegRange $newRange): void
+    private function changeFlagsByNewRegRange(RegRange $newRange, bool $onlySimulate = false, bool $admin = false): void
     {
-        foreach ($this->getFlagRanges() as $oldFlagRange) {
-            assert($oldFlagRange instanceof FlagRange);
-            if (!$newRange->isFlagRangeCompatible($oldFlagRange)) {
-                $newFlagRange = $newRange->getCompatibleFlagRange($oldFlagRange);
-                if (null === $newFlagRange) {
-                    $oldFlagRangeName = $oldFlagRange->getName();
-                    $oldRangeName = $newRange->getName();
-                    throw new FlagOutOfRangeException(
-                        "Příznak '$oldFlagRangeName' není možné v rozsahu přihlášek '$oldRangeName' použít (neexistuje automatická alternativa)."
-                    );
-                }
+        foreach ($this->getFlagGroups() as $oldParticipantFlagGroup) {
+            if (!($oldParticipantFlagGroup instanceof ParticipantFlagGroup)) {
+                continue;
+            }
+            $newParticipantFlagGroup = $newRange->getCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin);
+            if (!$onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
+                $oldParticipantFlagGroup->delete();
+                $this->getFlagGroups()->add($newParticipantFlagGroup);
             }
         }
-        // TODO: Set new flags by new RegRange.
-    }
-
-    public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, Flag $flag = null): Collection
-    {
-        $flagRanges = new ArrayCollection();
-        foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
-            assert($participantFlag instanceof ParticipantFlag);
-            $flagRanges->add($participantFlag->getFlagRange());
-        }
-
-        return $flagRanges;
-    }
-
-    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
-    {
-        $participantFlags = new ArrayCollection();
-        foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
-            if ($flagGroup instanceof ParticipantFlagGroup) {
-                foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
-                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
-                        $participantFlags->add($participantFlag);
-                    }
-                }
-            }
-        }
-
-        return $participantFlags;
     }
 
     public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
@@ -545,43 +561,42 @@ class Participant implements BasicInterface
         return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
     }
 
-    /**
-     * Sort collection of event participants by name (and id).
-     *
-     * @param Collection $eventParticipants
-     *
-     * @return Collection
-     */
-    public static function sortCollection(Collection $eventParticipants): Collection
+    public static function sortCollection(Collection $participants): Collection
     {
-        $participants = $eventParticipants->toArray();
-        self::sortArray($participants);
+        $participantsArray = $participants->toArray();
+        self::sortArray($participantsArray);
 
-        return new ArrayCollection($participants);
+        return new ArrayCollection($participantsArray);
     }
 
-    /**
-     * Sort array of event participants by name (and id).
-     *
-     * @param array $eventParticipants
-     */
-    public static function sortArray(array &$eventParticipants): void
+    public static function sortArray(array &$participants): array
     {
-        usort(
-            $eventParticipants,
-            static function (Participant $arg1, Participant $arg2) {
-                if (!$arg1->getContact() || !$arg2->getContact()) {
-                    $cmpResult = 0;
-                } else {
-                    $cmpResult = strcmp(
-                        $arg1->getContact()->getSortableName(),
-                        $arg2->getContact()->getSortableName()
-                    );
-                }
+        usort($participants, fn(Participant $participant1, Participant $participant2) => self::cmp($participant1, $participant2));
 
-                return $cmpResult === 0 ? AbstractRevision::cmpId($arg2->getId(), $arg1->getId()) : $cmpResult;
-            }
-        );
+        return $participants;
+    }
+
+    public static function cmp(Participant $participant1, Participant $participant2): int
+    {
+        $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
+            ? 0
+            : strcmp(
+                $participant1->getContact()->getSortableName(),
+                $participant2->getContact()->getSortableName()
+            );
+
+        return $cmpResult === 0 ? AbstractRevision::cmpId($participant2->getId(), $participant1->getId()) : $cmpResult;
+    }
+
+    public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, Flag $flag = null): Collection
+    {
+        $flagRanges = new ArrayCollection();
+        foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
+            assert($participantFlag instanceof ParticipantFlag);
+            $flagRanges->add($participantFlag->getFlagRange());
+        }
+
+        return $flagRanges;
     }
 
     public function differenceFromPayment(?int $value): ?int

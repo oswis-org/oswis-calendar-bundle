@@ -184,4 +184,13 @@ class ParticipantFlagGroup implements BasicInterface
 
         return $price;
     }
+
+    public function delete(): void
+    {
+        foreach ($this->getParticipantFlags() as $participantFlag) {
+            if ($participantFlag instanceof ParticipantFlag) {
+                $participantFlag->delete();
+            }
+        }
+    }
 }

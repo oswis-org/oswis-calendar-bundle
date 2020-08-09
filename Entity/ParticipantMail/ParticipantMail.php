@@ -53,7 +53,7 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 class ParticipantMail extends AbstractMail
 {
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
-    public const TYPE_ACTIVATION = 'activation';
+    public const TYPE_SUMMARY = 'summary';
     public const TYPE_PAYMENT = 'payment';
 
     /**
@@ -92,7 +92,7 @@ class ParticipantMail extends AbstractMail
 
     public static function getAllowedTypesDefault(): array
     {
-        return [...parent::getAllowedTypesDefault(), self::TYPE_ACTIVATION_REQUEST, self::TYPE_ACTIVATION];
+        return [...parent::getAllowedTypesDefault(), self::TYPE_ACTIVATION_REQUEST, self::TYPE_SUMMARY];
     }
 
     public function isParticipant(?Participant $participant): bool

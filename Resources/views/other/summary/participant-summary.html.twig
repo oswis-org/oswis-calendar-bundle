@@ -41,6 +41,20 @@
         Zaplaceno:&nbsp;{{ participant.paidPrice }},-&nbsp;Kč,
         <b>Zbývá:&nbsp;{{ participant.remainingPrice }},-&nbsp;Kč</b>
     </li>
+    {% if participant.payments|length > 0 %}
+        <li>
+            <strong>Platby:</strong>
+            <ul>
+                {% for payment in participant.payments %}
+                    <li>
+                        {{ payment.numericValue|default('0') }},- Kč
+                        <small>[{{ payment.date|date("j. n. Y") }}]</small>
+                        {% if payment.type %}<small>[{{ payment.type }}]</small>{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endif %}
 </ul>
 
 <h3>Událost</h3>

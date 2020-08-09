@@ -6,6 +6,8 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
@@ -13,6 +15,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
+use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
@@ -37,6 +40,37 @@ class ParticipantRange implements BasicInterface
             $this->setRange($range);
         } catch (NotImplementedException $e) {
         }
+    }
+
+    public static function sortCollection(Collection $ranges): Collection
+    {
+        $rangesArray = $ranges->toArray();
+        self::sortArray($rangesArray);
+
+        return new ArrayCollection($rangesArray);
+    }
+
+    public static function sortArray(array &$ranges): array
+    {
+        usort($ranges, fn(ParticipantRange $range1, ParticipantRange $range2) => self::cmp($range1, $range2));
+
+        return $ranges;
+    }
+
+    public static function cmp(self $range1, self $range2): int
+    {
+        $cmpResult = DateTimeUtils::cmpDate($range2->getCreatedAt(), $range1->getCreatedAt());
+
+        return 0 === $cmpResult ? self::cmpId($range2->getId(), $range1->getId()) : $cmpResult;
+    }
+
+    public static function cmpId(?int $a, ?int $b): int
+    {
+        if ($a === $b) {
+            return 0;
+        }
+
+        return $a < $b ? -1 : 1;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool

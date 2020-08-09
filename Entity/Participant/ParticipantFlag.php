@@ -118,4 +118,9 @@ class ParticipantFlag implements BasicInterface
         }
         $this->participantFlagGroup = $participantFlagGroup;
     }
+
+    public function getName(): ?string
+    {
+        return $this->getFlagRange() ? $this->getFlagRange()->getName() : null;
+    }
 }

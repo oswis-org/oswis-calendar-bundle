@@ -59,7 +59,7 @@ class ParticipantMailService
      *
      * @throws OswisException
      */
-    public function sendActivated(Participant $participant): void
+    public function sendSummary(Participant $participant): void
     {
         $sent = 0;
         foreach ($participant->getContactPersons(true) as $contactPerson) {
@@ -67,8 +67,8 @@ class ParticipantMailService
                 continue;
             }
             try {
-                $this->sendUserMail($participant, $contactPerson->getAppUser(), ParticipantMail::TYPE_ACTIVATION);
-            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $e) {
+                $this->sendSummaryToUser($participant, $contactPerson->getAppUser(), ParticipantMail::TYPE_SUMMARY);
+            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
             }
             $sent++;
         }
@@ -88,7 +88,7 @@ class ParticipantMailService
      * @throws OswisException
      * @throws InvalidTypeException
      */
-    public function sendUserMail(Participant $participant, AppUser $appUser, string $type, ?ParticipantToken $participantToken = null): void
+    public function sendSummaryToUser(Participant $participant, AppUser $appUser, string $type, ?ParticipantToken $participantToken = null): void
     {
         $isIS = false;
         if (null !== $participantToken && (!$participantToken->isParticipant($participant) || !$participantToken->isAppUser($appUser))) {
@@ -119,7 +119,7 @@ class ParticipantMailService
             'isIS'             => $isIS,
         ];
         $templatedEmail = $participantMail->getTemplatedEmail();
-        if (ParticipantMail::TYPE_ACTIVATION === $type) {
+        if (ParticipantMail::TYPE_SUMMARY === $type) {
             $data = $this->embedQrPayments($templatedEmail, $participant, $data);
         }
         $this->em->persist($participantMail);

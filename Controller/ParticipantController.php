@@ -14,6 +14,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
@@ -74,12 +75,13 @@ class ParticipantController extends AbstractController
      *
      * @return Response
      * @throws EventCapacityExceededException
+     * @throws FlagOutOfRangeException
      * @throws InvalidArgumentException
      * @throws NotFoundException
+     * @throws NotImplementedException
      * @throws OswisException
      * @throws ParticipantNotFoundException
-     * @throws FlagOutOfRangeException
-     * @throws NotImplementedException
+     * @throws FlagCapacityExceededException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {

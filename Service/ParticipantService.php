@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
@@ -180,7 +181,7 @@ class ParticipantService
     private function requestActivationForUser(Participant $participant, AppUser $appUser): void
     {
         $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
-        $this->participantMailService->sendUserMail($participant, $appUser, ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
+        $this->participantMailService->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
         $this->logger->info('Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.');
     }
 
@@ -250,8 +251,8 @@ class ParticipantService
             }
             $this->appUserService->activate($appUser, false);
             $participant->setUserConfirmed($appUser);
-            if ($sendConfirmation) {
-                $this->participantMailService->sendActivated($participant);
+            if (true === $sendConfirmation) {
+                $this->participantMailService->sendSummary($participant);
             }
             $this->em->persist($participant);
             $this->em->flush();
@@ -366,11 +367,12 @@ class ParticipantService
      *
      * @return Participant
      * @throws EventCapacityExceededException
+     * @throws FlagOutOfRangeException
      * @throws InvalidArgumentException
      * @throws NotImplementedException
      * @throws OswisException
      * @throws ParticipantNotFoundException
-     * @throws FlagOutOfRangeException
+     * @throws FlagCapacityExceededException
      */
     public function getEmptyParticipant(RegRange $regRange, ?AbstractContact $contact = null): Participant
     {
@@ -383,7 +385,7 @@ class ParticipantService
         $this->logger->info('Creating empty participant.');
 
         return new Participant(
-            $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']), new ArrayCollection([new ParticipantNote()]), null
+            $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']), new ArrayCollection([new ParticipantNote()])
         );
     }
 }
