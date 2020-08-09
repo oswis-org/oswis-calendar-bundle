@@ -18,7 +18,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_payment")
+ * @Doctrine\ORM\Mapping\Table(name="calendar_participant_payments_import")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
