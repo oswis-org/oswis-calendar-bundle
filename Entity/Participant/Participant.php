@@ -88,24 +88,7 @@ class Participant implements BasicInterface
     use UserConfirmationTrait;
     use ManagerConfirmationTrait;
     use DeletedTrait {
-        setDeleted as traitSetDeleted;
-    }
-
-    public function setDeleted(?DateTime $deleted = null): void
-    {
-        $this->traitSetDeleted($deleted);
-        if ($this->isDeleted()) {
-            foreach ($this->getParticipantRanges() as $participantRange) {
-                if ($participantRange instanceof ParticipantRange) {
-                    $participantRange->delete();
-                }
-            }
-            foreach ($this->getParticipantFlags() as $participantFlag) {
-                if ($participantFlag instanceof ParticipantFlag) {
-                    $participantFlag->delete();
-                }
-            }
-        }
+        setDeletedAt as traitSetDeletedAt;
     }
 
     /**
@@ -331,19 +314,6 @@ class Participant implements BasicInterface
         return $participantRanges->first() ?: null;
     }
 
-    public function getParticipantRanges(bool $onlyActive = false, bool $onlyDeleted = false): Collection
-    {
-        $connections = $this->participantRanges ?? new ArrayCollection();
-        if ($onlyActive) {
-            $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isActive());
-        }
-        if ($onlyDeleted) {
-            $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isDeleted());
-        }
-
-        return $connections;
-    }
-
     public function getContact(bool $onlyActive = true): ?AbstractContact
     {
         try {
@@ -455,45 +425,6 @@ class Participant implements BasicInterface
         }
     }
 
-    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
-    {
-        $participantFlags = new ArrayCollection();
-        foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
-            if ($flagGroup instanceof ParticipantFlagGroup) {
-                foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
-                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
-                        $participantFlags->add($participantFlag);
-                    }
-                }
-            }
-        }
-
-        return $participantFlags;
-    }
-
-    public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
-    {
-        $connections = $this->flagGroups ??= new ArrayCollection();
-        if (null !== $flagCategory) {
-            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
-        }
-        if (null !== $flagType) {
-            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
-        }
-
-        return $connections;
-    }
-
-    public function setFlagGroups(?Collection $newFlagGroups): void
-    {
-        $newFlagGroups ??= new ArrayCollection();
-        // TODO: FIX IT:
-        //        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
-        //            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
-        //        }
-        $this->flagGroups = $newFlagGroups;
-    }
-
     /**
      * @param RegRange $regRange
      *
@@ -598,6 +529,75 @@ class Participant implements BasicInterface
             );
 
         return $cmpResult === 0 ? AbstractRevision::cmpId($participant2->getId(), $participant1->getId()) : $cmpResult;
+    }
+
+    public function setDeletedAt(?DateTime $deleted = null): void
+    {
+        $this->traitSetDeletedAt($deleted);
+        if ($this->isDeleted()) {
+            foreach ($this->getParticipantRanges() as $participantRange) {
+                if ($participantRange instanceof ParticipantRange) {
+                    $participantRange->delete();
+                }
+            }
+            foreach ($this->getParticipantFlags() as $participantFlag) {
+                if ($participantFlag instanceof ParticipantFlag) {
+                    $participantFlag->delete();
+                }
+            }
+        }
+    }
+
+    public function getParticipantRanges(bool $onlyActive = false, bool $onlyDeleted = false): Collection
+    {
+        $connections = $this->participantRanges ?? new ArrayCollection();
+        if ($onlyActive) {
+            $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isActive());
+        }
+        if ($onlyDeleted) {
+            $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isDeleted());
+        }
+
+        return $connections;
+    }
+
+    public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
+    {
+        $participantFlags = new ArrayCollection();
+        foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
+            if ($flagGroup instanceof ParticipantFlagGroup) {
+                foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
+                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
+                        $participantFlags->add($participantFlag);
+                    }
+                }
+            }
+        }
+
+        return $participantFlags;
+    }
+
+    public function getFlagGroups(?FlagCategory $flagCategory = null, ?string $flagType = null): Collection
+    {
+        $connections = $this->flagGroups ??= new ArrayCollection();
+        if (null !== $flagCategory) {
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
+        }
+        if (null !== $flagType) {
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
+        }
+
+        return $connections;
+    }
+
+    public function setFlagGroups(?Collection $newFlagGroups): void
+    {
+        $newFlagGroups ??= new ArrayCollection();
+        // TODO: FIX IT:
+        //        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
+        //            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
+        //        }
+        $this->flagGroups = $newFlagGroups;
     }
 
     public function getFlagRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, Flag $flag = null): Collection
