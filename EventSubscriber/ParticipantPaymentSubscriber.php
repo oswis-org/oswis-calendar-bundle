@@ -1,7 +1,6 @@
 <?php
 /**
  * @noinspection RedundantDocCommentTagInspection
- * @noinspection PhpUnused
  */
 
 namespace OswisOrg\OswisCalendarBundle\EventSubscriber;

@@ -38,9 +38,6 @@ class EventCategoryService
         }
     }
 
-    /**
-     * @noinspection PhpUnused
-     */
     final public function updateActiveRevisions(): void
     {
 //        foreach ($this->em->getRepository(EventType::class)->findAll() as $eventType) {

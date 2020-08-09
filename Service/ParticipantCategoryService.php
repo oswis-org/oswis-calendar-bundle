@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 

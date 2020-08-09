@@ -62,10 +62,7 @@ use function assert;
  *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_participant_put"}, "enable_max_depth"=true}
  *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_delete"}, "enable_max_depth"=true}
- *     }
+ *     "delete"={}
  *   }
  * )
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
@@ -90,7 +87,26 @@ class Participant implements BasicInterface
     use ActivatedTrait;
     use UserConfirmationTrait;
     use ManagerConfirmationTrait;
-    use DeletedTrait;
+    use DeletedTrait {
+        setDeleted as traitSetDeleted;
+    }
+
+    public function setDeleted(?DateTime $deleted = null): void
+    {
+        $this->traitSetDeleted($deleted);
+        if ($this->isDeleted()) {
+            foreach ($this->getParticipantRanges() as $participantRange) {
+                if ($participantRange instanceof ParticipantRange) {
+                    $participantRange->delete();
+                }
+            }
+            foreach ($this->getParticipantFlags() as $participantFlag) {
+                if ($participantFlag instanceof ParticipantFlag) {
+                    $participantFlag->delete();
+                }
+            }
+        }
+    }
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
@@ -468,17 +484,13 @@ class Participant implements BasicInterface
         return $connections;
     }
 
-    /**
-     * @param Collection|null $newFlagGroups
-     *
-     * @throws OswisException
-     */
     public function setFlagGroups(?Collection $newFlagGroups): void
     {
         $newFlagGroups ??= new ArrayCollection();
-        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
-            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
-        }
+        // TODO: FIX IT:
+        //        if (!$this->getFlagGroups()->forAll(fn(ParticipantFlagGroup $oldFlagGroup) => $newFlagGroups->contains($oldFlagGroup))) {
+        //            throw new OswisException('Nový seznam skupiny příznaků není nadmnožinou původního seznamu u účastníka.');
+        //        }
         $this->flagGroups = $newFlagGroups;
     }
 
@@ -528,7 +540,7 @@ class Participant implements BasicInterface
                 continue;
             }
             $newParticipantFlagGroup = $newRange->getCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin);
-            if (!$onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
+            if (false === $onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
                 $oldParticipantFlagGroup->delete();
                 $this->getFlagGroups()->add($newParticipantFlagGroup);
             }
@@ -592,8 +604,9 @@ class Participant implements BasicInterface
     {
         $flagRanges = new ArrayCollection();
         foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
-            assert($participantFlag instanceof ParticipantFlag);
-            $flagRanges->add($participantFlag->getFlagRange());
+            if ($participantFlag instanceof ParticipantFlag) {
+                $flagRanges->add($participantFlag->getFlagRange());
+            }
         }
 
         return $flagRanges;
@@ -692,7 +705,7 @@ class Participant implements BasicInterface
     }
 
     /**
-     * Gets part of price that was already paid.
+     * Get part of price that was already paid.
      * @return int
      */
     public function getPaidPrice(): int

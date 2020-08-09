@@ -1,7 +1,4 @@
 <?php
-/**
- * @noinspection PhpUnused
- */
 
 namespace OswisOrg\OswisCalendarBundle\Api\EventSubscriber;
 

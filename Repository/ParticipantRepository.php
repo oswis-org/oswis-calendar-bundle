@@ -175,12 +175,6 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder->addOrderBy('participant.id', 'ASC');
     }
 
-    /**
-     * @param array|null $opts
-     *
-     * @return Participant|null
-     * @noinspection PhpUnused
-     */
     public function getParticipant(?array $opts = []): ?Participant
     {
         try {

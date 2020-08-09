@@ -29,7 +29,6 @@ final class EventActionSubscriber implements EventSubscriberInterface
      * @param ViewEvent $event
      *
      * @throws Exception
-     * @noinspection PhpUnused
      */
     public function eventAction(ViewEvent $event): void
     {
