@@ -4,7 +4,11 @@
 
 {% block content_inner %}
     <div itemscope itemtype="http://schema.org/EventReservation">
-        <link itemprop="reservationStatus" href="http://schema.org/ReservationConfirmed"/>
+        {% if participant.deleted|default %}
+            <link itemprop="reservationStatus" href="http://schema.org/ReservationCancelled"/>
+        {% else %}
+            <link itemprop="reservationStatus" href="http://schema.org/ReservationConfirmed"/>
+        {% endif %}
         <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
         <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>{# TODO #}
         <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
@@ -13,18 +17,28 @@
         {% block message_message_outer %}
             <p itemprop="additionalTicketText">
                 {% block message_message_inner %}
-                    {% if participant.contact.organization|default %}
-                        Vaše organizace {{ participant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }}
-                        na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                    {% if participant.deleted|default %}
+                        {% if participant.contact.organization|default %}
+                            Vaše organizace {{ participant.contact.name }} byl{{ a }} {{ participant.deleted|date("j. n. Y")|default('') }}
+                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ participant.event.name }}</b>.
+                        {% else %}
+                            Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.deleted|date("j. n. Y")|default('') }}
+                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ participant.event.name }}</b>.
+                        {% endif %}
                     {% else %}
-                        Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                        {% if participant.contact.organization|default %}
+                            Vaše organizace {{ participant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }}
+                            na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                        {% else %}
+                            Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                        {% endif %}
                     {% endif %}
                 {% endblock message_message_inner %}
             </p>
         {% endblock message_message_outer %}
 
         {% block message_payment_outer %}
-            {% if participant.depositValue > 0 or participant.price > 0 %}
+            {% if (not participant.deleted|default) and (participant.depositValue > 0 or participant.price > 0) %}
                 <p>
                     Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
@@ -52,7 +66,7 @@
             {% endif %}
         {% endblock message_payment_outer %}
 
-        {% if appUser|default %}
+        {% if (not participant.deleted|default) and appUser|default %}
             <p>
                 Uživatelské jméno u uživatelského účtu pro přístup do aplikace
                 <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}" target="_blank">{{ oswis.app.name }}</a> je
@@ -74,7 +88,9 @@
         {% endif %}
 
         {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
-        {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %} {# TODO #}
+        {% if not participant.deleted %}
+            {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
+        {% endif %}
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with {'event': participant.event} %}
         </div>
@@ -82,9 +98,16 @@
         <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
 
         {% block message_footer %}
+            {% if participant.deleted %}
+                <p>
+                    Přihláška byla zrušena na základě požadavku na zrušení nebo z důvodu duplicitního odeslání přihlášky.
+                    Pokud js{{ f ? 'te' : 'i' }} nás o zrušení přihlášky na akci nežádal{{ a }}, tak nás, prosím, kontaktuj{{ f ? 'te' : '' }}.
+                </p>
+            {% endif %}
             <p>Pokud zpráva přišla opakovaně, přihláška byla pravděpodobně aktualizována uživatelem nebo správcem.</p>
-            <p>Před akcí očekávej ještě další informační e-mail s upřesněním podrobností.</p>
+            {% if not participant.deleted %}
+                <p>Před akcí očekávej ještě další informační e-mail s upřesněním podrobností.</p>
+            {% endif %}
         {% endblock message_footer %}
     </div>
 {% endblock %}
-

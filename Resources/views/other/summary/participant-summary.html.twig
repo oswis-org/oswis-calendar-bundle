@@ -1,4 +1,4 @@
-<h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} přihlášky</h2>
+<h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} {{ participant.deleted|default ? 'zrušené' : '' }} přihlášky</h2>
 
 <h3>Základní údaje</h3>
 <ul>
@@ -12,6 +12,11 @@
             <small> (poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small>
         {% endif %}
     </li>
+    {% if participant.deleted|default %}
+        <li style="color: red; font-weight: bold;">
+            <strong>Přihláška byla zrušena {{ participant.deleted|date("j. n. Y, H:i") }}</strong>
+        </li>
+    {% endif %}
 </ul>
 
 <h3>Účastník</h3>
