@@ -63,7 +63,7 @@ class ParticipantFlagRepository extends EntityRepository
     private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('pFlag.deleted IS NULL');
+            $queryBuilder->andWhere('pFlag.deletedAt IS NULL');
         }
     }
 

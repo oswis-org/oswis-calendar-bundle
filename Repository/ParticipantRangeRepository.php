@@ -63,7 +63,7 @@ class ParticipantRangeRepository extends EntityRepository
     private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('participant_range.deleted IS NULL');
+            $queryBuilder->andWhere('participant_range.deletedAt IS NULL');
         }
     }
 
