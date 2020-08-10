@@ -195,7 +195,7 @@ services:
             - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository'
             - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository'
             - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository'
-            - '@monolog.logger_prototype'
+            - '@monolog.logger'
     OswisOrg\OswisCalendarBundle\Service\ParticipantMailService:
         alias: oswis_org_oswis_calendar.participant_mail_service
         public: true

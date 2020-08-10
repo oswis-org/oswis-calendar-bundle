@@ -362,7 +362,7 @@ class RegRange implements NameableInterface
             $newFlagRange = $newParticipantFlag->getFlagRange();
             if (null !== $newFlagRange && $oldParticipantFlag->getFlagRange() !== $newFlagRange) {
                 $remainingFlagRangeCapacity = $newFlagRange->getRemainingCapacity($admin);
-                if (0 === $remainingFlagRangeCapacity || -1 >= $remainingFlagRangeCapacity) {
+                if (null !== $remainingFlagRangeCapacity && (0 === $remainingFlagRangeCapacity || -1 >= $remainingFlagRangeCapacity)) {
                     throw new FlagCapacityExceededException($newFlagRange->getName());
                 }
             }

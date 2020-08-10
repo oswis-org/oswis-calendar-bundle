@@ -410,7 +410,7 @@ class Participant implements ParticipantInterface
         //
         // Check capacity of new range.
         $remainingCapacity = $newRegRange->getRemainingCapacity($admin);
-        if (0 === $remainingCapacity || -1 >= $remainingCapacity) {
+        if (null !== $remainingCapacity && (0 === $remainingCapacity || -1 >= $remainingCapacity)) {
             throw new EventCapacityExceededException($newParticipantRange->getEventName());
         }
         //
