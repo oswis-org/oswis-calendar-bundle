@@ -26,6 +26,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 use OswisOrg\OswisCoreBundle\Service\AbstractMailService;
 use OswisOrg\OswisCoreBundle\Service\MailService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class ParticipantMailService
@@ -40,18 +41,22 @@ class ParticipantMailService
 
     protected ParticipantMailCategoryRepository $categoryRepository;
 
+    protected LoggerInterface $logger;
+
     public function __construct(
         EntityManagerInterface $em,
         MailService $mailService,
         ParticipantMailGroupRepository $groupRepository,
         ParticipantMailCategoryRepository $categoryRepository,
-        ParticipantMailRepository $participantMailRepository
+        ParticipantMailRepository $participantMailRepository,
+        LoggerInterface $logger
     ) {
         $this->em = $em;
         $this->mailService = $mailService;
         $this->groupRepository = $groupRepository;
         $this->categoryRepository = $categoryRepository;
         $this->participantMailRepository = $participantMailRepository;
+        $this->logger = $logger;
     }
 
     /**
@@ -68,9 +73,13 @@ class ParticipantMailService
             }
             try {
                 $this->sendSummaryToUser($participant, $contactPerson->getAppUser(), ParticipantMail::TYPE_SUMMARY);
+                $sent++;
             } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+                $participantId = $participant->getId();
+                $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
+                $message = $exception->getMessage();
+                $this->logger->error("ERROR: Not sent summary for participant '$participantId' to user '$userId' ($message).");
             }
-            $sent++;
         }
         if (1 > $sent) {
             throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail.");
