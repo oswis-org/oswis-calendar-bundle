@@ -1,26 +1,14 @@
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
+OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     attributes:
-        id:
-            groups: ['calendar_participants_get', 'calendar_participant_get']
-        createdDateTime:
-            groups: ['calendar_participant_get']
-        updatedDateTime:
-            groups: ['calendar_participant_get']
-        createdAppUser:
-            groups: ['calendar_participant_get']
-        updatedAppUser:
-            groups: ['calendar_participant_get']
-        deleted:
-            groups: ['calendar_participants_get', 'calendar_participant_get', 'calendar_participant_put']
-        eventParticipantType:
+        participantType:
             groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
-        eventParticipantNotes:
+        participantNotes:
             groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
         contact:
             groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
         event:
             groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
-        eventParticipantFlagConnections:
+        participantFlagConnections:
             groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
         priceRest:
             groups: ['calendar_participants_get', 'calendar_participant_get']
@@ -35,39 +23,23 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
         webContents:
             groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagConnection:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagConnection:
     attributes:
-        id:
-            groups:
-                - 'calendar_participants_get'
-                - 'calendar_participants_post'
-                - 'calendar_participant_get'
-                - 'calendar_participant_put'
-        createdDateTime:
-            groups: ['calendar_participant_get']
-        updatedDateTime:
-            groups: ['calendar_participant_get']
         textValue:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participants_post'
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
-        eventParticipantFlag:
+        participantFlag:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participants_post'
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
     attributes:
-        id:
-            groups:
-                - 'calendar_participants_get'
-                - 'calendar_participants_post'
-                - 'calendar_participant_get'
-                - 'calendar_participant_put'
         name:
             groups:
                 - 'calendar_participants_get'
@@ -102,18 +74,12 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlag:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
-        eventParticipantFlagType:
+        participantFlagType:
             groups:
                 - 'calendar_participant_get'
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantFlagType:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagType:
     attributes:
-        id:
-            groups:
-                - 'calendar_participants_get'
-                - 'calendar_participants_post'
-                - 'calendar_participant_get'
-                - 'calendar_participant_put'
         name:
             groups:
                 - 'calendar_participants_get'
@@ -169,7 +135,7 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
     attributes:
         id:
             groups:
@@ -188,7 +154,7 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantNote:
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment:
     attributes:
         id:
             groups:
@@ -222,7 +188,7 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
             groups:
                 - 'calendar_participant_get'
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantType:
     attributes:
         id:
             groups:
@@ -230,10 +196,6 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantType:
                 - 'calendar_participants_post'
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
-        createdDateTime:
-            groups: ['calendar_participant_get']
-        updatedDateTime:
-            groups: ['calendar_participant_get']
         textValue:
             groups:
                 - 'calendar_participants_get'
