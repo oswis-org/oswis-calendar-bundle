@@ -103,9 +103,9 @@ class ParticipantRange implements BasicInterface
         if ($this->range === $range) {
             return;
         }
-        if (null === $this->range) {
-            $this->range = $range;
+        if (null !== $this->range) {
+            throw new NotImplementedException('změna rozsahu', 'v přiřazení rozsahu k účastníkovi');
         }
-        throw new NotImplementedException('změna rozsahu', 'v přiřazení rozsahu k účastníkovi');
+        $this->range = $range;
     }
 }

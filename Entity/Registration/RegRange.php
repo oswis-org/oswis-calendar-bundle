@@ -42,7 +42,7 @@ class RegRange implements NameableInterface
 {
     use NameableTrait;
     use PriceTrait {
-        getVariableSymbol as protected traitGetPrice;
+        getPrice as protected traitGetPrice;
         getDepositValue as protected traitGetDeposit;
     }
     use CapacityTrait;
@@ -175,7 +175,7 @@ class RegRange implements NameableInterface
 
     public function getRequiredRangePrice(?ParticipantCategory $participantType = null): int
     {
-        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getVariableSymbol($participantType);
+        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getPrice($participantType);
     }
 
     public function isRelative(): bool
@@ -193,10 +193,10 @@ class RegRange implements NameableInterface
         $this->requiredRegRange = $requiredRegRange;
     }
 
-    public function getVariableSymbol(?ParticipantCategory $participantType = null): int
+    public function getPrice(?ParticipantCategory $participantType = null): int
     {
         if (null === $participantType) {
-            return $this->traitGetPrice();
+            return $this->getPrice();
         }
         $price = $this->getParticipantCategory() === $participantType ? $this->traitGetPrice() : 0;
         $price += $this->getRequiredRangePrice($participantType);
@@ -242,7 +242,7 @@ class RegRange implements NameableInterface
 
     public function getRestValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
     {
-        return $this->getVariableSymbol($participantType) - $this->getDepositValue($participantType, $recursive);
+        return $this->getPrice($participantType) - $this->getDepositValue($participantType, $recursive);
     }
 
     public function getRemainingCapacity(bool $full = false): ?int
