@@ -37,6 +37,33 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  * @Doctrine\ORM\Mapping\Table(name="calendar_reg_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_reg_range")
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
+ * @ApiPlatform\Core\Annotation\ApiResource(
+ *   attributes={
+ *     "filters"={"search"},
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entities_get", "calendar_reg_ranges_get"}, "enable_max_depth"=true},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_reg_ranges_post"}, "enable_max_depth"=true}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entity_get", "calendar_reg_range_get"}, "enable_max_depth"=true},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_reg_range_put"}, "enable_max_depth"=true}
+ *     },
+ *     "delete"={}
+ *   }
+ * )
  */
 class RegRange implements NameableInterface
 {

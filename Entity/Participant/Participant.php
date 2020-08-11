@@ -293,9 +293,8 @@ class Participant implements ParticipantInterface
     {
         if ($this->getRegRange(false) !== $regRange) {
             $this->setParticipantRange(new ParticipantRange($regRange));
-
-            return;
         }
+        $this->updateCachedColumns();
     }
 
     /**
