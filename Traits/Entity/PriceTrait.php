@@ -27,11 +27,6 @@ trait PriceTrait
         $this->setDepositValue($eventPrice ? $eventPrice->deposit : null);
     }
 
-    public function setPrice(?int $price): void
-    {
-        $this->price = $price;
-    }
-
     public function getEventPrice(): Price
     {
         return new Price($this->getPrice(), $this->getDepositValue());
@@ -40,5 +35,10 @@ trait PriceTrait
     public function getPrice(): ?int
     {
         return $this->price;
+    }
+
+    public function setPrice(?int $price): void
+    {
+        $this->price = $price;
     }
 }

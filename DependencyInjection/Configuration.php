@@ -24,11 +24,13 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
+    /** @noinspection NullPointerExceptionInspection */
     private function addDefaultEvent(ArrayNodeDefinition $rootNode): void
     {
         $rootNode->children()->scalarNode('default_event')->defaultNull()->end()->end();
     }
 
+    /** @noinspection NullPointerExceptionInspection */
     private function addDefaultEventFallback(ArrayNodeDefinition $rootNode): void
     {
         $rootNode->fixXmlConfig('default_event_fallback')->children()->arrayNode('default_event_fallbacks')->defaultValue([])->scalarPrototype()->end()->end()->end();

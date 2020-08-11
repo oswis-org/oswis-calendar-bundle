@@ -314,6 +314,7 @@ services:
         public: true
         arguments:
             - '@oswis_org_oswis_calendar.participant_mail_service'
+            - '@monolog.logger'
 
     ## Participant list action (/participant_list_action)
     ## Sends pdf with Participants by e-mail.

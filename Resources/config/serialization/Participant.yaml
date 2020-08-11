@@ -226,4 +226,8 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
             groups:
                 - 'calendar_participant_get'
 
+OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange:
+    attributes:
+        id:
+            groups: ['calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put']
 
