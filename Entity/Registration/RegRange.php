@@ -417,7 +417,7 @@ class RegRange implements NameableInterface
             return $flagGroupRange;
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
-        foreach ($this->getFlagGroupRanges() as $newFlagGroupRange) {
+        foreach ($this->getFlagGroupRanges(null, null, false, true) as $newFlagGroupRange) {
             if ($newFlagGroupRange instanceof FlagGroupRange && $newFlagGroupRange->getFlagCategory() === $flagCategory) {
                 return $newFlagGroupRange;
             }
@@ -468,7 +468,7 @@ class RegRange implements NameableInterface
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldFlagRange;
         }
-        foreach ($this->getFlagGroupRanges() as $flagGroupRange) {
+        foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
             assert($flagGroupRange instanceof FlagGroupRange);
             foreach ($flagGroupRange->getFlagRanges() as $oneFlagRange) {
                 assert($oneFlagRange instanceof FlagRange);
