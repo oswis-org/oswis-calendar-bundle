@@ -1,4 +1,4 @@
-{% set eventImage = absolute_url(asset(event.image(true) ? '/images/events/'~event.image(true) : 'img/web/og-image.jpg'))|default %}
+{% set eventImage = absolute_url(asset(event.oneImage(true) ? '/images/events/'~event.oneImage(true) : 'img/web/og-image.jpg'))|default %}
 
 <div class="row text-justify" itemscope itemtype="http://schema.org/Event">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
