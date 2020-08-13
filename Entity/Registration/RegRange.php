@@ -337,11 +337,14 @@ class RegRange implements NameableInterface
 
     public function isParticipantInSuperEvent(Participant $participant): bool
     {
+        error_log("RegRange->isParticipantInSuperEvent()");
         return $this->getEvent() && $this->getEvent()->isEventSuperEvent($participant->getEvent());
     }
 
     public function getEvent(): ?Event
     {
+        error_log("RegRange::getEvent() => ".$this->event);
+
         return $this->event;
     }
 
@@ -370,6 +373,7 @@ class RegRange implements NameableInterface
      */
     public function getCompatibleParticipantFlagGroup(ParticipantFlagGroup $oldParticipantFlagGroup, bool $admin = false): ParticipantFlagGroup
     {
+        error_log("RegRange::getCompatibleParticipantFlagGroup()");
         if (null === ($oldFlagGroupRange = $oldParticipantFlagGroup->getFlagGroupRange())) {
             throw new FlagOutOfRangeException('Neplatný rozsah příznaků.');
         }
@@ -402,6 +406,7 @@ class RegRange implements NameableInterface
 
     public function isFlagGroupRangeCompatible(FlagGroupRange $flagGroupRange): bool
     {
+        error_log("RegRange::isFlagGroupRangeCompatible()");
         return $this->getFlagGroupRanges()->contains($flagGroupRange);
     }
 
@@ -413,6 +418,7 @@ class RegRange implements NameableInterface
      */
     public function getCompatibleFlagGroupRange(FlagGroupRange $flagGroupRange): FlagGroupRange
     {
+        error_log("RegRange::getCompatibleFlagGroupRange()");
         if ($this->isFlagGroupRangeCompatible($flagGroupRange)) {
             return $flagGroupRange;
         }
@@ -437,6 +443,7 @@ class RegRange implements NameableInterface
      */
     public function getCompatibleParticipantFlag(ParticipantFlag $oldParticipantFlag): ParticipantFlag
     {
+        error_log("RegRange::getCompatibleParticipantFlag()");
         if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagRange())) {
             throw new FlagOutOfRangeException('Prázdné přiřazení příznaku.');
         }
@@ -451,6 +458,7 @@ class RegRange implements NameableInterface
 
     public function isFlagRangeCompatible(FlagRange $flagRange): bool
     {
+        error_log("RegRange::isFLagRangeCompatible()");
         foreach ($this->getFlagGroupRanges() as $flagGroupRange) {
             assert($flagGroupRange instanceof FlagGroupRange);
             foreach ($flagGroupRange->getFlagRanges() as $oneFlagRange) {
@@ -465,6 +473,7 @@ class RegRange implements NameableInterface
 
     public function getCompatibleFlagRange(FlagRange $oldFlagRange): ?FlagRange
     {
+        error_log("RegRange::getCompatibleFlagRange()");
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldFlagRange;
         }

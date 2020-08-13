@@ -64,6 +64,15 @@ class ParticipantCategory implements NameableInterface
     public const TYPE_MANAGER = 'manager';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
+    public const ALLOWED_TYPES = [
+        self::TYPE_ATTENDEE, // Attendee of event.
+        self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
+        self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
+        self::TYPE_PARTNER, // Somebody (organization) who supports event.
+        self::TYPE_GUEST, // Somebody who performs at the event.
+        self::TYPE_MANAGER, // Somebody who manages the event.
+    ];
+
     /**
      * Send formal (or informal) e-mails?
      * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
@@ -93,14 +102,7 @@ class ParticipantCategory implements NameableInterface
 
     public static function getAllowedTypesDefault(): array
     {
-        return [
-            self::TYPE_ATTENDEE, // Attendee of event.
-            self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
-            self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
-            self::TYPE_PARTNER, // Somebody (organization) who supports event.
-            self::TYPE_GUEST, // Somebody who performs at the event.
-            self::TYPE_MANAGER, // Somebody who manages the event.
-        ];
+        return self::ALLOWED_TYPES;
     }
 
     public static function getAllowedTypesCustom(): array

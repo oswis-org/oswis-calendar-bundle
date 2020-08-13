@@ -576,16 +576,16 @@
         },
         {
             "name": "doctrine/annotations",
-            "version": "1.10.3",
+            "version": "1.10.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/annotations.git",
-                "reference": "5db60a4969eba0e0c197a19c077780aadbc43c5d"
+                "reference": "bfe91e31984e2ba76df1c1339681770401ec262f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/5db60a4969eba0e0c197a19c077780aadbc43c5d",
-                "reference": "5db60a4969eba0e0c197a19c077780aadbc43c5d",
+                "url": "https://api.github.com/repos/doctrine/annotations/zipball/bfe91e31984e2ba76df1c1339681770401ec262f",
+                "reference": "bfe91e31984e2ba76df1c1339681770401ec262f",
                 "shasum": ""
             },
             "require": {
@@ -595,7 +595,8 @@
             },
             "require-dev": {
                 "doctrine/cache": "1.*",
-                "phpunit/phpunit": "^7.5"
+                "phpstan/phpstan": "^0.12.20",
+                "phpunit/phpunit": "^7.5 || ^9.1.5"
             },
             "type": "library",
             "extra": {
@@ -641,7 +642,7 @@
                 "docblock",
                 "parser"
             ],
-            "time": "2020-05-25T17:24:27+00:00"
+            "time": "2020-08-10T19:35:50+00:00"
         },
         {
             "name": "doctrine/cache",
@@ -3843,16 +3844,16 @@
         },
         {
             "name": "oswis-org/oswis-address-book-bundle",
-            "version": "v0.0.279",
+            "version": "v0.0.284",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-                "reference": "56d9b4e45779965eb1c8bff7166bd1d3e57e579e"
+                "reference": "d9adfebd4b4cb8c52e4364809c8381fa72026977"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/56d9b4e45779965eb1c8bff7166bd1d3e57e579e",
-                "reference": "56d9b4e45779965eb1c8bff7166bd1d3e57e579e",
+                "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/d9adfebd4b4cb8c52e4364809c8381fa72026977",
+                "reference": "d9adfebd4b4cb8c52e4364809c8381fa72026977",
                 "shasum": ""
             },
             "require": {
@@ -3894,20 +3895,20 @@
                 "oswis",
                 "zakjakub"
             ],
-            "time": "2020-08-08T15:43:32+00:00"
+            "time": "2020-08-11T15:20:42+00:00"
         },
         {
             "name": "oswis-org/oswis-core-bundle",
-            "version": "v0.0.624",
+            "version": "v0.0.625",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-                "reference": "b45c63aaee0c85eb764e6301153befdc27175b8a"
+                "reference": "0e306ce2c42eb7ae90fbfb903e916aa7b60c0221"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/b45c63aaee0c85eb764e6301153befdc27175b8a",
-                "reference": "b45c63aaee0c85eb764e6301153befdc27175b8a",
+                "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/0e306ce2c42eb7ae90fbfb903e916aa7b60c0221",
+                "reference": "0e306ce2c42eb7ae90fbfb903e916aa7b60c0221",
                 "shasum": ""
             },
             "require": {
@@ -4004,7 +4005,7 @@
                 "php",
                 "zakjakub"
             ],
-            "time": "2020-08-10T11:19:30+00:00"
+            "time": "2020-08-11T11:18:40+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -10070,16 +10071,16 @@
         },
         {
             "name": "symplify/package-builder",
-            "version": "v8.2.1",
+            "version": "v8.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/package-builder.git",
-                "reference": "797d3e2508e92684f2714f5afdab835d4195e691"
+                "reference": "c11ec4f38ab656d53e8696ccde2d32fe64afcb88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/package-builder/zipball/797d3e2508e92684f2714f5afdab835d4195e691",
-                "reference": "797d3e2508e92684f2714f5afdab835d4195e691",
+                "url": "https://api.github.com/repos/symplify/package-builder/zipball/c11ec4f38ab656d53e8696ccde2d32fe64afcb88",
+                "reference": "c11ec4f38ab656d53e8696ccde2d32fe64afcb88",
                 "shasum": ""
             },
             "require": {

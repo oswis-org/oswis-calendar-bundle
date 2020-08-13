@@ -61,8 +61,7 @@ use function assert;
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_put"}, "enable_max_depth"=true}
- *     },
- *     "delete"={}
+ *     }
  *   }
  * )
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
@@ -193,6 +192,7 @@ class Participant implements ParticipantInterface
      */
     public function __construct(RegRange $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null)
     {
+        error_log("Participant::__construct()");
         $this->participantContacts = new ArrayCollection();
         $this->participantRanges = new ArrayCollection();
         $this->notes = new ArrayCollection();
@@ -207,6 +207,7 @@ class Participant implements ParticipantInterface
             $this->setParticipantRange($participantRange);
         }
         $this->setNotes($participantNotes);
+        error_log("Participant::__construct() FINISHED");
     }
 
     /**
@@ -216,12 +217,16 @@ class Participant implements ParticipantInterface
      */
     public function setParticipantContact(?ParticipantContact $participantContact): void
     {
+        error_log("Participant->setParticipantContact()");
         if ($this->getParticipantContact() === $participantContact) {
             return;
         }
-        if (null !== $participantContact && $this->getParticipantContacts()->isEmpty()) {
-            $this->getParticipantContacts()->add($participantContact);
+        $participantsContacts = $this->getParticipantContacts();
+        if (null !== $participantContact && $participantsContacts->isEmpty()) {
+            $participantsContacts->add($participantContact);
+            error_log("Participant->setParticipantContact()...will update");
             $this->updateCachedColumns();
+            error_log("Participant->setParticipantContact()...finished");
 
             return;
         }
@@ -260,11 +265,17 @@ class Participant implements ParticipantInterface
     public function updateCachedColumns(): void
     {
         try {
-            $this->regRange = $this->getRegRange();
+            error_log("Will update participant cached columns...");
+            $this->regRange = $this->getRegRange(true);
+            error_log("Will update participant cached columns... will get contact");
             $this->contact = $this->getContact();
-            $this->event = $this->getEvent();
-            $this->participantCategory = $this->getParticipantCategory();
+            error_log("Will update participant cached columns... will get event");
+            $this->event = $this->regRange ? $this->regRange->getEvent() : null;
+            error_log("Will update participant cached columns... will get participantCategory");
+            $this->participantCategory = $this->regRange ? $this->regRange->getParticipantCategory() : null;
+            error_log("Will update participant cached columns... will update VS");
             $this->updateVariableSymbol();
+            error_log("Participant cached columns updated.");
         } catch (OswisException $e) {
         }
     }
@@ -277,7 +288,11 @@ class Participant implements ParticipantInterface
      */
     public function getRegRange(bool $onlyActive = true): ?RegRange
     {
-        return $this->getParticipantRange($onlyActive) ? $this->getParticipantRange($onlyActive)->getRange() : null;
+        error_log("Getting RegRange of participant...");
+        $participantRange = $this->getParticipantRange($onlyActive);
+        error_log("Getting RegRange of participant...returning");
+
+        return $participantRange ? $participantRange->getRange() : null;
     }
 
     /**
@@ -291,10 +306,11 @@ class Participant implements ParticipantInterface
      */
     public function setRegRange(?RegRange $regRange): void
     {
-        if ($this->getRegRange(false) !== $regRange) {
+        error_log("Set RegRange in participant...");
+        if ($this->getRegRange(true) !== $regRange) {
             $this->setParticipantRange(new ParticipantRange($regRange));
         }
-        $this->updateCachedColumns();
+        error_log("OK, setted RegRange.");
     }
 
     /**
@@ -305,16 +321,19 @@ class Participant implements ParticipantInterface
      */
     public function getParticipantRange(bool $onlyActive = true): ?ParticipantRange
     {
+        error_log("Getting ParticipantRange of Participant...");
         $participantRanges = $this->getParticipantRanges($onlyActive);
         if ($participantRanges->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více událostem najednou.');
         }
+        error_log("Getting ParticipantRange of Participant...returning");
 
         return $participantRanges->first() ?: null;
     }
 
     public function getParticipantRanges(bool $onlyActive = false, bool $onlyDeleted = false): Collection
     {
+        error_log("Getting ParticipantRanges...");
         $connections = $this->participantRanges ?? new ArrayCollection();
         if ($onlyActive) {
             $connections = $connections->filter(fn(ParticipantRange $connection) => $connection->isActive());
@@ -328,9 +347,14 @@ class Participant implements ParticipantInterface
 
     public function getContact(bool $onlyActive = true): ?AbstractContact
     {
+        error_log("Participant->getContact($onlyActive)");
         try {
-            return $this->getParticipantContact($onlyActive) ? $this->getParticipantContact($onlyActive)->getContact() : null;
+            $participantContact = $this->getParticipantContact($onlyActive);
+
+            error_log("Participant->getContact($onlyActive)...RETURNING");
+            return $participantContact ? $participantContact->getContact() : null;
         } catch (OswisException $e) {
+            error_log("Participant->getContact($onlyActive)...FAILED");
             return null;
         }
     }
@@ -342,24 +366,38 @@ class Participant implements ParticipantInterface
      */
     public function setContact(AbstractContact $contact): void
     {
-        $this->setParticipantContact(new ParticipantContact($contact));
+        if ($this->getContact(true) !== $contact) {
+            $this->setParticipantContact(new ParticipantContact($contact));
+        }
         $this->updateVariableSymbol();
     }
 
     public function getEvent(): ?Event
     {
+        error_log("Participant::getEvent()");
         try {
-            return $this->getRegRange() ? $this->getRegRange()->getEvent() : null;
+            $participantRange = $this->getParticipantRange(true);
+            error_log("getEvent()...returninig");
+
+            return $participantRange ? $participantRange->getEvent() : null;
         } catch (OswisException $e) {
+            error_log("getEvent()...NULL");
+
             return null;
         }
     }
 
     public function getParticipantCategory(): ?ParticipantCategory
     {
+        error_log("getParticipanticipantCategory()");
         try {
-            return $this->getRegRange() ? $this->getRegRange()->getParticipantCategory() : null;
+            $participantRange = $this->getParticipantRange(true);
+            error_log("getParticipanticipantCategory()...returning");
+
+            return $participantRange ? $participantRange->getParticipantCategory() : null;
         } catch (OswisException $e) {
+            error_log("getParticipanticipantCategory()...NULL");
+
             return null;
         }
     }
@@ -386,8 +424,9 @@ class Participant implements ParticipantInterface
      */
     public function setParticipantRange(?ParticipantRange $newParticipantRange, bool $admin = false): void
     {
+        error_log("Setting new ParticipantRange...");
         $oldParticipantRange = $this->getParticipantRange(true);
-        $oldRegRange = $this->getRegRange(false);
+        $oldRegRange = $oldParticipantRange ? $oldParticipantRange->getRange() : null;
         $newRegRange = $newParticipantRange ? $newParticipantRange->getRange() : null;
         //
         // CASE 1: RegRange is same. Do nothing.
@@ -424,8 +463,16 @@ class Participant implements ParticipantInterface
             $this->changeFlagsByNewRegRange($newRegRange, false);
         }
         // Finally, add participant range.
+        foreach ($this->getParticipantRanges(false) as $participantRange) {
+            if ($participantRange instanceof ParticipantRange) {
+                $participantRange->delete();
+            }
+        }
+        $newParticipantRange->activate();
         $this->getParticipantRanges()->add($newParticipantRange);
+        error_log("Setted new ParticipantRange and will update...");
         $this->updateCachedColumns();
+        error_log("Setted new ParticipantRange and updated...");
     }
 
     public function deleteParticipantFlags(): void
@@ -439,6 +486,7 @@ class Participant implements ParticipantInterface
 
     public function getParticipantFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ?Flag $flag = null): Collection
     {
+        error_log("getParticipanticipantFlags()");
         $participantFlags = new ArrayCollection();
         foreach ($this->getFlagGroups($flagCategory, $flagType) as $flagGroup) {
             if ($flagGroup instanceof ParticipantFlagGroup) {
@@ -449,6 +497,7 @@ class Participant implements ParticipantInterface
                 }
             }
         }
+        error_log("getParticipanticipantFlags()...returning");
 
         return $participantFlags;
     }
@@ -517,6 +566,7 @@ class Participant implements ParticipantInterface
      */
     private function changeFlagsByNewRegRange(RegRange $newRange, bool $onlySimulate = false, bool $admin = false): void
     {
+        error_log("changeFlagsByNewRegRange()");
         foreach ($this->getFlagGroups() as $oldParticipantFlagGroup) {
             if (!($oldParticipantFlagGroup instanceof ParticipantFlagGroup)) {
                 continue;
@@ -646,10 +696,11 @@ class Participant implements ParticipantInterface
      */
     public function getPrice(): int
     {
-        if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
+        error_log("getPrice()");
+        if (null === ($participantRange = $this->getParticipantRange(true))) {
             throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
         }
-        $price = $this->getRegRange()->getPrice($this->getParticipantCategory()) + $this->getFlagsPrice();
+        $price = $participantRange->getPrice($this->getParticipantCategory()) + $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
     }
@@ -672,10 +723,11 @@ class Participant implements ParticipantInterface
      */
     public function getDepositValue(): ?int
     {
-        if (null === $this->getRegRange() || null === $this->getParticipantCategory()) {
+        error_log("getDepositValue()");
+        if (null === ($participantRange = $this->getParticipantRange())) {
             throw new PriceInvalidArgumentException(' (nelze vypočítat cenu kvůli chybějícím údajům u přihlášky)');
         }
-        $price = $this->getRegRange()->getDepositValue($this->getParticipantCategory()) + $this->getFlagsDepositValue();
+        $price = $participantRange->getDepositValue($this->getParticipantCategory()) + $this->getFlagsDepositValue();
 
         return $price < 0 ? 0 : $price;
     }
@@ -698,7 +750,8 @@ class Participant implements ParticipantInterface
      */
     public function getRemainingDeposit(): int
     {
-        $remaining = null !== $this->getDepositValue() ? $this->getDepositValue() - $this->getPaidPrice() : 0;
+        $deposit = $this->getDepositValue();
+        $remaining = null !== $deposit ? $deposit - $this->getPaidPrice() : 0;
 
         return $remaining > 0 ? $remaining : 0;
     }
@@ -729,6 +782,7 @@ class Participant implements ParticipantInterface
 
     public function getQrPng(bool $deposit = true, bool $rest = true, string $qrComment = ''): ?string
     {
+        error_log("getQrPng()");
         if (null === ($event = $this->getEvent()) || null === ($bankAccount = $event->getBankAccount(true))) {
             return null;
         }
@@ -748,8 +802,10 @@ class Participant implements ParticipantInterface
                 $value = $this->getPriceRest();
             }
 
+            error_log("getQrPng()...FINISHED");
             return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);
         } catch (OswisException|PriceInvalidArgumentException $exception) {
+            error_log("getQrPng()...FAILED");
             return null;
         }
     }
@@ -774,17 +830,21 @@ class Participant implements ParticipantInterface
 
     public function isRangeActivated(): bool
     {
+        error_log("isRangeActivated()");
         try {
-            return $this->getParticipantRange() ? $this->getParticipantRange()->isActivated() : false;
+            $participantRange = $this->getParticipantRange();
+
+            return $participantRange ? $participantRange->isActivated() : false;
         } catch (OswisException $e) {
             return false;
         }
     }
 
-    public function isRangeDeleted(): bool
+    public function isRangeDeleted(): bool // TODO: What's this?
     {
+        error_log("I am in some tricky method (isRangeDeleted())...");
         try {
-            return !($this->getRegRange() && $this->getEvent() && $this->getParticipantCategory());
+            return !($this->getRegRange(true) && $this->getEvent() && $this->getParticipantCategory());
         } catch (OswisException $e) {
             return false;
         }
@@ -799,8 +859,11 @@ class Participant implements ParticipantInterface
      */
     public function isFormal(bool $recursive = false): ?bool
     {
+        error_log("isFormal()");
         if ($recursive && null === $this->formal) {
-            return $this->getParticipantCategory() ? $this->getParticipantCategory()->isFormal() : true;
+            $participantCategory = $this->getParticipantCategory();
+
+            return $participantCategory ? $participantCategory->isFormal() : true;
         }
 
         return $this->formal;
@@ -817,6 +880,7 @@ class Participant implements ParticipantInterface
      */
     public function isManager(): bool
     {
+        error_log("isManager()");
         $type = $this->getParticipantCategory();
 
         return null !== $type ? in_array($type->getType(), ParticipantCategory::MANAGEMENT_TYPES, true) : false;
@@ -975,9 +1039,9 @@ class Participant implements ParticipantInterface
     public function removeEmptyNotesAndDetails(): void
     {
         $this->removeEmptyParticipantNotes();
-        if (null !== $this->getContact()) {
-            $this->getContact()->removeEmptyDetails();
-            $this->getContact()->removeEmptyNotes();
+        if (null !== $contact = $this->getContact()) {
+            $contact->removeEmptyDetails();
+            $contact->removeEmptyNotes();
         }
         foreach ($this->getContactPersons() as $contactPerson) {
             if ($contactPerson instanceof AbstractContact) {

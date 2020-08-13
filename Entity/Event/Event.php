@@ -39,21 +39,21 @@ use function assert;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_events_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_events_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_events_post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_events_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entity_get", "calendar_event_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_put"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_event_put"}, "enable_max_depth"=true}
  *     },
  *     "delete"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
@@ -180,6 +180,7 @@ class Event implements NameableInterface
 
     public function getOneImage(bool $recursive = false, string $type = EventImage::TYPE_IMAGE): ?EventImage
     {
+        error_log("Event::getOneImage()");
         $image = $this->getImages($type)->first();
         if ($image instanceof EventImage) {
             return $image;
@@ -190,6 +191,7 @@ class Event implements NameableInterface
 
     public function getImages(?string $type = null): Collection
     {
+        error_log("Event::getImages()");
         $images = $this->images ?? new ArrayCollection();
 
         return empty($type) ? $images : $images->filter(fn(EventImage $eventImage) => $eventImage->getType() === $type);
@@ -197,6 +199,8 @@ class Event implements NameableInterface
 
     public function getSuperEvent(): ?Event
     {
+        error_log("Event::getSuperEvent() => ".$this->superEvent);
+
         return $this->superEvent;
     }
 
@@ -211,14 +215,14 @@ class Event implements NameableInterface
         }
     }
 
-    public function getFile(bool $recursive = false, ?string $type = null): ?EventFile
+    public function getOneFile(bool $recursive = false, ?string $type = null): ?EventFile
     {
         $file = $this->getFiles($type)->first();
         if ($file instanceof EventFile) {
             return $file;
         }
 
-        return true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getFile(true, $type) : null;
+        return true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getOneFile(true, $type) : null;
     }
 
     public function getFiles(?string $type = null): Collection
@@ -260,6 +264,8 @@ class Event implements NameableInterface
 
     public function isRoot(): bool
     {
+        error_log("Event::isRoot()");
+
         return $this->getSuperEvent() ? false : true;
     }
 
@@ -288,6 +294,7 @@ class Event implements NameableInterface
 
     public function getContents(?string $type = null, ?bool $recursive = false): Collection
     {
+        error_log("Event::getContents()");
         if (null !== $type) {
             $contents = $this->getContents()->filter(fn(EventContent $webContent) => $type === $webContent->getType());
 
@@ -311,6 +318,8 @@ class Event implements NameableInterface
 
     public function getPlace(?bool $recursive = false): ?Place
     {
+        error_log("Event::getPlace($recursive)");
+
         return $this->place ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getPlace() : null) ?? null;
     }
 
@@ -321,11 +330,15 @@ class Event implements NameableInterface
 
     public function getOrganizerContact(): ?AbstractContact
     {
-        return $this->getOrganizer() ? $this->getOrganizer()->getContact() : null;
+        $organizer = $this->getOrganizer();
+
+        return $organizer ? $organizer->getContact() : null;
     }
 
     public function getOrganizer(?bool $recursive = false): ?Participant
     {
+        error_log("Event::getOrganizer()");
+
         return $this->organizer ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getOrganizer() : null) ?? null;
     }
 
@@ -336,6 +349,7 @@ class Event implements NameableInterface
 
     public function getBankAccount(bool $recursive = false): ?BankAccount
     {
+        error_log("Event::getBankAccount()");
         $bankAccount = $this->traitGetBankAccount();
         if (empty($bankAccount->getFull())) {
             $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()->getBankAccount($recursive) : null;
@@ -423,11 +437,15 @@ class Event implements NameableInterface
 
     public function isYear(): bool
     {
+        error_log("Event::isYear()");
+
         return null !== $this->getCategory() && EventCategory::YEAR_OF_EVENT === $this->getCategory()->getType();
     }
 
     public function getCategory(): ?EventCategory
     {
+        error_log("Event::getCategory()");
+
         return $this->category;
     }
 
@@ -438,21 +456,29 @@ class Event implements NameableInterface
 
     public function isBatch(): bool
     {
+        error_log("Event::isBatch()");
+
         return $this->getCategory() && EventCategory::BATCH_OF_EVENT === $this->getCategory()->getType();
     }
 
     public function getStartYear(): ?int
     {
+        error_log("Event::getStartYear()");
+
         return (int)$this->getStartByFormat(DateTimeUtils::DATE_TIME_YEARS);
     }
 
     public function getSeqId(): ?int
     {
+        error_log("Event::getSeqId()");
+
         return $this->getGroup() ? $this->getGroup()->getSeqId($this) : null;
     }
 
     public function getGroup(): ?EventGroup
     {
+        error_log("Event::getGroup()");
+
         return $this->group;
     }
 
@@ -469,16 +495,22 @@ class Event implements NameableInterface
 
     public function getType(): ?string
     {
+        error_log("Event::getType()");
+
         return $this->getCategory() ? $this->getCategory()->getType() : null;
     }
 
-    public function isEventSuperEvent(?Event $event, ?bool $recursive = true): bool
+    public function isEventSuperEvent(?Event $event = null, ?bool $recursive = true): bool
     {
-        return in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
+        error_log("Event::isEventSuperEvent()");
+
+        return null === $event ? false : in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
     }
 
     public function getSuperEvents(): array
     {
-        return null === $this->getSuperEvent() ? [...$this->getSuperEvents(), $this->getSuperEvent()] : [$this];
+        error_log("Event::getSuperEvents()");
+
+        return null !== $this->getSuperEvent() ? [...$this->getSuperEvents(), $this->getSuperEvent()] : [$this];
     }
 }
