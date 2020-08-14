@@ -217,6 +217,6 @@ class FlagRange implements NameableInterface
 
     public function getNote(): string
     {
-        return $this->traitGetNote() ?? ($this->getFlag() ? $this->getFlag()->getNote() : '');
+        return $this->traitGetNote() ?? ($this->getFlag() ? $this->getFlag()->getNote() : '') ?? '';
     }
 }

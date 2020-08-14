@@ -20,17 +20,17 @@
                     {% if participant.deleted|default %}
                         {% if participant.contact.organization|default %}
                             Vaše organizace {{ participant.contact.name }} byl{{ a }} {{ participant.deleted|date("j. n. Y")|default('') }}
-                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ participant.event.name }}</b>.
+                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ participant.event(false).name }}</b>.
                         {% else %}
                             Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.deleted|date("j. n. Y")|default('') }}
-                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ participant.event.name }}</b>.
+                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ participant.event(false).name }}</b>.
                         {% endif %}
                     {% else %}
                         {% if participant.contact.organization|default %}
                             Vaše organizace {{ participant.contact.name }} byl{{ a }} úspěšně přihlášen{{ a }}
-                            na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                            na&nbsp;akci <b>{{ participant.event(false).name }}</b>.
                         {% else %}
-                            Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>.
+                            Byl{{ a }} js{{ f ? 'te' : 'i' }} úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event(false).name }}</b>.
                         {% endif %}
                     {% endif %}
                 {% endblock message_message_inner %}
@@ -42,8 +42,8 @@
                 <p>
                     Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
-                    {% if participant.event.getBankAccount(true)|default %}
-                        na&nbsp;účet <b>{{ participant.event.getBankAccount(true).getFull() }}</b>
+                    {% if participant.event(false).getBankAccount(true)|default %}
+                        na&nbsp;účet <b>{{ participant.event(false).getBankAccount(true).getFull() }}</b>
                         s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
                         Samozřejmě počítáme s&nbsp;tím, že&nbsp;převod může pár dní trvat. :)
                     {% else %}

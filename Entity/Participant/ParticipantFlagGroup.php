@@ -18,6 +18,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
+use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
@@ -29,6 +30,9 @@ class ParticipantFlagGroup implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;
+    use DeletedTrait {
+        delete as traitDelete;
+    }
 
     public ?Collection $tempFlagRanges = null;
 
@@ -108,6 +112,26 @@ class ParticipantFlagGroup implements BasicInterface
         }
 
         return $participantFlags;
+    }
+
+    public function replaceParticipantFlag(ParticipantFlag $oldParticipantFlag, ParticipantFlag $newParticipantFlag, bool $admin = false): void {
+        $oldFlagRange = $oldParticipantFlag->getFlagRange();
+        $newFlagRange = $newParticipantFlag->getFlagRange();
+        if ($oldFlagRange !== $newFlagRange) {
+            if (null === $newFlagRange || !($newFlagRange instanceof FlagRange)) {
+                throw new FlagOutOfRangeException("Příznak musí být nahrazen, nesmí být smazán.");
+            }
+            if (0 === $newFlagRange->getRemainingCapacity($admin)) {
+                throw new FlagCapacityExceededException($newFlagRange->getName());
+            }
+            if ($oldParticipantFlag) {
+                $oldParticipantFlag->delete();
+            }
+            $newParticipantFlag->activate();
+            $newParticipantFlag->setParticipantFlagGroup($this);
+            return;
+        }
+        error_log("FlagRange NOT replaced because was same.");
     }
 
     /**
@@ -192,5 +216,6 @@ class ParticipantFlagGroup implements BasicInterface
                 $participantFlag->delete();
             }
         }
+        $this->traitDelete();
     }
 }

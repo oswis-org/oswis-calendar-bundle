@@ -152,6 +152,7 @@ class Event implements NameableInterface
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup", inversedBy="events", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
     private ?EventGroup $group = null;
 
@@ -511,6 +512,6 @@ class Event implements NameableInterface
     {
         error_log("Event::getSuperEvents()");
 
-        return null !== $this->getSuperEvent() ? [...$this->getSuperEvents(), $this->getSuperEvent()] : [$this];
+        return null === $this->getSuperEvent() ? [] : [...$this->getSuperEvent()->getSuperEvents(), $this->getSuperEvent()];
     }
 }

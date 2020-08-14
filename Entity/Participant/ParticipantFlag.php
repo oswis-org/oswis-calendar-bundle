@@ -116,6 +116,9 @@ class ParticipantFlag implements BasicInterface
             throw new NotImplementedException('změna skupiny', 'u použití příznaku');
         }
         $this->participantFlagGroup = $participantFlagGroup;
+        if ($this->participantFlagGroup && $participantFlagGroup) {
+            $this->participantFlagGroup->getParticipantFlags()->add($this);
+        }
     }
 
     public function getName(): ?string

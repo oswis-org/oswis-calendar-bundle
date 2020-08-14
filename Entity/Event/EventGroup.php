@@ -14,6 +14,36 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_group")
+ * @ApiPlatform\Core\Annotation\ApiResource(
+ *   attributes={
+ *     "filters"={"search"},
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entities_get", "calendar_event_groups_get"}, "enable_max_depth"=true},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_event_groups_post"}, "enable_max_depth"=true}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entity_get", "calendar_event_group_get"}, "enable_max_depth"=true},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_event_group_put"}, "enable_max_depth"=true}
+ *     },
+ *     "delete"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"calendar_event_group_delete"}, "enable_max_depth"=true}
+ *     }
+ *   }
+ * )
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
 class EventGroup implements NameableInterface
@@ -22,6 +52,7 @@ class EventGroup implements NameableInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="group")
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
     protected ?Collection $events = null;
 

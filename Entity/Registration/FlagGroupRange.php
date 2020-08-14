@@ -177,11 +177,11 @@ class FlagGroupRange implements NameableInterface
 
     public function getDescription(): string
     {
-        return $this->traitGetDescription() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getDescription() : '');
+        return $this->traitGetDescription() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getDescription() : '') ?? '';
     }
 
     public function getNote(): string
     {
-        return $this->traitGetNote() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getNote() : '');
+        return $this->traitGetNote() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getNote() : '') ?? '';
     }
 }
