@@ -22,6 +22,32 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
+ * @ApiPlatform\Core\Annotation\ApiResource(
+ *   attributes={
+ *     "filters"={"search"},
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_flags_get"}, "enable_max_depth"=true},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_flags_post"}, "enable_max_depth"=true}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entity_get", "calendar_participant_flag_get"}, "enable_max_depth"=true},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_flag_put"}, "enable_max_depth"=true}
+ *     }
+ *   }
+ * )
  */
 class ParticipantFlag implements BasicInterface
 {
@@ -42,6 +68,7 @@ class ParticipantFlag implements BasicInterface
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup", inversedBy="participantFlags", fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
     protected ?ParticipantFlagGroup $participantFlagGroup = null;
 

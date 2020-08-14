@@ -5,6 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
@@ -25,6 +26,32 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_group")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
+ * @ApiPlatform\Core\Annotation\ApiResource(
+ *   attributes={
+ *     "filters"={"search"},
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_flag_groups__get"}, "enable_max_depth"=true},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_flag_groups__post"}, "enable_max_depth"=true}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entity_get", "calendar_participant_flag_group_get"}, "enable_max_depth"=true},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_flag_group_put"}, "enable_max_depth"=true}
+ *     }
+ *   }
+ * )
  */
 class ParticipantFlagGroup implements BasicInterface
 {
@@ -46,6 +73,7 @@ class ParticipantFlagGroup implements BasicInterface
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag", mappedBy="participantFlagGroup", cascade={"all"}
      * )
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
     protected ?Collection $participantFlags = null;
 
@@ -114,6 +142,15 @@ class ParticipantFlagGroup implements BasicInterface
         return $participantFlags;
     }
 
+    /**
+     * @param ParticipantFlag $oldParticipantFlag
+     * @param ParticipantFlag $newParticipantFlag
+     * @param bool            $admin
+     *
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
+     */
     public function replaceParticipantFlag(ParticipantFlag $oldParticipantFlag, ParticipantFlag $newParticipantFlag, bool $admin = false): void {
         $oldFlagRange = $oldParticipantFlag->getFlagRange();
         $newFlagRange = $newParticipantFlag->getFlagRange();
@@ -209,13 +246,13 @@ class ParticipantFlagGroup implements BasicInterface
         return $price;
     }
 
-    public function delete(): void
+    public function delete(?DateTime $dateTime = null): void
     {
         foreach ($this->getParticipantFlags() as $participantFlag) {
             if ($participantFlag instanceof ParticipantFlag) {
-                $participantFlag->delete();
+                $participantFlag->delete($dateTime);
             }
         }
-        $this->traitDelete();
+        $this->traitDelete($dateTime);
     }
 }

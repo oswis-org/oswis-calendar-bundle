@@ -521,7 +521,7 @@ class Participant implements ParticipantInterface
         return $connections;
     }
 
-    public function isParticipantFlagGroupCompatible(ParticipantFlagGroup $participantFlagGroup): bool
+    public function isParticipantFlagGroupCompatible(?ParticipantFlagGroup $participantFlagGroup = null): bool
     {
         return ($regRange = $this->getRegRange()) ? $regRange->isFlagGroupRangeCompatible($participantFlagGroup->getFlagGroupRange()) : false;
     }
