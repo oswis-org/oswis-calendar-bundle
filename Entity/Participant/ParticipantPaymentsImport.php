@@ -38,9 +38,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar__csv_payments_import_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={},
- *     "delete"={}
+ *     }
  *   }
  * )
  * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class, properties={

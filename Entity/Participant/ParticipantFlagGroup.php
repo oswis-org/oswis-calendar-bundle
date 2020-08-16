@@ -236,13 +236,9 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             if (0 === $newFlagRange->getRemainingCapacity($admin)) {
                 throw new FlagCapacityExceededException($newFlagRange->getName());
             }
-            if ($oldParticipantFlag) {
-                $oldParticipantFlag->delete();
-            }
+            $oldParticipantFlag->delete();
             $newParticipantFlag->activate();
             $newParticipantFlag->setParticipantFlagGroup($this);
-
-            return;
         }
     }
 

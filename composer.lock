@@ -464,21 +464,21 @@
     },
     {
       "name": "composer/package-versions-deprecated",
-      "version": "1.10.99",
+      "version": "1.10.99.1",
       "source": {
         "type": "git",
         "url": "https://github.com/composer/package-versions-deprecated.git",
-        "reference": "dd51b4443d58b34b6d9344cf4c288e621c9a826f"
+        "reference": "68c9b502036e820c33445ff4d174327f6bb87486"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/dd51b4443d58b34b6d9344cf4c288e621c9a826f",
-        "reference": "dd51b4443d58b34b6d9344cf4c288e621c9a826f",
+        "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/68c9b502036e820c33445ff4d174327f6bb87486",
+        "reference": "68c9b502036e820c33445ff4d174327f6bb87486",
         "shasum": ""
       },
       "require": {
         "composer-plugin-api": "^1.1.0 || ^2.0",
-        "php": "^7"
+        "php": "^7 || ^8"
       },
       "replace": {
         "ocramius/package-versions": "1.10.99"
@@ -529,7 +529,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-07-15T08:39:18+00:00"
+      "time": "2020-08-13T12:55:41+00:00"
     },
     {
       "name": "dasprid/enum",
@@ -3899,16 +3899,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.625",
+      "version": "v0.0.627",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "0e306ce2c42eb7ae90fbfb903e916aa7b60c0221"
+        "reference": "af54d4bb91f9a919da8da4142d94ff872afdd716"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/0e306ce2c42eb7ae90fbfb903e916aa7b60c0221",
-        "reference": "0e306ce2c42eb7ae90fbfb903e916aa7b60c0221",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/af54d4bb91f9a919da8da4142d94ff872afdd716",
+        "reference": "af54d4bb91f9a919da8da4142d94ff872afdd716",
         "shasum": ""
       },
       "require": {
@@ -4005,7 +4005,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-08-11T11:18:40+00:00"
+      "time": "2020-08-16T08:10:09+00:00"
     },
     {
       "name": "paragonie/random_compat",
@@ -4154,16 +4154,16 @@
     },
     {
       "name": "phpdocumentor/reflection-docblock",
-      "version": "5.2.0",
+      "version": "5.2.1",
       "source": {
         "type": "git",
         "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
-        "reference": "3170448f5769fe19f456173d833734e0ff1b84df"
+        "reference": "d870572532cd70bc3fab58f2e23ad423c8404c44"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/3170448f5769fe19f456173d833734e0ff1b84df",
-        "reference": "3170448f5769fe19f456173d833734e0ff1b84df",
+        "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/d870572532cd70bc3fab58f2e23ad423c8404c44",
+        "reference": "d870572532cd70bc3fab58f2e23ad423c8404c44",
         "shasum": ""
       },
       "require": {
@@ -4202,7 +4202,7 @@
         }
       ],
       "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
-      "time": "2020-07-20T20:05:34+00:00"
+      "time": "2020-08-15T11:14:08+00:00"
     },
     {
       "name": "phpdocumentor/type-resolver",
@@ -10071,16 +10071,16 @@
     },
     {
       "name": "symplify/package-builder",
-      "version": "v8.2.2",
+      "version": "v8.2.3",
       "source": {
         "type": "git",
         "url": "https://github.com/symplify/package-builder.git",
-        "reference": "c11ec4f38ab656d53e8696ccde2d32fe64afcb88"
+        "reference": "80cc445e47f543ceaed055b7c3fb13d6bfc0ab03"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symplify/package-builder/zipball/c11ec4f38ab656d53e8696ccde2d32fe64afcb88",
-        "reference": "c11ec4f38ab656d53e8696ccde2d32fe64afcb88",
+        "url": "https://api.github.com/repos/symplify/package-builder/zipball/80cc445e47f543ceaed055b7c3fb13d6bfc0ab03",
+        "reference": "80cc445e47f543ceaed055b7c3fb13d6bfc0ab03",
         "shasum": ""
       },
       "require": {
@@ -10983,12 +10983,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "a9e4cf90fc47b0ffbb90ee79f24be1b7c5ce82dc"
+        "reference": "fa90d820db8d594157f65ef88d23b23e97575eaa"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/a9e4cf90fc47b0ffbb90ee79f24be1b7c5ce82dc",
-        "reference": "a9e4cf90fc47b0ffbb90ee79f24be1b7c5ce82dc",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/fa90d820db8d594157f65ef88d23b23e97575eaa",
+        "reference": "fa90d820db8d594157f65ef88d23b23e97575eaa",
         "shasum": ""
       },
       "conflict": {
@@ -11063,7 +11063,7 @@
         "gregwar/rst": "<1.0.3",
         "guzzlehttp/guzzle": ">=4-rc.2,<4.2.4|>=5,<5.3.1|>=6,<6.2.1",
         "illuminate/auth": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.10",
-        "illuminate/cookie": ">=4,<=4.0.11|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<=5.5.44|>=5.6,<5.6.30|>=6,<6.18.31|>=7,<7.22.4",
+        "illuminate/cookie": ">=4,<=4.0.11|>=4.1,<=4.1.99999|>=4.2,<=4.2.99999|>=5,<=5.0.99999|>=5.1,<=5.1.99999|>=5.2,<=5.2.99999|>=5.3,<=5.3.99999|>=5.4,<=5.4.99999|>=5.5,<=5.5.49|>=5.6,<=5.6.99999|>=5.7,<=5.7.99999|>=5.8,<=5.8.99999|>=6,<6.18.31|>=7,<7.22.4",
         "illuminate/database": ">=4,<4.0.99|>=4.1,<4.1.29|>=5.5,<=5.5.44|>=6,<6.18.34|>=7,<7.23.2",
         "illuminate/encryption": ">=4,<=4.0.11|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<5.5.40|>=5.6,<5.6.15",
         "illuminate/view": ">=7,<7.1.2",
@@ -11075,7 +11075,7 @@
         "kitodo/presentation": "<3.1.2",
         "kreait/firebase-php": ">=3.2,<3.8.1",
         "la-haute-societe/tcpdf": "<6.2.22",
-        "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.31|>=4.2,<=4.2.22|>=5,<=5.0.35|>=5.1,<=5.1.46|>=5.2,<=5.2.45|>=5.3,<=5.3.31|>=5.4,<=5.4.36|>=5.5,<=5.5.49|>=5.6,<5.6.30|>=6,<6.18.34|>=7,<7.23.2",
+        "laravel/framework": ">=4,<4.0.99|>=4.1,<=4.1.99999|>=4.2,<=4.2.99999|>=5,<=5.0.99999|>=5.1,<=5.1.99999|>=5.2,<=5.2.99999|>=5.3,<=5.3.99999|>=5.4,<=5.4.99999|>=5.5,<=5.5.49|>=5.6,<=5.6.99999|>=5.7,<=5.7.99999|>=5.8,<=5.8.99999|>=6,<6.18.34|>=7,<7.23.2",
         "laravel/socialite": ">=1,<1.0.99|>=2,<2.0.10",
         "league/commonmark": "<0.18.3",
         "librenms/librenms": "<1.53",
@@ -11270,7 +11270,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-08-08T10:05:44+00:00"
+      "time": "2020-08-16T05:16:28+00:00"
     }
   ],
   "aliases": [],
