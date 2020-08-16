@@ -1,77 +1,100 @@
-<!--suppress CheckEmptyScriptTag -->
-<div>
-    {% if data.eventParticipantType is defined and data.eventParticipantType %}
-        <div>
-            <p>Omezeno pouze na typ účastníka '<strong>{{ data.eventParticipantType.name|default('bez názvu') }}</strong>'.</p>
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block body_content %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2>Přehled přihlášek</h2>
+            </div>
         </div>
-    {% endif %}
-    <div>
-        <p>
-            Počet akcí: {{ data.events is defined ? data.events|length : 'žádná akce' }}
-        </p>
-    </div>
-    {% for subEvent in data.events %}
-        <pagebreak/>
-        <div style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 1px solid lightblue;">
-            <h2>{{ subEvent.shortName }}</h2>
-            <p>
-                {% if subEvent.rootEvent %}
-                    <strong>Počet přihlášek:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, true, 1) }}
-                    <strong> -> ověřených:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, false, 1) }}
-                {% else %}
-                    <strong>Počet přihlášek:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, true, 0) }}
-                    <strong> -> ověřených:</strong> {{ subEvent.getOccupancy(null, data.eventParticipantType, false, false, 0) }}
-                {% endif %}
-            </p>
-            <h3>Agregace dle příznaků (jen ověřené přihlášky)</h3>
-            {% for flagType in subEvent.getActiveEventParticipantsAggregatedByFlags(null, data.eventParticipantType, false, false, 1) %}
-                <h4>{{ flagType.flagType.shortName }}</h4>
-                <ul>
-                    {% for flag in flagType.flags %}
-                        <li style="color: {{ flag.flag.color }};">
-                            <strong>{{ flag.flag.shortName }}:</strong>
-                            {{ flag.eventParticipants|length }}
-                        </li>
+        <div class="row">
+            <div class="col">
+                <h3>Omezení</h3>
+                <table class="list">
+                    <thead>
+                    <tr>
+                        <th>Typ omezení</th>
+                        <th>Hodnota</th>
+                    </tr>
+                    </thead>
+                    {% if participantCategory|default %}
+                        <tbody>
+                        <tr>
+                            <td>Kategorie účastníka:</td>
+                            <td><strong>{{ participantCategory.name|default(participantCategory.slug|default('bez názvu')) }}</strong></td>
+                        </tr>
+                        </tbody>
+                    {% endif %}
+                    {% if event|default %}
+                        <tbody>
+                        <tr>
+                            <td>Událost:</td>
+                            <td>
+                                <strong>{{ event.name|default(event.slug|default('bez názvu')) }}</strong>
+                                <ul>
+                                    {% for subEvent in event.subEvents %}
+                                        <li>
+                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list',
+                                                {'eventSlug': subEvent.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">
+                                                {{ subEvent.name }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                    {% if event.superEvent %}
+                                        <li>
+                                            součást akce:
+                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list',
+                                                {'eventSlug': event.superEvent.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">
+                                                {{ event.superEvent.name }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </td>
+                        </tr>
+                        </tbody>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <h3>Přehled nezrušených přihlášek</h3>
+                <table class="list">
+                    {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
+                    {% for participant in participants|filter(participant => not participant.deleted) %}
+                        {% if not participant.deleted %}
+                            {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
+                        {% endif %}
+                    {% else %}
+                        <tbody>
+                        <tr>
+                            <td colspan="4" class="text-center bold">Žádné nezrušené přihlášky.</td>
+                        </tr>
+                        </tbody>
                     {% endfor %}
-                </ul>
-            {% endfor %}
-            <h3>Agregace dle fakulty (jen ověřené přihlášky)</h3>
-            <ul>
-                {% for school in subEvent.getActiveEventParticipantsAggregatedBySchool(null, data.eventParticipantType, false, false, 1) %}
-                    <li style="color: {{ school.school.color }};">
-                        <strong>{{ school.school.shortName }}:</strong>
-                        {{ school.eventParticipants|length }}
-                    </li>
-                {% endfor %}
-            </ul>
+                </table>
+            </div>
         </div>
-    {% endfor %}
-</div>
 
-<pagebreak/>
+        <div class="row">
+            <div class="col">
+                <h3>Přehled zrušených přihlášek</h3>
+                <table class="list">
+                    {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
+                    {% for participant in participants|filter(participant => participant.deleted) %}
+                        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
+                    {% else %}
+                        <tbody>
+                        <tr>
+                            <td colspan="4" class="text-center bold">Žádné zrušené přihlášky.</td>
+                        </tr>
+                        </tbody>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
 
-<div>
-    <h2>Přehled přihlášek</h2>
-    <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
-        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
-        {% for eventParticipant in data.event.getActiveEventParticipants(null, data.eventParticipantType, true, true, 1) %}
-            {% if not eventParticipant.deleted %}
-                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
-            {% endif %}
-        {% endfor %}
-    </table>
-</div>
-
-<pagebreak/>
-
-<div>
-    <h2>Přehled zrušených přihlášek</h2>
-    <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
-        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
-        {% for eventParticipant in data.event.getActiveEventParticipants(null, data.eventParticipantType, true, true, 1) %}
-            {% if eventParticipant.deleted %}
-                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
-            {% endif %}
-        {% endfor %}
-    </table>
-</div>
+    </div>
+{% endblock body_content %}

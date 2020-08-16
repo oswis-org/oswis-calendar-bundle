@@ -1,0 +1,32 @@
+<table class="list">
+    <thead>
+    <tr>
+        <th>Součet</th>
+        <th>Částka</th>
+    </tr>
+    </thead>
+    {% for valueName, value in paymentsAggregation %}
+        <tbody>
+        <tr>
+            <td><strong>{{ valueName }}</strong></td>
+            <td class="text-right">{{ value|default(0)|number_format(null, ',', ' ') }},-&nbsp;Kč</td>
+        </tr>
+        </tbody>
+    {% endfor %}
+    {% if paymentsAggregation['Celkem cena (s příznaky)']|default > 0 %}
+        {% set paidPercent = (paymentsAggregation['Zaplacená cena']|default(0) / paymentsAggregation['Celkem cena (s příznaky)'] * 100)|round(1) %}
+        <tbody>
+        <tr>
+            <td><strong>Zaplaceno</strong></td>
+            <td class="text-right">
+                <strong>{{ paidPercent }}&nbsp;%</strong>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped bg-primary" role="progressbar" aria-valuemin="0"
+                         style="width: {{ paidPercent }}%" aria-valuenow="{{ paidPercent }}" aria-valuemax="100">
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+</table>

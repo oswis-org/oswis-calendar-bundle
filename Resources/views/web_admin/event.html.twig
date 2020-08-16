@@ -1,0 +1,133 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block body_content %}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2>Přehled události</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-xl-6">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3>Základní údaje</h3>
+                            {% include '@OswisOrgOswisCalendar/web_admin/event-details-table.html.twig' %}
+                        </div>
+                        <div class="col-12">
+                            <h3>Počet nezrušených přihlášek <span class="block small text-muted">běžných účastníků</span></h3>
+                            <table class="list">
+                                <thead>
+                                <tr>
+                                    <th>Událost</th>
+                                    <th>Počet</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>{{ occupancy.event.shortName|default }}</strong>
+                                        {% if occupancy.event.shortName != occupancy.event.name %}
+                                            <span class="block small">{{ occupancy.event.name|default }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {'eventSlug': event.slug, 'participantCategorySlug': 'attendee'}) }}">
+                                            <strong>{{ occupancy.occupancy|default }}</strong>
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                {% for subEventOccupancy in occupancy.subEvents %}
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': subEventOccupancy.event.slug|default}) }}">
+                                                ➤ {{ subEventOccupancy.event.shortName|default }}
+                                            </a>
+                                            {% if subEventOccupancy.event.shortName != subEventOccupancy.event.name %}
+                                                <span class="block small">{{ subEventOccupancy.event.name|default }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {'eventSlug': subEventOccupancy.event.slug, 'participantCategorySlug': 'attendee'}) }}">
+                                                {{ subEventOccupancy.occupancy|default }}
+                                            </a>
+                                            {% if occupancy.occupancy|default(0) > 0 %}
+                                                <div class="block small">
+                                                    {{ (subEventOccupancy.occupancy|default(0) / occupancy.occupancy * 100)|round(1) }} % nadřazené
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                {% endfor %}
+                            </table>
+                        </div>
+
+                        <div class="col-12">
+                            <h3>Rozsahy přihlášek <small class="text-muted">(počty nemusí být aktuální)</small></h3>
+                            <table class="list">
+                                <thead>
+                                <tr>
+                                    <th>Rozsah</th>
+                                    <th>Využití</th>
+                                </tr>
+                                </thead>
+                                {% for regRange in regRanges %}
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>{{ regRange.shortName|default }}</strong>
+                                            {% if regRange.shortName != regRange.name %}
+                                                <span class="block small">{{ regRange.name|default }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if regRange.usageInt|default > 0 %}
+                                                <strong>{{ regRange.usageInt|default }}</strong>
+                                                {% if regRange.baseCapacity|default(null) != 0 and regRange.baseCapacity|default(null) != null %}
+                                                    <span class="small">z {{ regRange.baseCapacity }}</span>
+                                                    <div class="block small">
+                                                        {{ regRange.usageInt|default(0) / regRange.baseCapacity * 100 }} %
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                {% endfor %}
+                            </table>
+                        </div>
+
+                        <div class="col-12">
+                            <h3>Ostatní agregace <span class="block small text-muted">nezrušených běžných účastníků</span></h3>
+                            {% include '@OswisOrgOswisCalendar/web_admin/event-other-aggregation-table.html.twig' %}
+                        </div>
+
+                        <div class="col-12">
+                            <h3>Agregace plateb <span class="block small text-muted">nezrušených běžných účastníků</span></h3>
+                            {% include '@OswisOrgOswisCalendar/web_admin/event-payments-aggregation-table.html.twig' %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-6">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <h3>Příznaky <span class="block small text-muted">nezrušených běžných účastníků (dle rozsahů)</span></h3>
+                            {% include '@OswisOrgOswisCalendar/web_admin/event-flags-aggregation-table.html.twig' with {'flagsUsageArray': flagsUsageByRange} %}
+                        </div>
+                        <div class="col-12">
+                            <h3>Příznaky <span class="block small text-muted">nezrušených běžných účastníků (dle příznaků)</span></h3>
+                            {% include '@OswisOrgOswisCalendar/web_admin/event-flags-aggregation-table.html.twig' with {'flagsUsageArray': flagsUsageByFlag} %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body_content %}

@@ -27,8 +27,6 @@ class ParticipantPaymentService
 
     protected OswisCoreSettingsProvider $coreSettings;
 
-    protected ParticipantService $participantService;
-
     protected ParticipantMailService $participantMailService;
 
     public function __construct(
@@ -36,20 +34,23 @@ class ParticipantPaymentService
         MailerInterface $mailer,
         LoggerInterface $logger,
         OswisCoreSettingsProvider $oswisCoreSettings,
-        ParticipantService $participantService,
         ParticipantMailService $participantMailService
     ) {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->logger = $logger;
         $this->coreSettings = $oswisCoreSettings;
-        $this->participantService = $participantService;
         $this->participantMailService = $participantMailService;
     }
 
     public function create(ParticipantPayment $payment, bool $sendConfirmation = true): ?ParticipantPayment
     {
         try {
+            if (!empty($externalId = $payment->getExternalId()) && !empty($this->em->getRepository(ParticipantPayment::class)->findBy(['externalId' => $externalId]))) {
+                $this->logger->info("Skipped duplicity of payment with external id '$externalId'.");
+
+                return null;
+            }
             $this->em->persist($payment);
             $this->em->flush();
             $id = $payment->getId();
@@ -59,8 +60,8 @@ class ParticipantPaymentService
             $this->logger->info("CREATE: Created participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
             if ($sendConfirmation && null !== $participant) {
                 $this->participantMailService->sendPaymentConfirmation($payment, $participant->getAppUser());
+                $this->logger->info("CREATE: Sent confirmation for participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
             }
-            $this->logger->info("CREATE: Sent confirmation for participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
 
             return $payment;
         } catch (Exception $e) {
@@ -79,18 +80,17 @@ class ParticipantPaymentService
     final public function sendPaymentsReport(Collection $payments): bool
     {
         try {
-            $title = 'Report nových plateb';
-            $mailData['payments'] = $payments;
             $email = new TemplatedEmail();
-            $email->to($this->coreSettings->getArchiveMailerAddress())->subject(EmailUtils::mimeEnc($title));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/participant-payments-report.html.twig')->context($mailData);
+            $email->to($this->coreSettings->getArchiveMailerAddress())->subject(EmailUtils::mimeEnc('Report nových plateb'));
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/participant-payments-report.html.twig');
+            $email->context(['payments' => $payments]);
             $this->mailer->send($email);
 
             return true;
-        } catch (Exception $e) {
-            throw new OswisException('Problém s vytvářením reportu o CSV platbách.  '.$e->getMessage());
         } catch (TransportExceptionInterface $e) {
-            throw new OswisException('Problém s odesláním reportu o CSV platbách.  '.$e->getMessage());
+            throw new OswisException('Problém s odesláním reportu o CSV platbách. '.$e->getMessage());
+        } catch (Exception $e) {
+            throw new OswisException('Problém s vytvářením reportu o CSV platbách. '.$e->getMessage());
         }
     }
 }

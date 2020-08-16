@@ -18,29 +18,8 @@ class ParticipantPaymentsImportType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        self::addTypeField($builder);
-        self::addTextValueField($builder);
-        self::addSubmitButton($builder);
-    }
-
-    public static function addTypeField(FormBuilderInterface $builder): void
-    {
-        $builder->add(
-            'type',
-            ChoiceType::class,
-            [
-                "choices" => fn() => ParticipantPaymentsImport::getAllowedTypes(),
-            ]
-        );
-    }
-
-    public static function addTextValueField(FormBuilderInterface $builder): void
-    {
         $builder->add('textValue', TextareaType::class, []);
-    }
-
-    public static function addSubmitButton(FormBuilderInterface $builder): void
-    {
+        $builder->add('type', ChoiceType::class, ["choices" => fn() => ParticipantPaymentsImport::getAllowedTypes()]);
         $builder->add(
             'save',
             SubmitType::class,

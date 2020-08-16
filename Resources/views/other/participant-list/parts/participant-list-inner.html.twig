@@ -1,71 +1,112 @@
 <tbody>
-<tr {{ eventParticipant.deleted ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
+<tr {{ participant.deleted ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
     <td style="border: 1px solid grey; padding: .3em .6em; text-align: right;">
-        <small>
-            {% if eventParticipant.deleted %}
-                <span style="color:red;"><strong>❌</strong>&nbsp;smazáno</span><br>
-            {% endif %}
-            <strong>{{ eventParticipant.id }}</strong>:
-            {{ eventParticipant.createdDateTime|date("j. n. Y, H:i") }}<br>
-            {% if eventParticipant.contact.appUser and eventParticipant.contact.appUser.accountActivationDateTime %}
-                <span style="color:green;"><strong>✔</strong>&nbsp;{{ eventParticipant.contact.appUser.accountActivationDateTime|date("j. n. Y, H:i") }}</span>
-            {% else %}
-                <span style="color:red;"><strong>❌</strong>&nbsp;neověřeno</span>
-            {% endif %}
-            <br>
-            <strong>{{ eventParticipant.contact.name }}</strong><br>
-            <a href="call:{{ eventParticipant.contact.phone }}" target="_blank">{{ eventParticipant.contact.phone }}</a><br>
-            <a href="mailto:{{ eventParticipant.contact.email }}" target="_blank">{{ eventParticipant.contact.email }}</a>
-        </small>
+        {% if participant.deleted %}
+            <div class="block small" style="color:red;">
+                <strong>❌</strong>&nbsp;smazáno
+            </div>
+        {% endif %}
+        <div class="block small">
+            <strong class="badge badge-primary font-1em">{{ participant.id }}</strong> {{ participant.createdAt|date("j. n. Y, H:i") }}
+        </div>
+        {% if participant.contact.appUser and participant.contact.appUser.activated %}
+            <div class="block small" style="color:green;">
+                <strong>✔</strong>&nbsp;{{ participant.contact.appUser.activated|date("j. n. Y, H:i") }}
+            </div>
+        {% else %}
+            <div class="block small" style="color:red;">
+                <strong>❌</strong>&nbsp;neověřeno
+            </div>
+        {% endif %}
+        <div class="block small">
+            ☎ <a href="call:{{ participant.contact.phone }}" target="_blank">{{ participant.contact.phone }}</a>
+        </div>
+        <div class="block small">
+            ✉ <a href="mailto:{{ participant.contact.email }}" target="_blank">{{ participant.contact.email }}</a>
+        </div>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>
-            <li>
-                <small><strong>{{ eventParticipant.event.shortName }}</strong></small>
+            {% set listGenderIcon = "👤" %}
+            {% if 'male' == participant.contact.gender %}
+                {% set listGenderIcon = "👨" %}
+            {% elseif 'female' == participant.contact.gender %}
+                {% set listGenderIcon = "👩" %}
+            {% endif %}
+            <li style="list-style-type: '{{ listGenderIcon }}'">
+                <strong>{{ participant.contact.name|default }}</strong>
             </li>
-            {% for study in eventParticipant.contact.studies %}
-                <li style="color: {{ study.organization.color }};">
-                    <small>{{ study.organization.shortName }}</small>
-                </li>
+            <li style="list-style-type: '📅'">
+                <span class="block small"><strong>{{ participant.event.shortName|default }}</strong></span>
+            </li>
+            <li style="list-style-type: '🎫'">
+                <span class="block small"><strong>{{ participant.regRange.shortName|default }}</strong></span>
+            </li>
+            {% for note in participant.notes %}
+                {% if note.textValue|length > 0 %}
+                    <li style="list-style-type: '📝'">
+                        <span class="block small">{{ note.textValue }}</span>
+                    </li>
+                {% endif %}
             {% endfor %}
         </ul>
     </td>
-    <td style="border:1px solid grey; padding:.3em .6em; text-align:right;color:{{ eventParticipant.remainingPrice|default(0) == 0 ? 'green' : 'red' }}">
-        <strong>{{ eventParticipant.paidPrice|default(0) }},-&nbsp;Kč</strong><br>
-        z&nbsp;{{ eventParticipant.price|default(0) }},-&nbsp;Kč<br>
-        <small>
-            ({{ eventParticipant.remainingPrice|default(0) }},-&nbsp;Kč)
-        </small>
-    </td>
-    <td style="border: 1px solid grey; padding: .3em .6em;">
+    <td style="border: 1px solid grey; padding: .3em .6em; font-size: small;">
         <ul>
-            {% for flagConnection in eventParticipant.eventParticipantFlagConnections %}
-                <li style="color:{{ flagConnection.eventParticipantFlag.color }};">
-                    <small>
-                        {{ flagConnection.eventParticipantFlag.shortName }}
-                        {% if flagConnection.textValue and flagConnection.textValue|length > 0 %}
-                            ({{ flagConnection.textValue }})
-                        {% endif %}
-                        {% if flagConnection.eventParticipantFlag.price is defined and flagConnection.eventParticipantFlag.price and flagConnection.eventParticipantFlag.price != 0 %}
-                            <strong>
-                                ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
-                            </strong>
-                        {% endif %}
-                    </small>
-                </li>
+            {% for participantFlagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
+                <div>
+                    {% for index, participantFlag in participantFlagGroup.participantFlags %}
+                        {% set badgeColorString = participantFlag.flag.color
+                            ? 'background-color:'~participantFlag.flag.color~';color:'~participantFlag.flag.foregroundColor~';'
+                            : '' %}
+                        <div class="badge badge-info smaller" title="{{ participantFlag.flag.name|default }}" style="{{ badgeColorString }}">
+                            {{ participantFlag.flag.shortName|default }}
+                            {% if participantFlag.flagRange.price|default(0) != 0 %}
+                                <div class="badge badge-danger">
+                                    <strong>
+                                        {{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč
+                                    </strong>
+                                </div>
+                            {% endif %}
+                            {% if participantFlag.textValue|default|length > 0 %}
+                                <div class="badge badge-warn small">
+                                    {{ participantFlag.textValue }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             {% endfor %}
-            {% if eventParticipant.eventParticipantNotes is defined and eventParticipant.eventParticipantNotes %}
-                {% for note in eventParticipant.eventParticipantNotes %}
-                    {% if note.textValue|length > 0 %}
-                        <li>
-                            <small>
-                                <strong>Pozn.</strong>: {{ note.textValue }}
-                            </small>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
         </ul>
+    </td>
+    <td style="border:1px solid grey; padding:.3em .6em; text-align:right;color:{{ participant.remainingPrice|default(0) == 0 ? 'green' : 'red' }}">
+        <div class="block">
+            <strong>💰 {{ participant.paidPrice|default(0) }},-&nbsp;Kč</strong>
+        </div>
+        <div class="block">
+            z&nbsp;{{ participant.price|default(0) }},-&nbsp;Kč
+        </div>
+        <div class="block small">
+            zbývá {{ participant.remainingPrice|default(0) }},-&nbsp;Kč
+            {% if participant.remainingPrice|default(0) > 0 %}
+                <strong style="color: orange;">★</strong>
+            {% elseif participant.remainingPrice|default(0) < 0 %}
+                <strong style="color: red;">⚠</strong>
+            {% else %}
+                <strong style="color: green;">✔</strong>
+            {% endif %}
+        </div>
+        {% if participant.price != 0 %}
+            {% set paidPercentage = participant.paidPricePercentage * 100 %}
+            {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
+            {% set paidColor = participant.remainingDeposit > 0 ? paidColor : 'warning' %}
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped bg-{{ paidColor }}" role="progressbar" style="width: {{ paidPercentage }}%"
+                     aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ paidPercentage }} %
+                </div>
+            </div>
+        {% endif %}
     </td>
 </tr>
 </tbody>

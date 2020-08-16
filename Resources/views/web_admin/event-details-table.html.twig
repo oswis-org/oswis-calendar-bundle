@@ -1,0 +1,132 @@
+<table class="list">
+    <thead>
+    <tr>
+        <th>Položka</th>
+        <th>Hodnota</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>ID události
+            <div class="block small">Textový identifikátor („slug“)</div>
+        </td>
+        <td>
+            {{ event.id }}
+            <div class="block small">{{ event.slug }}</div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>Veřejná na webu?</td>
+        <td>{{ event.publicOnWeb ? 'ANO' : 'NE' }}</td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>Název události
+            <div class="block small">Zkrácený název</div>
+        </td>
+        <td>
+            {{ event.name }}
+            <div class="block small">{{ event.shortName }}</div>
+        </td>
+    </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td>Termín události
+            <div class="block small">Rok začátku akce</div>
+        </td>
+        <td>{{ event.rangeAsText }}
+            <div class="block small">{{ event.startYear }}</div>
+        </td>
+    </tr>
+    </tbody>
+    {% if event.superEvent|default %}
+        <tbody>
+        <tr>
+            <td>Nadřazená událost</td>
+            <td>
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': event.superEvent.slug}) }}">
+                    {{ event.superEvent.shortName }}
+                </a>
+                <span class="block small">{{ event.rangeAsText }}</span>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+    {% if event.category|default %}
+        <tbody>
+        <tr>
+            <td>Kategorie události
+                <div class="block small">Typ kategorie události</div>
+            </td>
+            <td>
+                {{ event.category.name }}
+                <span class="block small">{{ event.category.type }}</span>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+    {% if event.group|default %}
+        <tbody>
+        <tr>
+            <td>Skupina události
+                <div class="block small">Index události dle skupiny</div>
+            </td>
+            <td>
+                {{ event.group.name }}
+                <span class="block small">{{ event.seqId }}.</span>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+    {% if event.bankAccount(true).full|default %}
+        <tbody>
+        <tr>
+            <td>Bankovní účet</td>
+            <td>{{ event.bankAccount(true).full }}</td>
+        </tr>
+        </tbody>
+    {% endif %}
+    {% if event.place|default %}
+        <tbody>
+        <tr>
+            <td>Místo konání
+                <div class="block small">Adresa</div>
+            </td>
+            <td>
+                {{ event.place.name }}
+                <div class="block small">{{ event.place.fullAddress }}</div>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+    {% if event.organizer|default %}
+        <tbody>
+        <tr>
+            <td>Organizátor
+                <div class="block small">IČ</div>
+            </td>
+            <td>
+                {{ event.organizer.name }}
+                <div class="block small">{{ event.organizer.contact.identificationNumber|default }}</div>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+    {% if event.organizer|default %}
+        <tbody>
+        <tr>
+            <td>Výchozí událost?
+                <div class="block small">Událost nejvyššího řádu?</div>
+            </td>
+            <td>
+                {{ isDefaultEvent ? 'ANO' : 'NE' }}
+                <div class="block small">{{ event.root|default ? 'ANO' : 'NE' }}</div>
+            </td>
+        </tr>
+        </tbody>
+    {% endif %}
+</table>

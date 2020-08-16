@@ -1,0 +1,23 @@
+<table class="list">
+    {% for aggregationCategoryName, aggregationCategory in otherAggregations %}
+        <thead>
+        <tr>
+            <th><strong>{{ aggregationCategoryName|default }}</strong></th>
+            <th>Počet</th>
+        </tr>
+        </thead>
+        {% for aggregationName, aggregation in aggregationCategory %}
+            <tbody>
+            <tr>
+                <td><strong>{{ aggregationName|default }}</strong></td>
+                <td class="text-center">
+                    <strong>{{ aggregation|default(0) }}</strong>
+                    {% if occupancy.occupancy|default > 0 %}
+                        <span class="block small">{{ (aggregation|default(0) / occupancy.occupancy * 100)|round(1) }} % účastníků</span>
+                    {% endif %}
+                </td>
+            </tr>
+            </tbody>
+        {% endfor %}
+    {% endfor %}
+</table>

@@ -578,6 +578,11 @@ class Participant implements ParticipantInterface
         return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
     }
 
+    public function getSortableName(): string
+    {
+        return null !== ($contact = $this->getContact(false)) ? $contact->getSortableName() : '';
+    }
+
     /**
      * @param ParticipantFlagGroup|null $participantFlagGroup
      *

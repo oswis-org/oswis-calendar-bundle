@@ -30,7 +30,6 @@ services:
         alias: oswis_org_oswis_calendar.event_controller
         public: true
 
-    ## Participant controller
     oswis_org_oswis_calendar.participant_controller:
         class: OswisOrg\OswisCalendarBundle\Controller\ParticipantController
         autowire: true
@@ -41,6 +40,29 @@ services:
             - '@oswis_org_oswis_calendar.participant_service'
     OswisOrg\OswisCalendarBundle\Controller\ParticipantController:
         alias: oswis_org_oswis_calendar.participant_controller
+        public: true
+
+    oswis_org_oswis_calendar.web_admin_participants_list_controller:
+        class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsListController
+        autowire: true
+        public: true
+        arguments:
+            - '@oswis_org_oswis_calendar.event_service'
+            - '@oswis_org_oswis_calendar.participant_service'
+            - '@oswis_org_oswis_calendar.participant_category_service'
+            - '@oswis_org_oswis_calendar.reg_range_service'
+    OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsListController:
+        alias: oswis_org_oswis_calendar.web_admin_participants_list_controller
+        public: true
+
+    oswis_org_oswis_calendar.web_admin_participant_payments_import_controller:
+        class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController
+        autowire: true
+        public: true
+        arguments:
+            - '@oswis_org_oswis_calendar.participant_payments_import_service'
+    OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController:
+        alias: oswis_org_oswis_calendar.web_admin_participant_payments_import_controller
         public: true
 
 
@@ -138,7 +160,6 @@ services:
             - '@mailer.mailer'
             - '@monolog.logger'
             - '@oswis_org_oswis_core.oswis_core_settings_provider'
-            - '@oswis_org_oswis_calendar.participant_service'
             - '@oswis_org_oswis_calendar.participant_mail_service'
     OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService:
         alias: oswis_org_oswis_calendar.participant_payment_service

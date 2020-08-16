@@ -1,0 +1,17 @@
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+{% extends '@OswisOrgOswisCore/web/page-skeleton-default.html.twig' %}
+
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        <div class="row">
+            <div class="col-12">
+                <header>
+                    <h2 class="text-uppercase mb-2">Import plateb účastníků akcí</h2>
+                </header>
+                {{ form_start(form) }}
+                {{ form_widget(form) }}
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </main>
+{% endblock %}
