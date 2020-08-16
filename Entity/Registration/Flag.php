@@ -24,25 +24,21 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_categories_get"}},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_categories_get"}},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_categories_post"}}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_categories_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_category_get"}},
+ *       "normalization_context"={"groups"={"entity_get", "calendar_participant_category_get"}},
  *     },
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_category_put"}}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_participant_category_delete"}}
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_category_put"}}
  *     }
  *   }
  * )

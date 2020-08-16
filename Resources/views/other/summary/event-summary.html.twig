@@ -1,34 +1,37 @@
-<meta itemprop="name" content="{{ event.name }}"/>
-<link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'slug': event.slug})) }}"/>
-<meta itemprop="startDate" content="{{ event.startDate|date("c") }}"/>
-<meta itemprop="endDate" content="{{ event.endDate|date("c") }}"/>
-{% if event.place(true)|default %}
+<meta itemprop="name" content="{{ event.name|default }}"/>
+<link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'slug': event.slug|default})) }}"/>
+<meta itemprop="startDate" content="{{ event.startDate|date("c")|default }}"/>
+<meta itemprop="endDate" content="{{ event.endDate|date("c")|default }}"/>
+{% set place = event.place(true)|default %}
+{% if place|default %}
     <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">
-        {% if event.place(true).name|default %}
-            <meta itemprop="name" content="{{ event.place(true).name }}"/>
+        {% if place.name|default %}
+            <meta itemprop="name" content="{{ place.name }}"/>
         {% endif %}
-        <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-            {% if event.place(true).name|default %}
-                <meta itemprop="name" content="{{ event.place(true).name }}"/>
-            {% endif %}
-            {% if event.place(true).streetAddress|default %}
-                <meta itemprop="streetAddress" content="{{ event.place(true).streetAddress }}"/>
-            {% endif %}
-            {% if event.place(true).city|default %}
-                <meta itemprop="addressLocality" content="{{ event.place(true).city }}"/>
-            {% endif %}
-            {% if event.place(true).postalCode|default %}
-                <meta itemprop="postalCode" content="{{ event.place(true).postalCode }}"/>
-            {% endif %}
-            {% if event.place(true).city|default %}
-                <meta itemprop="addressRegion" content="{{ event.place(true).city }}"/>
-            {% endif %}
-            {% if event.place(true).url|default %}
-                <!--suppress HtmlUnknownAttribute -->
-                <meta itemprop="url" href="{{ event.place(true).url }}" content="{{ event.place(true).url }}"/>
-            {% endif %}
-            <meta itemprop=Country" content="CZ"/>
-        </div>
+        {% if place|default %}
+            <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
+                {% if place.name|default %}
+                    <meta itemprop="name" content="{{ place.name }}"/>
+                {% endif %}
+                {% if place.streetAddress|default %}
+                    <meta itemprop="streetAddress" content="{{ place.streetAddress }}"/>
+                {% endif %}
+                {% if place.city|default %}
+                    <meta itemprop="addressLocality" content="{{ place.city }}"/>
+                {% endif %}
+                {% if place.postalCode|default %}
+                    <meta itemprop="postalCode" content="{{ place.postalCode }}"/>
+                {% endif %}
+                {% if place.city|default %}
+                    <meta itemprop="addressRegion" content="{{ place.city }}"/>
+                {% endif %}
+                {% if place.url|default %}
+                    <!--suppress HtmlUnknownAttribute -->
+                    <meta itemprop="url" href="{{ place.url }}" content="{{ place.url }}"/>
+                {% endif %}
+                <meta itemprop=Country" content="CZ"/>
+            </div>
+        {% endif %}
     </div>
 {% endif %}
 {% if event.organizer.contact|default %}{# TODO #}

@@ -17,6 +17,8 @@ use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\DeletedInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\TextValueInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
@@ -34,11 +36,11 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   collectionOperations={
  *     "get"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_flag_groups__get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_flag_groups_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_flag_groups__post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_flag_groups_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
@@ -53,7 +55,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   }
  * )
  */
-class ParticipantFlagGroup implements BasicInterface
+class ParticipantFlagGroup implements BasicInterface, TextValueInterface, DeletedInterface
 {
     use BasicTrait;
     use TextValueTrait;
@@ -70,6 +72,7 @@ class ParticipantFlagGroup implements BasicInterface
     protected ?FlagGroupRange $flagGroupRange = null;
 
     /**
+     * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag", mappedBy="participantFlagGroup", cascade={"all"}
      * )
@@ -129,6 +132,12 @@ class ParticipantFlagGroup implements BasicInterface
         return $price;
     }
 
+    /**
+     * @param bool      $onlyActive
+     * @param Flag|null $flag
+     *
+     * @return Collection
+     */
     public function getParticipantFlags(bool $onlyActive = false, ?Flag $flag = null): Collection
     {
         $participantFlags = $this->participantFlags ?? new ArrayCollection();
@@ -140,35 +149,6 @@ class ParticipantFlagGroup implements BasicInterface
         }
 
         return $participantFlags;
-    }
-
-    /**
-     * @param ParticipantFlag $oldParticipantFlag
-     * @param ParticipantFlag $newParticipantFlag
-     * @param bool            $admin
-     *
-     * @throws FlagCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws NotImplementedException
-     */
-    public function replaceParticipantFlag(ParticipantFlag $oldParticipantFlag, ParticipantFlag $newParticipantFlag, bool $admin = false): void {
-        $oldFlagRange = $oldParticipantFlag->getFlagRange();
-        $newFlagRange = $newParticipantFlag->getFlagRange();
-        if ($oldFlagRange !== $newFlagRange) {
-            if (null === $newFlagRange || !($newFlagRange instanceof FlagRange)) {
-                throw new FlagOutOfRangeException("Příznak musí být nahrazen, nesmí být smazán.");
-            }
-            if (0 === $newFlagRange->getRemainingCapacity($admin)) {
-                throw new FlagCapacityExceededException($newFlagRange->getName());
-            }
-            if ($oldParticipantFlag) {
-                $oldParticipantFlag->delete();
-            }
-            $newParticipantFlag->activate();
-            $newParticipantFlag->setParticipantFlagGroup($this);
-            return;
-        }
-        error_log("FlagRange NOT replaced because was same.");
     }
 
     /**
@@ -233,6 +213,36 @@ class ParticipantFlagGroup implements BasicInterface
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
+        }
+    }
+
+    /**
+     * @param ParticipantFlag $oldParticipantFlag
+     * @param ParticipantFlag $newParticipantFlag
+     * @param bool            $admin
+     *
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
+     */
+    public function replaceParticipantFlag(ParticipantFlag $oldParticipantFlag, ParticipantFlag $newParticipantFlag, bool $admin = false): void
+    {
+        $oldFlagRange = $oldParticipantFlag->getFlagRange();
+        $newFlagRange = $newParticipantFlag->getFlagRange();
+        if ($oldFlagRange !== $newFlagRange) {
+            if (null === $newFlagRange || !($newFlagRange instanceof FlagRange)) {
+                throw new FlagOutOfRangeException("Příznak musí být nahrazen, nesmí být smazán.");
+            }
+            if (0 === $newFlagRange->getRemainingCapacity($admin)) {
+                throw new FlagCapacityExceededException($newFlagRange->getName());
+            }
+            if ($oldParticipantFlag) {
+                $oldParticipantFlag->delete();
+            }
+            $newParticipantFlag->activate();
+            $newParticipantFlag->setParticipantFlagGroup($this);
+
+            return;
         }
     }
 

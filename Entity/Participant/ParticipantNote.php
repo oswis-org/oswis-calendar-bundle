@@ -7,6 +7,8 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\DeletedInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\TextValueInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
@@ -47,7 +49,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantNote implements BasicInterface
+class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInterface
 {
     use BasicTrait;
     use TextValueTrait;

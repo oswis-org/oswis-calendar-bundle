@@ -10,7 +10,10 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\ActivatedInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\DeletedInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\TextValueInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
@@ -49,7 +52,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   }
  * )
  */
-class ParticipantFlag implements BasicInterface
+class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInterface, TextValueInterface
 {
     use BasicTrait;
     use TextValueTrait;

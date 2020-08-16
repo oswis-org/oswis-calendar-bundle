@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
-use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
@@ -94,20 +93,6 @@ class ParticipantRange implements BasicInterface
         return $this->range;
     }
 
-    public function getPrice(?ParticipantCategory $participantCategory = null): ?int {
-        return $this->getRange() ? $this->getRange()->getPrice($participantCategory) : null;
-    }
-
-    public function getDepositValue(?ParticipantCategory $participantCategory = null): ?int {
-        return $this->getRange() ? $this->getRange()->getDepositValue($participantCategory) : null;
-    }
-
-    public function getParticipantCategory(): ?ParticipantCategory {
-        $regRange = $this->getRange();
-
-        return $regRange ? $regRange->getParticipantCategory() : null;
-    }
-
     /**
      * @param RegRange|null $range
      *
@@ -122,5 +107,22 @@ class ParticipantRange implements BasicInterface
             throw new NotImplementedException('změna rozsahu', 'v přiřazení rozsahu k účastníkovi');
         }
         $this->range = $range;
+    }
+
+    public function getPrice(?ParticipantCategory $participantCategory = null): ?int
+    {
+        return $this->getRange() ? $this->getRange()->getPrice($participantCategory) : null;
+    }
+
+    public function getDepositValue(?ParticipantCategory $participantCategory = null): ?int
+    {
+        return $this->getRange() ? $this->getRange()->getDepositValue($participantCategory) : null;
+    }
+
+    public function getParticipantCategory(): ?ParticipantCategory
+    {
+        $regRange = $this->getRange();
+
+        return $regRange ? $regRange->getParticipantCategory() : null;
     }
 }

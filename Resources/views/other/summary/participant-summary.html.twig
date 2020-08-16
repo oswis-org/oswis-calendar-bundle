@@ -1,20 +1,20 @@
-<h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} {{ participant.deleted|default ? 'zrušené' : '' }} přihlášky</h2>
+{% set event = participant.event(false)|default %}
+
+<h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} {{ participant.deletedAt|default ? 'zrušené' : '' }} přihlášky</h2>
 
 <h3>Základní údaje</h3>
 <ul>
     <li>
-        ID přihlášky: <span itemprop="reservationNumber">{{ participant.id }}</span>
+        ID přihlášky: <span itemprop="reservationNumber" style="font-weight:bold;">{{ participant.id }}</span>,
         <meta itemprop="reservationId" content="{{ participant.id }}"/>
-    </li>
-    <li>
-        <span itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</span>
+        <small itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</small>
         {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}
-            <small> (poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }})</small>
+            <small>, poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }}</small>
         {% endif %}
     </li>
-    {% if participant.deleted|default %}
+    {% if participant.deletedAt|default %}
         <li style="color: red; font-weight: bold;">
-            <strong>Přihláška byla zrušena {{ participant.deleted|date("j. n. Y, H:i") }}</strong>
+            <strong>Přihláška byla zrušena {{ participant.deletedAt|date("j. n. Y, H:i") }}</strong>
         </li>
     {% endif %}
 </ul>
@@ -29,17 +29,18 @@
         <li>Typ přihlášky: {{ participant.participantCategory(false).name|default('neuveden') }}</li>
     {% endif %}
     <li>
-        <b>Cena celkem: {{ participant.price }},- Kč</b><br>
-        <small>V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení přihlášky.</small>
+        <b>Cena celkem: {{ participant.price }},- Kč</b>
+        <small style="color:grey;"> (záloha {{ participant.depositValue }},- Kč + doplatek: {{ participant.priceRest }},- Kč)</small>
+        <br>
+        <small style="color:grey;">V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení přihlášky.</small>
     </li>
-    <li><small>Záloha: {{ participant.depositValue }},- Kč + Doplatek: {{ participant.priceRest }},- Kč</small></li>
     <li>
         {% if participant.variableSymbol|default %}
             <small><b>Variabilní symbol:</b> {{ participant.variableSymbol }}</small>
         {%- endif -%}
-        {{- participant.variableSymbol|default and participant.event(false).bankAccount(true).full|default ? ', ' : '' }}
-        {% if participant.event(false).bankAccount(true).full|default %}
-            <small><b>Číslo účtu:</b> {{ participant.event(false).bankAccount(true).full }}</small>
+        {{- participant.variableSymbol|default and event.bankAccount(true).full|default ? ', ' : '' }}
+        {% if event.bankAccount(true).full|default %}
+            <small><b>Číslo účtu:</b> {{ event.bankAccount(true).full }}</small>
         {% endif %}
     </li>
     <li>
@@ -66,19 +67,16 @@
 <ul>
     <li>
         <b>
-            <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event(false).slug})) }}" target="_blank">
-                {{ participant.event(false).name }}
+            <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug|default})) }}" target="_blank">
+                {{ event.name|default }}
             </a>
         </b>
     </li>
     <li>
-        <small>
-            (od {{ participant.event(false).startDate|date("j. n. Y H:i")|default('neuvedeno') }}
-            do {{ participant.event(false).endDate|date("j. n. Y H:i")|default('neuvedeno') }})
-        </small>
+        od {{ event.startDate|date("j. n. Y H:i")|default('neuvedeno') }} do {{ event.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
     </li>
-    {% if participant.event(false).place(true)|default %}
-        {% set place = participant.event(false).place(true) %}
+    {% if event.place(true)|default %}
+        {% set place = event.place(true) %}
         <li>
             {% if place.url|default %}
                 <a href="{{ place.url }}" title="{{ place.name }}" target="_blank">{{ place.name }}</a>
@@ -87,8 +85,8 @@
             {% endif %}
         </li>
     {% endif %}
-    {% if participant.event(false).organizer.contact|default %}
-        {% set org = participant.event(false).organizer.contact %}
+    {% if event.organizer.contact|default %}
+        {% set org = event.organizer.contact %}
         <li>
             {% if org.url|default %}
                 <a href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': org.slug|default})) }}" target="_blank">
@@ -109,29 +107,39 @@
     {% endfor %}
 </ul>
 
-{% if participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length >= 0)|length >= 0 %}
+{% if participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length >= 0)|length > 0 %}
     <h3>Další informace <small>(příznaky přihlášky)</small></h3>
     <ul>
-        {% for participantFlagGroup in participant.flagGroups(null, null)|filter(flagGroup => flagGroup.participantFlags|length >= 0) %}
-            <li style="color: {{ participantFlagGroup.flagCategory.color|default('inherit') }}">
-                <span style="{{ participantFlagGroup.deleted ? 'text-decoration:line-through;' : '' }}">{{ participantFlagGroup.flagGroupRange.name|default('Ostatní příznaky') }}</span>
-                (ID {{ participantFlagGroup.id }}, rozsah {{ participantFlagGroup.flagGroupRange.id }})
+        {% for participantFlagGroup in participant.flagGroups(null, null)|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
+            <li style="color: {{ participantFlagGroup.flagCategory.color|default('inherit') }}"
+                title="ID přiřazení skupiny {{ participantFlagGroup.id }}, ID rozsahu skupiny {{ participantFlagGroup.flagGroupRange.id }}">
+                <span style="{{ participantFlagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">{{ participantFlagGroup.flagGroupRange.name|default('Ostatní příznaky') }}</span>
                 {% if participantFlagGroup.deletedAt %}
-                    [SMAZÁNO {{ participantFlagGroup.deletedAt|date("j. n. Y H:i") }}]
+                    <span style="color:red;font-weight:bold;" title="SMAZÁNO {{ participantFlagGroup.deletedAt|date("j. n. Y H:i") }}">
+                        [SMAZÁNO]
+                    </span>
                 {% endif %}
                 <ul style="font-size: small;">
                     {% for participantFlag in participantFlagGroup.participantFlags %}
-                        <li style="color: {{ participantFlag.flag.color|default('inherit') }}">
-                            <span  style="{{ participantFlagGroup.deleted ? 'text-decoration:line-through;' : '' }}">{{ participantFlag.flagRange.name|default }}</span>
-                            {% if participantFlag.textValue|default|length > 0 %}
-                                ({{ participantFlag.textValue }})
-                            {% endif %}
+                        <li style="color: {{ participantFlag.flag.color|default('inherit') }}"
+                            title="ID přiřazení {{ participantFlag.id }}, ID rozsahu {{ participantFlag.flagRange.id }}">
+                            <span style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">{{ participantFlag.flagRange.name|default }}</span>
                             {% if participantFlag.flagRange.price|default(0) != 0 %}
-                                <b>({{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč )</b>
+                                <span style="font-weight:bold;{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
+                                    [{{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč]
+                                </span>
                             {% endif %}
-                            (ID {{ participantFlag.id }}, rozsah {{ participantFlag.flagRange.id }})
-                            {% if participantFlag.deletedAt %}
-                                [SMAZÁNO {{ participantFlag.deletedAt|date("j. n. Y H:i") }}]
+                            {% if participantFlag.deletedAt|default %}
+                                <strong style="font-weight:bold;color:red;" title="SMAZÁNO {{ participantFlag.deletedAt|date("j. n. Y H:i") }}">
+                                    [SMAZÁNO]
+                                </strong>
+                            {% endif %}
+                            {% if participantFlag.textValue|default|length > 0 %}
+                                <ul>
+                                    <li title="{{ participantFlag.textValue|default }}">
+                                        {{ participantFlag.textValue|default|u.truncate(50, '...') }}
+                                    </li>
+                                </ul>
                             {% endif %}
                         </li>
                     {% endfor %}

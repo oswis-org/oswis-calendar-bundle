@@ -10,6 +10,9 @@ use OswisOrg\OswisCalendarBundle\Traits\Entity\MailConfirmationTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\VariableSymbolTrait;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\MyDateTimeInterface;
+use OswisOrg\OswisCoreBundle\Interfaces\Common\TypeInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateTimeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ExternalIdTrait;
@@ -75,7 +78,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantPayment
+class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInterface
 {
     use BasicTrait;
     use NumericValueTrait;
@@ -97,9 +100,7 @@ class ParticipantPayment
     public const ALLOWED_TYPES = ['', self::TYPE_CASH, self::TYPE_CARD, self::TYPE_BANK_TRANSFER, self::TYPE_ON_LINE];
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="payments"
-     * )
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="payments")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
@@ -191,7 +192,7 @@ class ParticipantPayment
         if ($this->participant === $participant) {
             return;
         }
-        if (null !== $this->participant || null === $participant) {
+        if (null !== $this->participant && null === $participant) {
             throw new NotImplementedException('změna účastníka', 'u platby');
         }
         $this->participant = $participant;
