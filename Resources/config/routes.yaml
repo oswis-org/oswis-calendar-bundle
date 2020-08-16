@@ -65,11 +65,11 @@ oswis_org_oswis_calendar_update_participants:
 
 oswis_org_oswis_calendar_web_admin_participants_list:
     controller: oswis_org_oswis_calendar.web_admin_participants_list_controller::showParticipants
-    path: "/web_admin/seznam-prihlasek/{eventSlug}/{participantCategorySlug}"
+    path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
 
 oswis_org_oswis_calendar_web_admin_event:
     controller: oswis_org_oswis_calendar.web_admin_participants_list_controller::showEvent
-    path: "/web_admin/udalost/{eventSlug}"
+    path: "/web_admin/udalost/{eventSlug?}"
 
 oswis_org_oswis_calendar_web_admin_participant_payments_import:
     controller: oswis_org_oswis_calendar.web_admin_participant_payments_import_controller::import
