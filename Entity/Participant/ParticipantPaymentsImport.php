@@ -94,6 +94,7 @@ class ParticipantPaymentsImport
         return self::ALLOWED_TYPES;
     }
 
+    /** @noinspection PhpUnusedParameterInspection */
     public function getSettings(?string $settingsCode = null): CsvPaymentImportSettings
     {
         return new CsvPaymentImportSettings();
@@ -105,9 +106,9 @@ class ParticipantPaymentsImport
         $csvRows = str_getcsv($this->getTextValue(), "\n");
         $csvPaymentRows = array_map(fn($row) => self::getColumnsFromCsvRow($row, $csvSettings), $csvRows);
         array_walk($csvPaymentRows, fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
-        error_log("SHIFTED: ".var_export(array_shift($csvPaymentRows), true)); # remove column header
+        array_shift($csvPaymentRows); # remove column header
         foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
-            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey]));
+            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey - 1]));
         }
 
         return $payments;
@@ -127,7 +128,6 @@ class ParticipantPaymentsImport
         );
         $payment->setInternalNote($csvRow);
         $payment->setExternalId($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null);
-        // TODO: Check duplicity of externalID in service.
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
             $payment->setNumericValue(0);
             $payment->setErrorMessage("Wrong payment currency ('$csvCurrency' instead of '$currencyAllowed').");

@@ -87,7 +87,7 @@ class CsvPaymentImportSettings
 
     public function getIdentifierColumnName(): ?string
     {
-        return $this->dateColumnName ?? self::DEFAULT_IDENTIFIER_COLUMN_NAME;
+        return $this->identifierColumnName ?? self::DEFAULT_IDENTIFIER_COLUMN_NAME;
     }
 
     public function setIdentifierColumnName(?string $identifierColumnName): void
