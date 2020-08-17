@@ -32,27 +32,29 @@
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>
-            {% set listGenderIcon = "👤" %}
-            {% if 'male' == contact.gender|default %}
-                {% set listGenderIcon = "👨" %}
-            {% elseif 'female' == contact.gender|default %}
-                {% set listGenderIcon = "👩" %}
-            {% endif %}
-            <li style="list-style-type: '{{ listGenderIcon }}'">
-                <strong>{{ contact.name|default }}</strong>
-            </li>
-            <li style="list-style-type: '📅'">
-                <span class="block small"><strong>{{ event.shortName|default }}</strong></span>
-            </li>
-            <li style="list-style-type: '🎫'">
-                <span class="block small"><strong>{{ regRange.shortName|default }}</strong></span>
-            </li>
-            {% for note in participant.notes %}
-                {% if note.textValue|length > 0 %}
-                    <li style="list-style-type: '📝'">
-                        <span class="block small">{{ note.textValue }}</span>
-                    </li>
+            {% for participantContact in participant.participantContacts(false, false) %}
+                {% set listGenderIcon = "👤" %}
+                {% if 'male' == participantContact.contact.gender|default %}
+                    {% set listGenderIcon = "👨" %}
+                {% elseif 'female' == participantContact.contact.gender|default %}
+                    {% set listGenderIcon = "👩" %}
                 {% endif %}
+                <li style="list-style-type: '{{ listGenderIcon }}' {{ participantContact.active|default ? '' : 'text-decoration:line-through;' }}">
+                    <strong>{{ participantContact.contact.name|default }}</strong>
+                </li>
+            {% endfor %}
+            {% for participantRange in participant.participantRanges(false, false) %}
+                <li style="list-style-type: '📅'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
+                    <span class="block small"><strong>{{ participantRange.event.shortName|default }}</strong></span>
+                </li>
+                <li style="list-style-type: '🎫'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
+                    <span class="block small"><strong>{{ participantRange.range.shortName|default }}</strong></span>
+                </li>
+            {% endfor %}
+            {% for note in participant.notes|filter(note => note.textValue|default|length > 0 and note.publicNote|default) %}
+                <li style="list-style-type: '📝'; {{ note.deleted|default ? 'text-decoration:line-through;' : '' }}">
+                    <span class="block small">{{ note.textValue }}</span>
+                </li>
             {% endfor %}
         </ul>
     </td>
