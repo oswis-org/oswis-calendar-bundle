@@ -70,7 +70,6 @@ class WebAdminParticipantsListController extends AbstractController
      *
      * @return Response
      * @throws NotFoundException
-     * @throws OswisException
      */
     public function showEvent(?string $eventSlug = null): Response
     {

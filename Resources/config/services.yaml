@@ -170,6 +170,7 @@ services:
         autowire: true
         public: true
         arguments:
+            - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
             - '@oswis_org_oswis_calendar.participant_service'
             - '@oswis_org_oswis_calendar.participant_payment_service'

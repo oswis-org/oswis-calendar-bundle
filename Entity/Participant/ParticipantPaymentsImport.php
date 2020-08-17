@@ -8,6 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
@@ -63,6 +64,17 @@ class ParticipantPaymentsImport
 
     public const TYPE_CSV = 'csv';
 
+    public const ALLOWED_TYPES = [self::TYPE_CSV];
+
+    public const SETTINGS_CODES = [
+        'fio' => 'Fio banka, a.s.',
+    ];
+
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    public ?string $settingsCode = 'fio';
+
     /**
      * @param string|null $type
      * @param string|null $textValue
@@ -79,7 +91,12 @@ class ParticipantPaymentsImport
 
     public static function getAllowedTypesDefault(): array
     {
-        return ['', self::TYPE_CSV];
+        return self::ALLOWED_TYPES;
+    }
+
+    public function getSettings(?string $settingsCode = null): CsvPaymentImportSettings
+    {
+        return new CsvPaymentImportSettings();
     }
 
     public function extractPayments(CsvPaymentImportSettings $csvSettings): Collection

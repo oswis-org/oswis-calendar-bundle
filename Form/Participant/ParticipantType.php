@@ -8,7 +8,6 @@ namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\AbstractType;
@@ -31,7 +30,7 @@ class ParticipantType extends AbstractType
      * @param FormBuilderInterface $builder
      * @param array                $options
      *
-     * @throws PriceInvalidArgumentException|OswisException
+     * @throws PriceInvalidArgumentException
      */
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {

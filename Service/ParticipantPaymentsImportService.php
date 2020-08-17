@@ -6,6 +6,7 @@
 namespace OswisOrg\OswisCalendarBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
@@ -17,14 +18,17 @@ use Psr\Log\LoggerInterface;
 
 class ParticipantPaymentsImportService
 {
+    protected EntityManagerInterface $em;
+
     protected LoggerInterface $logger;
 
     protected ParticipantService $participantService;
 
     protected ParticipantPaymentService $paymentService;
 
-    public function __construct(LoggerInterface $logger, ParticipantService $participantService, ParticipantPaymentService $paymentService)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantService $participantService, ParticipantPaymentService $paymentService)
     {
+        $this->em = $em;
         $this->logger = $logger;
         $this->participantService = $participantService;
         $this->paymentService = $paymentService;
@@ -32,11 +36,14 @@ class ParticipantPaymentsImportService
 
     public function processImport(ParticipantPaymentsImport $paymentsImport, ?CsvPaymentImportSettings $importSettings = null): void
     {
+        $this->em->persist($paymentsImport);
+        $this->em->flush();
         $payments = $paymentsImport->extractPayments($importSettings ?? new CsvPaymentImportSettings());
         foreach ($payments as $payment) {
             if (!($payment instanceof ParticipantPayment)) {
                 continue;
             }
+            $payment->setImport($paymentsImport);
             $participant = $this->getParticipantByPayment($payment);
             $participantId = $participant ? $participant->getId() : null;
             $paymentId = $payment->getId();
@@ -51,10 +58,12 @@ class ParticipantPaymentsImportService
             $this->paymentService->create($payment);
         }
         try {
+            $this->em->flush();
             $this->paymentService->sendPaymentsReport($payments);
             $this->logger->info("OK: Payments report sent! ");
         } catch (OswisException $e) {
-            $this->logger->error("ERROR: Payments report not sent! ");
+            $this->logger->error("ERROR: Payments report not sent! ".$e->getMessage());
+            $this->logger->error("ERROR: Payments report not sent! ".$e->getTraceAsString());
         }
     }
 
@@ -75,7 +84,7 @@ class ParticipantPaymentsImportService
         $participants = new ArrayCollection($participantsArray);
         $participant = $participants->first() instanceof Participant ? $participants->first() : null;
         if (null === $participant && !$isSecondTry) {
-            $participant = $this->getParticipantByPayment($payment, $isSecondTry);
+            $participant = $this->getParticipantByPayment($payment, true);
         }
         if (null === $participant) {
             $this->logger->warning("Participant NOT found for payment with VS '$vs' and value '$value'.");

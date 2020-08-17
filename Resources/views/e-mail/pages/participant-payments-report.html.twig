@@ -56,17 +56,17 @@
                 </tr>
                 {% if payment.errorMessage %}
                     <tr>
-                        <td style="background-color: rgba(255,50,50,.2)">CHYBA: {{ payment.errorMessage }}</td>
+                        <td style="background-color: rgba(255,50,50,.2)" colspan="3">CHYBA: {{ payment.errorMessage }}</td>
                     </tr>
                 {% endif %}
                 {% if payment.note %}
                     <tr>
-                        <td>Poznámka: {{ payment.note }}</td>
+                        <td colspan="3">Poznámka: {{ payment.note }}</td>
                     </tr>
                 {% endif %}
                 {% if payment.internalNote %}
                     <tr>
-                        <td>Interní: {{ payment.internalNote }}</td>
+                        <td colspan="3">Interní poznámka: {{ payment.internalNote }}</td>
                     </tr>
                 {% endif %}
                 </tbody>

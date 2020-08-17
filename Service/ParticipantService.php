@@ -190,11 +190,8 @@ class ParticipantService
         $id = $participant->getId();
         $contactName = $participant->getContact() ? $participant->getContact()->getName() : '';
         $infoMessage = "Created participant (by service) with ID [$id] and contact name [$contactName]";
-        try {
-            $rangeName = $participant->getRegRange() ? $participant->getRegRange()->getName() : '';
-            $infoMessage .= " to range [$rangeName].";
-        } catch (OswisException $e) {
-        }
+        $rangeName = $participant->getRegRange() ? $participant->getRegRange()->getName() : '';
+        $infoMessage .= " to range [$rangeName].";
 
         return $infoMessage;
     }

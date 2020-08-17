@@ -70,10 +70,7 @@ class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInte
 
     public function __construct(?Participant $participant = null, ?string $textValue = null)
     {
-        try {
-            $this->setParticipant($participant);
-        } catch (NotImplementedException $e) {
-        }
+        $this->setParticipant($participant);
         $this->setTextValue($textValue);
     }
 
@@ -92,24 +89,17 @@ class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInte
         return $this->participant;
     }
 
-    /**
-     * @param Participant|null $participant
-     *
-     * @throws NotImplementedException
-     */
     public function setParticipant(?Participant $participant): void
     {
         if ($this->participant === $participant) {
             return;
         }
-        if (null === $this->participant || null === $participant) {
-            $this->participant = $participant;
-            if (null !== $participant) {
-                $participant->addNote($this);
-            }
-
-            return;
+        if (null !== $this->participant) {
+            $this->participant->removeNote($this);
         }
-        throw new NotImplementedException('změna účastníka', 'u poznámky');
+        $this->participant = $participant;
+        if (null !== $participant) {
+            $participant->addNote($this);
+        }
     }
 }

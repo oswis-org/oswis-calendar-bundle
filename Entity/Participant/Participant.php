@@ -197,10 +197,10 @@ class Participant implements ParticipantInterface
         $participantContact = new ParticipantContact($contact);
         $participantContact->activate(new DateTime());
         $this->setParticipantContact($participantContact);
+        $this->setNotes($participantNotes);
         if ($regRange) {
             $this->setParticipantRange(new ParticipantRange($regRange));
         }
-        $this->setNotes($participantNotes);
     }
 
     /**
@@ -254,22 +254,14 @@ class Participant implements ParticipantInterface
 
     public function updateCachedColumns(): void
     {
-        try {
-            $this->regRange = $this->getRegRange(true);
-            $this->contact = $this->getContact();
-            $this->event = $this->regRange ? $this->regRange->getEvent() : null;
-            $this->participantCategory = $this->regRange ? $this->regRange->getParticipantCategory() : null;
-            $this->updateVariableSymbol();
-        } catch (OswisException $e) {
-        }
+        $this->regRange = $this->getRegRange(true);
+        $this->contact = $this->getContact();
+        $this->event = $this->regRange ? $this->regRange->getEvent() : null;
+        $this->participantCategory = $this->regRange ? $this->regRange->getParticipantCategory() : null;
+        $this->updateVariableSymbol();
+        $this->removeEmptyNotesAndDetails();
     }
 
-    /**
-     * @param bool $onlyActive
-     *
-     * @return RegRange|null
-     * @throws OswisException
-     */
     public function getRegRange(bool $onlyActive = true): ?RegRange
     {
         $participantRange = $this->getParticipantRange($onlyActive);
@@ -297,13 +289,13 @@ class Participant implements ParticipantInterface
      * @param bool $onlyActive
      *
      * @return ParticipantRange
-     * @throws OswisException
      */
     public function getParticipantRange(bool $onlyActive = true): ?ParticipantRange
     {
-        $participantRanges = self::sortCollection($this->getParticipantRanges($onlyActive));
+        $participantRanges = self::sortCollection($this->getParticipantRanges($onlyActive), true);
         if ($onlyActive && $participantRanges->count() > 1) {
-            throw new OswisException('Účastník je přiřazen k více událostem najednou.');
+            $this->deleteParticipantRanges(true);
+            $participantRanges = self::sortCollection($this->getParticipantRanges($onlyActive), true);
         }
 
         return $participantRanges->first() ?: null;
@@ -320,6 +312,16 @@ class Participant implements ParticipantInterface
         }
 
         return $connections;
+    }
+
+    public function deleteParticipantRanges(bool $exceptLatest = false): void
+    {
+        foreach ($ranges = $this->getParticipantRanges() as $range) {
+            if (!($range instanceof ParticipantRange) || ($exceptLatest && $ranges->first() === $range)) {
+                continue;
+            }
+            $range->delete();
+        }
     }
 
     public function getContact(bool $onlyActive = true): ?AbstractContact
@@ -587,7 +589,6 @@ class Participant implements ParticipantInterface
      * @param ParticipantFlagGroup|null $participantFlagGroup
      *
      * @return bool
-     * @throws OswisException
      */
     public function isParticipantFlagGroupCompatible(?ParticipantFlagGroup $participantFlagGroup = null): bool
     {
@@ -634,18 +635,11 @@ class Participant implements ParticipantInterface
 
     public function differenceFromPayment(?int $value): ?int
     {
-        try {
-            $priceRest = $this->getPriceRest();
-            $diff = abs($priceRest - $value);
-        } catch (OswisException $e) {
-            $diff = PHP_INT_MAX;
-        }
-        try {
-            $remainingDeposit = $this->getRemainingDeposit();
-            $depositDiff = abs($remainingDeposit - $value);
-            $diff = $depositDiff < $diff ? $depositDiff : $diff;
-        } catch (OswisException $e) {
-        }
+        $priceRest = $this->getPriceRest();
+        $diff = abs($priceRest - $value);
+        $remainingDeposit = $this->getRemainingDeposit();
+        $depositDiff = abs($remainingDeposit - $value);
+        $diff = $depositDiff < $diff ? $depositDiff : $diff;
 
         return $diff;
     }
@@ -653,7 +647,6 @@ class Participant implements ParticipantInterface
     /**
      * Gets part of price that is not marked as deposit.
      * @return int
-     * @throws OswisException
      */
     public function getPriceRest(): int
     {
@@ -663,7 +656,6 @@ class Participant implements ParticipantInterface
     /**
      * Get whole price of event for this participant (including flags price).
      * @return int
-     * @throws OswisException
      */
     public function getPrice(): int
     {
@@ -675,11 +667,7 @@ class Participant implements ParticipantInterface
 
     public function getParticipantCategory(bool $onlyActive = true): ?ParticipantCategory
     {
-        try {
-            return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getParticipantCategory() : null;
-        } catch (OswisException $e) {
-            return null;
-        }
+        return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getParticipantCategory() : null;
     }
 
     public function getFlagsPrice(?FlagCategory $flagCategory = null, ?string $flagType = null, ?Flag $flag = null): int
@@ -695,7 +683,6 @@ class Participant implements ParticipantInterface
     /**
      * Gets part of price that is marked as deposit.
      * @return int
-     * @throws OswisException
      */
     public function getDepositValue(): ?int
     {
@@ -718,7 +705,6 @@ class Participant implements ParticipantInterface
     /**
      * Gets price deposit that remains to be paid.
      * @return int
-     * @throws OswisException
      */
     public function getRemainingDeposit(): int
     {
@@ -756,33 +742,25 @@ class Participant implements ParticipantInterface
         }
         $value = null;
         $typeString = null;
-        try {
-            if ($deposit && $rest) {
-                $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'celá částka';
-                $value = $this->getPrice();
-            }
-            if ($deposit && !$rest) {
-                $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'záloha';
-                $value = $this->getDepositValue();
-            }
-            if (!$deposit && $rest) {
-                $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'doplatek';
-                $value = $this->getPriceRest();
-            }
-
-            return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);
-        } catch (OswisException $exception) {
-            return null;
+        if ($deposit && $rest) {
+            $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'celá částka';
+            $value = $this->getPrice();
         }
+        if ($deposit && !$rest) {
+            $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'záloha';
+            $value = $this->getDepositValue();
+        }
+        if (!$deposit && $rest) {
+            $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'doplatek';
+            $value = $this->getPriceRest();
+        }
+
+        return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);
     }
 
     public function getEvent(bool $onlyActive = true): ?Event
     {
-        try {
-            return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getEvent() : null;
-        } catch (OswisException $e) {
-            return null;
-        }
+        return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getEvent() : null;
     }
 
     /**
@@ -805,22 +783,14 @@ class Participant implements ParticipantInterface
 
     public function isRangeActivated(): bool
     {
-        try {
-            $participantRange = $this->getParticipantRange();
+        $participantRange = $this->getParticipantRange();
 
-            return $participantRange ? $participantRange->isActivated() : false;
-        } catch (OswisException $e) {
-            return false;
-        }
+        return $participantRange ? $participantRange->isActivated() : false;
     }
 
     public function isRangeDeleted(): bool // TODO: What's this?
     {
-        try {
-            return !($this->getRegRange(true) && $this->getEvent() && $this->getParticipantCategory());
-        } catch (OswisException $e) {
-            return false;
-        }
+        return !($this->getRegRange(true) && $this->getEvent() && $this->getParticipantCategory());
     }
 
     /**
@@ -846,10 +816,6 @@ class Participant implements ParticipantInterface
         $this->formal = $formal;
     }
 
-    /**
-     * Checks if participant is marked as manager (by one of management participant types).
-     * @return bool
-     */
     public function isManager(): bool
     {
         return null !== ($type = $this->getParticipantCategory()) ? in_array($type->getType(), ParticipantCategory::MANAGEMENT_TYPES, true) : false;
@@ -860,11 +826,6 @@ class Participant implements ParticipantInterface
         return null !== $this->getContact() ? $this->getContact()->getName() : null;
     }
 
-    /**
-     * @param ParticipantNote|null $note
-     *
-     * @throws NotImplementedException
-     */
     public function removeNote(?ParticipantNote $note): void
     {
         if (null !== $note && $this->getNotes()->removeElement($note)) {
@@ -877,11 +838,6 @@ class Participant implements ParticipantInterface
         return $this->notes ??= new ArrayCollection();
     }
 
-    /**
-     * @param Collection|null $newNotes
-     *
-     * @throws NotImplementedException
-     */
     public function setNotes(?Collection $newNotes): void
     {
         $this->notes ??= new ArrayCollection();
@@ -898,11 +854,6 @@ class Participant implements ParticipantInterface
         }
     }
 
-    /**
-     * @param ParticipantNote|null $note
-     *
-     * @throws NotImplementedException
-     */
     public function addNote(?ParticipantNote $note): void
     {
         if (null !== $note && !$this->getNotes()->contains($note)) {
@@ -924,10 +875,6 @@ class Participant implements ParticipantInterface
         }
     }
 
-    /**
-     * @return int
-     * @throws OswisException
-     */
     public function getRemainingRest(): int
     {
         return $this->getPriceRest() - $this->getPaidPrice() + $this->getDepositValue();
@@ -948,7 +895,6 @@ class Participant implements ParticipantInterface
     /**
      * Gets price remains to be paid.
      * @return int
-     * @throws OswisException
      */
     public function getRemainingPrice(): int
     {
@@ -958,7 +904,6 @@ class Participant implements ParticipantInterface
     /**
      * Gets percentage of price paid (as float).
      * @return float
-     * @throws OswisException
      */
     public function getPaidPricePercentage(): float
     {
@@ -999,9 +944,6 @@ class Participant implements ParticipantInterface
         return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
     }
 
-    /**
-     * @throws NotImplementedException
-     */
     public function removeEmptyNotesAndDetails(): void
     {
         $this->removeEmptyParticipantNotes();
@@ -1017,9 +959,6 @@ class Participant implements ParticipantInterface
         }
     }
 
-    /**
-     * @throws NotImplementedException
-     */
     public function removeEmptyParticipantNotes(): void
     {
         $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));

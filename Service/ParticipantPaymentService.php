@@ -82,7 +82,7 @@ class ParticipantPaymentService
         try {
             $email = new TemplatedEmail();
             $email->to($this->coreSettings->getArchiveMailerAddress())->subject(EmailUtils::mimeEnc('Report nových plateb'));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/participant-payments-report.html.twig');
+            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig');
             $email->context(['payments' => $payments]);
             $this->mailer->send($email);
 

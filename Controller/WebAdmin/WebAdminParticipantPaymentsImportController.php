@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport;
+use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantPaymentsImportType;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -32,7 +33,7 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
     {
         $paymentsImport = new ParticipantPaymentsImport();
         try {
-            $form = $this->createForm(ParticipantPaymentsImportService::class, $paymentsImport);
+            $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid() && (($paymentsImport = $form->getData()) instanceof ParticipantPaymentsImport)) {
                 $this->paymentsImportService->processImport($paymentsImport);
@@ -44,7 +45,7 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
         } catch (Exception $exception) {
             $paymentsImport ??= new ParticipantPaymentsImport();
             if (!isset($form)) {
-                $form = $this->createForm(ParticipantPaymentsImportService::class, $paymentsImport);
+                $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
                 $form->handleRequest($request);
             }
             $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage().''));

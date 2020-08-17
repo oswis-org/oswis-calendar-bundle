@@ -1,7 +1,12 @@
+{% set contact = participant.contact(false)|default %}
+{% set event = participant.event(false)|default %}
+{% set regRange = participant.regRange|default %}
+{% set appUser = contact.appUser|default %}
+
 <tbody>
-<tr {{ participant.deleted ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
+<tr {{ participant.deletedAt ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
     <td style="border: 1px solid grey; padding: .3em .6em; text-align: right;">
-        {% if participant.deleted %}
+        {% if participant.deletedAt %}
             <div class="block small" style="color:red;">
                 <strong>❌</strong>&nbsp;smazáno
             </div>
@@ -9,9 +14,9 @@
         <div class="block small">
             <strong class="badge badge-primary font-1em">{{ participant.id }}</strong> {{ participant.createdAt|date("j. n. Y, H:i") }}
         </div>
-        {% if participant.contact.appUser and participant.contact.appUser.activated %}
+        {% if appUser and appUser.activated %}
             <div class="block small" style="color:green;">
-                <strong>✔</strong>&nbsp;{{ participant.contact.appUser.activated|date("j. n. Y, H:i") }}
+                <strong>✔</strong>&nbsp;{{ appUser.activated|date("j. n. Y, H:i") }}
             </div>
         {% else %}
             <div class="block small" style="color:red;">
@@ -19,28 +24,28 @@
             </div>
         {% endif %}
         <div class="block small">
-            ☎ <a href="call:{{ participant.contact.phone }}" target="_blank">{{ participant.contact.phone }}</a>
+            ☎ <a href="call:{{ contact.phone|default }}" target="_blank">{{ contact.phone|default }}</a>
         </div>
         <div class="block small">
-            ✉ <a href="mailto:{{ participant.contact.email }}" target="_blank">{{ participant.contact.email }}</a>
+            ✉ <a href="mailto:{{ contact.email|default }}" target="_blank">{{ contact.email|default }}</a>
         </div>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>
             {% set listGenderIcon = "👤" %}
-            {% if 'male' == participant.contact.gender %}
+            {% if 'male' == contact.gender|default %}
                 {% set listGenderIcon = "👨" %}
-            {% elseif 'female' == participant.contact.gender %}
+            {% elseif 'female' == contact.gender|default %}
                 {% set listGenderIcon = "👩" %}
             {% endif %}
             <li style="list-style-type: '{{ listGenderIcon }}'">
-                <strong>{{ participant.contact.name|default }}</strong>
+                <strong>{{ contact.name|default }}</strong>
             </li>
             <li style="list-style-type: '📅'">
-                <span class="block small"><strong>{{ participant.event.shortName|default }}</strong></span>
+                <span class="block small"><strong>{{ event.shortName|default }}</strong></span>
             </li>
             <li style="list-style-type: '🎫'">
-                <span class="block small"><strong>{{ participant.regRange.shortName|default }}</strong></span>
+                <span class="block small"><strong>{{ regRange.shortName|default }}</strong></span>
             </li>
             {% for note in participant.notes %}
                 {% if note.textValue|length > 0 %}
@@ -52,17 +57,27 @@
         </ul>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em; font-size: small;">
-        <ul>
-            {% for participantFlagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
-                <div>
+        <div>
+            {% for participantFlagGroup in participant.flagGroups|filter(participantFlagGroup => participantFlagGroup.participantFlags|length > 0) %}
+                <div style="{{ participantFlagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">
                     {% for index, participantFlag in participantFlagGroup.participantFlags %}
-                        {% set badgeColorString = participantFlag.flag.color
+                        {% set badgeColorString = participantFlag.flag.color|default
                             ? 'background-color:'~participantFlag.flag.color~';color:'~participantFlag.flag.foregroundColor~';'
                             : '' %}
-                        <div class="badge badge-info smaller" title="{{ participantFlag.flag.name|default }}" style="{{ badgeColorString }}">
+                        {% set badgeColorString = participantFlag.deletedAt ? 'background-color:lightgrey;color:darkgrey;' : badgeColorString %}
+                        <div class="badge badge-info smaller" data-toggle="tooltip" data-html="true"
+                             style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
+                             title="Příznak: {{ participantFlag.flag.name|default }}<br>
+                             ID přiřazení {{ participantFlag.id }}<br>
+                             ID rozsahu {{ participantFlag.flagRange.id }}<br>
+                             {{ participantFlag.deletedAt ? 'SMAZÁN: '~participantFlag.deletedAt|date("j. n. Y H:i") : '' }}<br>
+                             Skupina: {{ participantFlagGroup.flagGroupRange.name }}<br>
+                             ID přiřazení skupiny {{ participantFlagGroup.id }}<br>
+                             ID rozsahu skupiny {{ participantFlagGroup.flagGroupRange.id }}<br>
+                             {{ participantFlagGroup.deletedAt ? 'SMAZÁNA: '~participantFlagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
                             {% if participantFlag.flagRange.price|default(0) != 0 %}
-                                <div class="badge badge-danger">
+                                <div class="badge badge-danger" style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
                                     <strong>
                                         {{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč
                                     </strong>
@@ -77,7 +92,7 @@
                     {% endfor %}
                 </div>
             {% endfor %}
-        </ul>
+        </div>
     </td>
     <td style="border:1px solid grey; padding:.3em .6em; text-align:right;color:{{ participant.remainingPrice|default(0) == 0 ? 'green' : 'red' }}">
         <div class="block">
