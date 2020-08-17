@@ -69,6 +69,7 @@ class ParticipantPaymentsImportService
 
     public function getParticipantByPayment(ParticipantPayment $payment, bool $isSecondTry = false): ?Participant
     {
+        $secondTryString = $isSecondTry ? " (second try, included deleted participants)" : '';
         $value = $payment->getNumericValue();
         if (empty($vs = $payment->getVariableSymbol())) {
             $this->logger->warning("Participant NOT found for payment without VS and with value '$value'.");
@@ -82,7 +83,7 @@ class ParticipantPaymentsImportService
             ]
         );
         $participantsCount = $participants->count();
-        $this->logger->info("Found $participantsCount participants for payment with VS '$vs' and value '$value'.");
+        $this->logger->info("Found $participantsCount participants for payment with VS '$vs' and value '$value'$secondTryString.");
         $participantsArray = $participants->toArray();
         usort($participantsArray, fn(Participant $p1, Participant $p2) => self::compareParticipantsByPayment($value, $p1, $p2));
         $participants = new ArrayCollection($participantsArray);
@@ -91,7 +92,7 @@ class ParticipantPaymentsImportService
             $participant = $this->getParticipantByPayment($payment, true);
         }
         if (null === $participant) {
-            $this->logger->warning("Participant NOT found for payment with VS '$vs' and value '$value'.");
+            $this->logger->warning("Participant NOT found for payment with VS '$vs' and value '$value'$secondTryString.");
 
             return null;
         }
