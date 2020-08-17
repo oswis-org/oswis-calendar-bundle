@@ -356,6 +356,52 @@ class Participant implements ParticipantInterface
         return empty($variableSymbol) ? null : substr(trim(preg_replace('/\s/', '', $variableSymbol)), -9);
     }
 
+    public function removeEmptyNotesAndDetails(): void
+    {
+        $this->removeEmptyParticipantNotes();
+        if (null !== $contact = $this->getContact()) {
+            $contact->removeEmptyDetails();
+            $contact->removeEmptyNotes();
+        }
+        foreach ($this->getContactPersons() as $contactPerson) {
+            if ($contactPerson instanceof AbstractContact) {
+                $contactPerson->removeEmptyDetails();
+                $contactPerson->removeEmptyNotes();
+            }
+        }
+    }
+
+    public function removeEmptyParticipantNotes(): void
+    {
+        $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));
+    }
+
+    public function getNotes(): Collection
+    {
+        return $this->notes ??= new ArrayCollection();
+    }
+
+    public function setNotes(?Collection $newNotes): void
+    {
+        $this->notes ??= new ArrayCollection();
+        $newNotes ??= new ArrayCollection();
+        foreach ($this->notes as $oldNote) {
+            if (!$newNotes->contains($oldNote)) {
+                $this->removeNote($oldNote);
+            }
+        }
+        foreach ($newNotes as $newNote) {
+            if (!$this->notes->contains($newNote)) {
+                $this->addNote($newNote);
+            }
+        }
+    }
+
+    public function getContactPersons(bool $onlyActivated = false): Collection
+    {
+        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
+    }
+
     /**
      * @param ParticipantRange|null $newParticipantRange
      * @param bool                  $admin
@@ -546,11 +592,6 @@ class Participant implements ParticipantInterface
     public function hasActivatedContactUser(): bool
     {
         return $this->getContactPersons(true)->count() > 0;
-    }
-
-    public function getContactPersons(bool $onlyActivated = false): Collection
-    {
-        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
     }
 
     public static function sortParticipantsCollection(Collection $participants): Collection
@@ -833,27 +874,6 @@ class Participant implements ParticipantInterface
         }
     }
 
-    public function getNotes(): Collection
-    {
-        return $this->notes ??= new ArrayCollection();
-    }
-
-    public function setNotes(?Collection $newNotes): void
-    {
-        $this->notes ??= new ArrayCollection();
-        $newNotes ??= new ArrayCollection();
-        foreach ($this->notes as $oldNote) {
-            if (!$newNotes->contains($oldNote)) {
-                $this->removeNote($oldNote);
-            }
-        }
-        foreach ($newNotes as $newNote) {
-            if (!$this->notes->contains($newNote)) {
-                $this->addNote($newNote);
-            }
-        }
-    }
-
     public function addNote(?ParticipantNote $note): void
     {
         if (null !== $note && !$this->getNotes()->contains($note)) {
@@ -942,25 +962,5 @@ class Participant implements ParticipantInterface
     public function getFlagsAggregatedByType(): array
     {
         return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
-    }
-
-    public function removeEmptyNotesAndDetails(): void
-    {
-        $this->removeEmptyParticipantNotes();
-        if (null !== $contact = $this->getContact()) {
-            $contact->removeEmptyDetails();
-            $contact->removeEmptyNotes();
-        }
-        foreach ($this->getContactPersons() as $contactPerson) {
-            if ($contactPerson instanceof AbstractContact) {
-                $contactPerson->removeEmptyDetails();
-                $contactPerson->removeEmptyNotes();
-            }
-        }
-    }
-
-    public function removeEmptyParticipantNotes(): void
-    {
-        $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));
     }
 }

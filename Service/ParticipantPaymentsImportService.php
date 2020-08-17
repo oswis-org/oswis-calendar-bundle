@@ -70,7 +70,11 @@ class ParticipantPaymentsImportService
     public function getParticipantByPayment(ParticipantPayment $payment, bool $isSecondTry = false): ?Participant
     {
         $value = $payment->getNumericValue();
-        $vs = $payment->getVariableSymbol();
+        if (empty($vs = $payment->getVariableSymbol())) {
+            $this->logger->warning("Participant NOT found for payment without VS and with value '$value'.");
+
+            return null;
+        }
         $participants = $this->participantService->getParticipants(
             [
                 ParticipantRepository::CRITERIA_VARIABLE_SYMBOL => $payment->getVariableSymbol(),

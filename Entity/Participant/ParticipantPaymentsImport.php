@@ -105,7 +105,7 @@ class ParticipantPaymentsImport
         $csvRows = str_getcsv($this->getTextValue(), "\n");
         $csvPaymentRows = array_map(fn($row) => self::getColumnsFromCsvRow($row, $csvSettings), $csvRows);
         array_walk($csvPaymentRows, fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
-        array_shift($csvPaymentRows); # remove column header
+        error_log("SHIFTED: ".var_export(array_shift($csvPaymentRows), true)); # remove column header
         foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
             $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey]));
         }
@@ -126,7 +126,7 @@ class ParticipantPaymentsImport
             (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0), $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings), ParticipantPayment::TYPE_BANK_TRANSFER
         );
         $payment->setInternalNote($csvRow);
-        $payment->setExternalId($csvPaymentRow[$csvSettings->getValueColumnName()] ?? null);
+        $payment->setExternalId($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null);
         // TODO: Check duplicity of externalID in service.
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
             $payment->setNumericValue(0);

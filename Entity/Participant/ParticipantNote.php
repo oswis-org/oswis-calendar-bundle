@@ -5,7 +5,6 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
-use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\DeletedInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\TextValueInterface;
