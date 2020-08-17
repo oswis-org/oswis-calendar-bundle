@@ -1,3 +1,6 @@
+{% set isInternal = isInternal|default(false) %}
+
+{% set participantRanges = participant.participantRanges(false, false) %}
 {% set event = participant.event(false)|default %}
 
 <h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} {{ participant.deletedAt|default ? 'zrušené' : '' }} přihlášky</h2>
@@ -21,13 +24,23 @@
 
 <h3>Účastník</h3>
 <ul>
-    <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
-        <b><span itemprop="name">{{ participant.contact.fullName }}</span> </b>
-        <small itemprop="email"> ({{ participant.contact.email }})</small>
-    </li>
-    {% if not participant.participantCategory(false).defaultType %}
-        <li>Typ přihlášky: {{ participant.participantCategory(false).name|default('neuveden') }}</li>
-    {% endif %}
+    {% for participantContact in participant.participantContacts(false, false) %}
+        {% if participantContact.active %}
+            <li itemprop="underName" itemscope itemtype="http://schema.org/Person">
+                <b><span itemprop="name">{{ participant.contact.fullName }}</span> </b>
+                <small itemprop="email"> ({{ participant.contact.email }})</small>
+            </li>
+        {% else %}
+            <li style="text-decoration: line-through; color: grey;">
+                <b><span>{{ participant.contact.fullName }}</span> </b><small> ({{ participant.contact.email }})</small>
+            </li>
+        {% endif %}
+    {% endfor %}
+    {% for participantRange in participantRanges|filter(participantRange => not participantRange.participantCategory.defaultType) %}
+        <li style="{{ participantRange.deletedAt ? 'text-decoration: line-through; color: grey;' : '' }}">
+            Typ přihlášky: {{ participant.participantCategory.name|default('neuveden') }}
+        </li>
+    {% endfor %}
     <li>
         <b>Cena celkem: {{ participant.price }},- Kč</b>
         <small style="color:grey;"> (záloha {{ participant.depositValue }},- Kč + doplatek: {{ participant.priceRest }},- Kč)</small>
@@ -38,9 +51,9 @@
         {% if participant.variableSymbol|default %}
             <small><b>Variabilní symbol:</b> {{ participant.variableSymbol }}</small>
         {%- endif -%}
-        {{- participant.variableSymbol|default and event.bankAccount(true).full|default ? ', ' : '' }}
-        {% if event.bankAccount(true).full|default %}
-            <small><b>Číslo účtu:</b> {{ event.bankAccount(true).full }}</small>
+        {{- participant.variableSymbol|default and activeEvent.bankAccount(true).full|default ? ', ' : '' }}
+        {% if activeEvent.bankAccount(true).full|default %}
+            <small><b>Číslo účtu:</b> {{ activeEvent.bankAccount(true).full }}</small>
         {% endif %}
     </li>
     <li>
@@ -65,18 +78,20 @@
 
 <h3>Událost</h3>
 <ul>
+    {% for participantRange in participantRanges %}
+        <li style="{{ participantRange.deletedAt ? 'text-decoration: line-through; color: grey;' : '' }}">
+            <b>
+                <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participantRange.event.slug|default})) }}" target="_blank">
+                    {{ participantRange.event.name|default }}
+                </a>
+            </b>
+        </li>
+    {% endfor %}
     <li>
-        <b>
-            <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug|default})) }}" target="_blank">
-                {{ event.name|default }}
-            </a>
-        </b>
+        od {{ activeEvent.startDate|date("j. n. Y H:i")|default('neuvedeno') }} do {{ activeEvent.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
     </li>
-    <li>
-        od {{ event.startDate|date("j. n. Y H:i")|default('neuvedeno') }} do {{ event.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
-    </li>
-    {% if event.place(true)|default %}
-        {% set place = event.place(true) %}
+    {% if activeEvent.place(true)|default %}
+        {% set place = activeEvent.place(true) %}
         <li>
             {% if place.url|default %}
                 <a href="{{ place.url }}" title="{{ place.name }}" target="_blank">{{ place.name }}</a>
@@ -85,8 +100,8 @@
             {% endif %}
         </li>
     {% endif %}
-    {% if event.organizer.contact|default %}
-        {% set org = event.organizer.contact %}
+    {% if activeEvent.organizer.contact|default %}
+        {% set org = activeEvent.organizer.contact %}
         <li>
             {% if org.url|default %}
                 <a href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': org.slug|default})) }}" target="_blank">
@@ -97,13 +112,14 @@
             {% endif %}
         </li>
     {% endif %}
-
 </ul>
 
 <h3>Kontaktní údaje</h3>
 <ul>
     {% for detail in participant.contact.details|filter(detail => detail.content|default|length > 0) %}
-        <li>{{ detail.categoryName|default('Kontakt') }}: {{ detail.content }}</li>
+        <li style="{{ detail.deletedAt|default ? 'text-decoration: line-through; color: grey;' : '' }}">
+            {{ detail.categoryName|default('Kontakt') }}: {{ detail.content }}
+        </li>
     {% endfor %}
 </ul>
 

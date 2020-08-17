@@ -51,8 +51,8 @@
                     <span class="block small"><strong>{{ participantRange.range.shortName|default }}</strong></span>
                 </li>
             {% endfor %}
-            {% for note in participant.notes|filter(note => note.textValue|default|length > 0 and note.publicNote|default) %}
-                <li style="list-style-type: '📝'; {{ note.deleted|default ? 'text-decoration:line-through;' : '' }}">
+            {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
+                <li style="list-style-type: '📝'; {{ note.deletedAt|default ? 'text-decoration:line-through;' : '' }}">
                     <span class="block small">{{ note.textValue }}</span>
                 </li>
             {% endfor %}
