@@ -216,7 +216,9 @@ class ParticipantMailService
             throw new NotImplementedException(ParticipantMail::TYPE_PAYMENT, 'u e-mailů k přihláškám');
         }
         if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
-            throw new NotFoundException('Skupina nebo šablona e-mailů nebyla nalezena.');
+            $groupName = $group ? $group->getName() : null;
+            $templateName = isset($twigTemplate) ? $twigTemplate->getName() : null;
+            throw new NotFoundException("Skupina '$groupName' nebo šablona '$templateName' e-mailů nebyla nalezena.");
         }
         $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);

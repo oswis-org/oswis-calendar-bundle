@@ -56,6 +56,8 @@ class ParticipantMail extends AbstractMail
     public const TYPE_SUMMARY = 'summary';
     public const TYPE_PAYMENT = 'payment';
 
+    public const ALLOWED_TYPES = [self::TYPE_ACTIVATION_REQUEST, self::TYPE_SUMMARY, self::TYPE_PAYMENT];
+
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")
@@ -92,7 +94,7 @@ class ParticipantMail extends AbstractMail
 
     public static function getAllowedTypesDefault(): array
     {
-        return [...parent::getAllowedTypesDefault(), self::TYPE_ACTIVATION_REQUEST, self::TYPE_SUMMARY];
+        return [...parent::getAllowedTypesDefault(), ...self::ALLOWED_TYPES];
     }
 
     public function isParticipant(?Participant $participant): bool

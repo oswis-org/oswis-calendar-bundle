@@ -45,9 +45,10 @@ class ParticipantPaymentService
 
     public function create(ParticipantPayment $payment, bool $sendConfirmation = true): ?ParticipantPayment
     {
+        $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
             if (!empty($externalId = $payment->getExternalId()) && !empty(
-                $existing = $this->em->getRepository(ParticipantPayment::class)->findBy(
+                $existing = $paymentsRepository->findBy(
                     ['externalId' => $externalId]
                 )
                 ) && $existing[0] instanceof ParticipantPayment) {
@@ -61,7 +62,7 @@ class ParticipantPaymentService
             $vs = $payment->getVariableSymbol();
             $value = $payment->getNumericValue();
             $participant = $payment->getParticipant();
-            $this->logger->info("CREATE: Created participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
+            $this->logger->info("CREATE: Created (or updated) participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
             if ($sendConfirmation && null !== $participant && !$payment->isConfirmedByMail()) {
                 $this->participantMailService->sendPaymentConfirmation($payment);
                 $this->logger->info("CREATE: Sent confirmation for participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
