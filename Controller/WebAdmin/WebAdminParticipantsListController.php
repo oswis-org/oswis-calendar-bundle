@@ -19,7 +19,6 @@ use OswisOrg\OswisCalendarBundle\Service\ParticipantCategoryService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
