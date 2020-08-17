@@ -238,7 +238,9 @@ class ParticipantMailService
         $this->em->persist($payment);
         $templateName = $twigTemplate->getTemplateName() ?? '@OswisOrgOswisCalendar/e-mail/pages/participant-payment.html.twig';
         $this->mailService->sendEMail($participantMail, $templateName, $data);
-        $payment->setConfirmedByMailAt(new DateTime());
+        if ($participantMail->getSent() && !$payment->isConfirmedByMail()) {
+            $payment->setConfirmedByMailAt($participantMail->getSent());
+        }
         $this->em->flush();
     }
 }
