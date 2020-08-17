@@ -46,10 +46,14 @@ class ParticipantPaymentService
     public function create(ParticipantPayment $payment, bool $sendConfirmation = true): ?ParticipantPayment
     {
         try {
-            if (!empty($externalId = $payment->getExternalId()) && !empty($this->em->getRepository(ParticipantPayment::class)->findBy(['externalId' => $externalId]))) {
-                $this->logger->info("Skipped duplicity of payment with external id '$externalId'.");
-
-                return null;
+            if (!empty($externalId = $payment->getExternalId()) && !empty(
+                $existing = $this->em->getRepository(ParticipantPayment::class)->findBy(
+                    ['externalId' => $externalId]
+                )
+                ) && $existing[0] instanceof ParticipantPayment) {
+                $payment = $existing[0];
+                $paymentId = $payment->getId();
+                $this->logger->info("Found duplicity (id '$paymentId') of payment with external id '$externalId'.");
             }
             $this->em->persist($payment);
             $this->em->flush();
@@ -58,8 +62,8 @@ class ParticipantPaymentService
             $value = $payment->getNumericValue();
             $participant = $payment->getParticipant();
             $this->logger->info("CREATE: Created participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
-            if ($sendConfirmation && null !== $participant) {
-                $this->participantMailService->sendPaymentConfirmation($payment, $participant->getAppUser());
+            if ($sendConfirmation && null !== $participant && !$payment->isConfirmedByMail()) {
+                $this->participantMailService->sendPaymentConfirmation($payment);
                 $this->logger->info("CREATE: Sent confirmation for participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
             }
 

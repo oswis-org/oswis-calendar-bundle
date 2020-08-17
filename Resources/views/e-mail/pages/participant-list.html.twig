@@ -4,7 +4,7 @@
 {% block meta_description %}{{ block('html_title') }}{% endblock %}
 
 {% block content_inner %}
-    {% if message is defined and message %}
+    {% if message|default %}
         <div style="color: red;font-weight: bold;padding: 1em; background-color: lightcoral;border: 2px solid red;">
             <p>{{ message }}</p>
         </div>

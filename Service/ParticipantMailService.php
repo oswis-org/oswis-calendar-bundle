@@ -168,13 +168,45 @@ class ParticipantMailService
 
     /**
      * @param ParticipantPayment $payment
+     *
+     * @throws OswisException
+     */
+    public function sendPaymentConfirmation(ParticipantPayment $payment): void
+    {
+        $sent = 0;
+        $paymentId = $payment->getId();
+        if (null === ($participant = $payment->getParticipant())) {
+            $this->logger->warning("Not sending payment '$paymentId' confirmation because participant is not set.");
+
+            return;
+        }
+        foreach ($participant->getContactPersons(true) as $contactPerson) {
+            if (!($contactPerson instanceof AbstractContact)) {
+                continue;
+            }
+            try {
+                $this->sendPaymentConfirmationToUser($payment, $contactPerson->getAppUser());
+                $sent++;
+            } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+                $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
+                $message = $exception->getMessage();
+                $this->logger->error("ERROR: Not sent confirmation of payment '$paymentId' to user '$userId' ($message).");
+            }
+        }
+        if (1 > $sent) {
+            throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail o platbě účastníkovi.");
+        }
+    }
+
+    /**
+     * @param ParticipantPayment $payment
      * @param AppUser            $appUser
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
      * @throws NotImplementedException
      */
-    public function sendPaymentConfirmation(ParticipantPayment $payment, AppUser $appUser): void
+    public function sendPaymentConfirmationToUser(ParticipantPayment $payment, AppUser $appUser): void
     {
         $participant = $payment->getParticipant();
         if (null === $participant) {

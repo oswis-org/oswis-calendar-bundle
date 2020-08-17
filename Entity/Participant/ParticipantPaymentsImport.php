@@ -108,7 +108,7 @@ class ParticipantPaymentsImport
         array_walk($csvPaymentRows, fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
         array_shift($csvPaymentRows); # remove column header
         foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
-            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey - 1]));
+            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey + 1]));
         }
 
         return $payments;
