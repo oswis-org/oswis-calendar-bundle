@@ -44,7 +44,9 @@ class ParticipantPaymentsImportService
             if (!($payment instanceof ParticipantPayment)) {
                 continue;
             }
-            $payment->setImport($paymentsImport);
+            if (null === $payment->getImport()) {
+                $payment->setImport($paymentsImport);
+            }
             $participant = $this->getParticipantByPayment($payment);
             $participantId = $participant ? $participant->getId() : null;
             $paymentId = $payment->getId();
