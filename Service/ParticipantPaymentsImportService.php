@@ -36,6 +36,7 @@ class ParticipantPaymentsImportService
 
     public function processImport(ParticipantPaymentsImport $paymentsImport, ?CsvPaymentImportSettings $importSettings = null): void
     {
+        $importedPayments = new ArrayCollection();
         $this->em->persist($paymentsImport);
         $this->em->flush();
         $payments = $paymentsImport->extractPayments($importSettings ?? new CsvPaymentImportSettings());
@@ -55,11 +56,11 @@ class ParticipantPaymentsImportService
             } catch (NotImplementedException $exception) {
                 $this->logger->error("ERROR: Participant '$participantId' can't be assigned to payment '$paymentId' (".$exception->getMessage().").");
             }
-            $this->paymentService->create($payment);
+            $importedPayments->add($this->paymentService->create($payment));
         }
         try {
             $this->em->flush();
-            $this->paymentService->sendPaymentsReport($payments);
+            $this->paymentService->sendPaymentsReport($importedPayments);
             $this->logger->info("OK: Payments report sent! ");
         } catch (OswisException $e) {
             $this->logger->error("ERROR: Payments report not sent! ".$e->getMessage());

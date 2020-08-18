@@ -1,0 +1,55 @@
+<tbody>
+<tr style="border-top: 2px solid grey;">
+    <td>
+        <strong>ID {{ payment.id|default }}</strong><br>
+        {% if payment.externalId|default %}
+            <small>EXT. ID: {{ payment.externalId|default }}</small><br>
+        {% endif %}
+        {% if payment.date|default %}
+            <small>{{ payment.date|date("j. n. Y")|default }}</small><br>
+        {% endif %}
+        {% if payment.import.id|default %}
+            <small>IMPORT {{ payment.import.id|default('0') }}</small><br>
+        {% endif %}
+    </td>
+    <td>
+        {% set valueColor = payment.numericValue|default < 0 ? 'red' : 'green' %}
+        <strong style="color: {{ valueColor }}">{{ payment.numericValue|default(0) }},- Kč</strong><br>
+        <small>VS: {{ payment.variableSymbol|default }}</small><br>
+        <small>{{ payment.type|default }}</small>
+    </td>
+    {% set assignedColor = payment.participant|default ? 'green' : 'red' %}
+    {% set assignedBackgroundColor = payment.participant|default ? 'rgba(50,255,50,.2)' : 'rgba(255,50,50,.2)' %}
+    <td style="background-color: {{ assignedBackgroundColor }};">
+        <strong style="color: {{ assignedColor }};">
+            {% if payment.participant.id|default %}
+                {{ payment.participant.id|default(0) }} | {{ payment.participant.name|default('<nepojmenovaný>') }}
+            {% else %}
+                ⚠️ NEPŘIŘAZENO ⚠️
+            {% endif %}
+        </strong><br>
+        <small>
+            {% if payment.confirmedByMailAt|default %}
+                {{ payment.confirmedByMailAt|date("j. n. Y, H:i") }}
+            {% else %}
+                Potvrzení neodesláno!
+            {% endif %}
+        </small>
+    </td>
+</tr>
+{% if payment.errorMessage %}
+    <tr>
+        <td style="background-color: rgba(255,50,50,.2)" colspan="3"><small>CHYBA: {{ payment.errorMessage }}</small></td>
+    </tr>
+{% endif %}
+{% if payment.note %}
+    <tr>
+        <td colspan="3"><small>Poznámka: {{ payment.note }}</small></td>
+    </tr>
+{% endif %}
+{% if payment.internalNote %}
+    <tr>
+        <td colspan="3"><small>Interní poznámka: {{ payment.internalNote }}</small></td>
+    </tr>
+{% endif %}
+</tbody>

@@ -1,0 +1,26 @@
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h2>Přehled plateb účastníků</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <h3>Přehled nezrušených přihlášek</h3>
+            <table class="list">
+                {% include '@OswisOrgOswisCalendar/other/payments-list/parts/payments-list-head.html.twig' %}
+                {% for payment in payments %}
+                    {% include '@OswisOrgOswisCalendar/other/payments-list/parts/payments-list-inner.html.twig' %}
+                {% else %}
+                    <tbody>
+                    <tr>
+                        <td colspan="3" class="text-center bold">Žádné platby.</td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+</div>

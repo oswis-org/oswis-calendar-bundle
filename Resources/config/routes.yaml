@@ -75,4 +75,8 @@ oswis_org_oswis_calendar_web_admin_participant_payments_import:
     controller: oswis_org_oswis_calendar.web_admin_participant_payments_import_controller::import
     path: "/web_admin/prihlasky/import-plateb"
 
+oswis_org_oswis_calendar_web_admin_participant_payments_list:
+    controller: oswis_org_oswis_calendar.web_admin_participant_payments_import_controller::showPayments
+    path: "/web_admin/prihlasky/prehled-plateb"
+
 

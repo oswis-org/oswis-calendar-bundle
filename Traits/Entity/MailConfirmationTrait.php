@@ -20,7 +20,7 @@ trait MailConfirmationTrait
 
     public function isConfirmedByMail(): bool
     {
-        return (bool)$this->getConfirmedByMailAt();
+        return null !== $this->getConfirmedByMailAt();
     }
 
     public function getConfirmedByMailAt(): ?DateTime

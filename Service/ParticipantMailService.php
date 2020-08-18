@@ -5,7 +5,6 @@
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;

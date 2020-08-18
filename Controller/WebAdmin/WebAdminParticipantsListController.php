@@ -6,11 +6,13 @@
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\RegRangeRepository;
@@ -32,16 +34,20 @@ class WebAdminParticipantsListController extends AbstractController
 
     public RegRangeService $regRangeService;
 
+    public EntityManagerInterface $em;
+
     public function __construct(
         EventService $eventService,
         ParticipantService $participantService,
         ParticipantCategoryService $participantCategoryService,
-        RegRangeService $regRangeService
+        RegRangeService $regRangeService,
+        EntityManagerInterface $em
     ) {
         $this->eventService = $eventService;
         $this->participantService = $participantService;
         $this->participantCategoryService = $participantCategoryService;
         $this->regRangeService = $regRangeService;
+        $this->em = $em;
     }
 
     public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
@@ -61,7 +67,18 @@ class WebAdminParticipantsListController extends AbstractController
         usort($participantsArray, fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
         $data['participants'] = new ArrayCollection($participantsArray);
 
-        return $this->render("@OswisOrgOswisCalendar/other/participant-list/participant-list.html.twig", $data);
+        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", $data);
+    }
+
+    public function showPayments(): Response
+    {
+        return $this->render(
+            "@OswisOrgOswisCalendar/web_admin/payments.html.twig",
+            [
+                'payments' => $this->em->getRepository(ParticipantPayment::class)->findAll(),
+                'title'    => "Přehled plateb účastníků :: ADMIN",
+            ]
+        );
     }
 
     /**
