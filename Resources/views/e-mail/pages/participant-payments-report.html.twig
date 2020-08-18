@@ -14,7 +14,7 @@
                 <th style="max-width:25%;">Účastník<br><small>Potvrzení na e-mail</small></th>
             </tr>
             </thead>
-            {% for payment in payments %}
+            {% for payment in payments|filter(payment => payment|default) %}
                 <tbody>
                 <tr style="border-top: 2px solid grey;">
                     <td>

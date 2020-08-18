@@ -192,11 +192,17 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
         if ($this->participant === $participant) {
             return;
         }
-        if (null !== $this->participant && null === $participant) {
+        if (null !== $this->participant && (null !== $this->getId() && null === $participant)) {
+            // Do not allow to remove payment from participant if payment was already persisted.
             throw new NotImplementedException('změna účastníka', 'u platby');
         }
+        if ($this->participant && $this->participant !== $participant) {
+            $this->participant->removePayment($this);
+        }
         $this->participant = $participant;
-        $participant->addPayment($this);
+        if (null !== $participant) {
+            $participant->addPayment($this);
+        }
     }
 
     public function getImport(): ?ParticipantPaymentsImport

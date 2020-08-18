@@ -12,7 +12,6 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
-use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Psr\Log\LoggerInterface;
 
@@ -48,17 +47,7 @@ class ParticipantPaymentsImportService
                 $payment->setImport($paymentsImport);
             }
             $participant = $this->getParticipantByPayment($payment);
-            $participantId = $participant ? $participant->getId() : null;
-            $paymentId = $payment->getId();
-            try {
-                if (null !== $participant) {
-                    $payment->setParticipant($participant);
-                    $this->logger->info("OK: Participant '$participantId' assigned to payment '$paymentId'.");
-                }
-            } catch (NotImplementedException $exception) {
-                $this->logger->error("ERROR: Participant '$participantId' can't be assigned to payment '$paymentId' (".$exception->getMessage().").");
-            }
-            $importedPayments->add($this->paymentService->create($payment));
+            $importedPayments->add($this->paymentService->create($payment, true, $participant));
         }
         try {
             $this->em->flush();

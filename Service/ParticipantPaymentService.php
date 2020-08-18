@@ -8,6 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -43,7 +44,7 @@ class ParticipantPaymentService
         $this->participantMailService = $participantMailService;
     }
 
-    public function create(ParticipantPayment $payment, bool $sendConfirmation = true): ?ParticipantPayment
+    public function create(ParticipantPayment $payment, bool $sendConfirmation = true, ?Participant $participant = null): ?ParticipantPayment
     {
         $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
@@ -52,9 +53,17 @@ class ParticipantPaymentService
                     ['externalId' => $externalId]
                 )
                 ) && $existing[0] instanceof ParticipantPayment) {
+                $payment->setImport(null);
+                $payment->setParticipant(null);
                 $payment = $existing[0];
                 $paymentId = $payment->getId();
                 $this->logger->info("Found duplicity (id '$paymentId') of payment with external id '$externalId'.");
+            }
+            $paymentId = $payment ? $payment->getId() : null;
+            if (null !== $participant) {
+                $participantId = $participant ? $participant->getId() : null;
+                $payment->setParticipant($participant);
+                $this->logger->info("OK: Participant '$participantId' assigned to payment '$paymentId'.");
             }
             $this->em->persist($payment);
             $this->em->flush();
