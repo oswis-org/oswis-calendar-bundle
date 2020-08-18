@@ -51,7 +51,7 @@ services:
             - '@oswis_org_oswis_calendar.participant_service'
             - '@oswis_org_oswis_calendar.participant_category_service'
             - '@oswis_org_oswis_calendar.reg_range_service'
-            - '@oswis_org_oswis_calendar.participant_payment_service'
+            - '@doctrine.orm.entity_manager'
     OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsListController:
         alias: oswis_org_oswis_calendar.web_admin_participants_list_controller
         public: true
