@@ -66,7 +66,7 @@ class ParticipantMailService
     public function sendSummary(Participant $participant): void
     {
         $sent = 0;
-        foreach ($participant->getContactPersons(true) as $contactPerson) {
+        foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
             if (!($contactPerson instanceof AbstractContact)) {
                 continue;
             }
@@ -80,7 +80,7 @@ class ParticipantMailService
                 $this->logger->error("ERROR: Not sent summary for participant '$participantId' to user '$userId' ($message).");
             }
         }
-        if (1 > $sent) {
+        if (1 > $sent && $contactPersons->count() > 0) {
             throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail.");
         }
     }
@@ -179,7 +179,7 @@ class ParticipantMailService
 
             return;
         }
-        foreach ($participant->getContactPersons(true) as $contactPerson) {
+        foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
             if (!($contactPerson instanceof AbstractContact)) {
                 continue;
             }
@@ -192,7 +192,7 @@ class ParticipantMailService
                 $this->logger->error("ERROR: Not sent confirmation of payment '$paymentId' to user '$userId' ($message).");
             }
         }
-        if (1 > $sent) {
+        if (1 > $sent && $contactPersons->count() > 0) {
             throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail o platbě účastníkovi.");
         }
     }

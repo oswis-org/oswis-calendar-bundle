@@ -59,9 +59,9 @@ class ParticipantPaymentService
                 $paymentId = $payment->getId();
                 $this->logger->info("Found duplicity (id '$paymentId') of payment with external id '$externalId'.");
             }
-            $paymentId = $payment ? $payment->getId() : null;
+            $paymentId = $payment->getId();
             if (null !== $participant) {
-                $participantId = $participant ? $participant->getId() : null;
+                $participantId = $participant->getId();
                 $payment->setParticipant($participant);
                 $this->logger->info("OK: Participant '$participantId' assigned to payment '$paymentId'.");
             }

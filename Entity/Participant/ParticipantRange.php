@@ -20,6 +20,32 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 /**
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_range")
+ * @ApiPlatform\Core\Annotation\ApiResource(
+ *   attributes={
+ *     "filters"={"search"},
+ *     "access_control"="is_granted('ROLE_MANAGER')"
+ *   },
+ *   collectionOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_ranges_get"}, "enable_max_depth"=true},
+ *     },
+ *     "post"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_ranges_post"}, "enable_max_depth"=true}
+ *     }
+ *   },
+ *   itemOperations={
+ *     "get"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "normalization_context"={"groups"={"entity_get", "calendar_participant_range_get"}, "enable_max_depth"=true},
+ *     },
+ *     "put"={
+ *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_range_put"}, "enable_max_depth"=true}
+ *     }
+ *   }
+ * )
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 class ParticipantRange implements BasicInterface

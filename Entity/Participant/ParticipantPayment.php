@@ -48,10 +48,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     "put"={
  *       "access_control"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"calendar_participant_payment_put"}, "enable_max_depth"=true}
- *     },
- *     "delete"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_participant_payment_delete"}, "enable_max_depth"=true}
  *     }
  *   }
  * )

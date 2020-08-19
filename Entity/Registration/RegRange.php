@@ -60,8 +60,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  *     "put"={
  *       "access_control"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"entity_put", "calendar_reg_range_put"}, "enable_max_depth"=true}
- *     },
- *     "delete"={}
+ *     }
  *   }
  * )
  */

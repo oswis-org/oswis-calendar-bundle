@@ -6,9 +6,9 @@
 <tbody>
 <tr {{ participant.deletedAt ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
     <td style="border: 1px solid grey; padding: .3em .6em; text-align: right;">
-        {% if participant.deletedAt %}
+        {% if participant.deletedAt|default %}
             <div class="block small" style="color:red;">
-                <strong>❌</strong>&nbsp;smazáno
+                <strong>❌</strong>&nbsp;smazáno {{ participant.deletedAt|date("j. n. Y, H:i") }}
             </div>
         {% endif %}
         <div class="block small">

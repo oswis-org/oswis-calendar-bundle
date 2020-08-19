@@ -259,7 +259,7 @@ class Participant implements ParticipantInterface
         $this->event = $this->regRange ? $this->regRange->getEvent() : null;
         $this->participantCategory = $this->regRange ? $this->regRange->getParticipantCategory() : null;
         $this->updateVariableSymbol();
-        $this->removeEmptyNotesAndDetails();
+        // $this->removeEmptyNotesAndDetails();
     }
 
     public function getRegRange(bool $onlyActive = true): ?RegRange
@@ -354,52 +354,6 @@ class Participant implements ParticipantInterface
     public static function vsStringFix(?string $variableSymbol): ?string
     {
         return empty($variableSymbol) ? null : substr(trim(preg_replace('/\s/', '', $variableSymbol)), -9);
-    }
-
-    public function removeEmptyNotesAndDetails(): void
-    {
-        $this->removeEmptyParticipantNotes();
-        if (null !== $contact = $this->getContact()) {
-            $contact->removeEmptyDetails();
-            $contact->removeEmptyNotes();
-        }
-        foreach ($this->getContactPersons() as $contactPerson) {
-            if ($contactPerson instanceof AbstractContact) {
-                $contactPerson->removeEmptyDetails();
-                $contactPerson->removeEmptyNotes();
-            }
-        }
-    }
-
-    public function removeEmptyParticipantNotes(): void
-    {
-        $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));
-    }
-
-    public function getNotes(): Collection
-    {
-        return $this->notes ??= new ArrayCollection();
-    }
-
-    public function setNotes(?Collection $newNotes): void
-    {
-        $this->notes ??= new ArrayCollection();
-        $newNotes ??= new ArrayCollection();
-        foreach ($this->notes as $oldNote) {
-            if (!$newNotes->contains($oldNote)) {
-                $this->removeNote($oldNote);
-            }
-        }
-        foreach ($newNotes as $newNote) {
-            if (!$this->notes->contains($newNote)) {
-                $this->addNote($newNote);
-            }
-        }
-    }
-
-    public function getContactPersons(bool $onlyActivated = false): Collection
-    {
-        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
     }
 
     /**
@@ -619,6 +573,52 @@ class Participant implements ParticipantInterface
             );
 
         return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
+    }
+
+    public function removeEmptyNotesAndDetails(): void
+    {
+        $this->removeEmptyParticipantNotes();
+        if (null !== $contact = $this->getContact()) {
+            $contact->removeEmptyDetails();
+            $contact->removeEmptyNotes();
+        }
+        foreach ($this->getContactPersons() as $contactPerson) {
+            if ($contactPerson instanceof AbstractContact) {
+                $contactPerson->removeEmptyDetails();
+                $contactPerson->removeEmptyNotes();
+            }
+        }
+    }
+
+    public function removeEmptyParticipantNotes(): void
+    {
+        $this->setNotes($this->getNotes()->filter(fn(ParticipantNote $note): bool => !empty($note->getTextValue())));
+    }
+
+    public function getNotes(): Collection
+    {
+        return $this->notes ??= new ArrayCollection();
+    }
+
+    public function setNotes(?Collection $newNotes): void
+    {
+        $this->notes ??= new ArrayCollection();
+        $newNotes ??= new ArrayCollection();
+        foreach ($this->notes as $oldNote) {
+            if (!$newNotes->contains($oldNote)) {
+                $this->removeNote($oldNote);
+            }
+        }
+        foreach ($newNotes as $newNote) {
+            if (!$this->notes->contains($newNote)) {
+                $this->addNote($newNote);
+            }
+        }
+    }
+
+    public function getContactPersons(bool $onlyActivated = false): Collection
+    {
+        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
     }
 
     public function getSortableName(): string
