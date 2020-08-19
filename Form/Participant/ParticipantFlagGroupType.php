@@ -39,68 +39,6 @@ class ParticipantFlagGroupType extends AbstractType
         $this->logger = $logger;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
-        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
-        // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
-        $builder->addEventListener(
-            FormEvents::PRE_SUBMIT,
-            static function (FormEvent $event) {
-                $data = $event->getData();
-                if (!empty($data)) {
-                    $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
-                }
-                $event->setData($data);
-            }
-        );
-        $builder->addEventListener(
-            FormEvents::SUBMIT,
-            static function (FormEvent $event) {
-                $participantFlagGroup = $event->getData();
-                assert($participantFlagGroup instanceof ParticipantFlagGroup);
-                $participantFlags = new ArrayCollection();
-                foreach ($participantFlagGroup->tempFlagRanges as $tempFlagRange) {
-                    assert($tempFlagRange instanceof FlagRange);
-                    $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
-                    $participantFlags->add($participantFlag);
-                }
-                $participantFlagGroup->setParticipantFlags($participantFlags);
-            }
-        );
-    }
-
-    /**
-     * @param FormEvent $event
-     *
-     * @throws AlreadySubmittedException
-     * @throws LogicException
-     * @throws OswisException
-     * @throws UnexpectedTypeException
-     */
-    public function onPreSetData(FormEvent $event): void
-    {
-        $participantFlagGroup = $event->getData();
-        assert($participantFlagGroup instanceof ParticipantFlagGroup);
-        $participant = $event->getForm()->getConfig()->getOptions()['participant'];
-        if (!($participant instanceof Participant)) {
-            throw new OswisException('Ve formuláři chybí instance účastníka...');
-        }
-        $flagGroupRange = $participantFlagGroup->getFlagGroupRange();
-        $flagCategory = $participantFlagGroup->getFlagCategory();
-        if (null === $flagGroupRange || null === $flagCategory) {
-            return;
-        }
-        $isFormal = false !== $participant->isFormal();
-        $min = $flagGroupRange->getMin();
-        $max = $flagGroupRange->getMax();
-        if ($flagGroupRange->isFlagValueAllowed()) {
-            self::addCheckboxes($event->getForm(), $participantFlagGroup);
-
-            return;
-        }
-        self::addSelect($event->getForm(), $participantFlagGroup, $min, $max, $isFormal);
-    }
-
     /**
      * @param FormInterface        $form
      * @param ParticipantFlagGroup $participantFlagCategory
@@ -211,6 +149,68 @@ class ParticipantFlagGroupType extends AbstractType
         }
 
         return $attributes;
+    }
+
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
+        // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
+        $builder->addEventListener(
+            FormEvents::PRE_SUBMIT,
+            static function (FormEvent $event) {
+                $data = $event->getData();
+                if (!empty($data)) {
+                    $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
+                }
+                $event->setData($data);
+            }
+        );
+        $builder->addEventListener(
+            FormEvents::SUBMIT,
+            static function (FormEvent $event) {
+                $participantFlagGroup = $event->getData();
+                assert($participantFlagGroup instanceof ParticipantFlagGroup);
+                $participantFlags = new ArrayCollection();
+                foreach ($participantFlagGroup->tempFlagRanges as $tempFlagRange) {
+                    assert($tempFlagRange instanceof FlagRange);
+                    $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
+                    $participantFlags->add($participantFlag);
+                }
+                $participantFlagGroup->setParticipantFlags($participantFlags);
+            }
+        );
+    }
+
+    /**
+     * @param FormEvent $event
+     *
+     * @throws AlreadySubmittedException
+     * @throws LogicException
+     * @throws OswisException
+     * @throws UnexpectedTypeException
+     */
+    public function onPreSetData(FormEvent $event): void
+    {
+        $participantFlagGroup = $event->getData();
+        assert($participantFlagGroup instanceof ParticipantFlagGroup);
+        $participant = $event->getForm()->getConfig()->getOptions()['participant'];
+        if (!($participant instanceof Participant)) {
+            throw new OswisException('Ve formuláři chybí instance účastníka...');
+        }
+        $flagGroupRange = $participantFlagGroup->getFlagGroupRange();
+        $flagCategory = $participantFlagGroup->getFlagCategory();
+        if (null === $flagGroupRange || null === $flagCategory) {
+            return;
+        }
+        $isFormal = false !== $participant->isFormal();
+        $min = $flagGroupRange->getMin();
+        $max = $flagGroupRange->getMax();
+        if ($flagGroupRange->isFlagValueAllowed()) {
+            self::addCheckboxes($event->getForm(), $participantFlagGroup);
+
+            return;
+        }
+        self::addSelect($event->getForm(), $participantFlagGroup, $min, $max, $isFormal);
     }
 
     /**

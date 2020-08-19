@@ -127,6 +127,16 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
         }
     }
 
+    public static function getAllowedTypesDefault(): array
+    {
+        return self::ALLOWED_TYPES;
+    }
+
+    public static function getAllowedTypesCustom(): array
+    {
+        return [];
+    }
+
     /**
      * @param DateTime|null $dateTime
      *
@@ -151,16 +161,6 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     public function getDateTime(): ?DateTime
     {
         return $this->traitGetDateTime() ?? $this->getCreatedAt();
-    }
-
-    public static function getAllowedTypesDefault(): array
-    {
-        return self::ALLOWED_TYPES;
-    }
-
-    public static function getAllowedTypesCustom(): array
-    {
-        return [];
     }
 
     public function getErrorMessage(): ?string

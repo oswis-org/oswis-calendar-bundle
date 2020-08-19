@@ -170,33 +170,6 @@ class ParticipantService
     }
 
     /**
-     * @param Participant $participant
-     * @param AppUser     $appUser
-     *
-     * @throws InvalidTypeException
-     * @throws NotFoundException
-     * @throws NotImplementedException
-     * @throws OswisException
-     */
-    private function requestActivationForUser(Participant $participant, AppUser $appUser): void
-    {
-        $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
-        $this->participantMailService->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
-        $this->logger->info('Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.');
-    }
-
-    private function getLogMessage(Participant $participant): string
-    {
-        $id = $participant->getId();
-        $contactName = $participant->getContact() ? $participant->getContact()->getName() : '';
-        $infoMessage = "Created participant (by service) with ID [$id] and contact name [$contactName]";
-        $rangeName = $participant->getRegRange() ? $participant->getRegRange()->getName() : '';
-        $infoMessage .= " to range [$rangeName].";
-
-        return $infoMessage;
-    }
-
-    /**
      * @param RegRange    $range
      * @param Participant $participant
      *
@@ -384,5 +357,32 @@ class ParticipantService
         return new Participant(
             $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']), new ArrayCollection([new ParticipantNote()])
         );
+    }
+
+    /**
+     * @param Participant $participant
+     * @param AppUser     $appUser
+     *
+     * @throws InvalidTypeException
+     * @throws NotFoundException
+     * @throws NotImplementedException
+     * @throws OswisException
+     */
+    private function requestActivationForUser(Participant $participant, AppUser $appUser): void
+    {
+        $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
+        $this->participantMailService->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
+        $this->logger->info('Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.');
+    }
+
+    private function getLogMessage(Participant $participant): string
+    {
+        $id = $participant->getId();
+        $contactName = $participant->getContact() ? $participant->getContact()->getName() : '';
+        $infoMessage = "Created participant (by service) with ID [$id] and contact name [$contactName]";
+        $rangeName = $participant->getRegRange() ? $participant->getRegRange()->getName() : '';
+        $infoMessage .= " to range [$rangeName].";
+
+        return $infoMessage;
     }
 }

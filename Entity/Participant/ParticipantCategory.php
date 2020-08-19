@@ -95,11 +95,6 @@ class ParticipantCategory implements NameableInterface
         $this->setFieldsFromNameable($nameable);
     }
 
-    public function setFormal(?bool $formal): void
-    {
-        $this->formal = $formal;
-    }
-
     public static function getAllowedTypesDefault(): array
     {
         return self::ALLOWED_TYPES;
@@ -110,14 +105,19 @@ class ParticipantCategory implements NameableInterface
         return [];
     }
 
-    public function isDefaultType(): bool
-    {
-        return self::getDefaultCategoryType() === $this->getType();
-    }
-
     public static function getDefaultCategoryType(): ?string
     {
         return self::TYPE_ATTENDEE;
+    }
+
+    public function setFormal(?bool $formal): void
+    {
+        $this->formal = $formal;
+    }
+
+    public function isDefaultType(): bool
+    {
+        return self::getDefaultCategoryType() === $this->getType();
     }
 
     public function isFormal(): ?bool

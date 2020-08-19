@@ -94,6 +94,11 @@ class ParticipantPaymentsImport
         return self::ALLOWED_TYPES;
     }
 
+    private static function getColumnsFromCsvRow(string $row, CsvPaymentImportSettings $csvSettings): array
+    {
+        return str_getcsv($row, $csvSettings->getDelimiter(), $csvSettings->getEnclosure(), $csvSettings->getEscape());
+    }
+
     /** @noinspection PhpUnusedParameterInspection */
     public function getSettings(?string $settingsCode = null): CsvPaymentImportSettings
     {
@@ -114,11 +119,6 @@ class ParticipantPaymentsImport
         return $payments;
     }
 
-    private static function getColumnsFromCsvRow(string $row, CsvPaymentImportSettings $csvSettings): array
-    {
-        return str_getcsv($row, $csvSettings->getDelimiter(), $csvSettings->getEnclosure(), $csvSettings->getEscape());
-    }
-
     public function makePaymentFromCsv(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings, string $csvRow): ParticipantPayment
     {
         $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
@@ -135,6 +135,11 @@ class ParticipantPaymentsImport
         $payment->setVariableSymbol($this->getVsFromCsvPayment($csvPaymentRow, $csvSettings));
 
         return $payment;
+    }
+
+    public function getVsFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?string
+    {
+        return Participant::vsStringFix($csvPaymentRow[$csvSettings->getVariableSymbolColumnName()] ?? null);
     }
 
     private function getDateFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?DateTime
@@ -158,10 +163,5 @@ class ParticipantPaymentsImport
         } catch (Exception $e) {
             return null;
         }
-    }
-
-    public function getVsFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?string
-    {
-        return Participant::vsStringFix($csvPaymentRow[$csvSettings->getVariableSymbolColumnName()] ?? null);
     }
 }

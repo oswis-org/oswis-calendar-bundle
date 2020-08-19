@@ -199,24 +199,6 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param FlagRange  $flagRange
-     * @param Collection $newPartiFlags
-     * @param bool|false $admin
-     *
-     * @throws FlagOutOfRangeException|FlagCapacityExceededException
-     */
-    private function checkAvailableFlagRange(FlagRange $flagRange, Collection $newPartiFlags, bool $admin = false): void
-    {
-        $newFlagRangeCount = $newPartiFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
-        $flagRange->checkInRange($newFlagRangeCount);
-        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
-        $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
-        if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
-            throw new FlagCapacityExceededException($flagRange->getName());
-        }
-    }
-
-    /**
      * @param ParticipantFlag $oldParticipantFlag
      * @param ParticipantFlag $newParticipantFlag
      * @param bool            $admin
@@ -260,5 +242,23 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             }
         }
         $this->traitDelete($dateTime);
+    }
+
+    /**
+     * @param FlagRange  $flagRange
+     * @param Collection $newPartiFlags
+     * @param bool|false $admin
+     *
+     * @throws FlagOutOfRangeException|FlagCapacityExceededException
+     */
+    private function checkAvailableFlagRange(FlagRange $flagRange, Collection $newPartiFlags, bool $admin = false): void
+    {
+        $newFlagRangeCount = $newPartiFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
+        $flagRange->checkInRange($newFlagRangeCount);
+        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
+        $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
+        if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
+            throw new FlagCapacityExceededException($flagRange->getName());
+        }
     }
 }

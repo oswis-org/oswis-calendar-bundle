@@ -62,49 +62,6 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param string $slug
-     * @param string $pattern
-     *
-     * @return array
-     */
-    private function regexMatch(string $slug, string $pattern = '//'): array
-    {
-        $parts = null;
-        preg_match($pattern, $slug, $parts);
-        if (empty($parts)) {
-            return [];
-        }
-
-        return [
-            $parts[0] ?? '',    // Whole string.
-            $parts[1] ?? '',    // Prefix.
-            $parts[2] ?? '',    // Keyword ("year").
-            $parts[3] ?? null,  // Sign.
-            $parts[4] ?? 0,     // Number.
-            $parts[5] ?? '',    // Suffix.
-        ];
-    }
-
-    /**
-     * @param int    $a
-     * @param string $sign
-     * @param int    $b
-     *
-     * @return int
-     */
-    private function processMath(int $a, string $sign, int $b): int
-    {
-        if ($sign === '+') {
-            $a += $b;
-        }
-        if ($sign === '-') {
-            $a -= $b;
-        }
-
-        return $a;
-    }
-
-    /**
      * @return array
      */
     public function getArray(): array
@@ -148,5 +105,48 @@ class OswisCalendarSettingsProvider
         foreach ($fallbacks as $fallback) {
             $this->defaultEventFallbacks[] = $this->processSpecialSlug($fallback);
         }
+    }
+
+    /**
+     * @param string $slug
+     * @param string $pattern
+     *
+     * @return array
+     */
+    private function regexMatch(string $slug, string $pattern = '//'): array
+    {
+        $parts = null;
+        preg_match($pattern, $slug, $parts);
+        if (empty($parts)) {
+            return [];
+        }
+
+        return [
+            $parts[0] ?? '',    // Whole string.
+            $parts[1] ?? '',    // Prefix.
+            $parts[2] ?? '',    // Keyword ("year").
+            $parts[3] ?? null,  // Sign.
+            $parts[4] ?? 0,     // Number.
+            $parts[5] ?? '',    // Suffix.
+        ];
+    }
+
+    /**
+     * @param int    $a
+     * @param string $sign
+     * @param int    $b
+     *
+     * @return int
+     */
+    private function processMath(int $a, string $sign, int $b): int
+    {
+        if ($sign === '+') {
+            $a += $b;
+        }
+        if ($sign === '-') {
+            $a -= $b;
+        }
+
+        return $a;
     }
 }

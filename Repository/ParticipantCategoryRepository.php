@@ -48,6 +48,13 @@ class ParticipantCategoryRepository extends EntityRepository
         return $queryBuilder;
     }
 
+    public function getParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    {
+        return new ArrayCollection(
+            $this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
+        );
+    }
+
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
@@ -86,12 +93,5 @@ class ParticipantCategoryRepository extends EntityRepository
             $queryBuilder->addOrderBy('ept.name', 'ASC');
         }
         $queryBuilder->addOrderBy('ept.id', 'ASC');
-    }
-
-    public function getParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
-    {
-        return new ArrayCollection(
-            $this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
-        );
     }
 }
