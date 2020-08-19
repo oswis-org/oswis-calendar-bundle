@@ -51,6 +51,15 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange:
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
 
+OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participants_post'
+                - 'calendar_participant_get'
+                - 'calendar_participant_put'
+
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
     attributes:
         id:
