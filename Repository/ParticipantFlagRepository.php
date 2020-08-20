@@ -45,17 +45,6 @@ class ParticipantFlagRepository extends EntityRepository
         return $queryBuilder;
     }
 
-    public function getParticipantFlag(?array $opts = []): ?ParticipantFlag
-    {
-        try {
-            $participantFlag = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
-            return null;
-        }
-
-        return $participantFlag instanceof ParticipantFlag ? $participantFlag : null;
-    }
-
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
@@ -91,6 +80,17 @@ class ParticipantFlagRepository extends EntityRepository
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
         $queryBuilder->addOrderBy('pFlag.id', 'ASC');
+    }
+
+    public function getParticipantFlag(?array $opts = []): ?ParticipantFlag
+    {
+        try {
+            $participantFlag = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+        } catch (Exception $e) {
+            return null;
+        }
+
+        return $participantFlag instanceof ParticipantFlag ? $participantFlag : null;
     }
 }
 

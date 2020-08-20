@@ -203,53 +203,6 @@ class Participant implements ParticipantInterface
         }
     }
 
-    public static function vsStringFix(?string $variableSymbol): ?string
-    {
-        return empty($variableSymbol) ? null : substr(trim(preg_replace('/\s/', '', $variableSymbol)), -9);
-    }
-
-    public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
-    {
-        $filtered = new ArrayCollection();
-        foreach ($participants as $newParticipant) {
-            if (!($newParticipant instanceof self) || (!$includeNotActivated && !$newParticipant->hasActivatedContactUser())) {
-                continue;
-            }
-            if (!$filtered->contains($newParticipant)) {
-                $filtered->add($newParticipant);
-            }
-        }
-
-        return $filtered;
-    }
-
-    public static function sortParticipantsCollection(Collection $participants): Collection
-    {
-        $participantsArray = $participants->toArray();
-        self::sortParticipantsArray($participantsArray);
-
-        return new ArrayCollection($participantsArray);
-    }
-
-    public static function sortParticipantsArray(array &$participants): array
-    {
-        usort($participants, fn(Participant $participant1, Participant $participant2) => self::compareParticipants($participant1, $participant2));
-
-        return $participants;
-    }
-
-    public static function compareParticipants(Participant $participant1, Participant $participant2): int
-    {
-        $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
-            ? 0
-            : strcmp(
-                $participant1->getContact()->getSortableName(),
-                $participant2->getContact()->getSortableName()
-            );
-
-        return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
-    }
-
     /**
      * @param ParticipantContact|null $participantContact
      *
@@ -398,6 +351,11 @@ class Participant implements ParticipantInterface
         return $this->variableSymbol = self::vsStringFix($this->getContact() ? $this->getContact()->getPhone() : null) ?? ''.$this->getId();
     }
 
+    public static function vsStringFix(?string $variableSymbol): ?string
+    {
+        return empty($variableSymbol) ? null : substr(trim(preg_replace('/\s/', '', $variableSymbol)), -9);
+    }
+
     /**
      * @param ParticipantRange|null $newParticipantRange
      * @param bool                  $admin
@@ -543,15 +501,83 @@ class Participant implements ParticipantInterface
         );
     }
 
+    /**
+     * @param RegRange        $newRange
+     * @param bool            $onlySimulate
+     * @param bool            $admin
+     * @param Collection|null $newFlagGroups
+     *
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
+     */
+    private function changeFlagsByNewRegRange(RegRange $newRange, bool $onlySimulate = false, bool $admin = false, ?Collection $newFlagGroups = null): void
+    {
+        $newFlagGroups ??= $this->getFlagGroups(null, null, true);
+        foreach ($newFlagGroups as $oldParticipantFlagGroup) {
+            $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin);
+            if (false === $onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
+                $this->replaceParticipantFlagGroup($oldParticipantFlagGroup, $newParticipantFlagGroup);
+            }
+        }
+    }
+
     public function replaceParticipantFlagGroup(ParticipantFlagGroup $oldParticipantFlagGroup, ParticipantFlagGroup $newParticipantFlagGroup): void
     {
         $oldParticipantFlagGroup->delete();
         $this->getFlagGroups()->add($newParticipantFlagGroup);
     }
 
+    public static function filterCollection(Collection $participants, ?bool $includeNotActivated = true): Collection
+    {
+        $filtered = new ArrayCollection();
+        foreach ($participants as $newParticipant) {
+            if (!($newParticipant instanceof self) || (!$includeNotActivated && !$newParticipant->hasActivatedContactUser())) {
+                continue;
+            }
+            if (!$filtered->contains($newParticipant)) {
+                $filtered->add($newParticipant);
+            }
+        }
+
+        return $filtered;
+    }
+
     public function hasActivatedContactUser(): bool
     {
         return $this->getContactPersons(true)->count() > 0;
+    }
+
+    public function getContactPersons(bool $onlyActivated = false): Collection
+    {
+        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
+    }
+
+    public static function sortParticipantsCollection(Collection $participants): Collection
+    {
+        $participantsArray = $participants->toArray();
+        self::sortParticipantsArray($participantsArray);
+
+        return new ArrayCollection($participantsArray);
+    }
+
+    public static function sortParticipantsArray(array &$participants): array
+    {
+        usort($participants, fn(Participant $participant1, Participant $participant2) => self::compareParticipants($participant1, $participant2));
+
+        return $participants;
+    }
+
+    public static function compareParticipants(Participant $participant1, Participant $participant2): int
+    {
+        $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
+            ? 0
+            : strcmp(
+                $participant1->getContact()->getSortableName(),
+                $participant2->getContact()->getSortableName()
+            );
+
+        return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
     }
 
     public function removeEmptyNotesAndDetails(): void
@@ -593,11 +619,6 @@ class Participant implements ParticipantInterface
                 $this->addNote($newNote);
             }
         }
-    }
-
-    public function getContactPersons(bool $onlyActivated = false): Collection
-    {
-        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
     }
 
     public function getSortableName(): string
@@ -941,26 +962,5 @@ class Participant implements ParticipantInterface
     public function getFlagsAggregatedByType(): array
     {
         return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
-    }
-
-    /**
-     * @param RegRange        $newRange
-     * @param bool            $onlySimulate
-     * @param bool            $admin
-     * @param Collection|null $newFlagGroups
-     *
-     * @throws FlagCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws NotImplementedException
-     */
-    private function changeFlagsByNewRegRange(RegRange $newRange, bool $onlySimulate = false, bool $admin = false, ?Collection $newFlagGroups = null): void
-    {
-        $newFlagGroups ??= $this->getFlagGroups(null, null, true);
-        foreach ($newFlagGroups as $oldParticipantFlagGroup) {
-            $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin);
-            if (false === $onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
-                $this->replaceParticipantFlagGroup($oldParticipantFlagGroup, $newParticipantFlagGroup);
-            }
-        }
     }
 }

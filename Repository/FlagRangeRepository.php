@@ -64,11 +64,6 @@ class FlagRangeRepository extends ServiceEntityRepository
         return $queryBuilder;
     }
 
-    public function getFlagRanges(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
-    {
-        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
-    }
-
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
@@ -106,5 +101,10 @@ class FlagRangeRepository extends ServiceEntityRepository
             $queryBuilder->addOrderBy('flagRange.name', 'ASC');
         }
         $queryBuilder->addOrderBy('flagRange.id', 'ASC');
+    }
+
+    public function getFlagRanges(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    {
+        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
     }
 }

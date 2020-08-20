@@ -103,20 +103,21 @@
         <div class="block">
             z&nbsp;{{ participant.price|default(0) }},-&nbsp;Kč
         </div>
-        <div class="block small">
-            zbývá {{ participant.remainingPrice|default(0) }},-&nbsp;Kč
-            {% if participant.remainingPrice|default(0) > 0 %}
+        <div class="block small" style="{{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
+            zbývá&nbsp;{{ participant.remainingPrice|default(0) }},-&nbsp;Kč&nbsp;
+            {%- if participant.remainingPrice|default(0) > 0 -%}
                 <strong style="color: orange;">★</strong>
-            {% elseif participant.remainingPrice|default(0) < 0 %}
+            {%- elseif participant.remainingPrice|default(0) < 0 -%}
                 <strong style="color: red;">⚠</strong>
-            {% else %}
+            {%- else -%}
                 <strong style="color: green;">✔</strong>
-            {% endif %}
+            {%- endif -%}
         </div>
         {% if participant.price != 0 %}
-            {% set paidPercentage = participant.paidPricePercentage * 100 %}
+            {% set paidPercentage = (participant.paidPricePercentage * 100)|round %}
             {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
-            {% set paidColor = participant.remainingDeposit > 0 ? paidColor : 'warning' %}
+            {% set paidColor = participant.remainingDeposit > 0 ? 'warning' : paidColor %}
+            {% set paidColor = participant.remainingPrice < 0 ? 'secondary' : paidColor %}
             <div class="progress">
                 <div class="progress-bar progress-bar-striped bg-{{ paidColor }}" role="progressbar" style="width: {{ paidPercentage }}%"
                      aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">
@@ -124,6 +125,11 @@
                 </div>
             </div>
         {% endif %}
+        <div>
+            <small>
+                VS: {{ participant.variableSymbol|default('nenastaven') }}
+            </small>
+        </div>
     </td>
 </tr>
 </tbody>

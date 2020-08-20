@@ -55,17 +55,6 @@ class RegRangeRepository extends EntityRepository
         return $queryBuilder;
     }
 
-    public function getRegistrationsRange(?array $opts = []): ?RegRange
-    {
-        try {
-            $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts)->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
-            return null;
-        }
-
-        return $registrationsRange instanceof RegRange ? $registrationsRange : null;
-    }
-
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
@@ -134,6 +123,17 @@ class RegRangeRepository extends EntityRepository
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
         $queryBuilder->addOrderBy('range.id', 'ASC');
+    }
+
+    public function getRegistrationsRange(?array $opts = []): ?RegRange
+    {
+        try {
+            $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+        } catch (Exception $e) {
+            return null;
+        }
+
+        return $registrationsRange instanceof RegRange ? $registrationsRange : null;
     }
 }
 

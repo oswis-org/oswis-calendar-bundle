@@ -26,39 +26,6 @@ class ParticipantType extends AbstractType
         $this->logger = $logger;
     }
 
-    public static function addContactField(FormBuilderInterface $builder): void
-    {
-        $builder->add('contact', PersonType::class, array('label' => 'Účastník', 'required' => true));
-    }
-
-    public static function addParticipantNotesFields(FormBuilderInterface $builder): void
-    {
-        // TODO: PRE_SUBMIT => Remove empty notes.
-        $builder->add(
-            'notes',
-            CollectionType::class,
-            array(
-                'label'         => false,
-                'entry_type'    => ParticipantNoteFormType::class,
-                'entry_options' => array(
-                    'label' => false,
-                ),
-            )
-        );
-    }
-
-    public static function addSubmitButton(FormBuilderInterface $builder): void
-    {
-        $builder->add(
-            'save',
-            SubmitType::class,
-            [
-                'label' => 'Přihlásit se',
-                'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
-            ]
-        );
-    }
-
     /**
      * @param FormBuilderInterface $builder
      * @param array                $options
@@ -89,6 +56,11 @@ class ParticipantType extends AbstractType
         self::addSubmitButton($builder);
     }
 
+    public static function addContactField(FormBuilderInterface $builder): void
+    {
+        $builder->add('contact', PersonType::class, array('label' => 'Účastník', 'required' => true));
+    }
+
     public function addParticipantFlagGroupFields(FormBuilderInterface $builder, Participant $participant): void
     {
         $builder->add(
@@ -104,6 +76,34 @@ class ParticipantType extends AbstractType
                     'participant' => $participant,
                 ],
             )
+        );
+    }
+
+    public static function addParticipantNotesFields(FormBuilderInterface $builder): void
+    {
+        // TODO: PRE_SUBMIT => Remove empty notes.
+        $builder->add(
+            'notes',
+            CollectionType::class,
+            array(
+                'label'         => false,
+                'entry_type'    => ParticipantNoteFormType::class,
+                'entry_options' => array(
+                    'label' => false,
+                ),
+            )
+        );
+    }
+
+    public static function addSubmitButton(FormBuilderInterface $builder): void
+    {
+        $builder->add(
+            'save',
+            SubmitType::class,
+            [
+                'label' => 'Přihlásit se',
+                'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
+            ]
         );
     }
 

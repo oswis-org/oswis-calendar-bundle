@@ -45,17 +45,6 @@ class ParticipantRangeRepository extends EntityRepository
         return $queryBuilder;
     }
 
-    public function getFlagRangeConnection(?array $opts = []): ?ParticipantRange
-    {
-        try {
-            $rangeConnection = $this->getRangesConnectionsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
-            return null;
-        }
-
-        return $rangeConnection instanceof ParticipantRange ? $rangeConnection : null;
-    }
-
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
@@ -91,6 +80,17 @@ class ParticipantRangeRepository extends EntityRepository
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
         $queryBuilder->addOrderBy('participant_range.id', 'ASC');
+    }
+
+    public function getFlagRangeConnection(?array $opts = []): ?ParticipantRange
+    {
+        try {
+            $rangeConnection = $this->getRangesConnectionsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+        } catch (Exception $e) {
+            return null;
+        }
+
+        return $rangeConnection instanceof ParticipantRange ? $rangeConnection : null;
     }
 }
 

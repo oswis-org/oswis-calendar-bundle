@@ -33,11 +33,6 @@ class ParticipantPaymentsImportService
         $this->paymentService = $paymentService;
     }
 
-    public static function compareParticipantsByPayment(int $value, Participant $participant1, Participant $participant2): int
-    {
-        return $participant1->differenceFromPayment($value) <=> $participant2->differenceFromPayment($value);
-    }
-
     public function processImport(ParticipantPaymentsImport $paymentsImport, ?CsvPaymentImportSettings $importSettings = null): void
     {
         $importedPayments = new ArrayCollection();
@@ -97,5 +92,10 @@ class ParticipantPaymentsImportService
         $this->logger->info("Found participant '$participantString' for payment with VS '$vs' and value '$value'.");
 
         return $participant;
+    }
+
+    public static function compareParticipantsByPayment(int $value, Participant $participant1, Participant $participant2): int
+    {
+        return $participant1->differenceFromPayment($value) <=> $participant2->differenceFromPayment($value);
     }
 }

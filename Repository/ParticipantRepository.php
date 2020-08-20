@@ -75,17 +75,6 @@ class ParticipantRepository extends ServiceEntityRepository
         return $queryBuilder;
     }
 
-    public function getParticipant(?array $opts = []): ?Participant
-    {
-        try {
-            $participant = $this->getParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
-            return null;
-        }
-
-        return $participant instanceof Participant ? $participant : null;
-    }
-
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
@@ -184,6 +173,17 @@ class ParticipantRepository extends ServiceEntityRepository
             $queryBuilder->addOrderBy('contact_0.sortableName', 'ASC');
         }
         $queryBuilder->addOrderBy('participant.id', 'ASC');
+    }
+
+    public function getParticipant(?array $opts = []): ?Participant
+    {
+        try {
+            $participant = $this->getParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+        } catch (NonUniqueResultException $e) {
+            return null;
+        }
+
+        return $participant instanceof Participant ? $participant : null;
     }
 }
 

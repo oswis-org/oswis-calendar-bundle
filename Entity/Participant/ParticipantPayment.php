@@ -121,10 +121,17 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             $this->setType($type);
         } catch (InvalidTypeException $exception) {
         }
-        try {
-            $this->setDateTime($dateTime);
-        } catch (NotImplementedException $exception) {
-        }
+        $this->setDateTime($dateTime);
+    }
+
+    /**
+     * @param DateTime|null $dateTime
+     *
+     * @throws NotImplementedException
+     */
+    public function setDateTime(?DateTime $dateTime): void
+    {
+        $this->dateTime = $dateTime;
     }
 
     public static function getAllowedTypesDefault(): array
@@ -135,19 +142,6 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @throws NotImplementedException
-     */
-    public function setDateTime(?DateTime $dateTime): void
-    {
-        $oldDateTime = $this->getDateTime();
-        if (null !== $oldDateTime && $oldDateTime !== $dateTime) {
-            throw new NotImplementedException('změna data platby');
-        }
     }
 
     /**
