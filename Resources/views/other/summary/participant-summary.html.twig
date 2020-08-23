@@ -67,8 +67,11 @@
                 {% for payment in participant.payments %}
                     <li>
                         {{ payment.numericValue|default('0') }},- Kč
-                        <small>[{{ payment.date|date("j. n. Y") }}]</small>
-                        {% if payment.type %}<small>[{{ payment.type }}]</small>{% endif %}
+                        <small>[{{ payment.dateTime|date("j. n. Y") }}]</small>
+                        {% if payment.type %}<small> [{{ payment.type }}]</small>{% endif %}
+                        {% if payment.note|default|length > 0 %}
+                            <br><small style="color: darkgrey;">{{ payment.note }}</small>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>

@@ -84,7 +84,7 @@ class FlagGroupRange implements NameableInterface
      */
     protected ?Collection $flagRanges = null;
 
-    public function __construct(?FlagCategory $category, ?FlagAmountRange $flagAmountRange = null, ?Publicity $publicity = null, ?string $emptyPlaceholder = null)
+    public function __construct(?FlagCategory $category = null, ?FlagAmountRange $flagAmountRange = null, ?Publicity $publicity = null, ?string $emptyPlaceholder = null)
     {
         $this->flagRanges = new ArrayCollection();
         $this->setFlagCategory($category);
