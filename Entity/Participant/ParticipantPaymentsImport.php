@@ -99,8 +99,6 @@ class ParticipantPaymentsImport
         return new CsvPaymentImportSettings();
     }
 
-    /** @noinspection PhpUnusedParameterInspection */
-
     public function extractPayments(CsvPaymentImportSettings $csvSettings): Collection
     {
         $payments = new ArrayCollection();

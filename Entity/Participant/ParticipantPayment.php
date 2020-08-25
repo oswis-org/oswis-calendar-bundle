@@ -124,11 +124,6 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
         $this->setDateTime($dateTime);
     }
 
-    /**
-     * @param DateTime|null $dateTime
-     *
-     * @throws NotImplementedException
-     */
     public function setDateTime(?DateTime $dateTime): void
     {
         $this->dateTime = $dateTime;

@@ -156,7 +156,7 @@ class ParticipantMailService
         $eventId = $participant->getEvent() ? $participant->getEvent()->getId() : null;
         $qrComment = "$participantContactSlug, ID $participantId, akce $eventId";
         foreach (['depositQr' => ['deposit' => true, 'rest' => false], 'restQr' => ['deposit' => false, 'rest' => true]] as $key => $opts) {
-            if ($qrPng = $participant->getQrPng($opts['deposit'], $opts['rest'], $qrComment)) {
+            if ($qrPng = $participant->generateQrPng($opts['deposit'], $opts['rest'], $qrComment)) {
                 $templatedEmail->embed($qrPng, $key, 'image/png');
                 $mailData[$key] = "cid:$key";
             }

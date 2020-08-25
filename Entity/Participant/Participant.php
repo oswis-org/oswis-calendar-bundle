@@ -776,7 +776,7 @@ class Participant implements ParticipantInterface
         return $this->getContact() ? $this->getContact()->getAppUser() : null;
     }
 
-    public function getQrPng(bool $deposit = true, bool $rest = true, string $qrComment = ''): ?string
+    public function generateQrPng(bool $deposit = true, bool $rest = true, string $qrComment = ''): ?string
     {
         if (null === ($event = $this->getEvent()) || null === ($bankAccount = $event->getBankAccount(true))) {
             return null;
