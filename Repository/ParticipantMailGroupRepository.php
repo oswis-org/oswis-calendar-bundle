@@ -51,15 +51,15 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
 
     final public function findAutoMailGroups(?Event $event = null, ?string $type = null): Collection
     {
-        $queryBuilder = $this->createQueryBuilder('group')->setParameter('now', new DateTime());
-        $queryBuilder->where("group.automaticMailing = 1");
-        $queryBuilder->andWhere("(group.startDateTime IS NULL) OR (:now < group.startDateTime) AND  (group.endDateTime IS NULL) OR (:now > group.endDateTime)");
-        $queryBuilder->addOrderBy('group.priority', 'DESC');
+        $queryBuilder = $this->createQueryBuilder('mg')->setParameter('now', new DateTime());
+        $queryBuilder->where("mg.automaticMailing = 1");
+        $queryBuilder->andWhere("(mg.startDateTime IS NULL) OR (:now < mg.startDateTime) AND  (mg.endDateTime IS NULL) OR (:now > mg.endDateTime)");
+        $queryBuilder->addOrderBy('mg.priority', 'DESC');
         if (null !== $event) {
-            $queryBuilder->where("group.event = :event_id")->setParameter('event_id', $event->getId());
+            $queryBuilder->where("mg.event = :event_id")->setParameter('event_id', $event->getId());
         }
         if (!empty($type)) {
-            $queryBuilder->where("group.type = :type")->setParameter('type', $type);
+            $queryBuilder->where("mg.type = :type")->setParameter('type', $type);
         }
 
         return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
