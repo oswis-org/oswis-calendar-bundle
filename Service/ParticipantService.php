@@ -391,21 +391,19 @@ class ParticipantService
     {
         foreach ($this->participantMailService->getAutoMailGroups($event, $type) as $group) {
             if (!($group instanceof ParticipantMailGroup)) {
+                $this->logger->error("MailGroup is not MailGroup!");
                 continue;
             }
             $participants = $this->getParticipants(
                 [
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED       => !$group->isOnlyActive(),
                     ParticipantRepository::CRITERIA_EVENT                 => $group->getEvent(),
                     ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
                 ]
             )->filter(fn(Participant $p) => !$p->hasEMailOfType($group->getType()))->slice(0, $limit);
             foreach ($participants as $participant) {
-                if ($participant instanceof Participant) {
-                    try {
-                        $this->participantMailService->sendMessage($participant, $group);
-                    } catch (OswisException $e) {
-                    }
+                if ($participant instanceof Participant && $group->isApplicable($participant)) {
+                    $this->participantMailService->sendMessage($participant, $group);
                 }
             }
         }

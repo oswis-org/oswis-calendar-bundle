@@ -265,6 +265,7 @@ class ParticipantMailService
         $sent = 0;
         if ($this->participantMailRepository->findSent($participant, $type)->count() > 0) {
             $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user (message already sent).");
+
             return;
         }
         foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {

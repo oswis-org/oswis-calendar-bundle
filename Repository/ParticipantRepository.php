@@ -125,7 +125,7 @@ class ParticipantRepository extends ServiceEntityRepository
     private function setIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('participant.regRange IS NOT NULL');
+            $queryBuilder->andWhere('participant.deletedAt IS NULL');
         }
     }
 

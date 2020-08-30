@@ -783,7 +783,7 @@ class Participant implements ParticipantInterface
 
     public function hasEMailOfType(?string $type = null): bool
     {
-        return $this->eMails->filter(fn(ParticipantMail $mail) => $mail->getType() === $type)->count() > 0;
+        return $this->eMails->filter(fn(ParticipantMail $mail) => $mail->isSent() && $mail->getType() === $type)->count() > 0;
     }
 
     public function getAppUser(): ?AppUser

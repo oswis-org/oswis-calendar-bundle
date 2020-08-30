@@ -126,6 +126,16 @@ class ParticipantMailGroup extends AbstractMailGroup
 
     public function isApplicableByRestrictions(?object $entity): bool
     {
-        return !(!($entity instanceof Participant) || ($this->onlyActive && !$entity->isActive()) || ($this->event && $entity->isContainedInEvent($this->event)));
+        if (!($entity instanceof Participant)) {
+            return false;
+        }
+        if ($this->onlyActive && !$entity->isActive()) {
+            return false;
+        }
+        if ($this->event && !$entity->isContainedInEvent($this->event)) {
+            return false;
+        }
+
+        return true;
     }
 }
