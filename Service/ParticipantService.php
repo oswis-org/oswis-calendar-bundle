@@ -18,6 +18,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
@@ -385,4 +386,30 @@ class ParticipantService
             $regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']), new ArrayCollection([new ParticipantNote()])
         );
     }
+
+    public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): void
+    {
+        $groups = $this->participantMailService->getAutoMailGroups($event, $type);
+        foreach ($groups as $group) {
+            if (!($group instanceof ParticipantMailGroup)) {
+                continue;
+            }
+            $participants = $this->getParticipants(
+                [
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
+                    ParticipantRepository::CRITERIA_EVENT                 => $group->getEvent(),
+                    ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
+                ]
+            )->filter(fn(Participant $p) => !$p->hasEMailOfType($group->getType()))->slice(0, $limit);
+            foreach ($participants as $participant) {
+                if ($participant instanceof Participant) {
+                    try {
+                        $this->participantMailService->sendMessage($participant, $group);
+                    } catch (OswisException $e) {
+                    }
+                }
+            }
+        }
+    }
+
 }

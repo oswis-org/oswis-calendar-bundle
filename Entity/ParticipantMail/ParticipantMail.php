@@ -10,6 +10,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMail;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 
 /**
  * E-mail sent to some user included in participant.
@@ -56,13 +57,17 @@ class ParticipantMail extends AbstractMail
     public const TYPE_SUMMARY = 'summary';
     public const TYPE_PAYMENT = 'payment';
 
-    public const ALLOWED_TYPES = [self::TYPE_ACTIVATION_REQUEST, self::TYPE_SUMMARY, self::TYPE_PAYMENT];
-
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER", inversedBy="eMails")
      * @Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")
      */
     protected ?Participant $participant = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(name="participant_mail_category_id", referencedColumnName="id")
+     */
+    protected ?ParticipantMailCategory $participantMailCategory = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser", fetch="EAGER")
@@ -92,9 +97,9 @@ class ParticipantMail extends AbstractMail
         $this->appUser = $appUser;
     }
 
-    public static function getAllowedTypesDefault(): array
+    public static function checkType(?string $typeName): bool
     {
-        return [...parent::getAllowedTypesDefault(), ...self::ALLOWED_TYPES];
+        return true;
     }
 
     public function isParticipant(?Participant $participant): bool
@@ -107,6 +112,29 @@ class ParticipantMail extends AbstractMail
         return $this->participant;
     }
 
+    /**
+     * @param Participant|null $participant
+     *
+     * @throws NotImplementedException
+     */
+    public function setParticipant(?Participant $participant): void
+    {
+        if ($this->participant === $participant) {
+            return;
+        }
+        if (null !== $this->participant && (null !== $this->getId() && null === $participant)) {
+            // Do not allow to remove e-mail from participant if payment was already persisted.
+            throw new NotImplementedException('změna účastníka', 'u zprávy');
+        }
+        if ($this->participant && $this->participant !== $participant) {
+            $this->participant->removeEMail($this);
+        }
+        $this->participant = $participant;
+        if (null !== $participant) {
+            $participant->addEMail($this);
+        }
+    }
+
     public function getAppUser(): ?AppUser
     {
         return $this->appUser;
@@ -115,5 +143,15 @@ class ParticipantMail extends AbstractMail
     public function getParticipantToken(): ?ParticipantToken
     {
         return $this->participantToken;
+    }
+
+    public function getParticipantMailCategory(): ?ParticipantMailCategory
+    {
+        return $this->participantMailCategory;
+    }
+
+    public function setParticipantMailCategory(?ParticipantMailCategory $participantMailCategory): void
+    {
+        $this->participantMailCategory = $participantMailCategory;
     }
 }

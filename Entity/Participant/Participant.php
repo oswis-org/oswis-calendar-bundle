@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
@@ -104,6 +105,14 @@ class Participant implements ParticipantInterface
     protected ?Collection $payments = null;
 
     /**
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail", cascade={"all"}, mappedBy="participant", fetch="EAGER"
+     * )
+     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
+     */
+    protected ?Collection $eMails = null;
+
+    /**
      * Related contact (person or organization).
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact", cascade={"all"}, fetch="EAGER"
@@ -194,6 +203,7 @@ class Participant implements ParticipantInterface
         $this->notes = new ArrayCollection();
         $this->flagGroups = new ArrayCollection();
         $this->payments = new ArrayCollection();
+        $this->eMails = new ArrayCollection();
         $participantContact = new ParticipantContact($contact);
         $participantContact->activate(new DateTime());
         $this->setParticipantContact($participantContact);
@@ -771,6 +781,11 @@ class Participant implements ParticipantInterface
         return $this->payments ??= new ArrayCollection();
     }
 
+    public function hasEMailOfType(?string $type = null): bool
+    {
+        return $this->eMails->exists(fn(ParticipantMail $mail) => $mail->getType() === $type);
+    }
+
     public function getAppUser(): ?AppUser
     {
         return $this->getContact() ? $this->getContact()->getAppUser() : null;
@@ -943,6 +958,18 @@ class Participant implements ParticipantInterface
     }
 
     /**
+     * @param ParticipantMail|null $participantMail
+     *
+     * @throws NotImplementedException
+     */
+    public function removeEMail(?ParticipantMail $participantMail): void
+    {
+        if (null !== $participantMail) {
+            throw new NotImplementedException('odebrání zprávy', 'u přihlášek');
+        }
+    }
+
+    /**
      * @param ParticipantPayment|null $participantPayment
      *
      * @throws NotImplementedException
@@ -955,6 +982,27 @@ class Participant implements ParticipantInterface
         }
     }
 
+    public function addEMail(?ParticipantMail $participantMail): void
+    {
+        if ($participantMail && !$this->getEMails()->contains($participantMail)) {
+            $this->getEMails()->add($participantMail);
+            try {
+                $participantMail->setParticipant($this);
+            } catch (NotImplementedException $e) {
+            }
+        }
+    }
+
+    public function getEMails(): Collection
+    {
+        return $this->eMails ??= new ArrayCollection();
+    }
+
+    public function setEMails(?Collection $eMails): void
+    {
+        $this->eMails = $eMails;
+    }
+
     /**
      * Gets array of flags aggregated by their types.
      * @return array
@@ -962,5 +1010,17 @@ class Participant implements ParticipantInterface
     public function getFlagsAggregatedByType(): array
     {
         return FlagsByType::getFlagsAggregatedByType($this->getParticipantFlags());
+    }
+
+    public function isContainedInEvent(?Event $event = null): bool
+    {
+        if (null === $event || null === $this->getEvent()) {
+            return false;
+        }
+        if ($this->getEvent() === $event || $this->getEvent()->isEventSuperEvent($event, true)) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -5,9 +5,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Service;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
@@ -105,7 +107,7 @@ class ParticipantMailService
         if (null === ($mailCategory = $this->getMailCategoryByType($type))) {
             throw new NotImplementedException($type, 'u e-mailů k přihláškám');
         }
-        if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
+        if (null === ($group = $this->getMailGroupByCategory($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Skupina nebo šablona e-mailů nebyla nalezena.');
         }
         $appUser = ($participantToken ? $participantToken->getAppUser() : null) ?? $participant->getAppUser();
@@ -117,6 +119,7 @@ class ParticipantMailService
             $title = "Shrnutí smazané přihlášky";
         }
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
+        $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
         $contact = $participant->getContact();
         $data = [
@@ -144,7 +147,7 @@ class ParticipantMailService
         return $this->categoryRepository->findByType($type);
     }
 
-    public function getMailGroup(Participant $participant, MailCategoryInterface $category): ?ParticipantMailGroup
+    public function getMailGroupByCategory(Participant $participant, MailCategoryInterface $category): ?ParticipantMailGroup
     {
         return $this->groupRepository->findByUser($participant, $category);
     }
@@ -163,6 +166,11 @@ class ParticipantMailService
         }
 
         return $mailData;
+    }
+
+    public function getAutoMailGroups(?Event $event = null, ?string $type = null): ?Collection
+    {
+        return $this->groupRepository->findAutoMailGroups($event, $type);
     }
 
     /**
@@ -214,13 +222,14 @@ class ParticipantMailService
         if (null === ($mailCategory = $this->getMailCategoryByType(ParticipantMail::TYPE_PAYMENT))) {
             throw new NotImplementedException(ParticipantMail::TYPE_PAYMENT, 'u e-mailů k přihláškám');
         }
-        if (null === ($group = $this->getMailGroup($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
+        if (null === ($group = $this->getMailGroupByCategory($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
             $groupName = $group ? $group->getName() : null;
             $templateName = isset($twigTemplate) ? $twigTemplate->getName() : null;
             throw new NotFoundException("Skupina '$groupName' nebo šablona '$templateName' e-mailů nebyla nalezena.");
         }
         $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
+        $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
         $contact = $participant->getContact();
         $data = [
@@ -242,4 +251,73 @@ class ParticipantMailService
         }
         $this->em->flush();
     }
+
+    /**
+     * @param Participant          $participant
+     * @param ParticipantMailGroup $group
+     *
+     * @throws OswisException
+     */
+    public function sendMessage(Participant $participant, ParticipantMailGroup $group): void
+    {
+        $type = $group->getType();
+        $sent = 0;
+        if (!empty($this->participantMailRepository->findSent($participant, $group->getType()))) {
+            return;
+        }
+        foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
+            if ($contactPerson instanceof AbstractContact) {
+                try {
+                    $this->sendMessageToUser($participant, $contactPerson->getAppUser(), $group);
+                    $sent++;
+                } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+                    $participantId = $participant->getId();
+                    $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
+                    $message = $exception->getMessage();
+                    $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user '$userId' ($message).");
+                }
+            }
+        }
+        if (1 > $sent && $contactPersons->count() > 0) {
+            throw new OswisException("Nepodařilo se odeslat e-mail typu '$type'.");
+        }
+    }
+
+    /**
+     * @param Participant          $participant
+     * @param AppUser              $appUser
+     * @param ParticipantMailGroup $group
+     *
+     * @throws InvalidTypeException
+     * @throws NotFoundException
+     * @throws NotImplementedException
+     */
+    public function sendMessageToUser(Participant $participant, AppUser $appUser, ParticipantMailGroup $group): void
+    {
+        if (null === ($mailCategory = $group->getCategory()) || !($mailCategory instanceof ParticipantMailCategory)) {
+            throw new NotImplementedException($group->getType(), 'u e-mailů k přihláškám');
+        }
+        if (null === ($twigTemplate = $group->getTwigTemplate())) {
+            throw new NotFoundException('Šablona e-mailů nebyla nalezena.');
+        }
+        $defaultTitle = "Informace k akci".(null !== $group->getEvent() ? $group->getEvent()->getShortName() : '');
+        $title = $twigTemplate->getName() ?? $defaultTitle;
+        $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
+        $participantMail->setParticipantMailCategory($mailCategory);
+        $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+        $contact = $participant->getContact();
+        $data = [
+            'participant'    => $participant,
+            'appUser'        => $appUser,
+            'contact'        => $contact,
+            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
+            'category'       => $mailCategory,
+            'type'           => $group->getType(),
+        ];
+        $this->em->persist($participantMail);
+        $templateName = $twigTemplate->getTemplateName() ?? '@OswisOrgOswisCalendar/e-mail/pages/participant-universal.html.twig';
+        $this->mailService->sendEMail($participantMail, $templateName, $data);
+        $this->em->flush();
+    }
+
 }

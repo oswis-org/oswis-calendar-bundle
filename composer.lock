@@ -128,20 +128,20 @@
     },
     {
       "name": "api-platform/core",
-      "version": "v2.5.6",
+      "version": "v2.5.7",
       "source": {
         "type": "git",
         "url": "https://github.com/api-platform/core.git",
-        "reference": "d84282fd29cc16a4fac9be67fdd76ca247b94123"
+        "reference": "37b5edf50cc05299b12cb8982be3efa035d726ce"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/api-platform/core/zipball/d84282fd29cc16a4fac9be67fdd76ca247b94123",
-        "reference": "d84282fd29cc16a4fac9be67fdd76ca247b94123",
+        "url": "https://api.github.com/repos/api-platform/core/zipball/37b5edf50cc05299b12cb8982be3efa035d726ce",
+        "reference": "37b5edf50cc05299b12cb8982be3efa035d726ce",
         "shasum": ""
       },
       "require": {
-        "doctrine/inflector": "^1.0",
+        "doctrine/inflector": "^1.0 || ^2.0",
         "fig/link-util": "^1.0",
         "php": ">=7.1",
         "psr/cache": "^1.0",
@@ -156,7 +156,8 @@
       },
       "conflict": {
         "doctrine/common": "<2.7",
-        "doctrine/mongodb-odm": "<2.0"
+        "doctrine/mongodb-odm": "<2.0",
+        "doctrine/persistence": "<1.3"
       },
       "require-dev": {
         "behat/behat": "^3.1",
@@ -181,17 +182,14 @@
         "nelmio/api-doc-bundle": "^2.13.4",
         "phpdocumentor/reflection-docblock": "^3.0 || ^4.0",
         "phpdocumentor/type-resolver": "^0.3 || ^0.4",
-        "phpspec/prophecy": "^1.8",
         "phpstan/extension-installer": "^1.0",
         "phpstan/phpstan": "^0.12.4",
         "phpstan/phpstan-doctrine": "^0.12.7",
         "phpstan/phpstan-phpunit": "^0.12.4",
         "phpstan/phpstan-symfony": "^0.12.4",
-        "phpunit/phpunit": "^7.5.2 || ^8.0",
         "psr/log": "^1.0",
         "ramsey/uuid": "^3.7",
         "ramsey/uuid-doctrine": "^1.4",
-        "sebastian/object-enumerator": "^3.0.3",
         "symfony/asset": "^3.4 || ^4.0 || ^5.0",
         "symfony/browser-kit": "^4.3 || ^5.0",
         "symfony/cache": "^3.4 || ^4.0 || ^5.0",
@@ -210,7 +208,7 @@
         "symfony/http-client": "^4.3 || ^5.0",
         "symfony/mercure-bundle": "*",
         "symfony/messenger": "^4.3 || ^5.0",
-        "symfony/phpunit-bridge": "^4.3 || ^5.0",
+        "symfony/phpunit-bridge": "dev-master",
         "symfony/routing": "^3.4 || ^4.3 || ^5.0",
         "symfony/security-bundle": "^3.4 || ^4.0 || ^5.0",
         "symfony/security-core": "^4.3 || ^5.0",
@@ -220,7 +218,7 @@
         "symfony/yaml": "^3.4 || ^4.0 || ^5.0",
         "teohhanhui/stubs-mongodb": "@dev",
         "twig/twig": "^1.42.3 || ^2.12",
-        "webonyx/graphql-php": ">=0.13.1 <1.0"
+        "webonyx/graphql-php": "^14.0"
       },
       "suggest": {
         "doctrine/mongodb-odm-bundle": "To support MongoDB. Only versions 4.0 and later are supported.",
@@ -275,7 +273,7 @@
         "rest",
         "swagger"
       ],
-      "time": "2020-05-28T15:07:16+00:00"
+      "time": "2020-08-28T16:23:13+00:00"
     },
     {
       "name": "bacon/bacon-qr-code",
@@ -464,16 +462,16 @@
     },
     {
       "name": "composer/package-versions-deprecated",
-      "version": "1.10.99.1",
+      "version": "1.11.99",
       "source": {
         "type": "git",
         "url": "https://github.com/composer/package-versions-deprecated.git",
-        "reference": "68c9b502036e820c33445ff4d174327f6bb87486"
+        "reference": "c8c9aa8a14cc3d3bec86d0a8c3fa52ea79936855"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/68c9b502036e820c33445ff4d174327f6bb87486",
-        "reference": "68c9b502036e820c33445ff4d174327f6bb87486",
+        "url": "https://api.github.com/repos/composer/package-versions-deprecated/zipball/c8c9aa8a14cc3d3bec86d0a8c3fa52ea79936855",
+        "reference": "c8c9aa8a14cc3d3bec86d0a8c3fa52ea79936855",
         "shasum": ""
       },
       "require": {
@@ -481,7 +479,7 @@
         "php": "^7 || ^8"
       },
       "replace": {
-        "ocramius/package-versions": "1.10.99"
+        "ocramius/package-versions": "1.11.99"
       },
       "require-dev": {
         "composer/composer": "^1.9.3 || ^2.0@dev",
@@ -529,7 +527,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-08-13T12:55:41+00:00"
+      "time": "2020-08-25T05:50:16+00:00"
     },
     {
       "name": "dasprid/enum",
@@ -998,21 +996,21 @@
     },
     {
       "name": "doctrine/doctrine-bundle",
-      "version": "2.1.0",
+      "version": "2.1.2",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine/DoctrineBundle.git",
-        "reference": "0fb513842c78b43770597ef3c487cdf79d944db3"
+        "reference": "f5153089993e1230f5d8acbd8e126014d5a63e17"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine/DoctrineBundle/zipball/0fb513842c78b43770597ef3c487cdf79d944db3",
-        "reference": "0fb513842c78b43770597ef3c487cdf79d944db3",
+        "url": "https://api.github.com/repos/doctrine/DoctrineBundle/zipball/f5153089993e1230f5d8acbd8e126014d5a63e17",
+        "reference": "f5153089993e1230f5d8acbd8e126014d5a63e17",
         "shasum": ""
       },
       "require": {
-        "doctrine/dbal": "^2.9.0",
-        "doctrine/persistence": "^1.3.3",
+        "doctrine/dbal": "^2.9.0|^3.0",
+        "doctrine/persistence": "^1.3.3|^2.0",
         "doctrine/sql-formatter": "^1.0.1",
         "php": "^7.1 || ^8.0",
         "symfony/cache": "^4.3.3|^5.0",
@@ -1100,7 +1098,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-05-25T19:56:00+00:00"
+      "time": "2020-08-25T10:57:15+00:00"
     },
     {
       "name": "doctrine/doctrine-migrations-bundle",
@@ -2113,16 +2111,16 @@
     },
     {
       "name": "gedmo/doctrine-extensions",
-      "version": "v2.4.41",
+      "version": "v2.4.42",
       "source": {
         "type": "git",
         "url": "https://github.com/Atlantic18/DoctrineExtensions.git",
-        "reference": "e55a6727052f91834a968937c93b6fb193be8fb6"
+        "reference": "b6c4442b4f32ce05673fbdf1fa4a2d5e315cc0a4"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Atlantic18/DoctrineExtensions/zipball/e55a6727052f91834a968937c93b6fb193be8fb6",
-        "reference": "e55a6727052f91834a968937c93b6fb193be8fb6",
+        "url": "https://api.github.com/repos/Atlantic18/DoctrineExtensions/zipball/b6c4442b4f32ce05673fbdf1fa4a2d5e315cc0a4",
+        "reference": "b6c4442b4f32ce05673fbdf1fa4a2d5e315cc0a4",
         "shasum": ""
       },
       "require": {
@@ -2191,7 +2189,7 @@
         "tree",
         "uploadable"
       ],
-      "time": "2020-05-10T22:20:03+00:00"
+      "time": "2020-08-21T01:27:20+00:00"
     },
     {
       "name": "gesdinet/jwt-refresh-token-bundle",
@@ -2606,41 +2604,41 @@
     },
     {
       "name": "laminas/laminas-eventmanager",
-      "version": "3.2.1",
+      "version": "3.3.0",
       "source": {
         "type": "git",
         "url": "https://github.com/laminas/laminas-eventmanager.git",
-        "reference": "ce4dc0bdf3b14b7f9815775af9dfee80a63b4748"
+        "reference": "1940ccf30e058b2fd66f5a9d696f1b5e0027b082"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/laminas/laminas-eventmanager/zipball/ce4dc0bdf3b14b7f9815775af9dfee80a63b4748",
-        "reference": "ce4dc0bdf3b14b7f9815775af9dfee80a63b4748",
+        "url": "https://api.github.com/repos/laminas/laminas-eventmanager/zipball/1940ccf30e058b2fd66f5a9d696f1b5e0027b082",
+        "reference": "1940ccf30e058b2fd66f5a9d696f1b5e0027b082",
         "shasum": ""
       },
       "require": {
         "laminas/laminas-zendframework-bridge": "^1.0",
-        "php": "^5.6 || ^7.0"
+        "php": "^7.3 || ^8.0"
       },
       "replace": {
-        "zendframework/zend-eventmanager": "self.version"
+        "zendframework/zend-eventmanager": "^3.2.1"
       },
       "require-dev": {
-        "athletic/athletic": "^0.1",
-        "container-interop/container-interop": "^1.1.0",
+        "container-interop/container-interop": "^1.1",
         "laminas/laminas-coding-standard": "~1.0.0",
         "laminas/laminas-stdlib": "^2.7.3 || ^3.0",
-        "phpunit/phpunit": "^5.7.27 || ^6.5.8 || ^7.1.2"
+        "phpbench/phpbench": "^0.17.1",
+        "phpunit/phpunit": "^8.5.8"
       },
       "suggest": {
-        "container-interop/container-interop": "^1.1.0, to use the lazy listeners feature",
+        "container-interop/container-interop": "^1.1, to use the lazy listeners feature",
         "laminas/laminas-stdlib": "^2.7.3 || ^3.0, to use the FilterChain feature"
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "3.2-dev",
-          "dev-develop": "3.3-dev"
+          "dev-master": "3.3.x-dev",
+          "dev-develop": "3.4.x-dev"
         }
       },
       "autoload": {
@@ -2660,7 +2658,13 @@
         "events",
         "laminas"
       ],
-      "time": "2019-12-31T16:44:52+00:00"
+      "funding": [
+        {
+          "url": "https://funding.communitybridge.org/projects/laminas-project",
+          "type": "community_bridge"
+        }
+      ],
+      "time": "2020-08-25T11:10:44+00:00"
     },
     {
       "name": "laminas/laminas-zendframework-bridge",
@@ -2722,16 +2726,16 @@
     },
     {
       "name": "lcobucci/jwt",
-      "version": "3.3.2",
+      "version": "3.3.3",
       "source": {
         "type": "git",
         "url": "https://github.com/lcobucci/jwt.git",
-        "reference": "56f10808089e38623345e28af2f2d5e4eb579455"
+        "reference": "c1123697f6a2ec29162b82f170dd4a491f524773"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/lcobucci/jwt/zipball/56f10808089e38623345e28af2f2d5e4eb579455",
-        "reference": "56f10808089e38623345e28af2f2d5e4eb579455",
+        "url": "https://api.github.com/repos/lcobucci/jwt/zipball/c1123697f6a2ec29162b82f170dd4a491f524773",
+        "reference": "c1123697f6a2ec29162b82f170dd4a491f524773",
         "shasum": ""
       },
       "require": {
@@ -2783,7 +2787,7 @@
           "type": "patreon"
         }
       ],
-      "time": "2020-05-22T08:21:12+00:00"
+      "time": "2020-08-20T13:22:28+00:00"
     },
     {
       "name": "league/commonmark",
@@ -3844,16 +3848,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.286",
+      "version": "v0.0.287",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "e8b756559e8673c0160bf2efffa3c2e5db6a89a9"
+        "reference": "500434a802ef2b137f8dfb45a86b01e396f4ed10"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/e8b756559e8673c0160bf2efffa3c2e5db6a89a9",
-        "reference": "e8b756559e8673c0160bf2efffa3c2e5db6a89a9",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/500434a802ef2b137f8dfb45a86b01e396f4ed10",
+        "reference": "500434a802ef2b137f8dfb45a86b01e396f4ed10",
         "shasum": ""
       },
       "require": {
@@ -3895,7 +3899,7 @@
         "oswis",
         "zakjakub"
       ],
-      "time": "2020-08-19T09:21:48+00:00"
+      "time": "2020-08-19T10:10:23+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
@@ -4693,40 +4697,43 @@
     },
     {
       "name": "sensio/framework-extra-bundle",
-      "version": "v5.5.6",
+      "version": "v5.6.1",
       "source": {
         "type": "git",
         "url": "https://github.com/sensiolabs/SensioFrameworkExtraBundle.git",
-        "reference": "b49f079d8a87a6e6dd434062085ff5a132af466b"
+        "reference": "430d14c01836b77c28092883d195a43ce413ee32"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/b49f079d8a87a6e6dd434062085ff5a132af466b",
-        "reference": "b49f079d8a87a6e6dd434062085ff5a132af466b",
+        "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/430d14c01836b77c28092883d195a43ce413ee32",
+        "reference": "430d14c01836b77c28092883d195a43ce413ee32",
         "shasum": ""
       },
       "require": {
         "doctrine/annotations": "^1.0",
-        "php": ">=7.1.3",
+        "php": ">=7.2.5",
         "symfony/config": "^4.4|^5.0",
         "symfony/dependency-injection": "^4.4|^5.0",
         "symfony/framework-bundle": "^4.4|^5.0",
         "symfony/http-kernel": "^4.4|^5.0"
       },
       "conflict": {
-        "doctrine/doctrine-cache-bundle": "<1.3.1"
+        "doctrine/doctrine-cache-bundle": "<1.3.1",
+        "doctrine/persistence": "<1.3"
       },
       "require-dev": {
+        "doctrine/dbal": "^2.10|^3.0",
         "doctrine/doctrine-bundle": "^1.11|^2.0",
         "doctrine/orm": "^2.5",
         "nyholm/psr7": "^1.1",
         "symfony/browser-kit": "^4.4|^5.0",
+        "symfony/doctrine-bridge": "^4.4|^5.0",
         "symfony/dom-crawler": "^4.4|^5.0",
         "symfony/expression-language": "^4.4|^5.0",
         "symfony/finder": "^4.4|^5.0",
         "symfony/monolog-bridge": "^4.0|^5.0",
         "symfony/monolog-bundle": "^3.2",
-        "symfony/phpunit-bridge": "^4.3.5|^5.0",
+        "symfony/phpunit-bridge": "^4.4.9|^5.0.9",
         "symfony/psr-http-message-bridge": "^1.1",
         "symfony/security-bundle": "^4.4|^5.0",
         "symfony/twig-bundle": "^4.4|^5.0",
@@ -4736,7 +4743,7 @@
       "type": "symfony-bundle",
       "extra": {
         "branch-alias": {
-          "dev-master": "5.5.x-dev"
+          "dev-master": "5.6.x-dev"
         }
       },
       "autoload": {
@@ -4762,20 +4769,20 @@
         "annotations",
         "controllers"
       ],
-      "time": "2020-06-15T20:28:02+00:00"
+      "time": "2020-08-25T19:10:18+00:00"
     },
     {
       "name": "setasign/fpdi",
-      "version": "v2.3.3",
+      "version": "v2.3.4",
       "source": {
         "type": "git",
         "url": "https://github.com/Setasign/FPDI.git",
-        "reference": "50c388860a73191e010810ed57dbed795578e867"
+        "reference": "2b5fb811c04f937ef257ef3f798cebeded33c136"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Setasign/FPDI/zipball/50c388860a73191e010810ed57dbed795578e867",
-        "reference": "50c388860a73191e010810ed57dbed795578e867",
+        "url": "https://api.github.com/repos/Setasign/FPDI/zipball/2b5fb811c04f937ef257ef3f798cebeded33c136",
+        "reference": "2b5fb811c04f937ef257ef3f798cebeded33c136",
         "shasum": ""
       },
       "require": {
@@ -4789,6 +4796,7 @@
         "phpunit/phpunit": "~5.7",
         "setasign/fpdf": "~1.8",
         "setasign/tfpdf": "1.31",
+        "squizlabs/php_codesniffer": "^3.5",
         "tecnickcom/tcpdf": "~6.2"
       },
       "suggest": {
@@ -4829,7 +4837,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-04-28T12:40:35+00:00"
+      "time": "2020-08-27T06:55:47+00:00"
     },
     {
       "name": "symfony/asset",
@@ -10071,16 +10079,16 @@
     },
     {
       "name": "symplify/package-builder",
-      "version": "v8.2.9",
+      "version": "v8.2.16",
       "source": {
         "type": "git",
         "url": "https://github.com/symplify/package-builder.git",
-        "reference": "cd8368ae350b540d87f021da39522955472b933d"
+        "reference": "30897570db3b457abaad5dbcc614118f7def8d00"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symplify/package-builder/zipball/cd8368ae350b540d87f021da39522955472b933d",
-        "reference": "cd8368ae350b540d87f021da39522955472b933d",
+        "url": "https://api.github.com/repos/symplify/package-builder/zipball/30897570db3b457abaad5dbcc614118f7def8d00",
+        "reference": "30897570db3b457abaad5dbcc614118f7def8d00",
         "shasum": ""
       },
       "require": {
@@ -10119,7 +10127,7 @@
           "type": "github"
         }
       ],
-      "time": "2020-08-07T20:33:15+00:00"
+      "time": "2020-08-19T14:13:41+00:00"
     },
     {
       "name": "tijsverkoyen/css-to-inline-styles",
@@ -10721,30 +10729,31 @@
     },
     {
       "name": "webimpress/safe-writer",
-      "version": "2.0.1",
+      "version": "2.1.0",
       "source": {
         "type": "git",
         "url": "https://github.com/webimpress/safe-writer.git",
-        "reference": "d6e879960febb307c112538997316371f1e95b12"
+        "reference": "5cfafdec5873c389036f14bf832a5efc9390dcdd"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/webimpress/safe-writer/zipball/d6e879960febb307c112538997316371f1e95b12",
-        "reference": "d6e879960febb307c112538997316371f1e95b12",
+        "url": "https://api.github.com/repos/webimpress/safe-writer/zipball/5cfafdec5873c389036f14bf832a5efc9390dcdd",
+        "reference": "5cfafdec5873c389036f14bf832a5efc9390dcdd",
         "shasum": ""
       },
       "require": {
-        "php": "^7.2"
+        "php": "^7.2 || ^8.0"
       },
       "require-dev": {
-        "phpunit/phpunit": "^8.5.2 || ^9.0.1",
-        "webimpress/coding-standard": "^1.1.4"
+        "phpunit/phpunit": "^8.5.8 || ^9.3.7",
+        "vimeo/psalm": "^3.14.2",
+        "webimpress/coding-standard": "^1.1.5"
       },
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "2.0.x-dev",
-          "dev-develop": "2.1.x-dev",
+          "dev-master": "2.1.x-dev",
+          "dev-develop": "2.2.x-dev",
           "dev-release-1.0": "1.0.x-dev"
         }
       },
@@ -10771,7 +10780,7 @@
           "type": "github"
         }
       ],
-      "time": "2020-03-21T15:49:08+00:00"
+      "time": "2020-08-25T07:21:11+00:00"
     },
     {
       "name": "webmozart/assert",
@@ -10878,30 +10887,30 @@
   "packages-dev": [
     {
       "name": "phpstan/extension-installer",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/extension-installer.git",
-        "reference": "2e041def501d661b806f50000c8a4dccbd4907b4"
+        "reference": "5c2da3846819f951385cb6a25d3277051481c48a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/2e041def501d661b806f50000c8a4dccbd4907b4",
-        "reference": "2e041def501d661b806f50000c8a4dccbd4907b4",
+        "url": "https://api.github.com/repos/phpstan/extension-installer/zipball/5c2da3846819f951385cb6a25d3277051481c48a",
+        "reference": "5c2da3846819f951385cb6a25d3277051481c48a",
         "shasum": ""
       },
       "require": {
         "composer-plugin-api": "^1.1 || ^2.0",
-        "php": "^7.1",
+        "php": "^7.1 || ^8.0",
         "phpstan/phpstan": ">=0.11.6"
       },
       "require-dev": {
         "composer/composer": "^1.8",
         "consistence/coding-standard": "^3.8",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
         "ergebnis/composer-normalize": "^2.0.2",
-        "jakub-onderka/php-parallel-lint": "^1.0",
         "phing/phing": "^2.16",
+        "php-parallel-lint/php-parallel-lint": "^1.2.0",
         "phpstan/phpstan-strict-rules": "^0.11",
         "slevomat/coding-standard": "^5.0.4"
       },
@@ -10919,20 +10928,20 @@
         "MIT"
       ],
       "description": "Composer plugin for automatic installation of PHPStan extensions",
-      "time": "2020-03-31T16:00:42+00:00"
+      "time": "2020-08-30T12:06:42+00:00"
     },
     {
       "name": "phpstan/phpstan",
-      "version": "0.12.38",
+      "version": "0.12.40",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan.git",
-        "reference": "ad606c5f1c641b465b739e79a3a0f1a5a57cf1b4"
+        "reference": "dce7293ad7b59fc09a9ab9b0b5b44902c092ca17"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ad606c5f1c641b465b739e79a3a0f1a5a57cf1b4",
-        "reference": "ad606c5f1c641b465b739e79a3a0f1a5a57cf1b4",
+        "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dce7293ad7b59fc09a9ab9b0b5b44902c092ca17",
+        "reference": "dce7293ad7b59fc09a9ab9b0b5b44902c092ca17",
         "shasum": ""
       },
       "require": {
@@ -10975,7 +10984,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-08-19T08:13:30+00:00"
+      "time": "2020-08-26T19:06:20+00:00"
     },
     {
       "name": "roave/security-advisories",
@@ -10983,12 +10992,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "b7e8c8916bca1758da0105979774ea6cb49072f7"
+        "reference": "dbda10aea96678b6742e8f0109c1c7ac003a0f69"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/b7e8c8916bca1758da0105979774ea6cb49072f7",
-        "reference": "b7e8c8916bca1758da0105979774ea6cb49072f7",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/dbda10aea96678b6742e8f0109c1c7ac003a0f69",
+        "reference": "dbda10aea96678b6742e8f0109c1c7ac003a0f69",
         "shasum": ""
       },
       "conflict": {
@@ -11004,6 +11013,7 @@
         "bagisto/bagisto": "<0.1.5",
         "barrelstrength/sprout-base-email": "<1.2.7",
         "barrelstrength/sprout-forms": "<3.9",
+        "baserproject/basercms": ">=4,<=4.3.6",
         "bolt/bolt": "<3.7.1",
         "brightlocal/phpwhois": "<=4.2.5",
         "buddypress/buddypress": "<5.1.2",
@@ -11096,6 +11106,7 @@
         "onelogin/php-saml": "<2.10.4",
         "oneup/uploader-bundle": "<1.9.3|>=2,<2.1.5",
         "openid/php-openid": "<2.3",
+        "openmage/magento-lts": "<19.4.6|>=20,<20.0.2",
         "oro/crm": ">=1.7,<1.7.4",
         "oro/platform": ">=1.7,<1.7.4",
         "padraic/humbug_get_contents": "<1.1.2",
@@ -11270,7 +11281,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2020-08-18T07:47:20+00:00"
+      "time": "2020-08-28T21:02:31+00:00"
     }
   ],
   "aliases": [],

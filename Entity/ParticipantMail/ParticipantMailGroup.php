@@ -5,6 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
@@ -53,8 +54,39 @@ class ParticipantMailGroup extends AbstractMailGroup
      */
     protected ?MailCategoryInterface $category = null;
 
+    /**
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Event $event = null;
+
+    /**
+     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=false)
+     */
+    protected bool $onlyActive = true;
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): void
+    {
+        $this->event = $event;
+    }
+
+    public function isOnlyActive(): bool
+    {
+        return $this->onlyActive;
+    }
+
+    public function setOnlyActive(bool $onlyActive): void
+    {
+        $this->onlyActive = $onlyActive;
+    }
+
     public function isApplicableByRestrictions(?object $entity): bool
     {
-        return $entity instanceof Participant;
+        return !(!($entity instanceof Participant) || ($this->onlyActive && !$entity->isActive()) || ($this->event && $entity->isContainedInEvent($this->event)));
     }
 }

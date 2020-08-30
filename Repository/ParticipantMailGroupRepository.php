@@ -4,9 +4,13 @@ namespace OswisOrg\OswisCalendarBundle\Repository;
 
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
@@ -43,6 +47,22 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
         } catch (Exception $e) {
             return null;
         }
+    }
+
+    final public function findAutoMailGroups(?Event $event = null, ?string $type = null): Collection
+    {
+        $queryBuilder = $this->createQueryBuilder('group')->setParameter('now', new DateTime());
+        $queryBuilder->where("group.automaticMailing = 1");
+        $queryBuilder->andWhere("(group.startDateTime IS NULL) OR (:now < group.startDateTime) AND  (group.endDateTime IS NULL) OR (:now > group.endDateTime)");
+        $queryBuilder->addOrderBy('group.priority', 'DESC');
+        if (null !== $event) {
+            $queryBuilder->where("group.event = :event_id")->setParameter('event_id', $event->getId());
+        }
+        if (!empty($type)) {
+            $queryBuilder->where("group.type = :type")->setParameter('type', $type);
+        }
+
+        return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
     }
 
     final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMailGroup
