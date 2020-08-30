@@ -389,8 +389,7 @@ class ParticipantService
 
     public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): void
     {
-        $groups = $this->participantMailService->getAutoMailGroups($event, $type);
-        foreach ($groups as $group) {
+        foreach ($this->participantMailService->getAutoMailGroups($event, $type) as $group) {
             if (!($group instanceof ParticipantMailGroup)) {
                 continue;
             }

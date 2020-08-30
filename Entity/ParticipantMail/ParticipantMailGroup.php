@@ -9,7 +9,9 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
-use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 
 /**
  * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository")
@@ -52,7 +54,7 @@ class ParticipantMailGroup extends AbstractMailGroup
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?MailCategoryInterface $category = null;
+    protected ?ParticipantMailCategory $category = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
@@ -64,6 +66,43 @@ class ParticipantMailGroup extends AbstractMailGroup
      * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=false)
      */
     protected bool $onlyActive = true;
+
+    public function __construct(
+        ?Nameable $nameable = null,
+        ?int $priority = null,
+        ?DateTimeRange $range = null,
+        ?TwigTemplate $twigTemplate = null,
+        bool $automaticMailing = false,
+        ParticipantMailCategory $participantMailCategory = null
+    ) {
+        parent::__construct($nameable, $priority, $range, $twigTemplate, $automaticMailing);
+        $this->setCategory($participantMailCategory);
+    }
+
+    public function isCategory(?ParticipantMailCategory $category): bool
+    {
+        return $this->getCategory() === $category;
+    }
+
+    public function getCategory(): ?ParticipantMailCategory
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?ParticipantMailCategory $category): void
+    {
+        $this->category = $category;
+    }
+
+    public function isType(?string $type): bool
+    {
+        return $this->getType() === $type;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->getCategory() ? $this->getCategory()->getType() : null;
+    }
 
     public function getEvent(): ?Event
     {

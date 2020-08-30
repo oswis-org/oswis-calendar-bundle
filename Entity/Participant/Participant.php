@@ -783,7 +783,7 @@ class Participant implements ParticipantInterface
 
     public function hasEMailOfType(?string $type = null): bool
     {
-        return $this->eMails->exists(fn(ParticipantMail $mail) => $mail->getType() === $type);
+        return $this->eMails->filter(fn(ParticipantMail $mail) => $mail->getType() === $type)->count() > 0;
     }
 
     public function getAppUser(): ?AppUser
@@ -996,11 +996,6 @@ class Participant implements ParticipantInterface
     public function getEMails(): Collection
     {
         return $this->eMails ??= new ArrayCollection();
-    }
-
-    public function setEMails(?Collection $eMails): void
-    {
-        $this->eMails = $eMails;
     }
 
     /**

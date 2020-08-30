@@ -3903,16 +3903,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.0.629",
+      "version": "v0.0.630",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "40df7d9983a6758494ea73199c2fd1f619dd1f0f"
+        "reference": "4fc7580f6e09d7f077f76521c611a83b4f13bebf"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/40df7d9983a6758494ea73199c2fd1f619dd1f0f",
-        "reference": "40df7d9983a6758494ea73199c2fd1f619dd1f0f",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/4fc7580f6e09d7f077f76521c611a83b4f13bebf",
+        "reference": "4fc7580f6e09d7f077f76521c611a83b4f13bebf",
         "shasum": ""
       },
       "require": {
@@ -4009,7 +4009,7 @@
         "php",
         "zakjakub"
       ],
-      "time": "2020-08-19T09:14:00+00:00"
+      "time": "2020-08-30T14:54:40+00:00"
     },
     {
       "name": "paragonie/random_compat",
