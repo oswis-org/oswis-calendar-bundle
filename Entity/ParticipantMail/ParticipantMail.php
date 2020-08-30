@@ -97,11 +97,6 @@ class ParticipantMail extends AbstractMail
         $this->appUser = $appUser;
     }
 
-    public static function checkType(?string $typeName): bool
-    {
-        return true;
-    }
-
     public function isParticipant(?Participant $participant): bool
     {
         return $this->getParticipant() === $participant;

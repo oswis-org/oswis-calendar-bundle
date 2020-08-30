@@ -260,9 +260,11 @@ class ParticipantMailService
      */
     public function sendMessage(Participant $participant, ParticipantMailGroup $group): void
     {
+        $participantId = $participant->getId();
         $type = $group->getType();
         $sent = 0;
-        if (!empty($this->participantMailRepository->findSent($participant, $group->getType()))) {
+        if ($this->participantMailRepository->findSent($participant, $type)->count() > 0) {
+            $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user (message already sent).");
             return;
         }
         foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
@@ -271,7 +273,6 @@ class ParticipantMailService
                     $this->sendMessageToUser($participant, $contactPerson->getAppUser(), $group);
                     $sent++;
                 } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
-                    $participantId = $participant->getId();
                     $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
                     $message = $exception->getMessage();
                     $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user '$userId' ($message).");
