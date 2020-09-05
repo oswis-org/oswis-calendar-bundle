@@ -67,6 +67,10 @@ oswis_org_oswis_calendar_web_admin_participants_list:
     controller: oswis_org_oswis_calendar.web_admin_participants_list_controller::showParticipants
     path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
 
+oswis_org_oswis_calendar_web_admin_participants_list_csv:
+    controller: oswis_org_oswis_calendar.web_admin_participants_list_controller::showParticipantsCsv
+    path: "/web_admin/seznam-prihlasek-csv/{eventSlug?}/{participantCategorySlug?}"
+
 oswis_org_oswis_calendar_web_admin_event:
     controller: oswis_org_oswis_calendar.web_admin_participants_list_controller::showEvent
     path: "/web_admin/udalost/{eventSlug?}"
