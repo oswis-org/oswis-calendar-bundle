@@ -70,6 +70,26 @@ class WebAdminParticipantsListController extends AbstractController
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", $data);
     }
 
+    public function showParticipantsCsv(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    {
+        $data['participantCategory'] = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
+        $data['event'] = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
+        $data['participants'] = $this->participantService->getParticipants(
+            [
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
+                ParticipantRepository::CRITERIA_EVENT                 => $data['event'],
+                ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $data['participantCategory'],
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
+            ]
+        );
+        $data['title'] = "Přehled účastníků :: ADMIN";
+        $participantsArray = $data['participants']->toArray();
+        usort($participantsArray, fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
+        $data['participants'] = new ArrayCollection($participantsArray);
+
+        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.csv.twig", $data);
+    }
+
     public function showPayments(): Response
     {
         return $this->render(
