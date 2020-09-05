@@ -834,7 +834,7 @@ class Participant implements ParticipantInterface
 
     public function isActive(?DateTime $referenceDateTime = null): bool
     {
-        return $this->hasActivatedContactUser($referenceDateTime) && !$this->isDeleted($referenceDateTime);
+        return $this->hasActivatedContactUser() && !$this->isDeleted($referenceDateTime);
     }
 
     public function isRangeActivated(): bool

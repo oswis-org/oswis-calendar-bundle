@@ -5,6 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +31,43 @@ class WebAdminParticipantsController extends AbstractController
                 'message'   => "E-maily rozeslány.",
             ]
         );
+    }
+
+    public function arrival(int $participantId, ?bool $arrival = true): Response
+    {
+        $participant = null;
+        if (true === $arrival) {
+            // Process arrival.
+            $participant = $this->participantService->getParticipant(
+                [
+                    ParticipantRepository::CRITERIA_ID              => $participantId,
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+                ],
+                false
+            );
+        }
+        if (false === $arrival) {
+            // Process de-arrival.
+            $participant = $this->participantService->getParticipant(
+                [
+                    ParticipantRepository::CRITERIA_ID              => $participantId,
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+                ],
+                true
+            );
+        }
+        if (null === $arrival) {
+            // Only show.
+            $participant = $this->participantService->getParticipant(
+                [
+                    ParticipantRepository::CRITERIA_ID              => $participantId,
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+                ],
+                true
+            );
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', ['participant' => $participant]);
     }
 
 }

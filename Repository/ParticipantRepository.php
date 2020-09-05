@@ -175,15 +175,18 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder->addOrderBy('participant.id', 'ASC');
     }
 
-    public function getParticipant(?array $opts = []): ?Participant
+    public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant
     {
         try {
-            $participant = $this->getParticipantsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $participant = $this->getParticipantsQueryBuilder($opts, 1, 0)->getQuery()->getOneOrNullResult();
         } catch (NonUniqueResultException $e) {
             return null;
         }
+        if (!($participant instanceof Participant) || (!$includeNotActivated && !$participant->hasActivatedContactUser())) {
+            return null;
+        }
 
-        return $participant instanceof Participant ? $participant : null;
+        return $participant;
     }
 }
 

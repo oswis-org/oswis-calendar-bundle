@@ -1,0 +1,10 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% set contact = participant is defined ? participant.contact : null %}
+{% set f = f is defined ? f : (participant.formal is defined ? participant.formal : true) %}
+{% set a = a is defined ? a : (contact.czechSuffixA is defined ? contact.czechSuffixA : '') %}
+{% set salName = salutationName|default(contact.salutationName|default) %}
+
+{% block body_content %}
+    {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
+{% endblock body_content %}

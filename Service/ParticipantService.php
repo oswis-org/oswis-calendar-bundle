@@ -234,6 +234,11 @@ class ParticipantService
         return $this->participantRepository;
     }
 
+    public function getParticipant(array $opts = [], ?bool $includeNotActivated = true): ?Participant
+    {
+        return $this->getRepository()->getParticipant($opts, $includeNotActivated);
+    }
+
     /**
      * @param Participant      $participant
      * @param ParticipantToken $participantToken
