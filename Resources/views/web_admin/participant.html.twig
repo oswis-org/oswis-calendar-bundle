@@ -8,6 +8,12 @@
 {% block body_content %}
     <div class="container">
         <div class="row">
+            <a class="col-6" href="{{ path('oswis_org_oswis_calendar_web_admin_participant_arrival', ['arrival' => true]) }}">
+            </a>
+            <a class="col-6">
+            </a>
+        </div>
+        <div class="row">
             <div class="col-12">
                 {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
             </div>

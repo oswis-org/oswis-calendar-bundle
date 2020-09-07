@@ -115,7 +115,7 @@ class ParticipantMailService
             throw new NotFoundException('Uživatel nebyl nalezen.');
         }
         $title = $twigTemplate->getName() ?? 'Přihláška na akci';
-        if ($participant->isDeleted()) {
+        if ($participant->getDeletedAt()) {
             $title = "Shrnutí smazané přihlášky";
         }
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);

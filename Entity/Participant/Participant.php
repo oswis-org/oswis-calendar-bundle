@@ -832,6 +832,15 @@ class Participant implements ParticipantInterface
         $this->variableSymbol = $variableSymbol;
     }
 
+    public function getTShirt(): string {
+        $tShirts = $this->getFlags(null, FlagCategory::TYPE_T_SHIRT_SIZE);
+        if ($tShirts->count() < 1 || !(($tShirt = $tShirts->first()) instanceof Flag)) {
+            return '';
+        }
+
+        return $tShirt->getShortName();
+    }
+    
     public function isActive(?DateTime $referenceDateTime = null): bool
     {
         return $this->hasActivatedContactUser() && !$this->isDeleted($referenceDateTime);
