@@ -23,21 +23,21 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
+ *     "security"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar_participant_payments_imports_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar__csv_payments_imports_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar__csv_payments_import_get"}, "enable_max_depth"=true},
  *     }
  *   }

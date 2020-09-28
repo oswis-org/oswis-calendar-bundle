@@ -14,27 +14,27 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_ADMIN')",
+ *     "security"="is_granted('ROLE_ADMIN')",
  *     "normalization_context"={"groups"={"participant_tokens_get"}, "enable_max_depth"=true},
  *     "denormalization_context"={"groups"={"participant_tokens_post"}, "enable_max_depth"=true}
  *   },
  *   collectionOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "normalization_context"={"groups"={"participant_tokens_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"participant_tokens_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "normalization_context"={"groups"={"participant_token_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"participant_token_put"}, "enable_max_depth"=true}
  *     }
  *   }

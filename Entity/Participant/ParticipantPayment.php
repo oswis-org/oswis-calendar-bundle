@@ -28,25 +28,25 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
+ *     "security"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar_participant_payments_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_participant_payments_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar_participant_payment_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"calendar_participant_payment_put"}, "enable_max_depth"=true}
  *     }
  *   }

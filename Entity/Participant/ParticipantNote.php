@@ -18,25 +18,25 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
+ *     "security"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar_participant_notes_get"}},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_participant_notes_post"}}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"calendar_participant_note_get"}},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"calendar_participant_note_put"}}
  *     }
  *   }

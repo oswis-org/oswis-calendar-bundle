@@ -19,27 +19,27 @@ use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_ADMIN')",
+ *     "security"="is_granted('ROLE_ADMIN')",
  *     "normalization_context"={"groups"={"participant_mail_groups_get"}, "enable_max_depth"=true},
  *     "denormalization_context"={"groups"={"participant_mail_groups_post"}, "enable_max_depth"=true}
  *   },
  *   collectionOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "normalization_context"={"groups"={"participant_mail_groups_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"participant_mail_groups_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "normalization_context"={"groups"={"participant_mail_group_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_ADMIN')",
+ *       "security"="is_granted('ROLE_ADMIN')",
  *       "denormalization_context"={"groups"={"participant_mail_group_put"}, "enable_max_depth"=true}
  *     }
  *   }

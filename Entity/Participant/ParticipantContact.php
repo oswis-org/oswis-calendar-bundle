@@ -19,25 +19,25 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
- *     "access_control"="is_granted('ROLE_MANAGER')"
+ *     "security"="is_granted('ROLE_MANAGER')"
  *   },
  *   collectionOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"entities_get", "calendar_participant_contacts_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_contacts_post"}, "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "normalization_context"={"groups"={"entity_get", "calendar_participant_contact_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
- *       "access_control"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_MANAGER')",
  *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_contact_put"}, "enable_max_depth"=true}
  *     }
  *   }
