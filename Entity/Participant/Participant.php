@@ -832,7 +832,8 @@ class Participant implements ParticipantInterface
         $this->variableSymbol = $variableSymbol;
     }
 
-    public function getTShirt(): string {
+    public function getTShirt(): string
+    {
         $tShirts = $this->getFlags(null, FlagCategory::TYPE_T_SHIRT_SIZE);
         if ($tShirts->count() < 1 || !(($tShirt = $tShirts->first()) instanceof Flag)) {
             return '';
@@ -840,7 +841,14 @@ class Participant implements ParticipantInterface
 
         return $tShirt->getShortName();
     }
-    
+
+    public function getFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection
+    {
+        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(
+            fn(ParticipantFlag $participantFlag) => $participantFlag->getFlag()
+        );
+    }
+
     public function isActive(?DateTime $referenceDateTime = null): bool
     {
         return $this->hasActivatedContactUser() && !$this->isDeleted($referenceDateTime);
@@ -927,13 +935,6 @@ class Participant implements ParticipantInterface
     public function hasFlag(?Flag $flag = null, bool $onlyActive = true, ?FlagCategory $flagCategory = null, ?string $flagType = null): bool
     {
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->count() > 0;
-    }
-
-    public function getFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection
-    {
-        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(
-            fn(ParticipantFlag $participantFlag) => $participantFlag->getFlag()
-        );
     }
 
     /**

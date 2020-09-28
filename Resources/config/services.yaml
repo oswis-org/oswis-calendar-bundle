@@ -14,7 +14,7 @@ services:
     ## Controllers wildcard (TODO: To be refactored. Do not use wildcards.)
     OswisOrg\OswisCalendarBundle\Controller\:
         resource: '../../Controller/*'
-        tags: ['controller.service_arguments']
+        tags: [ 'controller.service_arguments' ]
         public: true
 
     ## Event controller.
@@ -345,7 +345,7 @@ services:
         class: OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantSubscriber
         autowire: true
         public: true
-        tags: [ { name: 'kernel.view'} ]
+        tags: [ { name: 'kernel.view' } ]
         arguments:
             - '@oswis_org_oswis_calendar.participant_mail_service'
             - '@monolog.logger'

@@ -1,33 +1,33 @@
 OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
     attributes:
         id:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
         createdDateTime:
-            groups: ['calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payment_get' ]
         updatedDateTime:
-            groups: ['calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payment_get' ]
         createdAppUser:
-            groups: ['calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payment_get' ]
         updatedAppUser:
-            groups: ['calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payment_get' ]
         dateTime:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
         eventParticipant:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
         numericValue:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
         type:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
         note:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
         internalNote:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
         eMailConfirmationDateTime:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
         eMailConfirmationCount:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
         eMailConfirmationSource:
-            groups: ['calendar_participant_payments_get', 'calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
 
 OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
     attributes:
@@ -37,9 +37,9 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
                 - 'calendar_participant_payments_post'
                 - 'calendar_participant_payment_get'
         createdDateTime:
-            groups: ['calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payment_get' ]
         updatedDateTime:
-            groups: ['calendar_participant_payment_get']
+            groups: [ 'calendar_participant_payment_get' ]
         event:
             groups:
                 - 'calendar_participant_payments_get'

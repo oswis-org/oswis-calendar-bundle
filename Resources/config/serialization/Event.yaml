@@ -7,13 +7,13 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
                 - 'calendar_event_get'
                 - 'calendar_event_put'
         createdDateTime:
-            groups: ['calendar_event_get']
+            groups: [ 'calendar_event_get' ]
         updatedDateTime:
-            groups: ['calendar_event_get']
+            groups: [ 'calendar_event_get' ]
         createdAppUser:
-            groups: ['calendar_event_get']
+            groups: [ 'calendar_event_get' ]
         updatedAppUser:
-            groups: ['calendar_event_get']
+            groups: [ 'calendar_event_get' ]
         name:
             groups:
                 - 'calendar_events_get'
