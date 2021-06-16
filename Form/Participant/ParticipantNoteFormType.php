@@ -26,7 +26,7 @@ class ParticipantNoteFormType extends AbstractType
     }
 
     /**
-     * @param OptionsResolver $resolver
+     * @param  OptionsResolver  $resolver
      *
      * @throws AccessException
      */
@@ -35,7 +35,7 @@ class ParticipantNoteFormType extends AbstractType
         $resolver->setDefaults(
             array(
                 'data_class' => ParticipantNote::class,
-//                'attr' => ['class' => 'col-md-6'],
+                //                'attr' => ['class' => 'col-md-6'],
             )
         );
     }

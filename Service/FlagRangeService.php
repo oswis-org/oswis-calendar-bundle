@@ -52,7 +52,7 @@ class FlagRangeService
 
     public function updateUsage(FlagRange $flagRange): void
     {
-        $usage = $this->getParticipantFlags($flagRange, false)->count();
+        $usage = $this->getParticipantFlags($flagRange)->count();
         $flagRange->setBaseUsage($usage);
         $flagRange->setFullUsage($usage);
     }

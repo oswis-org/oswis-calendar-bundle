@@ -15,25 +15,19 @@ use Psr\Log\LoggerInterface;
 
 class ParticipantTokenService
 {
-    protected EntityManagerInterface $em;
-
-    protected LoggerInterface $logger;
-
-    protected ParticipantTokenRepository $participantTokenRepository;
-
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantTokenRepository $participantTokenRepository)
-    {
-        $this->em = $em;
-        $this->logger = $logger;
-        $this->participantTokenRepository = $participantTokenRepository;
+    public function __construct(
+        protected EntityManagerInterface $em,
+        protected LoggerInterface $logger,
+        protected ParticipantTokenRepository $participantTokenRepository,
+    ) {
     }
 
     /**
-     * @param Participant $participant
-     * @param AppUser     $appUser
-     * @param string|null $type
-     * @param bool|null   $multipleUseAllowed
-     * @param int|null    $validHours
+     * @param  Participant  $participant
+     * @param  AppUser  $appUser
+     * @param  string|null  $type
+     * @param  bool|null  $multipleUseAllowed
+     * @param  int|null  $validHours
      *
      * @return ParticipantToken
      * @throws InvalidTypeException
@@ -47,7 +41,7 @@ class ParticipantTokenService
     ): ParticipantToken {
         try {
             // TODO: Complete refactoring needed. Or not???
-            $participantToken = new ParticipantToken($participant, $appUser, $type, $multipleUseAllowed, $validHours);
+            $participantToken = new ParticipantToken($participant, $appUser, $type, $multipleUseAllowed ?? false, $validHours);
             $this->em->persist($participantToken);
             $this->em->flush();
             $tokenId = $participantToken->getId();

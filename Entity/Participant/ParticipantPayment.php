@@ -168,7 +168,7 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     }
 
     /**
-     * @param Participant|null $participant
+     * @param  Participant|null  $participant
      *
      * @throws NotImplementedException
      */

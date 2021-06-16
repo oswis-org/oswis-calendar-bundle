@@ -26,6 +26,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\BankAccountTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
+
 use function assert;
 
 /**
@@ -186,7 +187,7 @@ class Event implements NameableInterface
             return $image;
         }
 
-        return true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getOneImage(true, $type) : null;
+        return true === $recursive ? $this->getSuperEvent()?->getOneImage(true, $type) : null;
     }
 
     public function getImages(?string $type = null): Collection
@@ -219,7 +220,7 @@ class Event implements NameableInterface
             return $file;
         }
 
-        return true === $recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getOneFile(true, $type) : null;
+        return true === $recursive ? $this->getSuperEvent()?->getOneFile(true, $type) : null;
     }
 
     public function getFiles(?string $type = null): Collection
@@ -261,7 +262,7 @@ class Event implements NameableInterface
 
     public function isRoot(): bool
     {
-        return $this->getSuperEvent() ? false : true;
+        return !$this->getSuperEvent();
     }
 
     public function addSubEvent(?Event $event): void
@@ -292,7 +293,7 @@ class Event implements NameableInterface
         if (null !== $type) {
             $contents = $this->getContents()->filter(fn(EventContent $webContent) => $type === $webContent->getType());
 
-            return $recursive && $contents->count() < 1 && $this->getSuperEvent() ? $this->getSuperEvent()->getContents($type) : $contents;
+            return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents) ?? new ArrayCollection();
         }
 
         return $this->contents ?? new ArrayCollection();
@@ -312,7 +313,7 @@ class Event implements NameableInterface
 
     public function getPlace(?bool $recursive = false): ?Place
     {
-        return $this->place ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getPlace() : null) ?? null;
+        return $this->place ?? ($recursive ? $this->getSuperEvent()?->getPlace() : null) ?? null;
     }
 
     public function setPlace(?Place $event): void
@@ -329,7 +330,7 @@ class Event implements NameableInterface
 
     public function getOrganizer(?bool $recursive = false): ?Participant
     {
-        return $this->organizer ?? ($recursive && $this->getSuperEvent() ? $this->getSuperEvent()->getOrganizer() : null) ?? null;
+        return $this->organizer ?? ($recursive ? $this->getSuperEvent()?->getOrganizer() : null) ?? null;
     }
 
     public function setOrganizer(?Participant $organizer): void
@@ -386,7 +387,7 @@ class Event implements NameableInterface
 
     public function removeFlagConnection(EventFlagConnection $flagConnection): void
     {
-        $this->getFlagConnections()->remove($flagConnection);
+        $this->getFlagConnections()->removeElement($flagConnection);
     }
 
     public function getEndDateTimeRecursive(): ?DateTime
@@ -416,7 +417,7 @@ class Event implements NameableInterface
             $name .= " ($rangeString)";
         }
 
-        return $name;
+        return ''.$name;
     }
 
     public function isBatchOrYear(): bool
@@ -441,7 +442,7 @@ class Event implements NameableInterface
 
     public function isBatch(): bool
     {
-        return $this->getCategory() && EventCategory::BATCH_OF_EVENT === $this->getCategory()->getType();
+        return EventCategory::BATCH_OF_EVENT === $this->getCategory()?->getType();
     }
 
     public function getStartYear(): ?int
@@ -451,7 +452,7 @@ class Event implements NameableInterface
 
     public function getSeqId(): ?int
     {
-        return $this->getGroup() ? $this->getGroup()->getSeqId($this) : null;
+        return $this->getGroup()?->getSeqId($this);
     }
 
     public function getGroup(): ?EventGroup
@@ -472,12 +473,12 @@ class Event implements NameableInterface
 
     public function getType(): ?string
     {
-        return $this->getCategory() ? $this->getCategory()->getType() : null;
+        return $this->getCategory()?->getType();
     }
 
     public function isEventSuperEvent(?Event $event = null, ?bool $recursive = true): bool
     {
-        return null === $event ? false : in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
+        return !(null === $event) && in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
     }
 
     public function getSuperEvents(): array

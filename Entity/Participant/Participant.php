@@ -186,9 +186,9 @@ class Participant implements ParticipantInterface
     protected ?string $variableSymbol = null;
 
     /**
-     * @param RegRange|null        $regRange
-     * @param AbstractContact|null $contact
-     * @param Collection|null      $participantNotes
+     * @param  RegRange|null  $regRange
+     * @param  AbstractContact|null  $contact
+     * @param  Collection|null  $participantNotes
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -214,7 +214,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param ParticipantContact|null $participantContact
+     * @param  ParticipantContact|null  $participantContact
      *
      * @throws OswisException
      */
@@ -234,10 +234,10 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param bool $onlyActive
+     * @param  bool  $onlyActive
      *
-     * @return ParticipantContact
-     * @throws OswisException
+     * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact|null
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
     public function getParticipantContact(bool $onlyActive = true): ?ParticipantContact
     {
@@ -264,7 +264,7 @@ class Participant implements ParticipantInterface
 
     public function updateCachedColumns(): void
     {
-        $this->regRange = $this->getRegRange(true);
+        $this->regRange = $this->getRegRange();
         $this->contact = $this->getContact();
         $this->event = $this->regRange ? $this->regRange->getEvent() : null;
         $this->participantCategory = $this->regRange ? $this->regRange->getParticipantCategory() : null;
@@ -280,7 +280,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param RegRange|null $regRange
+     * @param  RegRange|null  $regRange
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -290,15 +290,15 @@ class Participant implements ParticipantInterface
      */
     public function setRegRange(?RegRange $regRange): void
     {
-        if ($this->getRegRange(true) !== $regRange) {
+        if ($this->getRegRange() !== $regRange) {
             $this->setParticipantRange(new ParticipantRange($regRange));
         }
     }
 
     /**
-     * @param bool $onlyActive
+     * @param  bool  $onlyActive
      *
-     * @return ParticipantRange
+     * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange|null
      */
     public function getParticipantRange(bool $onlyActive = true): ?ParticipantRange
     {
@@ -344,13 +344,13 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param AbstractContact $contact
+     * @param  AbstractContact  $contact
      *
      * @throws OswisException
      */
     public function setContact(AbstractContact $contact): void
     {
-        if ($this->getContact(true) !== $contact) {
+        if ($this->getContact() !== $contact) {
             $this->setParticipantContact(new ParticipantContact($contact));
         }
         $this->updateVariableSymbol();
@@ -358,17 +358,19 @@ class Participant implements ParticipantInterface
 
     public function updateVariableSymbol(): ?string
     {
-        return $this->variableSymbol = self::vsStringFix($this->getContact() ? $this->getContact()->getPhone() : null) ?? ''.$this->getId();
+        return $this->variableSymbol = self::vsStringFix($this->getContact()?->getPhone()) ?? ''.$this->getId();
     }
 
     public static function vsStringFix(?string $variableSymbol): ?string
     {
-        return empty($variableSymbol) ? null : substr(trim(preg_replace('/\s/', '', $variableSymbol)), -9);
+        $variableSymbol = preg_replace('/\s/', '', ''.$variableSymbol);
+
+        return empty($variableSymbol) ? null : substr(trim(''.$variableSymbol), -9);
     }
 
     /**
-     * @param ParticipantRange|null $newParticipantRange
-     * @param bool                  $admin
+     * @param  ParticipantRange|null  $newParticipantRange
+     * @param  bool  $admin
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -402,7 +404,7 @@ class Participant implements ParticipantInterface
         // Check capacity of new range.
         $remainingCapacity = $newRegRange->getRemainingCapacity($admin);
         if (null !== $remainingCapacity && (0 === $remainingCapacity || -1 >= $remainingCapacity)) {
-            throw new EventCapacityExceededException($newParticipantRange->getEventName());
+            throw new EventCapacityExceededException($newParticipantRange?->getEventName());
         }
         //
         // CASE 3: RegRange is not set yet, set initial RegRange and set new flags by range.
@@ -414,15 +416,15 @@ class Participant implements ParticipantInterface
         if (null !== $oldParticipantRange) {
             $oldParticipantRange->delete();
             $this->changeFlagsByNewRegRange($newRegRange, true);
-            $this->changeFlagsByNewRegRange($newRegRange, false);
+            $this->changeFlagsByNewRegRange($newRegRange);
         }
         // Finally, add participant range.
-        foreach ($this->getParticipantRanges(false) as $participantRange) {
+        foreach ($this->getParticipantRanges() as $participantRange) {
             if ($participantRange instanceof ParticipantRange) {
                 $participantRange->delete();
             }
         }
-        $newParticipantRange->activate();
+        $newParticipantRange?->activate();
         $this->getParticipantRanges()->add($newParticipantRange);
         $this->updateCachedColumns();
     }
@@ -469,7 +471,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param Collection|null $newFlagGroups
+     * @param  Collection|null  $newFlagGroups
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -481,7 +483,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param RegRange $regRange
+     * @param  RegRange  $regRange
      *
      * @throws NotImplementedException
      */
@@ -512,17 +514,20 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param RegRange        $newRange
-     * @param bool            $onlySimulate
-     * @param bool            $admin
-     * @param Collection|null $newFlagGroups
+     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange|null  $newRange
+     * @param  bool  $onlySimulate
+     * @param  bool  $admin
+     * @param  Collection|null  $newFlagGroups
      *
-     * @throws FlagCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws NotImplementedException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
      */
-    private function changeFlagsByNewRegRange(RegRange $newRange, bool $onlySimulate = false, bool $admin = false, ?Collection $newFlagGroups = null): void
+    private function changeFlagsByNewRegRange(?RegRange $newRange, bool $onlySimulate = false, bool $admin = false, ?Collection $newFlagGroups = null): void
     {
+        if (null === $newRange) {
+            throw new NotImplementedException();
+        }
         $newFlagGroups ??= $this->getFlagGroups(null, null, true);
         foreach ($newFlagGroups as $oldParticipantFlagGroup) {
             $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin);
@@ -560,7 +565,7 @@ class Participant implements ParticipantInterface
 
     public function getContactPersons(bool $onlyActivated = false): Collection
     {
-        return $this->getContact() ? $this->getContact()->getContactPersons($onlyActivated) : new ArrayCollection();
+        return $this->getContact()?->getContactPersons($onlyActivated) ?? new ArrayCollection();
     }
 
     public static function sortParticipantsCollection(Collection $participants): Collection
@@ -573,7 +578,10 @@ class Participant implements ParticipantInterface
 
     public static function sortParticipantsArray(array &$participants): array
     {
-        usort($participants, fn(Participant $participant1, Participant $participant2) => self::compareParticipants($participant1, $participant2));
+        usort(
+            $participants,
+            static fn(Participant $participant1, Participant $participant2) => self::compareParticipants($participant1, $participant2),
+        );
 
         return $participants;
     }
@@ -583,8 +591,8 @@ class Participant implements ParticipantInterface
         $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
             ? 0
             : strcmp(
-                $participant1->getContact()->getSortableName(),
-                $participant2->getContact()->getSortableName()
+                ''.$participant1->getContact()?->getSortableName(),
+                ''.$participant2->getContact()?->getSortableName()
             );
 
         return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
@@ -593,7 +601,7 @@ class Participant implements ParticipantInterface
     public function removeEmptyNotesAndDetails(): void
     {
         $this->removeEmptyParticipantNotes();
-        if (null !== $contact = $this->getContact()) {
+        if (null !== ($contact = $this->getContact())) {
             $contact->removeEmptyDetails();
             $contact->removeEmptyNotes();
         }
@@ -619,13 +627,13 @@ class Participant implements ParticipantInterface
     {
         $this->notes ??= new ArrayCollection();
         $newNotes ??= new ArrayCollection();
-        foreach ($this->notes as $oldNote) {
+        foreach ($this->getNotes() as $oldNote) {
             if (!$newNotes->contains($oldNote)) {
                 $this->removeNote($oldNote);
             }
         }
         foreach ($newNotes as $newNote) {
-            if (!$this->notes->contains($newNote)) {
+            if (!$this->getNotes()->contains($newNote)) {
                 $this->addNote($newNote);
             }
         }
@@ -637,14 +645,14 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param ParticipantFlagGroup|null $participantFlagGroup
+     * @param  ParticipantFlagGroup|null  $participantFlagGroup
      *
      * @return bool
      */
     public function isParticipantFlagGroupCompatible(?ParticipantFlagGroup $participantFlagGroup = null): bool
     {
         if ($participantFlagGroup) {
-            return ($regRange = $this->getRegRange()) ? $regRange->isFlagGroupRangeCompatible($participantFlagGroup->getFlagGroupRange()) : false;
+            return (($regRange = $this->getRegRange())) && $regRange->isFlagGroupRangeCompatible($participantFlagGroup->getFlagGroupRange());
         }
 
         return false;
@@ -664,7 +672,7 @@ class Participant implements ParticipantInterface
                     $participantFlagGroup->delete($deleted);
                 }
             }
-            foreach ($this->getParticipantRanges(false) as $participantRange) {
+            foreach ($this->getParticipantRanges() as $participantRange) {
                 if ($participantRange instanceof ParticipantRange) {
                     $participantRange->delete($deleted);
                 }
@@ -690,9 +698,8 @@ class Participant implements ParticipantInterface
         $diff = abs($priceRest - $value);
         $remainingDeposit = $this->getRemainingDeposit();
         $depositDiff = abs($remainingDeposit - $value);
-        $diff = $depositDiff < $diff ? $depositDiff : $diff;
 
-        return $diff;
+        return $depositDiff < $diff ? $depositDiff : $diff;
     }
 
     /**
@@ -710,7 +717,7 @@ class Participant implements ParticipantInterface
      */
     public function getPrice(): int
     {
-        $price = ($range = $this->getParticipantRange(true)) ? $range->getPrice($this->getParticipantCategory()) : 0;
+        $price = ($range = $this->getParticipantRange()) ? $range->getPrice($this->getParticipantCategory()) : 0;
         $price += $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
@@ -733,11 +740,11 @@ class Participant implements ParticipantInterface
 
     /**
      * Gets part of price that is marked as deposit.
-     * @return int
+     * @return int|null
      */
     public function getDepositValue(): ?int
     {
-        $price = ($range = $this->getParticipantRange(true)) ? $range->getDepositValue($range->getParticipantCategory()) : 0;
+        $price = ($range = $this->getParticipantRange()) ? $range->getDepositValue($range->getParticipantCategory()) : 0;
         $price += $this->getFlagsDepositValue();
 
         return $price < 0 ? 0 : $price;
@@ -783,12 +790,17 @@ class Participant implements ParticipantInterface
 
     public function hasEMailOfType(?string $type = null): bool
     {
-        return $this->eMails->filter(fn(ParticipantMail $mail) => $mail->isSent() && $mail->getType() === $type)->count() > 0;
+        return $this->getEMails()->filter(fn(ParticipantMail $mail) => $mail->isSent() && $mail->getType() === $type)->count() > 0;
+    }
+
+    public function getEMails(): Collection
+    {
+        return $this->eMails ??= new ArrayCollection();
     }
 
     public function getAppUser(): ?AppUser
     {
-        return $this->getContact() ? $this->getContact()->getAppUser() : null;
+        return $this->getContact()?->getAppUser();
     }
 
     public function generateQrPng(bool $deposit = true, bool $rest = true, string $qrComment = ''): ?string
@@ -839,7 +851,7 @@ class Participant implements ParticipantInterface
             return '';
         }
 
-        return $tShirt->getShortName();
+        return ''.$tShirt->getShortName();
     }
 
     public function getFlags(?FlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, Flag $flag = null): Collection
@@ -858,20 +870,20 @@ class Participant implements ParticipantInterface
     {
         $participantRange = $this->getParticipantRange();
 
-        return $participantRange ? $participantRange->isActivated() : false;
+        return $participantRange && $participantRange->isActivated();
     }
 
     public function isRangeDeleted(): bool // TODO: What's this?
     {
-        return !($this->getRegRange(true) && $this->getEvent() && $this->getParticipantCategory());
+        return !($this->getRegRange() && $this->getEvent() && $this->getParticipantCategory());
     }
 
     /**
      * Recognizes if participant must be addressed in a formal way.
      *
-     * @param bool $recursive
+     * @param  bool  $recursive
      *
-     * @return bool Participant must be addressed in a formal way.
+     * @return bool|null Participant must be addressed in a formal way.
      */
     public function isFormal(bool $recursive = false): ?bool
     {
@@ -891,7 +903,7 @@ class Participant implements ParticipantInterface
 
     public function isManager(): bool
     {
-        return null !== ($type = $this->getParticipantCategory()) ? in_array($type->getType(), ParticipantCategory::MANAGEMENT_TYPES, true) : false;
+        return null !== ($type = $this->getParticipantCategory()) && in_array($type->getType(), ParticipantCategory::MANAGEMENT_TYPES, true);
     }
 
     public function getName(): ?string
@@ -915,7 +927,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param Collection|null $newRanges
+     * @param  Collection|null  $newRanges
      *
      * @throws NotImplementedException
      */
@@ -956,7 +968,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param ParticipantPayment|null $participantPayment
+     * @param  ParticipantPayment|null  $participantPayment
      *
      * @throws NotImplementedException
      */
@@ -968,7 +980,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param ParticipantMail|null $participantMail
+     * @param  ParticipantMail|null  $participantMail
      *
      * @throws NotImplementedException
      */
@@ -980,7 +992,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param ParticipantPayment|null $participantPayment
+     * @param  ParticipantPayment|null  $participantPayment
      *
      * @throws NotImplementedException
      */
@@ -1001,11 +1013,6 @@ class Participant implements ParticipantInterface
             } catch (NotImplementedException $e) {
             }
         }
-    }
-
-    public function getEMails(): Collection
-    {
-        return $this->eMails ??= new ArrayCollection();
     }
 
     /**

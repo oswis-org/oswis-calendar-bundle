@@ -43,7 +43,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param string|null $eventSlug
+     * @param  string|null  $eventSlug
      *
      * @return Response
      * @throws NotFoundException
@@ -109,7 +109,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param string|null $eventSlug
+     * @param  string|null  $eventSlug
      *
      * @return Response
      * @throws NotFoundException
@@ -137,6 +137,7 @@ class EventController extends AbstractController
             'organizer'   => $this->participantService->getOrganizer($event),
         );
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
+        /** @phpstan-ignore-next-line */
         if ($this->get('twig')->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
@@ -170,11 +171,11 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param string|null   $range
-     * @param DateTime|null $start
-     * @param DateTime|null $end
-     * @param int|null      $limit
-     * @param int|null      $offset
+     * @param  string|null  $range
+     * @param  DateTime|null  $start
+     * @param  DateTime|null  $end
+     * @param  int|null  $limit
+     * @param  int|null  $offset
      *
      * @return Response
      * @throws Exception
@@ -191,7 +192,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param int|null $page
+     * @param  int|null  $page
      *
      * @return Response
      * @throws Exception

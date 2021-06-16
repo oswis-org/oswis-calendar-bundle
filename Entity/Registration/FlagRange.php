@@ -100,7 +100,7 @@ class FlagRange implements NameableInterface
 
     public function isFlag(?Flag $flag = null): bool
     {
-        return null === $flag ? true : $this->getFlag() && $this->getFlag() === $flag;
+        return null === $flag || ($this->getFlag() && $this->getFlag() === $flag);
     }
 
     public function getFlag(): ?Flag
@@ -115,29 +115,29 @@ class FlagRange implements NameableInterface
 
     public function isCategory(?FlagCategory $category = null): bool
     {
-        return null === $category ? true : $this->getCategory() && $this->getCategory() === $category;
+        return null === $category || $this->getCategory() === $category;
     }
 
     public function getCategory(): ?FlagCategory
     {
-        return $this->getFlag() ? $this->getFlag()->getCategory() : null;
+        return $this->getFlag()?->getCategory();
     }
 
     public function isType(?string $flagType = null): bool
     {
-        return null === $flagType ? true : $this->getType() === $flagType;
+        return null === $flagType || $this->getType() === $flagType;
     }
 
     public function getType(): ?string
     {
-        return $this->getFlag() ? $this->getFlag()->getType() : null;
+        return $this->getFlag()?->getType();
     }
 
     public function getExtendedName(bool $addPrice = true, bool $addCapacityOverflow = true): ?string
     {
         $flagName = $this->getName();
         if ($addPrice) {
-            $price = $this->getVariableSymbol();
+            $price = $this->getPrice();
             $flagName .= 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
         }
         if ($addCapacityOverflow && !$this->hasRemainingCapacity()) {
@@ -149,10 +149,10 @@ class FlagRange implements NameableInterface
 
     public function getName(): ?string
     {
-        return $this->traitGetName() ?? ($this->getFlag() ? $this->getFlag()->getName() : null);
+        return $this->traitGetName() ?? $this->getFlag()?->getName();
     }
 
-    public function getVariableSymbol(): int
+    public function getPrice(): int
     {
         return $this->price ?? 0;
     }
@@ -178,8 +178,10 @@ class FlagRange implements NameableInterface
         if (null !== $this->getFlagFormGroup()) {
             return $this->getFlagFormGroup();
         }
-        if ($this->getFlag() && null !== $this->getFlag()->getFlagFormGroup()) {
-            return $this->getFlag()->getFlagFormGroup();
+        $flag = $this->getFlag();
+        if (null !== $flag?->getFlagFormGroup()) {
+            /** @noinspection NullPointerExceptionInspection */
+            return $flag->getFlagFormGroup();
         }
         if (FlagCategory::TYPE_T_SHIRT_SIZE === $this->getType()) {
             return $this->getTShirtGroup();
@@ -204,13 +206,13 @@ class FlagRange implements NameableInterface
     public function getTShirtGroup(): string
     {
         $flagName = $this->getName();
-        if (strpos($flagName, 'Pán') !== false) {
+        if (str_contains(''.$flagName, 'Pán')) {
             return '♂ Pánské tričko';
         }
-        if (strpos($flagName, 'Dám') !== false) {
+        if (str_contains(''.$flagName, 'Dám')) {
             return '♀ Dámské tričko';
         }
-        if (strpos($flagName, 'Uni') !== false) {
+        if (str_contains(''.$flagName, 'Uni')) {
             return '⚲ Unisex tričko';
         }
 
@@ -219,7 +221,7 @@ class FlagRange implements NameableInterface
 
     public function getFlagPriceGroup(): string
     {
-        $price = $this->getVariableSymbol();
+        $price = $this->getPrice();
         if ($price > 0) {
             return '⊕ S příplatkem';
         }
@@ -233,16 +235,16 @@ class FlagRange implements NameableInterface
     public function getShortName(): ?string
     {
         // TODO: !!!
-        return $this->shortName ?? ($this->getFlag() ? $this->getFlag()->getShortName() : null);
+        return $this->shortName ?? $this->getFlag()?->getShortName();
     }
 
     public function getDescription(): string
     {
-        return $this->traitGetDescription() ?? ($this->getFlag() ? $this->getFlag()->getDescription() : '');
+        return $this->traitGetDescription() ?? $this->getFlag()?->getDescription() ?? '';
     }
 
     public function getNote(): string
     {
-        return $this->traitGetNote() ?? ($this->getFlag() ? $this->getFlag()->getNote() : '') ?? '';
+        return $this->traitGetNote() ?? $this->getFlag()?->getNote() ?? '';
     }
 }

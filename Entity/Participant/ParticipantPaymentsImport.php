@@ -66,9 +66,10 @@ class ParticipantPaymentsImport
 
     public const ALLOWED_TYPES = [self::TYPE_CSV];
 
-    public const SETTINGS_CODES = [
-        'fio' => 'Fio banka, a.s.',
-    ];
+    public const SETTINGS_CODES
+        = [
+            'fio' => 'Fio banka, a.s.',
+        ];
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -76,9 +77,9 @@ class ParticipantPaymentsImport
     public ?string $settingsCode = 'fio';
 
     /**
-     * @param string|null $type
-     * @param string|null $textValue
-     * @param string|null $note
+     * @param  string|null  $type
+     * @param  string|null  $textValue
+     * @param  string|null  $note
      *
      * @throws InvalidTypeException
      */
@@ -102,9 +103,9 @@ class ParticipantPaymentsImport
     public function extractPayments(CsvPaymentImportSettings $csvSettings): Collection
     {
         $payments = new ArrayCollection();
-        $csvRows = str_getcsv($this->getTextValue(), "\n");
-        $csvPaymentRows = array_map(fn($row) => self::getColumnsFromCsvRow($row, $csvSettings), $csvRows);
-        array_walk($csvPaymentRows, fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
+        $csvRows = str_getcsv(''.$this->getTextValue(), "\n");
+        $csvPaymentRows = array_map(static fn($row) => self::getColumnsFromCsvRow($row, $csvSettings), $csvRows);
+        array_walk($csvPaymentRows, static fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
         array_shift($csvPaymentRows); # remove column header
         foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
             $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey + 1]));
@@ -115,7 +116,12 @@ class ParticipantPaymentsImport
 
     private static function getColumnsFromCsvRow(string $row, CsvPaymentImportSettings $csvSettings): array
     {
-        return str_getcsv($row, $csvSettings->getDelimiter(), $csvSettings->getEnclosure(), $csvSettings->getEscape());
+        return str_getcsv(
+            $row,
+            ''.$csvSettings->getDelimiter(),
+            ''.$csvSettings->getEnclosure(),
+            ''.$csvSettings->getEscape(),
+        );
     }
 
     public function makePaymentFromCsv(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings, string $csvRow): ParticipantPayment
@@ -139,8 +145,8 @@ class ParticipantPaymentsImport
     private function getDateFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?DateTime
     {
         try {
-            $dateKey = preg_grep('/.*Datum.*/', array_keys($csvPaymentRow))[0] ?? null;
-            if (array_key_exists($csvSettings->getDateColumnName(), $csvPaymentRow)) {
+            $dateKey = (preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: [])[0] ?? null;
+            if (array_key_exists(''.$csvSettings->getDateColumnName(), $csvPaymentRow)) {
                 return new DateTime($csvPaymentRow[$csvSettings->getDateColumnName()]);
             }
             if (array_key_exists('"'.$csvSettings->getDateColumnName().'"', $csvPaymentRow)) {

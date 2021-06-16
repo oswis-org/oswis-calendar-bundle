@@ -80,13 +80,13 @@ class EventService
     }
 
     /**
-     * @param string|null   $range
-     * @param DateTime|null $start
-     * @param DateTime|null $end
-     * @param int|null      $limit
-     * @param int|null      $offset
-     * @param string|null   $eventSlug
-     * @param bool|null     $onlyRoot
+     * @param  string|null  $range
+     * @param  DateTime|null  $start
+     * @param  DateTime|null  $end
+     * @param  int|null  $limit
+     * @param  int|null  $offset
+     * @param  string|null  $eventSlug
+     * @param  bool|null  $onlyRoot
      *
      * @return Collection
      * @throws Exception

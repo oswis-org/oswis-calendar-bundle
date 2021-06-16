@@ -51,7 +51,7 @@ class RegRangeService
 
     public function updateUsage(RegRange $range): void
     {
-        $range->setUsage(new CapacityUsage($this->getRegistrationsRangeConnectionsByRange($range, false)->count()));
+        $range->setUsage(new CapacityUsage($this->getRegistrationsRangeConnectionsByRange($range)->count()));
         foreach ($range->getFlagGroupRanges() as $flagRange) {
             $this->flagRangeService->updateUsage($flagRange);
         }
@@ -115,9 +115,9 @@ class RegRangeService
     /**
      * Helper for getting structured array of registration ranges from given collection of events.
      *
-     * @param Collection  $events          Collection of events to extract registration ranges.
-     * @param string|null $participantType Restriction to event participant type.
-     * @param bool        $onlyPublicOnWeb Restriction only for web-public ranges.
+     * @param  Collection  $events  Collection of events to extract registration ranges.
+     * @param  string|null  $participantType  Restriction to event participant type.
+     * @param  bool  $onlyPublicOnWeb  Restriction only for web-public ranges.
      *
      * @return Collection
      */

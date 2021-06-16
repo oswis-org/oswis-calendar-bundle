@@ -18,7 +18,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 class ParticipantMailGroupRepository extends ServiceEntityRepository
 {
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */

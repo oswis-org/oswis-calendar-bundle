@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+
 use function in_array;
 
 final class EventActionSubscriber implements EventSubscriberInterface
@@ -16,7 +17,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
     public const ALLOWED_ACTION_TYPES = [];
 
     /**
-     * @return  array<string, array<int, int|string>>
+     * @return array
      */
     public static function getSubscribedEvents(): array
     {
@@ -26,7 +27,7 @@ final class EventActionSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
+     * @param  ViewEvent  $event
      *
      * @throws Exception
      */

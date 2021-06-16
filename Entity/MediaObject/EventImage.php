@@ -63,10 +63,10 @@ class EventImage extends AbstractImage
     protected ?Event $event = null;
 
     /**
-     * @param File|null      $file
-     * @param string|null    $type
-     * @param int|null       $priority
-     * @param Publicity|null $publicity
+     * @param  File|null  $file
+     * @param  string|null  $type
+     * @param  int|null  $priority
+     * @param  Publicity|null  $publicity
      *
      * @throws InvalidTypeException
      */

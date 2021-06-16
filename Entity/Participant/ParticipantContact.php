@@ -70,7 +70,7 @@ class ParticipantContact implements BasicInterface
     }
 
     /**
-     * @param AbstractContact|null $contact
+     * @param  AbstractContact|null  $contact
      *
      * @throws NotImplementedException
      */

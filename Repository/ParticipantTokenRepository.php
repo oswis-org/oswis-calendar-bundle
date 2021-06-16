@@ -12,7 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 class ParticipantTokenRepository extends ServiceEntityRepository
 {
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */
@@ -21,15 +21,18 @@ class ParticipantTokenRepository extends ServiceEntityRepository
         parent::__construct($registry, ParticipantToken::class);
     }
 
-    final public function findByToken(string $token, int $participantId): ?ParticipantToken
+    final public function findByToken(?string $token, ?int $participantId): ?ParticipantToken
     {
+        if (empty($token) || $participantId === null) {
+            return null;
+        }
         $queryBuilder = $this->createQueryBuilder('token');
         $queryBuilder->where('token.token = :token')->setParameter('token', $token);
         $queryBuilder->andWhere('token.participant = :participant_id')->setParameter('participant_id', $participantId);
         $query = $queryBuilder->getQuery();
         try {
             return $query->getOneOrNullResult(Query::HYDRATE_OBJECT);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return null;
         }
     }

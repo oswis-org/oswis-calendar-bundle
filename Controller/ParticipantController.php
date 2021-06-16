@@ -70,8 +70,8 @@ class ParticipantController extends AbstractController
      * Route shows registration form or process it if form was sent.
      * Data from form is validated, user is created and than summary and activation e-mail is sent.
      *
-     * @param Request     $request
-     * @param string|null $rangeSlug
+     * @param  Request  $request
+     * @param  string|null  $rangeSlug
      *
      * @return Response
      * @throws EventCapacityExceededException
@@ -96,7 +96,7 @@ class ParticipantController extends AbstractController
         if (null === $range || !($range instanceof RegRange) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
-        $participant = $this->participantService->getEmptyParticipant($range, null);
+        $participant = $this->participantService->getEmptyParticipant($range);
         $this->logger->info("GOT EMPTY PARTICIPANT");
         try {
             $form = $this->createForm(ParticipantType::class, $participant);
@@ -105,7 +105,7 @@ class ParticipantController extends AbstractController
                 $participant = $form->getData();
                 assert($participant instanceof Participant);
                 $participant = $this->participantService->create($participant);
-                $eventName = $participant->getEvent() ? $participant->getEvent()->getShortName() : null;
+                $eventName = $participant->getEvent()?->getShortName();
 
                 return $this->getResponse(
                     'success',
@@ -120,7 +120,7 @@ class ParticipantController extends AbstractController
 
             return $this->getResponse(
                 'form',
-                "Přihláška na akci ".($range->getEvent() ? $range->getEvent()->getShortName() : null),
+                "Přihláška na akci ".$range->getEvent()?->getShortName(),
                 false,
                 $range->getEvent(),
                 $range,
@@ -129,6 +129,7 @@ class ParticipantController extends AbstractController
             );
         } catch (Exception $e) {
             $participant = $this->participantService->getEmptyParticipant($range);
+            /** @phpstan-ignore-next-line */
             if (!isset($form)) {
                 $form = $this->createForm(ParticipantType::class, $participant);
                 $form->handleRequest($request);
@@ -188,8 +189,8 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param string|null $token
-     * @param int|null    $participantId
+     * @param  string|null  $token
+     * @param  int|null  $participantId
      *
      * @return Response
      * @throws TokenInvalidException|OswisException
@@ -205,7 +206,7 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param ParticipantToken $participantToken
+     * @param  ParticipantToken  $participantToken
      *
      * @return Response
      * @throws OswisException
@@ -231,11 +232,11 @@ class ParticipantController extends AbstractController
     /**
      * Finds correct registration range by event and participantType.
      *
-     * @param Event                    $event               Event.
-     * @param ParticipantCategory|null $participantCategory Type of participant.
-     * @param string|null              $participantType
+     * @param  Event  $event  Event.
+     * @param  ParticipantCategory|null  $participantCategory  Type of participant.
+     * @param  string|null  $participantType
      *
-     * @return RegRange
+     * @return \OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange|null
      */
     public function getRange(Event $event, ?ParticipantCategory $participantCategory, ?string $participantType): ?RegRange
     {
@@ -243,7 +244,7 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param string $eventSlug
+     * @param  string  $eventSlug
      *
      * @return Event
      * @throws NotFoundException
@@ -268,8 +269,8 @@ class ParticipantController extends AbstractController
      *
      * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
      *
-     * @param string|null $eventSlug       Slug for selected event.
-     * @param string|null $participantType Restriction by participant type.
+     * @param  string|null  $eventSlug  Slug for selected event.
+     * @param  string|null  $participantType  Restriction by participant type.
      *
      * @return Response Page with registration ranges.
      * @throws Exception Error occurred when getting events.
@@ -301,10 +302,10 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param Request                   $request
-     * @param OswisCoreSettingsProvider $coreSettings
-     * @param int|null                  $limit
-     * @param int|null                  $offset
+     * @param  Request  $request
+     * @param  OswisCoreSettingsProvider  $coreSettings
+     * @param  int|null  $limit
+     * @param  int|null  $offset
      *
      * @return Response
      * @throws AccessDeniedHttpException

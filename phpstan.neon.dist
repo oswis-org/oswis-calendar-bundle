@@ -1,0 +1,19 @@
+parameters:
+    level: max
+
+    paths:
+        - .
+
+    excludes_analyse:
+        - vendor/*
+        - var/*
+        - tests/*
+        - node_modules/*
+        - bin/*
+        - public/check.php
+        - public/comet_api
+        - DependencyInjection/Configuration.php
+
+    checkGenericClassInNonGenericObjectType: false
+
+    checkMissingIterableValueType: false

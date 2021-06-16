@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+
 use function assert;
 
 final class ParticipantListActionSubscriber implements EventSubscriberInterface
@@ -23,17 +24,11 @@ final class ParticipantListActionSubscriber implements EventSubscriberInterface
     public const DEFAULT_EVENT_PARTICIPANT_TYPE = 'ucastnik';
 
     // TODO: ParticipantCategory slug change!
-    protected EntityManagerInterface $em;
-
-    protected ExportService $exportService;
-
-    private ParticipantService $participantService;
-
-    public function __construct(ExportService $pdfGenerator, EntityManagerInterface $em, ParticipantService $participantService)
-    {
-        $this->em = $em;
-        $this->exportService = $pdfGenerator;
-        $this->participantService = $participantService;
+    public function __construct(
+        protected ExportService $exportService,
+        protected EntityManagerInterface $em,
+        private ParticipantService $participantService,
+    ) {
     }
 
     public static function getSubscribedEvents(): array

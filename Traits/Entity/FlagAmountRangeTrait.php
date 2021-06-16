@@ -27,7 +27,7 @@ trait FlagAmountRangeTrait
     }
 
     /**
-     * @param int $count
+     * @param  int  $count
      *
      * @throws FlagOutOfRangeException
      */

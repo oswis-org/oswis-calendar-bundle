@@ -67,21 +67,22 @@ class EventCategory implements NameableInterface
     public const TEAM_BUILDING_STAY = 'team-building-stay';
     public const TEAM_BUILDING = 'team-building';
 
-    public const ALLOWED_TYPES = [
-        self::YEAR_OF_EVENT,
-        self::BATCH_OF_EVENT,
-        self::LECTURE,
-        self::WORKSHOP,
-        self::MODERATED_DISCUSSION,
-        self::TRANSPORT,
-        self::TEAM_BUILDING_STAY,
-        self::TEAM_BUILDING,
-    ];
+    public const ALLOWED_TYPES
+        = [
+            self::YEAR_OF_EVENT,
+            self::BATCH_OF_EVENT,
+            self::LECTURE,
+            self::WORKSHOP,
+            self::MODERATED_DISCUSSION,
+            self::TRANSPORT,
+            self::TEAM_BUILDING_STAY,
+            self::TEAM_BUILDING,
+        ];
 
     /**
-     * @param Nameable|null $nameable
-     * @param string|null   $type
-     * @param string|null   $color
+     * @param  Nameable|null  $nameable
+     * @param  string|null  $type
+     * @param  string|null  $color
      *
      * @throws InvalidArgumentException
      */

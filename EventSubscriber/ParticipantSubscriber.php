@@ -14,6 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+
 use function in_array;
 
 final class ParticipantSubscriber implements EventSubscriberInterface
@@ -39,7 +40,7 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
+     * @param  ViewEvent  $event
      *
      * @throws Exception
      */
@@ -55,7 +56,7 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
+     * @param  ViewEvent  $event
      *
      * @throws Exception
      */

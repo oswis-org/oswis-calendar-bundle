@@ -70,9 +70,9 @@ class FlagCategory implements NameableInterface
     public const TYPE_CONFIRMATIONS = 'confirmations';
 
     /**
-     * @param Nameable|null $nameable
-     * @param string|null   $type
-     * @param string|null   $color
+     * @param  Nameable|null  $nameable
+     * @param  string|null  $type
+     * @param  string|null  $color
      *
      * @throws InvalidTypeException
      */

@@ -41,16 +41,17 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
                 return $this->renderMessage("Platby importovány!", "Import plateb proběhl úspěšně. Shrnutí bylo odesláno do archivu.");
             }
 
-            return $this->renderForm($form);
+            return $this->renderImportForm($form);
         } catch (Exception $exception) {
             $paymentsImport ??= new ParticipantPaymentsImport();
+            /** @phpstan-ignore-next-line */
             if (!isset($form)) {
                 $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
                 $form->handleRequest($request);
             }
             $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage().''));
 
-            return $this->renderForm($form);
+            return $this->renderImportForm($form);
         }
     }
 
@@ -66,7 +67,7 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
         );
     }
 
-    public function renderForm(FormInterface $form): Response
+    public function renderImportForm(FormInterface $form): Response
     {
         return $this->render(
             "@OswisOrgOswisCalendar/web/pages/participant-payments-import-form.html.twig",

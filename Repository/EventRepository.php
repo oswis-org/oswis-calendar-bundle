@@ -35,7 +35,7 @@ class EventRepository extends ServiceEntityRepository
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
 
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */
@@ -54,7 +54,7 @@ class EventRepository extends ServiceEntityRepository
     public function getEvent(?array $opts = []): ?Event
     {
         try {
-            $event = $this->getEventsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $event = $this->getEventsQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
@@ -79,7 +79,7 @@ class EventRepository extends ServiceEntityRepository
         $this->setTypeStringQuery($queryBuilder, $opts);
         $this->addTypeQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
-        $this->addOrderBy($queryBuilder, true);
+        $this->addOrderBy($queryBuilder);
 
         return $queryBuilder;
     }
@@ -215,7 +215,7 @@ class EventRepository extends ServiceEntityRepository
     public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         return new ArrayCollection(
-            $this->getEventsQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
+            $this->getEventsQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult()
         );
     }
 }

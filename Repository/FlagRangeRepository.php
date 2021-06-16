@@ -25,7 +25,7 @@ class FlagRangeRepository extends ServiceEntityRepository
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */
@@ -44,7 +44,7 @@ class FlagRangeRepository extends ServiceEntityRepository
     public function getFlagRange(?array $opts = []): ?FlagRange
     {
         try {
-            $flagRange = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $flagRange = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
@@ -59,7 +59,7 @@ class FlagRangeRepository extends ServiceEntityRepository
         $this->addSlugQuery($queryBuilder, $opts);
         $this->addOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
-        $this->addOrderBy($queryBuilder, true);
+        $this->addOrderBy($queryBuilder);
 
         return $queryBuilder;
     }
@@ -105,6 +105,6 @@ class FlagRangeRepository extends ServiceEntityRepository
 
     public function getFlagRanges(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection($this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult());
+        return new ArrayCollection($this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult());
     }
 }

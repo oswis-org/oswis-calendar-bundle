@@ -12,7 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 class ParticipantMailCategoryRepository extends ServiceEntityRepository
 {
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */

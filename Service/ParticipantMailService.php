@@ -32,36 +32,18 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class ParticipantMailService
 {
-    protected EntityManagerInterface $em;
-
-    protected MailService $mailService;
-
-    protected ParticipantMailRepository $participantMailRepository;
-
-    protected ParticipantMailGroupRepository $groupRepository;
-
-    protected ParticipantMailCategoryRepository $categoryRepository;
-
-    protected LoggerInterface $logger;
-
     public function __construct(
-        EntityManagerInterface $em,
-        MailService $mailService,
-        ParticipantMailGroupRepository $groupRepository,
-        ParticipantMailCategoryRepository $categoryRepository,
-        ParticipantMailRepository $participantMailRepository,
-        LoggerInterface $logger
+        protected EntityManagerInterface $em,
+        protected MailService $mailService,
+        protected ParticipantMailGroupRepository $groupRepository,
+        protected ParticipantMailCategoryRepository $categoryRepository,
+        protected ParticipantMailRepository $participantMailRepository,
+        protected LoggerInterface $logger
     ) {
-        $this->em = $em;
-        $this->mailService = $mailService;
-        $this->groupRepository = $groupRepository;
-        $this->categoryRepository = $categoryRepository;
-        $this->participantMailRepository = $participantMailRepository;
-        $this->logger = $logger;
     }
 
     /**
-     * @param Participant $participant
+     * @param  Participant  $participant
      *
      * @throws OswisException
      */
@@ -69,15 +51,15 @@ class ParticipantMailService
     {
         $sent = 0;
         foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
-            if (!($contactPerson instanceof AbstractContact)) {
+            if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
                 continue;
             }
             try {
-                $this->sendSummaryToUser($participant, $contactPerson->getAppUser(), ParticipantMail::TYPE_SUMMARY);
+                $this->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_SUMMARY);
                 $sent++;
-            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+            } catch (OswisException | NotFoundException | NotImplementedException | InvalidTypeException $exception) {
                 $participantId = $participant->getId();
-                $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
+                $userId = $appUser->getId();
                 $message = $exception->getMessage();
                 $this->logger->error("ERROR: Not sent summary for participant '$participantId' to user '$userId' ($message).");
             }
@@ -88,10 +70,10 @@ class ParticipantMailService
     }
 
     /**
-     * @param Participant           $participant
-     * @param AppUser               $appUser
-     * @param string                $type
-     * @param ParticipantToken|null $participantToken
+     * @param  Participant  $participant
+     * @param  AppUser  $appUser
+     * @param  string  $type
+     * @param  ParticipantToken|null  $participantToken
      *
      * @throws NotFoundException
      * @throws NotImplementedException
@@ -126,7 +108,7 @@ class ParticipantMailService
             'participant'      => $participant,
             'appUser'          => $appUser,
             'contact'          => $contact,
-            'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
+            'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
             'category'         => $mailCategory,
             'type'             => $type,
             'participantToken' => $participantToken,
@@ -144,7 +126,7 @@ class ParticipantMailService
 
     public function getMailCategoryByType(?string $type): ?ParticipantMailCategory
     {
-        return $this->categoryRepository->findByType($type);
+        return $this->categoryRepository->findByType(''.$type);
     }
 
     public function getMailGroupByCategory(Participant $participant, MailCategoryInterface $category): ?ParticipantMailGroup
@@ -155,8 +137,8 @@ class ParticipantMailService
     public function embedQrPayments(TemplatedEmail $templatedEmail, Participant $participant, array $mailData): array
     {
         $participantId = $participant->getId();
-        $participantContactSlug = $participant->getContact() ? $participant->getContact()->getSlug() : null;
-        $eventId = $participant->getEvent() ? $participant->getEvent()->getId() : null;
+        $participantContactSlug = $participant->getContact()?->getSlug();
+        $eventId = $participant->getEvent()?->getId();
         $qrComment = "$participantContactSlug, ID $participantId, akce $eventId";
         foreach (['depositQr' => ['deposit' => true, 'rest' => false], 'restQr' => ['deposit' => false, 'rest' => true]] as $key => $opts) {
             if ($qrPng = $participant->generateQrPng($opts['deposit'], $opts['rest'], $qrComment)) {
@@ -174,7 +156,7 @@ class ParticipantMailService
     }
 
     /**
-     * @param ParticipantPayment $payment
+     * @param  ParticipantPayment  $payment
      *
      * @throws OswisException
      */
@@ -188,14 +170,14 @@ class ParticipantMailService
             return;
         }
         foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
-            if (!($contactPerson instanceof AbstractContact)) {
+            if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
                 continue;
             }
             try {
-                $this->sendPaymentConfirmationToUser($payment, $contactPerson->getAppUser());
+                $this->sendPaymentConfirmationToUser($payment, $appUser);
                 $sent++;
-            } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
-                $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
+            } catch (NotFoundException | NotImplementedException | InvalidTypeException $exception) {
+                $userId = $contactPerson->getAppUser()?->getId();
                 $message = $exception->getMessage();
                 $this->logger->error("ERROR: Not sent confirmation of payment '$paymentId' to user '$userId' ($message).");
             }
@@ -206,8 +188,8 @@ class ParticipantMailService
     }
 
     /**
-     * @param ParticipantPayment $payment
-     * @param AppUser            $appUser
+     * @param  ParticipantPayment  $payment
+     * @param  AppUser  $appUser
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
@@ -223,7 +205,7 @@ class ParticipantMailService
             throw new NotImplementedException(ParticipantMail::TYPE_PAYMENT, 'u e-mailů k přihláškám');
         }
         if (null === ($group = $this->getMailGroupByCategory($participant, $mailCategory)) || null === ($twigTemplate = $group->getTwigTemplate())) {
-            $groupName = $group ? $group->getName() : null;
+            $groupName = $group?->getName();
             $templateName = isset($twigTemplate) ? $twigTemplate->getName() : null;
             throw new NotFoundException("Skupina '$groupName' nebo šablona '$templateName' e-mailů nebyla nalezena.");
         }
@@ -237,7 +219,7 @@ class ParticipantMailService
             'participant'    => $participant,
             'appUser'        => $appUser,
             'contact'        => $contact,
-            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
+            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
             'category'       => $mailCategory,
             'type'           => ParticipantMail::TYPE_PAYMENT,
             'isIS'           => false,
@@ -253,8 +235,8 @@ class ParticipantMailService
     }
 
     /**
-     * @param Participant          $participant
-     * @param ParticipantMailGroup $group
+     * @param  Participant  $participant
+     * @param  ParticipantMailGroup  $group
      *
      * @throws OswisException
      */
@@ -263,18 +245,18 @@ class ParticipantMailService
         $participantId = $participant->getId();
         $type = $group->getType();
         $sent = 0;
-        if ($this->participantMailRepository->findSent($participant, $type)->count() > 0) {
+        if ($this->participantMailRepository->findSent($participant, ''.$type)->count() > 0) {
             $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user (message already sent).");
 
             return;
         }
         foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
-            if ($contactPerson instanceof AbstractContact) {
+            if ($contactPerson instanceof AbstractContact && null !== ($appUser = $contactPerson->getAppUser())) {
                 try {
-                    $this->sendMessageToUser($participant, $contactPerson->getAppUser(), $group);
+                    $this->sendMessageToUser($participant, $appUser, $group);
                     $sent++;
-                } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
-                    $userId = $contactPerson->getAppUser() ? $contactPerson->getAppUser()->getId() : null;
+                } catch (NotFoundException | NotImplementedException | InvalidTypeException $exception) {
+                    $userId = $appUser->getId();
                     $message = $exception->getMessage();
                     $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user '$userId' ($message).");
                 }
@@ -286,9 +268,9 @@ class ParticipantMailService
     }
 
     /**
-     * @param Participant          $participant
-     * @param AppUser              $appUser
-     * @param ParticipantMailGroup $group
+     * @param  Participant  $participant
+     * @param  AppUser  $appUser
+     * @param  ParticipantMailGroup  $group
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
@@ -312,7 +294,7 @@ class ParticipantMailService
             'participant'    => $participant,
             'appUser'        => $appUser,
             'contact'        => $contact,
-            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact->getName(),
+            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
             'category'       => $mailCategory,
             'type'           => $group->getType(),
         ];

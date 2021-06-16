@@ -34,7 +34,7 @@ class ParticipantRepository extends ServiceEntityRepository
     public const CRITERIA_VARIABLE_SYMBOL = 'variableSymbol';
 
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */
@@ -70,7 +70,7 @@ class ParticipantRepository extends ServiceEntityRepository
         $this->setAppUserQuery($queryBuilder, $opts);
         $this->setVSQuery($queryBuilder, $opts);
         $this->setLimit($queryBuilder, $limit, $offset);
-        $this->setOrderBy($queryBuilder, true, true);
+        $this->setOrderBy($queryBuilder);
 
         return $queryBuilder;
     }
@@ -178,7 +178,7 @@ class ParticipantRepository extends ServiceEntityRepository
     public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant
     {
         try {
-            $participant = $this->getParticipantsQueryBuilder($opts, 1, 0)->getQuery()->getOneOrNullResult();
+            $participant = $this->getParticipantsQueryBuilder($opts ?? [], 1, 0)->getQuery()->getOneOrNullResult();
         } catch (NonUniqueResultException $e) {
             return null;
         }

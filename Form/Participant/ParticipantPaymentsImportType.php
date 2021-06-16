@@ -57,7 +57,7 @@ class ParticipantPaymentsImportType extends AbstractType
     }
 
     /**
-     * @param OptionsResolver $resolver
+     * @param  OptionsResolver  $resolver
      *
      * @throws AccessException
      */

@@ -86,7 +86,7 @@ class Flag implements NameableInterface
 
     public function getType(): ?string
     {
-        return $this->getCategory() ? $this->getCategory()->getType() : null;
+        return $this->getCategory()?->getType();
     }
 
     public function getCategory(): ?FlagCategory

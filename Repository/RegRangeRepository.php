@@ -128,8 +128,8 @@ class RegRangeRepository extends EntityRepository
     public function getRegistrationsRange(?array $opts = []): ?RegRange
     {
         try {
-            $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts)->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
+            $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
+        } catch (Exception) {
             return null;
         }
 

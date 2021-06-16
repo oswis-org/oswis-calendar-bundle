@@ -85,7 +85,7 @@ class ParticipantFlagRepository extends EntityRepository
     public function getParticipantFlag(?array $opts = []): ?ParticipantFlag
     {
         try {
-            $participantFlag = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $participantFlag = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }

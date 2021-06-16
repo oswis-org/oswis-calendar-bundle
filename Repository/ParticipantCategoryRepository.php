@@ -28,7 +28,7 @@ class ParticipantCategoryRepository extends EntityRepository
     public function getParticipantCategory(?array $opts = []): ?ParticipantCategory
     {
         try {
-            $participantType = $this->getQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $participantType = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }
@@ -43,7 +43,7 @@ class ParticipantCategoryRepository extends EntityRepository
         $this->addSlugQuery($queryBuilder, $opts);
         $this->addTypeQuery($queryBuilder, $opts);
         $this->addLimit($queryBuilder, $limit, $offset);
-        $this->addOrderBy($queryBuilder, true);
+        $this->addOrderBy($queryBuilder);
 
         return $queryBuilder;
     }
@@ -91,7 +91,7 @@ class ParticipantCategoryRepository extends EntityRepository
     public function getParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         return new ArrayCollection(
-            $this->getQueryBuilder($opts, $limit, $offset)->getQuery()->getResult()
+            $this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult()
         );
     }
 }

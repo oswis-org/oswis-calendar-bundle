@@ -23,8 +23,8 @@ trait PriceTrait
 
     public function setEventPrice(?Price $eventPrice): void
     {
-        $this->setPrice($eventPrice ? $eventPrice->price : null);
-        $this->setDepositValue($eventPrice ? $eventPrice->deposit : null);
+        $this->setPrice($eventPrice?->price);
+        $this->setDepositValue($eventPrice?->deposit);
     }
 
     public function getEventPrice(): Price

@@ -26,28 +26,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WebAdminParticipantsListController extends AbstractController
 {
-    public EventService $eventService;
-
-    public ParticipantService $participantService;
-
-    public ParticipantCategoryService $participantCategoryService;
-
-    public RegRangeService $regRangeService;
-
-    public EntityManagerInterface $em;
-
     public function __construct(
-        EventService $eventService,
-        ParticipantService $participantService,
-        ParticipantCategoryService $participantCategoryService,
-        RegRangeService $regRangeService,
-        EntityManagerInterface $em
+        public EventService $eventService,
+        public ParticipantService $participantService,
+        public ParticipantCategoryService $participantCategoryService,
+        public RegRangeService $regRangeService,
+        public EntityManagerInterface $em
     ) {
-        $this->eventService = $eventService;
-        $this->participantService = $participantService;
-        $this->participantCategoryService = $participantCategoryService;
-        $this->regRangeService = $regRangeService;
-        $this->em = $em;
     }
 
     public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
@@ -64,7 +49,7 @@ class WebAdminParticipantsListController extends AbstractController
         );
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
+        usort($participantsArray, static fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
         $data['participants'] = new ArrayCollection($participantsArray);
 
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", $data);
@@ -84,7 +69,7 @@ class WebAdminParticipantsListController extends AbstractController
         );
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
+        usort($participantsArray, static fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
         $data['participants'] = new ArrayCollection($participantsArray);
 
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.csv.twig", $data);
@@ -102,7 +87,7 @@ class WebAdminParticipantsListController extends AbstractController
     }
 
     /**
-     * @param string|null $eventSlug
+     * @param  string|null  $eventSlug
      *
      * @return Response
      * @throws NotFoundException
@@ -204,7 +189,7 @@ class WebAdminParticipantsListController extends AbstractController
                 $otherAggregations['Nastavení IS']['Formální oslovení (ručně u přihlášky)'] ??= 0;
                 $otherAggregations['Nastavení IS']['Formální oslovení (ručně u přihlášky)']++;
             }
-            switch ($participant->getContact() ? $participant->getContact()->getGender() : null) {
+            switch ($participant->getContact()?->getGender()) {
                 case AbstractContact::GENDER_MALE:
                     $otherAggregations['Pohlaví (odhad)']['👨 Muž'] ??= 0;
                     $otherAggregations['Pohlaví (odhad)']['👨 Muž']++;

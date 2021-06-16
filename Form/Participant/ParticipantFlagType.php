@@ -28,7 +28,7 @@ class ParticipantFlagType extends AbstractType
     }
 
     /**
-     * @param FormEvent $event
+     * @param  FormEvent  $event
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -55,7 +55,7 @@ class ParticipantFlagType extends AbstractType
                 'help'       => $flagRange->getDescription(),
             ]
         );
-        if ($participantFlag->getFlagRange() && $participantFlag->getFlagRange()->isFormValueAllowed()) {
+        if ($participantFlag->getFlagRange() && $participantFlag->getFlagRange()?->isFormValueAllowed()) {
             $event->getForm()->add(
                 "textValue",
                 TextType::class,
@@ -71,7 +71,7 @@ class ParticipantFlagType extends AbstractType
     }
 
     /**
-     * @param OptionsResolver $resolver
+     * @param  OptionsResolver  $resolver
      *
      * @throws AccessException
      */

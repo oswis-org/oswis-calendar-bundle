@@ -28,8 +28,8 @@ class OswisCalendarSettingsProvider
     /**
      * OswisCalendarSettingsProvider constructor.
      *
-     * @param string|null $defaultEvent
-     * @param array|null  $defaultEventFallbacks
+     * @param  string|null  $defaultEvent
+     * @param  array|null  $defaultEventFallbacks
      */
     public function __construct(?string $defaultEvent = null, ?array $defaultEventFallbacks = null)
     {
@@ -44,7 +44,7 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param string|null $slug
+     * @param  string|null  $slug
      *
      * @return string|null
      */
@@ -62,8 +62,8 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param string $slug
-     * @param string $pattern
+     * @param  string  $slug
+     * @param  string  $pattern
      *
      * @return array
      */
@@ -86,9 +86,9 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param int    $a
-     * @param string $sign
-     * @param int    $b
+     * @param  int  $a
+     * @param  string  $sign
+     * @param  int  $b
      *
      * @return int
      */
@@ -124,7 +124,7 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param string|null $slug
+     * @param  string|null  $slug
      */
     public function setDefaultEvent(?string $slug): void
     {
@@ -140,13 +140,16 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param string[] $fallbacks
+     * @param  string[]  $fallbacks
      */
     public function setDefaultEventFallbacks(array $fallbacks): void
     {
         $this->defaultEventFallbacks = [];
         foreach ($fallbacks as $fallback) {
-            $this->defaultEventFallbacks[] = $this->processSpecialSlug($fallback);
+            $fallbackString = $this->processSpecialSlug($fallback);
+            if ($fallbackString) {
+                $this->defaultEventFallbacks[] = $fallbackString;
+            }
         }
     }
 }

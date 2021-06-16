@@ -124,7 +124,7 @@ class FlagGroupRange implements NameableInterface
     }
 
     /**
-     * @param FlagRange|null $flagRange
+     * @param  FlagRange|null  $flagRange
      *
      * @throws NotImplementedException
      */
@@ -137,7 +137,7 @@ class FlagGroupRange implements NameableInterface
 
     public function isCategory(?FlagCategory $category = null): bool
     {
-        return null === $category ? true : $this->getFlagCategory() && $this->getFlagCategory() === $category;
+        return null === $category || ($this->getFlagCategory() && $this->getFlagCategory() === $category);
     }
 
     public function getFlagCategory(): ?FlagCategory
@@ -152,12 +152,12 @@ class FlagGroupRange implements NameableInterface
 
     public function isType(?string $flagType = null): bool
     {
-        return null === $flagType ? true : $this->getType() === $flagType;
+        return null === $flagType || $this->getType() === $flagType;
     }
 
     public function getType(): ?string
     {
-        return $this->getFlagCategory() ? $this->getFlagCategory()->getType() : null;
+        return $this->getFlagCategory()?->getType();
     }
 
     public function isCategoryValueAllowed(): bool
@@ -177,12 +177,12 @@ class FlagGroupRange implements NameableInterface
 
     public function getFlagGroupName(): ?string
     {
-        return $this->getName() ?? $this->getFlagCategory() ? $this->getFlagCategory()->getName() : null;
+        return $this->getName() ?? $this->getFlagCategory()?->getName();
     }
 
     public function getName(): ?string
     {
-        return $this->traitGetName() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getName() : null);
+        return $this->traitGetName() ?? $this->getFlagCategory()?->getName();
     }
 
     public function getFlagsGroupNames(): array
@@ -198,16 +198,16 @@ class FlagGroupRange implements NameableInterface
 
     public function getShortName(): ?string
     {
-        return $this->traitGetShortName() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getShortName() : null);
+        return $this->traitGetShortName() ?? $this->getFlagCategory()?->getShortName();
     }
 
     public function getDescription(): string
     {
-        return $this->traitGetDescription() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getDescription() : '') ?? '';
+        return $this->traitGetDescription() ?? $this->getFlagCategory()?->getDescription() ?? '';
     }
 
     public function getNote(): string
     {
-        return $this->traitGetNote() ?? ($this->getFlagCategory() ? $this->getFlagCategory()->getNote() : '') ?? '';
+        return $this->traitGetNote() ?? $this->getFlagCategory()?->getNote() ?? '';
     }
 }

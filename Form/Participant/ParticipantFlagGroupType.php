@@ -59,7 +59,7 @@ class ParticipantFlagGroupType extends AbstractType
                 $participantFlagGroup = $event->getData();
                 assert($participantFlagGroup instanceof ParticipantFlagGroup);
                 $participantFlags = new ArrayCollection();
-                foreach ($participantFlagGroup->tempFlagRanges as $tempFlagRange) {
+                foreach ($participantFlagGroup->tempFlagRanges ?? new ArrayCollection() as $tempFlagRange) {
                     assert($tempFlagRange instanceof FlagRange);
                     $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
                     $participantFlags->add($participantFlag);
@@ -70,7 +70,7 @@ class ParticipantFlagGroupType extends AbstractType
     }
 
     /**
-     * @param FormEvent $event
+     * @param  FormEvent  $event
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -102,8 +102,8 @@ class ParticipantFlagGroupType extends AbstractType
     }
 
     /**
-     * @param FormInterface        $form
-     * @param ParticipantFlagGroup $participantFlagCategory
+     * @param  FormInterface  $form
+     * @param  ParticipantFlagGroup  $participantFlagCategory
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -128,11 +128,11 @@ class ParticipantFlagGroupType extends AbstractType
     }
 
     /**
-     * @param FormInterface        $form
-     * @param ParticipantFlagGroup $participantFlagGroup
-     * @param int                  $min
-     * @param int|null             $max
-     * @param bool                 $isFormal
+     * @param  FormInterface  $form
+     * @param  ParticipantFlagGroup  $participantFlagGroup
+     * @param  int  $min
+     * @param  int|null  $max
+     * @param  bool  $isFormal
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -140,7 +140,7 @@ class ParticipantFlagGroupType extends AbstractType
      */
     public static function addSelect(FormInterface $form, ParticipantFlagGroup $participantFlagGroup, int $min, ?int $max, bool $isFormal = true): void
     {
-        if (null === $flagGroupRange = $participantFlagGroup->getFlagGroupRange()) {
+        if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupRange())) {
             return;
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
@@ -214,7 +214,7 @@ class ParticipantFlagGroupType extends AbstractType
     }
 
     /**
-     * @param OptionsResolver $resolver
+     * @param  OptionsResolver  $resolver
      *
      * @throws AccessException
      */

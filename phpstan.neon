@@ -1,6 +1,0 @@
-parameters:
-    excludes_analyse:
-        - vendor/*
-    checkGenericClassInNonGenericObjectType: false
-    checkMissingIterableValueType: false
-

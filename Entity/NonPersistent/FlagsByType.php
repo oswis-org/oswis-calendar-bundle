@@ -10,7 +10,7 @@ class FlagsByType
     /**
      * Gets array of flags aggregated by their types.
      *
-     * @param Collection $flags
+     * @param  Collection  $flags
      *
      * @return array
      */
@@ -19,7 +19,7 @@ class FlagsByType
         $out = [];
         foreach ($flags as $flag) {
             if ($flag instanceof Flag) {
-                $flagTypeSlug = $flag->getCategory() ? $flag->getCategory()->getSlug() : '0';
+                $flagTypeSlug = $flag->getCategory()?->getSlug() ?? '0';
                 $flagSlug = $flag->getSlug();
                 $out[$flagTypeSlug] ??= [];
                 $out[$flagTypeSlug][$flagSlug]['flagType'] = $flag->getCategory();

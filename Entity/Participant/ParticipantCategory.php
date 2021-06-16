@@ -10,6 +10,7 @@ use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
+
 use function in_array;
 
 /**
@@ -64,14 +65,15 @@ class ParticipantCategory implements NameableInterface
     public const TYPE_MANAGER = 'manager';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
-    public const ALLOWED_TYPES = [
-        self::TYPE_ATTENDEE, // Attendee of event.
-        self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
-        self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
-        self::TYPE_PARTNER, // Somebody (organization) who supports event.
-        self::TYPE_GUEST, // Somebody who performs at the event.
-        self::TYPE_MANAGER, // Somebody who manages the event.
-    ];
+    public const ALLOWED_TYPES
+        = [
+            self::TYPE_ATTENDEE, // Attendee of event.
+            self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
+            self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
+            self::TYPE_PARTNER, // Somebody (organization) who supports event.
+            self::TYPE_GUEST, // Somebody who performs at the event.
+            self::TYPE_MANAGER, // Somebody who manages the event.
+        ];
 
     /**
      * Send formal (or informal) e-mails?
@@ -82,9 +84,9 @@ class ParticipantCategory implements NameableInterface
     /**
      * EmployerFlag constructor.
      *
-     * @param Nameable|null $nameable
-     * @param string|null   $type
-     * @param bool|null     $formal
+     * @param  Nameable|null  $nameable
+     * @param  string|null  $type
+     * @param  bool|null  $formal
      *
      * @throws InvalidArgumentException
      */

@@ -87,7 +87,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function getFlagType(): ?string
     {
-        return $this->getFlagRange() ? $this->getFlagRange()->getType() : null;
+        return $this->getFlagRange()?->getType();
     }
 
     public function getFlagRange(): ?FlagRange
@@ -107,17 +107,17 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function getFlagCategory(): ?FlagCategory
     {
-        return $this->getFlagRange() ? $this->getFlagRange()->getCategory() : null;
+        return $this->getFlagRange()?->getCategory();
     }
 
     public function getFlag(): ?Flag
     {
-        return $this->getFlagRange() ? $this->getFlagRange()->getFlag() : null;
+        return $this->getFlagRange()?->getFlag();
     }
 
     public function getPrice(): int
     {
-        return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getVariableSymbol() : 0;
+        return $this->isActive() ? ($this->getFlagRange()?->getPrice() ?? 0) : 0;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool
@@ -127,7 +127,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function getDepositValue(): int
     {
-        return $this->isActive() && $this->getFlagRange() ? $this->getFlagRange()->getDepositValue() : 0;
+        return $this->isActive() ? ($this->getFlagRange()?->getDepositValue() ?? 0) : 0;
     }
 
     public function getParticipantFlagGroup(): ?ParticipantFlagGroup
@@ -136,7 +136,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     }
 
     /**
-     * @param ParticipantFlagGroup|null $participantFlagGroup
+     * @param  ParticipantFlagGroup|null  $participantFlagGroup
      *
      * @throws NotImplementedException
      */
@@ -153,6 +153,6 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function getName(): ?string
     {
-        return $this->getFlagRange() ? $this->getFlagRange()->getName() : null;
+        return $this->getFlagRange()?->getName();
     }
 }

@@ -48,7 +48,7 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
                 $items->add(
                     new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $event->getSlug()]), null, $event->getUpdatedAt())
                 );
-            } catch (InvalidParameterException|RouteNotFoundException|MissingMandatoryParametersException $e) {
+            } catch (InvalidParameterException | RouteNotFoundException | MissingMandatoryParametersException $e) {
             }
         }
 

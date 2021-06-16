@@ -27,8 +27,8 @@ class ParticipantType extends AbstractType
     }
 
     /**
-     * @param FormBuilderInterface $builder
-     * @param array                $options
+     * @param  FormBuilderInterface  $builder
+     * @param  array  $options
      *
      * @throws PriceInvalidArgumentException
      */
@@ -108,7 +108,7 @@ class ParticipantType extends AbstractType
     }
 
     /**
-     * @param OptionsResolver $resolver
+     * @param  OptionsResolver  $resolver
      *
      * @throws AccessException
      */

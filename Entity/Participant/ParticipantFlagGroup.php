@@ -89,7 +89,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     public function getFlagType(): ?string
     {
-        return $this->getFlagGroupRange() ? $this->getFlagGroupRange()->getType() : null;
+        return $this->getFlagGroupRange()?->getType();
     }
 
     public function getFlagGroupRange(): ?FlagGroupRange
@@ -98,7 +98,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param FlagGroupRange|null $flagGroupRange
+     * @param  FlagGroupRange|null  $flagGroupRange
      *
      * @throws NotImplementedException
      */
@@ -114,27 +114,27 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     public function getFlagCategory(): ?FlagCategory
     {
-        return $this->getFlagGroupRange() ? $this->getFlagGroupRange()->getFlagCategory() : null;
+        return $this->getFlagGroupRange()?->getFlagCategory();
     }
 
     public function isPublicOnWeb(): bool
     {
-        return $this->getFlagGroupRange() ? $this->getFlagGroupRange()->isPublicOnWeb() : false;
+        return $this->getFlagGroupRange()?->isPublicOnWeb() ?? false;
     }
 
     public function getPrice(): int
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof FlagRange ? $flagRange->getVariableSymbol() : 0;
+            $price += $flagRange instanceof FlagRange ? $flagRange->getPrice() : 0;
         }
 
         return $price;
     }
 
     /**
-     * @param bool      $onlyActive
-     * @param Flag|null $flag
+     * @param  bool  $onlyActive
+     * @param  Flag|null  $flag
      *
      * @return Collection
      */
@@ -152,9 +152,9 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param Collection|null $newParticipantFlags
-     * @param bool|false      $admin
-     * @param bool            $onlySimulate
+     * @param  Collection|null  $newParticipantFlags
+     * @param  bool|false  $admin
+     * @param  bool  $onlySimulate
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -195,13 +195,13 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     public function getAvailableFlagRanges(bool $onlyPublic = false): Collection
     {
-        return $this->getFlagGroupRange() ? $this->getFlagGroupRange()->getFlagRanges($onlyPublic) : new ArrayCollection();
+        return $this->getFlagGroupRange()?->getFlagRanges($onlyPublic) ?? new ArrayCollection();
     }
 
     /**
-     * @param FlagRange  $flagRange
-     * @param Collection $newPartiFlags
-     * @param bool|false $admin
+     * @param  FlagRange  $flagRange
+     * @param  Collection  $newPartiFlags
+     * @param  bool|false  $admin
      *
      * @throws FlagOutOfRangeException|FlagCapacityExceededException
      */
@@ -217,9 +217,9 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param ParticipantFlag $oldParticipantFlag
-     * @param ParticipantFlag $newParticipantFlag
-     * @param bool            $admin
+     * @param  ParticipantFlag  $oldParticipantFlag
+     * @param  ParticipantFlag  $newParticipantFlag
+     * @param  bool  $admin
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -246,7 +246,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof FlagRange ? $flagRange->getVariableSymbol() : 0;
+            $price += $flagRange instanceof FlagRange ? $flagRange->getPrice() : 0;
         }
 
         return $price;

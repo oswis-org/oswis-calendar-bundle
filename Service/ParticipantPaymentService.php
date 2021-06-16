@@ -20,39 +20,26 @@ use Symfony\Component\Mailer\MailerInterface;
 
 class ParticipantPaymentService
 {
-    protected EntityManagerInterface $em;
-
-    protected MailerInterface $mailer;
-
-    protected LoggerInterface $logger;
-
-    protected OswisCoreSettingsProvider $coreSettings;
-
-    protected ParticipantMailService $participantMailService;
-
     public function __construct(
-        EntityManagerInterface $em,
-        MailerInterface $mailer,
-        LoggerInterface $logger,
-        OswisCoreSettingsProvider $oswisCoreSettings,
-        ParticipantMailService $participantMailService
+        protected EntityManagerInterface $em,
+        protected MailerInterface $mailer,
+        protected LoggerInterface $logger,
+        protected OswisCoreSettingsProvider $coreSettings,
+        protected ParticipantMailService $participantMailService
     ) {
-        $this->em = $em;
-        $this->mailer = $mailer;
-        $this->logger = $logger;
-        $this->coreSettings = $oswisCoreSettings;
-        $this->participantMailService = $participantMailService;
     }
 
     public function create(ParticipantPayment $payment, bool $sendConfirmation = true, ?Participant $participant = null): ?ParticipantPayment
     {
         $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
-            if (!empty($externalId = $payment->getExternalId()) && !empty(
+            if (!empty($externalId = $payment->getExternalId())
+                && !empty(
                 $existing = $paymentsRepository->findBy(
                     ['externalId' => $externalId]
                 )
-                ) && $existing[0] instanceof ParticipantPayment) {
+                )
+                && $existing[0] instanceof ParticipantPayment) {
                 $payment->setImport(null);
                 $payment->setParticipant(null);
                 $payment = $existing[0];
@@ -86,7 +73,7 @@ class ParticipantPaymentService
     }
 
     /**
-     * @param Collection $payments
+     * @param  Collection  $payments
      *
      * @return bool
      * @throws OswisException
@@ -95,7 +82,10 @@ class ParticipantPaymentService
     {
         try {
             $email = new TemplatedEmail();
-            $email->to($this->coreSettings->getArchiveMailerAddress())->subject(EmailUtils::mimeEnc('Report nových plateb'));
+            $email->to(
+                $this->coreSettings->getArchiveMailerAddress() ?? throw new OswisException('Není nastavená adresa archivu.')
+            );
+            $email->subject(EmailUtils::mimeEnc('Report nových plateb'));
             $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig');
             $email->context(['payments' => $payments]);
             $this->mailer->send($email);

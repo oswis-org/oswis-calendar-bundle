@@ -15,7 +15,7 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 class ParticipantMailRepository extends ServiceEntityRepository
 {
     /**
-     * @param ManagerRegistry $registry
+     * @param  ManagerRegistry  $registry
      *
      * @throws LogicException
      */

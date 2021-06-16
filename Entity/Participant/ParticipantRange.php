@@ -64,23 +64,23 @@ class ParticipantRange implements BasicInterface
     {
         try {
             $this->setRange($range);
-        } catch (NotImplementedException $e) {
+        } catch (NotImplementedException) {
         }
     }
 
-    public static function sortCollection(Collection $ranges): Collection
+    public static function sortCollection(Collection $items): Collection
     {
-        $rangesArray = $ranges->toArray();
+        $rangesArray = $items->toArray();
         self::sortArray($rangesArray);
 
         return new ArrayCollection($rangesArray);
     }
 
-    public static function sortArray(array &$ranges): array
+    public static function sortArray(array &$items): array
     {
-        usort($ranges, fn(ParticipantRange $range1, ParticipantRange $range2) => self::cmp($range1, $range2));
+        usort($items, static fn(ParticipantRange $range1, ParticipantRange $range2) => self::cmp($range1, $range2));
 
-        return $ranges;
+        return $items;
     }
 
     public static function cmp(self $range1, self $range2): int
@@ -106,12 +106,12 @@ class ParticipantRange implements BasicInterface
 
     public function getEventName(): ?string
     {
-        return $this->getEvent() ? $this->getEvent()->getName() : null;
+        return $this->getEvent()?->getName();
     }
 
     public function getEvent(): ?Event
     {
-        return $this->getRange() ? $this->getRange()->getEvent() : null;
+        return $this->getRange()?->getEvent();
     }
 
     public function getRange(): ?RegRange
@@ -120,7 +120,7 @@ class ParticipantRange implements BasicInterface
     }
 
     /**
-     * @param RegRange|null $range
+     * @param  RegRange|null  $range
      *
      * @throws NotImplementedException
      */
@@ -137,18 +137,16 @@ class ParticipantRange implements BasicInterface
 
     public function getPrice(?ParticipantCategory $participantCategory = null): ?int
     {
-        return $this->getRange() ? $this->getRange()->getPrice($participantCategory) : null;
+        return $this->getRange()?->getPrice($participantCategory);
     }
 
     public function getDepositValue(?ParticipantCategory $participantCategory = null): ?int
     {
-        return $this->getRange() ? $this->getRange()->getDepositValue($participantCategory) : null;
+        return $this->getRange()?->getDepositValue($participantCategory);
     }
 
     public function getParticipantCategory(): ?ParticipantCategory
     {
-        $regRange = $this->getRange();
-
-        return $regRange ? $regRange->getParticipantCategory() : null;
+        return $this->getRange()?->getParticipantCategory();
     }
 }

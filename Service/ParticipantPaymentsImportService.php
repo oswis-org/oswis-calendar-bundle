@@ -17,20 +17,12 @@ use Psr\Log\LoggerInterface;
 
 class ParticipantPaymentsImportService
 {
-    protected EntityManagerInterface $em;
-
-    protected LoggerInterface $logger;
-
-    protected ParticipantService $participantService;
-
-    protected ParticipantPaymentService $paymentService;
-
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantService $participantService, ParticipantPaymentService $paymentService)
-    {
-        $this->em = $em;
-        $this->logger = $logger;
-        $this->participantService = $participantService;
-        $this->paymentService = $paymentService;
+    public function __construct(
+        protected EntityManagerInterface $em,
+        protected LoggerInterface $logger,
+        protected ParticipantService $participantService,
+        protected ParticipantPaymentService $paymentService,
+    ) {
     }
 
     public function processImport(ParticipantPaymentsImport $paymentsImport, ?CsvPaymentImportSettings $importSettings = null): void
@@ -77,7 +69,10 @@ class ParticipantPaymentsImportService
         $participantsCount = $participants->count();
         $this->logger->info("Found $participantsCount participants for payment with VS '$vs' and value '$value'$secondTryString.");
         $participantsArray = $participants->toArray();
-        usort($participantsArray, fn(Participant $p1, Participant $p2) => self::compareParticipantsByPayment($value, $p1, $p2));
+        usort(
+            $participantsArray,
+            static fn(Participant $p1, Participant $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
+        );
         $participants = new ArrayCollection($participantsArray);
         $participant = $participants->first() instanceof Participant ? $participants->first() : null;
         if (null === $participant && !$isSecondTry) {

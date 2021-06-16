@@ -108,7 +108,7 @@ class ParticipantMail extends AbstractMail
     }
 
     /**
-     * @param Participant|null $participant
+     * @param  Participant|null  $participant
      *
      * @throws NotImplementedException
      */

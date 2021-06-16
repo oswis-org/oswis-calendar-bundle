@@ -85,7 +85,7 @@ class ParticipantRangeRepository extends EntityRepository
     public function getFlagRangeConnection(?array $opts = []): ?ParticipantRange
     {
         try {
-            $rangeConnection = $this->getRangesConnectionsQueryBuilder($opts)->getQuery()->getOneOrNullResult();
+            $rangeConnection = $this->getRangesConnectionsQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
         } catch (Exception $e) {
             return null;
         }

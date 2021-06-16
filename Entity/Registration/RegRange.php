@@ -128,16 +128,16 @@ class RegRange implements NameableInterface
     /**
      * RegistrationsRange constructor.
      *
-     * @param Nameable|null            $nameable
-     * @param Event|null               $event
-     * @param ParticipantCategory|null $participantType
-     * @param Price|null               $eventPrice
-     * @param DateTimeRange|null       $dateTimeRange
-     * @param bool|null                $isRelative
-     * @param RegRange|null            $requiredRange
-     * @param Capacity|null            $eventCapacity
-     * @param Publicity|null           $publicity
-     * @param bool|null                $superEventRequired
+     * @param  Nameable|null  $nameable
+     * @param  Event|null  $event
+     * @param  ParticipantCategory|null  $participantType
+     * @param  Price|null  $eventPrice
+     * @param  DateTimeRange|null  $dateTimeRange
+     * @param  bool|null  $isRelative
+     * @param  RegRange|null  $requiredRange
+     * @param  Capacity|null  $eventCapacity
+     * @param  Publicity|null  $publicity
+     * @param  bool|null  $superEventRequired
      *
      * @throws NotImplementedException
      */
@@ -158,8 +158,8 @@ class RegRange implements NameableInterface
         $this->setEvent($event);
         $this->setParticipantCategory($participantType);
         $this->setEventPrice($eventPrice);
-        $this->setStartDateTime($dateTimeRange ? $dateTimeRange->startDateTime : null);
-        $this->setEndDateTime($dateTimeRange ? $dateTimeRange->endDateTime : null, true);
+        $this->setStartDateTime($dateTimeRange?->startDateTime);
+        $this->setEndDateTime($dateTimeRange?->endDateTime, true);
         $this->setCapacity($eventCapacity);
         $this->setRelative($isRelative);
         $this->setRequiredRegRange($requiredRange);
@@ -225,8 +225,11 @@ class RegRange implements NameableInterface
         if ($recursive) {
             $price += $this->getRequiredRangePrice($participantType);
         }
+        if (null === $price) {
+            return 0;
+        }
 
-        return null !== $price && $price <= 0 ? 0 : $price;
+        return $price <= 0 ? 0 : $price;
     }
 
     public function getParticipantCategory(): ?ParticipantCategory
@@ -235,7 +238,7 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param ParticipantCategory|null $participantCategory
+     * @param  ParticipantCategory|null  $participantCategory
      *
      * @throws NotImplementedException
      */
@@ -320,7 +323,7 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param FlagGroupRange|null $flagGroupRange
+     * @param  FlagGroupRange|null  $flagGroupRange
      *
      * @throws NotImplementedException
      */
@@ -334,7 +337,7 @@ class RegRange implements NameableInterface
 
     public function isParticipantInSuperEvent(?Participant $participant = null): bool
     {
-        return $participant instanceof Participant && $this->getEvent() && $this->getEvent()->isEventSuperEvent($participant->getEvent());
+        return $participant instanceof Participant && $this->getEvent() && $this->getEvent()?->isEventSuperEvent($participant->getEvent());
     }
 
     public function getEvent(): ?Event
@@ -343,7 +346,7 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param Event|null $event
+     * @param  Event|null  $event
      *
      * @throws NotImplementedException
      * @TODO Catch change of event in subscribers and resend participant summaries!
@@ -357,8 +360,8 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param ParticipantFlagGroup $oldParticipantFlagGroup
-     * @param bool                 $admin
+     * @param  ParticipantFlagGroup  $oldParticipantFlagGroup
+     * @param  bool  $admin
      *
      * @return ParticipantFlagGroup
      * @throws FlagCapacityExceededException
@@ -398,7 +401,7 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param FlagGroupRange $flagGroupRange
+     * @param  FlagGroupRange  $flagGroupRange
      *
      * @return FlagGroupRange
      * @throws FlagOutOfRangeException
@@ -422,7 +425,7 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param ParticipantFlag $oldParticipantFlag
+     * @param  ParticipantFlag  $oldParticipantFlag
      *
      * @return ParticipantFlag
      * @throws FlagOutOfRangeException

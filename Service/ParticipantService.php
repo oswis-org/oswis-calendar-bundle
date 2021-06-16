@@ -8,7 +8,6 @@ namespace OswisOrg\OswisCalendarBundle\Service;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
-use InvalidArgumentException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
 use OswisOrg\OswisAddressBookBundle\Service\AbstractContactService;
@@ -22,8 +21,6 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
-use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
@@ -33,47 +30,22 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
-use OswisOrg\OswisCoreBundle\Exceptions\UserNotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use Psr\Log\LoggerInterface;
 
 class ParticipantService
 {
-    protected EntityManagerInterface $em;
-
-    protected ParticipantRepository $participantRepository;
-
-    protected ParticipantTokenService $tokenService;
-
-    protected LoggerInterface $logger;
-
-    protected AppUserService $appUserService;
-
-    protected ParticipantMailService $participantMailService;
-
-    protected AbstractContactService $abstractContactService;
-
-    protected FlagRangeService $flagRangeService;
-
     public function __construct(
-        EntityManagerInterface $em,
-        ParticipantRepository $participantRepository,
-        LoggerInterface $logger,
-        AppUserService $appUserService,
-        ParticipantTokenService $participantTokenService,
-        ParticipantMailService $participantMailService,
-        AbstractContactService $abstractContactService,
-        FlagRangeService $flagRangeService
+        protected EntityManagerInterface $em,
+        protected ParticipantRepository $participantRepository,
+        protected LoggerInterface $logger,
+        protected AppUserService $appUserService,
+        protected ParticipantTokenService $tokenService,
+        protected ParticipantMailService $participantMailService,
+        protected AbstractContactService $abstractContactService,
+        protected FlagRangeService $flagRangeService,
     ) {
-        $this->em = $em;
-        $this->participantRepository = $participantRepository;
-        $this->logger = $logger;
-        $this->appUserService = $appUserService;
-        $this->tokenService = $participantTokenService;
-        $this->participantMailService = $participantMailService;
-        $this->abstractContactService = $abstractContactService;
-        $this->flagRangeService = $flagRangeService;
     }
 
     public function getTokenService(): ParticipantTokenService
@@ -82,15 +54,15 @@ class ParticipantService
     }
 
     /**
-     * @param Participant|null $participant
+     * @param  Participant|null  $participant
      *
      * @return Participant
-     * @throws InvalidTypeException
-     * @throws NotFoundException
-     * @throws NotImplementedException
-     * @throws OswisException
-     * @throws UserNotUniqueException
-     * @throws UserNotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\UserNotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException
      */
     public function create(?Participant $participant): Participant
     {
@@ -110,7 +82,7 @@ class ParticipantService
         }
         $participantMailAddress = $contact->getEmail();
         $participantName = $contact->getName();
-        if (null === ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = $contact->getEmail())) {
+        if (null === ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = ''.$contact->getEmail())) {
             $this->logger->error("User not unique with string '$eMail' and participant was NOT created!");
             throw new UserNotUniqueException('Uživatel se stejným e-mailem nebo jménem již existuje!');
         }
@@ -133,7 +105,7 @@ class ParticipantService
     }
 
     /**
-     * @param Participant|null $participant
+     * @param  Participant|null  $participant
      *
      * @throws OswisException|NotFoundException
      */
@@ -160,7 +132,7 @@ class ParticipantService
             try {
                 $this->requestActivationForUser($participant, $appUser);
                 $sent++;
-            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+            } catch (OswisException | NotFoundException | NotImplementedException | InvalidTypeException $exception) {
                 $this->logger->error("Participant ($participantId) activation request FAILED. ".$exception->getMessage());
             }
         }
@@ -171,8 +143,8 @@ class ParticipantService
     }
 
     /**
-     * @param Participant $participant
-     * @param AppUser     $appUser
+     * @param  Participant  $participant
+     * @param  AppUser  $appUser
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
@@ -189,17 +161,17 @@ class ParticipantService
     private function getLogMessage(Participant $participant): string
     {
         $id = $participant->getId();
-        $contactName = $participant->getContact() ? $participant->getContact()->getName() : '';
+        $contactName = $participant->getContact()?->getName() ?? '';
         $infoMessage = "Created participant (by service) with ID [$id] and contact name [$contactName]";
-        $rangeName = $participant->getRegRange() ? $participant->getRegRange()->getName() : '';
+        $rangeName = $participant->getRegRange()?->getName() ?? '';
         $infoMessage .= " to range [$rangeName].";
 
         return $infoMessage;
     }
 
     /**
-     * @param RegRange    $range
-     * @param Participant $participant
+     * @param  RegRange  $range
+     * @param  Participant  $participant
      *
      * @throws EventCapacityExceededException
      */
@@ -240,16 +212,16 @@ class ParticipantService
     }
 
     /**
-     * @param Participant      $participant
-     * @param ParticipantToken $participantToken
-     * @param bool             $sendConfirmation
+     * @param  Participant  $participant
+     * @param  ParticipantToken  $participantToken
+     * @param  bool  $sendConfirmation
      *
      * @throws OswisException
      */
-    public function activate(Participant $participant, ParticipantToken $participantToken, bool $sendConfirmation = true): void
+    public function activate(?Participant $participant, ParticipantToken $participantToken, bool $sendConfirmation = true): void
     {
         try {
-            if (null === ($appUser = $participantToken->getAppUser())) {
+            if (null === $participant || null === ($appUser = $participantToken->getAppUser())) {
                 throw new NotFoundException('Uživatel nenalezen.');
             }
             $this->appUserService->activate($appUser, false);
@@ -260,8 +232,8 @@ class ParticipantService
             $this->em->persist($participant);
             $this->em->flush();
             $this->logger->info('Successfully activated participant ('.$participant->getId().').');
-        } catch (OswisException|NotFoundException|InvalidTypeException $exception) {
-            $this->logger->error('Participant ('.$participant->getId().') activation FAILED. '.$exception->getMessage());
+        } catch (OswisException | NotFoundException | InvalidTypeException $exception) {
+            $this->logger->error('Participant ('.$participant?->getId().') activation FAILED. '.$exception->getMessage());
             throw new OswisException("Aktivace přihlášky se nezdařila. ".$exception->getMessage());
         }
     }
@@ -269,9 +241,9 @@ class ParticipantService
     /**
      * Checks if contact is participant in event as given participantType.
      *
-     * @param Event                    $event
-     * @param AbstractContact          $contact
-     * @param ParticipantCategory|null $participantType
+     * @param  Event  $event
+     * @param  AbstractContact  $contact
+     * @param  ParticipantCategory|null  $participantType
      *
      * @return bool
      */
@@ -286,8 +258,11 @@ class ParticipantService
         return $this->getRepository()->getParticipants($opts)->count() > 0;
     }
 
-    final public function getOrganizer(Event $event): ?AbstractContact
+    final public function getOrganizer(?Event $event): ?AbstractContact
     {
+        if (null === $event) {
+            return null;
+        }
         $organizer = $this->getOrganizers($event)->map(fn(Participant $p) => $p->getContact())->first() ?: null;
         if (null === $organizer) {
             $organizer = $event->getSuperEvent() ? $this->getOrganizer($event->getSuperEvent()) : null;
@@ -340,14 +315,17 @@ class ParticipantService
     }
 
     /**
-     * @param string $token
-     * @param int    $participantId
+     * @param  string|null  $token
+     * @param  int|null  $participantId
      *
      * @return ParticipantToken
-     * @throws TokenInvalidException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException
      */
-    public function getVerifiedToken(string $token, int $participantId): ParticipantToken
+    public function getVerifiedToken(?string $token, ?int $participantId): ParticipantToken
     {
+        if (empty($token) || null === $participantId) {
+            throw new TokenInvalidException('token neexistuje');
+        }
         $participantToken = $this->getToken($token, $participantId);
         if (null === $participantToken) {
             throw new TokenInvalidException('zadaný token neexistuje');
@@ -365,17 +343,17 @@ class ParticipantService
     /**
      * Create empty eventParticipant for use in forms.
      *
-     * @param RegRange             $regRange
-     * @param AbstractContact|null $contact
+     * @param  RegRange  $regRange
+     * @param  AbstractContact|null  $contact
      *
      * @return Participant
-     * @throws EventCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws InvalidArgumentException
-     * @throws NotImplementedException
-     * @throws OswisException
-     * @throws ParticipantNotFoundException
-     * @throws FlagCapacityExceededException
+     * @throws \InvalidArgumentException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
     public function getEmptyParticipant(RegRange $regRange, ?AbstractContact $contact = null): Participant
     {
@@ -394,7 +372,7 @@ class ParticipantService
 
     public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): void
     {
-        foreach ($this->participantMailService->getAutoMailGroups($event, $type) as $group) {
+        foreach ($this->participantMailService->getAutoMailGroups($event, $type) ?? new ArrayCollection() as $group) {
             if (!($group instanceof ParticipantMailGroup)) {
                 $this->logger->error("MailGroup is not MailGroup!");
                 continue;

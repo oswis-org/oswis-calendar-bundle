@@ -21,17 +21,23 @@
       "role": "author"
     }
   ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@gitlab.com:zakjakub/vokativ.git"
+    }
+  ],
   "require": {
-    "php": "^7.4",
+    "php": ">=8.0",
     "ext-iconv": "*",
-    "bigit/vokativ": "dev-master",
-    "endroid/qr-code": "^3.7",
-    "rikudou/czqrpayment": "^4.0",
+    "bigit/vokativ": "dev-zakjakub-master",
+    "endroid/qr-code": "^4.1",
+    "rikudou/czqrpayment": "^v5.0",
     "oswis-org/oswis-core-bundle": "^0.0",
     "oswis-org/oswis-address-book-bundle": "^0.0"
   },
   "require-dev": {
-    "roave/security-advisories": "dev-master",
+    "roave/security-advisories": "dev-latest",
     "phpstan/extension-installer": "^1.0"
   },
   "autoload": {
@@ -43,6 +49,16 @@
     ]
   },
   "config": {
-    "optimize-autoloader": true
+    "optimize-autoloader": true,
+    "classmap-authoritative": true,
+    "apcu-autoloader": true,
+    "preferred-install": {
+      "*": "dist"
+    },
+    "sort-packages": true
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan analyse",
+    "post-update-cmd": []
   }
 }
