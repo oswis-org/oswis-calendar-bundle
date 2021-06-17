@@ -12,7 +12,7 @@
             </div>
         {% endif %}
         <div class="block small">
-            <strong class="badge badge-primary font-1em">{{ participant.id }}</strong> {{ participant.createdAt|date("j. n. Y, H:i") }}
+            <strong class="badge bg-primary font-1em">{{ participant.id }}</strong> {{ participant.createdAt|date("j. n. Y, H:i") }}
         </div>
         {% if appUser and appUser.activated %}
             <div class="block small" style="color:green;">
@@ -67,7 +67,7 @@
                             ? 'background-color:'~participantFlag.flag.color~';color:'~participantFlag.flag.foregroundColor~';'
                             : '' %}
                         {% set badgeColorString = participantFlag.deletedAt ? 'background-color:lightgrey;color:darkgrey;' : badgeColorString %}
-                        <div class="badge badge-info smaller" data-bs-toggle="tooltip" data-bs-html="true"
+                        <div class="badge bg-info smaller" data-bs-toggle="tooltip" data-bs-html="true"
                              style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
                              title="Příznak: {{ participantFlag.flag.name|default }}<br>
                              ID přiřazení {{ participantFlag.id }}<br>
@@ -79,14 +79,14 @@
                              {{ participantFlagGroup.deletedAt ? 'SMAZÁNA: '~participantFlagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
                             {% if participantFlag.flagRange.price|default(0) != 0 %}
-                                <div class="badge badge-danger" style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
+                                <div class="badge bg-danger" style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
                                     <strong>
                                         {{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč
                                     </strong>
                                 </div>
                             {% endif %}
                             {% if participantFlag.textValue|default|length > 0 %}
-                                <div class="badge badge-warn small">
+                                <div class="badge bg-warning small">
                                     {{ participantFlag.textValue }}
                                 </div>
                             {% endif %}

@@ -45,22 +45,22 @@
                     {% if range.rangeActive %}
                         {% set badgeClassColor = range.surrogate ? 'warning' : 'success' %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
-                            <div class="badge badge-{{ badgeClassColor }} py-1 px-2 mt-1">
+                            <div class="badge bg-{{ badgeClassColor }} py-1 px-2 mt-1">
                                 Přihlas se nyní{{- range.surrogate ? ' (jako náhradník)' : '' -}}!
                             </div>
                         </a>
                     {% else %}
-                        <div class="badge badge-dark py-1 px-2 mt-1">Aktuálně neaktivní.</div>
+                        <div class="badge bg-dark py-1 px-2 mt-1">Aktuálně neaktivní.</div>
                     {% endif %}
                     {#
                     {% if range.startDateTime and date(range.startDateTime).diff(date()).days > 0 %}
-                        <div class="badge badge-warning pt-1 pb-1 ps-2 pe-2 mt-1">
+                        <div class="badge bg-warning pt-1 pb-1 ps-2 pe-2 mt-1">
                             Začíná za {{ date(range.startDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
                     #}
                     {% if range.endDateTime and date(range.endDateTime).diff(date()).days > 0 %}
-                        <div class="badge badge-warning py-1 px-2 mt-1">
+                        <div class="badge bg-warning py-1 px-2 mt-1">
                             Zbývá {{ date(range.endDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
