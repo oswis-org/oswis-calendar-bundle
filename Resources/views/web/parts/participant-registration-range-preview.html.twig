@@ -25,7 +25,7 @@
                 <h6 class="card-subtitle mb-2 text-muted">
                     <strong>Akce:</strong>
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug|default}) }}" itemprop="itemOffered"
-                       title="{{ range.event|default }}" content="{{ range.event|default }}" data-toggle="tooltip">
+                       title="{{ range.event|default }}" content="{{ range.event|default }}" data-bs-toggle="tooltip">
                         {{ range.event.shortName|default }}
                     </a>
                 </h6>
