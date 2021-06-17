@@ -1,5 +1,5 @@
 {% if partner.contact.oneImage|default %}
-    <div class="swiper-slide pt-1 pb-1 pl-1 pr-1">
+    <div class="swiper-slide py-1 px-1">
         {% if partner.contact.url %}
             <a href="{{ partner.contact.url }}" target="_blank" title="{{ partner.name }}" data-toggle="tooltip" data-placement="top">
                 <div data-background="{{ asset('/images/contacts/'~partner.contact.oneImage) }}" class="swiper-lazy" title="{{ partner.name }}">

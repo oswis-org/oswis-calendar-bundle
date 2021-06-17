@@ -59,6 +59,8 @@
   },
   "scripts": {
     "phpstan": "vendor/bin/phpstan analyse",
-    "post-update-cmd": []
+    "post-update-cmd": [
+      "@phpstan"
+    ]
   }
 }

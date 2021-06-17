@@ -5,10 +5,10 @@
                 <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}" itemprop="url">
                     {% block range_preview_title %}
                         <div class="card-header p-2">
-                            <h5 class="card-title mb-0 font-weight-bold font-1em">
+                            <h5 class="card-title mb-0 fw-bold font-1em">
                                 <span class="d-inline d-xl-none">{{ range.shortName|default('Přihláška na '~range.event.shortName|default) }}</span>
                                 <span class="d-none d-xl-inline" itemprop="name">{{ range.name|default('Přihláška na akci '~range.event.name|default) }}</span>
-                                <span class="float-right align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
+                                <span class="float-end align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
                             </h5>
                         </div>
                     {% endblock range_preview_title %}
@@ -45,22 +45,22 @@
                     {% if range.rangeActive %}
                         {% set badgeClassColor = range.surrogate ? 'warning' : 'success' %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
-                            <div class="badge badge-{{ badgeClassColor }} pt-1 pb-1 pl-2 pr-2 mt-1">
+                            <div class="badge badge-{{ badgeClassColor }} py-1 px-2 mt-1">
                                 Přihlas se nyní{{- range.surrogate ? ' (jako náhradník)' : '' -}}!
                             </div>
                         </a>
                     {% else %}
-                        <div class="badge badge-dark pt-1 pb-1 pl-2 pr-2 mt-1">Aktuálně neaktivní.</div>
+                        <div class="badge badge-dark py-1 px-2 mt-1">Aktuálně neaktivní.</div>
                     {% endif %}
                     {#
                     {% if range.startDateTime and date(range.startDateTime).diff(date()).days > 0 %}
-                        <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">
+                        <div class="badge badge-warning pt-1 pb-1 ps-2 pe-2 mt-1">
                             Začíná za {{ date(range.startDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
                     #}
                     {% if range.endDateTime and date(range.endDateTime).diff(date()).days > 0 %}
-                        <div class="badge badge-warning pt-1 pb-1 pl-2 pr-2 mt-1">
+                        <div class="badge badge-warning py-1 px-2 mt-1">
                             Zbývá {{ date(range.endDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
@@ -71,7 +71,7 @@
             </div>
             <div class="card-footer row m-0">
                 <div class="col p-0">
-                    <table class="w-100 h-100 small mr-auto" style="max-width: 25em;">
+                    <table class="w-100 h-100 small me-auto" style="max-width: 25em;">
                         <tr>
                             <td><strong>Záloha:</strong></td>
                             <td>{{- range.depositValue(range.participantCategory)|default(0) -}},-&nbsp;Kč</td>
@@ -85,7 +85,7 @@
                     </table>
                 </div>
                 <div class="col p-0">
-                    <table class="w-100 h-100 ml-auto" style="max-width: 25em;">
+                    <table class="w-100 h-100 ms-auto" style="max-width: 25em;">
                         <tr>
                             <td></td>
                             <td><strong>Cena celkem:</strong></td>

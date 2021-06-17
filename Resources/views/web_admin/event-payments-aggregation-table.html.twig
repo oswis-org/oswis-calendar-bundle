@@ -9,7 +9,7 @@
         <tbody>
         <tr>
             <td><strong>{{ valueName }}</strong></td>
-            <td class="text-right">{{ value|default(0)|number_format(null, ',', ' ') }},-&nbsp;Kč</td>
+            <td class="text-end">{{ value|default(0)|number_format(null, ',', ' ') }},-&nbsp;Kč</td>
         </tr>
         </tbody>
     {% endfor %}
@@ -18,7 +18,7 @@
         <tbody>
         <tr>
             <td><strong>Zaplaceno</strong></td>
-            <td class="text-right">
+            <td class="text-end">
                 <strong>{{ paidPercent }}&nbsp;%</strong>
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped bg-primary" role="progressbar" aria-valuemin="0"

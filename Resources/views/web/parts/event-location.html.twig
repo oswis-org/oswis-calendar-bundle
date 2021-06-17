@@ -2,7 +2,7 @@
     <meta itemprop="name" content="{{ event.place(true).name|default }}"/>
     <div class="card-header p-2">
         <small class="text-muted">Místo konání&nbsp;akce</small>
-        <strong class="float-right align-middle text-muted"><i class="fas fa-map-marked-alt"></i></strong>
+        <strong class="float-end align-middle text-muted"><i class="fas fa-map-marked-alt"></i></strong>
     </div>
     {% if event.place(true).geoLon and event.place(true).geoLat %}
         {% set geoLon = event.place(true).geoLon|number_format(6, '.', '') %}
