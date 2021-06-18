@@ -447,7 +447,7 @@ class Event implements NameableInterface
 
     public function getStartYear(): ?int
     {
-        return (int)$this->getStartByFormat(DateTimeUtils::DATE_TIME_YEARS);
+        return (int)$this->getStartByFormat('Y');
     }
 
     public function getSeqId(): ?int
