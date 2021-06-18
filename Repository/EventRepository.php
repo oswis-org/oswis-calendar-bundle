@@ -153,7 +153,7 @@ class EventRepository extends ServiceEntityRepository
 
     private function setSeriesQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_SERIES]) && $opts[self::CRITERIA_END] instanceof EventGroup) {
+        if (!empty($opts[self::CRITERIA_SERIES]) && $opts[self::CRITERIA_SERIES] instanceof EventGroup) {
             $queryBuilder->andWhere('e.group = :series_id');
             $queryBuilder->setParameter('series_id', $opts[self::CRITERIA_SERIES]->getId());
         }
@@ -161,7 +161,7 @@ class EventRepository extends ServiceEntityRepository
 
     private function setLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_END] instanceof Place) {
+        if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_LOCATION] instanceof Place) {
             $queryBuilder->andWhere('e.location = :location_id')->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
         }
     }
