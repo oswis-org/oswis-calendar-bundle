@@ -176,9 +176,9 @@ class EventRepository extends ServiceEntityRepository
     private function setTypeStringQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_TYPE_STRING]) && is_string($opts[self::CRITERIA_TYPE_STRING])) {
-            $queryBuilder->leftJoin('e.type', 'type');
-            $queryBuilder->andWhere('type.type = :type_of_type');
-            $queryBuilder->setParameter('type_of_type', $opts[self::CRITERIA_TYPE_STRING]);
+            $queryBuilder->leftJoin('e.category', 'category');
+            $queryBuilder->andWhere('category.type = :type');
+            $queryBuilder->setParameter('type', $opts[self::CRITERIA_TYPE_STRING]);
         }
     }
 
