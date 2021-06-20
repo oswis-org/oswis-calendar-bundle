@@ -71,21 +71,17 @@
     {% endif %}
 </section>
 
-<section class="row">
-    <div class="col-12">
-        <div class="card-deck">
-            {% if event.place(true)|default %}
-                <div class="col-12 col-md-6 col-lg-7 mt-2 mb-3 p-0">
-                    {% include '@OswisOrgOswisCalendar/web/parts/event-location.html.twig' %}
-                </div>
-            {% endif %}
-            {% if organizer|default %}
-                <div class="col-12 col-md-6 col-lg-5 mt-2 mb-3 p-0">
-                    {% include '@OswisOrgOswisCalendar/web/parts/event-organizer.html.twig' %}
-                </div>
-            {% endif %}
+<section class="row align-items-stretch">
+    {% if event.place(true)|default %}
+        <div class="col-12 col-md-6 col-lg-7">
+            {% include '@OswisOrgOswisCalendar/web/parts/event-location.html.twig' %}
         </div>
-    </div>
+    {% endif %}
+    {% if organizer|default %}
+        <div class="col-12 col-md-6 col-lg-5">
+            {% include '@OswisOrgOswisCalendar/web/parts/event-organizer.html.twig' %}
+        </div>
+    {% endif %}
 </section>
 
 {% if ranges|default and ranges|length > 0 %}
