@@ -6,6 +6,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -42,6 +44,20 @@ class ParticipantMailRepository extends ServiceEntityRepository
         $queryBuilder->addOrderBy('mail.id', 'DESC');
 
         return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
+    }
+
+    final public function countSent(Participant $participant, string $type): ?int
+    {
+        $queryBuilder = $this->createQueryBuilder('mail');
+        $queryBuilder->select(' COUNT(mail.id) ');
+        $queryBuilder->andWhere("mail.participant = :participant_id")->setParameter('participant_id', $participant->getId());
+        $queryBuilder->andWhere("mail.type = :type")->setParameter('type', $type)->andWhere("mail.sent IS NOT NULL");
+        $queryBuilder->addOrderBy('mail.id', 'DESC');
+        try {
+            return (int)$queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NoResultException | NonUniqueResultException) {
+            return null;
+        }
     }
 
     final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMail

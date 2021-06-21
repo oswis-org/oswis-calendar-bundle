@@ -8,6 +8,8 @@ namespace OswisOrg\OswisCalendarBundle\Repository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
@@ -26,11 +28,14 @@ class ParticipantRangeRepository extends EntityRepository
         return $result instanceof ParticipantRange ? $result : null;
     }
 
-    public function getRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    public function countRangesConnections(array $opts = []): ?int
     {
-        $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts, $limit, $offset);
-
-        return new ArrayCollection($queryBuilder->getQuery()->getResult());
+        $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts)->select(' COUNT(participant_range.id) ');
+        try {
+            return $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NoResultException | NonUniqueResultException) {
+            return null;
+        }
     }
 
     public function getRangesConnectionsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
@@ -80,6 +85,13 @@ class ParticipantRangeRepository extends EntityRepository
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
         $queryBuilder->addOrderBy('participant_range.id', 'ASC');
+    }
+
+    public function getRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    {
+        $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts, $limit, $offset);
+
+        return new ArrayCollection($queryBuilder->getQuery()->getResult());
     }
 
     public function getFlagRangeConnection(?array $opts = []): ?ParticipantRange

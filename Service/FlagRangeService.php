@@ -17,14 +17,10 @@ use Psr\Log\LoggerInterface;
 
 class FlagRangeService
 {
-    protected EntityManagerInterface $em;
-
-    protected LoggerInterface $logger;
-
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
-    {
-        $this->em = $em;
-        $this->logger = $logger;
+    public function __construct(
+        private EntityManagerInterface $em,
+        private LoggerInterface $logger,
+    ) {
     }
 
     final public function create(FlagRange $flagRange): ?FlagRange
@@ -52,14 +48,16 @@ class FlagRangeService
 
     public function updateUsage(FlagRange $flagRange): void
     {
-        $usage = $this->getParticipantFlags($flagRange)->count();
-        $flagRange->setBaseUsage($usage);
-        $flagRange->setFullUsage($usage);
+        $usage = $this->countParticipantFlags($flagRange);
+        if (null !== $usage) {
+            $flagRange->setBaseUsage($usage);
+            $flagRange->setFullUsage($usage);
+        }
     }
 
-    public function getParticipantFlags(FlagRange $flagRange, bool $includeDeleted = false): Collection
+    public function countParticipantFlags(FlagRange $flagRange, bool $includeDeleted = false): ?int
     {
-        return $this->getParticipantFlagRepository()->getParticipantFlagGroups(
+        return $this->getParticipantFlagRepository()->countParticipantFlagGroups(
             [
                 ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
                 ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
@@ -73,6 +71,16 @@ class FlagRangeService
         assert($repo instanceof ParticipantFlagRepository);
 
         return $repo;
+    }
+
+    public function getParticipantFlags(FlagRange $flagRange, bool $includeDeleted = false): Collection
+    {
+        return $this->getParticipantFlagRepository()->getParticipantFlagGroups(
+            [
+                ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+                ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+            ]
+        );
     }
 
     public function getRepository(): FlagRangeRepository

@@ -9,6 +9,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Excparticipanttion;
@@ -50,11 +51,14 @@ class ParticipantRepository extends ServiceEntityRepository
         return $result instanceof Participant ? $result : null;
     }
 
-    public function getParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
+    public function countParticipants(array $opts = []): ?int
     {
-        $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
-
-        return Participant::filterCollection(new ArrayCollection($queryBuilder->getQuery()->getResult()), $includeNotActivated);
+        $queryBuilder = $this->getParticipantsQueryBuilder($opts)->select(' COUNT(participant.id) ');
+        try {
+            return $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NoResultException | NonUniqueResultException) {
+            return null;
+        }
     }
 
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
@@ -175,11 +179,18 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder->addOrderBy('participant.id', 'ASC');
     }
 
+    public function getParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
+    {
+        $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
+
+        return Participant::filterCollection(new ArrayCollection($queryBuilder->getQuery()->getResult()), $includeNotActivated);
+    }
+
     public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant
     {
         try {
             $participant = $this->getParticipantsQueryBuilder($opts ?? [], 1, 0)->getQuery()->getOneOrNullResult();
-        } catch (NonUniqueResultException $e) {
+        } catch (NonUniqueResultException) {
             return null;
         }
         if (!($participant instanceof Participant) || (!$includeNotActivated && !$participant->hasActivatedContactUser())) {

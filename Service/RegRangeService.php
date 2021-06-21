@@ -51,15 +51,18 @@ class RegRangeService
 
     public function updateUsage(RegRange $range): void
     {
-        $range->setUsage(new CapacityUsage($this->getRegistrationsRangeConnectionsByRange($range)->count()));
+        $usage = $this->countRegistrationsRangeConnectionsByRange($range);
+        if (null !== $usage) {
+            $range->setUsage(new CapacityUsage($usage));
+        }
         foreach ($range->getFlagGroupRanges() as $flagRange) {
             $this->flagRangeService->updateUsage($flagRange);
         }
     }
 
-    public function getRegistrationsRangeConnectionsByRange(RegRange $range, bool $includeDeleted = false): Collection
+    public function countRegistrationsRangeConnectionsByRange(RegRange $range, bool $includeDeleted = false): ?int
     {
-        return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
+        return $this->getParticipantRangeConnectionRepository()->countRangesConnections(
             [
                 ParticipantRepository::CRITERIA_REG_RANGE       => $range,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
@@ -73,6 +76,16 @@ class RegRangeService
         assert($repository instanceof ParticipantRangeRepository);
 
         return $repository;
+    }
+
+    public function getRegistrationsRangeConnectionsByRange(RegRange $range, bool $includeDeleted = false): Collection
+    {
+        return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
+            [
+                ParticipantRepository::CRITERIA_REG_RANGE       => $range,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+            ]
+        );
     }
 
     public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?RegRange

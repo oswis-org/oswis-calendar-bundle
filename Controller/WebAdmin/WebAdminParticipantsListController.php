@@ -117,12 +117,12 @@ class WebAdminParticipantsListController extends AbstractController
         foreach ($event->getSubEvents() as $subEvent) {
             $occupancy['subEvents'][] = [
                 'event'     => $subEvent,
-                'occupancy' => $this->participantService->getParticipants(
+                'occupancy' => $this->participantService->countParticipants(
                     [
                         ParticipantRepository::CRITERIA_EVENT                 => $subEvent,
                         ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
                     ]
-                )->count(),
+                ),
             ];
             // Do some recursion??
         }

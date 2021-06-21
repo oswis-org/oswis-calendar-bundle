@@ -206,6 +206,11 @@ class ParticipantService
         return $this->participantRepository;
     }
 
+    public function countParticipants(array $opts = []): ?int
+    {
+        return $this->getRepository()->countParticipants($opts);
+    }
+
     public function getParticipant(array $opts = [], ?bool $includeNotActivated = true): ?Participant
     {
         return $this->getRepository()->getParticipant($opts, $includeNotActivated);
@@ -255,7 +260,7 @@ class ParticipantService
             ParticipantRepository::CRITERIA_CONTACT              => $contact,
         ];
 
-        return $this->getRepository()->getParticipants($opts)->count() > 0;
+        return $this->getRepository()->countParticipants($opts) > 0;
     }
 
     final public function getOrganizer(?Event $event): ?AbstractContact
@@ -311,7 +316,7 @@ class ParticipantService
             ParticipantRepository::CRITERIA_APP_USER             => $appUser,
         ];
 
-        return $this->getRepository()->getParticipants($opts)->count() > 0;
+        return $this->getRepository()->countParticipants($opts) > 0;
     }
 
     /**

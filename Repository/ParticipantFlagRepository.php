@@ -8,6 +8,8 @@ namespace OswisOrg\OswisCalendarBundle\Repository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
@@ -26,16 +28,19 @@ class ParticipantFlagRepository extends EntityRepository
         return $result instanceof ParticipantFlag ? $result : null;
     }
 
-    public function getParticipantFlagGroups(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    public function countParticipantFlagGroups(array $opts = [], ?int $limit = null, ?int $offset = null): ?int
     {
-        $queryBuilder = $this->getQueryBuilder($opts, $limit, $offset);
-
-        return new ArrayCollection($queryBuilder->getQuery()->getResult());
+        $queryBuilder = $this->getQueryBuilder($opts, $limit, $offset)->select(' COUNT(item.id) ');
+        try {
+            return (int)$queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NoResultException | NonUniqueResultException) {
+            return null;
+        }
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
-        $queryBuilder = $this->createQueryBuilder('pFlag');
+        $queryBuilder = $this->createQueryBuilder('item');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addFlagRangeQuery($queryBuilder, $opts);
         $this->addIncludeDeletedQuery($queryBuilder, $opts);
@@ -48,14 +53,14 @@ class ParticipantFlagRepository extends EntityRepository
     private function addIdQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_ID])) {
-            $queryBuilder->andWhere(' pFlag.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
+            $queryBuilder->andWhere(' item.id = :id ')->setParameter('id', $opts[self::CRITERIA_ID]);
         }
     }
 
     private function addFlagRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof FlagRange) {
-            $queryBuilder->andWhere('pFlag.flagRange = :flag_range_id');
+            $queryBuilder->andWhere('item.flagRange = :flag_range_id');
             $queryBuilder->setParameter('flag_range_id', $opts[self::CRITERIA_FLAG_RANGE]->getId());
         }
     }
@@ -63,7 +68,7 @@ class ParticipantFlagRepository extends EntityRepository
     private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('pFlag.deletedAt IS NULL');
+            $queryBuilder->andWhere('item.deletedAt IS NULL');
         }
     }
 
@@ -79,14 +84,21 @@ class ParticipantFlagRepository extends EntityRepository
 
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        $queryBuilder->addOrderBy('pFlag.id', 'ASC');
+        $queryBuilder->addOrderBy('item.id', 'ASC');
+    }
+
+    public function getParticipantFlagGroups(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
+    {
+        $queryBuilder = $this->getQueryBuilder($opts, $limit, $offset);
+
+        return new ArrayCollection($queryBuilder->getQuery()->getResult());
     }
 
     public function getParticipantFlag(?array $opts = []): ?ParticipantFlag
     {
         try {
             $participantFlag = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
+        } catch (Exception) {
             return null;
         }
 
