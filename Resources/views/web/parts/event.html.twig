@@ -71,7 +71,7 @@
     {% endif %}
 </section>
 
-<section class="row align-items-stretch">
+<section class="row align-items-stretch my-2">
     {% if event.place(true)|default %}
         <div class="col-12 col-md-6 col-lg-7">
             {% include '@OswisOrgOswisCalendar/web/parts/event-location.html.twig' %}
@@ -85,7 +85,7 @@
 </section>
 
 {% if ranges|default and ranges|length > 0 %}
-    <section class="row">
+    <section class="row mt-4">
         <header class="col-12"><h3>Přihlášky</h3></header>
     </section>
     <section class="row">
