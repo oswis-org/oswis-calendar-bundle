@@ -55,6 +55,15 @@ class ParticipantRange implements BasicInterface
     use DeletedTrait;
 
     /**
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant",
+     *     fetch="EXTRA_LAZY",
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Participant $participant = null;
+
+    /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -148,5 +157,13 @@ class ParticipantRange implements BasicInterface
     public function getParticipantCategory(): ?ParticipantCategory
     {
         return $this->getRange()?->getParticipantCategory();
+    }
+
+    public function getParticipant(): ?Participant {
+        return $this->participant;
+    }
+
+    public function setParticipant(?Participant $participant): void {
+        $this->participant = $participant;
     }
 }

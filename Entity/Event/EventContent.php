@@ -37,4 +37,39 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractWebContent;
  */
 class EventContent extends AbstractWebContent
 {
+    /**
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
+     *     fetch="EAGER",
+     *     inversedBy="contents",
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Event $event = null;
+
+    /**
+     * @param  \OswisOrg\OswisCalendarBundle\Entity\Event\Event|null  $event
+     * @param  string|null  $textValue
+     * @param  string|null  $type
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function __construct(
+        ?Event $event = null,
+        ?string $textValue = null,
+        ?string $type = null,
+    ) {
+        parent::__construct($textValue, $type);
+        $this->event = $event;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): void
+    {
+        $this->event = $event;
+    }
 }

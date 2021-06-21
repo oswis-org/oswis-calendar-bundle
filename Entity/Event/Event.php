@@ -97,13 +97,11 @@ class Event implements NameableInterface
     protected ?Participant $organizer = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection", cascade={"all"}, fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_event_flag_connection_connection",
-     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_flag_id", referencedColumnName="id", unique=true)}
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection",
+     *     cascade={"all"},
+     *     fetch="EAGER",
+     *     mappedBy="event",
      * )
      */
     protected ?Collection $flagConnections = null;
@@ -121,11 +119,10 @@ class Event implements NameableInterface
     protected ?Collection $subEvents = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventContent", cascade={"all"})
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_event_content_connection",
-     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="event_content_id", referencedColumnName="id", unique=true)}
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventContent",
+     *     cascade={"all"},
+     *     mappedBy="event"
      * )
      */
     protected ?Collection $contents = null;

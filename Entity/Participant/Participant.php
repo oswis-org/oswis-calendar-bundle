@@ -152,25 +152,21 @@ class Participant implements ParticipantInterface
     protected ?Collection $flagGroups = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange", cascade={"all"}, fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_reg_range_connection",
-     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="reg_range_id", referencedColumnName="id", unique=true)}
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange",
+     *     cascade={"all"},
+     *     fetch="EAGER",
+     *     mappedBy="participant",
      * )
      */
     protected ?Collection $participantRanges = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact", cascade={"all"}, fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_contact_connection",
-     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="participant_contact_id", referencedColumnName="id", unique=true)}
+     * @Doctrine\ORM\Mapping\OneToMany(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact",
+     *     cascade={"all"},
+     *     fetch="EAGER",
+     *     mappedBy="participant",
      * )
      */
     protected ?Collection $participantContacts = null;
@@ -266,8 +262,8 @@ class Participant implements ParticipantInterface
     {
         $this->regRange = $this->getRegRange();
         $this->contact = $this->getContact();
-        $this->event = $this->regRange ? $this->regRange->getEvent() : null;
-        $this->participantCategory = $this->regRange ? $this->regRange->getParticipantCategory() : null;
+        $this->event = $this->regRange?->getEvent();
+        $this->participantCategory = $this->regRange?->getParticipantCategory();
         $this->updateVariableSymbol();
         // $this->removeEmptyNotesAndDetails();
     }

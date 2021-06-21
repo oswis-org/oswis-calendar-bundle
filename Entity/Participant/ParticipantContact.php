@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
@@ -51,6 +52,15 @@ class ParticipantContact implements BasicInterface
     use DeletedTrait;
 
     /**
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant",
+     *     fetch="EXTRA_LAZY",
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Participant $participant = null;
+
+    /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -88,5 +98,13 @@ class ParticipantContact implements BasicInterface
     public function isActive(?DateTime $referenceDateTime = null): bool
     {
         return $this->isActivated($referenceDateTime) && !$this->isDeleted($referenceDateTime);
+    }
+
+    public function getParticipant(): ?Participant {
+        return $this->participant;
+    }
+
+    public function setParticipant(?Participant $participant): void {
+        $this->participant = $participant;
     }
 }

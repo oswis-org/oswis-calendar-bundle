@@ -48,7 +48,16 @@ class EventFlagConnection implements BasicInterface
     use DeletedTrait;
 
     /**
-     * Event flag.
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
+     *     fetch="EAGER",
+     *     inversedBy="flagConnections",
+     * )
+     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
+     */
+    protected ?Event $event = null;
+
+    /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlag", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -68,6 +77,16 @@ class EventFlagConnection implements BasicInterface
     public function setEventFlag(?EventFlag $eventFlag): void
     {
         $this->eventFlag = $eventFlag;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): void
+    {
+        $this->event = $event;
     }
 
     public function isActive(): bool
