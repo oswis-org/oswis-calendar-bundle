@@ -58,6 +58,7 @@ class ParticipantRange implements BasicInterface
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant",
      *     fetch="EXTRA_LAZY",
+     *     inversedBy="participantRanges",
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -159,11 +160,13 @@ class ParticipantRange implements BasicInterface
         return $this->getRange()?->getParticipantCategory();
     }
 
-    public function getParticipant(): ?Participant {
+    public function getParticipant(): ?Participant
+    {
         return $this->participant;
     }
 
-    public function setParticipant(?Participant $participant): void {
+    public function setParticipant(?Participant $participant): void
+    {
         $this->participant = $participant;
     }
 }

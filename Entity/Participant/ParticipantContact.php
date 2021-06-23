@@ -7,7 +7,6 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
@@ -55,6 +54,7 @@ class ParticipantContact implements BasicInterface
      * @Doctrine\ORM\Mapping\ManyToOne(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant",
      *     fetch="EXTRA_LAZY",
+     *     inversedBy="participantContacts",
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
@@ -70,7 +70,7 @@ class ParticipantContact implements BasicInterface
     {
         try {
             $this->setContact($contact);
-        } catch (NotImplementedException $e) {
+        } catch (NotImplementedException) {
         }
     }
 
@@ -100,11 +100,13 @@ class ParticipantContact implements BasicInterface
         return $this->isActivated($referenceDateTime) && !$this->isDeleted($referenceDateTime);
     }
 
-    public function getParticipant(): ?Participant {
+    public function getParticipant(): ?Participant
+    {
         return $this->participant;
     }
 
-    public function setParticipant(?Participant $participant): void {
+    public function setParticipant(?Participant $participant): void
+    {
         $this->participant = $participant;
     }
 }
