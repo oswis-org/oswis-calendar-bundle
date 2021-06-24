@@ -217,11 +217,11 @@ class ParticipantService
     }
 
     /**
-     * @param  Participant  $participant
+     * @param  \OswisOrg\OswisCalendarBundle\Entity\Participant\Participant|null  $participant
      * @param  ParticipantToken  $participantToken
      * @param  bool  $sendConfirmation
      *
-     * @throws OswisException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
     public function activate(?Participant $participant, ParticipantToken $participantToken, bool $sendConfirmation = true): void
     {
@@ -232,6 +232,7 @@ class ParticipantService
             $this->appUserService->activate($appUser, false);
             $participant->setUserConfirmed($appUser);
             if (true === $sendConfirmation) {
+                $this->logger->error('SENDING MAIL!!!');
                 $this->participantMailService->sendSummary($participant);
             }
             $this->em->persist($participant);

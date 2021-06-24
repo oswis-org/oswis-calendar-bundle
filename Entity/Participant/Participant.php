@@ -222,6 +222,7 @@ class Participant implements ParticipantInterface
         $participantsContacts = $this->getParticipantContacts();
         if (null !== $participantContact && $participantsContacts->isEmpty()) {
             $participantsContacts->add($participantContact);
+            $participantContact->setParticipant($this);
             $this->updateCachedColumns();
 
             return;
@@ -287,7 +288,9 @@ class Participant implements ParticipantInterface
     public function setRegRange(?RegRange $regRange): void
     {
         if ($this->getRegRange() !== $regRange) {
-            $this->setParticipantRange(new ParticipantRange($regRange));
+            $participantRange = new ParticipantRange($regRange);
+            $this->setParticipantRange($participantRange);
+            $participantRange->setParticipant($this);
         }
     }
 
@@ -334,7 +337,7 @@ class Participant implements ParticipantInterface
     {
         try {
             return null !== ($participantContact = $this->getParticipantContact($onlyActive)) ? $participantContact->getContact() : null;
-        } catch (OswisException $e) {
+        } catch (OswisException) {
             return null;
         }
     }
@@ -347,7 +350,9 @@ class Participant implements ParticipantInterface
     public function setContact(AbstractContact $contact): void
     {
         if ($this->getContact() !== $contact) {
-            $this->setParticipantContact(new ParticipantContact($contact));
+            $participantContact = new ParticipantContact($contact);
+            $this->setParticipantContact($participantContact);
+            $participantContact->setParticipant($this);
         }
         $this->updateVariableSymbol();
     }
@@ -422,6 +427,7 @@ class Participant implements ParticipantInterface
         }
         $newParticipantRange?->activate();
         $this->getParticipantRanges()->add($newParticipantRange);
+        $newParticipantRange->setParticipant($this);
         $this->updateCachedColumns();
     }
 
@@ -654,23 +660,23 @@ class Participant implements ParticipantInterface
         return false;
     }
 
-    public function setDeletedAt(?DateTime $deleted = null): void
+    public function setDeletedAt(?DateTime $deletedAt = null): void
     {
-        $this->traitSetDeletedAt($deleted);
+        $this->traitSetDeletedAt($deletedAt);
         if ($this->isDeleted()) {
             foreach ($this->getParticipantFlags() as $participantFlagGroup) {
                 if ($participantFlagGroup instanceof ParticipantFlag) {
-                    $participantFlagGroup->delete($deleted);
+                    $participantFlagGroup->delete($deletedAt);
                 }
             }
             foreach ($this->getFlagGroups() as $participantFlagGroup) {
                 if ($participantFlagGroup instanceof ParticipantFlagGroup) {
-                    $participantFlagGroup->delete($deleted);
+                    $participantFlagGroup->delete($deletedAt);
                 }
             }
             foreach ($this->getParticipantRanges() as $participantRange) {
                 if ($participantRange instanceof ParticipantRange) {
-                    $participantRange->delete($deleted);
+                    $participantRange->delete($deletedAt);
                 }
             }
         }
@@ -805,7 +811,6 @@ class Participant implements ParticipantInterface
             return null;
         }
         $value = null;
-        $typeString = null;
         if ($deposit && $rest) {
             $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'celá částka';
             $value = $this->getPrice();
@@ -1006,7 +1011,7 @@ class Participant implements ParticipantInterface
             $this->getEMails()->add($participantMail);
             try {
                 $participantMail->setParticipant($this);
-            } catch (NotImplementedException $e) {
+            } catch (NotImplementedException) {
             }
         }
     }

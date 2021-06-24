@@ -74,7 +74,10 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag", mappedBy="participantFlagGroup", cascade={"all"}
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag",
+     *     mappedBy="participantFlagGroup",
+     *     cascade={"all"},
+     *     fetch="EAGER",
      * )
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */

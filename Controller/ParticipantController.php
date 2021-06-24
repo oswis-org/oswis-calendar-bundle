@@ -213,6 +213,7 @@ class ParticipantController extends AbstractController
      */
     public function doActivation(ParticipantToken $participantToken): Response
     {
+        $this->logger->warning("doActivation()");
         $this->participantService->activate($participantToken->getParticipant(), $participantToken, true);
 
         return $this->participantActivated();
