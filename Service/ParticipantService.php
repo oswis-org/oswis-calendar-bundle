@@ -232,7 +232,6 @@ class ParticipantService
             $this->appUserService->activate($appUser, false);
             $participant->setUserConfirmed($appUser);
             if (true === $sendConfirmation) {
-                $this->logger->error('SENDING MAIL!!!');
                 $this->participantMailService->sendSummary($participant);
             }
             $this->em->persist($participant);

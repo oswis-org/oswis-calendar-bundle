@@ -50,11 +50,9 @@ class ParticipantMailService
     public function sendSummary(Participant $participant): void
     {
         $sent = 0;
-        $this->logger->error('CONTACT: '.$participant->getContact()?->getId());
         $contactPersons = $participant->getContactPersons(true);
         foreach ($contactPersons as $contactPerson) {
             if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
-                $this->logger->error('NO USER!!!!!!');
                 continue;
             }
             try {
@@ -67,7 +65,7 @@ class ParticipantMailService
                 $this->logger->error("ERROR: Not sent summary for participant '$participantId' to user '$userId' ($message).");
             }
         }
-        $this->logger->error("SENT $sent from ".$contactPersons->count());
+        $this->logger->debug("SENT $sent from ".$contactPersons->count());
         if (1 > $sent && $contactPersons->count() > 0) {
             throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail.");
         }
