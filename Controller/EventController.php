@@ -208,8 +208,15 @@ class EventController extends AbstractController
         );
     }
 
-    public function showCurrentEvent(): Response
+    public function showCurrentEvent(?string $prefix = null, ?string $suffix = null): Response
     {
-        return $this->render('@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig', ['event' => $this->eventService->getDefaultEvent()]);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig',
+            [
+                'event' => $this->eventService->getDefaultEvent(),
+                'prefix' => $prefix,
+                'suffix' => $suffix,
+            ]
+        );
     }
 }

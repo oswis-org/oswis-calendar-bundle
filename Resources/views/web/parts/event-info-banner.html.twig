@@ -6,6 +6,11 @@
                     <div class="col-12 text-center text-uppercase">
                         <a href="{{ path('oswis_org_oswis_calendar_web_event') }}"><h2><span class="text-black">Ročník</span> {{ event.startYear }}</h2></a>
                     </div>
+                    {% if prefix|default %}
+                        <div class="col-12 text-center mb-1">
+                            <p>{{ prefix }}</p>
+                        </div>
+                    {% endif %}
                     <div class="batches-sidebar-box col-12 mb-0">
                         {% for subEvent in event.subEvents|default|filter(e => e.batch) %}
                             <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}">
@@ -19,6 +24,11 @@
                             </a>
                         {% endfor %}
                     </div>
+                    {% if suffix|default %}
+                        <div class="col-12 text-center mt-1">
+                            <p>{{ suffix }}</p>
+                        </div>
+                    {% endif %}
                 </section>
             {% endif %}
         </div>
