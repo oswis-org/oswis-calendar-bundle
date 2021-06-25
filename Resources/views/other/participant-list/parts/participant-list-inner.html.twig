@@ -64,9 +64,11 @@
                 <div style="{{ participantFlagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">
                     {% for index, participantFlag in participantFlagGroup.participantFlags %}
                         {% set badgeColorString = participantFlag.flag.color|default
-                            ? 'background-color:'~participantFlag.flag.color~';color:'~participantFlag.flag.foregroundColor~';'
+                            ? 'background-color:'~participantFlag.flag.color~'!important;color:'~participantFlag.flag.foregroundColor~'!important;'
                             : '' %}
-                        {% set badgeColorString = participantFlag.deletedAt ? 'background-color:lightgrey;color:darkgrey;' : badgeColorString %}
+                        {% set badgeColorString = participantFlag.deletedAt
+                            ? 'background-color:lightgrey!important;color:darkgrey!important;'
+                            : badgeColorString %}
                         <div class="badge bg-info smaller" data-bs-toggle="tooltip" data-bs-html="true"
                              style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
                              title="Příznak: {{ participantFlag.flag.name|default }}<br>
