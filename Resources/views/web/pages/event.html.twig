@@ -1,5 +1,23 @@
 {% extends '@OswisOrgOswisCore/web/page-skeleton-default.html.twig' %}
 
+{% block javascripts %}
+    {{ parent() }}
+    {% autoescape false %}
+        {% for jsContent in event.contents('js') %}
+            <script>{{ jsContent.textValue|default }}</script>
+        {% endfor %}
+    {% endautoescape %}
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% autoescape false %}
+        {% for cssContent in event.contents('css') %}
+            <style>{{ cssContent.textValue|default }}</style>
+        {% endfor %}
+    {% endautoescape %}
+{% endblock %}
+
 {% block body_content %}
     <main class="container" id="main-content-container" itemscope itemtype="http://schema.org/Event">
         {% include '@OswisOrgOswisCalendar/web/parts/event.html.twig' %}
