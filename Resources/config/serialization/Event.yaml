@@ -3,7 +3,6 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         id:
             groups:
                 - 'calendar_events_get'
-                - 'calendar_events_post'
                 - 'calendar_event_get'
                 - 'calendar_event_put'
         createdDateTime:

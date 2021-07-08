@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -242,7 +243,7 @@ class Participant implements ParticipantInterface
     public function getParticipantContact(bool $onlyActive = false): ?ParticipantContact
     {
         $connections = $this->getParticipantContacts($onlyActive);
-        if ($connections->count() > 1) {
+        if ($onlyActive && $connections->count() > 1) {
             throw new OswisException('Účastník je přiřazen k více kontaktům najednou.');
         }
 
@@ -302,7 +303,7 @@ class Participant implements ParticipantInterface
      *
      * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange|null
      */
-    public function getParticipantRange(bool $onlyActive = true): ?ParticipantRange
+    public function getParticipantRange(bool $onlyActive = false): ?ParticipantRange
     {
         $participantRanges = self::sortCollection($this->getParticipantRanges($onlyActive), true);
         if ($onlyActive && $participantRanges->count() > 1) {
@@ -336,7 +337,7 @@ class Participant implements ParticipantInterface
         }
     }
 
-    public function getContact(bool $onlyActive = true): ?AbstractContact
+    public function getContact(bool $onlyActive = false): ?AbstractContact
     {
         try {
             return null !== ($participantContact = $this->getParticipantContact($onlyActive)) ? $participantContact->getContact() : null;
@@ -385,8 +386,8 @@ class Participant implements ParticipantInterface
     public function setParticipantRange(?ParticipantRange $newParticipantRange, bool $admin = false): void
     {
         $oldParticipantRange = $this->getParticipantRange();
-        $oldRegRange = $oldParticipantRange ? $oldParticipantRange->getRange() : null;
-        $newRegRange = $newParticipantRange ? $newParticipantRange->getRange() : null;
+        $oldRegRange = $oldParticipantRange?->getRange();
+        $newRegRange = $newParticipantRange?->getRange();
         //
         // CASE 1: RegRange is same. Do nothing.
         if ($oldRegRange === $newRegRange) {
@@ -408,7 +409,8 @@ class Participant implements ParticipantInterface
         // Check capacity of new range.
         $remainingCapacity = $newRegRange->getRemainingCapacity($admin);
         if (null !== $remainingCapacity && (0 === $remainingCapacity || -1 >= $remainingCapacity)) {
-            throw new EventCapacityExceededException($newParticipantRange?->getEventName());
+            /** @noinspection NullPointerExceptionInspection */
+            throw new EventCapacityExceededException($newParticipantRange->getEventName());
         }
         //
         // CASE 3: RegRange is not set yet, set initial RegRange and set new flags by range.
@@ -428,9 +430,11 @@ class Participant implements ParticipantInterface
                 $participantRange->delete();
             }
         }
-        $newParticipantRange?->activate();
-        $this->getParticipantRanges()->add($newParticipantRange);
-        $newParticipantRange->setParticipant($this);
+        if (null !== $newParticipantRange) {
+            $newParticipantRange->activate();
+            $this->getParticipantRanges()->add($newParticipantRange);
+            $newParticipantRange->setParticipant($this);
+        }
         $this->updateCachedColumns();
     }
 
@@ -728,7 +732,7 @@ class Participant implements ParticipantInterface
         return $price < 0 ? 0 : $price;
     }
 
-    public function getParticipantCategory(bool $onlyActive = true): ?ParticipantCategory
+    public function getParticipantCategory(bool $onlyActive = false): ?ParticipantCategory
     {
         return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getParticipantCategory() : null;
     }
@@ -830,7 +834,7 @@ class Participant implements ParticipantInterface
         return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);
     }
 
-    public function getEvent(bool $onlyActive = true): ?Event
+    public function getEvent(bool $onlyActive = false): ?Event
     {
         return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getEvent() : null;
     }

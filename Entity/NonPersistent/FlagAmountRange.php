@@ -27,7 +27,9 @@ class FlagAmountRange
 
     public function getMin(): int
     {
-        return $this->getMax() < $this->min ? $this->getMax() : $this->min;
+        $max = $this->getMax();
+
+        return null === $max ? $this->min : min($max, $this->min);
     }
 
     public function setMin(?int $min): void
