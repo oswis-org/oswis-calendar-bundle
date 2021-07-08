@@ -213,7 +213,7 @@ class EventController extends AbstractController
         return $this->render(
             '@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig',
             [
-                'event' => $this->eventService->getDefaultEvent(),
+                'event'  => $this->eventService->getDefaultEvent(),
                 'prefix' => $prefix,
                 'suffix' => $suffix,
             ]

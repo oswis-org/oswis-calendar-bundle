@@ -5,6 +5,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -77,6 +79,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
+#[ApiFilter(OrderFilter::class, properties: ['contact.sortableName'])]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;
@@ -236,7 +239,7 @@ class Participant implements ParticipantInterface
      * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact|null
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
-    public function getParticipantContact(bool $onlyActive = true): ?ParticipantContact
+    public function getParticipantContact(bool $onlyActive = false): ?ParticipantContact
     {
         $connections = $this->getParticipantContacts($onlyActive);
         if ($connections->count() > 1) {
@@ -269,7 +272,7 @@ class Participant implements ParticipantInterface
         // $this->removeEmptyNotesAndDetails();
     }
 
-    public function getRegRange(bool $onlyActive = true): ?RegRange
+    public function getRegRange(bool $onlyActive = false): ?RegRange
     {
         $participantRange = $this->getParticipantRange($onlyActive);
 
@@ -287,7 +290,7 @@ class Participant implements ParticipantInterface
      */
     public function setRegRange(?RegRange $regRange): void
     {
-        if ($this->getRegRange() !== $regRange) {
+        if ($this->getRegRange(true) !== $regRange) {
             $participantRange = new ParticipantRange($regRange);
             $this->setParticipantRange($participantRange);
             $participantRange->setParticipant($this);
@@ -349,7 +352,7 @@ class Participant implements ParticipantInterface
      */
     public function setContact(AbstractContact $contact): void
     {
-        if ($this->getContact() !== $contact) {
+        if ($this->getContact(true) !== $contact) {
             $participantContact = new ParticipantContact($contact);
             $this->setParticipantContact($participantContact);
             $participantContact->setParticipant($this);
@@ -872,11 +875,6 @@ class Participant implements ParticipantInterface
         $participantRange = $this->getParticipantRange();
 
         return $participantRange && $participantRange->isActivated();
-    }
-
-    public function isRangeDeleted(): bool // TODO: What's this?
-    {
-        return !($this->getRegRange() && $this->getEvent() && $this->getParticipantCategory());
     }
 
     /**
