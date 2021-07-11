@@ -120,6 +120,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         return $this->getFlagGroupRange()?->getFlagCategory();
     }
 
+    public function getName(): ?string
+    {
+        return $this->getFlagGroupRange()?->getName();
+    }
+
     public function isPublicOnWeb(): bool
     {
         return $this->getFlagGroupRange()?->isPublicOnWeb() ?? false;
@@ -263,5 +268,10 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             }
         }
         $this->traitDelete($dateTime);
+    }
+
+    public function isActive(): bool
+    {
+        return !$this->isDeleted();
     }
 }

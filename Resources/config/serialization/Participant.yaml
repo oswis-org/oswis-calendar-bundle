@@ -2,9 +2,7 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     attributes:
         participantCategory:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
-        participantType:
-            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
-        participantNotes:
+        notes:
             groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
         regRange:
             groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
@@ -24,9 +22,9 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
         paidPrice:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
-        webContents:
-            groups: [ 'calendar_participant_get' ]
         activatedContactUser:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        variableSymbol:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
@@ -43,6 +41,14 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
                 - 'calendar_participants_post'
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        active:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange:
     attributes:
@@ -73,9 +79,11 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
         name:
             groups:
                 - 'calendar_participants_get'
-                - 'calendar_participants_post'
                 - 'calendar_participant_get'
-                - 'calendar_participant_put'
+        extendedName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
         shortName:
             groups:
                 - 'calendar_participants_get'
@@ -103,6 +111,14 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
             groups:
                 - 'calendar_participant_get'
         color:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        price:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        active:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
@@ -134,6 +150,17 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment:
             groups:
                 - 'calendar_participant_get'
 
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
+    attributes:
+        publicNote:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        deleted:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+
 OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
     attributes:
         name:
@@ -141,6 +168,10 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
         contactName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        details:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
@@ -157,5 +188,119 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
                 - 'calendar_participant_get'
         email:
             groups:
+                - 'calendar_participants_get'
                 - 'calendar_participant_get'
+        gender:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+
+
+OswisOrg\OswisCalendarBundle\Entity\Event\Event:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        superEvent:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+
+
+
+OswisOrg\OswisAddressBookBundle\Entity\ContactDetail:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        detailCategory:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        shortName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        description:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        priority:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        content:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        formatted:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        schemaString:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        categoryString:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        categoryName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        showInPreview:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+
+OswisOrg\OswisAddressBookBundle\Entity\ContactDetailCategory:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        name:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        shortName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        type:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        priority:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        content:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        formatted:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        schemaString:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        typeString:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+
 

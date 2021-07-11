@@ -8,6 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -81,6 +82,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 #[ApiFilter(OrderFilter::class, properties: ['contact.sortableName'])]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['regRange.event.id'])]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;
@@ -94,7 +96,10 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote", cascade={"all"}, mappedBy="participant", fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote",
+     *     cascade={"all"},
+     *     mappedBy="participant",
+     *     fetch="EAGER",
      * )
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
@@ -102,7 +107,10 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment", cascade={"all"}, mappedBy="participant", fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment",
+     *     cascade={"all"},
+     *     mappedBy="participant",
+     *     fetch="EAGER",
      * )
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */

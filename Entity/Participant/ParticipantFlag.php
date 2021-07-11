@@ -155,4 +155,14 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     {
         return $this->getFlagRange()?->getName();
     }
+
+    public function getShortName(): ?string
+    {
+        return $this->getFlagRange()?->getShortName();
+    }
+
+    public function getExtendedName(): ?string
+    {
+        return $this->getFlagRange()?->getExtendedName(true, false);
+    }
 }
