@@ -71,13 +71,14 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  *     "name",
  *     "shortName",
  *     "slug",
- *     "startDateTime",
- *     "endDateTime",
- *     "event.type.name",
- *     "event.type.shortName",
- *     "event.type.slug",
+ *     "variableSymbol",
+ *     "event.name",
+ *     "event.shortName",
+ *     "event.slug",
+ *     "contact.name",
  *     "contact.contactName",
- *     "contact.contactDetails.content"
+ *     "contact.sortableName",
+ *     "contact.contactDetails.content",
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
@@ -734,7 +735,7 @@ class Participant implements ParticipantInterface
      */
     public function getPrice(): int
     {
-        $price = ($range = $this->getParticipantRange()) ? $range->getPrice($this->getParticipantCategory()) : 0;
+        $price = ($range = $this->getParticipantRange(true)) ? $range->getPrice($this->getParticipantCategory(true)) : 0;
         $price += $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
@@ -761,7 +762,7 @@ class Participant implements ParticipantInterface
      */
     public function getDepositValue(): ?int
     {
-        $price = ($range = $this->getParticipantRange()) ? $range->getDepositValue($range->getParticipantCategory()) : 0;
+        $price = ($range = $this->getParticipantRange(true)) ? $range->getDepositValue($range->getParticipantCategory()) : 0;
         $price += $this->getFlagsDepositValue();
 
         return $price < 0 ? 0 : $price;
@@ -884,7 +885,7 @@ class Participant implements ParticipantInterface
 
     public function isRangeActivated(): bool
     {
-        $participantRange = $this->getParticipantRange();
+        $participantRange = $this->getParticipantRange(true);
 
         return $participantRange && $participantRange->isActivated();
     }

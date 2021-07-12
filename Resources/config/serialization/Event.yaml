@@ -4,7 +4,6 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
             groups:
                 - 'calendar_events_get'
                 - 'calendar_event_get'
-                - 'calendar_event_put'
         createdDateTime:
             groups: [ 'calendar_event_get' ]
         updatedDateTime:
