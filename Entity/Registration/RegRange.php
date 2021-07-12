@@ -6,6 +6,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -65,6 +67,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  *   }
  * )
  */
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['regRange.event.id', 'regRange.event.superEvent.id'])]
 class RegRange implements NameableInterface
 {
     use NameableTrait;
