@@ -96,7 +96,7 @@ class ParticipantOfferRepository extends EntityRepository
 
     private function addOnlyActiveQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_ONLY_ACTIVE]) && $opts[self::CRITERIA_ONLY_ACTIVE]) {
+        if (!empty($opts[self::CRITERIA_ONLY_ACTIVE]) && true === (bool)$opts[self::CRITERIA_ONLY_ACTIVE]) {
             $startQuery = ' (range.startDateTime IS NULL) OR (:now > range.startDateTime) ';
             $endQuery = ' (range.endDateTime IS NULL) OR (:now < range.endDateTime) ';
             $queryBuilder->andWhere($startQuery)->andWhere($endQuery)->setParameter('now', new DateTime());

@@ -21,17 +21,11 @@ use Psr\Log\LoggerInterface;
 
 class ParticipantOfferService
 {
-    protected EntityManagerInterface $em;
-
-    protected LoggerInterface $logger;
-
-    protected ParticipantFlagOfferService $flagRangeService;
-
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantFlagOfferService $flagRangeService)
-    {
-        $this->em = $em;
-        $this->flagRangeService = $flagRangeService;
-        $this->logger = $logger;
+    public function __construct(
+        protected EntityManagerInterface $em,
+        protected LoggerInterface $logger,
+        protected ParticipantFlagOfferService $flagRangeService,
+    ) {
     }
 
     final public function create(ParticipantOffer $range): ?ParticipantOffer
