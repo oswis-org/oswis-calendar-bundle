@@ -3,7 +3,7 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\NonPersistent;
 
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlag;
 
 class FlagsByType
 {
@@ -18,7 +18,7 @@ class FlagsByType
     {
         $out = [];
         foreach ($flags as $flag) {
-            if ($flag instanceof Flag) {
+            if ($flag instanceof ParticipantFlag) {
                 $flagTypeSlug = $flag->getCategory()?->getSlug() ?? '0';
                 $flagSlug = $flag->getSlug();
                 $out[$flagTypeSlug] ??= [];

@@ -52,7 +52,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag")
  */
-class FlagCategory implements NameableInterface
+class ParticipantFlagCategory implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;

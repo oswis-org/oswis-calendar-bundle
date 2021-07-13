@@ -51,7 +51,7 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  * )
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag_range")
  */
-class FlagRange implements NameableInterface
+class ParticipantFlagOffer implements NameableInterface
 {
     use NameableTrait {
         getName as traitGetName;
@@ -67,10 +67,10 @@ class FlagRange implements NameableInterface
     use FormValueTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\Flag", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantFlag", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Flag $flag = null;
+    protected ?ParticipantFlag $flag = null;
 
     /**
      * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
@@ -78,7 +78,7 @@ class FlagRange implements NameableInterface
     protected ?string $flagFormGroup = null;
 
     public function __construct(
-        ?Flag $flag = null,
+        ?ParticipantFlag $flag = null,
         ?Capacity $eventCapacity = null,
         ?Price $eventPrice = null,
         ?FlagAmountRange $flagAmountRange = null,
@@ -98,27 +98,27 @@ class FlagRange implements NameableInterface
         return $this->depositValue ?? 0;
     }
 
-    public function isFlag(?Flag $flag = null): bool
+    public function isFlag(?ParticipantFlag $flag = null): bool
     {
         return null === $flag || ($this->getFlag() && $this->getFlag() === $flag);
     }
 
-    public function getFlag(): ?Flag
+    public function getFlag(): ?ParticipantFlag
     {
         return $this->flag;
     }
 
-    public function setFlag(?Flag $flag): void
+    public function setFlag(?ParticipantFlag $flag): void
     {
         $this->flag = $flag;
     }
 
-    public function isCategory(?FlagCategory $category = null): bool
+    public function isCategory(?ParticipantFlagCategory $category = null): bool
     {
         return null === $category || $this->getCategory() === $category;
     }
 
-    public function getCategory(): ?FlagCategory
+    public function getCategory(): ?ParticipantFlagCategory
     {
         return $this->getFlag()?->getCategory();
     }
@@ -183,10 +183,10 @@ class FlagRange implements NameableInterface
             /** @noinspection NullPointerExceptionInspection */
             return $flag->getFlagFormGroup();
         }
-        if (FlagCategory::TYPE_T_SHIRT_SIZE === $this->getType()) {
+        if (ParticipantFlagCategory::TYPE_T_SHIRT_SIZE === $this->getType()) {
             return $this->getTShirtGroup();
         }
-        if (FlagCategory::TYPE_SCHOOL === $this->getType()) {
+        if (ParticipantFlagCategory::TYPE_SCHOOL === $this->getType()) {
             return null;
         }
 

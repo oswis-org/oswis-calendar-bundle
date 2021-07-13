@@ -7,7 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\AbstractType;
@@ -40,7 +40,7 @@ class ParticipantType extends AbstractType
         }
         $this->logger->info("Form data:");
         $this->logger->info(null !== $participant->getContact() ? 'Contact OK.' : 'Without contact!');
-        if (!(($range = $participant->getRegRange(false)) instanceof RegRange)) {
+        if (!(($range = $participant->getRegRange(false)) instanceof ParticipantOffer)) {
             throw new PriceInvalidArgumentException('[špatný rozsah přihlášek]');
         }
         $participantType = $range->getParticipantCategory();
@@ -68,7 +68,7 @@ class ParticipantType extends AbstractType
             CollectionType::class,
             array(
                 'label'              => false,
-                'entry_type'         => ParticipantFlagGroupType::class,
+                'entry_type'         => FlagGroupOfParticipantType::class,
                 'mapped'             => true,
                 'allow_extra_fields' => true,
                 'entry_options'      => [

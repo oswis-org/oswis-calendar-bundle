@@ -12,9 +12,9 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagOffer;
 
-class FlagRangeRepository extends ServiceEntityRepository
+class ParticipantFlagOfferRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
@@ -31,17 +31,17 @@ class FlagRangeRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, FlagRange::class);
+        parent::__construct($registry, ParticipantFlagOffer::class);
     }
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?FlagRange
+    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantFlagOffer
     {
         $flagRange = parent::findOneBy($criteria, $orderBy);
 
-        return $flagRange instanceof FlagRange ? $flagRange : null;
+        return $flagRange instanceof ParticipantFlagOffer ? $flagRange : null;
     }
 
-    public function getFlagRange(?array $opts = []): ?FlagRange
+    public function getFlagRange(?array $opts = []): ?ParticipantFlagOffer
     {
         try {
             $flagRange = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
@@ -49,7 +49,7 @@ class FlagRangeRepository extends ServiceEntityRepository
             return null;
         }
 
-        return $flagRange instanceof FlagRange ? $flagRange : null;
+        return $flagRange instanceof ParticipantFlagOffer ? $flagRange : null;
     }
 
     public function getQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder

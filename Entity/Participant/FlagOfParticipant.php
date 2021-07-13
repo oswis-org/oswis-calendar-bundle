@@ -6,9 +6,9 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagOffer;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\ActivatedInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
@@ -21,8 +21,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
- * Flag assigned to event participant (ie. special food requirement...) through some "flag range".
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository")
+ * ParticipantFlag assigned to event participant (ie. special food requirement...) through some "flag range".
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\FlagOfParticipantRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  * @ApiPlatform\Core\Annotation\ApiResource(
@@ -52,7 +52,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   }
  * )
  */
-class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInterface, TextValueInterface
+class FlagOfParticipant implements BasicInterface, DeletedInterface, ActivatedInterface, TextValueInterface
 {
     use BasicTrait;
     use TextValueTrait;
@@ -61,21 +61,21 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     /**
      * Event contact flag.
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantFlagOffer", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?FlagRange $flagRange = null;
+    protected ?ParticipantFlagOffer $flagRange = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup", inversedBy="participantFlags", fetch="EAGER"
+     *     targetEntity="FlagGroupOfParticipant", inversedBy="participantFlags", fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
-    protected ?ParticipantFlagGroup $participantFlagGroup = null;
+    protected ?FlagGroupOfParticipant $participantFlagGroup = null;
 
-    public function __construct(?FlagRange $flagRange = null, ParticipantFlagGroup $participantFlagGroup = null, ?string $textValue = null)
+    public function __construct(?ParticipantFlagOffer $flagRange = null, FlagGroupOfParticipant $participantFlagGroup = null, ?string $textValue = null)
     {
         try {
             $this->setParticipantFlagGroup($participantFlagGroup);
@@ -90,12 +90,12 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         return $this->getFlagRange()?->getType();
     }
 
-    public function getFlagRange(): ?FlagRange
+    public function getFlagRange(): ?ParticipantFlagOffer
     {
         return $this->flagRange;
     }
 
-    public function setFlagRange(?FlagRange $flagRange): void
+    public function setFlagRange(?ParticipantFlagOffer $flagRange): void
     {
         if ($this->flagRange === $flagRange) {
             return;
@@ -105,12 +105,12 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         }
     }
 
-    public function getFlagCategory(): ?FlagCategory
+    public function getFlagCategory(): ?ParticipantFlagCategory
     {
         return $this->getFlagRange()?->getCategory();
     }
 
-    public function getFlag(): ?Flag
+    public function getFlag(): ?ParticipantFlag
     {
         return $this->getFlagRange()?->getFlag();
     }
@@ -130,17 +130,17 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         return $this->isActive() ? ($this->getFlagRange()?->getDepositValue() ?? 0) : 0;
     }
 
-    public function getParticipantFlagGroup(): ?ParticipantFlagGroup
+    public function getParticipantFlagGroup(): ?FlagGroupOfParticipant
     {
         return $this->participantFlagGroup;
     }
 
     /**
-     * @param  ParticipantFlagGroup|null  $participantFlagGroup
+     * @param  FlagGroupOfParticipant|null  $participantFlagGroup
      *
      * @throws NotImplementedException
      */
-    public function setParticipantFlagGroup(?ParticipantFlagGroup $participantFlagGroup): void
+    public function setParticipantFlagGroup(?FlagGroupOfParticipant $participantFlagGroup): void
     {
         if ($this->participantFlagGroup && $participantFlagGroup !== $this->participantFlagGroup) {
             throw new NotImplementedException('změna skupiny', 'u použití příznaku');

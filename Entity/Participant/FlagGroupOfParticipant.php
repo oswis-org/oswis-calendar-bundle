@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -8,10 +9,10 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagGroupOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagOffer;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
@@ -55,7 +56,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   }
  * )
  */
-class ParticipantFlagGroup implements BasicInterface, TextValueInterface, DeletedInterface
+class FlagGroupOfParticipant implements BasicInterface, TextValueInterface, DeletedInterface
 {
     use BasicTrait;
     use TextValueTrait;
@@ -66,15 +67,15 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     public ?Collection $tempFlagRanges = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantFlagGroupOffer", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?FlagGroupRange $flagGroupRange = null;
+    protected ?ParticipantFlagGroupOffer $flagGroupRange = null;
 
     /**
      * @var Collection|null
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag",
+     *     targetEntity="FlagOfParticipant",
      *     mappedBy="participantFlagGroup",
      *     cascade={"all"},
      *     fetch="EAGER",
@@ -83,7 +84,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
      */
     protected ?Collection $participantFlags = null;
 
-    public function __construct(?FlagGroupRange $flagGroupRange = null)
+    public function __construct(?ParticipantFlagGroupOffer $flagGroupRange = null)
     {
         $this->participantFlags = new ArrayCollection();
         $this->tempFlagRanges = new ArrayCollection();
@@ -95,17 +96,17 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         return $this->getFlagGroupRange()?->getType();
     }
 
-    public function getFlagGroupRange(): ?FlagGroupRange
+    public function getFlagGroupRange(): ?ParticipantFlagGroupOffer
     {
         return $this->flagGroupRange;
     }
 
     /**
-     * @param  FlagGroupRange|null  $flagGroupRange
+     * @param  ParticipantFlagGroupOffer|null  $flagGroupRange
      *
      * @throws NotImplementedException
      */
-    public function setFlagGroupRange(?FlagGroupRange $flagGroupRange): void
+    public function setFlagGroupRange(?ParticipantFlagGroupOffer $flagGroupRange): void
     {
         if ($this->flagGroupRange === $flagGroupRange || null === $this->flagGroupRange) {
             $this->flagGroupRange = $flagGroupRange;
@@ -115,7 +116,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         throw new NotImplementedException('změna kategorie příznaků', 'v přiřazení kategorie příznaků k účastníkovi');
     }
 
-    public function getFlagCategory(): ?FlagCategory
+    public function getFlagCategory(): ?ParticipantFlagCategory
     {
         return $this->getFlagGroupRange()?->getFlagCategory();
     }
@@ -134,7 +135,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof FlagRange ? $flagRange->getPrice() : 0;
+            $price += $flagRange instanceof ParticipantFlagOffer ? $flagRange->getPrice() : 0;
         }
 
         return $price;
@@ -142,18 +143,18 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     /**
      * @param  bool  $onlyActive
-     * @param  Flag|null  $flag
+     * @param  ParticipantFlag|null  $flag
      *
      * @return Collection
      */
-    public function getParticipantFlags(bool $onlyActive = false, ?Flag $flag = null): Collection
+    public function getParticipantFlags(bool $onlyActive = false, ?ParticipantFlag $flag = null): Collection
     {
         $participantFlags = $this->participantFlags ?? new ArrayCollection();
         if ($onlyActive) {
-            $participantFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->isActive());
+            $participantFlags->filter(fn(FlagOfParticipant $pFlag) => $pFlag->isActive());
         }
         if (null !== $flag) {
-            $participantFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlag() === $flag);
+            $participantFlags->filter(fn(FlagOfParticipant $pFlag) => $pFlag->getFlag() === $flag);
         }
 
         return $participantFlags;
@@ -175,21 +176,21 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             return; // Lists are same.
         }
         // 1. All flags are of allowed category.
-//        if (!$newParticipantFlags->forAll(fn(ParticipantFlag $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
+//        if (!$newParticipantFlags->forAll(fn(FlagOfParticipant $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
 //            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
 //        }
-        // 2. Number of flags is in range of minInParticipant and maxInParticipant of FlagGroupRange. OK
+        // 2. Number of flags is in range of minInParticipant and maxInParticipant of ParticipantFlagGroupOffer. OK
         if (null !== $this->getFlagGroupRange()) {
             $this->getFlagGroupRange()->checkInRange($newParticipantFlags->count());
         }
-        // 3. minInParticipant and maxInParticipant of each FlagRange from FlagGroupRange. + 4. There is remaining capacity of each flag.
+        // 3. minInParticipant and maxInParticipant of each ParticipantFlagOffer from ParticipantFlagGroupOffer. + 4. There is remaining capacity of each flag.
         foreach ($this->getAvailableFlagRanges() as $availFlagRange) {
             $this->checkAvailableFlagRange($availFlagRange, $newParticipantFlags, $admin);
         }
         if (!$onlySimulate) {
             foreach ($newParticipantFlags as $newParticipantFlag) {
-                if (!($newParticipantFlag instanceof ParticipantFlag)) {
-                    throw new OswisException("Příznak není typu ParticipantFlag (je typu '".gettype($newParticipantFlag).", ".get_class($newParticipantFlag)."'). ");
+                if (!($newParticipantFlag instanceof FlagOfParticipant)) {
+                    throw new OswisException("Příznak není typu FlagOfParticipant (je typu '".gettype($newParticipantFlag).", ".get_class($newParticipantFlag)."'). ");
                 }
                 $newParticipantFlag->activate();
                 try {
@@ -207,17 +208,17 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  FlagRange  $flagRange
+     * @param  ParticipantFlagOffer  $flagRange
      * @param  Collection  $newPartiFlags
      * @param  bool|false  $admin
      *
      * @throws FlagOutOfRangeException|FlagCapacityExceededException
      */
-    private function checkAvailableFlagRange(FlagRange $flagRange, Collection $newPartiFlags, bool $admin = false): void
+    private function checkAvailableFlagRange(ParticipantFlagOffer $flagRange, Collection $newPartiFlags, bool $admin = false): void
     {
-        $newFlagRangeCount = $newPartiFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
+        $newFlagRangeCount = $newPartiFlags->filter(fn(FlagOfParticipant $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
         $flagRange->checkInRange($newFlagRangeCount);
-        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
+        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(FlagOfParticipant $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
@@ -225,20 +226,20 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  ParticipantFlag  $oldParticipantFlag
-     * @param  ParticipantFlag  $newParticipantFlag
+     * @param  FlagOfParticipant  $oldParticipantFlag
+     * @param  FlagOfParticipant  $newParticipantFlag
      * @param  bool  $admin
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
      * @throws NotImplementedException
      */
-    public function replaceParticipantFlag(ParticipantFlag $oldParticipantFlag, ParticipantFlag $newParticipantFlag, bool $admin = false): void
+    public function replaceParticipantFlag(FlagOfParticipant $oldParticipantFlag, FlagOfParticipant $newParticipantFlag, bool $admin = false): void
     {
         $oldFlagRange = $oldParticipantFlag->getFlagRange();
         $newFlagRange = $newParticipantFlag->getFlagRange();
         if ($oldFlagRange !== $newFlagRange) {
-            if (null === $newFlagRange || !($newFlagRange instanceof FlagRange)) {
+            if (null === $newFlagRange || !($newFlagRange instanceof ParticipantFlagOffer)) {
                 throw new FlagOutOfRangeException("Příznak musí být nahrazen, nesmí být smazán.");
             }
             if (0 === $newFlagRange->getRemainingCapacity($admin)) {
@@ -254,7 +255,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof FlagRange ? $flagRange->getPrice() : 0;
+            $price += $flagRange instanceof ParticipantFlagOffer ? $flagRange->getPrice() : 0;
         }
 
         return $price;
@@ -263,7 +264,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     public function delete(?DateTime $dateTime = null): void
     {
         foreach ($this->getParticipantFlags() as $participantFlag) {
-            if ($participantFlag instanceof ParticipantFlag) {
+            if ($participantFlag instanceof FlagOfParticipant) {
                 $participantFlag->delete($dateTime);
             }
         }

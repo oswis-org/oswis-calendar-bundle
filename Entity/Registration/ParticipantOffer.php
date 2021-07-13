@@ -15,10 +15,10 @@ use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagGroupOfParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagOfParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\CapacityTrait;
@@ -36,7 +36,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 
 /**
  * Time range available for registrations of participants of some type to some event (with some price, capacity...).
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\RegRangeRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantOfferRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_reg_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_reg_range")
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
@@ -68,7 +68,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  * )
  */
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['regRange.event.id', 'regRange.event.superEvent.id'])]
-class RegRange implements NameableInterface
+class ParticipantOffer implements NameableInterface
 {
     use NameableTrait;
     use PriceTrait {
@@ -84,10 +84,10 @@ class RegRange implements NameableInterface
     use PriorityTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantOffer", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegRange $requiredRegRange;
+    protected ?ParticipantOffer $requiredRegRange;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
@@ -102,7 +102,7 @@ class RegRange implements NameableInterface
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagGroupRange", cascade={"all"})
+     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="ParticipantFlagGroupOffer", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
      *      name="calendar_reg_range_flag_group_range",
      *      joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="reg_range_id", referencedColumnName="id")},
@@ -138,7 +138,7 @@ class RegRange implements NameableInterface
      * @param  Price|null  $eventPrice
      * @param  DateTimeRange|null  $dateTimeRange
      * @param  bool|null  $isRelative
-     * @param  RegRange|null  $requiredRange
+     * @param  ParticipantOffer|null  $requiredRange
      * @param  Capacity|null  $eventCapacity
      * @param  Publicity|null  $publicity
      * @param  bool|null  $superEventRequired
@@ -152,7 +152,7 @@ class RegRange implements NameableInterface
         ?Price $eventPrice = null,
         ?DateTimeRange $dateTimeRange = null,
         ?bool $isRelative = null,
-        ?RegRange $requiredRange = null,
+        ?ParticipantOffer $requiredRange = null,
         ?Capacity $eventCapacity = null,
         Publicity $publicity = null,
         ?bool $superEventRequired = null
@@ -213,12 +213,12 @@ class RegRange implements NameableInterface
         return $this->relative ?? false;
     }
 
-    public function getRequiredRegRange(): ?RegRange
+    public function getRequiredRegRange(): ?ParticipantOffer
     {
         return $this->requiredRegRange;
     }
 
-    public function setRequiredRegRange(?RegRange $requiredRegRange): void
+    public function setRequiredRegRange(?ParticipantOffer $requiredRegRange): void
     {
         $this->requiredRegRange = $requiredRegRange;
     }
@@ -300,24 +300,24 @@ class RegRange implements NameableInterface
         return $this->isInDateRange() && (null === $capacity || 0 < $capacity);
     }
 
-    public function addFlagGroupRange(?FlagGroupRange $flagGroupRange): void
+    public function addFlagGroupRange(?ParticipantFlagGroupOffer $flagGroupRange): void
     {
         if (null !== $flagGroupRange && !$this->getFlagGroupRanges()->contains($flagGroupRange)) {
             $this->getFlagGroupRanges()->add($flagGroupRange);
         }
     }
 
-    public function getFlagGroupRanges(?FlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false, bool $recursive = false): Collection
+    public function getFlagGroupRanges(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false, bool $recursive = false): Collection
     {
         $flagGroupRanges = $this->flagGroupRanges ??= new ArrayCollection();
         if (true === $onlyPublic) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(FlagGroupRange $range) => $range->isPublicOnWeb());
+            $flagGroupRanges = $flagGroupRanges->filter(fn(ParticipantFlagGroupOffer $range) => $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(FlagGroupRange $range) => $range->isCategory($flagCategory));
+            $flagGroupRanges = $flagGroupRanges->filter(fn(ParticipantFlagGroupOffer $range) => $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(FlagGroupRange $range) => $range->isType($flagType));
+            $flagGroupRanges = $flagGroupRanges->filter(fn(ParticipantFlagGroupOffer $range) => $range->isType($flagType));
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
             $flagGroupRanges = new ArrayCollection([...$flagGroupRanges, ...$this->getRequiredRegRange()->getFlagGroupRanges()]);
@@ -327,11 +327,11 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param  FlagGroupRange|null  $flagGroupRange
+     * @param  ParticipantFlagGroupOffer|null  $flagGroupRange
      *
      * @throws NotImplementedException
      */
-    public function removeFlagGroupRange(?FlagGroupRange $flagGroupRange): void
+    public function removeFlagGroupRange(?ParticipantFlagGroupOffer $flagGroupRange): void
     {
         if (null === $flagGroupRange || !$this->getFlagGroupRanges()->contains($flagGroupRange)) {
             return;
@@ -364,15 +364,15 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param  ParticipantFlagGroup  $oldParticipantFlagGroup
+     * @param  FlagGroupOfParticipant  $oldParticipantFlagGroup
      * @param  bool  $admin
      *
-     * @return ParticipantFlagGroup
+     * @return FlagGroupOfParticipant
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
      * @throws NotImplementedException
      */
-    public function makeCompatibleParticipantFlagGroup(ParticipantFlagGroup $oldParticipantFlagGroup, bool $admin = false): ParticipantFlagGroup
+    public function makeCompatibleParticipantFlagGroup(FlagGroupOfParticipant $oldParticipantFlagGroup, bool $admin = false): FlagGroupOfParticipant
     {
         if (null === ($oldFlagGroupRange = $oldParticipantFlagGroup->getFlagGroupRange())) {
             throw new FlagOutOfRangeException('Neplatný rozsah příznaků.');
@@ -380,9 +380,9 @@ class RegRange implements NameableInterface
         if ($this->isFlagGroupRangeCompatible($oldFlagGroupRange)) {
             return $oldParticipantFlagGroup;
         }
-        $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
+        $newParticipantFlagGroup = new FlagGroupOfParticipant($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags() as $oldParticipantFlag) {
-            if (!($oldParticipantFlag instanceof ParticipantFlag) || ($newParticipantFlagGroup->getAvailableFlagRanges()->contains($oldParticipantFlag->getFlagRange()))) {
+            if (!($oldParticipantFlag instanceof FlagOfParticipant) || ($newParticipantFlagGroup->getAvailableFlagRanges()->contains($oldParticipantFlag->getFlagRange()))) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag);
@@ -399,25 +399,25 @@ class RegRange implements NameableInterface
         return $newParticipantFlagGroup;
     }
 
-    public function isFlagGroupRangeCompatible(?FlagGroupRange $flagGroupRange = null): bool
+    public function isFlagGroupRangeCompatible(?ParticipantFlagGroupOffer $flagGroupRange = null): bool
     {
         return $this->getFlagGroupRanges(null, null, false, true)->contains($flagGroupRange);
     }
 
     /**
-     * @param  FlagGroupRange  $flagGroupRange
+     * @param  ParticipantFlagGroupOffer  $flagGroupRange
      *
-     * @return FlagGroupRange
+     * @return ParticipantFlagGroupOffer
      * @throws FlagOutOfRangeException
      */
-    public function findCompatibleFlagGroupRange(FlagGroupRange $flagGroupRange): FlagGroupRange
+    public function findCompatibleFlagGroupRange(ParticipantFlagGroupOffer $flagGroupRange): ParticipantFlagGroupOffer
     {
         if ($this->isFlagGroupRangeCompatible($flagGroupRange)) {
             return $flagGroupRange;
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $newFlagGroupRange) {
-            if ($newFlagGroupRange instanceof FlagGroupRange && $newFlagGroupRange->getFlagCategory() === $flagCategory) {
+            if ($newFlagGroupRange instanceof ParticipantFlagGroupOffer && $newFlagGroupRange->getFlagCategory() === $flagCategory) {
                 return $newFlagGroupRange;
             }
         }
@@ -429,12 +429,12 @@ class RegRange implements NameableInterface
     }
 
     /**
-     * @param  ParticipantFlag  $oldParticipantFlag
+     * @param  FlagOfParticipant  $oldParticipantFlag
      *
-     * @return ParticipantFlag
+     * @return FlagOfParticipant
      * @throws FlagOutOfRangeException
      */
-    public function makeCompatibleParticipantFlag(ParticipantFlag $oldParticipantFlag): ParticipantFlag
+    public function makeCompatibleParticipantFlag(FlagOfParticipant $oldParticipantFlag): FlagOfParticipant
     {
         if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagRange())) {
             throw new FlagOutOfRangeException('Prázdné přiřazení příznaku.');
@@ -442,16 +442,16 @@ class RegRange implements NameableInterface
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldParticipantFlag;
         }
-        $newParticipantFlag = new ParticipantFlag($this->findCompatibleFlagRange($oldFlagRange), null, $oldParticipantFlag->getTextValue());
+        $newParticipantFlag = new FlagOfParticipant($this->findCompatibleFlagRange($oldFlagRange), null, $oldParticipantFlag->getTextValue());
         $oldParticipantFlag->delete();
 
         return $newParticipantFlag;
     }
 
-    public function isFlagRangeCompatible(?FlagRange $flagRange = null): bool
+    public function isFlagRangeCompatible(?ParticipantFlagOffer $flagRange = null): bool
     {
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof FlagGroupRange && $flagGroupRange->getFlagRanges()->contains($flagRange)) {
+            if ($flagGroupRange instanceof ParticipantFlagGroupOffer && $flagGroupRange->getFlagRanges()->contains($flagRange)) {
                 return true;
             }
         }
@@ -459,15 +459,15 @@ class RegRange implements NameableInterface
         return false;
     }
 
-    public function findCompatibleFlagRange(FlagRange $oldFlagRange): ?FlagRange
+    public function findCompatibleFlagRange(ParticipantFlagOffer $oldFlagRange): ?ParticipantFlagOffer
     {
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldFlagRange;
         }
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof FlagGroupRange) {
+            if ($flagGroupRange instanceof ParticipantFlagGroupOffer) {
                 foreach ($flagGroupRange->getFlagRanges() as $oneFlagRange) {
-                    if ($oneFlagRange instanceof FlagRange && $oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
+                    if ($oneFlagRange instanceof ParticipantFlagOffer && $oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
                         return $oneFlagRange;
                     }
                 }

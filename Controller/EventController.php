@@ -13,8 +13,8 @@ use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
-use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,9 +33,9 @@ class EventController extends AbstractController
 
     protected ParticipantService $participantService;
 
-    protected RegRangeService $regRangeService;
+    protected ParticipantOfferService $regRangeService;
 
-    public function __construct(EventService $eventService, ParticipantService $participantService, RegRangeService $regRangeService)
+    public function __construct(EventService $eventService, ParticipantService $participantService, ParticipantOfferService $regRangeService)
     {
         $this->eventService = $eventService;
         $this->participantService = $participantService;

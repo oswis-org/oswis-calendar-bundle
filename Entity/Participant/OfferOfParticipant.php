@@ -9,7 +9,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
@@ -48,7 +48,7 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
  * )
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantRange implements BasicInterface
+class OfferOfParticipant implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;
@@ -65,12 +65,12 @@ class ParticipantRange implements BasicInterface
     protected ?Participant $participant = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationOffer", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegRange $range = null;
+    protected ?ParticipantOffer $range = null;
 
-    public function __construct(?RegRange $range = null)
+    public function __construct(?ParticipantOffer $range = null)
     {
         try {
             $this->setRange($range);
@@ -88,7 +88,7 @@ class ParticipantRange implements BasicInterface
 
     public static function sortArray(array &$items): array
     {
-        usort($items, static fn(ParticipantRange $range1, ParticipantRange $range2) => self::cmp($range1, $range2));
+        usort($items, static fn(OfferOfParticipant $range1, OfferOfParticipant $range2) => self::cmp($range1, $range2));
 
         return $items;
     }
@@ -124,17 +124,17 @@ class ParticipantRange implements BasicInterface
         return $this->getRange()?->getEvent();
     }
 
-    public function getRange(): ?RegRange
+    public function getRange(): ?ParticipantOffer
     {
         return $this->range;
     }
 
     /**
-     * @param  RegRange|null  $range
+     * @param  ParticipantOffer|null  $range
      *
      * @throws NotImplementedException
      */
-    public function setRange(?RegRange $range): void
+    public function setRange(?ParticipantOffer $range): void
     {
         if ($this->range === $range) {
             return;

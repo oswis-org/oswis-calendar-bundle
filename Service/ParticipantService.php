@@ -18,8 +18,8 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
@@ -44,7 +44,7 @@ class ParticipantService
         protected ParticipantTokenService $tokenService,
         protected ParticipantMailService $participantMailService,
         protected AbstractContactService $abstractContactService,
-        protected FlagRangeService $flagRangeService,
+        protected ParticipantFlagOfferService $flagRangeService,
     ) {
     }
 
@@ -170,12 +170,12 @@ class ParticipantService
     }
 
     /**
-     * @param  RegRange  $range
+     * @param  ParticipantOffer  $range
      * @param  Participant  $participant
      *
      * @throws EventCapacityExceededException
      */
-    public function checkParticipantSuperEvent(RegRange $range, Participant $participant): void
+    public function checkParticipantSuperEvent(ParticipantOffer $range, Participant $participant): void
     {
         if (true === $range->isSuperEventRequired()) {
             $included = false;
@@ -304,7 +304,7 @@ class ParticipantService
         $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE] ??= ParticipantCategory::TYPE_PARTNER;
 
         return $this->getParticipants($opts)->filter(
-            fn(Participant $participant) => $participant->hasFlag(null, true, null, FlagCategory::TYPE_PARTNER_HOMEPAGE)
+            fn(Participant $participant) => $participant->hasFlag(null, true, null, ParticipantFlagCategory::TYPE_PARTNER_HOMEPAGE)
         );
     }
 
@@ -348,7 +348,7 @@ class ParticipantService
     /**
      * Create empty eventParticipant for use in forms.
      *
-     * @param  RegRange  $regRange
+     * @param  ParticipantOffer  $regRange
      * @param  AbstractContact|null  $contact
      *
      * @return Participant
@@ -360,7 +360,7 @@ class ParticipantService
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
-    public function getEmptyParticipant(RegRange $regRange, ?AbstractContact $contact = null): Participant
+    public function getEmptyParticipant(ParticipantOffer $regRange, ?AbstractContact $contact = null): Participant
     {
         if (null === $regRange->getEvent()) {
             throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazenou událost.');

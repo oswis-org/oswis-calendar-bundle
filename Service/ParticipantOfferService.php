@@ -11,30 +11,30 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CapacityUsage;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\OfferOfParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantRangeRepository;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
+use OswisOrg\OswisCalendarBundle\Repository\OfferOfParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantOfferRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Repository\RegRangeRepository;
 use Psr\Log\LoggerInterface;
 
-class RegRangeService
+class ParticipantOfferService
 {
     protected EntityManagerInterface $em;
 
     protected LoggerInterface $logger;
 
-    protected FlagRangeService $flagRangeService;
+    protected ParticipantFlagOfferService $flagRangeService;
 
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, FlagRangeService $flagRangeService)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger, ParticipantFlagOfferService $flagRangeService)
     {
         $this->em = $em;
         $this->flagRangeService = $flagRangeService;
         $this->logger = $logger;
     }
 
-    final public function create(RegRange $range): ?RegRange
+    final public function create(ParticipantOffer $range): ?ParticipantOffer
     {
         try {
             $this->em->persist($range);
@@ -49,7 +49,7 @@ class RegRangeService
         }
     }
 
-    public function updateUsage(RegRange $range): void
+    public function updateUsage(ParticipantOffer $range): void
     {
         $usage = $this->countRegistrationsRangeConnectionsByRange($range);
         if (null !== $usage) {
@@ -60,7 +60,7 @@ class RegRangeService
         }
     }
 
-    public function countRegistrationsRangeConnectionsByRange(RegRange $range, bool $includeDeleted = false): ?int
+    public function countRegistrationsRangeConnectionsByRange(ParticipantOffer $range, bool $includeDeleted = false): ?int
     {
         return $this->getParticipantRangeConnectionRepository()->countRangesConnections(
             [
@@ -70,15 +70,15 @@ class RegRangeService
         );
     }
 
-    public function getParticipantRangeConnectionRepository(): ParticipantRangeRepository
+    public function getParticipantRangeConnectionRepository(): OfferOfParticipantRepository
     {
-        $repository = $this->em->getRepository(ParticipantRange::class);
-        assert($repository instanceof ParticipantRangeRepository);
+        $repository = $this->em->getRepository(OfferOfParticipant::class);
+        assert($repository instanceof OfferOfParticipantRepository);
 
         return $repository;
     }
 
-    public function getRegistrationsRangeConnectionsByRange(RegRange $range, bool $includeDeleted = false): Collection
+    public function getRegistrationsRangeConnectionsByRange(ParticipantOffer $range, bool $includeDeleted = false): Collection
     {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
             [
@@ -88,21 +88,21 @@ class RegRangeService
         );
     }
 
-    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?RegRange
+    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?ParticipantOffer
     {
         return $this->getRepository()->getRegistrationsRange(
             [
-                RegRangeRepository::CRITERIA_SLUG          => $rangeSlug,
-                RegRangeRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
-                RegRangeRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
+                ParticipantOfferRepository::CRITERIA_SLUG          => $rangeSlug,
+                ParticipantOfferRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
+                ParticipantOfferRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
             ]
         );
     }
 
-    public function getRepository(): RegRangeRepository
+    public function getRepository(): ParticipantOfferRepository
     {
-        $repository = $this->em->getRepository(RegRange::class);
-        assert($repository instanceof RegRangeRepository);
+        $repository = $this->em->getRepository(ParticipantOffer::class);
+        assert($repository instanceof ParticipantOfferRepository);
 
         return $repository;
     }
@@ -113,14 +113,14 @@ class RegRangeService
         ?string $participantType,
         bool $publicOnWeb = false,
         bool $onlyActive = true
-    ): ?RegRange {
+    ): ?ParticipantOffer {
         return $this->getRepository()->getRegistrationsRange(
             [
-                RegRangeRepository::CRITERIA_EVENT                => $event,
-                RegRangeRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantCategory,
-                RegRangeRepository::CRITERIA_PARTICIPANT_TYPE     => $participantType,
-                RegRangeRepository::CRITERIA_ONLY_ACTIVE          => $onlyActive,
-                RegRangeRepository::CRITERIA_PUBLIC_ON_WEB        => $publicOnWeb,
+                ParticipantOfferRepository::CRITERIA_EVENT                => $event,
+                ParticipantOfferRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantCategory,
+                ParticipantOfferRepository::CRITERIA_PARTICIPANT_TYPE     => $participantType,
+                ParticipantOfferRepository::CRITERIA_ONLY_ACTIVE          => $onlyActive,
+                ParticipantOfferRepository::CRITERIA_PUBLIC_ON_WEB        => $publicOnWeb,
             ]
         );
     }
@@ -143,9 +143,9 @@ class RegRangeService
                     ...$ranges,
                     ...$this->getRepository()->getRegistrationsRanges(
                         [
-                            RegRangeRepository::CRITERIA_EVENT            => $event,
-                            RegRangeRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
-                            RegRangeRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
+                            ParticipantOfferRepository::CRITERIA_EVENT            => $event,
+                            ParticipantOfferRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+                            ParticipantOfferRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
                         ]
                     ),
                 ];

@@ -6,10 +6,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\EventAttendeeFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\RegistrationFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\Flag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlag;
 use Psr\Log\LoggerInterface;
 
-class FlagService
+class ParticipantFlagService
 {
     protected EntityManagerInterface $em;
 
@@ -21,7 +21,7 @@ class FlagService
         $this->logger = $logger;
     }
 
-    final public function create(Flag $participantFlag): ?Flag
+    final public function create(ParticipantFlag $participantFlag): ?ParticipantFlag
     {
         try {
             $this->em->persist($participantFlag);
@@ -31,7 +31,7 @@ class FlagService
 
             return $participantFlag;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Flag not created (by service): '.$e->getMessage());
+            $this->logger->info('ERROR: ParticipantFlag not created (by service): '.$e->getMessage());
 
             return null;
         }

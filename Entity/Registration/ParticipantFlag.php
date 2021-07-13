@@ -12,9 +12,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
 
 /**
- * Flag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
+ * ParticipantFlag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
  * @example Type of accommodation, food allergies, time of arrival/departure...
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\FlagOfParticipantRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_flag")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
@@ -52,23 +52,23 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ValueTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag")
  */
-class Flag implements NameableInterface
+class ParticipantFlag implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantFlagCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?FlagCategory $category = null;
+    protected ?ParticipantFlagCategory $category = null;
 
     /**
      * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
      */
     protected ?string $flagFormGroup = null;
 
-    public function __construct(?Nameable $nameable = null, ?FlagCategory $flagType = null)
+    public function __construct(?Nameable $nameable = null, ?ParticipantFlagCategory $flagType = null)
     {
         $this->setFieldsFromNameable($nameable);
         $this->setCategory($flagType);
@@ -89,12 +89,12 @@ class Flag implements NameableInterface
         return $this->getCategory()?->getType();
     }
 
-    public function getCategory(): ?FlagCategory
+    public function getCategory(): ?ParticipantFlagCategory
     {
         return $this->category;
     }
 
-    public function setCategory(?FlagCategory $category): void
+    public function setCategory(?ParticipantFlagCategory $category): void
     {
         $this->category = $category;
     }

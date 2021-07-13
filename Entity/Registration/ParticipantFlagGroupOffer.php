@@ -48,7 +48,7 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  * )
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag_range")
  */
-class FlagGroupRange implements NameableInterface
+class ParticipantFlagGroupOffer implements NameableInterface
 {
     use NameableTrait {
         getName as traitGetName;
@@ -67,14 +67,14 @@ class FlagGroupRange implements NameableInterface
     protected ?string $emptyPlaceholder = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="ParticipantFlagCategory", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?FlagCategory $flagCategory = null;
+    protected ?ParticipantFlagCategory $flagCategory = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="ParticipantFlagOffer", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_flag_group_range_flag_connection",
@@ -84,7 +84,7 @@ class FlagGroupRange implements NameableInterface
      */
     protected ?Collection $flagRanges = null;
 
-    public function __construct(?FlagCategory $category = null, ?FlagAmountRange $flagAmountRange = null, ?Publicity $publicity = null, ?string $emptyPlaceholder = null)
+    public function __construct(?ParticipantFlagCategory $category = null, ?FlagAmountRange $flagAmountRange = null, ?Publicity $publicity = null, ?string $emptyPlaceholder = null)
     {
         $this->flagRanges = new ArrayCollection();
         $this->setFlagCategory($category);
@@ -103,49 +103,49 @@ class FlagGroupRange implements NameableInterface
         $this->emptyPlaceholder = $emptyPlaceholder;
     }
 
-    public function addFlagRange(?FlagRange $flagRange): void
+    public function addFlagRange(?ParticipantFlagOffer $flagRange): void
     {
         if (null !== $flagRange && !$this->getFlagRanges()->contains($flagRange)) {
             $this->getFlagRanges()->add($flagRange);
         }
     }
 
-    public function getFlagRanges(bool $onlyPublic = false, Flag $flag = null): Collection
+    public function getFlagRanges(bool $onlyPublic = false, ParticipantFlag $flag = null): Collection
     {
         $flagRanges = $this->flagRanges ?? new ArrayCollection();
         if (true === $onlyPublic) {
-            $flagRanges = $flagRanges->filter(fn(FlagRange $flagRange) => $flagRange->isPublicOnWeb());
+            $flagRanges = $flagRanges->filter(fn(ParticipantFlagOffer $flagRange) => $flagRange->isPublicOnWeb());
         }
         if (null !== $flag) {
-            $flagRanges = $flagRanges->filter(fn(FlagRange $flagRange) => $flagRange->getFlag() === $flag);
+            $flagRanges = $flagRanges->filter(fn(ParticipantFlagOffer $flagRange) => $flagRange->getFlag() === $flag);
         }
 
         return $flagRanges;
     }
 
     /**
-     * @param  FlagRange|null  $flagRange
+     * @param  ParticipantFlagOffer|null  $flagRange
      *
      * @throws NotImplementedException
      */
-    public function removeFlagRange(?FlagRange $flagRange): void
+    public function removeFlagRange(?ParticipantFlagOffer $flagRange): void
     {
         if (null !== $flagRange) {
             throw new NotImplementedException('odebrání rozsahu příznaku ze skupiny', 'u rozsahu příznaků');
         }
     }
 
-    public function isCategory(?FlagCategory $category = null): bool
+    public function isCategory(?ParticipantFlagCategory $category = null): bool
     {
         return null === $category || ($this->getFlagCategory() && $this->getFlagCategory() === $category);
     }
 
-    public function getFlagCategory(): ?FlagCategory
+    public function getFlagCategory(): ?ParticipantFlagCategory
     {
         return $this->flagCategory;
     }
 
-    public function setFlagCategory(?FlagCategory $flagCategory): void
+    public function setFlagCategory(?ParticipantFlagCategory $flagCategory): void
     {
         $this->flagCategory = $flagCategory;
     }
@@ -165,14 +165,14 @@ class FlagGroupRange implements NameableInterface
         return $this->isFormValueAllowed();
     }
 
-    public function isFlagValueAllowed(bool $onlyPublic = false, ?Flag $flag = null): bool
+    public function isFlagValueAllowed(bool $onlyPublic = false, ?ParticipantFlag $flag = null): bool
     {
-        return $this->getFlagRanges($onlyPublic, $flag)->filter(fn(FlagRange $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
+        return $this->getFlagRanges($onlyPublic, $flag)->filter(fn(ParticipantFlagOffer $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagRanges()->exists(fn(FlagRange $flagRange) => $flagRange->isFormValueAllowed());
+        return $this->getFlagRanges()->exists(fn(ParticipantFlagOffer $flagRange) => $flagRange->isFormValueAllowed());
     }
 
     public function getFlagGroupName(): ?string

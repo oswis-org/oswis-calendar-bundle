@@ -18,7 +18,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends ServiceEntityRepository
@@ -103,7 +103,7 @@ class ParticipantRepository extends ServiceEntityRepository
 
     private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_REG_RANGE]) && $opts[self::CRITERIA_REG_RANGE] instanceof RegRange) {
+        if (!empty($opts[self::CRITERIA_REG_RANGE]) && $opts[self::CRITERIA_REG_RANGE] instanceof ParticipantOffer) {
             $queryBuilder->andWhere('participant.regRange = :regRange_id');
             $queryBuilder->setParameter('regRange_id', $opts[self::CRITERIA_REG_RANGE]->getId());
         }

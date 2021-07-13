@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -44,7 +45,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
  * )
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
-class ParticipantContact implements BasicInterface
+class ContactOfParticipant implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;

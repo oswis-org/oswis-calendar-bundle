@@ -12,7 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
@@ -20,9 +20,9 @@ use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService;
-use OswisOrg\OswisCalendarBundle\Service\RegRangeService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -38,7 +38,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class ParticipantController extends AbstractController
 {
-    public RegRangeService $regRangeService;
+    public ParticipantOfferService $regRangeService;
 
     public ParticipantService $participantService;
 
@@ -46,7 +46,7 @@ class ParticipantController extends AbstractController
 
     protected LoggerInterface $logger;
 
-    public function __construct(EventService $eventService, RegRangeService $regRangeService, ParticipantService $participantService, LoggerInterface $logger)
+    public function __construct(EventService $eventService, ParticipantOfferService $regRangeService, ParticipantService $participantService, LoggerInterface $logger)
     {
         $this->eventService = $eventService;
         $this->participantService = $participantService;
@@ -93,7 +93,7 @@ class ParticipantController extends AbstractController
         $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, true);
         $this->logger->info("GOT RANGE");
         //
-        if (null === $range || !($range instanceof RegRange) || !$range->isPublicOnWeb()) {
+        if (null === $range || !($range instanceof ParticipantOffer) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
         $participant = $this->participantService->getEmptyParticipant($range);
@@ -164,7 +164,7 @@ class ParticipantController extends AbstractController
         string $title,
         bool $verification = false,
         ?Event $event = null,
-        ?RegRange $range = null,
+        ?ParticipantOffer $range = null,
         ?string $message = null,
         ?FormView $formView = null
     ): Response {
@@ -236,9 +236,9 @@ class ParticipantController extends AbstractController
      * @param  ParticipantCategory|null  $participantCategory  Type of participant.
      * @param  string|null  $participantType
      *
-     * @return \OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange|null
+     * @return \OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer|null
      */
-    public function getRange(Event $event, ?ParticipantCategory $participantCategory, ?string $participantType): ?RegRange
+    public function getRange(Event $event, ?ParticipantCategory $participantCategory, ?string $participantType): ?ParticipantOffer
     {
         return $this->regRangeService->getRange($event, $participantCategory, $participantType, true, true);
     }

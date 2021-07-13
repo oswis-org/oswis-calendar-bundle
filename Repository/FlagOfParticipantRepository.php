@@ -12,20 +12,20 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\FlagRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagOfParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagOffer;
 
-class ParticipantFlagRepository extends EntityRepository
+class FlagOfParticipantRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_FLAG_RANGE = 'flagRange';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantFlag
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?FlagOfParticipant
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof ParticipantFlag ? $result : null;
+        return $result instanceof FlagOfParticipant ? $result : null;
     }
 
     public function countParticipantFlagGroups(array $opts = [], ?int $limit = null, ?int $offset = null): ?int
@@ -59,7 +59,7 @@ class ParticipantFlagRepository extends EntityRepository
 
     private function addFlagRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof FlagRange) {
+        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof ParticipantFlagOffer) {
             $queryBuilder->andWhere('item.flagRange = :flag_range_id');
             $queryBuilder->setParameter('flag_range_id', $opts[self::CRITERIA_FLAG_RANGE]->getId());
         }
@@ -94,7 +94,7 @@ class ParticipantFlagRepository extends EntityRepository
         return new ArrayCollection($queryBuilder->getQuery()->getResult());
     }
 
-    public function getParticipantFlag(?array $opts = []): ?ParticipantFlag
+    public function getParticipantFlag(?array $opts = []): ?FlagOfParticipant
     {
         try {
             $participantFlag = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
@@ -102,7 +102,7 @@ class ParticipantFlagRepository extends EntityRepository
             return null;
         }
 
-        return $participantFlag instanceof ParticipantFlag ? $participantFlag : null;
+        return $participantFlag instanceof FlagOfParticipant ? $participantFlag : null;
     }
 }
 

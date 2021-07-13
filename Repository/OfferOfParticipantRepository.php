@@ -12,20 +12,20 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRange;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegRange;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\OfferOfParticipant;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
 
-class ParticipantRangeRepository extends EntityRepository
+class OfferOfParticipantRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_RANGE = 'range';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
-    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantRange
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?OfferOfParticipant
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
-        return $result instanceof ParticipantRange ? $result : null;
+        return $result instanceof OfferOfParticipant ? $result : null;
     }
 
     public function countRangesConnections(array $opts = []): ?int
@@ -59,7 +59,7 @@ class ParticipantRangeRepository extends EntityRepository
 
     private function addRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegRange) {
+        if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof ParticipantOffer) {
             $queryBuilder->andWhere('participant_range.range = :range_id');
             $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
         }
@@ -94,7 +94,7 @@ class ParticipantRangeRepository extends EntityRepository
         return new ArrayCollection($queryBuilder->getQuery()->getResult());
     }
 
-    public function getFlagRangeConnection(?array $opts = []): ?ParticipantRange
+    public function getFlagRangeConnection(?array $opts = []): ?OfferOfParticipant
     {
         try {
             $rangeConnection = $this->getRangesConnectionsQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
@@ -102,7 +102,7 @@ class ParticipantRangeRepository extends EntityRepository
             return null;
         }
 
-        return $rangeConnection instanceof ParticipantRange ? $rangeConnection : null;
+        return $rangeConnection instanceof OfferOfParticipant ? $rangeConnection : null;
     }
 }
 
