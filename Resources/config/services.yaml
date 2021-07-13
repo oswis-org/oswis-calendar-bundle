@@ -25,7 +25,7 @@ services:
         arguments:
             - '@oswis_org_oswis_calendar.event_service'
             - '@oswis_org_oswis_calendar.participant_service'
-            - '@oswis_org_oswis_calendar.reg_range_service'
+            - '@oswis_org_oswis_calendar.participant_offer_service'
     OswisOrg\OswisCalendarBundle\Controller\EventController:
         alias: oswis_org_oswis_calendar.event_controller
         public: true
@@ -36,7 +36,7 @@ services:
         public: true
         arguments:
             - '@oswis_org_oswis_calendar.event_service'
-            - '@oswis_org_oswis_calendar.reg_range_service'
+            - '@oswis_org_oswis_calendar.participant_offer_service'
             - '@oswis_org_oswis_calendar.participant_service'
     OswisOrg\OswisCalendarBundle\Controller\ParticipantController:
         alias: oswis_org_oswis_calendar.participant_controller
@@ -50,7 +50,7 @@ services:
             - '@oswis_org_oswis_calendar.event_service'
             - '@oswis_org_oswis_calendar.participant_service'
             - '@oswis_org_oswis_calendar.participant_category_service'
-            - '@oswis_org_oswis_calendar.reg_range_service'
+            - '@oswis_org_oswis_calendar.participant_offer_service'
             - '@doctrine.orm.entity_manager'
     OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsListController:
         alias: oswis_org_oswis_calendar.web_admin_participants_list_controller
@@ -129,37 +129,37 @@ services:
         alias: oswis_org_oswis_calendar.event_category_service
         public: true
 
-    oswis_org_oswis_calendar.flag_range_service:
-        class: OswisOrg\OswisCalendarBundle\Service\FlagRangeService
+    oswis_org_oswis_calendar.participant_flag_offer_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagOfferService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\FlagRangeService:
-        alias: oswis_org_oswis_calendar.flag_range_service
+    OswisOrg\OswisCalendarBundle\Service\ParticipantFlagOfferService:
+        alias: oswis_org_oswis_calendar.participant_flag_offer_service
         public: true
 
-    oswis_org_oswis_calendar.flag_service:
-        class: OswisOrg\OswisCalendarBundle\Service\FlagService
+    oswis_org_oswis_calendar.participant_flag_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\FlagService:
-        alias: oswis_org_oswis_calendar.flag_service
+    OswisOrg\OswisCalendarBundle\Service\ParticipantFlagService:
+        alias: oswis_org_oswis_calendar.participant_flag_service
         public: true
 
-    oswis_org_oswis_calendar.flag_category_service:
-        class: OswisOrg\OswisCalendarBundle\Service\FlagCategoryService
+    oswis_org_oswis_calendar.participant_flag_category_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagCategoryService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\FlagCategoryService:
-        alias: oswis_org_oswis_calendar.flag_category_service
+    OswisOrg\OswisCalendarBundle\Service\ParticipantFlagCategoryService:
+        alias: oswis_org_oswis_calendar.participant_flag_category_service
         public: true
 
     oswis_org_oswis_calendar.participant_payment_service:
@@ -201,7 +201,7 @@ services:
             - '@oswis_org_oswis_calendar.participant_token_service'
             - '@oswis_org_oswis_calendar.participant_mail_service'
             - '@oswis_org_oswis_address_book.abstract_contact_service'
-            - '@oswis_org_oswis_calendar.flag_range_service'
+            - '@oswis_org_oswis_calendar.participant_flag_offer_service'
     OswisOrg\OswisCalendarBundle\Service\ParticipantService:
         alias: oswis_org_oswis_calendar.participant_service
         public: true
@@ -244,16 +244,16 @@ services:
         alias: oswis_org_oswis_calendar.participant_category_service
         public: true
 
-    oswis_org_oswis_calendar.reg_range_service:
-        class: OswisOrg\OswisCalendarBundle\Service\RegRangeService
+    oswis_org_oswis_calendar.participant_offer_service:
+        class: OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-            - '@oswis_org_oswis_calendar.flag_range_service'
-    OswisOrg\OswisCalendarBundle\Service\RegRangeService:
-        alias: oswis_org_oswis_calendar.reg_range_service
+            - '@oswis_org_oswis_calendar.participant_flag_offer_service'
+    OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService:
+        alias: oswis_org_oswis_calendar.participant_offer_service
         public: true
 
     ###
@@ -269,8 +269,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\FlagRangeRepository
+    OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagOfferRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagOfferRepository
         autowire: true
         public: true
         arguments:
@@ -405,12 +405,12 @@ services:
         alias: oswis_org_oswis_calendar.participant_type
         public: true
 
-    oswis_org_oswis_calendar.participant_flag_group_type:
-        class: OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantFlagGroupType
+    oswis_org_oswis_calendar.flag_group_of_participant_type:
+        class: OswisOrg\OswisCalendarBundle\Form\Participant\FlagGroupOfParticipantType
         autowire: true
         public: true
-    OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantFlagGroupType:
-        alias: oswis_org_oswis_calendar.participant_flag_group_type
+    OswisOrg\OswisCalendarBundle\Form\Participant\FlagGroupOfParticipantType:
+        alias: oswis_org_oswis_calendar.flag_group_of_participant_type
         public: true
 
     ###
