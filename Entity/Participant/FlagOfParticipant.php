@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -68,15 +69,20 @@ class FlagOfParticipant implements BasicInterface, DeletedInterface, ActivatedIn
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="FlagGroupOfParticipant", inversedBy="participantFlags", fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\FlagGroupOfParticipant",
+     *     inversedBy="participantFlags",
+     *     fetch="EAGER",
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
     protected ?FlagGroupOfParticipant $participantFlagGroup = null;
 
-    public function __construct(?ParticipantFlagOffer $flagRange = null, FlagGroupOfParticipant $participantFlagGroup = null, ?string $textValue = null)
-    {
+    public function __construct(
+        ?ParticipantFlagOffer $flagRange = null,
+        FlagGroupOfParticipant $participantFlagGroup = null,
+        ?string $textValue = null
+    ) {
         try {
             $this->setParticipantFlagGroup($participantFlagGroup);
         } catch (NotImplementedException $e) {
