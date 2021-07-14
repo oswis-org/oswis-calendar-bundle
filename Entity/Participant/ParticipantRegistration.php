@@ -67,7 +67,7 @@ class ParticipantRegistration implements BasicInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="RegistrationOffer",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer",
      *     fetch="EAGER",
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
