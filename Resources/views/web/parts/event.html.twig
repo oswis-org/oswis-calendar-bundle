@@ -15,7 +15,8 @@
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
     <div class="col-lg-9">
-        {{ render(controller('OswisOrg\\OswisCalendarBundle\\Controller\\EventController::showEventsNavigationChunk', {'eventSlug': event.slug})) }}
+        {{ render(controller('OswisOrg\\OswisCalendarBundle\\Controller\\Event\\EventController::showEventsNavigationChunk',
+            {'eventSlug': event.slug})) }}
         <h3>
             {% if event.group|default and event.batchOrYear and event.getSeqId > 0 %}
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
@@ -36,7 +37,9 @@
             <h3>Je součástí akce:</h3>
             <ul class="mt-2">
                 <li itemprop="superEvent" itemscope itemtype="http://schema.org/Event">
-                    <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}" title="{{ event.superEvent.name }}">
+                    <a itemprop="url"
+                       href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}"
+                       title="{{ event.superEvent.name }}">
                         <i class="fas fa-calendar-week"></i>
                         <strong class="d-inline d-md-none">{{ event.superEvent.shortName }}</strong>
                         <strong class="d-none d-md-inline" itemprop="name">{{ event.superEvent.name }}</strong>
