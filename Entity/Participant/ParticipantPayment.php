@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -119,7 +120,7 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
         $this->setNumericValue($numericValue);
         try {
             $this->setType($type);
-        } catch (InvalidTypeException $exception) {
+        } catch (InvalidTypeException) {
         }
         $this->setDateTime($dateTime);
     }

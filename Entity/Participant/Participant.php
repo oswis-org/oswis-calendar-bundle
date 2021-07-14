@@ -115,7 +115,10 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail", cascade={"all"}, mappedBy="participant", fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail",
+     *     cascade={"all"},
+     *     mappedBy="participant",
+     *     fetch="EAGER",
      * )
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
@@ -131,7 +134,10 @@ class Participant implements ParticipantInterface
     protected ?AbstractContact $contact = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationOffer", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer",
+     *     fetch="EAGER",
+     * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?RegistrationOffer $offer = null;
@@ -150,7 +156,7 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="ParticipantFlagGroup", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_participant_flag_group_connection",
@@ -172,7 +178,7 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="ParticipantContact",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact",
      *     cascade={"all"},
      *     fetch="EAGER",
      *     mappedBy="participant",

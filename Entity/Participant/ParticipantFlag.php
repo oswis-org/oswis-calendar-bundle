@@ -63,7 +63,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     /**
      * Event contact flag.
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="RegistrationFlagOffer",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer",
      *     fetch="EAGER",
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
@@ -72,7 +72,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="ParticipantFlagGroup",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup",
      *     inversedBy="participantFlags",
      *     fetch="EAGER",
      * )
