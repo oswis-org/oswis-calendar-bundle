@@ -22,7 +22,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService;
-use OswisOrg\OswisCalendarBundle\Service\Participant\RegistrationOfferService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;

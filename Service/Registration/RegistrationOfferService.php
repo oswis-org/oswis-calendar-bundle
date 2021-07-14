@@ -3,7 +3,7 @@
  * @noinspection MethodShouldBeFinalInspection
  */
 
-namespace OswisOrg\OswisCalendarBundle\Service\Participant;
+namespace OswisOrg\OswisCalendarBundle\Service\Registration;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,7 +17,6 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRegistrationRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository;
-use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
 use Psr\Log\LoggerInterface;
 
 class RegistrationOfferService

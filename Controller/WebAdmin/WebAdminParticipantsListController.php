@@ -19,7 +19,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferReposi
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
-use OswisOrg\OswisCalendarBundle\Service\Participant\RegistrationOfferService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;

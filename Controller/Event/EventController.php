@@ -14,7 +14,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
-use OswisOrg\OswisCalendarBundle\Service\Participant\RegistrationOfferService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
