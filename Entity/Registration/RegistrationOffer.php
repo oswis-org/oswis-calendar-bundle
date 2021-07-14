@@ -36,7 +36,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 
 /**
  * Time range available for registrations of participants of some type to some event (with some price, capacity...).
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRegistrationRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass=OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_reg_range")
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_reg_range")
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
