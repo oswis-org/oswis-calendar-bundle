@@ -18,62 +18,62 @@ services:
         public: true
 
     ## Event controller.
-    oswis_org_oswis_calendar.event_controller:
-        class: OswisOrg\OswisCalendarBundle\Controller\EventController
+    oswis_org_oswis_calendar.event.event_controller:
+        class: OswisOrg\OswisCalendarBundle\Controller\Event\EventController
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.event_service'
-            - '@oswis_org_oswis_calendar.participant_service'
-            - '@oswis_org_oswis_calendar.participant_offer_service'
-    OswisOrg\OswisCalendarBundle\Controller\EventController:
-        alias: oswis_org_oswis_calendar.event_controller
+            - '@oswis_org_oswis_calendar.event.event_service'
+            - '@oswis_org_oswis_calendar.participant.participant_service'
+            - '@oswis_org_oswis_calendar.participant.participant_registration_service'
+    OswisOrg\OswisCalendarBundle\Controller\Event\EventController:
+        alias: oswis_org_oswis_calendar.event.event_controller
         public: true
 
-    oswis_org_oswis_calendar.participant_controller:
-        class: OswisOrg\OswisCalendarBundle\Controller\ParticipantController
+    oswis_org_oswis_calendar.participant.participant_controller:
+        class: OswisOrg\OswisCalendarBundle\Controller\Participant\ParticipantController
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.event_service'
-            - '@oswis_org_oswis_calendar.participant_offer_service'
-            - '@oswis_org_oswis_calendar.participant_service'
-    OswisOrg\OswisCalendarBundle\Controller\ParticipantController:
-        alias: oswis_org_oswis_calendar.participant_controller
+            - '@oswis_org_oswis_calendar.event.event_service'
+            - '@oswis_org_oswis_calendar.participant.participant_registration_service'
+            - '@oswis_org_oswis_calendar.participant.participant_service'
+    OswisOrg\OswisCalendarBundle\Controller\Participant\ParticipantController:
+        alias: oswis_org_oswis_calendar.participant.participant_controller
         public: true
 
-    oswis_org_oswis_calendar.web_admin_participants_list_controller:
+    oswis_org_oswis_calendar.web_admin.participants_list_controller:
         class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsListController
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.event_service'
-            - '@oswis_org_oswis_calendar.participant_service'
-            - '@oswis_org_oswis_calendar.participant_category_service'
-            - '@oswis_org_oswis_calendar.participant_offer_service'
+            - '@oswis_org_oswis_calendar.event.event_service'
+            - '@oswis_org_oswis_calendar.participant.participant_service'
+            - '@oswis_org_oswis_calendar.participant.participant_category_service'
+            - '@oswis_org_oswis_calendar.participant.participant_registration_service'
             - '@doctrine.orm.entity_manager'
     OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsListController:
-        alias: oswis_org_oswis_calendar.web_admin_participants_list_controller
+        alias: oswis_org_oswis_calendar.web_admin.participants_list_controller
         public: true
 
-    oswis_org_oswis_calendar.web_admin_participants_controller:
+    oswis_org_oswis_calendar.web_admin.participants_controller:
         class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsController
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.participant_service'
+            - '@oswis_org_oswis_calendar.participant.participant_service'
     OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsController:
-        alias: oswis_org_oswis_calendar.web_admin_participants_controller
+        alias: oswis_org_oswis_calendar.web_admin.participants_controller
         public: true
 
-    oswis_org_oswis_calendar.web_admin_participant_payments_import_controller:
+    oswis_org_oswis_calendar.web_admin.participant_payments_import_controller:
         class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.participant_payments_import_service'
+            - '@oswis_org_oswis_calendar.participant.participant_payments_import_service'
     OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController:
-        alias: oswis_org_oswis_calendar.web_admin_participant_payments_import_controller
+        alias: oswis_org_oswis_calendar.web_admin.participant_payments_import_controller
         public: true
 
 
@@ -82,88 +82,88 @@ services:
     ###
 
     ### EventFlag Service
-    oswis_org_oswis_calendar.event_flag_service:
-        class: OswisOrg\OswisCalendarBundle\Service\EventFlagService
+    oswis_org_oswis_calendar.event.event_flag_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Event\EventFlagService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\EventFlagService:
-        alias: oswis_org_oswis_calendar.event_flag_service
+    OswisOrg\OswisCalendarBundle\Service\Event\EventFlagService:
+        alias: oswis_org_oswis_calendar.event.event_flag_service
         public: true
 
     ### EventGroup Service
-    oswis_org_oswis_calendar.event_series_service:
-        class: OswisOrg\OswisCalendarBundle\Service\EventSeriesService
+    oswis_org_oswis_calendar.event.event_series_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Event\EventSeriesService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\EventSeriesService:
-        alias: oswis_org_oswis_calendar.event_series_service
+    OswisOrg\OswisCalendarBundle\Service\Event\EventSeriesService:
+        alias: oswis_org_oswis_calendar.event.event_series_service
         public: true
 
     ### Event Service
-    oswis_org_oswis_calendar.event_service:
-        class: OswisOrg\OswisCalendarBundle\Service\EventService
+    oswis_org_oswis_calendar.event.event_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Event\EventService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
             - '@oswis_org_oswis_calendar.oswis_calendar_settings_provider'
-    OswisOrg\OswisCalendarBundle\Service\EventService:
-        alias: oswis_org_oswis_calendar.event_service
+    OswisOrg\OswisCalendarBundle\Service\Event\EventService:
+        alias: oswis_org_oswis_calendar.event.event_service
         public: true
 
-    oswis_org_oswis_calendar.event_category_service:
-        class: OswisOrg\OswisCalendarBundle\Service\EventCategoryService
+    oswis_org_oswis_calendar.event.event_category_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Event\EventCategoryService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\EventCategoryService:
-        alias: oswis_org_oswis_calendar.event_category_service
+    OswisOrg\OswisCalendarBundle\Service\Event\EventCategoryService:
+        alias: oswis_org_oswis_calendar.event.event_category_service
         public: true
 
-    oswis_org_oswis_calendar.participant_flag_offer_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagOfferService
+    oswis_org_oswis_calendar.registration.registration_flag_offer_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantFlagOfferService:
-        alias: oswis_org_oswis_calendar.participant_flag_offer_service
+    OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService:
+        alias: oswis_org_oswis_calendar.registration.registration_flag_offer_service
         public: true
 
-    oswis_org_oswis_calendar.participant_flag_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagService
+    oswis_org_oswis_calendar.registration.registration_flag_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantFlagService:
-        alias: oswis_org_oswis_calendar.participant_flag_service
+    OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagService:
+        alias: oswis_org_oswis_calendar.registration.registration_flag_service
         public: true
 
-    oswis_org_oswis_calendar.participant_flag_category_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantFlagCategoryService
+    oswis_org_oswis_calendar.registration.registration_flag_category_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagCategoryService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantFlagCategoryService:
-        alias: oswis_org_oswis_calendar.participant_flag_category_service
+    OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagCategoryService:
+        alias: oswis_org_oswis_calendar.registration.registration_flag_category_service
         public: true
 
-    oswis_org_oswis_calendar.participant_payment_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService
+    oswis_org_oswis_calendar.participant.participant_payment_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService
         autowire: true
         public: true
         arguments:
@@ -171,97 +171,97 @@ services:
             - '@mailer.mailer'
             - '@monolog.logger'
             - '@oswis_org_oswis_core.oswis_core_settings_provider'
-            - '@oswis_org_oswis_calendar.participant_mail_service'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService:
-        alias: oswis_org_oswis_calendar.participant_payment_service
+            - '@oswis_org_oswis_calendar.participant.participant_mail_service'
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService:
+        alias: oswis_org_oswis_calendar.participant.participant_payment_service
         public: true
 
-    oswis_org_oswis_calendar.participant_payments_import_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService
+    oswis_org_oswis_calendar.participant.participant_payments_import_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentsImportService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-            - '@oswis_org_oswis_calendar.participant_service'
-            - '@oswis_org_oswis_calendar.participant_payment_service'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService:
-        alias: oswis_org_oswis_calendar.participant_payments_import_service
+            - '@oswis_org_oswis_calendar.participant.participant_service'
+            - '@oswis_org_oswis_calendar.participant.participant_payment_service'
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentsImportService:
+        alias: oswis_org_oswis_calendar.participant.participant_payments_import_service
         public: true
 
-    oswis_org_oswis_calendar.participant_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantService
+    oswis_org_oswis_calendar.participant.participant_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
-            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository'
             - '@monolog.logger'
             - '@oswis_org_oswis_core.app_user_service'
-            - '@oswis_org_oswis_calendar.participant_token_service'
-            - '@oswis_org_oswis_calendar.participant_mail_service'
+            - '@oswis_org_oswis_calendar.participant.participant_token_service'
+            - '@oswis_org_oswis_calendar.participant.participant_mail_service'
             - '@oswis_org_oswis_address_book.abstract_contact_service'
-            - '@oswis_org_oswis_calendar.participant_flag_offer_service'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantService:
-        alias: oswis_org_oswis_calendar.participant_service
+            - '@oswis_org_oswis_calendar.registration.registration_flag_offer_service'
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService:
+        alias: oswis_org_oswis_calendar.participant.participant_service
         public: true
 
-    oswis_org_oswis_calendar.participant_token_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService
+    oswis_org_oswis_calendar.participant.participant_token_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantTokenService:
-        alias: oswis_org_oswis_calendar.participant_token_service
+            - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository'
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService:
+        alias: oswis_org_oswis_calendar.participant.participant_token_service
         public: true
 
-    oswis_org_oswis_calendar.participant_mail_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantMailService
+    oswis_org_oswis_calendar.participant.participant_mail_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@oswis_org_oswis_core.mail_service'
-            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository'
-            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository'
-            - '@OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository'
+            - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantMailService:
-        alias: oswis_org_oswis_calendar.participant_mail_service
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService:
+        alias: oswis_org_oswis_calendar.participant.participant_mail_service
         public: true
 
-    oswis_org_oswis_calendar.participant_category_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantCategoryService
+    oswis_org_oswis_calendar.participant.participant_category_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantCategoryService:
-        alias: oswis_org_oswis_calendar.participant_category_service
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService:
+        alias: oswis_org_oswis_calendar.participant.participant_category_service
         public: true
 
-    oswis_org_oswis_calendar.participant_offer_service:
-        class: OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService
+    oswis_org_oswis_calendar.participant.participant_registration_service:
+        class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantRegistrationService
         autowire: true
         public: true
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@monolog.logger'
-            - '@oswis_org_oswis_calendar.participant_flag_offer_service'
-    OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService:
-        alias: oswis_org_oswis_calendar.participant_offer_service
+            - '@oswis_org_oswis_calendar.registration.registration_flag_offer_service'
+    OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantRegistrationService:
+        alias: oswis_org_oswis_calendar.participant.participant_registration_service
         public: true
 
     ###
     ###  REPOSITORY
     ###
 
-    OswisOrg\OswisCalendarBundle\Repository\EventRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\EventRepository
+    OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository
         autowire: true
         public: true
         arguments:
@@ -269,8 +269,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagOfferRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagOfferRepository
+    OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository
         autowire: true
         public: true
         arguments:
@@ -278,8 +278,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository
+    OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository
         autowire: true
         public: true
         arguments:
@@ -287,8 +287,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository
+    OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository
         autowire: true
         public: true
         arguments:
@@ -296,8 +296,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantMailRepository
+    OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository
         autowire: true
         public: true
         arguments:
@@ -305,8 +305,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantMailCategoryRepository
+    OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository
         autowire: true
         public: true
         arguments:
@@ -314,8 +314,8 @@ services:
         tags:
             - 'doctrine.repository_service'
 
-    OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository:
-        class: OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository
+    OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository
         autowire: true
         public: true
         arguments:
@@ -332,14 +332,14 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.participant_payment_service'
+            - '@oswis_org_oswis_calendar.participant.participant_payment_service'
 
     oswis_org_oswis_calendar.participant_payments_import_subscriber:
         class: OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantPaymentsImportSubscriber
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.participant_payments_import_service'
+            - '@oswis_org_oswis_calendar.participant.participant_payments_import_service'
 
     oswis_org_oswis_calendar.participant_subscriber:
         class: OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantSubscriber
@@ -347,7 +347,7 @@ services:
         public: true
         tags: [ { name: 'kernel.view' } ]
         arguments:
-            - '@oswis_org_oswis_calendar.participant_mail_service'
+            - '@oswis_org_oswis_calendar.participant.participant_mail_service'
             - '@monolog.logger'
     OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantSubscriber:
         alias: oswis_org_oswis_calendar.participant_subscriber
@@ -369,7 +369,7 @@ services:
         arguments:
             - '@oswis_org_oswis_core.export_service'
             - '@doctrine.orm.entity_manager'
-            - '@oswis_org_oswis_calendar.participant_service'
+            - '@oswis_org_oswis_calendar.participant.participant_service'
     OswisOrg\OswisCalendarBundle\Api\EventSubscriber\ParticipantListActionSubscriber:
         alias: oswis_org_oswis_calendar.participant_list_action_subscriber
         public: true
@@ -387,7 +387,7 @@ services:
         autowire: true
         public: true
         arguments:
-            - '@oswis_org_oswis_calendar.participant_service'
+            - '@oswis_org_oswis_calendar.participant.participant_service'
     OswisOrg\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber:
         alias: oswis_org_oswis_calendar.event_action_subscriber
         public: true

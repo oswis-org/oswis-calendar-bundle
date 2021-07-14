@@ -10,7 +10,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
- * Category (type) of event (ie. year of event, batch of event, conference, lecture...).
+ * Category (type) of event.
+ * @example "year of MegaParty", "batch of event, "conference", "lecture"...
  * @Doctrine\ORM\Mapping\Entity()
  * @Doctrine\ORM\Mapping\Table(name="calendar_event_category")
  * @ApiPlatform\Core\Annotation\ApiResource(

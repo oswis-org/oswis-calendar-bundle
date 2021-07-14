@@ -9,7 +9,7 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantTokenRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_token")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={

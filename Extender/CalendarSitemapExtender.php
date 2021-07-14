@@ -8,8 +8,8 @@ namespace OswisOrg\OswisCalendarBundle\Extender;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
-use OswisOrg\OswisCalendarBundle\Service\EventService;
+use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\SiteMapItem;
 use OswisOrg\OswisCoreBundle\Interfaces\Web\SiteMapExtenderInterface;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
@@ -19,14 +19,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CalendarSitemapExtender implements SiteMapExtenderInterface
 {
-    protected UrlGeneratorInterface $urlGenerator;
-
-    protected EventService $eventService;
-
-    public function __construct(UrlGeneratorInterface $urlGenerator, EventService $eventService)
-    {
-        $this->urlGenerator = $urlGenerator;
-        $this->eventService = $eventService;
+    public function __construct(
+        protected UrlGeneratorInterface $urlGenerator,
+        protected EventService $eventService,
+    ) {
     }
 
     public function getItems(): Collection

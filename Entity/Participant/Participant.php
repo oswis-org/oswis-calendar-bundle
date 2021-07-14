@@ -16,10 +16,10 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagGroupOffer;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
@@ -28,7 +28,6 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\BasicMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ManagerConfirmationTrait;
@@ -38,7 +37,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
 /**
  * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
  *
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
@@ -135,7 +134,7 @@ class Participant implements ParticipantInterface
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationOffer", fetch="EAGER")
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?ParticipantOffer $regRange = null;
+    protected ?RegistrationOffer $offer = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
@@ -151,7 +150,7 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="FlagGroupOfParticipant", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="ParticipantFlagGroup", cascade={"all"}, fetch="EAGER"
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_participant_flag_group_connection",
@@ -163,17 +162,17 @@ class Participant implements ParticipantInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OfferOfParticipant",
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRegistration",
      *     cascade={"all"},
      *     fetch="EAGER",
      *     mappedBy="participant",
      * )
      */
-    protected ?Collection $participantRanges = null;
+    protected ?Collection $participantRegistrations = null;
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="ContactOfParticipant",
+     *     targetEntity="ParticipantContact",
      *     cascade={"all"},
      *     fetch="EAGER",
      *     mappedBy="participant",
@@ -192,7 +191,7 @@ class Participant implements ParticipantInterface
     protected ?string $variableSymbol = null;
 
     /**
-     * @param  ParticipantOffer|null  $regRange
+     * @param  RegistrationOffer|null  $regRange
      * @param  AbstractContact|null  $contact
      * @param  Collection|null  $participantNotes
      *
@@ -202,29 +201,29 @@ class Participant implements ParticipantInterface
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function __construct(ParticipantOffer $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null)
+    public function __construct(RegistrationOffer $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null)
     {
         $this->participantContacts = new ArrayCollection();
-        $this->participantRanges = new ArrayCollection();
+        $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
         $this->flagGroups = new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->eMails = new ArrayCollection();
-        $participantContact = new ContactOfParticipant($contact);
+        $participantContact = new ParticipantContact($contact);
         $participantContact->activate(new DateTime());
         $this->setParticipantContact($participantContact);
         $this->setNotes($participantNotes);
         if ($regRange) {
-            $this->setParticipantRange(new OfferOfParticipant($regRange));
+            $this->setParticipantRegistration(new ParticipantRegistration($regRange));
         }
     }
 
     /**
-     * @param  ContactOfParticipant|null  $participantContact
+     * @param  ParticipantContact|null  $participantContact
      *
      * @throws OswisException
      */
-    public function setParticipantContact(?ContactOfParticipant $participantContact): void
+    public function setParticipantContact(?ParticipantContact $participantContact): void
     {
         if ($this->getParticipantContact() === $participantContact) {
             return;
@@ -243,10 +242,10 @@ class Participant implements ParticipantInterface
     /**
      * @param  bool  $onlyActive
      *
-     * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ContactOfParticipant|null
+     * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact|null
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
-    public function getParticipantContact(bool $onlyActive = false): ?ContactOfParticipant
+    public function getParticipantContact(bool $onlyActive = false): ?ParticipantContact
     {
         $connections = $this->getParticipantContacts($onlyActive);
         if ($onlyActive && $connections->count() > 1) {
@@ -260,10 +259,10 @@ class Participant implements ParticipantInterface
     {
         $connections = $this->participantContacts ??= new ArrayCollection();
         if (true === $onlyActive) {
-            $connections = $connections->filter(fn(ContactOfParticipant $connection) => $connection->isActive());
+            $connections = $connections->filter(fn(ParticipantContact $connection) => $connection->isActive());
         }
         if (true === $onlyDeleted) {
-            $connections = $connections->filter(fn(ContactOfParticipant $connection) => $connection->isDeleted());
+            $connections = $connections->filter(fn(ParticipantContact $connection) => $connection->isDeleted());
         }
 
         return $connections;
@@ -271,23 +270,23 @@ class Participant implements ParticipantInterface
 
     public function updateCachedColumns(): void
     {
-        $this->regRange = $this->getRegRange();
+        $this->offer = $this->getOffer();
         $this->contact = $this->getContact();
-        $this->event = $this->regRange?->getEvent();
-        $this->participantCategory = $this->regRange?->getParticipantCategory();
+        $this->event = $this->offer?->getEvent();
+        $this->participantCategory = $this->offer?->getParticipantCategory();
         $this->updateVariableSymbol();
         // $this->removeEmptyNotesAndDetails();
     }
 
-    public function getRegRange(bool $onlyActive = false): ?ParticipantOffer
+    public function getOffer(bool $onlyActive = false): ?RegistrationOffer
     {
-        $participantRange = $this->getParticipantRange($onlyActive);
+        $participantRange = $this->getParticipantRegistration($onlyActive);
 
-        return $participantRange ? $participantRange->getRange() : null;
+        return $participantRange ? $participantRange->getOffer() : null;
     }
 
     /**
-     * @param  ParticipantOffer|null  $regRange
+     * @param  RegistrationOffer|null  $offer
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -295,48 +294,43 @@ class Participant implements ParticipantInterface
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function setRegRange(?ParticipantOffer $regRange): void
+    public function setOffer(?RegistrationOffer $offer): void
     {
-        if ($this->getRegRange(true) !== $regRange) {
-            $participantRange = new OfferOfParticipant($regRange);
-            $this->setParticipantRange($participantRange);
+        if ($this->getOffer(true) !== $offer) {
+            $participantRange = new ParticipantRegistration($offer);
+            $this->setParticipantRegistration($participantRange);
             $participantRange->setParticipant($this);
         }
     }
 
-    /**
-     * @param  bool  $onlyActive
-     *
-     * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\OfferOfParticipant|null
-     */
-    public function getParticipantRange(bool $onlyActive = false): ?OfferOfParticipant
+    public function getParticipantRegistration(bool $onlyActive = false): ?ParticipantRegistration
     {
-        $participantRanges = self::sortCollection($this->getParticipantRanges($onlyActive), true);
+        $participantRanges = self::sortCollection($this->getParticipantRegistrations($onlyActive), true);
         if ($onlyActive && $participantRanges->count() > 1) {
-            $this->deleteParticipantRanges(true);
-            $participantRanges = self::sortCollection($this->getParticipantRanges($onlyActive), true);
+            $this->deleteParticipantRegistrations(true);
+            $participantRanges = self::sortCollection($this->getParticipantRegistrations($onlyActive), true);
         }
 
         return $participantRanges->first() ?: null;
     }
 
-    public function getParticipantRanges(bool $onlyActive = false, bool $onlyDeleted = false): Collection
+    public function getParticipantRegistrations(bool $onlyActive = false, bool $onlyDeleted = false): Collection
     {
-        $connections = $this->participantRanges ?? new ArrayCollection();
+        $connections = $this->participantRegistrations ?? new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(fn(OfferOfParticipant $connection) => $connection->isActive());
+            $connections = $connections->filter(fn(ParticipantRegistration $connection) => $connection->isActive());
         }
         if ($onlyDeleted) {
-            $connections = $connections->filter(fn(OfferOfParticipant $connection) => $connection->isDeleted());
+            $connections = $connections->filter(fn(ParticipantRegistration $connection) => $connection->isDeleted());
         }
 
         return $connections;
     }
 
-    public function deleteParticipantRanges(bool $exceptLatest = false): void
+    public function deleteParticipantRegistrations(bool $exceptLatest = false): void
     {
-        foreach ($ranges = $this->getParticipantRanges() as $range) {
-            if (!($range instanceof OfferOfParticipant) || ($exceptLatest && $ranges->first() === $range)) {
+        foreach ($ranges = $this->getParticipantRegistrations() as $range) {
+            if (!($range instanceof ParticipantRegistration) || ($exceptLatest && $ranges->first() === $range)) {
                 continue;
             }
             $range->delete();
@@ -360,7 +354,7 @@ class Participant implements ParticipantInterface
     public function setContact(AbstractContact $contact): void
     {
         if ($this->getContact(true) !== $contact) {
-            $participantContact = new ContactOfParticipant($contact);
+            $participantContact = new ParticipantContact($contact);
             $this->setParticipantContact($participantContact);
             $participantContact->setParticipant($this);
         }
@@ -380,7 +374,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  OfferOfParticipant|null  $newParticipantRange
+     * @param  ParticipantRegistration|null  $newParticipantRegistration
      * @param  bool  $admin
      *
      * @throws EventCapacityExceededException
@@ -389,18 +383,18 @@ class Participant implements ParticipantInterface
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function setParticipantRange(?OfferOfParticipant $newParticipantRange, bool $admin = false): void
+    public function setParticipantRegistration(?ParticipantRegistration $newParticipantRegistration, bool $admin = false): void
     {
-        $oldParticipantRange = $this->getParticipantRange();
-        $oldRegRange = $oldParticipantRange?->getRange();
-        $newRegRange = $newParticipantRange?->getRange();
+        $oldParticipantRange = $this->getParticipantRegistration();
+        $oldRegRange = $oldParticipantRange?->getOffer();
+        $newRegRange = $newParticipantRegistration?->getOffer();
         //
-        // CASE 1: ParticipantOffer is same. Do nothing.
+        // CASE 1: RegistrationOffer is same. Do nothing.
         if ($oldRegRange === $newRegRange) {
             return;
         }
         //
-        // CASE 2: New ParticipantOffer is not set.
+        // CASE 2: New RegistrationOffer is not set.
         //   --> Set participant as deleted.
         //   --> Set participant flags as deleted.
         if (null === $newRegRange) {
@@ -416,30 +410,30 @@ class Participant implements ParticipantInterface
         $remainingCapacity = $newRegRange->getRemainingCapacity($admin);
         if (null !== $remainingCapacity && (0 === $remainingCapacity || -1 >= $remainingCapacity)) {
             /** @noinspection NullPointerExceptionInspection */
-            throw new EventCapacityExceededException($newParticipantRange->getEventName());
+            throw new EventCapacityExceededException($newParticipantRegistration->getEventName());
         }
         //
-        // CASE 3: ParticipantOffer is not set yet, set initial ParticipantOffer and set new flags by range.
+        // CASE 3: RegistrationOffer is not set yet, set initial RegistrationOffer and set new flags by range.
         if (null === $oldRegRange) {
-            $this->setFlagGroupsFromRegRange($newRegRange);
+            $this->setFlagGroupsByOffer($newRegRange);
         }
         //
-        // CASE 4: ParticipantOffer is already set, change it and change flags by new range.
+        // CASE 4: RegistrationOffer is already set, change it and change flags by new range.
         if (null !== $oldParticipantRange) {
             $oldParticipantRange->delete();
-            $this->changeFlagsByNewRegRange($newRegRange, true);
-            $this->changeFlagsByNewRegRange($newRegRange);
+            $this->changeFlagsByNewOffer($newRegRange, true);
+            $this->changeFlagsByNewOffer($newRegRange);
         }
         // Finally, add participant range.
-        foreach ($this->getParticipantRanges() as $participantRange) {
-            if ($participantRange instanceof OfferOfParticipant) {
+        foreach ($this->getParticipantRegistrations() as $participantRange) {
+            if ($participantRange instanceof ParticipantRegistration) {
                 $participantRange->delete();
             }
         }
-        if (null !== $newParticipantRange) {
-            $newParticipantRange->activate();
-            $this->getParticipantRanges()->add($newParticipantRange);
-            $newParticipantRange->setParticipant($this);
+        if (null !== $newParticipantRegistration) {
+            $newParticipantRegistration->activate();
+            $this->getParticipantRegistrations()->add($newParticipantRegistration);
+            $newParticipantRegistration->setParticipant($this);
         }
         $this->updateCachedColumns();
     }
@@ -447,23 +441,23 @@ class Participant implements ParticipantInterface
     public function deleteParticipantFlags(): void
     {
         foreach ($this->getParticipantFlags() as $participantFlag) {
-            if ($participantFlag instanceof FlagOfParticipant) {
+            if ($participantFlag instanceof ParticipantFlag) {
                 $participantFlag->delete();
             }
         }
     }
 
     public function getParticipantFlags(
-        ?ParticipantFlagCategory $flagCategory = null,
+        ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
         bool $onlyActive = false,
-        ?ParticipantFlag $flag = null
+        ?RegistrationFlag $flag = null
     ): Collection {
         $participantFlags = new ArrayCollection();
         foreach ($this->getFlagGroups($flagCategory, $flagType, $onlyActive) as $flagGroup) {
-            if ($flagGroup instanceof FlagGroupOfParticipant) {
+            if ($flagGroup instanceof ParticipantFlagGroup) {
                 foreach ($flagGroup->getParticipantFlags($onlyActive, $flag) as $participantFlag) {
-                    if ($participantFlag instanceof FlagOfParticipant && (!$onlyActive || $participantFlag->isActive())) {
+                    if ($participantFlag instanceof ParticipantFlag && (!$onlyActive || $participantFlag->isActive())) {
                         $participantFlags->add($participantFlag);
                     }
                 }
@@ -473,17 +467,20 @@ class Participant implements ParticipantInterface
         return $participantFlags;
     }
 
-    public function getFlagGroups(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false): Collection
-    {
+    public function getFlagGroups(
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?string $flagType = null,
+        bool $onlyActive = false,
+    ): Collection {
         $connections = $this->flagGroups ??= new ArrayCollection();
         if (null !== $flagCategory) {
-            $connections = $connections->filter(fn(FlagGroupOfParticipant $connection) => $connection->getFlagCategory() === $flagCategory);
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagCategory() === $flagCategory);
         }
         if (null !== $flagType) {
-            $connections = $connections->filter(fn(FlagGroupOfParticipant $connection) => $connection->getFlagType() === $flagType);
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => $connection->getFlagType() === $flagType);
         }
         if ($onlyActive) {
-            $connections = $connections->filter(fn(FlagGroupOfParticipant $connection) => !$connection->isDeleted());
+            $connections = $connections->filter(fn(ParticipantFlagGroup $connection) => !$connection->isDeleted());
         }
 
         return $connections;
@@ -498,42 +495,46 @@ class Participant implements ParticipantInterface
      */
     public function setFlagGroups(?Collection $newFlagGroups): void
     {
-        $this->changeFlagsByNewRegRange($this->getRegRange(), false, false, $newFlagGroups ?? new ArrayCollection());
+        $this->changeFlagsByNewOffer($this->getOffer(), false, false, $newFlagGroups ?? new ArrayCollection());
     }
 
     /**
-     * @param  ParticipantOffer  $regRange
+     * @param  RegistrationOffer  $registrationOffer
      *
      * @throws NotImplementedException
      */
-    public function setFlagGroupsFromRegRange(ParticipantOffer $regRange): void
+    public function setFlagGroupsByOffer(RegistrationOffer $registrationOffer): void
     {
         if (!$this->getFlagGroups(null, null, true)->isEmpty()) {
             throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
         }
-        foreach ($regRange->getFlagGroupRanges(null, null, true, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof ParticipantFlagGroupOffer) {
-                $this->addFlagGroupRange($flagGroupRange);
+        $flagGroupRanges = $registrationOffer->getFlagGroupRanges(null, null, true, true);
+        foreach ($flagGroupRanges as $flagGroupRange) {
+            if ($flagGroupRange instanceof RegistrationFlagGroupOffer) {
+                $this->addFlagGroupOffer($flagGroupRange);
             }
         }
     }
 
-    public function addFlagGroupRange(ParticipantFlagGroupOffer $flagGroupRange): void
+    public function addFlagGroupOffer(RegistrationFlagGroupOffer $flagGroupRange): void
     {
-        if (!$this->getFlagGroupRanges()->contains($flagGroupRange)) {
-            $this->getFlagGroups()->add(new FlagGroupOfParticipant($flagGroupRange));
+        if (!$this->getFlagGroupOffers()->contains($flagGroupRange)) {
+            $this->getFlagGroups()->add(new ParticipantFlagGroup($flagGroupRange));
         }
     }
 
-    public function getFlagGroupRanges(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false): Collection
-    {
+    public function getFlagGroupOffers(
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?string $flagType = null,
+        bool $onlyActive = false,
+    ): Collection {
         return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(
-            fn(FlagGroupOfParticipant $connection) => $connection->getFlagGroupRange()
+            fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupOffer()
         );
     }
 
     /**
-     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantOffer|null  $newRange
+     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer|null  $newRange
      * @param  bool  $onlySimulate
      * @param  bool  $admin
      * @param  Collection|null  $newFlagGroups
@@ -542,8 +543,12 @@ class Participant implements ParticipantInterface
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
      */
-    private function changeFlagsByNewRegRange(?ParticipantOffer $newRange, bool $onlySimulate = false, bool $admin = false, ?Collection $newFlagGroups = null): void
-    {
+    private function changeFlagsByNewOffer(
+        ?RegistrationOffer $newRange,
+        bool $onlySimulate = false,
+        bool $admin = false,
+        ?Collection $newFlagGroups = null,
+    ): void {
         if (null === $newRange) {
             throw new NotImplementedException();
         }
@@ -556,8 +561,10 @@ class Participant implements ParticipantInterface
         }
     }
 
-    public function replaceParticipantFlagGroup(FlagGroupOfParticipant $oldParticipantFlagGroup, FlagGroupOfParticipant $newParticipantFlagGroup): void
-    {
+    public function replaceParticipantFlagGroup(
+        ParticipantFlagGroup $oldParticipantFlagGroup,
+        ParticipantFlagGroup $newParticipantFlagGroup,
+    ): void {
         $oldParticipantFlagGroup->delete();
         $this->getFlagGroups()->add($newParticipantFlagGroup);
     }
@@ -663,15 +670,10 @@ class Participant implements ParticipantInterface
         return null !== ($contact = $this->getContact(false)) ? $contact->getSortableName() : '';
     }
 
-    /**
-     * @param  FlagGroupOfParticipant|null  $participantFlagGroup
-     *
-     * @return bool
-     */
-    public function isParticipantFlagGroupCompatible(?FlagGroupOfParticipant $participantFlagGroup = null): bool
+    public function isParticipantFlagGroupCompatible(?ParticipantFlagGroup $participantFlagGroup = null): bool
     {
         if ($participantFlagGroup) {
-            return (($regRange = $this->getRegRange())) && $regRange->isFlagGroupRangeCompatible($participantFlagGroup->getFlagGroupRange());
+            return (($regRange = $this->getOffer())) && $regRange->isFlagGroupRangeCompatible($participantFlagGroup->getFlagGroupOffer());
         }
 
         return false;
@@ -682,28 +684,32 @@ class Participant implements ParticipantInterface
         $this->traitSetDeletedAt($deletedAt);
         if ($this->isDeleted()) {
             foreach ($this->getParticipantFlags() as $participantFlagGroup) {
-                if ($participantFlagGroup instanceof FlagOfParticipant) {
+                if ($participantFlagGroup instanceof ParticipantFlag) {
                     $participantFlagGroup->delete($deletedAt);
                 }
             }
             foreach ($this->getFlagGroups() as $participantFlagGroup) {
-                if ($participantFlagGroup instanceof FlagGroupOfParticipant) {
+                if ($participantFlagGroup instanceof ParticipantFlagGroup) {
                     $participantFlagGroup->delete($deletedAt);
                 }
             }
-            foreach ($this->getParticipantRanges() as $participantRange) {
-                if ($participantRange instanceof OfferOfParticipant) {
+            foreach ($this->getParticipantRegistrations() as $participantRange) {
+                if ($participantRange instanceof ParticipantRegistration) {
                     $participantRange->delete($deletedAt);
                 }
             }
         }
     }
 
-    public function getFlagRanges(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = false, ParticipantFlag $flag = null): Collection
-    {
+    public function getFlagOffers(
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?string $flagType = null,
+        bool $onlyActive = false,
+        RegistrationFlag $flag = null,
+    ): Collection {
         $flagRanges = new ArrayCollection();
         foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
-            if ($participantFlag instanceof FlagOfParticipant) {
+            if ($participantFlag instanceof ParticipantFlag) {
                 $flagRanges->add($participantFlag->getFlagRange());
             }
         }
@@ -736,7 +742,8 @@ class Participant implements ParticipantInterface
      */
     public function getPrice(): int
     {
-        $price = ($range = $this->getParticipantRange(true)) ? $range->getPrice($this->getParticipantCategory(true)) : 0;
+        $range = $this->getParticipantRegistration(true);
+        $price = $range ? $range->getPrice($this->getParticipantCategory(true)) : 0;
         $price += $this->getFlagsPrice();
 
         return $price < 0 ? 0 : $price;
@@ -744,14 +751,19 @@ class Participant implements ParticipantInterface
 
     public function getParticipantCategory(bool $onlyActive = false): ?ParticipantCategory
     {
-        return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getParticipantCategory() : null;
+        $participantRange = $this->getParticipantRegistration($onlyActive);
+
+        return null !== $participantRange ? $participantRange->getParticipantCategory() : null;
     }
 
-    public function getFlagsPrice(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null, ?ParticipantFlag $flag = null): int
-    {
+    public function getFlagsPrice(
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?string $flagType = null,
+        ?RegistrationFlag $flag = null
+    ): int {
         $price = 0;
         foreach ($this->getParticipantFlags($flagCategory, $flagType, true, $flag) as $participantFlag) {
-            $price += $participantFlag instanceof FlagOfParticipant ? $participantFlag->getPrice() : 0;
+            $price += $participantFlag instanceof ParticipantFlag ? $participantFlag->getPrice() : 0;
         }
 
         return $price;
@@ -763,17 +775,18 @@ class Participant implements ParticipantInterface
      */
     public function getDepositValue(): ?int
     {
-        $price = ($range = $this->getParticipantRange(true)) ? $range->getDepositValue($range->getParticipantCategory()) : 0;
+        $range = $this->getParticipantRegistration(true);
+        $price = $range ? $range->getDepositValue($range->getParticipantCategory()) : 0;
         $price += $this->getFlagsDepositValue();
 
         return $price < 0 ? 0 : $price;
     }
 
-    public function getFlagsDepositValue(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null): int
+    public function getFlagsDepositValue(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null): int
     {
         $price = 0;
         foreach ($this->getFlagGroups($flagCategory, $flagType, true) as $category) {
-            $price += $category instanceof FlagGroupOfParticipant ? $category->getDepositValue() : 0;
+            $price += $category instanceof ParticipantFlagGroup ? $category->getDepositValue() : 0;
         }
 
         return $price;
@@ -846,7 +859,7 @@ class Participant implements ParticipantInterface
 
     public function getEvent(bool $onlyActive = false): ?Event
     {
-        return null !== ($participantRange = $this->getParticipantRange($onlyActive)) ? $participantRange->getEvent() : null;
+        return null !== ($participantRange = $this->getParticipantRegistration($onlyActive)) ? $participantRange->getEvent() : null;
     }
 
     /**
@@ -864,18 +877,18 @@ class Participant implements ParticipantInterface
 
     public function getTShirt(): string
     {
-        $tShirts = $this->getFlags(null, ParticipantFlagCategory::TYPE_T_SHIRT_SIZE);
-        if ($tShirts->count() < 1 || !(($tShirt = $tShirts->first()) instanceof ParticipantFlag)) {
+        $tShirts = $this->getFlags(null, RegistrationFlagCategory::TYPE_T_SHIRT_SIZE);
+        if ($tShirts->count() < 1 || !(($tShirt = $tShirts->first()) instanceof RegistrationFlag)) {
             return '';
         }
 
         return ''.$tShirt->getShortName();
     }
 
-    public function getFlags(?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, ParticipantFlag $flag = null): Collection
+    public function getFlags(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, RegistrationFlag $flag = null): Collection
     {
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(
-            fn(FlagOfParticipant $participantFlag) => $participantFlag->getFlag()
+            fn(ParticipantFlag $participantFlag) => $participantFlag->getFlag()
         );
     }
 
@@ -886,7 +899,7 @@ class Participant implements ParticipantInterface
 
     public function isRangeActivated(): bool
     {
-        $participantRange = $this->getParticipantRange(true);
+        $participantRange = $this->getParticipantRegistration(true);
 
         return $participantRange && $participantRange->isActivated();
     }
@@ -944,10 +957,10 @@ class Participant implements ParticipantInterface
      *
      * @throws NotImplementedException
      */
-    public function setFlagGroupRanges(?Collection $newRanges): void
+    public function setFlagGroupOffers(?Collection $newRanges): void
     {
         $newRanges ??= new ArrayCollection();
-        if ($this->getFlagGroupRanges() !== $newRanges) {
+        if ($this->getFlagGroupOffers() !== $newRanges) {
             throw new NotImplementedException('změna skupin příznaků', 'u účastníka');
         }
     }
@@ -957,8 +970,12 @@ class Participant implements ParticipantInterface
         return $this->getPriceRest() - $this->getPaidPrice() + $this->getDepositValue();
     }
 
-    public function hasFlag(?ParticipantFlag $flag = null, bool $onlyActive = true, ?ParticipantFlagCategory $flagCategory = null, ?string $flagType = null): bool
-    {
+    public function hasFlag(
+        ?RegistrationFlag $flag = null,
+        bool $onlyActive = true,
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?string $flagType = null
+    ): bool {
         return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->count() > 0;
     }
 

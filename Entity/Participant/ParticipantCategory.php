@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -14,7 +15,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use function in_array;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantCategoryRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantCategoryRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={

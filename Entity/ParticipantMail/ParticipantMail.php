@@ -7,7 +7,6 @@ namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
-use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMail;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;

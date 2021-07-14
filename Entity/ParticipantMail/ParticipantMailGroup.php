@@ -7,14 +7,13 @@ namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractEMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\ParticipantMailGroupRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_participant_mail_group")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={

@@ -5,18 +5,16 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
 class WebAdminParticipantsController extends AbstractController
 {
-    public ParticipantService $participantService;
-
-    public function __construct(ParticipantService $participantService)
-    {
-        $this->participantService = $participantService;
+    public function __construct(
+        public ParticipantService $participantService,
+    ) {
     }
 
     public function sendAutoMails(): Response

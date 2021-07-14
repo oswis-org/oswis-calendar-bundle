@@ -8,18 +8,18 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagOfParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
-use OswisOrg\OswisCalendarBundle\Repository\EventRepository;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantOfferRepository;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Service\EventService;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantCategoryService;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantOfferService;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantService;
+use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository;
+use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantRegistrationService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +30,7 @@ class WebAdminParticipantsListController extends AbstractController
         public EventService $eventService,
         public ParticipantService $participantService,
         public ParticipantCategoryService $participantCategoryService,
-        public ParticipantOfferService $regRangeService,
+        public ParticipantRegistrationService $participantRegistrationService,
         public EntityManagerInterface $em
     ) {
     }
@@ -140,13 +140,13 @@ class WebAdminParticipantsListController extends AbstractController
         foreach ($participants as $participant) {
             assert($participant instanceof Participant);
             foreach ($participant->getParticipantFlags(null, null, true) as $participantFlag) {
-                assert($participantFlag instanceof FlagOfParticipant);
+                assert($participantFlag instanceof ParticipantFlag);
                 $flagRange = $participantFlag->getFlagRange();
                 if (null === $flagRange) {
                     continue;
                 }
                 $participantFlagGroup = $participantFlag->getParticipantFlagGroup();
-                $flagGroupRange = $participantFlagGroup ? $participantFlagGroup->getFlagGroupRange() : null;
+                $flagGroupRange = $participantFlagGroup ? $participantFlagGroup->getFlagGroupOffer() : null;
                 $flagGroupRangeId = $flagGroupRange ? $flagGroupRange->getId() : 0;
                 $flag = $flagRange->getFlag();
                 $flagId = $flag ? $flag->getId() : 0;
@@ -213,7 +213,7 @@ class WebAdminParticipantsListController extends AbstractController
             $paymentsAggregation['Zbývající záloha (s příznaky)'] += $participant->getRemainingDeposit();
             $paymentsAggregation['Zbývající cena (s příznaky)'] += $participant->getRemainingPrice();
         }
-        $regRanges = $this->regRangeService->getRepository()->getRegistrationsRanges([ParticipantOfferRepository::CRITERIA_EVENT => $event]);
+        $regRanges = $this->participantRegistrationService->getRepository()->getRegistrationsRanges([RegistrationOfferRepository::CRITERIA_EVENT => $event]);
         ksort($flagsUsageByRange);
         ksort($flagsUsageByFlag);
 

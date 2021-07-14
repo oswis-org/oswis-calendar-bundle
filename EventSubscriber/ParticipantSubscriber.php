@@ -8,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantMailService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,14 +19,10 @@ use function in_array;
 
 final class ParticipantSubscriber implements EventSubscriberInterface
 {
-    protected ParticipantMailService $participantMailService;
-
-    protected LoggerInterface $logger;
-
-    public function __construct(ParticipantMailService $participantMailService, LoggerInterface $logger)
-    {
-        $this->participantMailService = $participantMailService;
-        $this->logger = $logger;
+    public function __construct(
+        private ParticipantMailService $participantMailService,
+        private LoggerInterface $logger,
+    ) {
     }
 
     public static function getSubscribedEvents(): array

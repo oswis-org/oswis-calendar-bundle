@@ -5,9 +5,8 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
-use OswisOrg\OswisCalendarBundle\Entity\Event\RegistrationFlagRangeCategoryRange;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagOfParticipant;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
 use Symfony\Component\Form\Exception\LogicException;
@@ -36,10 +35,10 @@ class FlagOfParticipantType extends AbstractType
      */
     public function onPreSetData(FormEvent $event): void
     {
-        if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof FlagOfParticipant)) {
+        if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof ParticipantFlag)) {
             return;
         }
-        if (null === ($flagRange = $participantFlag->getFlagRange()) || !($flagRange instanceof ParticipantFlagOffer)) {
+        if (null === ($flagRange = $participantFlag->getFlagRange()) || !($flagRange instanceof RegistrationFlagOffer)) {
             return;
         }
         $event->getForm()->add(
@@ -79,7 +78,7 @@ class FlagOfParticipantType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => FlagOfParticipant::class,
+                'data_class' => ParticipantFlag::class,
                 // 'attr' => ['class' => 'col-md-6'],
             ]
         );

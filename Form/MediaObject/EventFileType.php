@@ -5,7 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\MediaObject;
 
-use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventFile;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventFile;
 use OswisOrg\OswisCoreBundle\Form\AbstractClass\AbstractFileType;
 
 class EventFileType extends AbstractFileType

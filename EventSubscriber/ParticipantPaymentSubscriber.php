@@ -7,7 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Exception\SuspiciousOperationException;
@@ -17,11 +17,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 final class ParticipantPaymentSubscriber implements EventSubscriberInterface
 {
-    private ParticipantPaymentService $paymentService;
-
-    public function __construct(ParticipantPaymentService $paymentService)
-    {
-        $this->paymentService = $paymentService;
+    public function __construct(
+        private ParticipantPaymentService $paymentService,
+    ) {
     }
 
     public static function getSubscribedEvents(): array

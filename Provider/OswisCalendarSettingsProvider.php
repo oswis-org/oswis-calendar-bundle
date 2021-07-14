@@ -18,12 +18,12 @@ class OswisCalendarSettingsProvider
     /**
      * @var string|null
      */
-    protected ?string $defaultEvent = null;
+    private ?string $defaultEvent = null;
 
     /**
      * @var string[] Fallback default events.
      */
-    protected array $defaultEventFallbacks = [];
+    private array $defaultEventFallbacks = [];
 
     /**
      * OswisCalendarSettingsProvider constructor.

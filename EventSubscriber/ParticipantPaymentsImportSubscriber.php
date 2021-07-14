@@ -9,7 +9,7 @@ use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentsImportService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -17,11 +17,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 final class ParticipantPaymentsImportSubscriber implements EventSubscriberInterface
 {
-    private ParticipantPaymentsImportService $paymentsImportService;
-
-    public function __construct(ParticipantPaymentsImportService $paymentsImportService)
-    {
-        $this->paymentsImportService = $paymentsImportService;
+    public function __construct(
+        private ParticipantPaymentsImportService $paymentsImportService,
+    ) {
     }
 
     public static function getSubscribedEvents(): array

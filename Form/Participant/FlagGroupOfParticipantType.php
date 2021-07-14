@@ -6,11 +6,11 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagGroupOfParticipant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\FlagOfParticipant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\ParticipantFlagOffer;
-use OswisOrg\OswisCalendarBundle\Repository\ParticipantFlagOfferRepository;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
+use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -29,11 +29,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FlagGroupOfParticipantType extends AbstractType
 {
-    protected ParticipantFlagOfferRepository $flagRangeRepository;
+    protected RegistrationFlagOfferRepository $flagRangeRepository;
 
     protected LoggerInterface $logger;
 
-    public function __construct(ParticipantFlagOfferRepository $flagRangeRepository, LoggerInterface $logger)
+    public function __construct(RegistrationFlagOfferRepository $flagRangeRepository, LoggerInterface $logger)
     {
         $this->flagRangeRepository = $flagRangeRepository;
         $this->logger = $logger;
@@ -57,11 +57,11 @@ class FlagGroupOfParticipantType extends AbstractType
             FormEvents::SUBMIT,
             static function (FormEvent $event) {
                 $participantFlagGroup = $event->getData();
-                assert($participantFlagGroup instanceof FlagGroupOfParticipant);
+                assert($participantFlagGroup instanceof ParticipantFlagGroup);
                 $participantFlags = new ArrayCollection();
                 foreach ($participantFlagGroup->tempFlagRanges ?? new ArrayCollection() as $tempFlagRange) {
-                    assert($tempFlagRange instanceof ParticipantFlagOffer);
-                    $participantFlag = new FlagOfParticipant($tempFlagRange, $participantFlagGroup);
+                    assert($tempFlagRange instanceof RegistrationFlagOffer);
+                    $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
                     $participantFlags->add($participantFlag);
                 }
                 $participantFlagGroup->setParticipantFlags($participantFlags);
@@ -80,12 +80,12 @@ class FlagGroupOfParticipantType extends AbstractType
     public function onPreSetData(FormEvent $event): void
     {
         $participantFlagGroup = $event->getData();
-        assert($participantFlagGroup instanceof FlagGroupOfParticipant);
+        assert($participantFlagGroup instanceof ParticipantFlagGroup);
         $participant = $event->getForm()->getConfig()->getOptions()['participant'];
         if (!($participant instanceof Participant)) {
             throw new OswisException('Ve formuláři chybí instance účastníka...');
         }
-        $flagGroupRange = $participantFlagGroup->getFlagGroupRange();
+        $flagGroupRange = $participantFlagGroup->getFlagGroupOffer();
         $flagCategory = $participantFlagGroup->getFlagCategory();
         if (null === $flagGroupRange || null === $flagCategory) {
             return;
@@ -103,15 +103,15 @@ class FlagGroupOfParticipantType extends AbstractType
 
     /**
      * @param  FormInterface  $form
-     * @param  FlagGroupOfParticipant  $participantFlagCategory
+     * @param  ParticipantFlagGroup  $participantFlagCategory
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
      * @throws UnexpectedTypeException
      */
-    public static function addCheckboxes(FormInterface $form, FlagGroupOfParticipant $participantFlagCategory): void
+    public static function addCheckboxes(FormInterface $form, ParticipantFlagGroup $participantFlagCategory): void
     {
-        $flagGroupRange = $participantFlagCategory->getFlagGroupRange();
+        $flagGroupRange = $participantFlagCategory->getFlagGroupOffer();
         if (null === $flagGroupRange) {
             return;
         }
@@ -129,7 +129,7 @@ class FlagGroupOfParticipantType extends AbstractType
 
     /**
      * @param  FormInterface  $form
-     * @param  FlagGroupOfParticipant  $participantFlagGroup
+     * @param  ParticipantFlagGroup  $participantFlagGroup
      * @param  int  $min
      * @param  int|null  $max
      * @param  bool  $isFormal
@@ -138,9 +138,9 @@ class FlagGroupOfParticipantType extends AbstractType
      * @throws LogicException
      * @throws UnexpectedTypeException
      */
-    public static function addSelect(FormInterface $form, FlagGroupOfParticipant $participantFlagGroup, int $min, ?int $max, bool $isFormal = true): void
+    public static function addSelect(FormInterface $form, ParticipantFlagGroup $participantFlagGroup, int $min, ?int $max, bool $isFormal = true): void
     {
-        if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupRange())) {
+        if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupOffer())) {
             return;
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
@@ -158,7 +158,7 @@ class FlagGroupOfParticipantType extends AbstractType
             "tempFlagRanges",
             EntityType::class,
             [
-                'class'              => ParticipantFlagOffer::class,
+                'class'              => RegistrationFlagOffer::class,
                 'label'              => false,
                 'required'           => false,
                 'help_html'          => true,
@@ -166,7 +166,7 @@ class FlagGroupOfParticipantType extends AbstractType
                 // 'empty_data'         => null,
                 'multiple'           => true,
                 'attr'               => ['style' => 'display:none'],
-                'choice_label'       => fn(ParticipantFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
+                'choice_label'       => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
                 'allow_extra_fields' => true,
             ]
         );
@@ -174,7 +174,7 @@ class FlagGroupOfParticipantType extends AbstractType
             "flagRanges",
             EntityType::class,
             [
-                'class'        => ParticipantFlagOffer::class,
+                'class'        => RegistrationFlagOffer::class,
                 'mapped'       => false,
                 'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
                 'help_html'    => true,
@@ -185,9 +185,9 @@ class FlagGroupOfParticipantType extends AbstractType
                 // 'empty_data'   => new ArrayCollection(),
                 'multiple'     => $multiple,
                 'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null],
-                'choice_label' => fn(ParticipantFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
-                'choice_attr'  => fn(ParticipantFlagOffer $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
-                'group_by'     => fn(ParticipantFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
+                'choice_label' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
+                'choice_attr'  => fn(RegistrationFlagOffer $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
+                'group_by'     => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
                 'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
             ]
         );
@@ -203,7 +203,7 @@ class FlagGroupOfParticipantType extends AbstractType
         }
     }
 
-    public static function getChoiceAttributes(ParticipantFlagOffer $flagRange): array
+    public static function getChoiceAttributes(RegistrationFlagOffer $flagRange): array
     {
         $attributes = [];
         if (!$flagRange->hasRemainingCapacity()) {
@@ -222,7 +222,7 @@ class FlagGroupOfParticipantType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class'  => FlagGroupOfParticipant::class,
+                'data_class'  => ParticipantFlagGroup::class,
                 'participant' => null,
                 'empty_data'  => new ArrayCollection(),
                 // 'attr' => ['class' => 'col-md-6'],

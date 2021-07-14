@@ -8,7 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantPaymentsImportType;
-use OswisOrg\OswisCalendarBundle\Service\ParticipantPaymentsImportService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentsImportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -17,11 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WebAdminParticipantPaymentsImportController extends AbstractController
 {
-    public ParticipantPaymentsImportService $paymentsImportService;
-
-    public function __construct(ParticipantPaymentsImportService $paymentsImportService)
-    {
-        $this->paymentsImportService = $paymentsImportService;
+    public function __construct(
+        public ParticipantPaymentsImportService $paymentsImportService,
+    ) {
     }
 
     public function getPaymentsImportService(): ParticipantPaymentsImportService

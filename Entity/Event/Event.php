@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -10,10 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
-use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventFile;
-use OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventImage;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantTypeInEventConnection;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -30,7 +28,7 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use function assert;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\EventRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_event")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
@@ -129,14 +127,14 @@ class Event implements NameableInterface
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventImage", mappedBy="event", cascade={"all"}, orphanRemoval=true
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventImage", mappedBy="event", cascade={"all"}, orphanRemoval=true
      * )
      */
     protected ?Collection $images = null;
 
     /**
      * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\MediaObject\EventFile", mappedBy="event", cascade={"all"}, orphanRemoval=true
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFile", mappedBy="event", cascade={"all"}, orphanRemoval=true
      * )
      */
     protected ?Collection $files = null;
