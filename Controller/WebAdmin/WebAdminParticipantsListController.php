@@ -18,8 +18,8 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
-use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantRegistrationService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +30,7 @@ class WebAdminParticipantsListController extends AbstractController
         public EventService $eventService,
         public ParticipantService $participantService,
         public ParticipantCategoryService $participantCategoryService,
-        public ParticipantRegistrationService $participantRegistrationService,
+        public RegistrationOfferService $participantRegistrationService,
         public EntityManagerInterface $em
     ) {
     }

@@ -20,9 +20,9 @@ use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
-use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantRegistrationService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -40,7 +40,7 @@ class ParticipantController extends AbstractController
 {
     public function __construct(
         public EventService $eventService,
-        public ParticipantRegistrationService $regRangeService,
+        public RegistrationOfferService $regRangeService,
         public ParticipantService $participantService,
         protected LoggerInterface $logger,
     ) {

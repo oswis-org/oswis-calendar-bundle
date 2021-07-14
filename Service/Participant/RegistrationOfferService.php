@@ -20,7 +20,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferReposi
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
 use Psr\Log\LoggerInterface;
 
-class ParticipantRegistrationService
+class RegistrationOfferService
 {
     public function __construct(
         protected EntityManagerInterface $em,
