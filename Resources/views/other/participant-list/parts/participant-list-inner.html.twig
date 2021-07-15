@@ -48,7 +48,7 @@
                     <span class="block small"><strong>{{ participantRange.event.shortName|default }}</strong></span>
                 </li>
                 <li style="list-style-type: '🎫'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
-                    <span class="block small"><strong>{{ participantRange.range.shortName|default }}</strong></span>
+                    <span class="block small"><strong>{{ participantRange.offer.shortName|default }}</strong></span>
                 </li>
             {% endfor %}
             {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
