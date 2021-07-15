@@ -225,7 +225,7 @@ class WebAdminParticipantsListController extends AbstractController
                 'occupancy'           => $occupancy,
                 'flagsUsageByRange'   => $flagsUsageByRange,
                 'flagsUsageByFlag'    => $flagsUsageByFlag,
-                'regRanges'           => $regRanges,
+                'offer'               => $regRanges,
                 'otherAggregations'   => $otherAggregations,
                 'paymentsAggregation' => $paymentsAggregation,
                 'isDefaultEvent'      => $isDefaultEvent,

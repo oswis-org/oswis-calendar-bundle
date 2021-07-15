@@ -67,7 +67,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  *   }
  * )
  */
-#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['regRange.event.id', 'regRange.event.superEvent.id'])]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['offer.event.id', 'offer.event.superEvent.id'])]
 class RegistrationOffer implements NameableInterface
 {
     use NameableTrait;

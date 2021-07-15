@@ -79,7 +79,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 #[ApiFilter(OrderFilter::class, properties: ['contact.sortableName'])]
-#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['regRange.event.id', 'regRange.event.superEvent.id'])]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['offer.event.id', 'offer.event.superEvent.id'])]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;

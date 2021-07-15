@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpSameParameterValueInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -28,7 +29,7 @@ class ParticipantRepository extends ServiceEntityRepository
     public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
-    public const CRITERIA_REG_RANGE = 'regRange';
+    public const CRITERIA_OFFER = 'offer';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
     public const CRITERIA_CONTACT = 'contact';
     public const CRITERIA_APP_USER = 'appUser';
@@ -103,9 +104,9 @@ class ParticipantRepository extends ServiceEntityRepository
 
     private function setRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_REG_RANGE]) && $opts[self::CRITERIA_REG_RANGE] instanceof RegistrationOffer) {
-            $queryBuilder->andWhere('participant.regRange = :regRange_id');
-            $queryBuilder->setParameter('regRange_id', $opts[self::CRITERIA_REG_RANGE]->getId());
+        if (!empty($opts[self::CRITERIA_OFFER]) && $opts[self::CRITERIA_OFFER] instanceof RegistrationOffer) {
+            $queryBuilder->andWhere('participant.offer = :offer_id');
+            $queryBuilder->setParameter('offer_id', $opts[self::CRITERIA_OFFER]->getId());
         }
     }
 

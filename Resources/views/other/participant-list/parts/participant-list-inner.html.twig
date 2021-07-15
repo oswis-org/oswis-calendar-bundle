@@ -43,7 +43,7 @@
                     <strong>{{ participantContact.contact.name|default }}</strong>
                 </li>
             {% endfor %}
-            {% for participantRange in participant.participantRanges(false, false) %}
+            {% for participantRange in participant.participantRegistrations(false, false) %}
                 <li style="list-style-type: '📅'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
                     <span class="block small"><strong>{{ participantRange.event.shortName|default }}</strong></span>
                 </li>

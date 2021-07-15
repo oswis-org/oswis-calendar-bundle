@@ -58,7 +58,7 @@ class RegistrationOfferService
     {
         return $this->getParticipantRangeConnectionRepository()->countRangesConnections(
             [
-                ParticipantRepository::CRITERIA_REG_RANGE       => $range,
+                ParticipantRepository::CRITERIA_OFFER           => $range,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ]
         );
@@ -76,7 +76,7 @@ class RegistrationOfferService
     {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections(
             [
-                ParticipantRepository::CRITERIA_REG_RANGE       => $range,
+                ParticipantRepository::CRITERIA_OFFER           => $range,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ]
         );
