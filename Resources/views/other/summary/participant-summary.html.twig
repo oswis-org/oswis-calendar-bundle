@@ -1,6 +1,6 @@
 {% set isInternal = isInternal|default(false) %}
 
-{% set registrations = participant.registrations(false, false) %}
+{% set participantRegistrations = participant.participantRegistrations(false, false) %}
 {% set activeEvent = participant.event(false)|default %}
 
 <h2>Shrnutí {{ f ? 'Vaší' : 'Tvé' }} {{ participant.deletedAt|default ? 'zrušené' : '' }} přihlášky</h2>

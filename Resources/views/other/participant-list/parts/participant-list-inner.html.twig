@@ -60,9 +60,9 @@
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em; font-size: small;">
         <div>
-            {% for participantFlagGroup in participant.flagGroups|filter(participantFlagGroup => participantFlagGroup.participantFlags|length > 0) %}
-                <div style="{{ participantFlagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">
-                    {% for index, participantFlag in participantFlagGroup.participantFlags %}
+            {% for flagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
+                <div style="{{ flagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">
+                    {% for index, participantFlag in flagGroup.participantFlags %}
                         {% set badgeColorString = participantFlag.flag.color|default
                             ? 'background-color:'~participantFlag.flag.color~'!important;color:'~participantFlag.flag.foregroundColor~'!important;'
                             : '' %}
@@ -75,10 +75,10 @@
                              ID přiřazení {{ participantFlag.id }}<br>
                              ID rozsahu {{ participantFlag.flagRange.id }}<br>
                              {{ participantFlag.deletedAt ? 'SMAZÁN: '~participantFlag.deletedAt|date("j. n. Y H:i") : '' }}<br>
-                             Skupina: {{ participantFlagGroup.flagGroupRange.name }}<br>
-                             ID přiřazení skupiny {{ participantFlagGroup.id }}<br>
-                             ID rozsahu skupiny {{ participantFlagGroup.flagGroupRange.id }}<br>
-                             {{ participantFlagGroup.deletedAt ? 'SMAZÁNA: '~participantFlagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
+                             Skupina: {{ flagGroup.flagGroupRange.name }}<br>
+                             ID přiřazení skupiny {{ flagGroup.id }}<br>
+                             ID rozsahu skupiny {{ flagGroup.flagGroupRange.id }}<br>
+                             {{ flagGroup.deletedAt ? 'SMAZÁNA: '~flagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
                             {% if participantFlag.flagRange.price|default(0) != 0 %}
                                 <div class="badge bg-danger" style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
