@@ -27,7 +27,7 @@ class ParticipantType extends AbstractType
     public function __construct(
         protected Security $security,
         protected LoggerInterface $logger,
-        protected EntityManager $entityManager,
+        protected EntityManagerInterface $entityManager,
     ) {
     }
 
