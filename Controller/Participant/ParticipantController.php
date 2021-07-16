@@ -6,17 +6,14 @@
 namespace OswisOrg\OswisCalendarBundle\Controller\Participant;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use InvalidArgumentException;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
-use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
-use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
-use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
-use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
@@ -24,8 +21,8 @@ use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
-use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -36,6 +33,8 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Core\Security;
+use UnexpectedValueException;
 
 class ParticipantController extends AbstractController
 {
@@ -43,6 +42,8 @@ class ParticipantController extends AbstractController
         public EventService $eventService,
         public RegistrationOfferService $regRangeService,
         public ParticipantService $participantService,
+        protected EntityManagerInterface $entityManager,
+        protected Security $security,
         protected LoggerInterface $logger,
     ) {
     }
@@ -67,14 +68,15 @@ class ParticipantController extends AbstractController
      * @param  string|null  $rangeSlug
      *
      * @return Response
-     * @throws EventCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws InvalidArgumentException
-     * @throws NotFoundException
-     * @throws NotImplementedException
-     * @throws OswisException
-     * @throws ParticipantNotFoundException
-     * @throws FlagCapacityExceededException
+     * @throws \InvalidArgumentException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws \UnexpectedValueException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {
@@ -89,7 +91,15 @@ class ParticipantController extends AbstractController
         if (null === $range || !($range instanceof RegistrationOffer) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
-        $participant = $this->participantService->getEmptyParticipant($range);
+        $user = $this->security->getUser();
+        if ($user instanceof AppUser) {
+            try {
+                $repository = $this->entityManager->getRepository(AbstractContact::class);
+                $contact = $repository->findBy(['appUser' => $user->getId()])[0] ?? null;
+            } catch (UnexpectedValueException) {
+            }
+        }
+        $participant = $this->participantService->getEmptyParticipant($range, $contact ?? null);
         $this->logger->info("GOT EMPTY PARTICIPANT");
         try {
             $form = $this->createForm(ParticipantType::class, $participant);

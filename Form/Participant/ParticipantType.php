@@ -5,13 +5,9 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
-use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\AbstractType;
@@ -20,16 +16,11 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\Security;
-use UnexpectedValueException;
 
 class ParticipantType extends AbstractType
 {
-    public function __construct(
-        protected Security $security,
-        protected LoggerInterface $logger,
-        protected EntityManagerInterface $entityManager,
-    ) {
+    public function __construct(protected LoggerInterface $logger)
+    {
     }
 
     /**
@@ -57,18 +48,7 @@ class ParticipantType extends AbstractType
             $message .= null !== $event ? '[událost nenastavena]' : '';
             throw new PriceInvalidArgumentException($message);
         }
-        $user = $this->security->getUser();
-        if ($user instanceof AppUser) {
-            try {
-                $repository = $this->entityManager->getRepository(AbstractContact::class);
-                $contact = $repository->findBy(['appUser' => $user->getId()])[0] ?? null;
-            } catch (UnexpectedValueException) {
-            }
-        }
-        if (isset($contact) && $contact instanceof AbstractContact) {
-            $participant->setContact($contact);
-        }
-        self::addContactField($builder, isset($contact) && $contact instanceof AbstractContact);
+        self::addContactField($builder, null !== $participant->getContact()?->getId());
         $this->addParticipantFlagGroupFields($builder, $participant);
         self::addParticipantNotesFields($builder);
         self::addSubmitButton($builder);
