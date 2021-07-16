@@ -5,9 +5,12 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
+use Doctrine\ORM\EntityManager;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\AbstractType;
@@ -16,14 +19,16 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Security\Core\Security;
+use UnexpectedValueException;
 
 class ParticipantType extends AbstractType
 {
-    protected LoggerInterface $logger;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
+    public function __construct(
+        protected Security $security,
+        protected LoggerInterface $logger,
+        protected EntityManager $entityManager,
+    ) {
     }
 
     /**
@@ -31,6 +36,7 @@ class ParticipantType extends AbstractType
      * @param  array  $options
      *
      * @throws PriceInvalidArgumentException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -50,15 +56,34 @@ class ParticipantType extends AbstractType
             $message .= null !== $event ? '[událost nenastavena]' : '';
             throw new PriceInvalidArgumentException($message);
         }
-        self::addContactField($builder);
+        $user = $this->security->getUser();
+        if ($user instanceof AppUser) {
+            try {
+                $repository = $this->entityManager->getRepository(AbstractContact::class);
+                $contact = $repository->findBy(['appUser' => $user->getId()])[0] ?? null;
+            } catch (UnexpectedValueException) {
+            }
+        }
+        if (isset($contact) && $contact instanceof AbstractContact) {
+            $participant->setContact($contact);
+        }
+        self::addContactField($builder, isset($contact) && $contact instanceof AbstractContact);
         $this->addParticipantFlagGroupFields($builder, $participant);
         self::addParticipantNotesFields($builder);
         self::addSubmitButton($builder);
     }
 
-    public static function addContactField(FormBuilderInterface $builder): void
+    public static function addContactField(FormBuilderInterface $builder, bool $existing = false): void
     {
-        $builder->add('contact', PersonType::class, array('label' => 'Účastník', 'required' => true));
+        $builder->add(
+            'contact',
+            PersonType::class,
+            [
+                'label'    => 'Účastník',
+                'required' => true,
+                'disabled' => $existing,
+            ]
+        );
     }
 
     public function addParticipantFlagGroupFields(FormBuilderInterface $builder, Participant $participant): void

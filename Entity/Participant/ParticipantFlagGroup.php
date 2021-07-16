@@ -218,9 +218,9 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
      */
     private function checkAvailableFlagRange(RegistrationFlagOffer $flagRange, Collection $newPartiFlags, bool $admin = false): void
     {
-        $newFlagRangeCount = $newPartiFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
+        $newFlagRangeCount = $newPartiFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagOffer() === $flagRange)->count();
         $flagRange->checkInRange($newFlagRangeCount);
-        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagRange() === $flagRange)->count();
+        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagOffer() === $flagRange)->count();
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
@@ -241,8 +241,8 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         ParticipantFlag $newParticipantFlag,
         bool $admin = false,
     ): void {
-        $oldFlagRange = $oldParticipantFlag->getFlagRange();
-        $newFlagRange = $newParticipantFlag->getFlagRange();
+        $oldFlagRange = $oldParticipantFlag->getFlagOffer();
+        $newFlagRange = $newParticipantFlag->getFlagOffer();
         if ($oldFlagRange !== $newFlagRange) {
             if (null === $newFlagRange || !($newFlagRange instanceof RegistrationFlagOffer)) {
                 throw new FlagOutOfRangeException("Příznak musí být nahrazen, nesmí být smazán.");

@@ -19,6 +19,7 @@ use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService;
@@ -218,6 +219,26 @@ class ParticipantController extends AbstractController
                 'title'   => 'Přihláška aktivována!',
                 'message' => 'Přihláška byla úspěšně ověřena.',
             ]
+        );
+    }
+
+    /**
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
+     */
+    public function resendActivationEmail(?int $participantId = null): Response
+    {
+        $this->participantService->requestActivation(
+            $this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId])
+        );
+
+        return $this->getResponse(
+            'success',
+            'Ověřovací zpráva odeslána!',
+            false,
+            null,
+            null,
+            "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
         );
     }
 

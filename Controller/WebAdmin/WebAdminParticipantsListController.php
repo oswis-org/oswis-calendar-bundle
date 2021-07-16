@@ -141,7 +141,7 @@ class WebAdminParticipantsListController extends AbstractController
             assert($participant instanceof Participant);
             foreach ($participant->getParticipantFlags(null, null, true) as $participantFlag) {
                 assert($participantFlag instanceof ParticipantFlag);
-                $flagRange = $participantFlag->getFlagRange();
+                $flagRange = $participantFlag->getFlagOffer();
                 if (null === $flagRange) {
                     continue;
                 }

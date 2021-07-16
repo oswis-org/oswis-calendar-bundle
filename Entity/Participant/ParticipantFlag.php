@@ -68,7 +68,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
      * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?RegistrationFlagOffer $flagRange = null;
+    protected ?RegistrationFlagOffer $flagOffer = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -90,43 +90,43 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
             $this->setParticipantFlagGroup($participantFlagGroup);
         } catch (NotImplementedException) {
         }
-        $this->setFlagRange($flagRange);
+        $this->setFlagOffer($flagRange);
         $this->setTextValue($textValue);
     }
 
     public function getFlagType(): ?string
     {
-        return $this->getFlagRange()?->getType();
+        return $this->getFlagOffer()?->getType();
     }
 
-    public function getFlagRange(): ?RegistrationFlagOffer
+    public function getFlagOffer(): ?RegistrationFlagOffer
     {
-        return $this->flagRange;
+        return $this->flagOffer;
     }
 
-    public function setFlagRange(?RegistrationFlagOffer $flagRange): void
+    public function setFlagOffer(?RegistrationFlagOffer $flagOffer): void
     {
-        if ($this->flagRange === $flagRange) {
+        if ($this->flagOffer === $flagOffer) {
             return;
         }
-        if (null === $this->flagRange) {
-            $this->flagRange = $flagRange;
+        if (null === $this->flagOffer) {
+            $this->flagOffer = $flagOffer;
         }
     }
 
     public function getFlagCategory(): ?RegistrationFlagCategory
     {
-        return $this->getFlagRange()?->getCategory();
+        return $this->getFlagOffer()?->getCategory();
     }
 
     public function getFlag(): ?RegistrationFlag
     {
-        return $this->getFlagRange()?->getFlag();
+        return $this->getFlagOffer()?->getFlag();
     }
 
     public function getPrice(): int
     {
-        return $this->isActive() ? ($this->getFlagRange()?->getPrice() ?? 0) : 0;
+        return $this->isActive() ? ($this->getFlagOffer()?->getPrice() ?? 0) : 0;
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool
@@ -136,7 +136,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function getDepositValue(): int
     {
-        return $this->isActive() ? ($this->getFlagRange()?->getDepositValue() ?? 0) : 0;
+        return $this->isActive() ? ($this->getFlagOffer()?->getDepositValue() ?? 0) : 0;
     }
 
     public function getParticipantFlagGroup(): ?ParticipantFlagGroup
@@ -162,16 +162,16 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function getName(): ?string
     {
-        return $this->getFlagRange()?->getName();
+        return $this->getFlagOffer()?->getName();
     }
 
     public function getShortName(): ?string
     {
-        return $this->getFlagRange()?->getShortName();
+        return $this->getFlagOffer()?->getShortName();
     }
 
     public function getExtendedName(): ?string
     {
-        return $this->getFlagRange()?->getExtendedName(true, false);
+        return $this->getFlagOffer()?->getExtendedName(true, false);
     }
 }

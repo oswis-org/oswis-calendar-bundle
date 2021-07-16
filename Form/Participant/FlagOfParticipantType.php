@@ -38,7 +38,7 @@ class FlagOfParticipantType extends AbstractType
         if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof ParticipantFlag)) {
             return;
         }
-        if (null === ($flagRange = $participantFlag->getFlagRange()) || !($flagRange instanceof RegistrationFlagOffer)) {
+        if (null === ($flagRange = $participantFlag->getFlagOffer()) || !($flagRange instanceof RegistrationFlagOffer)) {
             return;
         }
         $event->getForm()->add(
@@ -54,7 +54,7 @@ class FlagOfParticipantType extends AbstractType
                 'help'       => $flagRange->getDescription(),
             ]
         );
-        if ($participantFlag->getFlagRange() && $participantFlag->getFlagRange()?->isFormValueAllowed()) {
+        if ($participantFlag->getFlagOffer() && $participantFlag->getFlagOffer()?->isFormValueAllowed()) {
             $event->getForm()->add(
                 "textValue",
                 TextType::class,

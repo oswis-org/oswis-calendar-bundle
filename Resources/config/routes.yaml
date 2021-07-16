@@ -1,3 +1,9 @@
+oswis_org_oswis_calendar_participant_resend_activation_email:
+    controller: oswis_org_oswis_calendar.participant.participant_controller::resendActivationEmail
+    path: "/akce/prihlaska/email-overeni/{token}"
+    requirements:
+        participantId: '\d+'
+
 oswis_org_oswis_calendar_participant_process_token:
     controller: oswis_org_oswis_calendar.participant.participant_controller::processToken
     path: "/akce/prihlaska/token/{token}/{participantId}"

@@ -207,8 +207,11 @@ class Participant implements ParticipantInterface
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function __construct(RegistrationOffer $regRange = null, AbstractContact $contact = null, ?Collection $participantNotes = null)
-    {
+    public function __construct(
+        RegistrationOffer $regRange = null,
+        AbstractContact $contact = null,
+        ?Collection $participantNotes = null,
+    ) {
         $this->participantContacts = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
@@ -716,7 +719,7 @@ class Participant implements ParticipantInterface
         $flagRanges = new ArrayCollection();
         foreach ($this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag) as $participantFlag) {
             if ($participantFlag instanceof ParticipantFlag) {
-                $flagRanges->add($participantFlag->getFlagRange());
+                $flagRanges->add($participantFlag->getFlagOffer());
             }
         }
 

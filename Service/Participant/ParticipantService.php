@@ -93,7 +93,9 @@ class ParticipantService
             $contact->setAppUser($this->appUserService->create($newAppUser, false, false, false));
             $this->logger->debug("New AppUser for participant '$participantMailAddress' created.");
         }
-        $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci '$eventName'."));
+        if (null === $contact->getId()) {
+            $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci '$eventName'."));
+        }
         $participant->removeEmptyNotesAndDetails();
         $this->em->persist($participant);
         $participant->updateCachedColumns();

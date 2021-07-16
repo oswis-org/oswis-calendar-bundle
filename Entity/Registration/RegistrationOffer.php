@@ -382,12 +382,12 @@ class RegistrationOffer implements NameableInterface
         }
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags() as $oldParticipantFlag) {
-            if (!($oldParticipantFlag instanceof ParticipantFlag) || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagRange()))) {
+            if (!($oldParticipantFlag instanceof ParticipantFlag) || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer()))) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag);
-            $newFlagRange = $newParticipantFlag->getFlagRange();
-            if (null !== $newFlagRange && $oldParticipantFlag->getFlagRange() !== $newFlagRange) {
+            $newFlagRange = $newParticipantFlag->getFlagOffer();
+            if (null !== $newFlagRange && $oldParticipantFlag->getFlagOffer() !== $newFlagRange) {
                 $remainingFlagRangeCapacity = $newFlagRange->getRemainingCapacity($admin);
                 if (null !== $remainingFlagRangeCapacity && (0 === $remainingFlagRangeCapacity || -1 >= $remainingFlagRangeCapacity)) {
                     throw new FlagCapacityExceededException($newFlagRange->getName());
@@ -436,7 +436,7 @@ class RegistrationOffer implements NameableInterface
      */
     public function makeCompatibleParticipantFlag(ParticipantFlag $oldParticipantFlag): ParticipantFlag
     {
-        if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagRange())) {
+        if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagOffer())) {
             throw new FlagOutOfRangeException('Prázdné přiřazení příznaku.');
         }
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
