@@ -6,6 +6,7 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
