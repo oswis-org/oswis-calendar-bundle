@@ -144,7 +144,7 @@ class FlagGroupOfParticipantType extends AbstractType
             return;
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
-        $choices = $flagGroupRange->getFlagRanges();
+        $choices = $flagGroupRange->getFlagOffers();
         $multiple = null === $max || $max > 1;
         $expanded = count($choices) <= 1;
         $help = $flagGroupRange->getDescription();
@@ -162,7 +162,7 @@ class FlagGroupOfParticipantType extends AbstractType
                 'label'              => false,
                 'required'           => false,
                 'help_html'          => true,
-                'choices'            => $flagGroupRange->getFlagRanges(),
+                'choices'            => $flagGroupRange->getFlagOffers(),
                 // 'empty_data'         => null,
                 'multiple'           => true,
                 'attr'               => ['style' => 'display:none'],

@@ -451,7 +451,7 @@ class RegistrationOffer implements NameableInterface
     public function isFlagRangeCompatible(?RegistrationFlagOffer $flagRange = null): bool
     {
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof RegistrationFlagGroupOffer && $flagGroupRange->getFlagRanges()->contains($flagRange)) {
+            if ($flagGroupRange instanceof RegistrationFlagGroupOffer && $flagGroupRange->getFlagOffers()->contains($flagRange)) {
                 return true;
             }
         }
@@ -466,7 +466,7 @@ class RegistrationOffer implements NameableInterface
         }
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
             if ($flagGroupRange instanceof RegistrationFlagGroupOffer) {
-                foreach ($flagGroupRange->getFlagRanges() as $oneFlagRange) {
+                foreach ($flagGroupRange->getFlagOffers() as $oneFlagRange) {
                     if ($oneFlagRange instanceof RegistrationFlagOffer && $oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
                         return $oneFlagRange;
                     }

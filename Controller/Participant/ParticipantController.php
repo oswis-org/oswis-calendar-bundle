@@ -76,7 +76,6 @@ class ParticipantController extends AbstractController
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
-     * @throws \UnexpectedValueException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {

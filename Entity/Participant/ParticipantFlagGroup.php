@@ -206,7 +206,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     public function getAvailableFlagOffers(bool $onlyPublic = false): Collection
     {
-        return $this->getFlagGroupOffer()?->getFlagRanges($onlyPublic) ?? new ArrayCollection();
+        return $this->getFlagGroupOffer()?->getFlagOffers($onlyPublic) ?? new ArrayCollection();
     }
 
     /**

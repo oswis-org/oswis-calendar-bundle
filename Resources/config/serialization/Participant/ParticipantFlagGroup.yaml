@@ -1,9 +1,5 @@
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
     attributes:
-        flagGroupOffer:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
         min:
             groups:
                 - 'calendar_participant_flag_group_get'
@@ -21,6 +17,30 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
                 - 'calendar_participant_flag_group_get'
                 - 'calendar_participant_flag_groups_get'
                 - 'calendar_participant_flag_groups_put'
+
+
+OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
+    attributes:
+        flag:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
+        min:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
+        max:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
+        deposit:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
+        price:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
 
 
 

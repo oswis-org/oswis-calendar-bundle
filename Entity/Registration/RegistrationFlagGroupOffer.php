@@ -68,14 +68,19 @@ class RegistrationFlagGroupOffer implements NameableInterface
     protected ?string $emptyPlaceholder = null;
 
     /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationFlagCategory", fetch="EAGER")
+     * @Doctrine\ORM\Mapping\ManyToOne(
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory",
+     *     fetch="EAGER",
+     * )
      * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
     protected ?RegistrationFlagCategory $flagCategory = null;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="RegistrationFlagOffer", cascade={"all"}, fetch="EAGER"
+     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer",
+     *     cascade={"all"},
+     *     fetch="EAGER",
      * )
      * @Doctrine\ORM\Mapping\JoinTable(
      *     name="calendar_flag_group_range_flag_connection",
@@ -83,7 +88,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_range_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $flagRanges = null;
+    protected ?Collection $flagOffers = null;
 
     public function __construct(
         ?RegistrationFlagCategory $category = null,
@@ -91,7 +96,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
         ?Publicity $publicity = null,
         ?string $emptyPlaceholder = null
     ) {
-        $this->flagRanges = new ArrayCollection();
+        $this->flagOffers = new ArrayCollection();
         $this->setFlagCategory($category);
         $this->setFlagAmountRange($flagAmountRange);
         $this->setFieldsFromPublicity($publicity);
@@ -110,14 +115,14 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function addFlagRange(?RegistrationFlagOffer $flagRange): void
     {
-        if (null !== $flagRange && !$this->getFlagRanges()->contains($flagRange)) {
-            $this->getFlagRanges()->add($flagRange);
+        if (null !== $flagRange && !$this->getFlagOffers()->contains($flagRange)) {
+            $this->getFlagOffers()->add($flagRange);
         }
     }
 
-    public function getFlagRanges(bool $onlyPublic = false, RegistrationFlag $flag = null): Collection
+    public function getFlagOffers(bool $onlyPublic = false, RegistrationFlag $flag = null): Collection
     {
-        $flagRanges = $this->flagRanges ?? new ArrayCollection();
+        $flagRanges = $this->flagOffers ?? new ArrayCollection();
         if (true === $onlyPublic) {
             $flagRanges = $flagRanges->filter(fn(RegistrationFlagOffer $flagRange) => $flagRange->isPublicOnWeb());
         }
@@ -172,12 +177,12 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function isFlagValueAllowed(bool $onlyPublic = false, ?RegistrationFlag $flag = null): bool
     {
-        return $this->getFlagRanges($onlyPublic, $flag)->filter(fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
+        return $this->getFlagOffers($onlyPublic, $flag)->filter(fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagRanges()->exists(fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed());
+        return $this->getFlagOffers()->exists(fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed());
     }
 
     public function getFlagGroupName(): ?string
@@ -193,7 +198,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     public function getFlagsGroupNames(): array
     {
         $groups = [];
-        foreach ($this->getFlagRanges(true) as $flagRange) {
+        foreach ($this->getFlagOffers(true) as $flagRange) {
             $groupName = $flagRange->getFlagGroupName();
             $groups[$groupName] = ($groups[$groupName] ?? 0) + 1;
         }
