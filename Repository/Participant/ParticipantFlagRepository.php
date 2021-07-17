@@ -18,7 +18,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 class ParticipantFlagRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
-    public const CRITERIA_FLAG_RANGE = 'flagRange';
+    public const CRITERIA_FLAG_RANGE = 'flagOffer';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
     public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantFlag
@@ -60,7 +60,7 @@ class ParticipantFlagRepository extends EntityRepository
     private function addFlagRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof RegistrationFlagOffer) {
-            $queryBuilder->andWhere('item.flagRange = :flag_range_id');
+            $queryBuilder->andWhere('item.flagOffer = :flag_range_id');
             $queryBuilder->setParameter('flag_range_id', $opts[self::CRITERIA_FLAG_RANGE]->getId());
         }
     }

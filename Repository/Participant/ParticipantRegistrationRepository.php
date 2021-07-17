@@ -18,7 +18,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 class ParticipantRegistrationRepository extends EntityRepository
 {
     public const CRITERIA_ID = 'id';
-    public const CRITERIA_RANGE = 'range';
+    public const CRITERIA_RANGE = 'offer';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
     public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantRegistration
@@ -60,7 +60,7 @@ class ParticipantRegistrationRepository extends EntityRepository
     private function addRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_RANGE]) && $opts[self::CRITERIA_RANGE] instanceof RegistrationOffer) {
-            $queryBuilder->andWhere('participant_range.range = :range_id');
+            $queryBuilder->andWhere('participant_range.offer = :range_id');
             $queryBuilder->setParameter('range_id', $opts[self::CRITERIA_RANGE]->getId());
         }
     }
