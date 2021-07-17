@@ -142,10 +142,10 @@
                     {% for participantFlag in participantFlagGroup.participantFlags %}
                         <li style="color: {{ participantFlag.flag.color|default('inherit') }}"
                             title="ID přiřazení {{ participantFlag.id }}, ID rozsahu {{ participantFlag.flagRange.id }}">
-                            <span style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">{{ participantFlag.flagRange.name|default }}</span>
-                            {% if participantFlag.flagRange.price|default(0) != 0 %}
+                            <span style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">{{ participantFlag.flagOffer.name|default }}</span>
+                            {% if participantFlag.flagOffer.price|default(0) != 0 %}
                                 <span style="font-weight:bold;{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
-                                    [{{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč]
+                                    [{{ participantFlag.flagOffer.price > 0 ? '+' : '' }}{{ participantFlag.flagOffer.price }},- Kč]
                                 </span>
                             {% endif %}
                             {% if participantFlag.deletedAt|default %}
