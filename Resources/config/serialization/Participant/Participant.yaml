@@ -27,6 +27,7 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
         variableSymbol:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
+
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
     attributes:
         id:
@@ -54,6 +55,14 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
         availableFlagOffers:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        min:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
+        max:
             groups:
                 - 'calendar_participant_flag_group_get'
                 - 'calendar_participant_flag_groups_get'
