@@ -162,7 +162,7 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
-        flagRange:
+        flagOffer:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participants_post'
