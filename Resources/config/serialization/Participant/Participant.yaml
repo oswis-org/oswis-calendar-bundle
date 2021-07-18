@@ -60,12 +60,12 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
                 - 'calendar_participant_get'
         min:
             groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
+                - 'calendar_participant_get'
+                - 'calendar_participants_get'
         max:
             groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
+                - 'calendar_participant_get'
+                - 'calendar_participants_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
     attributes:
