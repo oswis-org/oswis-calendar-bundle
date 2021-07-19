@@ -43,4 +43,11 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
                 - 'calendar_participant_flag_groups_get'
 
 
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
+    attributes:
+        flagOffer:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_groups_get'
+
 
