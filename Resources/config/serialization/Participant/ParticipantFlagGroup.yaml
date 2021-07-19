@@ -45,9 +45,15 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
     attributes:
+        id:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_group_put'
+                - 'calendar_participant_flag_groups_get'
         flagOffer:
             groups:
                 - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_group_put'
                 - 'calendar_participant_flag_groups_get'
 
 
