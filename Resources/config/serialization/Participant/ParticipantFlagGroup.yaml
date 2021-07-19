@@ -15,12 +15,17 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
         participantFlags:
             groups:
                 - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_group_put'
                 - 'calendar_participant_flag_groups_get'
-                - 'calendar_participant_flag_groups_put'
 
 
 OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
     attributes:
+        id:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_group_put'
+                - 'calendar_participant_flag_groups_get'
         flag:
             groups:
                 - 'calendar_participant_flag_group_get'

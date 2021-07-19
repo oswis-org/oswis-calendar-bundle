@@ -156,6 +156,22 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         return $participantFlags;
     }
 
+    public function addParticipantFlag(ParticipantFlag $participantFlag): void {
+        if ($participantFlag->getParticipantFlagGroup() !== $this) {
+            $participantFlag->activate();
+            try {
+                $participantFlag->setParticipantFlagGroup($this);
+            } catch (NotImplementedException) {
+            }
+        }
+    }
+
+    public function removeParticipantFlag(ParticipantFlag $participantFlag): void {
+        if ($participantFlag->getParticipantFlagGroup() === $this) {
+            $participantFlag->delete();
+        }
+    }
+
     /**
      * @param  Collection|null  $newParticipantFlags
      * @param  bool|false  $admin
