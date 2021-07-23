@@ -12,6 +12,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
@@ -106,6 +107,10 @@ class ParticipantController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 $participant = $form->getData();
                 assert($participant instanceof Participant);
+                foreach ($participant->getFlagGroups(null, null, true) as $flagGroup) {
+                    assert($flagGroup instanceof ParticipantFlagGroup);
+                    $flagGroup->setParticipantFlags($flagGroup->getParticipantFlags(true), false, true);
+                }
                 $participant = $this->participantService->create($participant);
                 $eventName = $participant->getEvent()?->getShortName();
 
