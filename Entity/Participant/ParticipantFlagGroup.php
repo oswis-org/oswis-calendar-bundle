@@ -168,11 +168,6 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $oldParticipantFlags = $this->getParticipantFlags();
         $newParticipantFlags ??= new ArrayCollection();
-        $oldParticipantFlagsString = implode(',', $oldParticipantFlags->map(fn(ParticipantFlag $flag) => $flag->getId())->toArray());
-        $newParticipantFlagsString = implode(',', $newParticipantFlags->map(fn(ParticipantFlag $flag) => $flag->getId())->toArray());
-        if ($oldParticipantFlagsString === $newParticipantFlagsString || $this->getParticipantFlags() === $newParticipantFlags) {
-            return;
-        }
         // 1. All flags are of allowed category.
 //        if (!$newParticipantFlags->forAll(fn(ParticipantFlag $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
 //            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
