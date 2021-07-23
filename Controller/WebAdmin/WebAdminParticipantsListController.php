@@ -119,6 +119,8 @@ class WebAdminParticipantsListController extends AbstractController
                 'event'     => $subEvent,
                 'occupancy' => $this->participantService->countParticipants(
                     [
+                        ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
+                        ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
                         ParticipantRepository::CRITERIA_EVENT                 => $subEvent,
                         ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
                     ]
@@ -146,8 +148,8 @@ class WebAdminParticipantsListController extends AbstractController
                     continue;
                 }
                 $participantFlagGroup = $participantFlag->getParticipantFlagGroup();
-                $flagGroupRange = $participantFlagGroup ? $participantFlagGroup->getFlagGroupOffer() : null;
-                $flagGroupRangeId = $flagGroupRange ? $flagGroupRange->getId() : 0;
+                $flagGroupRange = $participantFlagGroup?->getFlagGroupOffer();
+                $flagGroupRangeId = $flagGroupRange?->getId() ?? 0;
                 $flag = $flagRange->getFlag();
                 $flagId = $flag ? $flag->getId() : 0;
                 $flagCategory = $flagRange->getCategory();

@@ -60,5 +60,10 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
                 - 'calendar_participant_flag_group_get'
                 - 'calendar_participant_flag_group_put'
                 - 'calendar_participant_flag_groups_get'
+        active:
+            groups:
+                - 'calendar_participant_flag_group_get'
+                - 'calendar_participant_flag_group_put'
+                - 'calendar_participant_flag_groups_get'
 
 

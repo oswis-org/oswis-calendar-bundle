@@ -156,22 +156,6 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         return $participantFlags;
     }
 
-    public function addParticipantFlag(ParticipantFlag $participantFlag): void {
-        if ($participantFlag->getParticipantFlagGroup() !== $this) {
-            $participantFlag->activate();
-            try {
-                $participantFlag->setParticipantFlagGroup($this);
-            } catch (NotImplementedException) {
-            }
-        }
-    }
-
-    public function removeParticipantFlag(ParticipantFlag $participantFlag): void {
-        if ($participantFlag->getParticipantFlagGroup() === $this) {
-            $participantFlag->delete();
-        }
-    }
-
     /**
      * @param  Collection|null  $newParticipantFlags
      * @param  bool|false  $admin
@@ -240,6 +224,29 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
+        }
+    }
+
+    public function getActiveParticipantFlags(?RegistrationFlag $flag = null): Collection
+    {
+        return $this->getParticipantFlags(true, $flag);
+    }
+
+    public function addParticipantFlag(ParticipantFlag $participantFlag): void
+    {
+        $participantFlag->activate();
+        if ($participantFlag->getParticipantFlagGroup() !== $this) {
+            try {
+                $participantFlag->setParticipantFlagGroup($this);
+            } catch (NotImplementedException) {
+            }
+        }
+    }
+
+    public function removeParticipantFlag(ParticipantFlag $participantFlag): void
+    {
+        if ($participantFlag->getParticipantFlagGroup() === $this) {
+            $participantFlag->delete();
         }
     }
 
