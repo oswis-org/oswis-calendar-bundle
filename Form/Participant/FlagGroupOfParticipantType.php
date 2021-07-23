@@ -94,7 +94,7 @@ class FlagGroupOfParticipantType extends AbstractType
         $min = $flagGroupRange->getMin();
         $max = $flagGroupRange->getMax();
         if ($flagGroupRange->isFlagValueAllowed()) {
-            self::addCheckboxes($event->getForm(), $participantFlagGroup);
+            self::addCheckboxes($event->getForm(), $participantFlagGroup, $min);
 
             return;
         }
@@ -104,13 +104,17 @@ class FlagGroupOfParticipantType extends AbstractType
     /**
      * @param  FormInterface  $form
      * @param  ParticipantFlagGroup  $participantFlagCategory
+     * @param  int|null  $min
      *
-     * @throws AlreadySubmittedException
-     * @throws LogicException
-     * @throws UnexpectedTypeException
+     * @throws \Symfony\Component\Form\Exception\AlreadySubmittedException
+     * @throws \Symfony\Component\Form\Exception\LogicException
+     * @throws \Symfony\Component\Form\Exception\UnexpectedTypeException
      */
-    public static function addCheckboxes(FormInterface $form, ParticipantFlagGroup $participantFlagCategory): void
-    {
+    public static function addCheckboxes(
+        FormInterface $form,
+        ParticipantFlagGroup $participantFlagCategory,
+        int $min = null,
+    ): void {
         $flagGroupRange = $participantFlagCategory->getFlagGroupOffer();
         if (null === $flagGroupRange) {
             return;
@@ -120,6 +124,7 @@ class FlagGroupOfParticipantType extends AbstractType
             CollectionType::class,
             [
                 'entry_type' => FlagOfParticipantType::class,
+                'required'   => $min !== null && $min > 0,
                 'label'      => $flagGroupRange->getName() ?? 'Ostatní příznaky',
                 'help'       => $flagGroupRange->getDescription() ?? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>',
                 'help_html'  => true,
@@ -179,7 +184,7 @@ class FlagGroupOfParticipantType extends AbstractType
                 'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
                 'help_html'    => true,
                 'help'         => $help,
-                'required'     => !empty($min),
+                'required'     => !empty($min) || $min > 0,
                 'choices'      => $choices,
                 'expanded'     => $expanded,
                 // 'empty_data'   => new ArrayCollection(),

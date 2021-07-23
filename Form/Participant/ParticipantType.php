@@ -71,7 +71,7 @@ class ParticipantType extends AbstractType
         $builder->add(
             'flagGroups',
             CollectionType::class,
-            array(
+            [
                 'label'              => false,
                 'entry_type'         => FlagGroupOfParticipantType::class,
                 'mapped'             => true,
@@ -80,7 +80,7 @@ class ParticipantType extends AbstractType
                     'label'       => false,
                     'participant' => $participant,
                 ],
-            )
+            ]
         );
     }
 
