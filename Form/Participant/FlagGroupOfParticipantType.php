@@ -62,6 +62,7 @@ class FlagGroupOfParticipantType extends AbstractType
                 foreach ($participantFlagGroup->tempFlagRanges ?? new ArrayCollection() as $tempFlagRange) {
                     assert($tempFlagRange instanceof RegistrationFlagOffer);
                     $participantFlag = new ParticipantFlag($tempFlagRange, $participantFlagGroup);
+                    $participantFlag->activate();
                     $participantFlags->add($participantFlag);
                 }
                 $participantFlagGroup->setParticipantFlags($participantFlags);
