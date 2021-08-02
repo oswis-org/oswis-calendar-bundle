@@ -760,15 +760,13 @@ class Participant implements ParticipantInterface
 
     public function getParticipantCategory(bool $onlyActive = false): ?ParticipantCategory
     {
-        $participantRange = $this->getParticipantRegistration($onlyActive);
-
-        return null !== $participantRange ? $participantRange->getParticipantCategory() : null;
+        return $this->getParticipantRegistration($onlyActive)?->getParticipantCategory();
     }
 
     public function getFlagsPrice(
         ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
-        ?RegistrationFlag $flag = null
+        ?RegistrationFlag $flag = null,
     ): int {
         $price = 0;
         foreach ($this->getParticipantFlags($flagCategory, $flagType, true, $flag) as $participantFlag) {
