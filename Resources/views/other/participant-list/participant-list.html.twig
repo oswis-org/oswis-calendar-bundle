@@ -72,6 +72,13 @@
                     </tbody>
                 {% endfor %}
             </table>
+            <p>
+                {% for participant in participants|filter(participant => not participant.deleted) %}
+                    {% for email in participant.emails %}
+                        {{ email }},
+                    {% endfor %}
+                {% endfor %}
+            </p>
         </div>
     </div>
 
@@ -90,6 +97,13 @@
                     </tbody>
                 {% endfor %}
             </table>
+            <p>
+                {% for participant in participants|filter(participant => participant.deleted) %}
+                    {% for email in participant.emails %}
+                        {{ email }},
+                    {% endfor %}
+                {% endfor %}
+            </p>
         </div>
     </div>
 
