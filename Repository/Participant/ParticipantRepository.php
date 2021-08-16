@@ -65,7 +65,7 @@ class ParticipantRepository extends ServiceEntityRepository
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
-        $select = 'participant, offer, contact, event, notes, payments, eMails, participantRegistration, participantContact, participantCategory';
+        $select = 'participant, offer, contact, event, note, payment, eMail, participantRegistration, participantContact, participantCategory';
         $queryBuilder->select($select);
         $queryBuilder->leftJoin('participant.offer', 'offer');
         $queryBuilder->leftJoin('participant.contact', 'contact');
