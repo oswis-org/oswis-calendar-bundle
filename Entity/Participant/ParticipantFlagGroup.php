@@ -173,9 +173,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 //            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
 //        }
         // 2. Number of flags is in range of minInParticipant and maxInParticipant of RegistrationFlagGroupOffer. OK
-        if (null !== $this->getFlagGroupOffer()) {
-            $this->getFlagGroupOffer()->checkInRange($newParticipantFlags->count());
-        }
+        $this->getFlagGroupOffer()?->checkInRange($newParticipantFlags->count());
         // 3. minInParticipant and maxInParticipant of each RegistrationFlagOffer from RegistrationFlagGroupOffer. + 4. There is remaining capacity of each flag.
         foreach ($this->getAvailableFlagOffers() as $availFlagRange) {
             $this->checkAvailableFlagRange($availFlagRange, $newParticipantFlags, $admin);
@@ -262,7 +260,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         $oldFlagRange = $oldParticipantFlag->getFlagOffer();
         $newFlagRange = $newParticipantFlag->getFlagOffer();
         if ($oldFlagRange !== $newFlagRange) {
-            if (null === $newFlagRange || !($newFlagRange instanceof RegistrationFlagOffer)) {
+            if (!($newFlagRange instanceof RegistrationFlagOffer)) {
                 throw new FlagOutOfRangeException("Příznak musí být nahrazen, nesmí být smazán.");
             }
             if (0 === $newFlagRange->getRemainingCapacity($admin)) {

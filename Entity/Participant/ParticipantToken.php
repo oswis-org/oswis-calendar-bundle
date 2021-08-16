@@ -68,7 +68,7 @@ class ParticipantToken extends AbstractToken
         ?int $validHours = null,
         ?int $level = null
     ) {
-        parent::__construct($appUser ? $appUser->getEmail() : null, $type, $multipleUseAllowed, $validHours, $level);
+        parent::__construct($appUser?->getEmail(), $type, $multipleUseAllowed, $validHours, $level);
         $this->appUser = $appUser;
         $this->participant = $participant;
     }

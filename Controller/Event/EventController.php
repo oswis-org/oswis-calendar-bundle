@@ -55,16 +55,13 @@ class EventController extends AbstractController
             throw new NotFoundException('Událost nenalezena.');
         }
 
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/pages/event.html.twig',
-            [
-                'title'       => $event->getShortName(),
-                'description' => $event->getDescription(),
-                'ranges'      => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()])),
-                'event'       => $event,
-                'organizer'   => $this->participantService->getOrganizer($event),
-            ]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', [
+            'title'       => $event->getShortName(),
+            'description' => $event->getDescription(),
+            'ranges'      => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()])),
+            'event'       => $event,
+            'organizer'   => $this->participantService->getOrganizer($event),
+        ]);
     }
 
     public function getWebPublicEventOpts(?string $eventSlug = null): array
@@ -81,13 +78,10 @@ class EventController extends AbstractController
         $eventRepo = $this->eventService->getRepository();
         $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
 
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/parts/event-nav.html.twig',
-            [
-                'event'     => $event,
-                'navEvents' => $this->getNavigationEvents($event),
-            ]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/parts/event-nav.html.twig', [
+            'event'     => $event,
+            'navEvents' => $this->getNavigationEvents($event),
+        ]);
     }
 
     public function getNavigationEvents(?Event $event = null): Collection
@@ -204,13 +198,10 @@ class EventController extends AbstractController
 
     public function showCurrentEvent(?string $prefix = null, ?string $suffix = null): Response
     {
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig',
-            [
-                'event'  => $this->eventService->getDefaultEvent(),
-                'prefix' => $prefix,
-                'suffix' => $suffix,
-            ]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig', [
+            'event'  => $this->eventService->getDefaultEvent(),
+            'prefix' => $prefix,
+            'suffix' => $suffix,
+        ]);
     }
 }

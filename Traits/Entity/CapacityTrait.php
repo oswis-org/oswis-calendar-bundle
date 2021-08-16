@@ -21,8 +21,8 @@ trait CapacityTrait
 
     public function setCapacity(?Capacity $capacity = null): void
     {
-        $this->setBaseCapacity($capacity ? $capacity->getBaseCapacity() : null);
-        $this->setFullCapacity($capacity ? $capacity->getFullCapacity() : null);
+        $this->setBaseCapacity($capacity?->getBaseCapacity());
+        $this->setFullCapacity($capacity?->getFullCapacity());
     }
 
     public function getCapacityInt(bool $full = false): ?int

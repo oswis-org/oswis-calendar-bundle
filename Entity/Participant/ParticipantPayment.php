@@ -186,9 +186,7 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             $this->participant->removePayment($this);
         }
         $this->participant = $participant;
-        if (null !== $participant) {
-            $participant->addPayment($this);
-        }
+        $participant?->addPayment($this);
     }
 
     public function getImport(): ?ParticipantPaymentsImport

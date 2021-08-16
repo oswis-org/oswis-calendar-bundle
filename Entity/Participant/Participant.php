@@ -291,7 +291,7 @@ class Participant implements ParticipantInterface
     {
         $participantRange = $this->getParticipantRegistration($onlyActive);
 
-        return $participantRange ? $participantRange->getOffer() : null;
+        return $participantRange?->getOffer();
     }
 
     /**
@@ -537,9 +537,7 @@ class Participant implements ParticipantInterface
         ?string $flagType = null,
         bool $onlyActive = false,
     ): Collection {
-        return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(
-            fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupOffer()
-        );
+        return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(fn(ParticipantFlagGroup $connection) => $connection->getFlagGroupOffer());
     }
 
     /**
@@ -676,7 +674,7 @@ class Participant implements ParticipantInterface
 
     public function getSortableName(): string
     {
-        return null !== ($contact = $this->getContact(false)) ? $contact->getSortableName() : '';
+        return null !== ($contact = $this->getContact()) ? $contact->getSortableName() : '';
     }
 
     public function isParticipantFlagGroupCompatible(?ParticipantFlagGroup $participantFlagGroup = null): bool
@@ -894,9 +892,7 @@ class Participant implements ParticipantInterface
 
     public function getFlags(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, bool $onlyActive = true, RegistrationFlag $flag = null): Collection
     {
-        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(
-            fn(ParticipantFlag $participantFlag) => $participantFlag->getFlag()
-        );
+        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(fn(ParticipantFlag $participantFlag) => $participantFlag->getFlag());
     }
 
     public function isActive(?DateTime $referenceDateTime = null): bool

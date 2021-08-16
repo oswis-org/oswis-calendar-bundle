@@ -60,12 +60,10 @@ class ParticipantPaymentsImportService
 
             return null;
         }
-        $participants = $this->participantService->getParticipants(
-            [
-                ParticipantRepository::CRITERIA_VARIABLE_SYMBOL => $payment->getVariableSymbol(),
-                ParticipantRepository::CRITERIA_INCLUDE_DELETED => $isSecondTry,
-            ]
-        );
+        $participants = $this->participantService->getParticipants([
+            ParticipantRepository::CRITERIA_VARIABLE_SYMBOL => $payment->getVariableSymbol(),
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED => $isSecondTry,
+        ]);
         $participantsCount = $participants->count();
         $this->logger->info("Found $participantsCount participants for payment with VS '$vs' and value '$value'$secondTryString.");
         $participantsArray = $participants->toArray();

@@ -120,6 +120,12 @@ class RegistrationFlagGroupOffer implements NameableInterface
         }
     }
 
+    /**
+     * @param  bool  $onlyPublic
+     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag|null  $flag
+     *
+     * @return \Doctrine\Common\Collections\Collection<\OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer>
+     */
     public function getFlagOffers(bool $onlyPublic = false, RegistrationFlag $flag = null): Collection
     {
         $flagRanges = $this->flagOffers ?? new ArrayCollection();
@@ -182,7 +188,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagOffers()->exists(fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed());
+        return $this->getFlagOffers()->filter(static fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
     }
 
     public function getFlagGroupName(): ?string

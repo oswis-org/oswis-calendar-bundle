@@ -80,8 +80,5 @@ class EventFile extends AbstractFile
             $this->event->removeFile($this);
         }
         $this->event = $event;
-        if (null !== $event && $this->event !== $event) {
-            $event->addFile($this);
-        }
     }
 }

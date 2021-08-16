@@ -55,61 +55,45 @@ class ParticipantType extends AbstractType
 
     public static function addContactField(FormBuilderInterface $builder, bool $existing = false): void
     {
-        $builder->add(
-            'contact',
-            PersonType::class,
-            [
-                'label'    => 'Účastník',
-                'required' => true,
-                'disabled' => $existing,
-            ]
-        );
+        $builder->add('contact', PersonType::class, [
+            'label'    => 'Účastník',
+            'required' => true,
+            'disabled' => $existing,
+        ]);
     }
 
     public function addParticipantFlagGroupFields(FormBuilderInterface $builder, Participant $participant): void
     {
-        $builder->add(
-            'flagGroups',
-            CollectionType::class,
-            [
-                'label'              => false,
-                'entry_type'         => FlagGroupOfParticipantType::class,
-                'mapped'             => true,
-                'allow_extra_fields' => true,
-                'entry_options'      => [
-                    'label'       => false,
-                    'participant' => $participant,
-                ],
-            ]
-        );
+        $builder->add('flagGroups', CollectionType::class, [
+            'label'              => false,
+            'entry_type'         => FlagGroupOfParticipantType::class,
+            'mapped'             => true,
+            'allow_extra_fields' => true,
+            'entry_options'      => [
+                'label'       => false,
+                'participant' => $participant,
+            ],
+        ]);
     }
 
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
     {
         // TODO: PRE_SUBMIT => Remove empty notes.
-        $builder->add(
-            'notes',
-            CollectionType::class,
-            array(
-                'label'         => false,
-                'entry_type'    => ParticipantNoteFormType::class,
-                'entry_options' => array(
-                    'label' => false,
-                ),
-            )
-        );
+        $builder->add('notes', CollectionType::class, array(
+            'label'         => false,
+            'entry_type'    => ParticipantNoteFormType::class,
+            'entry_options' => array(
+                'label' => false,
+            ),
+        ));
     }
 
     public static function addSubmitButton(FormBuilderInterface $builder): void
     {
-        $builder->add(
-            'save',
-            SubmitType::class,
-            [
-                'label' => 'Přihlásit se',
-                'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
-            ]
-        );
+        $builder->add('save', SubmitType::class, [
+            'label' => 'Přihlásit se',
+            'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
+        ]);
     }
 
     /**
@@ -119,11 +103,9 @@ class ParticipantType extends AbstractType
      */
     final public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(
-            array(
-                'data_class' => Participant::class,
-            )
-        );
+        $resolver->setDefaults(array(
+            'data_class' => Participant::class,
+        ));
     }
 
     public function getName(): string

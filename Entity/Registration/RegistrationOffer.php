@@ -341,7 +341,7 @@ class RegistrationOffer implements NameableInterface
 
     public function isParticipantInSuperEvent(?Participant $participant = null): bool
     {
-        return $participant instanceof Participant && $this->getEvent() && $this->getEvent()?->isEventSuperEvent($participant->getEvent());
+        return $participant instanceof Participant && $this->getEvent() && $this->getEvent()->isEventSuperEvent($participant->getEvent());
     }
 
     public function getEvent(): ?Event

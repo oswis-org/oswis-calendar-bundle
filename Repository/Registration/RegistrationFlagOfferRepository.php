@@ -95,9 +95,9 @@ class RegistrationFlagOfferRepository extends ServiceEntityRepository
         }
     }
 
-    private function addOrderBy(QueryBuilder $queryBuilder, bool $name = true): void
+    private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        if ($name) {
+        if (true) {
             $queryBuilder->addOrderBy('flagRange.name', 'ASC');
         }
         $queryBuilder->addOrderBy('flagRange.id', 'ASC');

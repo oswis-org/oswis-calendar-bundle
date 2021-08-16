@@ -3,7 +3,7 @@
 namespace OswisOrg\OswisCalendarBundle\Repository\Participant;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Query;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
@@ -31,7 +31,7 @@ class ParticipantTokenRepository extends ServiceEntityRepository
         $queryBuilder->andWhere('token.participant = :participant_id')->setParameter('participant_id', $participantId);
         $query = $queryBuilder->getQuery();
         try {
-            return $query->getOneOrNullResult(Query::HYDRATE_OBJECT);
+            return $query->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);
         } catch (Exception) {
             return null;
         }

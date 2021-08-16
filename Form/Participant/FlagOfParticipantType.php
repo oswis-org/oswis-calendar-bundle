@@ -41,31 +41,23 @@ class FlagOfParticipantType extends AbstractType
         if (null === ($flagRange = $participantFlag->getFlagOffer()) || !($flagRange instanceof RegistrationFlagOffer)) {
             return;
         }
-        $event->getForm()->add(
-            "flagRange",
-            CheckboxType::class,
-            [
+        $event->getForm()->add("flagRange", CheckboxType::class, [
+            'label_html' => true,
+            'label'      => $flagRange->getExtendedName(),
+            'required'   => $flagRange->getMin() > 0,
+            'value'      => $flagRange,
+            'disabled'   => !$flagRange->hasRemainingCapacity(),
+            'help_html'  => true,
+            'help'       => $flagRange->getDescription(),
+        ]);
+        if ($participantFlag->getFlagOffer() && $participantFlag->getFlagOffer()->isFormValueAllowed()) {
+            $event->getForm()->add("textValue", TextType::class, [
                 'label_html' => true,
-                'label'      => $flagRange->getExtendedName(),
+                'label'      => $flagRange->getFormValueLabel(),
+                'attr'       => ['pattern' => $flagRange->getFormValueRegex()],
                 'required'   => $flagRange->getMin() > 0,
-                'value'      => $flagRange,
                 'disabled'   => !$flagRange->hasRemainingCapacity(),
-                'help_html'  => true,
-                'help'       => $flagRange->getDescription(),
-            ]
-        );
-        if ($participantFlag->getFlagOffer() && $participantFlag->getFlagOffer()?->isFormValueAllowed()) {
-            $event->getForm()->add(
-                "textValue",
-                TextType::class,
-                [
-                    'label_html' => true,
-                    'label'      => $flagRange->getFormValueLabel(),
-                    'attr'       => ['pattern' => $flagRange->getFormValueRegex()],
-                    'required'   => $flagRange->getMin() > 0,
-                    'disabled'   => !$flagRange->hasRemainingCapacity(),
-                ]
-            );
+            ]);
         }
     }
 
@@ -76,12 +68,10 @@ class FlagOfParticipantType extends AbstractType
      */
     final public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(
-            [
-                'data_class' => ParticipantFlag::class,
-                // 'attr' => ['class' => 'col-md-6'],
-            ]
-        );
+        $resolver->setDefaults([
+            'data_class' => ParticipantFlag::class,
+            // 'attr' => ['class' => 'col-md-6'],
+        ]);
     }
 
     final public function getName(): string

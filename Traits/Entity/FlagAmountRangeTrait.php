@@ -22,8 +22,8 @@ trait FlagAmountRangeTrait
 
     public function setFlagAmountRange(?FlagAmountRange $flagAmountRange = null): void
     {
-        $this->setMin($flagAmountRange ? $flagAmountRange->getMin() : null);
-        $this->setMax($flagAmountRange ? $flagAmountRange->getMax() : null);
+        $this->setMin($flagAmountRange?->getMin());
+        $this->setMax($flagAmountRange?->getMax());
     }
 
     /**

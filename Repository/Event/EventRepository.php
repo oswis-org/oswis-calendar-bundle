@@ -200,13 +200,13 @@ class EventRepository extends ServiceEntityRepository
         }
     }
 
-    private function addOrderBy(QueryBuilder $queryBuilder, bool $dateTime = true, bool $name = true): void
+    private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        if ($dateTime) {
+        if (true) {
             $queryBuilder->addOrderBy('e.startDateTime', 'DESC');
             $queryBuilder->addOrderBy('e.endDateTime', 'DESC');
         }
-        if ($name) {
+        if (true) {
             $queryBuilder->addOrderBy('e.name', 'ASC');
         }
         $queryBuilder->addOrderBy('e.id', 'ASC');

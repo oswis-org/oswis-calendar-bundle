@@ -80,9 +80,9 @@ class ParticipantCategoryRepository extends EntityRepository
         }
     }
 
-    private function addOrderBy(QueryBuilder $queryBuilder, bool $name = true): void
+    private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        if ($name) {
+        if (true) {
             $queryBuilder->addOrderBy('ept.name', 'ASC');
         }
         $queryBuilder->addOrderBy('ept.id', 'ASC');

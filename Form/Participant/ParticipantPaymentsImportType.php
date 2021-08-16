@@ -18,42 +18,26 @@ class ParticipantPaymentsImportType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add(
-            'textValue',
-            TextareaType::class,
-            [
-                "label"    => 'Seznam plateb ve formátu CSV',
-                "help"     => "Zadejte seznam plateb ve formě exportu z internetového bankovnictví. 
+        $builder->add('textValue', TextareaType::class, [
+            "label"    => 'Seznam plateb ve formátu CSV',
+            "help"     => "Zadejte seznam plateb ve formě exportu z internetového bankovnictví. 
                 U každé platby by měl být obsažen externí identifikátor, jinak při opětovném importu dojde k vytvoření duplicity.",
-                "required" => false,
-            ]
-        );
-        $builder->add(
-            'type',
-            ChoiceType::class,
-            [
-                "label"        => "Formát importu",
-                "choices"      => ParticipantPaymentsImport::getAllowedTypes(),
-                "choice_label" => fn($choice, $key, $value) => $value,
-            ]
-        );
-        $builder->add(
-            'settingsCode',
-            ChoiceType::class,
-            [
-                "label"        => "Nastavení formátu importu",
-                "choices"      => ParticipantPaymentsImport::SETTINGS_CODES,
-                "choice_label" => fn($choice, $key, $value) => $value,
-            ]
-        );
-        $builder->add(
-            'save',
-            SubmitType::class,
-            [
-                'label' => 'Importovat platby',
-                'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
-            ]
-        );
+            "required" => false,
+        ]);
+        $builder->add('type', ChoiceType::class, [
+            "label"        => "Formát importu",
+            "choices"      => ParticipantPaymentsImport::getAllowedTypes(),
+            "choice_label" => fn($choice, $key, $value) => $value,
+        ]);
+        $builder->add('settingsCode', ChoiceType::class, [
+            "label"        => "Nastavení formátu importu",
+            "choices"      => ParticipantPaymentsImport::SETTINGS_CODES,
+            "choice_label" => fn($choice, $key, $value) => $value,
+        ]);
+        $builder->add('save', SubmitType::class, [
+            'label' => 'Importovat platby',
+            'attr'  => ['class' => 'btn-lg btn-primary btn-block font-weight-bold text-uppercase'],
+        ]);
     }
 
     /**

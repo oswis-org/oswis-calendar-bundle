@@ -21,14 +21,11 @@ class WebAdminParticipantsController extends AbstractController
     {
         $this->participantService->sendAutoMails();
 
-        return $this->render(
-            '@OswisOrgOswisCore/web/pages/message.html.twig',
-            [
-                'title'     => "Akce provedena.",
-                'pageTitle' => "Akce provedena.",
-                'message'   => "E-maily rozeslány.",
-            ]
-        );
+        return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
+            'title'     => "Akce provedena.",
+            'pageTitle' => "Akce provedena.",
+            'message'   => "E-maily rozeslány.",
+        ]);
     }
 
     public function arrival(int $participantId, ?bool $arrival = true): Response

@@ -94,12 +94,8 @@ class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInte
         if ($this->participant === $participant) {
             return;
         }
-        if (null !== $this->participant) {
-            $this->participant->removeNote($this);
-        }
+        $this->participant?->removeNote($this);
         $this->participant = $participant;
-        if (null !== $participant) {
-            $participant->addNote($this);
-        }
+        $participant?->addNote($this);
     }
 }

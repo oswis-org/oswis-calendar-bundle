@@ -35,9 +35,7 @@ class ParticipantPaymentService
         try {
             if (!empty($externalId = $payment->getExternalId())
                 && !empty(
-                $existing = $paymentsRepository->findBy(
-                    ['externalId' => $externalId]
-                )
+                $existing = $paymentsRepository->findBy(['externalId' => $externalId])
                 )
                 && $existing[0] instanceof ParticipantPayment) {
                 $payment->setImport(null);

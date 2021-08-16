@@ -124,9 +124,7 @@ class ParticipantMail extends AbstractMail
             $this->participant->removeEMail($this);
         }
         $this->participant = $participant;
-        if (null !== $participant) {
-            $participant->addEMail($this);
-        }
+        $participant?->addEMail($this);
     }
 
     public function getAppUser(): ?AppUser

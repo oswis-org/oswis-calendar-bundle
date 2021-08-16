@@ -100,8 +100,5 @@ class EventImage extends AbstractImage
             $this->event->removeImage($this);
         }
         $this->event = $event;
-        if (null !== $event && $this->event !== $event) {
-            $event->addImage($this);
-        }
     }
 }

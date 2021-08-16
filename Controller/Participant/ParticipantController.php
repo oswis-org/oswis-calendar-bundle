@@ -22,6 +22,7 @@ use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -88,7 +89,7 @@ class ParticipantController extends AbstractController
         $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, true);
         $this->logger->info("GOT RANGE");
         //
-        if (null === $range || !($range instanceof RegistrationOffer) || !$range->isPublicOnWeb()) {
+        if (!($range instanceof RegistrationOffer) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
         $user = $this->security->getUser();
@@ -143,7 +144,7 @@ class ParticipantController extends AbstractController
             }
             $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$e->getMessage().''));
             $event = $range->getEvent();
-            $eventName = $event ? $event->getShortName() : null;
+            $eventName = $event?->getShortName();
 
             return $this->getResponse('form', "Přihláška na akci $eventName", false, $event, $range, null, $form->createView());
         }
@@ -180,19 +181,16 @@ class ParticipantController extends AbstractController
             $template = '@OswisOrgOswisCalendar/web/pages/participant-registration-confirmation.html.twig';
         }
 
-        return $this->render(
-            $template,
-            [
-                'form'                => $formView,
-                'title'               => $title,
-                'pageTitle'           => $title,
-                'event'               => $event,
-                'range'               => $range,
-                'message'             => $message,
-                'type'                => $type,
-                'registrationsActive' => $range && $range->isRangeActive(),
-            ]
-        );
+        return $this->render($template, [
+            'form'                => $formView,
+            'title'               => $title,
+            'pageTitle'           => $title,
+            'event'               => $event,
+            'range'               => $range,
+            'message'             => $message,
+            'type'                => $type,
+            'registrationsActive' => $range && $range->isRangeActive(),
+        ]);
     }
 
     /**
@@ -206,7 +204,7 @@ class ParticipantController extends AbstractController
     {
         $participantToken = $this->participantService->getVerifiedToken($token, $participantId);
         $type = $participantToken->getType();
-        if (ParticipantToken::TYPE_ACTIVATION === $type) {
+        if (AbstractToken::TYPE_ACTIVATION === $type) {
             return $this->doActivation($participantToken);
         }
         throw new TokenInvalidException('nebyla vykonána žádná akce');
@@ -227,13 +225,10 @@ class ParticipantController extends AbstractController
 
     public function participantActivated(): Response
     {
-        return $this->render(
-            '@OswisOrgOswisCore/web/pages/message.html.twig',
-            [
-                'title'   => 'Přihláška aktivována!',
-                'message' => 'Přihláška byla úspěšně ověřena.',
-            ]
-        );
+        return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
+            'title'   => 'Přihláška aktivována!',
+            'message' => 'Přihláška byla úspěšně ověřena.',
+        ]);
     }
 
     /**
@@ -278,12 +273,10 @@ class ParticipantController extends AbstractController
      */
     public function getEvent(string $eventSlug): Event
     {
-        $event = $this->eventService->getRepository()->getEvent(
-            [
-                EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-                EventRepository::CRITERIA_SLUG               => $eventSlug,
-            ]
-        );
+        $event = $this->eventService->getRepository()->getEvent([
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
+        ]);
         if (null === $event) {
             throw new NotFoundException('Akce nebyla nalezena.');
         }
@@ -312,15 +305,12 @@ class ParticipantController extends AbstractController
         $shortTitle = 'Přihlášky';
         $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
 
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig',
-            [
-                'event'      => $event,
-                'ranges'     => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
-                'title'      => $title,
-                'shortTitle' => $shortTitle,
-            ]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', [
+            'event'      => $event,
+            'ranges'     => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
+            'title'      => $title,
+            'shortTitle' => $shortTitle,
+        ]);
     }
 
     public function partnersFooter(): Response
@@ -346,12 +336,9 @@ class ParticipantController extends AbstractController
             }
         }
 
-        return $this->render(
-            "@OswisOrgOswisCore/web/pages/message.html.twig",
-            [
-                'title'   => 'Přihlášky aktualizovány!',
-                'message' => 'Přihlášky byly úspěšně aktualizovány.',
-            ]
-        );
+        return $this->render("@OswisOrgOswisCore/web/pages/message.html.twig", [
+            'title'   => 'Přihlášky aktualizovány!',
+            'message' => 'Přihlášky byly úspěšně aktualizovány.',
+        ]);
     }
 }

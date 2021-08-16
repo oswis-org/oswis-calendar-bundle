@@ -55,26 +55,20 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
 
     public function renderMessage(string $title, string $message): Response
     {
-        return $this->render(
-            '@OswisOrgOswisCore/web/pages/message.html.twig',
-            [
-                'title'     => $title,
-                'pageTitle' => $title,
-                'message'   => $message,
-            ]
-        );
+        return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
+            'title'     => $title,
+            'pageTitle' => $title,
+            'message'   => $message,
+        ]);
     }
 
     public function renderImportForm(FormInterface $form): Response
     {
-        return $this->render(
-            "@OswisOrgOswisCalendar/web/pages/participant-payments-import-form.html.twig",
-            [
-                'form'      => $form->createView(),
-                'title'     => "Import plateb účastníků",
-                'pageTitle' => "Import plateb účastníků",
-                'type'      => "form",
-            ]
-        );
+        return $this->render("@OswisOrgOswisCalendar/web/pages/participant-payments-import-form.html.twig", [
+            'form'      => $form->createView(),
+            'title'     => "Import plateb účastníků",
+            'pageTitle' => "Import plateb účastníků",
+            'type'      => "form",
+        ]);
     }
 }

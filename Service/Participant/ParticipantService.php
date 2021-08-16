@@ -182,12 +182,10 @@ class ParticipantService
     {
         if (true === $range->isSuperEventRequired()) {
             $included = false;
-            $participantsOfContact = $this->getParticipants(
-                [
-                    ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
-                ]
-            );
+            $participantsOfContact = $this->getParticipants([
+                ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+            ]);
             foreach ($participantsOfContact as $participantOfContact) {
                 if ($participantOfContact instanceof Participant && $range->isParticipantInSuperEvent($participantOfContact)) {
                     $included = true;
@@ -306,9 +304,7 @@ class ParticipantService
     {
         $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE] ??= ParticipantCategory::TYPE_PARTNER;
 
-        return $this->getParticipants($opts)->filter(
-            fn(Participant $participant) => $participant->hasFlag(null, true, null, RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE)
-        );
+        return $this->getParticipants($opts)->filter(fn(Participant $participant) => $participant->hasFlag(null, true, null, RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE));
     }
 
     final public function containsAppUser(Event $event, AppUser $appUser, ParticipantCategory $participantType = null): bool
@@ -385,13 +381,11 @@ class ParticipantService
                 $this->logger->error("MailGroup is not MailGroup!");
                 continue;
             }
-            $participants = $this->getParticipants(
-                [
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED       => !$group->isOnlyActive(),
-                    ParticipantRepository::CRITERIA_EVENT                 => $group->getEvent(),
-                    ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
-                ]
-            )->filter(fn(Participant $p) => !$p->hasEMailOfType($group->getType()))->slice(0, $limit);
+            $participants = $this->getParticipants([
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => !$group->isOnlyActive(),
+                ParticipantRepository::CRITERIA_EVENT                 => $group->getEvent(),
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
+            ])->filter(fn(Participant $p) => !$p->hasEMailOfType($group->getType()))->slice(0, $limit);
             foreach ($participants as $participant) {
                 if ($participant instanceof Participant && $group->isApplicable($participant)) {
                     $this->participantMailService->sendMessage($participant, $group);

@@ -203,9 +203,7 @@ class Event implements NameableInterface
             $this->superEvent->removeSubEvent($this);
         }
         $this->superEvent = $event;
-        if ($this->superEvent) {
-            $this->superEvent->addSubEvent($this);
-        }
+        $this->superEvent?->addSubEvent($this);
     }
 
     public function getOneFile(bool $recursive = false, ?string $type = null): ?EventFile
@@ -320,7 +318,7 @@ class Event implements NameableInterface
     {
         $organizer = $this->getOrganizer();
 
-        return $organizer ? $organizer->getContact() : null;
+        return $organizer?->getContact();
     }
 
     public function getOrganizer(?bool $recursive = false): ?Participant
@@ -461,9 +459,6 @@ class Event implements NameableInterface
             $this->group->removeEvent($this);
         }
         $this->group = $group;
-        if (null !== $group && $this->group !== $group) {
-            $group->addEvent($this);
-        }
     }
 
     public function getType(): ?string

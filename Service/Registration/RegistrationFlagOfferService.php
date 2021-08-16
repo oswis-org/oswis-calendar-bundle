@@ -57,12 +57,10 @@ class RegistrationFlagOfferService
 
     public function countParticipantFlags(RegistrationFlagOffer $flagRange, bool $includeDeleted = false): ?int
     {
-        return $this->getParticipantFlagRepository()->countParticipantFlagGroups(
-            [
-                ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
-                ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
-            ]
-        );
+        return $this->getParticipantFlagRepository()->countParticipantFlagGroups([
+            ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+            ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+        ]);
     }
 
     public function getParticipantFlagRepository(): ParticipantFlagRepository
@@ -75,12 +73,10 @@ class RegistrationFlagOfferService
 
     public function getParticipantFlags(RegistrationFlagOffer $flagRange, bool $includeDeleted = false): Collection
     {
-        return $this->getParticipantFlagRepository()->getParticipantFlagGroups(
-            [
-                ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
-                ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
-            ]
-        );
+        return $this->getParticipantFlagRepository()->getParticipantFlagGroups([
+            ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+            ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+        ]);
     }
 
     public function getRepository(): RegistrationFlagOfferRepository
