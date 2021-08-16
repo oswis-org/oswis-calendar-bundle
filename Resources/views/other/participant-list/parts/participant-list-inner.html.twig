@@ -73,17 +73,17 @@
                              style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
                              title="Příznak: {{ participantFlag.flag.name|default }}<br>
                              ID přiřazení {{ participantFlag.id }}<br>
-                             ID rozsahu {{ participantFlag.flagRange.id }}<br>
+                             ID rozsahu {{ participantFlag.flagOffer.id }}<br>
                              {{ participantFlag.deletedAt ? 'SMAZÁN: '~participantFlag.deletedAt|date("j. n. Y H:i") : '' }}<br>
                              Skupina: {{ flagGroup.flagGroupRange.name }}<br>
                              ID přiřazení skupiny {{ flagGroup.id }}<br>
                              ID rozsahu skupiny {{ flagGroup.flagGroupRange.id }}<br>
                              {{ flagGroup.deletedAt ? 'SMAZÁNA: '~flagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
-                            {% if participantFlag.flagRange.price|default(0) != 0 %}
+                            {% if participantFlag.flagOffer.price|default(0) != 0 %}
                                 <div class="badge bg-danger" style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
                                     <strong>
-                                        {{ participantFlag.flagRange.price > 0 ? '+' : '' }}{{ participantFlag.flagRange.price }},- Kč
+                                        {{ participantFlag.flagOffer.price > 0 ? '+' : '' }}{{ participantFlag.flagOffer.price }},- Kč
                                     </strong>
                                 </div>
                             {% endif %}
