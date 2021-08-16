@@ -75,9 +75,9 @@
                              ID přiřazení {{ participantFlag.id }}<br>
                              ID rozsahu {{ participantFlag.flagOffer.id }}<br>
                              {{ participantFlag.deletedAt ? 'SMAZÁN: '~participantFlag.deletedAt|date("j. n. Y H:i") : '' }}<br>
-                             Skupina: {{ flagGroup.flagGroupRange.name }}<br>
+                             Skupina: {{ flagGroup.flagGroupOffer.name }}<br>
                              ID přiřazení skupiny {{ flagGroup.id }}<br>
-                             ID rozsahu skupiny {{ flagGroup.flagGroupRange.id }}<br>
+                             ID rozsahu skupiny {{ flagGroup.flagGroupOffer.id }}<br>
                              {{ flagGroup.deletedAt ? 'SMAZÁNA: '~flagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
                             {% if participantFlag.flagOffer.price|default(0) != 0 %}
