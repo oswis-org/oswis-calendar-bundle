@@ -190,10 +190,8 @@ class EventController extends AbstractController
         $pageSize = self::PAGINATION;
         $page ??= 0;
 
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/pages/events.html.twig',
-            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig',
+            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]);
     }
 
     public function showCurrentEvent(?string $prefix = null, ?string $suffix = null): Response

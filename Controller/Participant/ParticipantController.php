@@ -161,10 +161,8 @@ class ParticipantController extends AbstractController
             throw new NotFoundException('Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.');
         }
 
-        return $this->redirectToRoute(
-            'oswis_org_oswis_calendar_web_registration_ranges',
-            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]
-        );
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges',
+            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]);
     }
 
     public function getResponse(

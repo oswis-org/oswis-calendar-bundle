@@ -76,7 +76,6 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder->leftJoin('participant.payments', 'payment');
         $queryBuilder->leftJoin('participant.participantRegistrations', 'participantRegistration');
         $queryBuilder->leftJoin('participant.participantContacts', 'participantContact');
-
         $this->setSuperEventQuery($queryBuilder, $opts);
         $this->setIdQuery($queryBuilder, $opts);
         $this->setRangeQuery($queryBuilder, $opts);
