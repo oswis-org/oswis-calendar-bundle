@@ -423,3 +423,13 @@ services:
     OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider:
         alias: oswis_org_oswis_calendar.oswis_calendar_settings_provider
         public: true
+
+
+    oswis_org_oswis_calendar.parent_event_filter:
+        class: OswisOrg\OswisCalendarBundle\Filter\ParentEventFilter
+        autowire: true
+        tags: [ { name: 'api_platform.filter', id: 'parentEvent' } ]
+        public: true
+    OswisOrg\OswisCalendarBundle\Filter\ParentEventFilter:
+        alias: oswis_org_oswis_calendar.parent_event_filter
+        public: true
