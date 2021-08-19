@@ -23,6 +23,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
+use OswisOrg\OswisCalendarBundle\Filter\ParentEventFilter;
 use OswisOrg\OswisCalendarBundle\Interfaces\Participant\ParticipantInterface;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
@@ -78,6 +79,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  * })
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
+#[ApiFilter(ParentEventFilter::class)]
 #[ApiFilter(OrderFilter::class, properties: ['contact.sortableName'])]
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['offer.event.id', 'offer.event.superEvent.id'])]
 class Participant implements ParticipantInterface
