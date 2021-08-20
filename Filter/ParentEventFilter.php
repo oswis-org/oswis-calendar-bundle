@@ -16,9 +16,9 @@ final class ParentEventFilter extends AbstractContextAwareFilter
 {
     public function getDescription(string $resourceClass): array
     {
-        $description['recursive_event'] = [
-            'property' => 'recursiveEvent',
-            'type'     => Event::class,
+        $description['recursiveEventId'] = [
+            'property' => 'recursiveEventId',
+            'type'     => 'string',
             'required' => false,
             'swagger'  => [
                 'description' => "Event filter with recursion on superEvent property.",
@@ -36,7 +36,7 @@ final class ParentEventFilter extends AbstractContextAwareFilter
         string $resourceClass,
         string $operationName = null
     ): void {
-        if ('recursiveEvent' !== $property || !$value instanceof Event) {
+        if ('recursiveEventId' !== $property || null === $value) {
             return;
         }
         $alias = $queryBuilder->getRootAliases()[0] ?? throw new ErrorException("Can't find root alias for DB query.");
@@ -48,6 +48,6 @@ final class ParentEventFilter extends AbstractContextAwareFilter
             $queryBuilder->leftJoin("e$i.superEvent", "e$j");
             $eventQuery .= " OR e$j = :event_id ";
         }
-        $queryBuilder->andWhere($eventQuery)->setParameter('event_id', $value->getId());
+        $queryBuilder->andWhere($eventQuery)->setParameter('event_id', $value);
     }
 }

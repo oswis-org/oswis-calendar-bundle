@@ -81,7 +81,12 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  */
 #[ApiFilter(ParentEventFilter::class)]
 #[ApiFilter(OrderFilter::class, properties: ['contact.sortableName'])]
-#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['offer.event.id', 'offer.event.superEvent.id'])]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: [
+    'event.id',
+    'event.superEvent.id',
+    'offer.event.id',
+    'offer.event.superEvent.id',
+])]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;
