@@ -374,6 +374,9 @@ class ParticipantService
         );
     }
 
+    /**
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     */
     public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): void
     {
         foreach ($this->participantMailService->getAutoMailGroups($event, $type) ?? new ArrayCollection() as $group) {
