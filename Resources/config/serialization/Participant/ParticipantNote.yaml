@@ -6,6 +6,8 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
             groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
         deleted:
             groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
+        participant:
+            groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get' ]
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     attributes:
