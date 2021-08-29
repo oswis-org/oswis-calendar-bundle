@@ -1,5 +1,7 @@
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
     attributes:
+        id:
+            groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
         textValue:
             groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
         publicNote:
