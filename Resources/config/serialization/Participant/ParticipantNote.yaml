@@ -1,0 +1,14 @@
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
+    attributes:
+        textValue:
+            groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+        publicNote:
+            groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+        deleted:
+            groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+
+OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
+    attributes:
+        id:
+            groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+

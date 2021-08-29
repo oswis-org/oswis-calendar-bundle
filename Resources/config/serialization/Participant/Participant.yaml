@@ -181,6 +181,10 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
+        textValue:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
 
 OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
     attributes:
