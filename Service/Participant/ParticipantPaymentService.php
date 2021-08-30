@@ -33,18 +33,15 @@ class ParticipantPaymentService
     {
         $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
+            $paymentId = $payment->getId();
             if (!empty($externalId = $payment->getExternalId())
-                && !empty(
-                $existing = $paymentsRepository->findBy(['externalId' => $externalId])
-                )
+                && !empty($existing = $paymentsRepository->findBy(['externalId' => $externalId]))
                 && $existing[0] instanceof ParticipantPayment) {
                 $payment->setImport(null);
                 $payment->setParticipant(null);
                 $payment = $existing[0];
-                $paymentId = $payment->getId();
                 $this->logger->info("Found duplicity (id '$paymentId') of payment with external id '$externalId'.");
             }
-            $paymentId = $payment->getId();
             if (null !== $participant) {
                 $participantId = $participant->getId();
                 $payment->setParticipant($participant);
