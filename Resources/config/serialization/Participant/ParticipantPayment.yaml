@@ -1,27 +1,27 @@
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment:
     attributes:
         id:
             groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
-        createdDateTime:
+        createdAt:
             groups: [ 'calendar_participant_payment_get' ]
-        updatedDateTime:
+        updatedAt:
             groups: [ 'calendar_participant_payment_get' ]
-        createdAppUser:
+        createdBy:
             groups: [ 'calendar_participant_payment_get' ]
-        updatedAppUser:
+        updatedBy:
             groups: [ 'calendar_participant_payment_get' ]
         dateTime:
-            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
-        eventParticipant:
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
+        participant:
             groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
         numericValue:
-            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
         type:
-            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
         note:
-            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
         internalNote:
-            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get', 'calendar_participant_payment_put' ]
+            groups: [ 'calendar_participant_payments_get', 'calendar_participant_payments_post', 'calendar_participant_payment_get' ]
         eMailConfirmationDateTime:
             groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
         eMailConfirmationCount:
@@ -29,7 +29,7 @@ OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipantPayment:
         eMailConfirmationSource:
             groups: [ 'calendar_participant_payments_get', 'calendar_participant_payment_get' ]
 
-OswisOrg\OswisCalendarBundle\Entity\EventParticipant\EventParticipant:
+OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     attributes:
         id:
             groups:

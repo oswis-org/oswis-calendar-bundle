@@ -93,8 +93,16 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     public const TYPE_CARD = 'card';
     public const TYPE_CASH = 'cash';
     public const TYPE_ON_LINE = 'on-line';
+    public const TYPE_INTERNAL = 'internal';
 
-    public const ALLOWED_TYPES = ['', self::TYPE_CASH, self::TYPE_CARD, self::TYPE_BANK_TRANSFER, self::TYPE_ON_LINE];
+    public const ALLOWED_TYPES = [
+        '',
+        self::TYPE_CASH,
+        self::TYPE_CARD,
+        self::TYPE_BANK_TRANSFER,
+        self::TYPE_ON_LINE,
+        self::TYPE_INTERNAL,
+    ];
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="payments")
