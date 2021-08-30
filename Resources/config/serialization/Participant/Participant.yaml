@@ -28,6 +28,8 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
         sortableName:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        payments:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
@@ -282,4 +284,35 @@ OswisOrg\OswisAddressBookBundle\Entity\ContactDetail:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
+
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment:
+    attributes:
+        id:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        createdAt:
+            groups: [ 'calendar_participant_get' ]
+        updatedAt:
+            groups: [ 'calendar_participant_get' ]
+        createdBy:
+            groups: [ 'calendar_participant_get' ]
+        updatedBy:
+            groups: [ 'calendar_participant_get' ]
+        dateTime:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        participant:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        numericValue:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        type:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        note:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        internalNote:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        eMailConfirmationDateTime:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        eMailConfirmationCount:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+        eMailConfirmationSource:
+            groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
