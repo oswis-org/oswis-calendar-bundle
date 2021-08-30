@@ -155,7 +155,6 @@ class ParticipantRepository extends ServiceEntityRepository
     private function setAppUserQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_APP_USER]) && $opts[self::CRITERIA_APP_USER] instanceof AppUser) {
-            $queryBuilder->leftJoin('participant.contact', 'contact');
             $queryBuilder->andWhere('contact.appUser = :app_user_id');
             $queryBuilder->setParameter('app_user_id', $opts[self::CRITERIA_APP_USER]->getId());
         }
