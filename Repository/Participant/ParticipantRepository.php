@@ -54,9 +54,9 @@ class ParticipantRepository extends ServiceEntityRepository
 
     public function countParticipants(array $opts = []): ?int
     {
-        $queryBuilder = $this->getParticipantsQueryBuilder($opts)->select(' COUNT(participant.id) ');
+        $queryBuilder = $this->getParticipantsQueryBuilder($opts)->addSelect(' COUNT(participant) AS count ');
         try {
-            return $queryBuilder->getQuery()->getSingleScalarResult();
+            return $queryBuilder->getQuery()->getFirstResult()['count'] ?? null;
         } catch (NoResultException | NonUniqueResultException) {
             return null;
         }

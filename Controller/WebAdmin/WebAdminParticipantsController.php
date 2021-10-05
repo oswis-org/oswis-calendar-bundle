@@ -20,9 +20,9 @@ class WebAdminParticipantsController extends AbstractController
     /**
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
-    public function sendAutoMails(): Response
+    public function sendAutoMails(?string $type = null, int $limit = 100): Response
     {
-        $this->participantService->sendAutoMails();
+        $this->participantService->sendAutoMails(null, $type, $limit);
 
         return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
             'title'     => "Akce provedena.",
