@@ -56,14 +56,12 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
         $queryBuilder->andWhere("(mg.startDateTime IS NULL) OR (:now < mg.startDateTime) AND  (mg.endDateTime IS NULL) OR (:now > mg.endDateTime)");
         $queryBuilder->addOrderBy('mg.priority', 'DESC');
         if (null !== $event) {
-            $queryBuilder->where("mg.event = :event_id")->setParameter('event_id', $event->getId());
+            $queryBuilder->andWhere("mg.event = :event_id")->setParameter('event_id', $event->getId());
         }
         if (!empty($type)) {
             $queryBuilder->leftJoin('mg.category', 'mc');
-            $queryBuilder->where("mc.type = :type")->setParameter('type', $type);
+            $queryBuilder->andWhere("mc.type = :type")->setParameter('type', $type);
         }
-
-        dd($queryBuilder->getDQL());
 
         return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
     }
