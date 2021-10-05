@@ -59,7 +59,7 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
             $queryBuilder->where("mg.event = :event_id")->setParameter('event_id', $event->getId());
         }
         if (!empty($type)) {
-            $queryBuilder->where("mg.type = :type")->setParameter('type', $type);
+            $queryBuilder->where("mg.category.type = :type")->setParameter('type', $type);
         }
 
         return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
