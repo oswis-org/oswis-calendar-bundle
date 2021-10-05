@@ -91,7 +91,7 @@ oswis_org_oswis_calendar_web_admin_participant_payments_import:
 
 oswis_org_oswis_calendar_web_admin_participant_send_automails:
     controller: oswis_org_oswis_calendar.web_admin.participants_controller::sendAutoMails
-    path: "/web_admin/prihlasky/send-automails"
+    path: "/web_admin/prihlasky/send-automails/{limit?}/{type?}"
 
 oswis_org_oswis_calendar_web_admin_participant_arrival:
     controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival

@@ -20,7 +20,7 @@ class WebAdminParticipantsController extends AbstractController
     /**
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
-    public function sendAutoMails(?string $type = null, int $limit = 100): Response
+    public function sendAutoMails(int $limit = 100, ?string $type = null): Response
     {
         $this->participantService->sendAutoMails(null, $type, $limit);
 
