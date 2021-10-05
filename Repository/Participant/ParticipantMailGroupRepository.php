@@ -63,6 +63,8 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
             $queryBuilder->where("mc.type = :type")->setParameter('type', $type);
         }
 
+        dd($queryBuilder->getDQL());
+
         return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
     }
 
