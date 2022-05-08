@@ -12,7 +12,7 @@
                         </div>
                     {% endif %}
                     <div class="batches-sidebar-box col-12 mb-0">
-                        {% for subEvent in event.subEvents|default|filter(e => e.batch) %}
+                        {% for subEvent in event.subEvents|default([])|filter(e => e.batch) %}
                             <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}">
                                 <div>
                                     <div class="fa-stack">
