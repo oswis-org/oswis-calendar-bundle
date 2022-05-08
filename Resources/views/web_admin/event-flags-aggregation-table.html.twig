@@ -12,7 +12,8 @@
                 {% if flagCategoryUsage.flagGroupRange|default
                     and (flagCategoryUsage.flagGroupRange.min|default(0) > 0 or flagCategoryUsage.flagGroupRange.max|default != null) %}
                     <div class="block small">
-                        Vyžadováno {{ flagCategoryUsage.flagGroupRange.min|default(0) }} až {{ flagCategoryUsage.flagGroupRange.max|default('neomezeno') }} v každé přihlášce.
+                        Vyžadováno {{ flagCategoryUsage.flagGroupRange.min|default(0) }} až {{ flagCategoryUsage.flagGroupRange.max|default('neomezeno') }} v
+                        každé přihlášce.
                     </div>
                 {% endif %}
             </th>

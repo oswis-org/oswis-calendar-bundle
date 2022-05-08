@@ -97,14 +97,14 @@ class RegistrationFlagOfferRepository extends ServiceEntityRepository
 
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        if (true) {
-            $queryBuilder->addOrderBy('flagRange.name', 'ASC');
-        }
+        $queryBuilder->addOrderBy('flagRange.name', 'ASC');
         $queryBuilder->addOrderBy('flagRange.id', 'ASC');
     }
 
     public function getFlagRanges(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection($this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult());
+        $result = $this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult();
+
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 }

@@ -10,7 +10,7 @@ namespace OswisOrg\OswisCalendarBundle\Filter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use ErrorException;
 
 final class ParentEventFilter extends AbstractContextAwareFilter
 {
@@ -28,6 +28,9 @@ final class ParentEventFilter extends AbstractContextAwareFilter
         return $description;
     }
 
+    /**
+     * @throws \ErrorException
+     */
     public function filterProperty(
         string $property,
         mixed $value,

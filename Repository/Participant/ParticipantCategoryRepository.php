@@ -82,16 +82,14 @@ class ParticipantCategoryRepository extends EntityRepository
 
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        if (true) {
-            $queryBuilder->addOrderBy('ept.name', 'ASC');
-        }
+        $queryBuilder->addOrderBy('ept.name', 'ASC');
         $queryBuilder->addOrderBy('ept.id', 'ASC');
     }
 
     public function getParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection(
-            $this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult()
-        );
+        $result = $this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult();
+
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 }

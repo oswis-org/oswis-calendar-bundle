@@ -75,13 +75,19 @@ class EventGroup implements NameableInterface
     {
         $events = $this->events ??= new ArrayCollection();
         if (!$deleted) {
-            $events->filter(fn(Event $event) => !$event->isDeleted());
+            $events->filter(
+                fn(mixed $event) => $event instanceof Event && !$event->isDeleted(),
+            );
         }
         if (null !== $eventType) {
-            $events = $events->filter(fn(Event $event) => $event->getType() === $eventType);
+            $events = $events->filter(
+                fn(mixed $event) => $event instanceof Event && $event->getType() === $eventType,
+            );
         }
         if (null !== $year) {
-            $events = $events->filter(fn(Event $event) => $event->getStartYear() && $year === $event->getStartYear());
+            $events = $events->filter(
+                fn(mixed $event) => $event instanceof Event && $event->getStartYear() && $year === $event->getStartYear(),
+            );
         }
 
         return $events;

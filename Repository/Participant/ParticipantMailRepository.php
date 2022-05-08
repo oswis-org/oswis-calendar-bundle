@@ -31,8 +31,9 @@ class ParticipantMailRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('mail');
         $queryBuilder->andWhere("mail.appUser = :app_user_id")->setParameter('app_user_id', $appUser->getId());
         $queryBuilder->addOrderBy('mail.id', 'DESC');
+        $result = $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT);
 
-        return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 
     final public function findSent(Participant $participant, string $type): Collection
@@ -42,8 +43,9 @@ class ParticipantMailRepository extends ServiceEntityRepository
         $queryBuilder->andWhere("mail.type = :type")->setParameter('type', $type);
         $queryBuilder->andWhere("mail.sent IS NOT NULL");
         $queryBuilder->addOrderBy('mail.id', 'DESC');
+        $result = $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT);
 
-        return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 
     final public function countSent(Participant $participant, string $type): ?int
@@ -54,8 +56,10 @@ class ParticipantMailRepository extends ServiceEntityRepository
         $queryBuilder->andWhere("mail.type = :type")->setParameter('type', $type)->andWhere("mail.sent IS NOT NULL");
         $queryBuilder->addOrderBy('mail.id', 'DESC');
         try {
-            return (int)$queryBuilder->getQuery()->getSingleScalarResult();
-        } catch (NoResultException | NonUniqueResultException) {
+            $result = $queryBuilder->getQuery()->getSingleScalarResult();
+
+            return (is_numeric($result) || is_string($result)) ? (int)$result : null;
+        } catch (NoResultException|NonUniqueResultException) {
             return null;
         }
     }

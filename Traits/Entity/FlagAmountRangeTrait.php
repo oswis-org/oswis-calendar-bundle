@@ -26,25 +26,6 @@ trait FlagAmountRangeTrait
         $this->setMax($flagAmountRange?->getMax());
     }
 
-    /**
-     * @param  int  $count
-     *
-     * @throws FlagOutOfRangeException
-     */
-    public function checkInRange(int $count): void
-    {
-        $name = $this->getName();
-        $min = $this->getMin();
-        $max = $this->getMax();
-        $actually = "(nyní je jich $count)";
-        if ($count < $min) {
-            throw new FlagOutOfRangeException("Přihláška musí obsahovat alespoň $min příznaků '$name' $actually.");
-        }
-        if (null !== $max && $count > $max) {
-            throw new FlagOutOfRangeException("Přihláška může obsahovat maximálně $max příznaků '$name' $actually.");
-        }
-    }
-
     public function getMin(): int
     {
         return $this->getFlagAmountRange()->getMin();
@@ -69,5 +50,24 @@ trait FlagAmountRangeTrait
     public function setMax(?int $max): void
     {
         $this->max = null !== $max && 0 > $max ? 0 : $max;
+    }
+
+    /**
+     * @param  int  $count
+     *
+     * @throws FlagOutOfRangeException
+     */
+    public function checkInRange(int $count): void
+    {
+        $name = $this->getName();
+        $min = $this->getMin();
+        $max = $this->getMax();
+        $actually = "(nyní je jich $count)";
+        if ($count < $min) {
+            throw new FlagOutOfRangeException("Přihláška musí obsahovat alespoň $min příznaků '$name' $actually.");
+        }
+        if (null !== $max && $count > $max) {
+            throw new FlagOutOfRangeException("Přihláška může obsahovat maximálně $max příznaků '$name' $actually.");
+        }
     }
 }

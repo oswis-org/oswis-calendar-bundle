@@ -118,12 +118,12 @@ class EventController extends AbstractController
         if (!($event instanceof Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
-        $data = array(
+        $data = [
             'title'       => $event->getShortName(),
             'description' => $event->getDescription(),
             'event'       => $event,
             'organizer'   => $this->participantService->getOrganizer($event),
-        );
+        ];
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
         /** @phpstan-ignore-next-line */
         if ($this->get('twig')->getLoader()->exists($templatePath)) {
@@ -190,8 +190,10 @@ class EventController extends AbstractController
         $pageSize = self::PAGINATION;
         $page ??= 0;
 
-        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig',
-            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/pages/events.html.twig',
+            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]
+        );
     }
 
     public function showCurrentEvent(?string $prefix = null, ?string $suffix = null): Response

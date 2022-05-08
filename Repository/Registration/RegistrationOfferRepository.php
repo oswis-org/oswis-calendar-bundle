@@ -35,8 +35,9 @@ class RegistrationOfferRepository extends EntityRepository
     public function getRegistrationsRanges(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getRegistrationsRangesQueryBuilder($opts, $limit, $offset);
+        $result = $queryBuilder->getQuery()->getResult();
 
-        return new ArrayCollection($queryBuilder->getQuery()->getResult());
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 
     public function getRegistrationsRangesQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder

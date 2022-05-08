@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
@@ -77,6 +78,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     protected ?RegistrationFlagCategory $flagCategory = null;
 
     /**
+     * @var Collection<RegistrationFlagOffer>
      * @Doctrine\ORM\Mapping\ManyToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer",
      *     cascade={"all"},
@@ -88,7 +90,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
      *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_range_id", referencedColumnName="id", unique=true)}
      * )
      */
-    protected ?Collection $flagOffers = null;
+    protected Collection $flagOffers;
 
     public function __construct(
         ?RegistrationFlagCategory $category = null,
@@ -122,20 +124,25 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     /**
      * @param  bool  $onlyPublic
-     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag|null  $flag
+     * @param  RegistrationFlag|null  $flag
      *
-     * @return \Doctrine\Common\Collections\Collection<\OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer>
+     * @return Collection<RegistrationFlagOffer>
      */
     public function getFlagOffers(bool $onlyPublic = false, RegistrationFlag $flag = null): Collection
     {
-        $flagRanges = $this->flagOffers ?? new ArrayCollection();
+        $flagRanges = $this->flagOffers;
         if (true === $onlyPublic) {
-            $flagRanges = $flagRanges->filter(fn(RegistrationFlagOffer $flagRange) => $flagRange->isPublicOnWeb());
+            $flagRanges = $flagRanges->filter(
+                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isPublicOnWeb(),
+            );
         }
         if (null !== $flag) {
-            $flagRanges = $flagRanges->filter(fn(RegistrationFlagOffer $flagRange) => $flagRange->getFlag() === $flag);
+            $flagRanges = $flagRanges->filter(
+                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->getFlag() === $flag,
+            );
         }
 
+        /** @var Collection<RegistrationFlagOffer> $flagRanges */
         return $flagRanges;
     }
 
@@ -183,22 +190,16 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function isFlagValueAllowed(bool $onlyPublic = false, ?RegistrationFlag $flag = null): bool
     {
-        return $this->getFlagOffers($onlyPublic, $flag)->filter(fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
+        return $this->getFlagOffers($onlyPublic, $flag)->filter(
+                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isFormValueAllowed(),
+            )->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagOffers()->filter(static fn(RegistrationFlagOffer $flagRange) => $flagRange->isFormValueAllowed())->count() > 0;
-    }
-
-    public function getFlagGroupName(): ?string
-    {
-        return $this->getName() ?? $this->getFlagCategory()?->getName();
-    }
-
-    public function getName(): ?string
-    {
-        return $this->traitGetName() ?? $this->getFlagCategory()?->getName();
+        return $this->getFlagOffers()->filter(
+                static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isFormValueAllowed(),
+            )->count() > 0;
     }
 
     public function getFlagsGroupNames(): array
@@ -212,6 +213,16 @@ class RegistrationFlagGroupOffer implements NameableInterface
         return $groups;
     }
 
+    public function getFlagGroupName(): ?string
+    {
+        return $this->getName() ?? $this->getFlagCategory()?->getName();
+    }
+
+    public function getName(): ?string
+    {
+        return $this->traitGetName() ?? $this->getFlagCategory()?->getName();
+    }
+
     public function getShortName(): ?string
     {
         return $this->traitGetShortName() ?? $this->getFlagCategory()?->getShortName();
@@ -219,7 +230,9 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function getDescription(): string
     {
-        return $this->traitGetDescription() ?? $this->getFlagCategory()?->getDescription() ?? '';
+        $description = $this->traitGetDescription();
+
+        return empty($description) ? ($this->getFlagCategory()?->getDescription() ?? '') : $description;
     }
 
     public function getNote(): string

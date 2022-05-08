@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -26,6 +27,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WebAdminParticipantsListController extends AbstractController
 {
+    private const GENDER_APPROX_KEY = 'Pohlaví (odhad)';
+
     public function __construct(
         public EventService $eventService,
         public ParticipantService $participantService,
@@ -37,6 +40,15 @@ class WebAdminParticipantsListController extends AbstractController
 
     public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
+        return $this->render(
+            "@OswisOrgOswisCalendar/web_admin/participants.html.twig",
+            $this->getParticipantsData($eventSlug, $participantCategorySlug),
+        );
+    }
+
+    public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null): array
+    {
+        $data = [];
         $data['participantCategory'] = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $data['event'] = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
         $data['participants'] = $this->participantService->getParticipants([
@@ -47,28 +59,25 @@ class WebAdminParticipantsListController extends AbstractController
         ]);
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, static fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
+        usort(
+            $participantsArray,
+            static function (mixed $a, mixed $b) {
+                assert($a instanceof Participant && $b instanceof Participant);
+
+                return strcoll($a->getSortableName(), $b->getSortableName());
+            },
+        );
         $data['participants'] = new ArrayCollection($participantsArray);
 
-        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", $data);
+        return $data;
     }
 
     public function showParticipantsCsv(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
-        $data['participantCategory'] = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
-        $data['event'] = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
-        $data['participants'] = $this->participantService->getParticipants([
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
-            ParticipantRepository::CRITERIA_EVENT                 => $data['event'],
-            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $data['participantCategory'],
-            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
-        ]);
-        $data['title'] = "Přehled účastníků :: ADMIN";
-        $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, static fn(Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
-        $data['participants'] = new ArrayCollection($participantsArray);
-
-        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.csv.twig", $data);
+        return $this->render(
+            "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
+            $this->getParticipantsData($eventSlug, $participantCategorySlug),
+        );
     }
 
     public function showPayments(): Response
@@ -172,26 +181,28 @@ class WebAdminParticipantsListController extends AbstractController
                 $otherAggregations['Přihláška']['Přihláška ověřena'] ??= 0;
                 $otherAggregations['Přihláška']['Přihláška ověřena']++;
             }
-            if ($participant->getNotes()->filter(fn(ParticipantNote $note) => !empty($note->getTextValue()))->count() > 0) {
+            if ($participant->getNotes()->filter(
+                    fn(mixed $note) => $note instanceof ParticipantNote && !empty($note->getTextValue())
+                )->count() > 0) {
                 $otherAggregations['Poznámky']['S poznámkou'] ??= 0;
                 $otherAggregations['Poznámky']['S poznámkou']++;
             }
-            if ($participant->isFormal(false)) {
+            if ($participant->isFormal()) {
                 $otherAggregations['Nastavení IS']['Formální oslovení (ručně u přihlášky)'] ??= 0;
                 $otherAggregations['Nastavení IS']['Formální oslovení (ručně u přihlášky)']++;
             }
             switch ($participant->getContact()?->getGender()) {
                 case ContactInterface::GENDER_MALE:
-                    $otherAggregations['Pohlaví (odhad)']['👨 Muž'] ??= 0;
-                    $otherAggregations['Pohlaví (odhad)']['👨 Muž']++;
+                    $otherAggregations[self::GENDER_APPROX_KEY]['👨 Muž'] ??= 0;
+                    $otherAggregations[self::GENDER_APPROX_KEY]['👨 Muž']++;
                     break;
                 case ContactInterface::GENDER_FEMALE:
-                    $otherAggregations['Pohlaví (odhad)']['👩 Žena'] ??= 0;
-                    $otherAggregations['Pohlaví (odhad)']['👩 Žena']++;
+                    $otherAggregations[self::GENDER_APPROX_KEY]['👩 Žena'] ??= 0;
+                    $otherAggregations[self::GENDER_APPROX_KEY]['👩 Žena']++;
                     break;
                 default:
-                    $otherAggregations['Pohlaví (odhad)']['👤 Neurčeno'] ??= 0;
-                    $otherAggregations['Pohlaví (odhad)']['👤 Neurčeno']++;
+                    $otherAggregations[self::GENDER_APPROX_KEY]['👤 Neurčeno'] ??= 0;
+                    $otherAggregations[self::GENDER_APPROX_KEY]['👤 Neurčeno']++;
                     break;
             }
             // Payments aggregation.

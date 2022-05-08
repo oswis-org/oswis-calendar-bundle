@@ -79,13 +79,13 @@ class ParticipantType extends AbstractType
     public static function addParticipantNotesFields(FormBuilderInterface $builder): void
     {
         // TODO: PRE_SUBMIT => Remove empty notes.
-        $builder->add('notes', CollectionType::class, array(
+        $builder->add('notes', CollectionType::class, [
             'label'         => false,
             'entry_type'    => ParticipantNoteFormType::class,
-            'entry_options' => array(
+            'entry_options' => [
                 'label' => false,
-            ),
-        ));
+            ],
+        ]);
     }
 
     public static function addSubmitButton(FormBuilderInterface $builder): void
@@ -103,9 +103,9 @@ class ParticipantType extends AbstractType
      */
     final public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(array(
+        $resolver->setDefaults([
             'data_class' => Participant::class,
-        ));
+        ]);
     }
 
     public function getName(): string

@@ -56,8 +56,10 @@ class ParticipantRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->getParticipantsQueryBuilder($opts)->addSelect(' COUNT(participant) AS count ');
         try {
-            return $queryBuilder->getQuery()->getFirstResult()['count'] ?? null;
-        } catch (NoResultException | NonUniqueResultException) {
+            /** @var array<array> $result */
+            $result = $queryBuilder->getQuery()->getArrayResult();
+            return $result[0]['count'] ?? null;
+        } catch (NoResultException|NonUniqueResultException) {
             return null;
         }
     }
@@ -190,11 +192,19 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder->addOrderBy('participant.id', 'ASC');
     }
 
-    public function getParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
-    {
+    public function getParticipants(
+        array $opts = [],
+        ?bool $includeNotActivated = true,
+        ?int $limit = null,
+        ?int $offset = null,
+    ): Collection {
         $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
+        $result = $queryBuilder->getQuery()->getResult();
 
-        return Participant::filterCollection(new ArrayCollection($queryBuilder->getQuery()->getResult()), $includeNotActivated);
+        return Participant::filterCollection(
+            new ArrayCollection(is_array($result) ? $result : []),
+            $includeNotActivated
+        );
     }
 
     public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant

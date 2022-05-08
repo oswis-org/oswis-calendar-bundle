@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -41,13 +42,12 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
 
             return $this->renderImportForm($form);
         } catch (Exception $exception) {
-            $paymentsImport ??= new ParticipantPaymentsImport();
             /** @phpstan-ignore-next-line */
             if (!isset($form)) {
                 $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
                 $form->handleRequest($request);
             }
-            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage().''));
+            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage()));
 
             return $this->renderImportForm($form);
         }

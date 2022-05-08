@@ -57,7 +57,7 @@ class ParticipantMailService
             try {
                 $this->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_SUMMARY);
                 $sent++;
-            } catch (OswisException | NotFoundException | NotImplementedException | InvalidTypeException $exception) {
+            } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                 $participantId = $participant->getId();
                 $userId = $appUser->getId();
                 $message = $exception->getMessage();
@@ -177,7 +177,7 @@ class ParticipantMailService
             try {
                 $this->sendPaymentConfirmationToUser($payment, $appUser);
                 $sent++;
-            } catch (NotFoundException | NotImplementedException | InvalidTypeException $exception) {
+            } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                 $userId = $contactPerson->getAppUser()?->getId();
                 $message = $exception->getMessage();
                 $this->logger->error("ERROR: Not sent confirmation of payment '$paymentId' to user '$userId' ($message).");
@@ -256,7 +256,7 @@ class ParticipantMailService
                 try {
                     $this->sendMessageToUser($participant, $appUser, $group);
                     $sent++;
-                } catch (NotFoundException | NotImplementedException | InvalidTypeException $exception) {
+                } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                     $userId = $appUser->getId();
                     $message = $exception->getMessage();
                     $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user '$userId' ($message).");

@@ -69,7 +69,7 @@ class ParticipantPaymentsImportService
         $participantsArray = $participants->toArray();
         usort(
             $participantsArray,
-            static fn(Participant $p1, Participant $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
+            static fn(mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
         );
         $participants = new ArrayCollection($participantsArray);
         $participant = $participants->first() instanceof Participant ? $participants->first() : null;
@@ -87,8 +87,10 @@ class ParticipantPaymentsImportService
         return $participant;
     }
 
-    public static function compareParticipantsByPayment(int $value, Participant $participant1, Participant $participant2): int
+    public static function compareParticipantsByPayment(int $value, mixed $participant1, mixed $participant2): int
     {
+        /** @var Participant $participant1 */
+        /** @var Participant $participant2 */
         return $participant1->differenceFromPayment($value) <=> $participant2->differenceFromPayment($value);
     }
 }

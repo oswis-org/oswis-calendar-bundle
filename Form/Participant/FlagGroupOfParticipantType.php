@@ -42,10 +42,9 @@ class FlagGroupOfParticipantType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
-        // $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onSubmit']);
         $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) {
             $data = $event->getData();
-            if (!empty($data)) {
+            if (!empty($data) && is_array($data)) {
                 $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
             }
             $event->setData($data);
@@ -114,13 +113,19 @@ class FlagGroupOfParticipantType extends AbstractType
         if (null === $flagGroupRange) {
             return;
         }
+        $helpText = $flagGroupRange->getDescription();
         $form->add("participantFlags", CollectionType::class, [
             'entry_type' => FlagOfParticipantType::class,
             'required'   => $min !== null && $min > 0,
             'label'      => $flagGroupRange->getName() ?? 'Ostatní příznaky',
-            'help'       => $flagGroupRange->getDescription() ?? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>',
+            'help'       => empty($helpText) ? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>' : $helpText,
             'help_html'  => true,
         ]);
+    }
+
+    public function getName(): string
+    {
+        return 'calendar_participant_flag_group';
     }
 
     /**
@@ -210,10 +215,5 @@ class FlagGroupOfParticipantType extends AbstractType
             'empty_data'  => new ArrayCollection(),
             // 'attr' => ['class' => 'col-md-6'],
         ]);
-    }
-
-    public function getName(): string
-    {
-        return 'calendar_participant_flag_group';
     }
 }

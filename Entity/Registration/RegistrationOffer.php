@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
@@ -102,6 +103,7 @@ class RegistrationOffer implements NameableInterface
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
+     * @var Collection<RegistrationFlagGroupOffer> $flagGroupRanges
      * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="RegistrationFlagGroupOffer", cascade={"all"})
      * @Doctrine\ORM\Mapping\JoinTable(
      *      name="calendar_reg_range_flag_group_range",
@@ -109,7 +111,7 @@ class RegistrationOffer implements NameableInterface
      *      inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_group_range_id", referencedColumnName="id")}
      * )
      */
-    protected ?Collection $flagGroupRanges = null;
+    protected Collection $flagGroupRanges;
 
     /**
      * Indicates that price is relative to required range.
@@ -195,12 +197,12 @@ class RegistrationOffer implements NameableInterface
 
     public function isSurrogate(): bool
     {
-        return $this->surrogate ?? false;
+        return $this->surrogate;
     }
 
     public function setSurrogate(bool $surrogate): void
     {
-        $this->surrogate = $surrogate ?? false;
+        $this->surrogate = $surrogate;
     }
 
     public function getRequiredRangePrice(?ParticipantCategory $participantType = null): int
@@ -229,11 +231,8 @@ class RegistrationOffer implements NameableInterface
         if ($recursive) {
             $price += $this->getRequiredRangePrice($participantType);
         }
-        if (null === $price) {
-            return 0;
-        }
 
-        return $price <= 0 ? 0 : $price;
+        return max($price ?? 0, 0);
     }
 
     public function getParticipantCategory(): ?ParticipantCategory
@@ -276,13 +275,6 @@ class RegistrationOffer implements NameableInterface
         return $this->getPrice($participantType, $recursive) - $this->getDepositValue($participantType, $recursive);
     }
 
-    public function getRemainingCapacity(bool $full = false): ?int
-    {
-        $capacity = $this->getCapacityInt($full);
-
-        return null === $capacity ? null : ($capacity - $this->getUsageInt($full));
-    }
-
     /**
      * Participation in super event is required before registration to this range. Must be checked in service/controller.
      * @return bool
@@ -307,20 +299,33 @@ class RegistrationOffer implements NameableInterface
         }
     }
 
-    public function getFlagGroupRanges(?RegistrationFlagCategory $flagCategory = null, ?string $flagType = null, ?bool $onlyPublic = false, bool $recursive = false): Collection
-    {
-        $flagGroupRanges = $this->flagGroupRanges ??= new ArrayCollection();
+    public function getFlagGroupRanges(
+        ?RegistrationFlagCategory $flagCategory = null,
+        ?string $flagType = null,
+        ?bool $onlyPublic = false,
+        bool $recursive = false
+    ): Collection {
+        $flagGroupRanges = $this->flagGroupRanges;
         if (true === $onlyPublic) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(RegistrationFlagGroupOffer $range) => $range->isPublicOnWeb());
+            $flagGroupRanges = $flagGroupRanges->filter(
+                fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isPublicOnWeb(),
+            );
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(RegistrationFlagGroupOffer $range) => $range->isCategory($flagCategory));
+            $flagGroupRanges = $flagGroupRanges->filter(
+                fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isCategory($flagCategory),
+            );
         }
         if (null !== $flagType) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(RegistrationFlagGroupOffer $range) => $range->isType($flagType));
+            $flagGroupRanges = $flagGroupRanges->filter(
+                fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isType($flagType),
+            );
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
-            $flagGroupRanges = new ArrayCollection([...$flagGroupRanges, ...$this->getRequiredRegRange()->getFlagGroupRanges()]);
+            $flagGroupRanges = new ArrayCollection([
+                ...$flagGroupRanges,
+                ...$this->getRequiredRegRange()->getFlagGroupRanges(),
+            ]);
         }
 
         return $flagGroupRanges;
@@ -382,7 +387,10 @@ class RegistrationOffer implements NameableInterface
         }
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags() as $oldParticipantFlag) {
-            if (!($oldParticipantFlag instanceof ParticipantFlag) || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer()))) {
+            if (!($oldParticipantFlag instanceof ParticipantFlag)
+                || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains(
+                    $oldParticipantFlag->getFlagOffer()
+                ))) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag);
@@ -475,5 +483,12 @@ class RegistrationOffer implements NameableInterface
         }
 
         return null;
+    }
+
+    public function getRemainingCapacity(bool $full = false): ?int
+    {
+        $capacity = $this->getCapacityInt($full);
+
+        return null === $capacity ? null : ($capacity - $this->getUsageInt($full));
     }
 }

@@ -42,6 +42,7 @@ class RegistrationFlagOfferService
     public function updateUsages(Participant $participant): void
     {
         foreach ($participant->getFlagOffers(null, null, false) as $flagRange) {
+            /** @var RegistrationFlagOffer $flagRange */
             $this->updateUsage($flagRange);
         }
     }
@@ -71,19 +72,19 @@ class RegistrationFlagOfferService
         return $repo;
     }
 
-    public function getParticipantFlags(RegistrationFlagOffer $flagRange, bool $includeDeleted = false): Collection
-    {
-        return $this->getParticipantFlagRepository()->getParticipantFlagGroups([
-            ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
-            ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
-        ]);
-    }
-
     public function getRepository(): RegistrationFlagOfferRepository
     {
         $repository = $this->em->getRepository(RegistrationFlagOffer::class);
         assert($repository instanceof RegistrationFlagOfferRepository);
 
         return $repository;
+    }
+
+    public function getParticipantFlags(RegistrationFlagOffer $flagRange, bool $includeDeleted = false): Collection
+    {
+        return $this->getParticipantFlagRepository()->getParticipantFlagGroups([
+            ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+            ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
+        ]);
     }
 }

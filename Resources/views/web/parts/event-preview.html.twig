@@ -14,7 +14,8 @@
                 <div class="col-md-9">
                     <div class="card-body pt-0 pb-0">
                         <h2 class="card-title text-uppercase mt-1 mb-0" itemprop="name">
-                            <small><a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
+                            <small><a itemprop="url"
+                                      href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">{{ event.name }}</a></small>
                         </h2>
                         <p class="card-text text-muted">
                             {% if event.group|default and event.batchOrYear and event.getSeqId > 0 %}
@@ -46,7 +47,8 @@
                                         {%- if event.place(true).url -%}
                                             <a title="{{ event.place(true).fullAddress|default(event.place(true).name) }}"
                                                href="{{ event.place(true).url }}" target="_blank">
-                                                {%- block event_place_name -%}<small class="p-2">{{- event.place(true).name -}}</small>{%- endblock event_place_name -%}
+                                                {%- block event_place_name -%}<small
+                                                        class="p-2">{{- event.place(true).name -}}</small>{%- endblock event_place_name -%}
                                             </a>
                                         {%- else -%}
                                             {{ block('event_place_name') }}
@@ -78,7 +80,8 @@
                         {% endif %}
                     </div>
                     <div class="col-12 col-md-4 text-md-end" itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
-                        <i class="fas fa-users-cog text-muted"></i>&nbsp;<small class="p-2" itemprop="name">{{ event.organizer(true).contact.name|default }}</small>
+                        <i class="fas fa-users-cog text-muted"></i>&nbsp;<small class="p-2"
+                                                                                itemprop="name">{{ event.organizer(true).contact.name|default }}</small>
                         <meta itemprop="url" content="{{ event.organizer(true).contact.url|default }}"/>
                     </div>
                 </div>

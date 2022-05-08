@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
@@ -142,11 +143,19 @@ class ParticipantController extends AbstractController
                 $form = $this->createForm(ParticipantType::class, $participant);
                 $form->handleRequest($request);
             }
-            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$e->getMessage().''));
+            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$e->getMessage()));
             $event = $range->getEvent();
             $eventName = $event?->getShortName();
 
-            return $this->getResponse('form', "Přihláška na akci $eventName", false, $event, $range, null, $form->createView());
+            return $this->getResponse(
+                'form',
+                "Přihláška na akci $eventName",
+                false,
+                $event,
+                $range,
+                null,
+                $form->createView(),
+            );
         }
     }
 
@@ -161,8 +170,29 @@ class ParticipantController extends AbstractController
             throw new NotFoundException('Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.');
         }
 
-        return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges',
-            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]);
+        return $this->redirectToRoute(
+            'oswis_org_oswis_calendar_web_registration_ranges',
+            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]
+        );
+    }
+
+    /**
+     * @param  string  $eventSlug
+     *
+     * @return Event
+     * @throws NotFoundException
+     */
+    public function getEvent(string $eventSlug): Event
+    {
+        $event = $this->eventService->getRepository()->getEvent([
+            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
+            EventRepository::CRITERIA_SLUG               => $eventSlug,
+        ]);
+        if (null === $event) {
+            throw new NotFoundException('Akce nebyla nalezena.');
+        }
+
+        return $event;
     }
 
     public function getResponse(
@@ -264,25 +294,6 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param  string  $eventSlug
-     *
-     * @return Event
-     * @throws NotFoundException
-     */
-    public function getEvent(string $eventSlug): Event
-    {
-        $event = $this->eventService->getRepository()->getEvent([
-            EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
-        ]);
-        if (null === $event) {
-            throw new NotFoundException('Akce nebyla nalezena.');
-        }
-
-        return $event;
-    }
-
-    /**
      * Renders page with list of registration ranges.
      *
      * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not defined, renders list for all events.
@@ -299,15 +310,25 @@ class ParticipantController extends AbstractController
         if (!empty($eventSlug) && null === $event) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges');
         }
-        $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()]) : $this->eventService->getEvents(null, null, null, null, null, null, false);
-        $shortTitle = 'Přihlášky';
-        $title = $shortTitle.' na akc'.(null === $event ? 'e' : 'i '.$event->getShortName());
+        $events = $event instanceof Event
+            ? new ArrayCollection([$event, ...$event->getSubEvents()])
+            : $this->eventService->getEvents(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false
+            );
+        $shortName = $event instanceof Event ? $event->getShortName() : '';
+        $title = "Přihlášky na akc".($event instanceof Event ? "i $shortName" : "e");
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', [
             'event'      => $event,
             'ranges'     => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
             'title'      => $title,
-            'shortTitle' => $shortTitle,
+            'shortTitle' => 'Přihlášky',
         ]);
     }
 

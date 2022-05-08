@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
@@ -63,7 +64,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         delete as traitDelete;
     }
 
-    public ?Collection $tempFlagRanges = null;
+    public Collection $tempFlagRanges;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(
@@ -75,7 +76,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     protected ?RegistrationFlagGroupOffer $flagGroupOffer = null;
 
     /**
-     * @var Collection|null
+     * @var Collection<ParticipantFlag>
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag",
      *     mappedBy="participantFlagGroup",
@@ -84,7 +85,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
      * )
      * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
-    protected ?Collection $participantFlags = null;
+    protected Collection $participantFlags;
 
     public function __construct(?RegistrationFlagGroupOffer $flagGroupRange = null)
     {
@@ -123,36 +124,37 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         return $this->getFlagGroupOffer()?->getFlagCategory();
     }
 
-    public function getName(): ?string
-    {
-        return $this->getFlagGroupOffer()?->getName();
-    }
-
     public function isPublicOnWeb(): bool
     {
         return $this->getFlagGroupOffer()?->isPublicOnWeb() ?? false;
     }
 
-    public function getPrice(): int
+    public function getActiveParticipantFlags(?RegistrationFlag $flag = null): Collection
     {
-        $price = 0;
-        foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof RegistrationFlagOffer ? $flagRange->getPrice() : 0;
-        }
-
-        return $price;
+        return $this->getParticipantFlags(true, $flag);
     }
 
+    /**
+     * @param  bool  $onlyActive
+     * @param  RegistrationFlag|null  $flag
+     *
+     * @return Collection<ParticipantFlag>
+     */
     public function getParticipantFlags(bool $onlyActive = false, ?RegistrationFlag $flag = null): Collection
     {
-        $participantFlags = $this->participantFlags ?? new ArrayCollection();
+        $participantFlags = $this->participantFlags;
         if ($onlyActive) {
-            $participantFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->isActive());
+            $participantFlags->filter(
+                fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->isActive(),
+            );
         }
         if (null !== $flag) {
-            $participantFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlag() === $flag);
+            $participantFlags->filter(
+                fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlag() === $flag,
+            );
         }
 
+        /** @var Collection<ParticipantFlag> $participantFlags */
         return $participantFlags;
     }
 
@@ -176,11 +178,16 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         $this->getFlagGroupOffer()?->checkInRange($newParticipantFlags->count());
         // 3. minInParticipant and maxInParticipant of each RegistrationFlagOffer from RegistrationFlagGroupOffer. + 4. There is remaining capacity of each flag.
         foreach ($this->getAvailableFlagOffers() as $availFlagRange) {
+            /** @var RegistrationFlagOffer $availFlagRange */
             $this->checkAvailableFlagRange($availFlagRange, $newParticipantFlags, $admin);
         }
         if (!$onlySimulate) {
-            $removedFlags = $oldParticipantFlags->filter(static fn(ParticipantFlag $flag) => !$newParticipantFlags->contains($flag));
-            $addedFlags = $newParticipantFlags->filter(static fn(ParticipantFlag $flag) => !$oldParticipantFlags->contains($flag));
+            $removedFlags = $oldParticipantFlags->filter(
+                static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$newParticipantFlags->contains($flag),
+            );
+            $addedFlags = $newParticipantFlags->filter(
+                static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$oldParticipantFlags->contains($flag),
+            );
             foreach ($removedFlags as $removedFlag) {
                 assert($removedFlag instanceof ParticipantFlag);
                 $removedFlag->delete();
@@ -197,6 +204,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         }
     }
 
+    public function isActive(): bool
+    {
+        return !$this->isDeleted();
+    }
+
     public function getAvailableFlagOffers(bool $onlyPublic = false): Collection
     {
         return $this->getFlagGroupOffer()?->getFlagOffers($onlyPublic) ?? new ArrayCollection();
@@ -209,20 +221,37 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
      *
      * @throws FlagOutOfRangeException|FlagCapacityExceededException
      */
-    private function checkAvailableFlagRange(RegistrationFlagOffer $flagRange, Collection $newPartiFlags, bool $admin = false): void
-    {
-        $newFlagRangeCount = $newPartiFlags->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagOffer() === $flagRange)->count();
+    private function checkAvailableFlagRange(
+        RegistrationFlagOffer $flagRange,
+        Collection $newPartiFlags,
+        bool $admin = false,
+    ): void {
+        $newFlagRangeCount = $newPartiFlags->filter(
+            fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlagOffer() === $flagRange,
+        )->count();
         $flagRange->checkInRange($newFlagRangeCount);
-        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(ParticipantFlag $pFlag) => $pFlag->getFlagOffer() === $flagRange)->count();
+        $oldFlagRangeCount = $this->getParticipantFlags()->filter(
+            fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlagOffer() === $flagRange,
+        )->count();
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
         }
     }
 
-    public function getActiveParticipantFlags(?RegistrationFlag $flag = null): Collection
+    public function getName(): ?string
     {
-        return $this->getParticipantFlags(true, $flag);
+        return $this->getFlagGroupOffer()?->getName();
+    }
+
+    public function delete(?DateTime $dateTime = null): void
+    {
+        foreach ($this->getParticipantFlags() as $participantFlag) {
+            if ($participantFlag instanceof ParticipantFlag) {
+                $participantFlag->delete($dateTime);
+            }
+        }
+        $this->traitDelete($dateTime);
     }
 
     public function addParticipantFlag(ParticipantFlag $participantFlag): void
@@ -276,25 +305,22 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $price = 0;
         foreach ($this->getParticipantFlags() as $flagRange) {
-            $price += $flagRange instanceof RegistrationFlagOffer ? $flagRange->getPrice() : 0;
+            /** @var RegistrationFlagOffer $flagRange */
+            $price += $flagRange->getDepositValue();
         }
 
         return $price;
     }
 
-    public function delete(?DateTime $dateTime = null): void
+    public function getPrice(): int
     {
-        foreach ($this->getParticipantFlags() as $participantFlag) {
-            if ($participantFlag instanceof ParticipantFlag) {
-                $participantFlag->delete($dateTime);
-            }
+        $price = 0;
+        foreach ($this->getParticipantFlags() as $flagRange) {
+            /** @var RegistrationFlagOffer $flagRange */
+            $price += $flagRange->getPrice();
         }
-        $this->traitDelete($dateTime);
-    }
 
-    public function isActive(): bool
-    {
-        return !$this->isDeleted();
+        return $price;
     }
 
     public function getMin(): ?int

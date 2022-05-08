@@ -32,14 +32,19 @@ class ParticipantRegistrationRepository extends EntityRepository
     {
         $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts)->select(' COUNT(participant_range.id) ');
         try {
-            return $queryBuilder->getQuery()->getSingleScalarResult();
-        } catch (NoResultException | NonUniqueResultException) {
+            $result = $queryBuilder->getQuery()->getSingleScalarResult();
+
+            return is_string($result) || is_numeric($result) ? (int)$result : null;
+        } catch (NoResultException|NonUniqueResultException) {
             return null;
         }
     }
 
-    public function getRangesConnectionsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
-    {
+    public function getRangesConnectionsQueryBuilder(
+        array $opts = [],
+        ?int $limit = null,
+        ?int $offset = null,
+    ): QueryBuilder {
         $queryBuilder = $this->createQueryBuilder('participant_range');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addRangeQuery($queryBuilder, $opts);
@@ -90,8 +95,9 @@ class ParticipantRegistrationRepository extends EntityRepository
     public function getRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts, $limit, $offset);
+        $result = $queryBuilder->getQuery()->getResult();
 
-        return new ArrayCollection($queryBuilder->getQuery()->getResult());
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 
     public function getFlagRangeConnection(?array $opts = []): ?ParticipantRegistration

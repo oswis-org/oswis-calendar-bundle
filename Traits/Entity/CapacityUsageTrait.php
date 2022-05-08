@@ -27,16 +27,6 @@ trait CapacityUsageTrait
         $this->setFullUsage($usage?->getFullUsage());
     }
 
-    public function getUsageInt(bool $full = false): int
-    {
-        return $this->getUsage()->getUsage($full);
-    }
-
-    public function getUsage(): CapacityUsage
-    {
-        return new CapacityUsage($this->baseUsage, $this->fullUsage);
-    }
-
     public function getBaseUsage(): int
     {
         return $this->getUsage()->getBaseUsage();
@@ -48,6 +38,11 @@ trait CapacityUsageTrait
         $this->baseUsage = 0 > $baseUsage ? 0 : $baseUsage;
     }
 
+    public function getUsage(): CapacityUsage
+    {
+        return new CapacityUsage($this->baseUsage, $this->fullUsage);
+    }
+
     public function getFullUsage(): int
     {
         return $this->getUsage()->getFullUsage();
@@ -57,5 +52,10 @@ trait CapacityUsageTrait
     {
         $fullUsage ??= 0;
         $this->fullUsage = 0 > $fullUsage ? 0 : $fullUsage;
+    }
+
+    public function getUsageInt(bool $full = false): int
+    {
+        return $this->getUsage()->getUsage($full);
     }
 }

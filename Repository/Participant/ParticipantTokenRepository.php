@@ -31,7 +31,9 @@ class ParticipantTokenRepository extends ServiceEntityRepository
         $queryBuilder->andWhere('token.participant = :participant_id')->setParameter('participant_id', $participantId);
         $query = $queryBuilder->getQuery();
         try {
-            return $query->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);
+            $result = $query->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);
+
+            return $result instanceof ParticipantToken ? $result : null;
         } catch (Exception) {
             return null;
         }

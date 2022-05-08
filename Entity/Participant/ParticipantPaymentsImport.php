@@ -129,7 +129,9 @@ class ParticipantPaymentsImport
         $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
         $currencyAllowed = $csvSettings->getCurrencyAllowed();
         $payment = new ParticipantPayment(
-            (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0), $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings), ParticipantPayment::TYPE_BANK_TRANSFER
+            (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
+            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings),
+            ParticipantPayment::TYPE_BANK_TRANSFER
         );
         $payment->setInternalNote($csvRow);
         $payment->setExternalId($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null);

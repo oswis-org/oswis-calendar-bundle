@@ -32,8 +32,10 @@ class ParticipantFlagRepository extends EntityRepository
     {
         $queryBuilder = $this->getQueryBuilder($opts, $limit, $offset)->select(' COUNT(item.id) ');
         try {
-            return (int)$queryBuilder->getQuery()->getSingleScalarResult();
-        } catch (NoResultException | NonUniqueResultException) {
+            $result = $queryBuilder->getQuery()->getSingleScalarResult();
+
+            return is_string($result) || is_numeric($result) ? (int)$result : null;
+        } catch (NoResultException|NonUniqueResultException) {
             return null;
         }
     }
@@ -90,8 +92,9 @@ class ParticipantFlagRepository extends EntityRepository
     public function getParticipantFlagGroups(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getQueryBuilder($opts, $limit, $offset);
+        $result = $queryBuilder->getQuery()->getResult();
 
-        return new ArrayCollection($queryBuilder->getQuery()->getResult());
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 
     public function getParticipantFlag(?array $opts = []): ?ParticipantFlag

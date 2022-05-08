@@ -50,6 +50,7 @@ class RegistrationOfferService
             $range->setUsage(new CapacityUsage($usage));
         }
         foreach ($range->getFlagGroupRanges() as $flagRange) {
+            /** @var \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer $flagRange */
             $this->flagRangeService->updateUsage($flagRange);
         }
     }
@@ -70,6 +71,14 @@ class RegistrationOfferService
         return $repository;
     }
 
+    public function getRepository(): RegistrationOfferRepository
+    {
+        $repository = $this->em->getRepository(RegistrationOffer::class);
+        assert($repository instanceof RegistrationOfferRepository);
+
+        return $repository;
+    }
+
     public function getRegistrationsRangeConnectionsByRange(RegistrationOffer $range, bool $includeDeleted = false): Collection
     {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections([
@@ -85,14 +94,6 @@ class RegistrationOfferService
             RegistrationOfferRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
             RegistrationOfferRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
         ]);
-    }
-
-    public function getRepository(): RegistrationOfferRepository
-    {
-        $repository = $this->em->getRepository(RegistrationOffer::class);
-        assert($repository instanceof RegistrationOfferRepository);
-
-        return $repository;
     }
 
     public function getRange(

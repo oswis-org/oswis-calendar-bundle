@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
@@ -95,6 +96,7 @@ class Event implements NameableInterface
     protected ?Participant $organizer = null;
 
     /**
+     * @var Collection<EventFlagConnection> $flagConnections
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection",
      *     cascade={"all"},
@@ -102,7 +104,7 @@ class Event implements NameableInterface
      *     mappedBy="event",
      * )
      */
-    protected ?Collection $flagConnections = null;
+    protected Collection $flagConnections;
 
     /**
      * Parent event (if this is not top level event).
@@ -112,32 +114,36 @@ class Event implements NameableInterface
     protected ?Event $superEvent = null;
 
     /**
+     * @var Collection<Event> $subEvents
      * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent")
      */
-    protected ?Collection $subEvents = null;
+    protected Collection $subEvents;
 
     /**
+     * @var Collection<EventContent> $contents
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventContent",
      *     cascade={"all"},
      *     mappedBy="event"
      * )
      */
-    protected ?Collection $contents = null;
+    protected Collection $contents;
 
     /**
+     * @var Collection<EventImage> $images
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventImage", mappedBy="event", cascade={"all"}, orphanRemoval=true
      * )
      */
-    protected ?Collection $images = null;
+    protected Collection $images;
 
     /**
+     * @var Collection<EventFile> $files
      * @Doctrine\ORM\Mapping\OneToMany(
      *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFile", mappedBy="event", cascade={"all"}, orphanRemoval=true
      * )
      */
-    protected ?Collection $files = null;
+    protected Collection $files;
 
     /**
      * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory", fetch="EAGER")
@@ -187,9 +193,30 @@ class Event implements NameableInterface
 
     public function getImages(?string $type = null): Collection
     {
-        $images = $this->images ?? new ArrayCollection();
+        $images = $this->images;
+        if (!empty($type)) {
+            $images = $images->filter(
+                fn(mixed $eventImage) => $eventImage instanceof EventImage && $eventImage->getType() === $type,
+            );
+        }
 
-        return empty($type) ? $images : $images->filter(fn(EventImage $eventImage) => $eventImage->getType() === $type);
+        /** @var Collection<EventImage> $images */
+        return $images;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->getCategory()?->getType();
+    }
+
+    public function getCategory(): ?EventCategory
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?EventCategory $category): void
+    {
+        $this->category = $category;
     }
 
     public function getSuperEvent(): ?Event
@@ -218,9 +245,15 @@ class Event implements NameableInterface
 
     public function getFiles(?string $type = null): Collection
     {
-        $files = $this->files ?? new ArrayCollection();
+        $files = $this->files;
+        if (!empty($type)) {
+            $files = $files->filter(
+                fn(mixed $eventFile) => $eventFile instanceof EventFile && $eventFile->getType() === $type,
+            );
+        }
 
-        return empty($type) ? $files : $files->filter(fn(EventFile $eventFile) => $eventFile->getType() === $type);
+        /** @var Collection<EventFile> $files */
+        return $files;
     }
 
     public function addImage(?EventImage $image): void
@@ -284,12 +317,14 @@ class Event implements NameableInterface
     public function getContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            $contents = $this->getContents()->filter(fn(EventContent $webContent) => $type === $webContent->getType());
+            $contents = $this->getContents()->filter(
+                fn(mixed $webContent) => $webContent instanceof EventContent && $type === $webContent->getType(),
+            );
 
             return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents) ?? new ArrayCollection();
         }
 
-        return $this->contents ?? new ArrayCollection();
+        return $this->contents;
     }
 
     public function removeContent(?EventContent $eventContent): void
@@ -316,9 +351,7 @@ class Event implements NameableInterface
 
     public function getOrganizerContact(): ?AbstractContact
     {
-        $organizer = $this->getOrganizer();
-
-        return $organizer?->getContact();
+        return $this->getOrganizer()?->getContact();
     }
 
     public function getOrganizer(?bool $recursive = false): ?Participant
@@ -335,7 +368,7 @@ class Event implements NameableInterface
     {
         $bankAccount = $this->traitGetBankAccount();
         if (empty($bankAccount->getFull())) {
-            $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()->getBankAccount($recursive) : null;
+            $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()->getBankAccount(true) : null;
         }
 
         return $bankAccount;
@@ -358,7 +391,7 @@ class Event implements NameableInterface
 
     public function getSubEvents(): Collection
     {
-        return $this->subEvents ?? new ArrayCollection();
+        return $this->subEvents;
     }
 
     public function addFlagConnection(EventFlagConnection $flagConnection): void
@@ -372,7 +405,9 @@ class Event implements NameableInterface
     {
         $connections = $this->flagConnections ?? new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(fn(EventFlagConnection $conn) => $conn->isActive());
+            $connections = $connections->filter(
+                fn(mixed $conn) => $conn instanceof EventFlagConnection && $conn->isActive(),
+            );
         }
 
         return $connections;
@@ -423,16 +458,6 @@ class Event implements NameableInterface
         return null !== $this->getCategory() && EventCategory::YEAR_OF_EVENT === $this->getCategory()->getType();
     }
 
-    public function getCategory(): ?EventCategory
-    {
-        return $this->category;
-    }
-
-    public function setCategory(?EventCategory $category): void
-    {
-        $this->category = $category;
-    }
-
     public function isBatch(): bool
     {
         return EventCategory::BATCH_OF_EVENT === $this->getCategory()?->getType();
@@ -461,14 +486,14 @@ class Event implements NameableInterface
         $this->group = $group;
     }
 
-    public function getType(): ?string
-    {
-        return $this->getCategory()?->getType();
-    }
-
     public function isEventSuperEvent(?Event $event = null, ?bool $recursive = true): bool
     {
-        return !(null === $event) && in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
+        return (null !== $event)
+               && in_array(
+                   $event,
+                   $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()],
+                   true
+               );
     }
 
     public function getSuperEvents(): array

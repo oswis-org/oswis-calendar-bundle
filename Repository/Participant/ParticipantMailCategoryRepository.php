@@ -28,7 +28,9 @@ class ParticipantMailCategoryRepository extends ServiceEntityRepository
         $queryBuilder->orderBy("category.priority", "DESC");
         $queryBuilder->setMaxResults(1);
         try {
-            return $queryBuilder->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);
+            $result = $queryBuilder->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);
+
+            return $result instanceof ParticipantMailCategory ? $result : null;
         } catch (Exception $e) {
             return null;
         }

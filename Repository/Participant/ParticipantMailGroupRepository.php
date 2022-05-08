@@ -36,6 +36,7 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
         $queryBuilder->andWhere("mail_group.endDateTime IS NULL OR mail_group.endDateTime > :now");
         $queryBuilder->orderBy("mail_group.priority", "DESC");
         try {
+            /** @var ParticipantMailGroup[] $appUserEMailGroups */
             $appUserEMailGroups = $queryBuilder->getQuery()->getResult();
             foreach ($appUserEMailGroups as $appUserMailGroup) {
                 if ($appUserMailGroup instanceof ParticipantMailGroup && $appUserMailGroup->isApplicable($participant)) {
@@ -62,8 +63,9 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
             $queryBuilder->leftJoin('mg.category', 'mc');
             $queryBuilder->andWhere("mc.type = :type")->setParameter('type', $type);
         }
+        $result = $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT);
 
-        return new ArrayCollection($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT));
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 
     final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMailGroup

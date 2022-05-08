@@ -13,12 +13,12 @@ class ParticipantNoteFormType extends AbstractType
 {
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('textValue', TextareaType::class, array(
+        $builder->add('textValue', TextareaType::class, [
             'label'    => 'Poznámka',
             'required' => false,
             'help'     => 'Zde můžeš zadat svůj dotaz, poznámku nebo vzkaz pořadatelům.',
             'attr'     => ['placeholder' => false],
-        ));
+        ]);
     }
 
     /**
@@ -28,10 +28,10 @@ class ParticipantNoteFormType extends AbstractType
      */
     final public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(array(
+        $resolver->setDefaults([
             'data_class' => ParticipantNote::class,
             //                'attr' => ['class' => 'col-md-6'],
-        ));
+        ]);
     }
 
     final public function getName(): string

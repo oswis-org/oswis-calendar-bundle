@@ -235,13 +235,13 @@ class RegistrationFlagOffer implements NameableInterface
 
     public function getShortName(): ?string
     {
-        // TODO: !!!
         return $this->shortName ?? $this->getFlag()?->getShortName();
     }
 
     public function getDescription(): string
     {
-        return $this->traitGetDescription() ?? $this->getFlag()?->getDescription() ?? '';
+        $description = $this->traitGetDescription();
+        return empty($description) ? ($this->getFlag()?->getDescription() ?? '') : $description;
     }
 
     public function getNote(): string

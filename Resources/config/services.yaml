@@ -353,45 +353,6 @@ services:
         alias: oswis_org_oswis_calendar.participant_subscriber
         public: true
 
-    ## Participant list action (/participant_list_action)
-    ## Sends pdf with Participants by e-mail.
-    oswis_org_oswis_calendar.participant_list_action_request:
-        class: OswisOrg\OswisCalendarBundle\Api\Dto\ParticipantListActionRequest
-        autowire: true
-        public: true
-    OswisOrg\OswisCalendarBundle\Api\Dto\ParticipantListActionRequest:
-        alias: oswis_org_oswis_calendar.participant_list_action_request
-        public: true
-    oswis_org_oswis_calendar.participant_list_action_subscriber:
-        class: OswisOrg\OswisCalendarBundle\Api\EventSubscriber\ParticipantListActionSubscriber
-        autowire: true
-        public: true
-        arguments:
-            - '@oswis_org_oswis_core.export_service'
-            - '@doctrine.orm.entity_manager'
-            - '@oswis_org_oswis_calendar.participant.participant_service'
-    OswisOrg\OswisCalendarBundle\Api\EventSubscriber\ParticipantListActionSubscriber:
-        alias: oswis_org_oswis_calendar.participant_list_action_subscriber
-        public: true
-
-    ## Event action (/event_action)
-    oswis_org_oswis_calendar.event_action_request:
-        class: OswisOrg\OswisCalendarBundle\Api\Dto\EventActionRequest
-        autowire: true
-        public: true
-    OswisOrg\OswisCalendarBundle\Api\Dto\EventActionRequest:
-        alias: oswis_org_oswis_calendar.event_action_request
-        public: true
-    oswis_org_oswis_calendar.event_action_subscriber:
-        class: OswisOrg\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber
-        autowire: true
-        public: true
-        arguments:
-            - '@oswis_org_oswis_calendar.participant.participant_service'
-    OswisOrg\OswisCalendarBundle\Api\EventSubscriber\EventActionSubscriber:
-        alias: oswis_org_oswis_calendar.event_action_subscriber
-        public: true
-
 
     ###
     ### FORMS

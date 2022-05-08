@@ -202,20 +202,23 @@ class EventRepository extends ServiceEntityRepository
 
     private function addOrderBy(QueryBuilder $queryBuilder): void
     {
-        if (true) {
-            $queryBuilder->addOrderBy('e.startDateTime', 'DESC');
-            $queryBuilder->addOrderBy('e.endDateTime', 'DESC');
-        }
-        if (true) {
-            $queryBuilder->addOrderBy('e.name', 'ASC');
-        }
+        $queryBuilder->addOrderBy('e.startDateTime', 'DESC');
+        $queryBuilder->addOrderBy('e.endDateTime', 'DESC');
+        $queryBuilder->addOrderBy('e.name', 'ASC');
         $queryBuilder->addOrderBy('e.id', 'ASC');
     }
 
+    /**
+     * @param  array|null  $opts
+     * @param  int|null  $limit
+     * @param  int|null  $offset
+     *
+     * @return Collection<Event>
+     */
     public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
-        return new ArrayCollection(
-            $this->getEventsQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult()
-        );
+        $result = $this->getEventsQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult();
+
+        return new ArrayCollection(is_array($result) ? $result : []);
     }
 }
