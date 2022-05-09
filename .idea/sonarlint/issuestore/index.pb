@@ -25,8 +25,6 @@ e
 5Service/Registration/RegistrationFlagOfferService.php,d/2/d2eac0b3fc4ac0f6afc485c83c32e1c959988d37
 b
 2Entity/Registration/RegistrationFlagGroupOffer.php,8/f/8f921ffd1af73d5eb57618fb306b4cae63764a5a
-T
-$Controller/Event/EventController.php,f/a/fa48981769fc6e2d4de100130c343094edd32a49
 s
 CController/WebAdmin/WebAdminParticipantPaymentsImportController.php,d/0/d0ecd3dc545079aa5e50cf323b216fbae00c0d55
 K
@@ -43,8 +41,6 @@ $Extender/CalendarSitemapExtender.php,4/2/42df5ec7328bef703bd6b159b391f8786c2d4
 0Controller/Participant/ParticipantController.php,3/7/3717f8a4344f0a8e855fc1a02bef93c3a7d535cd
 L
 Filter/ParentEventFilter.php,5/4/549bca354982ae4696cbe5133cabe8b298e3a082
-F
-Entity/Event/Event.php,a/7/a79e47978677cc075442f5d468e702db2ad843cd
 Y
 )Entity/Registration/RegistrationOffer.php,b/e/be6b3bc75e349f69fed230c97b9fad7abfbca7e5
 Y
@@ -57,8 +53,6 @@ j
 :Controller/WebAdmin/WebAdminParticipantsListController.php,f/1/f1d0c0419efb1a2bdb3307db6b9a899b5b656858
 b
 2Resources/views/web/parts/event-location.html.twig,4/b/4b41ce8565541007dd886ef8368d1eb573517b11
-Z
-*Service/Participant/ParticipantService.php,6/8/686ce73427f31086dc3a0a7c26407e3d6e7bd9d4
 z
 JResources/views/web/parts/participant-registration-range-preview.html.twig,e/7/e7c5e5142891e5858cf4134d373cf4805e5070d4
 ^
@@ -99,3 +93,7 @@ d
 4Repository/Participant/ParticipantMailRepository.php,e/7/e7ae84ac445e808559151d38313609a754a48c9e
 N
 Resources/config/services.yaml,d/b/dbd43cf723713c53a4f677b91e18e1a006e87905
+=
+composer.json,3/9/3957b91a0d8450cea0115cfd5af69eac90d75897
+=
+composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd

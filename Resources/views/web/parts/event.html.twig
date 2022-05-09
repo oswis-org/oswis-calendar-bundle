@@ -14,10 +14,12 @@
     <meta itemprop="name" content="{{ event.name }}">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
     <meta itemprop="eventStatus" content="https://schema.org/EventScheduled">
-    <div class="col-lg-9">
+    <div class="col-12 mb-2">
         {{ render(controller('OswisOrg\\OswisCalendarBundle\\Controller\\Event\\EventController::showEventsNavigationChunk',
             {'eventSlug': event.slug})) }}
-        <h3>
+    </div>
+    <div class="col-lg-9">
+        <h3 class="text-center">
             {% if event.group|default and event.batchOrYear and event.getSeqId > 0 %}
                 {{ event.getSeqId }}. {{ event.year ? 'ročník' : 'turnus' }} akce
                 {{ event.group.shortName }} {{ event.batch ? event.startYear : null }}
@@ -25,13 +27,14 @@
                 {{ event.type ? event.type.shortName~', ' : null }} {{ event.group ? event.group.shortName : null }}
             {% endif %}
         </h3>
-        <h3 class="mb-3 p-1">
-            <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-1">{{ event.rangeAsText|default }}</small>
+        <h3 class="mb-3 p-1 text-center">
+            <small class="p-1">{{ event.rangeAsText|default }}</small>
         </h3>
         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         {% if event.subEvents|length > 0 %}
-            {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig' with {'subEvents': event.subEvents} %}
+            {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig'
+                with {'subEvents': event.subEvents} %}
         {% endif %}
         {% if event.superEvent|default %}
             <h3>Je součástí akce:</h3>
@@ -59,13 +62,16 @@
                 </li>
             </ul>
         {% endif %}
-        <div itemprop="description">{{ event.description|default }}</div>
     </div>
     <div class="d-lg-none col-md-4 col-sm-3 col-xs-2 d-print-none"></div>
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-8">
         {{ render_hinclude(controller('OswisOrg\\OswisCoreBundle\\Controller\\Web\\WebBannerController::showWebBanner',
             {'type': 'event', 'identifier': event.slug})) }}
     </div>
+</section>
+
+<section class="row text-justify my-3">
+    <div itemprop="description">{{ event.description|default }}</div>
 </section>
 
 <section class="row text-justify">
