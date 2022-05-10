@@ -1,6 +1,6 @@
 # Calendar module for OSWIS
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/03e8f1e4af334f28ad9dccf424d22f05)](https://www.codacy.com/manual/mail_106/oswis-calendar-bundle?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oswis-org/oswis-calendar-bundle&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/306bfd5105e140349c8aad318422706a)](https://www.codacy.com/gh/oswis-org/oswis-calendar-bundle/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=oswis-org/oswis-calendar-bundle&amp;utm_campaign=Badge_Grade)
 [![BCH compliance](https://bettercodehub.com/edge/badge/oswis-org/oswis-address-book-bundle?branch=master)](https://bettercodehub.com/)
 
 Calendar module for One Simple Web IS.
