@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
  */
@@ -18,6 +19,7 @@ use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Twig\Environment;
 
 class EventController extends AbstractController
 {
@@ -97,12 +99,13 @@ class EventController extends AbstractController
     }
 
     /**
+     * @param  \Twig\Environment  $twig
      * @param  string|null  $eventSlug
      *
      * @return Response
-     * @throws NotFoundException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
      */
-    final public function showEventLeaflet(?string $eventSlug = null): Response
+    final public function showEventLeaflet(Environment $twig, ?string $eventSlug = null): Response
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
@@ -125,8 +128,7 @@ class EventController extends AbstractController
             'organizer'   => $this->participantService->getOrganizer($event),
         ];
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
-        /** @phpstan-ignore-next-line */
-        if ($this->get('twig')->getLoader()->exists($templatePath)) {
+        if ($twig->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
         throw new NotFoundException('Leták nenalezen.');
