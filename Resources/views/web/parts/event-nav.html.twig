@@ -12,9 +12,10 @@
                 {% endif %}
             {% endblock event_nav_parent %}
             {% block event_nav_loop %}
-                {% for navEvent in navEvents|sort((a, b) => event.year ? b.startYear <=> a.startYear : a.seqId <=> b.seqId) %}
+                {% for navEvent in navEvents|sort((a, b) => not event or event.year ? b.startYear <=> a.startYear : a.seqId <=> b.seqId) %}
+                    {% set active = event is defined and navEvent.slug|default == event.slug|default %}
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
-                       class="badge {{ event is defined and navEvent.slug == event.slug ? 'bg-success' : 'bg-light text-dark' }}">
+                       class="badge {{ active ? 'bg-success' : 'bg-light text-dark' }}">
                         {% if navEvent.year and navEvent.startYear %}
                             {{ navEvent.startYear }}
                         {% elseif navEvent.batch and navEvent.seqId %}
