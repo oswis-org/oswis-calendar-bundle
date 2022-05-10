@@ -104,7 +104,7 @@ class EventController extends AbstractController
         }
 
         return $series->getEvents(
-            ''.$typeString,
+            ''.$eventTypeString,
             $event?->isBatch() ? $event?->getStartYear() : null
         );
     }
