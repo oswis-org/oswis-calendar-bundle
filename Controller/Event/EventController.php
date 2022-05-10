@@ -76,24 +76,27 @@ class EventController extends AbstractController
         ];
     }
 
-    public function showEventsNavigationChunk(?string $eventSlug = null): Response
-    {
+    public function showEventsNavigationChunk(
+        ?string $eventSlug = null,
+        ?string $eventGroupString = null,
+        ?string $eventTypeString = null,
+    ): Response {
         $eventRepo = $this->eventService->getRepository();
         $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
 
         return $this->render('@OswisOrgOswisCalendar/web/parts/event-nav.html.twig', [
             'event'     => $event,
-            'navEvents' => $this->getNavigationEvents($event),
+            'navEvents' => $this->getNavigationEvents($event, $eventGroupString, $eventTypeString),
         ]);
     }
 
     public function getNavigationEvents(
         ?Event $event = null,
-        ?string $eventGroupString,
+        ?string $eventGroupString = null,
         ?string $eventTypeString = null,
     ): Collection {
-        $eventTypeString ??= $event->getType();
-        $series = $event->getGroup() ?? $this->em->getRepository(EventGroup::class)->findOneBy([
+        $eventTypeString ??= $event?->getType();
+        $series = $event?->getGroup() ?? $this->em->getRepository(EventGroup::class)->findOneBy([
                 'slug' => $eventGroupString,
             ]);
         if (!$series) {
