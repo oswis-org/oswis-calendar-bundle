@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  * @noinspection RedundantDocCommentTagInspection
  */
@@ -10,8 +9,10 @@ namespace OswisOrg\OswisCalendarBundle\Controller\Event;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
@@ -19,7 +20,6 @@ use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Twig\Environment;
 
 class EventController extends AbstractController
 {
@@ -35,6 +35,7 @@ class EventController extends AbstractController
         protected EventService $eventService,
         protected ParticipantService $participantService,
         protected RegistrationOfferService $regRangeService,
+        protected EntityManagerInterface $em,
     ) {
     }
 
@@ -86,26 +87,32 @@ class EventController extends AbstractController
         ]);
     }
 
-    public function getNavigationEvents(?Event $event = null): Collection
-    {
-        if (null === $event || null === ($series = $event->getGroup()) || null === ($typeString = $event->getType())) {
+    public function getNavigationEvents(
+        ?Event $event = null,
+        ?string $eventGroupString,
+        ?string $eventTypeString = null,
+    ): Collection {
+        $eventTypeString ??= $event->getType();
+        $series = $event->getGroup() ?? $this->em->getRepository(EventGroup::class)->findOneBy([
+                'slug' => $eventGroupString,
+            ]);
+        if (!$series) {
             return new ArrayCollection();
         }
 
         return $series->getEvents(
             ''.$typeString,
-            $event->isBatch() ? $event->getStartYear() : null
+            $event?->isBatch() ? $event?->getStartYear() : null
         );
     }
 
     /**
-     * @param  \Twig\Environment  $twig
      * @param  string|null  $eventSlug
      *
      * @return Response
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
+     * @throws NotFoundException
      */
-    final public function showEventLeaflet(Environment $twig, ?string $eventSlug = null): Response
+    final public function showEventLeaflet(?string $eventSlug = null): Response
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
@@ -128,7 +135,8 @@ class EventController extends AbstractController
             'organizer'   => $this->participantService->getOrganizer($event),
         ];
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
-        if ($twig->getLoader()->exists($templatePath)) {
+        /** @phpstan-ignore-next-line */
+        if ($this->get('twig')->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
         throw new NotFoundException('Leták nenalezen.');

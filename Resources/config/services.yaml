@@ -26,6 +26,7 @@ services:
             - '@oswis_org_oswis_calendar.event.event_service'
             - '@oswis_org_oswis_calendar.participant.participant_service'
             - '@oswis_org_oswis_calendar.registration.registration_offer_service'
+            - '@doctrine.orm.entity_manager'
     OswisOrg\OswisCalendarBundle\Controller\Event\EventController:
         alias: oswis_org_oswis_calendar.event.event_controller
         public: true

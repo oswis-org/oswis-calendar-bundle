@@ -27,8 +27,6 @@ b
 2Entity/Registration/RegistrationFlagGroupOffer.php,8/f/8f921ffd1af73d5eb57618fb306b4cae63764a5a
 s
 CController/WebAdmin/WebAdminParticipantPaymentsImportController.php,d/0/d0ecd3dc545079aa5e50cf323b216fbae00c0d55
-K
-Entity/Event/EventGroup.php,f/6/f6609772ea2358b9d431d16e338b2607863252dc
 [
 +Entity/Participant/ParticipantFlagGroup.php,b/7/b78f35670e12d8e8d06f59bab02e8c71d46f3e41
 q
@@ -91,8 +89,6 @@ l
 <Repository/Participant/ParticipantMailCategoryRepository.php,3/2/32fe353376c56a768c8a8fa373740ad731d4c75b
 d
 4Repository/Participant/ParticipantMailRepository.php,e/7/e7ae84ac445e808559151d38313609a754a48c9e
-N
-Resources/config/services.yaml,d/b/dbd43cf723713c53a4f677b91e18e1a006e87905
 =
 composer.json,3/9/3957b91a0d8450cea0115cfd5af69eac90d75897
 =
