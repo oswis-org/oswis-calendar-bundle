@@ -93,3 +93,13 @@ d
 composer.json,3/9/3957b91a0d8450cea0115cfd5af69eac90d75897
 =
 composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd
+e
+5Resources/views/web/parts/event-info-banner.html.twig,9/4/94dec71e7c2c52063107a793ce3487fb5ac2e216
+Z
+*Service/Participant/ParticipantService.php,6/8/686ce73427f31086dc3a0a7c26407e3d6e7bd9d4
+c
+3Resources/views/web/parts/event-organizer.html.twig,b/5/b564cb63198d7d649c28e1659a37f317c7a85b67
+Y
+)Resources/views/web/pages/event.html.twig,4/2/42a82f71a7e228e541ba3c900bc6a82e5bdb247b
+e
+5Resources/views/web/parts/event-breadcrumbs.html.twig,a/1/a1223f550e669943c91cc78b21eb11220a821ce9
