@@ -11,7 +11,7 @@
             <meta itemprop="longitude" content="{{ geoLon }}"/>
             <meta itemprop="latitude" content="{{ geoLat }}"/>
         </div>
-        {% set mapQ = event.place(true).name|default ? '&q="'~event.place(true).name|default~'"' : '' %}
+        {% set mapQ = event.place(true).name|default ? '&q='~event.place(true).name|default : '' %}
         <iframe class="lazy card-img-top border-0"
                 title="Mapa místa konání"
                 style="min-height: 200px;"
