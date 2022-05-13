@@ -7,8 +7,6 @@ f
 6Controller/WebAdmin/WebAdminParticipantsController.php,3/f/3f1d9c0c02e5d60e40a833763b48076f704b286f
 W
 'Entity/Participant/ParticipantToken.php,c/f/cf6778ad1f2b17fe8a47b0a39d10b9e322e11c6f
-e
-5Repository/Participant/ParticipantTokenRepository.php,8/d/8da1a7ddfbb4cbaf11b828ebfd2bad3520b7cf2e
 d
 4Repository/Participant/ParticipantFlagRepository.php,7/4/74b10114955f30146a781f368933ff5d4d082c49
 l
@@ -81,16 +79,12 @@ _
 -Entity/Registration/RegistrationFlagOffer.php,d/f/df699ab6173843d4c7abc10c20895f96c3516552
 T
 $Repository/Event/EventRepository.php,0/c/0c3835f84a230ed6e4591a669d9412695ab6d68d
-h
-8Repository/Participant/ParticipantCategoryRepository.php,c/d/cd9433ebd38e2b4145e5a2b48b32fcef3e6b8d89
 l
 <Repository/Participant/ParticipantMailCategoryRepository.php,3/2/32fe353376c56a768c8a8fa373740ad731d4c75b
 d
 4Repository/Participant/ParticipantMailRepository.php,e/7/e7ae84ac445e808559151d38313609a754a48c9e
 =
 composer.json,3/9/3957b91a0d8450cea0115cfd5af69eac90d75897
-=
-composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd
 e
 5Resources/views/web/parts/event-info-banner.html.twig,9/4/94dec71e7c2c52063107a793ce3487fb5ac2e216
 c
@@ -99,3 +93,7 @@ Y
 )Resources/views/web/pages/event.html.twig,4/2/42a82f71a7e228e541ba3c900bc6a82e5bdb247b
 e
 5Resources/views/web/parts/event-breadcrumbs.html.twig,a/1/a1223f550e669943c91cc78b21eb11220a821ce9
+i
+9Resources/views/web/parts/event-sub-events-list.html.twig,e/b/ebd278b69dae828ca5c912e343c361ea1655f545
+N
+Entity/Event/EventCategory.php,2/3/23e4a02963a615824274229127fc715f04f90a39

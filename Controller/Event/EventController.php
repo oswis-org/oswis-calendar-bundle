@@ -107,7 +107,7 @@ class EventController extends AbstractController
 
         return $series->getEvents(
             ''.$eventTypeString,
-            $event?->isBatch() ? $event?->getStartYear() : null
+            $event && $event->isBatch() ? $event->getStartYear() : null
         );
     }
 
@@ -141,7 +141,6 @@ class EventController extends AbstractController
             'organizer'   => $this->participantService->getOrganizer($event),
         ];
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
-        /** @phpstan-ignore-next-line */
         if ($twig->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }

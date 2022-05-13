@@ -288,6 +288,15 @@ services:
         tags:
             - 'doctrine.repository_service'
 
+    OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantCategoryRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantCategoryRepository
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine'
+        tags:
+            - 'doctrine.repository_service'
+
     OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository
         autowire: true

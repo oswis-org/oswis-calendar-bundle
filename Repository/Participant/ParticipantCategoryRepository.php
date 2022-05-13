@@ -5,18 +5,30 @@
 
 namespace OswisOrg\OswisCalendarBundle\Repository\Participant;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 
-class ParticipantCategoryRepository extends EntityRepository
+class ParticipantCategoryRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_TYPE = 'participantType';
+
+    /**
+     * @param  ManagerRegistry  $registry
+     *
+     * @throws \LogicException
+     */
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, ParticipantToken::class);
+    }
 
     public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantCategory
     {
@@ -29,7 +41,7 @@ class ParticipantCategoryRepository extends EntityRepository
     {
         try {
             $participantType = $this->getQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
-        } catch (Exception $e) {
+        } catch (Exception) {
             return null;
         }
 
