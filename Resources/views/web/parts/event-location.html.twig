@@ -4,15 +4,19 @@
         <small class="text-muted">Místo konání&nbsp;akce</small>
         <strong class="float-end align-middle text-muted"><i class="fas fa-map-marked-alt"></i></strong>
     </div>
-    {% if event.place(true).geoLon and event.place(true).geoLat %}
+    {% if event.place(true).geoLon|default and event.place(true).geoLat|default %}
         {% set geoLon = event.place(true).geoLon|number_format(6, '.', '') %}
         {% set geoLat = event.place(true).geoLat|number_format(6, '.', '') %}
         <div itemprop="geo" itemscope itemtype="http://schema.org/GeoCoordinates">
             <meta itemprop="longitude" content="{{ geoLon }}"/>
             <meta itemprop="latitude" content="{{ geoLat }}"/>
         </div>
-        <iframe class="lazy card-img-top border-0" style="min-height: 200px;" loading="lazy"
-                data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15">
+        {% set mapQ = event.place(true).name|default ? '&q="'~event.place(true).name|default~'"' : '' %}
+        <iframe class="lazy card-img-top border-0"
+                title="Mapa místa konání"
+                style="min-height: 200px;"
+                loading="lazy"
+                data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15{{ mapQ }}">
         </iframe>
     {% endif %}
     <div class="card-body p-3">
