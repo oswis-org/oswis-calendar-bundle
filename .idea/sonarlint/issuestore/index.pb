@@ -93,8 +93,6 @@ d
 composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd
 e
 5Resources/views/web/parts/event-info-banner.html.twig,9/4/94dec71e7c2c52063107a793ce3487fb5ac2e216
-Z
-*Service/Participant/ParticipantService.php,6/8/686ce73427f31086dc3a0a7c26407e3d6e7bd9d4
 c
 3Resources/views/web/parts/event-organizer.html.twig,b/5/b564cb63198d7d649c28e1659a37f317c7a85b67
 Y

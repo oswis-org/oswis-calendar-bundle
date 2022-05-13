@@ -128,13 +128,11 @@ class ParticipantService
             if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
                 $this->logger->notice("Contact person is not AbstractPerson or doesn't have AppUser assigned.");
                 /** @var object $contactPerson */
-                $this->logger->notice(
-                    "Contact person is of type "
-                    .get_class($contactPerson)
-                    ." and is "
-                    .($contactPerson instanceof AbstractContact ? '' : 'NOT')
-                    ." AbstractContact"
-                );
+                $this->logger->notice("Contact person is of type "
+                                      .get_class($contactPerson)
+                                      ." and is "
+                                      .($contactPerson instanceof AbstractContact ? '' : 'NOT')
+                                      ." AbstractContact");
                 continue;
             }
             try {
@@ -274,9 +272,7 @@ class ParticipantService
         if (null === $event) {
             return null;
         }
-        $organizer = $this->getOrganizers($event)->map(
-            fn(mixed $p) => $p instanceof Participant && $p->getContact(),
-        )->first() ?: null;
+        $organizer = $this->getOrganizers($event)->map(fn(mixed $p) => $p instanceof Participant ? $p->getContact() : null,)->first() ?: null;
         if (null === $organizer) {
             $organizer = $event->getSuperEvent() ? $this->getOrganizer($event->getSuperEvent()) : null;
         }
@@ -296,30 +292,21 @@ class ParticipantService
         ?bool $includeNotActivated = true,
         ?int $depth = 1
     ): Collection {
-        return $this->getParticipants(
-            [
-                ParticipantRepository::CRITERIA_EVENT                 => $event,
-                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
-                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
-                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
-            ],
-            $includeNotActivated
-        );
+        return $this->getParticipants([
+            ParticipantRepository::CRITERIA_EVENT                 => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
+            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
+        ], $includeNotActivated);
     }
 
     public function getWebPartners(array $opts = []): Collection
     {
         $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE] ??= ParticipantCategory::TYPE_PARTNER;
 
-        return $this->getParticipants($opts)->filter(
-            fn(mixed $participant) => $participant instanceof Participant
-                                      && $participant->hasFlag(
-                    null,
-                    true,
-                    null,
-                    RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE
-                )
-        );
+        return $this->getParticipants($opts)->filter(fn(mixed $participant) => $participant instanceof Participant
+                                                                               && $participant->hasFlag(null, true, null,
+                RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE));
     }
 
     final public function containsAppUser(Event $event, AppUser $appUser, ParticipantCategory $participantType = null): bool
@@ -384,11 +371,8 @@ class ParticipantService
         }
         $this->logger->info('Creating empty participant.');
 
-        return new Participant(
-            $regRange,
-            $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']),
-            new ArrayCollection([new ParticipantNote()])
-        );
+        return new Participant($regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']),
+            new ArrayCollection([new ParticipantNote()]));
     }
 
     /**
@@ -405,9 +389,7 @@ class ParticipantService
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED       => !$group->isOnlyActive(),
                 ParticipantRepository::CRITERIA_EVENT                 => $group->getEvent(),
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
-            ])->filter(
-                fn(mixed $p) => $p instanceof Participant && !$p->hasEMailOfType($group->getType()),
-            )->slice(0, $limit);
+            ])->filter(fn(mixed $p) => $p instanceof Participant && !$p->hasEMailOfType($group->getType()),)->slice(0, $limit);
             foreach ($participants as $participant) {
                 if ($participant instanceof Participant && $group->isApplicable($participant)) {
                     $this->participantMailService->sendMessage($participant, $group);
