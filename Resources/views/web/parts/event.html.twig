@@ -80,12 +80,12 @@
 
 <section class="row align-items-stretch my-2">
     {% if event.place(true)|default %}
-        <div class="col-12 col-md-6 col-lg-7">
+        <div class="col-12 col-md-6">
             {% include '@OswisOrgOswisCalendar/web/parts/event-location.html.twig' %}
         </div>
     {% endif %}
     {% if organizer|default %}
-        <div class="col-12 col-md-6 col-lg-5">
+        <div class="col-12 col-md-6">
             {% include '@OswisOrgOswisCalendar/web/parts/event-organizer.html.twig' %}
         </div>
     {% endif %}

@@ -198,6 +198,9 @@ class FlagGroupOfParticipantType extends AbstractType
         if (!$flagRange->hasRemainingCapacity()) {
             $attributes['disabled'] = 'disabled';
         }
+        if ($flagRange->getMin() > 0) {
+            $attributes['required'] = 'required';
+        }
 
         return $attributes;
     }

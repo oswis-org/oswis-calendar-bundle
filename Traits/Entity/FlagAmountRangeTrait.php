@@ -34,7 +34,7 @@ trait FlagAmountRangeTrait
     public function setMin(?int $min): void
     {
         $min ??= 0;
-        $this->min = 0 > $min ? 0 : $min;
+        $this->min = max(0, $min);
     }
 
     public function getFlagAmountRange(): FlagAmountRange

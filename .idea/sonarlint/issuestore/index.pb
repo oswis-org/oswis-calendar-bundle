@@ -15,10 +15,6 @@ k
 ;Repository/Registration/RegistrationFlagOfferRepository.php,1/2/12d5b775d271434c7a5f45a9cb6007c4076852f6
 g
 7Repository/Registration/RegistrationOfferRepository.php,0/7/07ffe438018b561abb748159ff7b89e45fe5acde
-T
-$Form/Participant/ParticipantType.php,0/9/09c1424580a632f47c1fd3f23f73a3e1ecbcffde
-_
-/Form/Participant/FlagGroupOfParticipantType.php,4/7/475814a30ecfa6c35782ea86d2e64cb4bb3d4106
 e
 5Service/Registration/RegistrationFlagOfferService.php,d/2/d2eac0b3fc4ac0f6afc485c83c32e1c959988d37
 b
@@ -33,8 +29,6 @@ a
 1Service/Registration/RegistrationOfferService.php,7/0/70c2d7b361bebcdcc6a24923dee7433d0b28b64b
 T
 $Extender/CalendarSitemapExtender.php,4/2/42df5ec7328bef703bd6b159b391f8786c2d4184
-`
-0Controller/Participant/ParticipantController.php,3/7/3717f8a4344f0a8e855fc1a02bef93c3a7d535cd
 L
 Filter/ParentEventFilter.php,5/4/549bca354982ae4696cbe5133cabe8b298e3a082
 Y
@@ -63,12 +57,8 @@ a
 1Resources/views/web/parts/event-preview.html.twig,b/6/b6346a49cd7e3f72d7b99aeb7cb54aaf9b186f4c
 A
 phpstan.neon.dist,5/4/54bc7406fedf3f1c199468e6dba587f2e8dc19ab
-\
-,Form/Participant/ParticipantNoteFormType.php,7/a/7ad12d1b6ae7af2a134efe9752913c71dce8e98f
 U
 %DependencyInjection/Configuration.php,4/0/40445ca4f314e1b6bca678ae752dbf0e83bc5d44
-V
-&Traits/Entity/FlagAmountRangeTrait.php,9/0/90c5fa328499ce44acc634c87010097b5f839cfb
 `
 0Entity/Participant/ParticipantPaymentsImport.php,d/8/d814a620114b3d5505061ff894c3df2db01c0ae8
 _
@@ -85,8 +75,6 @@ d
 composer.json,3/9/3957b91a0d8450cea0115cfd5af69eac90d75897
 e
 5Resources/views/web/parts/event-info-banner.html.twig,9/4/94dec71e7c2c52063107a793ce3487fb5ac2e216
-c
-3Resources/views/web/parts/event-organizer.html.twig,b/5/b564cb63198d7d649c28e1659a37f317c7a85b67
 Y
 )Resources/views/web/pages/event.html.twig,4/2/42a82f71a7e228e541ba3c900bc6a82e5bdb247b
 e

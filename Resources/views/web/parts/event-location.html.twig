@@ -12,12 +12,13 @@
             <meta itemprop="latitude" content="{{ geoLat }}"/>
         </div>
         {% set mapQ = event.place(true).name|default ? '&q='~event.place(true).name|default : '' %}
-        <iframe class="lazy card-img-top border-0"
-                title="Mapa místa konání"
-                style="min-height: 200px;"
-                loading="lazy"
-                data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15{{ mapQ }}">
-        </iframe>
+        <div class="lazy card-img-top ratio ratio-21x9">
+            <iframe class=" border-0"
+                    title="Mapa místa konání"
+                    loading="lazy"
+                    data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15{{ mapQ }}">
+            </iframe>
+        </div>
     {% endif %}
     <div class="card-body p-3">
         <h5 class="card-title" itemprop="name"><strong>{{ event.place(true).name }}</strong></h5>
