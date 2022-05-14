@@ -279,6 +279,15 @@ services:
         tags:
             - 'doctrine.repository_service'
 
+    OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository:
+        class: OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository
+        autowire: true
+        public: true
+        arguments:
+            - '@doctrine'
+        tags:
+            - 'doctrine.repository_service'
+
     OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository:
         class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository
         autowire: true
