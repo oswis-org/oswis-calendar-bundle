@@ -14,7 +14,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 /**
  * RegistrationFlag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
  * @example Type of accommodation, food allergy, time of arrival/departure...
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantFlagRepository")
+ * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository")
  * @Doctrine\ORM\Mapping\Table(name="calendar_flag")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
