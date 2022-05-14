@@ -12,7 +12,6 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 
 class ParticipantCategoryRepository extends ServiceEntityRepository
 {
@@ -27,7 +26,7 @@ class ParticipantCategoryRepository extends ServiceEntityRepository
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ParticipantToken::class);
+        parent::__construct($registry, ParticipantCategory::class);
     }
 
     public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantCategory
