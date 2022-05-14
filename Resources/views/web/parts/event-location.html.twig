@@ -12,8 +12,8 @@
             <meta itemprop="latitude" content="{{ geoLat }}"/>
         </div>
         {% set mapQ = event.place(true).name|default ? '&q='~event.place(true).name|default : '' %}
-        <div class="lazy card-img-top ratio ratio-21x9">
-            <iframe class=" border-0"
+        <div class="card-img-top ratio ratio-21x9">
+            <iframe class="lazy border-0"
                     title="Mapa místa konání"
                     loading="lazy"
                     data-src="https://frame.mapy.cz/zakladni?x={{ geoLon }}&y={{ geoLat }}&z=15{{ mapQ }}">
