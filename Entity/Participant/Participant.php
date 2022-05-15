@@ -618,7 +618,7 @@ class Participant implements ParticipantInterface
         bool $onlyActive = false,
     ): Collection {
         return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(
-            fn(mixed $connection) => $connection instanceof ParticipantFlagGroup && $connection->getFlagGroupOffer(),
+            fn(mixed $connection) => $connection instanceof ParticipantFlagGroup ? $connection->getFlagGroupOffer() : null,
         );
     }
 
