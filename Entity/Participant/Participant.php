@@ -988,7 +988,7 @@ class Participant implements ParticipantInterface
             $onlyActive,
             $flag
         )->map(
-            fn(mixed $participantFlag) => $participantFlag instanceof ParticipantFlag && $participantFlag->getFlag(),
+            fn(mixed $participantFlag) => $participantFlag instanceof ParticipantFlag ? $participantFlag->getFlag() : null,
         );
     }
 
