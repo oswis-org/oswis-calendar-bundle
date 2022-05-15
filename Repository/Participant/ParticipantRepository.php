@@ -10,7 +10,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Excparticipanttion;
@@ -58,8 +57,9 @@ class ParticipantRepository extends ServiceEntityRepository
         try {
             /** @var array<array> $result */
             $result = $queryBuilder->getQuery()->getArrayResult();
+
             return $result[0]['count'] ?? null;
-        } catch (NoResultException|NonUniqueResultException) {
+        } catch (NonUniqueResultException) {
             return null;
         }
     }
@@ -201,10 +201,7 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
         $result = $queryBuilder->getQuery()->getResult();
 
-        return Participant::filterCollection(
-            new ArrayCollection(is_array($result) ? $result : []),
-            $includeNotActivated
-        );
+        return Participant::filterCollection(new ArrayCollection(is_array($result) ? $result : []), $includeNotActivated);
     }
 
     public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant

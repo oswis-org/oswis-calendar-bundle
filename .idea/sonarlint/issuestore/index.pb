@@ -1,10 +1,6 @@
 
-a
-1Service/Participant/ParticipantPaymentService.php,8/9/891dece616682cc986a8212453f59bb7c3ae51f0
 L
 Resources/config/routes.yaml,c/7/c7e7cf739616e8673064dd9edd4c8365f22aacd9
-f
-6Controller/WebAdmin/WebAdminParticipantsController.php,3/f/3f1d9c0c02e5d60e40a833763b48076f704b286f
 W
 'Entity/Participant/ParticipantToken.php,c/f/cf6778ad1f2b17fe8a47b0a39d10b9e322e11c6f
 d
@@ -17,38 +13,20 @@ g
 7Repository/Registration/RegistrationOfferRepository.php,0/7/07ffe438018b561abb748159ff7b89e45fe5acde
 e
 5Service/Registration/RegistrationFlagOfferService.php,d/2/d2eac0b3fc4ac0f6afc485c83c32e1c959988d37
-b
-2Entity/Registration/RegistrationFlagGroupOffer.php,8/f/8f921ffd1af73d5eb57618fb306b4cae63764a5a
 s
 CController/WebAdmin/WebAdminParticipantPaymentsImportController.php,d/0/d0ecd3dc545079aa5e50cf323b216fbae00c0d55
-[
-+Entity/Participant/ParticipantFlagGroup.php,b/7/b78f35670e12d8e8d06f59bab02e8c71d46f3e41
 q
 AResources/views/web_admin/event-flags-aggregation-table.html.twig,0/3/03c61c40650f18ed64c38774ba285b91fa83cc93
 a
 1Service/Registration/RegistrationOfferService.php,7/0/70c2d7b361bebcdcc6a24923dee7433d0b28b64b
-T
-$Extender/CalendarSitemapExtender.php,4/2/42df5ec7328bef703bd6b159b391f8786c2d4184
 L
 Filter/ParentEventFilter.php,5/4/549bca354982ae4696cbe5133cabe8b298e3a082
-Y
-)Entity/Registration/RegistrationOffer.php,b/e/be6b3bc75e349f69fed230c97b9fad7abfbca7e5
 Y
 )Entity/Participant/ParticipantPayment.php,2/1/21e68f0141aa48a3cca6a16b2cee1d70759130ae
 o
 ?Resources/views/e-mail/pages/participant-verification.html.twig,d/4/d4e9151a45b9cdbdc4dd4ed5cd2aa1fd8b56294d
-j
-:Controller/WebAdmin/WebAdminParticipantsListController.php,f/1/f1d0c0419efb1a2bdb3307db6b9a899b5b656858
 ^
 .Service/Participant/ParticipantMailService.php,8/1/8178b7825b118956945069c223651883046fd040
-`
-0Repository/Participant/ParticipantRepository.php,1/d/1ddc09e8b5078535aadf61688757d3781922b8f4
-T
-$Traits/Entity/CapacityUsageTrait.php,6/6/66e8f77bf2b9f84263d92b9ce0f8f1df4221afde
-h
-8Service/Participant/ParticipantPaymentsImportService.php,5/4/5417f42c3ccaad0eb49f0d892787c972030703f4
-O
-Traits/Entity/CapacityTrait.php,3/e/3ef2ca7b5a2f36b303f147e9f9ed3c4d01d1ccf2
 i
 9Repository/Participant/ParticipantMailGroupRepository.php,9/3/935ff46a323a9407c25e8c0d916edafe28e7d4fc
 a
@@ -57,12 +35,8 @@ A
 phpstan.neon.dist,5/4/54bc7406fedf3f1c199468e6dba587f2e8dc19ab
 U
 %DependencyInjection/Configuration.php,4/0/40445ca4f314e1b6bca678ae752dbf0e83bc5d44
-`
-0Entity/Participant/ParticipantPaymentsImport.php,d/8/d814a620114b3d5505061ff894c3df2db01c0ae8
 _
 /Interfaces/Participant/ParticipantInterface.php,8/6/86975b07532e0f7737b44e0bf17b9a45ca7ff1fd
-]
--Entity/Registration/RegistrationFlagOffer.php,d/f/df699ab6173843d4c7abc10c20895f96c3516552
 T
 $Repository/Event/EventRepository.php,0/c/0c3835f84a230ed6e4591a669d9412695ab6d68d
 l
@@ -81,22 +55,12 @@ i
 9Resources/views/web/parts/event-sub-events-list.html.twig,e/b/ebd278b69dae828ca5c912e343c361ea1655f545
 N
 Entity/Event/EventCategory.php,2/3/23e4a02963a615824274229127fc715f04f90a39
-K
-Entity/Event/EventGroup.php,f/6/f6609772ea2358b9d431d16e338b2607863252dc
 T
 $Service/Event/EventSeriesService.php,2/5/25e30c86b7ac6908c480d7edc4ac989261f45a47
-Z
-*Service/Participant/ParticipantService.php,6/8/686ce73427f31086dc3a0a7c26407e3d6e7bd9d4
-F
-Entity/Event/Event.php,a/7/a79e47978677cc075442f5d468e702db2ad843cd
 ]
 -Resources/views/web/parts/event-nav.html.twig,9/3/9368b1849d97833efd526da312e80ea964dda93d
 e
 5Repository/Participant/ParticipantTokenRepository.php,8/d/8da1a7ddfbb4cbaf11b828ebfd2bad3520b7cf2e
-=
-composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd
-T
-$Controller/Event/EventController.php,f/a/fa48981769fc6e2d4de100130c343094edd32a49
 h
 8Repository/Participant/ParticipantCategoryRepository.php,c/d/cd9433ebd38e2b4145e5a2b48b32fcef3e6b8d89
 f
@@ -119,11 +83,7 @@ T
 $Form/Participant/ParticipantType.php,0/9/09c1424580a632f47c1fd3f23f73a3e1ecbcffde
 q
 AResources/views/web/pages/participant-registration-form.html.twig,7/e/7e9cbe99967b9dfa88f5d29ded8f085064c92839
-`
-0Controller/Participant/ParticipantController.php,3/7/3717f8a4344f0a8e855fc1a02bef93c3a7d535cd
 _
 /Form/Participant/FlagGroupOfParticipantType.php,4/7/475814a30ecfa6c35782ea86d2e64cb4bb3d4106
-Z
-*Form/Participant/FlagOfParticipantType.php,7/d/7d5b0aa4a9c118387436b6390961731dd6247de5
 V
 &Traits/Entity/FlagAmountRangeTrait.php,9/0/90c5fa328499ce44acc634c87010097b5f839cfb

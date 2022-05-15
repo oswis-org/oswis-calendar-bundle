@@ -20,8 +20,8 @@ use function in_array;
 final class ParticipantSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private ParticipantMailService $participantMailService,
-        private LoggerInterface $logger,
+        private readonly ParticipantMailService $participantMailService,
+        private readonly LoggerInterface $logger,
     ) {
     }
 

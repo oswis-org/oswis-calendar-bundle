@@ -132,14 +132,10 @@ class RegistrationFlagGroupOffer implements NameableInterface
     {
         $flagRanges = $this->flagOffers;
         if (true === $onlyPublic) {
-            $flagRanges = $flagRanges->filter(
-                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isPublicOnWeb(),
-            );
+            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isPublicOnWeb(),);
         }
         if (null !== $flag) {
-            $flagRanges = $flagRanges->filter(
-                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->getFlag() === $flag,
-            );
+            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->getFlag() === $flag,);
         }
 
         /** @var Collection<RegistrationFlagOffer> $flagRanges */
@@ -190,16 +186,15 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function isFlagValueAllowed(bool $onlyPublic = false, ?RegistrationFlag $flag = null): bool
     {
-        return $this->getFlagOffers($onlyPublic, $flag)->filter(
-                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isFormValueAllowed(),
-            )->count() > 0;
+        return $this->getFlagOffers($onlyPublic, $flag)->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                                                                                        && $flagRange->isFormValueAllowed(),)->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagOffers()->filter(
-                static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isFormValueAllowed(),
-            )->count() > 0;
+        return $this->getFlagOffers()
+                    ->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isFormValueAllowed(),)
+                    ->count() > 0;
     }
 
     public function getFlagsGroupNames(): array

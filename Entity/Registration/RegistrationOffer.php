@@ -307,19 +307,13 @@ class RegistrationOffer implements NameableInterface
     ): Collection {
         $flagGroupRanges = $this->flagGroupRanges;
         if (true === $onlyPublic) {
-            $flagGroupRanges = $flagGroupRanges->filter(
-                fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isPublicOnWeb(),
-            );
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isPublicOnWeb(),);
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(
-                fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isCategory($flagCategory),
-            );
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isCategory($flagCategory),);
         }
         if (null !== $flagType) {
-            $flagGroupRanges = $flagGroupRanges->filter(
-                fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isType($flagType),
-            );
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isType($flagType),);
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
             $flagGroupRanges = new ArrayCollection([
@@ -388,9 +382,7 @@ class RegistrationOffer implements NameableInterface
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags() as $oldParticipantFlag) {
             if (!($oldParticipantFlag instanceof ParticipantFlag)
-                || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains(
-                    $oldParticipantFlag->getFlagOffer()
-                ))) {
+                || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer()))) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag);
@@ -431,9 +423,7 @@ class RegistrationOffer implements NameableInterface
         }
         $flagGroupName = $flagGroupRange->getName();
         $regRangeName = $this->getName();
-        throw new FlagOutOfRangeException(
-            "Skupinu příznaků '$flagGroupName' není možné v rozsahu přihlášek '$regRangeName' použít (neexistuje automatická náhrada)."
-        );
+        throw new FlagOutOfRangeException("Skupinu příznaků '$flagGroupName' není možné v rozsahu přihlášek '$regRangeName' použít (neexistuje automatická náhrada).");
     }
 
     /**

@@ -22,7 +22,7 @@ class CapacityUsage
         $fullUsage ??= 0;
         $baseUsage = 1 > $baseUsage ? 0 : $baseUsage;
         $fullUsage = 1 > $fullUsage ? 0 : $fullUsage;
-        $fullUsage = $fullUsage < $baseUsage ? $baseUsage : $fullUsage;
+        $fullUsage = max($fullUsage, $baseUsage);
         $this->setBaseUsage($baseUsage);
         $this->setFullUsage($fullUsage);
     }
@@ -40,7 +40,7 @@ class CapacityUsage
     public function setFullUsage(?int $fullUsage): void
     {
         $fullUsage ??= 0;
-        $this->fullUsage = 0 > $fullUsage ? 0 : $fullUsage;
+        $this->fullUsage = max(0, $fullUsage);
     }
 
     public function getBaseUsage(): int
@@ -55,6 +55,6 @@ class CapacityUsage
     public function setBaseUsage(?int $baseUsage): void
     {
         $baseUsage ??= 0;
-        $this->baseUsage = 0 > $baseUsage ? 0 : $baseUsage;
+        $this->baseUsage = max(0, $baseUsage);
     }
 }

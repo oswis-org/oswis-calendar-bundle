@@ -35,7 +35,7 @@ trait CapacityUsageTrait
     public function setBaseUsage(?int $baseUsage): void
     {
         $baseUsage ??= 0;
-        $this->baseUsage = 0 > $baseUsage ? 0 : $baseUsage;
+        $this->baseUsage = max(0, $baseUsage);
     }
 
     public function getUsage(): CapacityUsage
@@ -51,7 +51,7 @@ trait CapacityUsageTrait
     public function setFullUsage(?int $fullUsage): void
     {
         $fullUsage ??= 0;
-        $this->fullUsage = 0 > $fullUsage ? 0 : $fullUsage;
+        $this->fullUsage = max(0, $fullUsage);
     }
 
     public function getUsageInt(bool $full = false): int

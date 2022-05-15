@@ -105,10 +105,7 @@ class EventController extends AbstractController
             return new ArrayCollection();
         }
 
-        return $series->getEvents(
-            ''.$eventTypeString,
-            $event && $event->isBatch() ? $event->getStartYear() : null
-        );
+        return $series->getEvents(''.$eventTypeString, $event && $event->isBatch() ? $event->getStartYear() : null);
     }
 
     /**
@@ -205,10 +202,8 @@ class EventController extends AbstractController
         $pageSize = self::PAGINATION;
         $page ??= 0;
 
-        return $this->render(
-            '@OswisOrgOswisCalendar/web/pages/events.html.twig',
-            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]
-        );
+        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig',
+            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]);
     }
 
     public function showCurrentEvent(?string $prefix = null, ?string $suffix = null): Response

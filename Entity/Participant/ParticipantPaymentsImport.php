@@ -116,23 +116,15 @@ class ParticipantPaymentsImport
 
     private static function getColumnsFromCsvRow(string $row, CsvPaymentImportSettings $csvSettings): array
     {
-        return str_getcsv(
-            $row,
-            ''.$csvSettings->getDelimiter(),
-            ''.$csvSettings->getEnclosure(),
-            ''.$csvSettings->getEscape(),
-        );
+        return str_getcsv($row, ''.$csvSettings->getDelimiter(), ''.$csvSettings->getEnclosure(), ''.$csvSettings->getEscape(),);
     }
 
     public function makePaymentFromCsv(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings, string $csvRow): ParticipantPayment
     {
         $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
         $currencyAllowed = $csvSettings->getCurrencyAllowed();
-        $payment = new ParticipantPayment(
-            (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
-            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings),
-            ParticipantPayment::TYPE_BANK_TRANSFER
-        );
+        $payment = new ParticipantPayment((int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
+            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings), ParticipantPayment::TYPE_BANK_TRANSFER);
         $payment->setInternalNote($csvRow);
         $payment->setExternalId($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null);
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {

@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final class ParticipantPaymentSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private ParticipantPaymentService $paymentService,
+        private readonly ParticipantPaymentService $paymentService,
     ) {
     }
 

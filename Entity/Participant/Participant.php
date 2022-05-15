@@ -286,14 +286,10 @@ class Participant implements ParticipantInterface
     {
         $connections = $this->participantContacts ??= new ArrayCollection();
         if (true === $onlyActive) {
-            $connections = $connections->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantContact && $connection->isActive(),
-            );
+            $connections = $connections->filter(fn(mixed $connection) => $connection instanceof ParticipantContact && $connection->isActive(),);
         }
         if (true === $onlyDeleted) {
-            $connections = $connections->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantContact && $connection->isDeleted(),
-            );
+            $connections = $connections->filter(fn(mixed $connection) => $connection instanceof ParticipantContact && $connection->isDeleted(),);
         }
 
         return $connections;
@@ -391,14 +387,10 @@ class Participant implements ParticipantInterface
     {
         $connections = $this->participantRegistrations ?? new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantRegistration && $connection->isActive(),
-            );
+            $connections = $connections->filter(fn(mixed $connection) => $connection instanceof ParticipantRegistration && $connection->isActive(),);
         }
         if ($onlyDeleted) {
-            $connections = $connections->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantRegistration && $connection->isDeleted(),
-            );
+            $connections = $connections->filter(fn(mixed $connection) => $connection instanceof ParticipantRegistration && $connection->isDeleted(),);
         }
 
         return $connections;
@@ -544,21 +536,15 @@ class Participant implements ParticipantInterface
     ): Collection {
         $flagGroups = $this->flagGroups;
         if (null !== $flagCategory) {
-            $flagGroups = $flagGroups->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantFlagGroup
-                                         && $connection->getFlagCategory() === $flagCategory,
-            );
+            $flagGroups = $flagGroups->filter(fn(mixed $connection) => $connection instanceof ParticipantFlagGroup
+                                                                       && $connection->getFlagCategory() === $flagCategory,);
         }
         if (null !== $flagType) {
-            $flagGroups = $flagGroups->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantFlagGroup
-                                         && $connection->getFlagType() === $flagType,
-            );
+            $flagGroups = $flagGroups->filter(fn(mixed $connection) => $connection instanceof ParticipantFlagGroup
+                                                                       && $connection->getFlagType() === $flagType,);
         }
         if ($onlyActive) {
-            $flagGroups = $flagGroups->filter(
-                fn(mixed $connection) => $connection instanceof ParticipantFlagGroup && !$connection->isDeleted(),
-            );
+            $flagGroups = $flagGroups->filter(fn(mixed $connection) => ($connection instanceof ParticipantFlagGroup) && (!$connection->isDeleted()),);
         }
 
         /** @var Collection<ParticipantFlagGroup> $flagGroups */
@@ -574,12 +560,7 @@ class Participant implements ParticipantInterface
      */
     public function setFlagGroups(?Collection $newFlagGroups): void
     {
-        $this->changeFlagsByNewOffer(
-            $this->getOffer(),
-            false,
-            false,
-            $newFlagGroups ?? new ArrayCollection(),
-        );
+        $this->changeFlagsByNewOffer($this->getOffer(), false, false, $newFlagGroups ?? new ArrayCollection(),);
     }
 
     /**
@@ -592,12 +573,7 @@ class Participant implements ParticipantInterface
         if (!$this->getFlagGroups(null, null, true)->isEmpty()) {
             throw new NotImplementedException('změna rozsahu registrací a příznaků', 'u účastníků');
         }
-        $flagGroupRanges = $registrationOffer->getFlagGroupRanges(
-            null,
-            null,
-            true,
-            true,
-        );
+        $flagGroupRanges = $registrationOffer->getFlagGroupRanges(null, null, true, true,);
         foreach ($flagGroupRanges as $flagGroupRange) {
             if ($flagGroupRange instanceof RegistrationFlagGroupOffer) {
                 $this->addFlagGroupOffer($flagGroupRange);
@@ -617,9 +593,8 @@ class Participant implements ParticipantInterface
         ?string $flagType = null,
         bool $onlyActive = false,
     ): Collection {
-        return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(
-            fn(mixed $connection) => $connection instanceof ParticipantFlagGroup ? $connection->getFlagGroupOffer() : null,
-        );
+        return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(fn(mixed $connection) => $connection instanceof ParticipantFlagGroup
+            ? $connection->getFlagGroupOffer() : null,);
     }
 
     /**
@@ -686,10 +661,7 @@ class Participant implements ParticipantInterface
 
     public static function sortParticipantsArray(array &$participants): array
     {
-        usort(
-            $participants,
-            static fn(mixed $p1, mixed $p2) => self::compareParticipants($p1, $p2),
-        );
+        usort($participants, static fn(mixed $p1, mixed $p2) => self::compareParticipants($p1, $p2),);
 
         return $participants;
     }
@@ -702,12 +674,8 @@ class Participant implements ParticipantInterface
      */
     public static function compareParticipants(mixed $participant1, mixed $participant2): int
     {
-        $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
-            ? 0
-            : strcmp(
-                $participant1->getContact()->getSortableName(),
-                $participant2->getContact()->getSortableName(),
-            );
+        $cmpResult = (!$participant1->getContact() || !$participant2->getContact()) ? 0
+            : strcmp($participant1->getContact()->getSortableName(), $participant2->getContact()->getSortableName(),);
 
         return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
     }
@@ -734,11 +702,7 @@ class Participant implements ParticipantInterface
 
     public function removeEmptyParticipantNotes(): void
     {
-        $this->setNotes(
-            $this->getNotes()->filter(
-                fn(mixed $note): bool => $note instanceof ParticipantNote && !empty($note->getTextValue()),
-            ),
-        );
+        $this->setNotes($this->getNotes()->filter(fn(mixed $note): bool => $note instanceof ParticipantNote && !empty($note->getTextValue()),),);
     }
 
     /**
@@ -916,9 +880,7 @@ class Participant implements ParticipantInterface
 
     public function hasEMailOfType(?string $type = null): bool
     {
-        return $this->getEMails()->filter(
-                fn(mixed $mail) => $mail instanceof ParticipantMail && $mail->isSent() && $mail->getType() === $type,
-            )->count() > 0;
+        return $this->getEMails()->filter(fn(mixed $mail) => $mail instanceof ParticipantMail && $mail->isSent() && $mail->getType() === $type,)->count() > 0;
     }
 
     public function getEMails(): Collection
@@ -982,14 +944,10 @@ class Participant implements ParticipantInterface
         bool $onlyActive = true,
         RegistrationFlag $flag = null
     ): Collection {
-        return $this->getParticipantFlags(
-            $flagCategory,
-            $flagType,
-            $onlyActive,
-            $flag
-        )->map(
-            fn(mixed $participantFlag) => $participantFlag instanceof ParticipantFlag ? $participantFlag->getFlag() : null,
-        );
+        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(fn(mixed $participantFlag) => $participantFlag
+                                                                                                                           instanceof
+                                                                                                                           ParticipantFlag
+            ? $participantFlag->getFlag() : null,);
     }
 
     public function isRangeActivated(): bool

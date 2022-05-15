@@ -67,10 +67,7 @@ class ParticipantPaymentsImportService
         $participantsCount = $participants->count();
         $this->logger->info("Found $participantsCount participants for payment with VS '$vs' and value '$value'$secondTryString.");
         $participantsArray = $participants->toArray();
-        usort(
-            $participantsArray,
-            static fn(mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
-        );
+        usort($participantsArray, static fn(mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),);
         $participants = new ArrayCollection($participantsArray);
         $participant = $participants->first() instanceof Participant ? $participants->first() : null;
         if (null === $participant && !$isSecondTry) {

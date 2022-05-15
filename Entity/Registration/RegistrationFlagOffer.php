@@ -241,6 +241,7 @@ class RegistrationFlagOffer implements NameableInterface
     public function getDescription(): string
     {
         $description = $this->traitGetDescription();
+
         return empty($description) ? ($this->getFlag()?->getDescription() ?? '') : $description;
     }
 

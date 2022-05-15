@@ -272,7 +272,7 @@ class ParticipantService
         if (null === $event) {
             return null;
         }
-        $organizer = $this->getOrganizers($event)->map(fn(mixed $p) => $p instanceof Participant ? $p->getContact() : null,)->first() ?: null;
+        $organizer = $this->getOrganizers($event)->map(fn(mixed $p) => (($p instanceof Participant) ? $p->getContact() : null))->first() ?: null;
         if (null === $organizer) {
             $organizer = $event->getSuperEvent() ? $this->getOrganizer($event->getSuperEvent()) : null;
         }

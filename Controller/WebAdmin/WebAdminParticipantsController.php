@@ -36,33 +36,24 @@ class WebAdminParticipantsController extends AbstractController
         $participant = null;
         if (true === $arrival) {
             // Process arrival.
-            $participant = $this->participantService->getParticipant(
-                [
-                    ParticipantRepository::CRITERIA_ID              => $participantId,
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
-                ],
-                false
-            );
+            $participant = $this->participantService->getParticipant([
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+            ], false);
         }
         if (false === $arrival) {
             // Process de-arrival.
-            $participant = $this->participantService->getParticipant(
-                [
-                    ParticipantRepository::CRITERIA_ID              => $participantId,
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
-                ],
-                true
-            );
+            $participant = $this->participantService->getParticipant([
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ], true);
         }
         if (null === $arrival) {
             // Only show.
-            $participant = $this->participantService->getParticipant(
-                [
-                    ParticipantRepository::CRITERIA_ID              => $participantId,
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
-                ],
-                true
-            );
+            $participant = $this->participantService->getParticipant([
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ], true);
         }
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', ['participant' => $participant]);

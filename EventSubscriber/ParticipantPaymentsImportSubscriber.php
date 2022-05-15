@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final class ParticipantPaymentsImportSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private ParticipantPaymentsImportService $paymentsImportService,
+        private readonly ParticipantPaymentsImportService $paymentsImportService,
     ) {
     }
 

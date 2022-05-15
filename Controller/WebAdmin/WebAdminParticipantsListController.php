@@ -40,10 +40,7 @@ class WebAdminParticipantsListController extends AbstractController
 
     public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
-        return $this->render(
-            "@OswisOrgOswisCalendar/web_admin/participants.html.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug),
-        );
+        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", $this->getParticipantsData($eventSlug, $participantCategorySlug),);
     }
 
     public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null): array
@@ -59,14 +56,11 @@ class WebAdminParticipantsListController extends AbstractController
         ]);
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort(
-            $participantsArray,
-            static function (mixed $a, mixed $b) {
-                assert($a instanceof Participant && $b instanceof Participant);
+        usort($participantsArray, static function (mixed $a, mixed $b) {
+            assert($a instanceof Participant && $b instanceof Participant);
 
-                return strcoll($a->getSortableName(), $b->getSortableName());
-            },
-        );
+            return strcoll($a->getSortableName(), $b->getSortableName());
+        },);
         $data['participants'] = new ArrayCollection($participantsArray);
 
         return $data;
@@ -74,10 +68,7 @@ class WebAdminParticipantsListController extends AbstractController
 
     public function showParticipantsCsv(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
-        return $this->render(
-            "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug),
-        );
+        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.csv.twig", $this->getParticipantsData($eventSlug, $participantCategorySlug),);
     }
 
     public function showPayments(): Response
@@ -181,9 +172,7 @@ class WebAdminParticipantsListController extends AbstractController
                 $otherAggregations['Přihláška']['Přihláška ověřena'] ??= 0;
                 $otherAggregations['Přihláška']['Přihláška ověřena']++;
             }
-            if ($participant->getNotes()->filter(
-                    fn(mixed $note) => $note instanceof ParticipantNote && !empty($note->getTextValue())
-                )->count() > 0) {
+            if ($participant->getNotes()->filter(fn(mixed $note) => $note instanceof ParticipantNote && !empty($note->getTextValue()))->count() > 0) {
                 $otherAggregations['Poznámky']['S poznámkou'] ??= 0;
                 $otherAggregations['Poznámky']['S poznámkou']++;
             }

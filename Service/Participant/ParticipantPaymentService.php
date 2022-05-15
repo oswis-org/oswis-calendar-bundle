@@ -77,9 +77,7 @@ class ParticipantPaymentService
     {
         try {
             $email = new TemplatedEmail();
-            $email->to(
-                $this->coreSettings->getArchiveMailerAddress() ?? throw new OswisException('Není nastavená adresa archivu.')
-            );
+            $email->to($this->coreSettings->getArchiveMailerAddress() ?? throw new OswisException('Není nastavená adresa archivu.'));
             $email->subject(EmailUtils::mimeEnc('Report nových plateb'));
             $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig');
             $email->context(['payments' => $payments]);

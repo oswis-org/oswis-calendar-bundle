@@ -32,7 +32,7 @@ class Capacity
         }
         $baseCapacity = 1 > $baseCapacity ? 0 : $baseCapacity;
         $fullCapacity = 1 > $fullCapacity ? 0 : $fullCapacity;
-        $fullCapacity = $fullCapacity < $baseCapacity ? $baseCapacity : $fullCapacity;
+        $fullCapacity = max($fullCapacity, $baseCapacity);
         $this->setBaseCapacity($baseCapacity);
         $this->setFullCapacity($fullCapacity);
     }
@@ -54,7 +54,7 @@ class Capacity
 
             return;
         }
-        $this->fullCapacity = 0 > $fullCapacity ? 0 : $fullCapacity;
+        $this->fullCapacity = max(0, $fullCapacity);
     }
 
     public function getBaseCapacity(): ?int
@@ -74,6 +74,6 @@ class Capacity
 
             return;
         }
-        $this->baseCapacity = 0 > $baseCapacity ? 0 : $baseCapacity;
+        $this->baseCapacity = max(0, $baseCapacity);
     }
 }

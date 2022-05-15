@@ -116,26 +116,13 @@ class ParticipantController extends AbstractController
                 $participant = $this->participantService->create($participant);
                 $eventName = $participant->getEvent()?->getShortName();
 
-                return $this->getResponse(
-                    'success',
-                    'Přihláška odeslána!',
-                    false,
-                    $participant->getEvent(),
-                    $participant->getOffer(),
+                return $this->getResponse('success', 'Přihláška odeslána!', false, $participant->getEvent(), $participant->getOffer(),
                     "Tvoje přihláška na akci $eventName byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
-                    $form->createView()
-                );
+                    $form->createView());
             }
 
-            return $this->getResponse(
-                'form',
-                "Přihláška na akci ".$range->getEvent()?->getShortName(),
-                false,
-                $range->getEvent(),
-                $range,
-                null,
-                $form->createView()
-            );
+            return $this->getResponse('form', "Přihláška na akci ".$range->getEvent()?->getShortName(), false, $range->getEvent(), $range, null,
+                $form->createView());
         } catch (Exception $e) {
             $participant = $this->participantService->getEmptyParticipant($range);
             /** @phpstan-ignore-next-line */
@@ -147,15 +134,7 @@ class ParticipantController extends AbstractController
             $event = $range->getEvent();
             $eventName = $event?->getShortName();
 
-            return $this->getResponse(
-                'form',
-                "Přihláška na akci $eventName",
-                false,
-                $event,
-                $range,
-                null,
-                $form->createView(),
-            );
+            return $this->getResponse('form', "Přihláška na akci $eventName", false, $event, $range, null, $form->createView(),);
         }
     }
 
@@ -170,10 +149,8 @@ class ParticipantController extends AbstractController
             throw new NotFoundException('Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.');
         }
 
-        return $this->redirectToRoute(
-            'oswis_org_oswis_calendar_web_registration_ranges',
-            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]
-        );
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges',
+            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]);
     }
 
     /**
@@ -265,18 +242,10 @@ class ParticipantController extends AbstractController
      */
     public function resendActivationEmail(?int $participantId = null): Response
     {
-        $this->participantService->requestActivation(
-            $this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId])
-        );
+        $this->participantService->requestActivation($this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId]));
 
-        return $this->getResponse(
-            'success',
-            'Ověřovací zpráva odeslána!',
-            false,
-            null,
-            null,
-            "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
-        );
+        return $this->getResponse('success', 'Ověřovací zpráva odeslána!', false, null, null,
+            "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",);
     }
 
     /**
@@ -310,17 +279,8 @@ class ParticipantController extends AbstractController
         if (!empty($eventSlug) && null === $event) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges');
         }
-        $events = $event instanceof Event
-            ? new ArrayCollection([$event, ...$event->getSubEvents()])
-            : $this->eventService->getEvents(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false
-            );
+        $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()])
+            : $this->eventService->getEvents(null, null, null, null, null, null, false);
         $shortName = $event instanceof Event ? $event->getShortName() : '';
         $title = "Přihlášky na akc".($event instanceof Event ? "i $shortName" : "e");
 

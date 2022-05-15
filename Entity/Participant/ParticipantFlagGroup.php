@@ -144,14 +144,10 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $participantFlags = $this->participantFlags;
         if ($onlyActive) {
-            $participantFlags->filter(
-                fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->isActive(),
-            );
+            $participantFlags->filter(fn(mixed $pFlag) => ($pFlag instanceof ParticipantFlag) && $pFlag->isActive(),);
         }
         if (null !== $flag) {
-            $participantFlags->filter(
-                fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlag() === $flag,
-            );
+            $participantFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && ($pFlag->getFlag() === $flag),);
         }
 
         /** @var Collection<ParticipantFlag> $participantFlags */
@@ -182,12 +178,8 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             $this->checkAvailableFlagRange($availFlagRange, $newParticipantFlags, $admin);
         }
         if (!$onlySimulate) {
-            $removedFlags = $oldParticipantFlags->filter(
-                static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$newParticipantFlags->contains($flag),
-            );
-            $addedFlags = $newParticipantFlags->filter(
-                static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$oldParticipantFlags->contains($flag),
-            );
+            $removedFlags = $oldParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$newParticipantFlags->contains($flag),);
+            $addedFlags = $newParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$oldParticipantFlags->contains($flag),);
             foreach ($removedFlags as $removedFlag) {
                 assert($removedFlag instanceof ParticipantFlag);
                 $removedFlag->delete();
@@ -226,13 +218,10 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         Collection $newPartiFlags,
         bool $admin = false,
     ): void {
-        $newFlagRangeCount = $newPartiFlags->filter(
-            fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlagOffer() === $flagRange,
-        )->count();
+        $newFlagRangeCount = $newPartiFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlagOffer() === $flagRange,)->count();
         $flagRange->checkInRange($newFlagRangeCount);
-        $oldFlagRangeCount = $this->getParticipantFlags()->filter(
-            fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && $pFlag->getFlagOffer() === $flagRange,
-        )->count();
+        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
+                                                                                      && $pFlag->getFlagOffer() === $flagRange,)->count();
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());

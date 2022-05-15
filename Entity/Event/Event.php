@@ -195,9 +195,7 @@ class Event implements NameableInterface
     {
         $images = $this->images;
         if (!empty($type)) {
-            $images = $images->filter(
-                fn(mixed $eventImage) => $eventImage instanceof EventImage && $eventImage->getType() === $type,
-            );
+            $images = $images->filter(fn(mixed $eventImage) => $eventImage instanceof EventImage && $eventImage->getType() === $type,);
         }
 
         /** @var Collection<EventImage> $images */
@@ -247,9 +245,7 @@ class Event implements NameableInterface
     {
         $files = $this->files;
         if (!empty($type)) {
-            $files = $files->filter(
-                fn(mixed $eventFile) => $eventFile instanceof EventFile && $eventFile->getType() === $type,
-            );
+            $files = $files->filter(fn(mixed $eventFile) => $eventFile instanceof EventFile && $eventFile->getType() === $type,);
         }
 
         /** @var Collection<EventFile> $files */
@@ -317,9 +313,7 @@ class Event implements NameableInterface
     public function getContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            $contents = $this->getContents()->filter(
-                fn(mixed $webContent) => $webContent instanceof EventContent && $type === $webContent->getType(),
-            );
+            $contents = $this->getContents()->filter(fn(mixed $webContent) => $webContent instanceof EventContent && $type === $webContent->getType(),);
 
             return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents) ?? new ArrayCollection();
         }
@@ -405,9 +399,7 @@ class Event implements NameableInterface
     {
         $connections = $this->flagConnections ?? new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(
-                fn(mixed $conn) => $conn instanceof EventFlagConnection && $conn->isActive(),
-            );
+            $connections = $connections->filter(fn(mixed $conn) => $conn instanceof EventFlagConnection && $conn->isActive(),);
         }
 
         return $connections;
@@ -489,11 +481,7 @@ class Event implements NameableInterface
     public function isEventSuperEvent(?Event $event = null, ?bool $recursive = true): bool
     {
         return (null !== $event)
-               && in_array(
-                   $event,
-                   $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()],
-                   true
-               );
+               && in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
     }
 
     public function getSuperEvents(): array

@@ -33,7 +33,7 @@ trait CapacityTrait
     public function setBaseCapacity(?int $baseCapacity): void
     {
         $baseCapacity ??= 0;
-        $this->baseCapacity = 0 > $baseCapacity ? 0 : $baseCapacity;
+        $this->baseCapacity = max(0, $baseCapacity);
     }
 
     public function getCapacity(): Capacity
@@ -53,7 +53,7 @@ trait CapacityTrait
 
             return;
         }
-        $this->fullCapacity = 0 > $fullCapacity ? 0 : $fullCapacity;
+        $this->fullCapacity = max(0, $fullCapacity);
     }
 
     public function getCapacityInt(bool $full = false): ?int
