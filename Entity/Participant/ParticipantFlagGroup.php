@@ -144,10 +144,10 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $participantFlags = $this->participantFlags;
         if ($onlyActive) {
-            $participantFlags->filter(fn(mixed $pFlag) => ($pFlag instanceof ParticipantFlag) && $pFlag->isActive(),);
+            $participantFlags = $participantFlags->filter(fn(mixed $pFlag) => ($pFlag instanceof ParticipantFlag) && $pFlag->isActive(),);
         }
         if (null !== $flag) {
-            $participantFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && ($pFlag->getFlag() === $flag),);
+            $participantFlags = $participantFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag && ($pFlag->getFlag() === $flag),);
         }
 
         /** @var Collection<ParticipantFlag> $participantFlags */
