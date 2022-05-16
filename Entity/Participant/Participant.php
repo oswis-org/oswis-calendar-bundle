@@ -620,7 +620,7 @@ class Participant implements ParticipantInterface
         $newFlagGroups ??= $this->getFlagGroups(null, null, true);
         foreach ($newFlagGroups as $oldParticipantFlagGroup) {
             /** @var ParticipantFlagGroup $oldParticipantFlagGroup */
-            $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin);
+            $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin, $onlySimulate);
             if (false === $onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
                 $this->replaceParticipantFlagGroup($oldParticipantFlagGroup, $newParticipantFlagGroup);
             }

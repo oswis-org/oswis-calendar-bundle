@@ -428,11 +428,12 @@ class RegistrationOffer implements NameableInterface
 
     /**
      * @param  ParticipantFlag  $oldParticipantFlag
+     * @param  bool  $onlySimulate
      *
      * @return ParticipantFlag
-     * @throws FlagOutOfRangeException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
      */
-    public function makeCompatibleParticipantFlag(ParticipantFlag $oldParticipantFlag): ParticipantFlag
+    public function makeCompatibleParticipantFlag(ParticipantFlag $oldParticipantFlag, bool $onlySimulate = false): ParticipantFlag
     {
         if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagOffer())) {
             throw new FlagOutOfRangeException('Prázdné přiřazení příznaku.');
@@ -441,7 +442,9 @@ class RegistrationOffer implements NameableInterface
             return $oldParticipantFlag;
         }
         $newParticipantFlag = new ParticipantFlag($this->findCompatibleFlagRange($oldFlagRange), null, $oldParticipantFlag->getTextValue());
-        $oldParticipantFlag->delete();
+        if (!$onlySimulate) {
+            $oldParticipantFlag->delete();
+        }
 
         return $newParticipantFlag;
     }
