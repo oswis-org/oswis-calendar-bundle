@@ -77,8 +77,6 @@ q
 AResources/views/web/parts/participant-registration-form.html.twig,f/a/fa12bbb947cc98ceede17c1a24b318b62d84c967
 \
 ,Form/Participant/ParticipantNoteFormType.php,7/a/7ad12d1b6ae7af2a134efe9752913c71dce8e98f
-V
-&Entity/Participant/ParticipantFlag.php,2/3/2395421a901a5edf439754ba12ae8bfe27c686f8
 T
 $Form/Participant/ParticipantType.php,0/9/09c1424580a632f47c1fd3f23f73a3e1ecbcffde
 q

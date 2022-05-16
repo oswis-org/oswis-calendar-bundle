@@ -380,7 +380,7 @@ class RegistrationOffer implements NameableInterface
             return $oldParticipantFlagGroup;
         }
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
-        foreach ($oldParticipantFlagGroup->getParticipantFlags() as $oldParticipantFlag) {
+        foreach ($oldParticipantFlagGroup->getParticipantFlags(true) as $oldParticipantFlag) {
             if (!($oldParticipantFlag instanceof ParticipantFlag)
                 || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer()))) {
                 continue;
