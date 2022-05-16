@@ -75,7 +75,7 @@ class EventGroup implements NameableInterface
     {
         $events = $this->events ??= new ArrayCollection();
         if (!$deleted) {
-            $events->filter(fn(mixed $event) => $event instanceof Event && !$event->isDeleted(),);
+            $events = $events->filter(fn(mixed $event) => $event instanceof Event && !$event->isDeleted(),);
         }
         if (null !== $eventType) {
             $events = $events->filter(fn(mixed $event) => $event instanceof Event && $event->getType() === $eventType,);

@@ -265,10 +265,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
      * @param  ParticipantFlag  $oldParticipantFlag
      * @param  ParticipantFlag  $newParticipantFlag
      * @param  bool  $admin
+     * @param  bool  $onlySimulate
      *
-     * @throws FlagCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws NotImplementedException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
      */
     public function replaceParticipantFlag(
         ParticipantFlag $oldParticipantFlag,
