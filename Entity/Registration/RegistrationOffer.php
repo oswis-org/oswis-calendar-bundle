@@ -397,7 +397,7 @@ class RegistrationOffer implements NameableInterface
                     throw new FlagCapacityExceededException($newFlagRange->getName());
                 }
             }
-            $newParticipantFlagGroup->replaceParticipantFlag($oldParticipantFlag, $newParticipantFlag);
+            $newParticipantFlagGroup->replaceParticipantFlag($oldParticipantFlag, $newParticipantFlag, $onlySimulate);
         }
 
         return $newParticipantFlagGroup;

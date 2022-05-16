@@ -274,6 +274,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         ParticipantFlag $oldParticipantFlag,
         ParticipantFlag $newParticipantFlag,
         bool $admin = false,
+        bool $onlySimulate = false,
     ): void {
         $oldFlagRange = $oldParticipantFlag->getFlagOffer();
         $newFlagRange = $newParticipantFlag->getFlagOffer();
@@ -284,9 +285,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             if (0 === $newFlagRange->getRemainingCapacity($admin)) {
                 throw new FlagCapacityExceededException($newFlagRange->getName());
             }
-            $oldParticipantFlag->delete();
-            $newParticipantFlag->activate();
-            $newParticipantFlag->setParticipantFlagGroup($this);
+            if (!$onlySimulate) {
+                $oldParticipantFlag->delete();
+                $newParticipantFlag->activate();
+                $newParticipantFlag->setParticipantFlagGroup($this);
+            }
         }
     }
 
