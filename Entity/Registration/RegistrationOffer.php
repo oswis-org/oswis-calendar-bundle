@@ -307,13 +307,13 @@ class RegistrationOffer implements NameableInterface
     ): Collection {
         $flagGroupRanges = $this->flagGroupRanges;
         if (true === $onlyPublic) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isPublicOnWeb(),);
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isCategory($flagCategory),);
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isType($flagType),);
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isType($flagType));
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
             $flagGroupRanges = new ArrayCollection([
@@ -365,14 +365,18 @@ class RegistrationOffer implements NameableInterface
     /**
      * @param  ParticipantFlagGroup  $oldParticipantFlagGroup
      * @param  bool  $admin
+     * @param  bool  $onlySimulate
      *
      * @return ParticipantFlagGroup
-     * @throws FlagCapacityExceededException
-     * @throws FlagOutOfRangeException
-     * @throws NotImplementedException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
+     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
+     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
      */
-    public function makeCompatibleParticipantFlagGroup(ParticipantFlagGroup $oldParticipantFlagGroup, bool $admin = false): ParticipantFlagGroup
-    {
+    public function makeCompatibleParticipantFlagGroup(
+        ParticipantFlagGroup $oldParticipantFlagGroup,
+        bool $admin = false,
+        bool $onlySimulate = false,
+    ): ParticipantFlagGroup {
         if (null === ($oldFlagGroupRange = $oldParticipantFlagGroup->getFlagGroupOffer())) {
             throw new FlagOutOfRangeException('Neplatný rozsah příznaků.');
         }
@@ -385,7 +389,7 @@ class RegistrationOffer implements NameableInterface
                 || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer()))) {
                 continue;
             }
-            $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag);
+            $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag, $onlySimulate);
             $newFlagRange = $newParticipantFlag->getFlagOffer();
             if (null !== $newFlagRange && $oldParticipantFlag->getFlagOffer() !== $newFlagRange) {
                 $remainingFlagRangeCapacity = $newFlagRange->getRemainingCapacity($admin);
