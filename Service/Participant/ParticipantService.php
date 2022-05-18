@@ -33,19 +33,21 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
+use OswisOrg\OswisCoreBundle\Service\AppUserTypeService;
 use Psr\Log\LoggerInterface;
 
 class ParticipantService
 {
     public function __construct(
-        protected EntityManagerInterface $em,
-        protected ParticipantRepository $participantRepository,
-        protected LoggerInterface $logger,
-        protected AppUserService $appUserService,
-        protected ParticipantTokenService $tokenService,
-        protected ParticipantMailService $participantMailService,
-        protected AbstractContactService $abstractContactService,
-        protected RegistrationFlagOfferService $flagRangeService,
+        protected readonly EntityManagerInterface $em,
+        protected readonly ParticipantRepository $participantRepository,
+        protected readonly LoggerInterface $logger,
+        protected readonly AppUserService $appUserService,
+        protected readonly ParticipantTokenService $tokenService,
+        protected readonly ParticipantMailService $participantMailService,
+        protected readonly AbstractContactService $abstractContactService,
+        protected readonly RegistrationFlagOfferService $flagRangeService,
+        protected readonly AppUserTypeService $appUserTypeService,
     ) {
     }
 
@@ -68,7 +70,7 @@ class ParticipantService
     public function create(?Participant $participant): Participant
     {
         $this->logger->debug("Will create new participant.");
-        if (null === $participant || !($participant instanceof Participant)) {
+        if (!($participant instanceof Participant)) {
             $this->logger->error("Participant was NOT created because Participant is missing.");
             throw new OswisException('Přihláška není kompletní nebo je poškozená.');
         }
@@ -89,7 +91,8 @@ class ParticipantService
         }
         if (null === $appUser) {
             $this->logger->info("Creating new AppUser for participant with name '$participantName' and e-mail '$participantMailAddress'.");
-            $newAppUser = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress);
+            $appUserType = $this->appUserTypeService->getRepository()->findOneBy(['slug' => 'customer']);
+            $newAppUser = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress, null, $appUserType,);
             $contact->setAppUser($this->appUserService->create($newAppUser, false, false, false));
             $this->logger->debug("New AppUser for participant '$participantMailAddress' created.");
         }
@@ -105,6 +108,11 @@ class ParticipantService
         $this->logger->info($this->getLogMessage($participant));
 
         return $participant;
+    }
+
+    final public function getRepository(): ParticipantRepository
+    {
+        return $this->participantRepository;
     }
 
     /**
@@ -203,11 +211,6 @@ class ParticipantService
     public function getParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
     {
         return $this->getRepository()->getParticipants($opts, $includeNotActivated, $limit, $offset);
-    }
-
-    final public function getRepository(): ParticipantRepository
-    {
-        return $this->participantRepository;
     }
 
     public function getParticipant(array $opts = [], ?bool $includeNotActivated = true): ?Participant

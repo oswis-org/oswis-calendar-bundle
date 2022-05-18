@@ -85,3 +85,7 @@ _
 /Form/Participant/FlagGroupOfParticipantType.php,4/7/475814a30ecfa6c35782ea86d2e64cb4bb3d4106
 V
 &Traits/Entity/FlagAmountRangeTrait.php,9/0/90c5fa328499ce44acc634c87010097b5f839cfb
+^
+.Entity/Participant/ParticipantRegistration.php,0/4/04265c385ea3ee6e2c01ddfbe325e37c8f5e62d7
+K
+Entity/Event/EventGroup.php,f/6/f6609772ea2358b9d431d16e338b2607863252dc
