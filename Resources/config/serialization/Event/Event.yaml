@@ -79,6 +79,10 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         type:
             groups:
                 - 'calendar_events_get'
+                - 'calendar_event_get'
+        category:
+            groups:
+                - 'calendar_events_get'
                 - 'calendar_events_post'
                 - 'calendar_event_get'
                 - 'calendar_event_put'
@@ -107,7 +111,7 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
             groups:
                 - 'calendar_event_get'
 
-OswisOrg\OswisCalendarBundle\Entity\Event\EventType:
+OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
     attributes:
         id:
             groups:
@@ -124,6 +128,10 @@ OswisOrg\OswisCalendarBundle\Entity\Event\EventType:
                 - 'calendar_events_get'
                 - 'calendar_event_get'
         slug:
+            groups:
+                - 'calendar_events_get'
+                - 'calendar_event_get'
+        color:
             groups:
                 - 'calendar_events_get'
                 - 'calendar_event_get'

@@ -1,6 +1,4 @@
 
-L
-Resources/config/routes.yaml,c/7/c7e7cf739616e8673064dd9edd4c8365f22aacd9
 W
 'Entity/Participant/ParticipantToken.php,c/f/cf6778ad1f2b17fe8a47b0a39d10b9e322e11c6f
 d
@@ -37,8 +35,6 @@ U
 %DependencyInjection/Configuration.php,4/0/40445ca4f314e1b6bca678ae752dbf0e83bc5d44
 _
 /Interfaces/Participant/ParticipantInterface.php,8/6/86975b07532e0f7737b44e0bf17b9a45ca7ff1fd
-T
-$Repository/Event/EventRepository.php,0/c/0c3835f84a230ed6e4591a669d9412695ab6d68d
 l
 <Repository/Participant/ParticipantMailCategoryRepository.php,3/2/32fe353376c56a768c8a8fa373740ad731d4c75b
 d
@@ -53,8 +49,6 @@ e
 5Resources/views/web/parts/event-breadcrumbs.html.twig,a/1/a1223f550e669943c91cc78b21eb11220a821ce9
 i
 9Resources/views/web/parts/event-sub-events-list.html.twig,e/b/ebd278b69dae828ca5c912e343c361ea1655f545
-N
-Entity/Event/EventCategory.php,2/3/23e4a02963a615824274229127fc715f04f90a39
 T
 $Service/Event/EventSeriesService.php,2/5/25e30c86b7ac6908c480d7edc4ac989261f45a47
 ]
@@ -89,3 +83,19 @@ V
 .Entity/Participant/ParticipantRegistration.php,0/4/04265c385ea3ee6e2c01ddfbe325e37c8f5e62d7
 K
 Entity/Event/EventGroup.php,f/6/f6609772ea2358b9d431d16e338b2607863252dc
+R
+"Entity/Participant/Participant.php,9/c/9c565f1faed87ca37f1470eecb98ea7ac76e37a4
+V
+&Entity/Participant/ParticipantFlag.php,2/3/2395421a901a5edf439754ba12ae8bfe27c686f8
+b
+2Resources/views/e-mail/pages/participant.html.twig,c/a/ca903128f6dc4435f815427f3466b50f84c41fea
+k
+;Resources/views/other/summary/participant-summary.html.twig,0/a/0a30ef521578a184debd6ff076be008d0732d05d
+e
+5Resources/views/other/summary/event-summary.html.twig,3/e/3e938e0be0708363f1a5dc0ec68ce5e18d52baed
+[
++Entity/Participant/ParticipantFlagGroup.php,b/7/b78f35670e12d8e8d06f59bab02e8c71d46f3e41
+b
+2Entity/Registration/RegistrationFlagGroupOffer.php,8/f/8f921ffd1af73d5eb57618fb306b4cae63764a5a
+Y
+)Entity/Registration/RegistrationOffer.php,b/e/be6b3bc75e349f69fed230c97b9fad7abfbca7e5

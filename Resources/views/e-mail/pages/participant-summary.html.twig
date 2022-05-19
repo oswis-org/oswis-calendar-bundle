@@ -48,7 +48,6 @@
                     {% if event.getBankAccount(true)|default %}
                         na&nbsp;účet <b>{{ event.getBankAccount(true).getFull() }}</b>
                         s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
-                        Samozřejmě počítáme s&nbsp;tím, že&nbsp;převod může pár dní trvat. :)
                     {% else %}
                         dle údajů uvedených na webových stránkách.
                     {% endif %}

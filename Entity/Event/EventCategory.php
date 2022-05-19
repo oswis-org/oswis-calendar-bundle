@@ -66,6 +66,8 @@ class EventCategory implements NameableInterface
     public const TRANSPORT = 'transport';
     public const TEAM_BUILDING_STAY = 'team-building-stay';
     public const TEAM_BUILDING = 'team-building';
+    public const EVIDENCE = 'evidence';
+    public const SPORT = 'sport';
 
     public const ALLOWED_TYPES
         = [
@@ -77,6 +79,8 @@ class EventCategory implements NameableInterface
             self::TRANSPORT,
             self::TEAM_BUILDING_STAY,
             self::TEAM_BUILDING,
+            self::EVIDENCE,
+            self::SPORT,
         ];
 
     /**

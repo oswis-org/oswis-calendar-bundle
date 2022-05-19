@@ -98,7 +98,7 @@ class WebAdminParticipantsListController extends AbstractController
             ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
             ParticipantRepository::CRITERIA_EVENT                 => $event,
             ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
-            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
+            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
         ]);
         $occupancy = [
             'event'     => $event,
@@ -112,7 +112,7 @@ class WebAdminParticipantsListController extends AbstractController
                     ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
                     ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
                     ParticipantRepository::CRITERIA_EVENT                 => $subEvent,
-                    ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
+                    ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
                 ]),
             ];
             // Do some recursion??
