@@ -17,8 +17,6 @@ q
 AResources/views/web_admin/event-flags-aggregation-table.html.twig,0/3/03c61c40650f18ed64c38774ba285b91fa83cc93
 a
 1Service/Registration/RegistrationOfferService.php,7/0/70c2d7b361bebcdcc6a24923dee7433d0b28b64b
-L
-Filter/ParentEventFilter.php,5/4/549bca354982ae4696cbe5133cabe8b298e3a082
 Y
 )Entity/Participant/ParticipantPayment.php,2/1/21e68f0141aa48a3cca6a16b2cee1d70759130ae
 o
@@ -47,8 +45,6 @@ Y
 )Resources/views/web/pages/event.html.twig,4/2/42a82f71a7e228e541ba3c900bc6a82e5bdb247b
 e
 5Resources/views/web/parts/event-breadcrumbs.html.twig,a/1/a1223f550e669943c91cc78b21eb11220a821ce9
-i
-9Resources/views/web/parts/event-sub-events-list.html.twig,e/b/ebd278b69dae828ca5c912e343c361ea1655f545
 T
 $Service/Event/EventSeriesService.php,2/5/25e30c86b7ac6908c480d7edc4ac989261f45a47
 ]
@@ -59,8 +55,6 @@ h
 8Repository/Participant/ParticipantCategoryRepository.php,c/d/cd9433ebd38e2b4145e5a2b48b32fcef3e6b8d89
 f
 6Repository/Registration/RegistrationFlagRepository.php,c/b/cbbb50ade87e0f74ac629eaf703151ddadf0ac6b
-N
-Resources/config/services.yaml,d/b/dbd43cf723713c53a4f677b91e18e1a006e87905
 X
 (Entity/Registration/RegistrationFlag.php,b/0/b09c17bd2624c2dae95a887b75d925e1998b5d0d
 z
@@ -83,8 +77,6 @@ V
 .Entity/Participant/ParticipantRegistration.php,0/4/04265c385ea3ee6e2c01ddfbe325e37c8f5e62d7
 K
 Entity/Event/EventGroup.php,f/6/f6609772ea2358b9d431d16e338b2607863252dc
-R
-"Entity/Participant/Participant.php,9/c/9c565f1faed87ca37f1470eecb98ea7ac76e37a4
 V
 &Entity/Participant/ParticipantFlag.php,2/3/2395421a901a5edf439754ba12ae8bfe27c686f8
 b

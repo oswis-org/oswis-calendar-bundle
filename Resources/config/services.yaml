@@ -413,3 +413,30 @@ services:
     OswisOrg\OswisCalendarBundle\Filter\ParentEventFilter:
         alias: oswis_org_oswis_calendar.parent_event_filter
         public: true
+
+    oswis_org_oswis_calendar.participant_contains_user_extension:
+        class: OswisOrg\OswisCalendarBundle\ApiPlatform\ParticipantContainsUserExtension
+        autowire: true
+        arguments:
+            - '@security.helper'
+        tags:
+            - { name: api_platform.doctrine.orm.query_extension.collection }
+            - { name: api_platform.doctrine.orm.query_extension.item }
+        public: true
+    OswisOrg\OswisCalendarBundle\ApiPlatform\ParticipantContainsUserExtension:
+        alias: oswis_org_oswis_calendar.participant_contains_user_extension
+        public: true
+
+    oswis_org_oswis_calendar.event_visible_to_user_extension:
+        class: OswisOrg\OswisCalendarBundle\ApiPlatform\EventVisibleToUserExtension
+        autowire: true
+        arguments:
+            - '@security.helper'
+        tags:
+            - { name: api_platform.doctrine.orm.query_extension.collection }
+            - { name: api_platform.doctrine.orm.query_extension.item }
+        public: true
+    OswisOrg\OswisCalendarBundle\ApiPlatform\EventVisibleToUserExtension:
+        alias: oswis_org_oswis_calendar.event_visible_to_user_extension
+        public: true
+

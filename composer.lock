@@ -2487,26 +2487,25 @@
     },
     {
       "name": "gedmo/doctrine-extensions",
-      "version": "v3.6.0",
+      "version": "v3.7.0",
       "source": {
         "type": "git",
         "url": "https://github.com/doctrine-extensions/DoctrineExtensions.git",
-        "reference": "20e682c5c376faa4c88421453707741e1dd1f131"
+        "reference": "42d9acf02281bb46f9b741f4a9f033e3453e2d36"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/doctrine-extensions/DoctrineExtensions/zipball/20e682c5c376faa4c88421453707741e1dd1f131",
-        "reference": "20e682c5c376faa4c88421453707741e1dd1f131",
+        "url": "https://api.github.com/repos/doctrine-extensions/DoctrineExtensions/zipball/42d9acf02281bb46f9b741f4a9f033e3453e2d36",
+        "reference": "42d9acf02281bb46f9b741f4a9f033e3453e2d36",
         "shasum": ""
       },
       "require": {
         "behat/transliterator": "~1.2",
         "doctrine/annotations": "^1.13",
-        "doctrine/cache": "^1.11 || ^2.0",
         "doctrine/collections": "^1.0",
         "doctrine/common": "^2.13 || ^3.0",
         "doctrine/event-manager": "^1.0",
-        "doctrine/persistence": "^2.2",
+        "doctrine/persistence": "^2.2 || ^3.0",
         "php": "^7.2 || ^8.0",
         "psr/cache": "^1 || ^2 || ^3",
         "symfony/cache": "^4.4 || ^5.3 || ^6.0"
@@ -2514,17 +2513,17 @@
       "conflict": {
         "doctrine/cache": "<1.11",
         "doctrine/dbal": "<2.13.1 || ^3.0 <3.2",
-        "doctrine/mongodb-odm": "<2.2",
+        "doctrine/mongodb-odm": "<2.3",
         "doctrine/orm": "<2.10.2",
         "sebastian/comparator": "<2.0"
       },
       "require-dev": {
+        "doctrine/cache": "^1.11 || ^2.0",
         "doctrine/dbal": "^2.13.1 || ^3.2",
-        "doctrine/deprecations": "^0.5.3",
         "doctrine/doctrine-bundle": "^2.3",
-        "doctrine/mongodb-odm": "^2.2",
+        "doctrine/mongodb-odm": "^2.3",
         "doctrine/orm": "^2.10.2",
-        "friendsofphp/php-cs-fixer": "~3.4.0",
+        "friendsofphp/php-cs-fixer": "^3.4.0",
         "nesbot/carbon": "^2.55",
         "phpstan/phpstan": "^1.1",
         "phpstan/phpstan-doctrine": "^1.0",
@@ -2542,7 +2541,7 @@
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-main": "3.7-dev"
+          "dev-main": "3.8-dev"
         }
       },
       "autoload": {
@@ -2588,10 +2587,10 @@
       "support": {
         "email": "gediminas.morkevicius@gmail.com",
         "issues": "https://github.com/doctrine-extensions/DoctrineExtensions/issues",
-        "source": "https://github.com/doctrine-extensions/DoctrineExtensions/tree/v3.6.0",
+        "source": "https://github.com/doctrine-extensions/DoctrineExtensions/tree/v3.7.0",
         "wiki": "https://github.com/Atlantic18/DoctrineExtensions/tree/main/doc"
       },
-      "time": "2022-03-19T10:22:38+00:00"
+      "time": "2022-05-17T06:58:52+00:00"
     },
     {
       "name": "gesdinet/jwt-refresh-token-bundle",
@@ -3089,16 +3088,16 @@
     },
     {
       "name": "league/commonmark",
-      "version": "2.3.0",
+      "version": "2.3.1",
       "source": {
         "type": "git",
         "url": "https://github.com/thephpleague/commonmark.git",
-        "reference": "32a49eb2b38fe5e5c417ab748a45d0beaab97955"
+        "reference": "cb36fee279f7fca01d5d9399ddd1b37e48e2eca1"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/32a49eb2b38fe5e5c417ab748a45d0beaab97955",
-        "reference": "32a49eb2b38fe5e5c417ab748a45d0beaab97955",
+        "url": "https://api.github.com/repos/thephpleague/commonmark/zipball/cb36fee279f7fca01d5d9399ddd1b37e48e2eca1",
+        "reference": "cb36fee279f7fca01d5d9399ddd1b37e48e2eca1",
         "shasum": ""
       },
       "require": {
@@ -3191,7 +3190,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2022-04-07T22:37:05+00:00"
+      "time": "2022-05-14T15:37:39+00:00"
     },
     {
       "name": "league/config",
@@ -4238,16 +4237,16 @@
     },
     {
       "name": "oswis-org/oswis-address-book-bundle",
-      "version": "v0.0.310",
+      "version": "v0.0.315",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-address-book-bundle.git",
-        "reference": "9004571217d6c514c33e04218c560136854047fe"
+        "reference": "ebcc6b366ce0beea167369c919f83b5c1c0ace9b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/9004571217d6c514c33e04218c560136854047fe",
-        "reference": "9004571217d6c514c33e04218c560136854047fe",
+        "url": "https://api.github.com/repos/oswis-org/oswis-address-book-bundle/zipball/ebcc6b366ce0beea167369c919f83b5c1c0ace9b",
+        "reference": "ebcc6b366ce0beea167369c919f83b5c1c0ace9b",
         "shasum": ""
       },
       "require": {
@@ -4291,9 +4290,9 @@
       ],
       "support": {
         "issues": "https://github.com/oswis-org/oswis-address-book-bundle/issues",
-        "source": "https://github.com/oswis-org/oswis-address-book-bundle/tree/v0.0.310"
+        "source": "https://github.com/oswis-org/oswis-address-book-bundle/tree/v0.0.315"
       },
-      "time": "2022-05-08T19:20:53+00:00"
+      "time": "2022-05-18T12:58:29+00:00"
     },
     {
       "name": "oswis-org/oswis-core-bundle",
@@ -11107,7 +11106,7 @@
     },
     {
       "name": "twig/cssinliner-extra",
-      "version": "v3.3.5",
+      "version": "v3.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/cssinliner-extra.git",
@@ -11161,7 +11160,7 @@
         "twig"
       ],
       "support": {
-        "source": "https://github.com/twigphp/cssinliner-extra/tree/v3.3.5"
+        "source": "https://github.com/twigphp/cssinliner-extra/tree/v3.4.0"
       },
       "funding": [
         {
@@ -11177,7 +11176,7 @@
     },
     {
       "name": "twig/extra-bundle",
-      "version": "v3.3.8",
+      "version": "v3.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/twig-extra-bundle.git",
@@ -11240,7 +11239,7 @@
         "twig"
       ],
       "support": {
-        "source": "https://github.com/twigphp/twig-extra-bundle/tree/v3.3.8"
+        "source": "https://github.com/twigphp/twig-extra-bundle/tree/v3.4.0"
       },
       "funding": [
         {
@@ -11256,7 +11255,7 @@
     },
     {
       "name": "twig/inky-extra",
-      "version": "v3.3.5",
+      "version": "v3.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/inky-extra.git",
@@ -11311,7 +11310,7 @@
         "twig"
       ],
       "support": {
-        "source": "https://github.com/twigphp/inky-extra/tree/v3.3.5"
+        "source": "https://github.com/twigphp/inky-extra/tree/v3.4.0"
       },
       "funding": [
         {
@@ -11327,7 +11326,7 @@
     },
     {
       "name": "twig/markdown-extra",
-      "version": "v3.3.8",
+      "version": "v3.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/markdown-extra.git",
@@ -11384,7 +11383,7 @@
         "twig"
       ],
       "support": {
-        "source": "https://github.com/twigphp/markdown-extra/tree/v3.3.8"
+        "source": "https://github.com/twigphp/markdown-extra/tree/v3.4.0"
       },
       "funding": [
         {
@@ -11400,7 +11399,7 @@
     },
     {
       "name": "twig/string-extra",
-      "version": "v3.3.5",
+      "version": "v3.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/string-extra.git",
@@ -11456,7 +11455,7 @@
         "unicode"
       ],
       "support": {
-        "source": "https://github.com/twigphp/string-extra/tree/v3.3.5"
+        "source": "https://github.com/twigphp/string-extra/tree/v3.4.0"
       },
       "funding": [
         {
@@ -11472,16 +11471,16 @@
     },
     {
       "name": "twig/twig",
-      "version": "v3.3.10",
+      "version": "v3.4.1",
       "source": {
         "type": "git",
         "url": "https://github.com/twigphp/Twig.git",
-        "reference": "8442df056c51b706793adf80a9fd363406dd3674"
+        "reference": "e939eae92386b69b49cfa4599dd9bead6bf4a342"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/twigphp/Twig/zipball/8442df056c51b706793adf80a9fd363406dd3674",
-        "reference": "8442df056c51b706793adf80a9fd363406dd3674",
+        "url": "https://api.github.com/repos/twigphp/Twig/zipball/e939eae92386b69b49cfa4599dd9bead6bf4a342",
+        "reference": "e939eae92386b69b49cfa4599dd9bead6bf4a342",
         "shasum": ""
       },
       "require": {
@@ -11496,7 +11495,7 @@
       "type": "library",
       "extra": {
         "branch-alias": {
-          "dev-master": "3.3-dev"
+          "dev-master": "3.4-dev"
         }
       },
       "autoload": {
@@ -11532,7 +11531,7 @@
       ],
       "support": {
         "issues": "https://github.com/twigphp/Twig/issues",
-        "source": "https://github.com/twigphp/Twig/tree/v3.3.10"
+        "source": "https://github.com/twigphp/Twig/tree/v3.4.1"
       },
       "funding": [
         {
@@ -11544,7 +11543,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2022-04-06T06:47:41+00:00"
+      "time": "2022-05-17T05:48:52+00:00"
     },
     {
       "name": "vich/uploader-bundle",
@@ -11879,12 +11878,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/Roave/SecurityAdvisories.git",
-        "reference": "2ed308386e65cafaadd54723f5b57775374c2ae8"
+        "reference": "c491d086242983f784b8af91cbb9de43d3374971"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/2ed308386e65cafaadd54723f5b57775374c2ae8",
-        "reference": "2ed308386e65cafaadd54723f5b57775374c2ae8",
+        "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/c491d086242983f784b8af91cbb9de43d3374971",
+        "reference": "c491d086242983f784b8af91cbb9de43d3374971",
         "shasum": ""
       },
       "conflict": {
@@ -11917,6 +11916,7 @@
         "bolt/core": "<=4.2",
         "bottelet/flarepoint": "<2.2.1",
         "brightlocal/phpwhois": "<=4.2.5",
+        "brotkrueml/codehighlight": "<2.7",
         "buddypress/buddypress": "<7.2.1",
         "bugsnag/bugsnag-laravel": ">=2,<2.0.2",
         "bytefury/crater": "<6.0.2",
@@ -12361,7 +12361,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2022-05-11T11:06:18+00:00"
+      "time": "2022-05-16T08:10:11+00:00"
     }
   ],
   "aliases": [],

@@ -208,6 +208,14 @@ class ParticipantService
         }
     }
 
+    /**
+     * @param  array  $opts
+     * @param  bool|null  $includeNotActivated
+     * @param  int|null  $limit
+     * @param  int|null  $offset
+     *
+     * @return \Doctrine\Common\Collections\Collection<Participant>
+     */
     public function getParticipants(array $opts = [], ?bool $includeNotActivated = true, ?int $limit = null, ?int $offset = null): Collection
     {
         return $this->getRepository()->getParticipants($opts, $includeNotActivated, $limit, $offset);

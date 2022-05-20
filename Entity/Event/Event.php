@@ -38,7 +38,7 @@ use function assert;
  *   },
  *   collectionOperations={
  *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_CUSTOMER')",
  *       "normalization_context"={"groups"={"entities_get", "calendar_events_get"}, "enable_max_depth"=true},
  *     },
  *     "post"={
@@ -48,7 +48,7 @@ use function assert;
  *   },
  *   itemOperations={
  *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
+ *       "security"="is_granted('ROLE_CUSTOMER')",
  *       "normalization_context"={"groups"={"entity_get", "calendar_event_get"}, "enable_max_depth"=true},
  *     },
  *     "put"={
