@@ -81,7 +81,13 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 #[ApiFilter(ParentEventFilter::class)]
-#[ApiFilter(OrderFilter::class, properties: ['contact.sortableName'])]
+#[ApiFilter(OrderFilter::class, properties: [
+    'id',
+    'createdAt',
+    'contact.sortableName',
+    'event.startDateTime',
+    'event.id',
+])]
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: [
     'event.id',
     'event.superEvent.id',
