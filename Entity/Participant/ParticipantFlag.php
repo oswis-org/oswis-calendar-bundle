@@ -114,6 +114,11 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         }
     }
 
+    public function getColor(): ?string
+    {
+        return $this->getFlag()?->getColor();
+    }
+
     public function getFlagCategory(): ?RegistrationFlagCategory
     {
         return $this->getFlagOffer()?->getCategory();
