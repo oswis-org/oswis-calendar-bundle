@@ -233,7 +233,19 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
-        superEvent:
+        startDateTime:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        endDateTime:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        startDateTimeRecursive:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        endDateTimeRecursive:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
