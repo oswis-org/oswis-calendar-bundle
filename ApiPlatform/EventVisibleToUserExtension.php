@@ -40,7 +40,7 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         $events = array_map(static fn(mixed $p) => $p instanceof Participant ? $p->getEvent() : null, $participants->toArray());
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder->leftJoin("$rootAlias.superEvent", 'superEvent');
-        $queryBuilder->andWhere(" $rootAlias.id IN (:ids) OR $rootAlias.superEvent IN (:ids) OR $rootAlias.superEvent.id IN (:ids) OR superEvent.id IN (:ids) ");
+        $queryBuilder->andWhere(" $rootAlias.id IN (:ids) OR $rootAlias.superEvent IN (:ids) ");
         $queryBuilder->setParameter('ids', array_map(static fn(?Event $event) => $event?->getId(), $events));
     }
 
