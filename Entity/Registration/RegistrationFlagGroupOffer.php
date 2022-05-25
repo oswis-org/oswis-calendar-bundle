@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
@@ -82,9 +83,9 @@ class RegistrationFlagGroupOffer implements NameableInterface
      * @var Collection<RegistrationFlagOffer>
      */
     #[ManyToMany(targetEntity: RegistrationFlagOffer::class, cascade: ['all'], fetch: 'EAGER')]
-    #[JoinTable(name: 'calendar_flag_group_range_flag_connection', joinColumns: [
-        new JoinColumn(name: 'flag_group_range_id', referencedColumnName: 'id'),
-    ], inverseJoinColumns: [new JoinColumn(name: 'flag_range_id', referencedColumnName: 'id', unique: true)])]
+    #[JoinTable(name: 'calendar_flag_group_range_flag_connection')]
+    #[JoinColumn(name: "flag_group_range_id", referencedColumnName: "id")]
+    #[InverseJoinColumn(name: "flag_range_id", referencedColumnName: "id", unique: true)]
     protected Collection $flagOffers;
 
     public function __construct(

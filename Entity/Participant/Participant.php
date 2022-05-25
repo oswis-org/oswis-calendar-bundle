@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
@@ -160,9 +161,9 @@ class Participant implements ParticipantInterface
      * @var Collection<ParticipantFlagGroup>
      */
     #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
-    #[JoinTable(name: 'calendar_participant_flag_group_connection', joinColumns: [
-        new JoinColumn(name: 'participant_id', referencedColumnName: 'id'),
-    ], inverseJoinColumns: [new JoinColumn(name: 'participant_flag_group_id', referencedColumnName: 'id', unique: true)])]
+    #[JoinTable(name: 'calendar_participant_flag_group_connection')]
+    #[JoinColumn(name: "participant_id", referencedColumnName: "id")]
+    #[InverseJoinColumn(name: "participant_flag_group_id", referencedColumnName: "id", unique: true)]
     protected Collection $flagGroups;
 
     /**
