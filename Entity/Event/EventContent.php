@@ -1,15 +1,19 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractWebContent;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_content")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -36,18 +40,14 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractWebContent;
  *     }
  *   }
  * )
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
+#[Entity]
+#[Table(name: 'calendar_event_content')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventContent extends AbstractWebContent
 {
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
-     *     fetch="EAGER",
-     *     inversedBy="contents",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER', inversedBy: 'contents')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
     /**

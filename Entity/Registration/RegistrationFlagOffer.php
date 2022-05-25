@@ -1,11 +1,18 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
@@ -22,8 +29,6 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 
 /**
  * Date range when flag can be used (with some capacity).
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_flag_range")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -50,8 +55,10 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  *     }
  *   }
  * )
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag_range")
  */
+#[Entity]
+#[Table(name: 'calendar_flag_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag_range')]
 class RegistrationFlagOffer implements NameableInterface
 {
     use NameableTrait {
@@ -67,15 +74,11 @@ class RegistrationFlagOffer implements NameableInterface
     use FlagAmountRangeTrait;
     use FormValueTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationFlag", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: RegistrationFlag::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlag $flag = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     */
+    #[Column(type: 'string', nullable: true)]
     protected ?string $flagFormGroup = null;
 
     public function __construct(

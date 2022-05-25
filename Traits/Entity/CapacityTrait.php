@@ -1,22 +1,20 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
+use Doctrine\ORM\Mapping\Column;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 
 trait CapacityTrait
 {
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
-     */
+    #[Column(type: 'integer', nullable: true)]
     protected ?int $fullCapacity = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
-     */
+    #[Column(type: 'integer', nullable: true)]
     protected ?int $baseCapacity = null;
 
     public function setCapacity(?Capacity $capacity = null): void

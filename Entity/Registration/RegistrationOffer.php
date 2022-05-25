@@ -12,6 +12,14 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
@@ -22,6 +30,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
+use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\CapacityTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\CapacityUsageTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\PriceTrait;
@@ -37,9 +46,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 
 /**
  * Time range available for registrations of participants of some type to some event (with some price, capacity...).
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_reg_range")
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_reg_range")
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
@@ -69,6 +75,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  * )
  */
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['event.id', 'event.superEvent.id'])]
+#[Entity(repositoryClass: RegistrationOfferRepository::class)]
+#[Table(name: 'calendar_reg_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_reg_range')]
 class RegistrationOffer implements NameableInterface
 {
     use NameableTrait;
@@ -84,51 +93,41 @@ class RegistrationOffer implements NameableInterface
     use EntityPublicTrait;
     use PriorityTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationOffer", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationOffer $requiredRegRange;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
      * @var Collection<RegistrationFlagGroupOffer> $flagGroupRanges
-     * @Doctrine\ORM\Mapping\ManyToMany(targetEntity="RegistrationFlagGroupOffer", cascade={"all"})
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *      name="calendar_reg_range_flag_group_range",
-     *      joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="reg_range_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_group_range_id", referencedColumnName="id")}
-     * )
      */
+    #[ManyToMany(targetEntity: RegistrationFlagGroupOffer::class, cascade: ['all'])]
+    #[JoinTable(name: 'calendar_reg_range_flag_group_range', joinColumns: [
+        new JoinColumn(name: 'reg_range_id', referencedColumnName: 'id'),
+    ], inverseJoinColumns: [new JoinColumn(name: 'flag_group_range_id', referencedColumnName: 'id')])]
     protected Collection $flagGroupRanges;
 
     /**
      * Indicates that price is relative to required range.
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      * @todo Implement: Indicates that capacity is relative to required range too.
      */
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $relative = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=false)
-     */
+    #[Column(type: 'boolean', nullable: false)]
     protected bool $surrogate = false;
 
     /**
      * Indicates that participation on super event is required.
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
      */
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $superEventRequired = null;
 
     /**

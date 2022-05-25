@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
@@ -7,9 +8,15 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantFlagRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\ActivatedInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
@@ -20,12 +27,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * RegistrationFlag assigned to event participant (ie. special food requirement...) through some "flag range".
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantFlagRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag")
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -53,6 +58,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   }
  * )
  */
+#[Entity(repositoryClass: ParticipantFlagRepository::class)]
+#[Table(name: 'calendar_participant_flag')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInterface, TextValueInterface
 {
     use BasicTrait;
@@ -60,25 +68,14 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     use ActivatedTrait;
     use DeletedTrait;
 
-    /**
-     * Event contact flag.
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer",
-     *     fetch="EAGER",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    /** Event contact flag. */
+    #[ManyToOne(targetEntity: RegistrationFlagOffer::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagOffer $flagOffer = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup",
-     *     inversedBy="participantFlags",
-     *     fetch="EAGER",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
-     */
+    #[ManyToOne(targetEntity: ParticipantFlagGroup::class, fetch: 'EAGER', inversedBy: 'participantFlags')]
+    #[JoinColumn(nullable: true)]
+    #[MaxDepth(1)]
     protected ?ParticipantFlagGroup $participantFlagGroup = null;
 
     public function __construct(
@@ -119,14 +116,14 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         return $this->getFlag()?->getColor();
     }
 
-    public function getFlagCategory(): ?RegistrationFlagCategory
-    {
-        return $this->getFlagOffer()?->getCategory();
-    }
-
     public function getFlag(): ?RegistrationFlag
     {
         return $this->getFlagOffer()?->getFlag();
+    }
+
+    public function getFlagCategory(): ?RegistrationFlagCategory
+    {
+        return $this->getFlagOffer()?->getCategory();
     }
 
     public function getPrice(): int

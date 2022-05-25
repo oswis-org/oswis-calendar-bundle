@@ -5,13 +5,16 @@
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use Doctrine\ORM\Mapping\Column;
+use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
+
 trait VariableSymbolTrait
 {
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter::class, strategy="ipartial")
-     * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
-     */
+    #[Column(type: 'string', nullable: true)]
+    #[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
+    #[ApiFilter(OrderFilter::class)]
     protected ?string $variableSymbol = null;
 
     public function getVariableSymbol(): ?string

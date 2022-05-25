@@ -1,9 +1,4 @@
 <?php
-/**
- * @noinspection PhpComposerExtensionStubsInspection
- * @noinspection MissingParameterTypeDeclarationInspection
- * @noinspection ForeachInvariantsInspection
- */
 
 namespace OswisOrg\OswisCalendarBundle\Filter;
 

@@ -1,20 +1,28 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_mail_group")
+ * @author Jakub Zak <mail@jakubzak.eu>
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({"id"})
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -43,27 +51,21 @@ use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
  *     }
  *   }
  * )
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({"id"})
- * @author Jakub Zak <mail@jakubzak.eu>
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant_mail")
  */
+#[Entity(repositoryClass: ParticipantMailGroupRepository::class)]
+#[Table(name: 'calendar_participant_mail_group')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
 class ParticipantMailGroup extends AbstractMailGroup
 {
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: ParticipantMailCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?ParticipantMailCategory $category = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=false)
-     */
+    #[Column(type: 'boolean', nullable: false)]
     protected bool $onlyActive = true;
 
     public function __construct(

@@ -6,11 +6,21 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\MailConfirmationTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\VariableSymbolTrait;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\MyDateTimeInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\TypeInterface;
@@ -21,11 +31,16 @@ use OswisOrg\OswisCoreBundle\Traits\Common\InternalNoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NumericValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * Payment (or return - when numericValue is negative).
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_payment")
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "dateTime",
+ *     "createdDateTime",
+ *     "numericValue"
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -52,29 +67,23 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     }
  *   }
  * )
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class, properties={
- *     "id": "ASC",
- *     "dateTime",
- *     "createdDateTime",
- *     "numericValue"
- * })
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter::class, properties={
- *     "id": "iexact",
- *     "dateTime": "ipartial",
- *     "createdDateTime": "ipartial",
- *     "numericValue": "ipartial"
- * })
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter::class, properties={
- *     "createdDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"
- * })
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "dateTime",
- *     "createdDateTime",
- *     "numericValue"
- * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
+#[Entity]
+#[Table(name: 'calendar_participant_payment')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[ApiFilter(DateFilter::class, properties: ["createdDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"])]
+#[ApiFilter(SearchFilter::class, properties: [
+    "id"              => "iexact",
+    "dateTime"        => "ipartial",
+    "createdDateTime" => "ipartial",
+    "numericValue"    => "ipartial",
+])]
+#[ApiFilter(OrderFilter::class, properties: [
+    "id" => "ASC",
+    "dateTime",
+    "createdDateTime",
+    "numericValue",
+])]
 class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInterface
 {
     use BasicTrait;
@@ -94,7 +103,6 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     public const TYPE_CASH = 'cash';
     public const TYPE_ON_LINE = 'on-line';
     public const TYPE_INTERNAL = 'internal';
-
     public const ALLOWED_TYPES
         = [
             '',
@@ -104,24 +112,17 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             self::TYPE_ON_LINE,
             self::TYPE_INTERNAL,
         ];
-
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", inversedBy="payments")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
-     */
+    #[ManyToOne(targetEntity: Participant::class, inversedBy: 'payments')]
+    #[JoinColumn(nullable: true)]
+    #[MaxDepth(1)]
     protected ?Participant $participant = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
-     */
+    #[ManyToOne(targetEntity: ParticipantPaymentsImport::class)]
+    #[JoinColumn(nullable: true)]
+    #[MaxDepth(1)]
     protected ?ParticipantPaymentsImport $import = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     */
+    #[Column(type: 'string', nullable: true)]
     protected ?string $errorMessage = null;
 
     public function __construct(?int $numericValue = null, ?DateTime $dateTime = null, ?string $type = null)
@@ -191,9 +192,7 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             // Do not allow to remove payment from participant if payment was already persisted.
             throw new NotImplementedException('změna účastníka', 'u platby');
         }
-        if ($this->participant && $this->participant !== $participant) {
-            $this->participant->removePayment($this);
-        }
+        $this->participant?->removePayment($this);
         $this->participant = $participant;
         $participant?->addPayment($this);
     }

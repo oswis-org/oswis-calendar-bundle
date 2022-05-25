@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
@@ -8,13 +9,16 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_group")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -45,16 +49,16 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  *     }
  *   }
  * )
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
+#[Entity]
+#[Table(name: 'calendar_event_group')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventGroup implements NameableInterface
 {
     use NameableTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="group")
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
-     */
+    #[OneToMany(mappedBy: 'group', targetEntity: Event::class)]
+    #[MaxDepth(1)]
     protected ?Collection $events = null;
 
     public function __construct(?Nameable $nameable = null)

@@ -10,6 +10,12 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
@@ -24,11 +30,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedMailConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_flag_group")
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -56,6 +60,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   }
  * )
  */
+#[Entity]
+#[Table(name: 'calendar_participant_flag_group')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class ParticipantFlagGroup implements BasicInterface, TextValueInterface, DeletedInterface
 {
     use BasicTrait;
@@ -65,26 +72,15 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     public Collection $tempFlagRanges;
-
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer",
-     *     fetch="EAGER",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: RegistrationFlagGroupOffer::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagGroupOffer $flagGroupOffer = null;
 
     /**
      * @var Collection<ParticipantFlag>
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag",
-     *     mappedBy="participantFlagGroup",
-     *     cascade={"all"},
-     *     fetch="EAGER",
-     * )
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
+    #[OneToMany(mappedBy: 'participantFlagGroup', targetEntity: ParticipantFlag::class, cascade: ['all'], fetch: 'EAGER')]
+    #[MaxDepth(1)]
     protected Collection $participantFlags;
 
     public function __construct(?RegistrationFlagGroupOffer $flagGroupRange = null)

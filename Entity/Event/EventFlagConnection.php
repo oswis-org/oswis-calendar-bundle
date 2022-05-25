@@ -1,19 +1,23 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_flag_connection")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -40,28 +44,22 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *     }
  *   }
  * )
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
+#[Entity]
+#[Table(name: 'calendar_event_flag_connection')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventFlagConnection implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;
     use DeletedTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event",
-     *     fetch="EAGER",
-     *     inversedBy="flagConnections",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER', inversedBy: 'flagConnections')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlag", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: EventFlag::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?EventFlag $eventFlag = null;
 
     public function __construct(?EventFlag $eventFlag = null, ?string $textValue = null)

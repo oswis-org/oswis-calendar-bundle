@@ -2,11 +2,15 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Table;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_mail_category")
+ * @author Jakub Zak <mail@jakubzak.eu>
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({"id"})
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -35,10 +39,10 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
  *     }
  *   }
  * )
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({"id"})
- * @author Jakub Zak <mail@jakubzak.eu>
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant_mail")
  */
+#[Entity(repositoryClass: ParticipantMailCategoryRepository::class)]
+#[Table(name: 'calendar_participant_mail_category')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
 class ParticipantMailCategory extends AbstractMailCategory
 {
 }

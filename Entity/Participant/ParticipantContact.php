@@ -7,6 +7,11 @@
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use DateTime;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
@@ -15,8 +20,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_contact")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -43,28 +46,22 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
  *     }
  *   }
  * )
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
+#[Entity]
+#[Table(name: 'calendar_participant_contact')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class ParticipantContact implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;
     use DeletedTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant",
-     *     fetch="EXTRA_LAZY",
-     *     inversedBy="participantContacts",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EXTRA_LAZY', inversedBy: 'participantContacts')]
+    #[JoinColumn(nullable: true)]
     protected ?Participant $participant = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: AbstractContact::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?AbstractContact $contact = null;
 
     public function __construct(?AbstractContact $contact = null)

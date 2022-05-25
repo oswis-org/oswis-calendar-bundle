@@ -1,11 +1,21 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
+use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
@@ -14,8 +24,13 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 /**
  * RegistrationFlag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
  * @example Type of accommodation, food allergy, time of arrival/departure...
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_flag")
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "name",
+ *     "shortName",
+ *     "description",
+ *     "note"
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -42,30 +57,21 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  *     }
  *   }
  * )
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "shortName",
- *     "description",
- *     "note"
- * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag")
  */
+#[Entity(repositoryClass: RegistrationFlagRepository::class)]
+#[Table(name: 'calendar_flag')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag')]
+#[ApiFilter(OrderFilter::class)]
 class RegistrationFlag implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="RegistrationFlagCategory", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: RegistrationFlagCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagCategory $category = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     */
+    #[Column(type: 'string', nullable: true)]
     protected ?string $flagFormGroup = null;
 
     public function __construct(?Nameable $nameable = null, ?RegistrationFlagCategory $flagType = null)

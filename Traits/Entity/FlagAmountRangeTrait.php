@@ -5,19 +5,16 @@
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
+use Doctrine\ORM\Mapping\Column;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 
 trait FlagAmountRangeTrait
 {
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
-     */
+    #[Column(type: 'integer', nullable: false)]
     protected int $min = 0;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=true)
-     */
+    #[Column(type: 'integer', nullable: true)]
     protected ?int $max = 0;
 
     public function setFlagAmountRange(?FlagAmountRange $flagAmountRange = null): void

@@ -5,6 +5,8 @@
       <w>clearfix</w>
       <w>fallbacks</w>
       <w>iconv</w>
+      <w>iexact</w>
+      <w>ipartial</w>
       <w>jidlo</w>
       <w>kalendar</w>
       <w>letak</w>

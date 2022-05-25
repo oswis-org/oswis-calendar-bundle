@@ -1,5 +1,3 @@
 
-###> oswis-org/information-system-utils ###
 /vendor/
-###< oswis-org/information-system-utils ###
-
+/.idea/sonarlint/

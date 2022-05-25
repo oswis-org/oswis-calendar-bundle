@@ -2,6 +2,9 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Table;
 use InvalidArgumentException;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
@@ -11,8 +14,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * Category (type) of event.
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_category")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -50,8 +51,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     "description",
  *     "note"
  * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
+#[Entity]
+#[Table(name: 'calendar_event_category')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventCategory implements NameableInterface
 {
     use NameableTrait;
@@ -69,7 +72,6 @@ class EventCategory implements NameableInterface
     public const EVIDENCE = 'evidence';
     public const SPORT = 'sport';
     public const FOOD = 'food';
-
     public const ALLOWED_TYPES
         = [
             self::YEAR_OF_EVENT,

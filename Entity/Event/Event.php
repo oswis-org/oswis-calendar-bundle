@@ -10,9 +10,16 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -25,12 +32,11 @@ use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\BankAccountTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 use function assert;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_event")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -70,8 +76,10 @@ use function assert;
  *     "shortName",
  *     "slug"
  * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event")
  */
+#[Entity(repositoryClass: EventRepository::class)]
+#[Table(name: 'calendar_event')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class Event implements NameableInterface
 {
     use NameableTrait;
@@ -83,84 +91,63 @@ class Event implements NameableInterface
     use DeletedTrait;
     use EntityPublicTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisAddressBookBundle\Entity\Place", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Place::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Place $place = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Participant $organizer = null;
 
     /**
      * @var Collection<EventFlagConnection> $flagConnections
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection",
-     *     cascade={"all"},
-     *     fetch="EAGER",
-     *     mappedBy="event",
-     * )
      */
+    #[OneToMany(mappedBy: 'event', targetEntity: EventFlagConnection::class, cascade: ['all'], fetch: 'EAGER')]
     protected Collection $flagConnections;
 
     /**
      * Parent event (if this is not top level event).
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="subEvents", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
-    protected ?Event $superEvent = null;
+    #[ManyToOne(targetEntity: self::class, fetch: 'EAGER', inversedBy: 'subEvents')]
+    #[JoinColumn(nullable: true)]
+    protected ?self $superEvent = null;
 
     /**
      * @var Collection<Event> $subEvents
-     * @Doctrine\ORM\Mapping\OneToMany(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", mappedBy="superEvent")
      */
+    #[OneToMany(mappedBy: 'superEvent', targetEntity: self::class)]
     protected Collection $subEvents;
 
     /**
      * @var Collection<EventContent> $contents
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventContent",
-     *     cascade={"all"},
-     *     mappedBy="event"
-     * )
      */
+    #[OneToMany(mappedBy: 'event', targetEntity: EventContent::class, cascade: ['all'])]
     protected Collection $contents;
 
     /**
      * @var Collection<EventImage> $images
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventImage", mappedBy="event", cascade={"all"}, orphanRemoval=true
-     * )
      */
+    #[OneToMany(mappedBy: 'event', targetEntity: EventImage::class, cascade: ['all'], orphanRemoval: true)]
     protected Collection $images;
 
     /**
      * @var Collection<EventFile> $files
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventFile", mappedBy="event", cascade={"all"}, orphanRemoval=true
-     * )
      */
+    #[OneToMany(mappedBy: 'event', targetEntity: EventFile::class, cascade: ['all'], orphanRemoval: true)]
     protected Collection $files;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="type_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: EventCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'type_id', referencedColumnName: 'id')]
     private ?EventCategory $category = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup", inversedBy="events", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="event_series_id", referencedColumnName="id")
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
-     */
+    #[ManyToOne(targetEntity: EventGroup::class, fetch: 'EAGER', inversedBy: 'events')]
+    #[JoinColumn(name: 'event_series_id', referencedColumnName: 'id')]
+    #[MaxDepth(1)]
     private ?EventGroup $group = null;
 
     public function __construct(
         ?Nameable $nameable = null,
-        ?Event $superEvent = null,
+        ?self $superEvent = null,
         ?Place $place = null,
         ?EventCategory $category = null,
         ?DateTimeRange $dateTimeRange = null,
@@ -222,7 +209,7 @@ class Event implements NameableInterface
         return $this->superEvent;
     }
 
-    public function setSuperEvent(?Event $event): void
+    public function setSuperEvent(?self $event): void
     {
         if ($this->superEvent && $event !== $this->superEvent) {
             $this->superEvent->removeSubEvent($this);
@@ -287,7 +274,7 @@ class Event implements NameableInterface
         return !$this->getSuperEvent();
     }
 
-    public function addSubEvent(?Event $event): void
+    public function addSubEvent(?self $event): void
     {
         if (null !== $event && !$this->getSubEvents()->contains($event)) {
             $this->getSubEvents()->add($event);
@@ -295,7 +282,7 @@ class Event implements NameableInterface
         }
     }
 
-    public function removeSubEvent(?Event $event): void
+    public function removeSubEvent(?self $event): void
     {
         if (null !== $event && $this->getSubEvents()->removeElement($event)) {
             $event->setSuperEvent(null);
@@ -478,7 +465,7 @@ class Event implements NameableInterface
         $this->group = $group;
     }
 
-    public function isEventSuperEvent(?Event $event = null, ?bool $recursive = true): bool
+    public function isEventSuperEvent(?self $event = null, ?bool $recursive = true): bool
     {
         return (null !== $event)
                && in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);

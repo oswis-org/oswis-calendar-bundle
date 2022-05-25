@@ -13,6 +13,15 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
@@ -26,6 +35,7 @@ use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Filter\ParentEventFilter;
 use OswisOrg\OswisCalendarBundle\Interfaces\Participant\ParticipantInterface;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -35,12 +45,22 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\ManagerConfirmationTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
  *
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant")
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "variableSymbol",
+ *     "event.name",
+ *     "event.shortName",
+ *     "event.slug",
+ *     "contact.name",
+ *     "contact.shortName",
+ *     "contact.sortableName",
+ *     "contact.details.content",
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -67,18 +87,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
  *     }
  *   }
  * )
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "variableSymbol",
- *     "event.name",
- *     "event.shortName",
- *     "event.slug",
- *     "contact.name",
- *     "contact.shortName",
- *     "contact.sortableName",
- *     "contact.details.content",
- * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
 #[ApiFilter(ParentEventFilter::class)]
 #[ApiFilter(OrderFilter::class, properties: [
@@ -94,6 +102,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\UserConfirmationTrait;
     'offer.event.id',
     'offer.event.superEvent.id',
 ])]
+#[Entity(repositoryClass: ParticipantRepository::class)]
+#[Table(name: 'calendar_participant')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;
@@ -107,117 +118,69 @@ class Participant implements ParticipantInterface
 
     /**
      * @var Collection<ParticipantNote> $notes
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote",
-     *     cascade={"all"},
-     *     mappedBy="participant",
-     *     fetch="EAGER",
-     * )
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
+    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantNote::class, cascade: ['all'], fetch: 'EAGER')]
+    #[MaxDepth(1)]
     protected Collection $notes;
 
     /**
      * @var Collection<ParticipantPayment>
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment",
-     *     cascade={"all"},
-     *     mappedBy="participant",
-     *     fetch="EAGER",
-     * )
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
+    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantPayment::class, cascade: ['all'], fetch: 'EAGER')]
+    #[MaxDepth(1)]
     protected Collection $payments;
 
     /**
      * @var Collection<ParticipantMail> $eMails
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail",
-     *     cascade={"all"},
-     *     mappedBy="participant",
-     *     fetch="EAGER",
-     * )
-     * @Symfony\Component\Serializer\Annotation\MaxDepth(1)
      */
+    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantMail::class, cascade: ['all'], fetch: 'EAGER')]
+    #[MaxDepth(1)]
     protected Collection $eMails;
 
     /**
      * Related contact (person or organization).
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact", cascade={"all"}, fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
      */
+    #[ManyToOne(targetEntity: AbstractContact::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?AbstractContact $contact = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer",
-     *     fetch="EAGER",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationOffer $offer = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
      * @var Collection<ParticipantFlagGroup>
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup", cascade={"all"}, fetch="EAGER"
-     * )
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_participant_flag_group_connection",
-     *     joinColumns={
-     *         @Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")
-     *     },
-     *     inverseJoinColumns={
-     *         @Doctrine\ORM\Mapping\JoinColumn(name="participant_flag_group_id", referencedColumnName="id", unique=true)
-     *     }
-     * )
      */
+    #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinTable(name: 'calendar_participant_flag_group_connection', joinColumns: [
+        new JoinColumn(name: 'participant_id', referencedColumnName: 'id'),
+    ], inverseJoinColumns: [new JoinColumn(name: 'participant_flag_group_id', referencedColumnName: 'id', unique: true)])]
     protected Collection $flagGroups;
 
     /**
      * @var Collection<ParticipantRegistration>
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRegistration",
-     *     cascade={"all"},
-     *     fetch="EAGER",
-     *     mappedBy="participant",
-     * )
      */
+    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantRegistration::class, cascade: ['all'], fetch: 'EAGER')]
     protected Collection $participantRegistrations;
 
     /**
      * @var Collection<ParticipantContact>
-     * @Doctrine\ORM\Mapping\OneToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact",
-     *     cascade={"all"},
-     *     fetch="EAGER",
-     *     mappedBy="participant",
-     * )
      */
+    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantContact::class, cascade: ['all'], fetch: 'EAGER')]
     protected Collection $participantContacts;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
-     */
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $formal = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     */
+    #[Column(type: 'string', nullable: true)]
     protected ?string $variableSymbol = null;
 
     /**

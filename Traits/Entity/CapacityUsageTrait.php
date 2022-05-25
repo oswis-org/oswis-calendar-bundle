@@ -1,24 +1,22 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
+use Doctrine\ORM\Mapping\Column;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CapacityUsage;
 
 trait CapacityUsageTrait
 {
-    /**
-     * Usage including overflow.
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
-     */
+    /** Usage including overflow. */
+    #[Column(type: 'integer', nullable: false)]
     protected int $fullUsage = 0;
 
-    /**
-     * Usage.
-     * @Doctrine\ORM\Mapping\Column(type="integer", nullable=false)
-     */
+    /** Usage. */
+    #[Column(type: 'integer', nullable: false)]
     protected int $baseUsage = 0;
 
     public function setUsage(?CapacityUsage $usage = null): void

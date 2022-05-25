@@ -1,4 +1,14 @@
 <?php
+/** @noinspection PropertyCanBePrivateInspection */
+
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
+/** @noinspection PropertyCanBePrivateInspection */
 /**
  * @noinspection MethodShouldBeFinalInspection
  */

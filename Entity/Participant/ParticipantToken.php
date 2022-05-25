@@ -5,12 +5,21 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantTokenRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_token")
+ * @author Jakub Zak <mail@jakubzak.eu>
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "token"
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -39,25 +48,18 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
  *     }
  *   }
  * )
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "token"
- * })
- * @author Jakub Zak <mail@jakubzak.eu>
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
+#[Entity(repositoryClass: ParticipantTokenRepository::class)]
+#[Table(name: 'calendar_participant_token')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class ParticipantToken extends AbstractToken
 {
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]
     protected ?Participant $participant = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="app_user_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: AppUser::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'app_user_id', referencedColumnName: 'id')]
     protected ?AppUser $appUser = null;
 
     public function __construct(

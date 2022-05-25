@@ -5,6 +5,13 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
+use Gedmo\Mapping\Annotation\Uploadable;
 use OswisOrg\OswisCalendarBundle\Controller\Event\EventImageAction;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractImage;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
@@ -14,25 +21,22 @@ use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints\NotNull;
+use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
-/**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_event_image")
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   iri="http://schema.org/ImageObject",
- *   collectionOperations={
- *     "get",
- *     "post"={
- *         "method"="POST",
- *         "path"="/calendar_event_image",
- *         "controller"=EventImageAction::class,
- *         "defaults"={"_api_receive"=false},
- *     },
- *   }
- * )
- * @Vich\UploaderBundle\Mapping\Annotation\Uploadable()
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_event_image")
- */
+#[ApiResource(collectionOperations: [
+    'get',
+    'post' => [
+        'method'     => 'POST',
+        'path'       => '/calendar_event_image',
+        'controller' => EventImageAction::class,
+        'defaults'   => ['_api_receive' => false],
+    ],
+])]
+#[Uploadable]
+#[Entity]
+#[Table(name: 'calendar_event_image')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event_image')]
 class EventImage extends AbstractImage
 {
     public const TYPE_LEAFLET = 'leaflet';
@@ -41,24 +45,17 @@ class EventImage extends AbstractImage
     public const TYPE_MAP = 'map';
     public const TYPE_POSTER = 'poster';
     public const TYPE_GALLERY = 'gallery';
-
     use BasicTrait;
     use TypeTrait;
     use PriorityTrait;
     use EntityPublicTrait;
 
-    /**
-     * @Symfony\Component\Validator\Constraints\NotNull()
-     * @Vich\UploaderBundle\Mapping\Annotation\UploadableField(
-     *     mapping="calendar_event_image", fileNameProperty="contentName", mimeType="contentMimeType"
-     * )
-     */
+    #[UploadableField(mapping: 'calendar_event_image', fileNameProperty: 'contentName', mimeType: 'contentMimeType')]
+    #[NotNull]
     public ?File $file = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Event\Event", inversedBy="images", cascade={"all"})
-     * @Doctrine\ORM\Mapping\JoinColumn(name="event_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: Event::class, cascade: ['all'], inversedBy: 'images')]
+    #[JoinColumn(name: 'event_id', referencedColumnName: 'id')]
     protected ?Event $event = null;
 
     /**

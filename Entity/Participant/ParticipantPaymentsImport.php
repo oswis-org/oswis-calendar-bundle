@@ -5,21 +5,26 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Table;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
+use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_payments_import")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -42,19 +47,13 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     }
  *   }
  * )
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class, properties={
- *     "id": "ASC",
- *     "createdDateTime"
- * })
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter::class, properties={
- *     "id": "iexact",
- *     "createdDateTime": "ipartial"
- * })
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter::class, properties={
- *     "createdDateTime"
- * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant_payments_import")
  */
+#[Entity]
+#[Table(name: 'calendar_participant_payments_import')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_payments_import')]
+#[ApiFilter(OrderFilter::class, properties: ["id" => "ASC", "createdAt"])]
+#[ApiFilter(DateFilter::class, properties: [])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'createdAt' => 'ipartial'])]
 class ParticipantPaymentsImport
 {
     use BasicTrait;
@@ -63,17 +62,10 @@ class ParticipantPaymentsImport
     use TextValueTrait;
 
     public const TYPE_CSV = 'csv';
-
     public const ALLOWED_TYPES = [self::TYPE_CSV];
+    public const SETTINGS_CODES = ['fio' => 'Fio banka, a.s.'];
 
-    public const SETTINGS_CODES
-        = [
-            'fio' => 'Fio banka, a.s.',
-        ];
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
+    #[Column(type: 'string', nullable: true)]
     public ?string $settingsCode = 'fio';
 
     /**

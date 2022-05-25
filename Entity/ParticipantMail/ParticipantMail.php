@@ -1,10 +1,16 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
@@ -13,8 +19,11 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 
 /**
  * E-mail sent to some user included in participant.
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_mail")
+ * @author Jakub Zak <mail@jakubzak.eu>
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "token"
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -43,41 +52,30 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
  *     }
  *   }
  * )
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "token"
- * })
- * @author Jakub Zak <mail@jakubzak.eu>
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant_mail")
  */
+#[Entity]
+#[Table(name: 'calendar_participant_mail')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
 class ParticipantMail extends AbstractMail
 {
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
     public const TYPE_SUMMARY = 'summary';
     public const TYPE_PAYMENT = 'payment';
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\Participant", fetch="EAGER", inversedBy="eMails")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="participant_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER', inversedBy: 'eMails')]
+    #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]
     protected ?Participant $participant = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="participant_mail_category_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: ParticipantMailCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'participant_mail_category_id', referencedColumnName: 'id')]
     protected ?ParticipantMailCategory $participantMailCategory = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="app_user_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: AppUser::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'app_user_id', referencedColumnName: 'id')]
     protected ?AppUser $appUser = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(targetEntity="OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken", fetch="EAGER")
-     * @Doctrine\ORM\Mapping\JoinColumn(name="participant_token_id", referencedColumnName="id")
-     */
+    #[ManyToOne(targetEntity: ParticipantToken::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'participant_token_id', referencedColumnName: 'id')]
     protected ?ParticipantToken $participantToken = null;
 
     public function __construct(

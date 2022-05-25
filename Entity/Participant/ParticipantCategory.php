@@ -1,12 +1,20 @@
 <?php
 /**
+ * @noinspection PhpUnused
  * @noinspection PropertyCanBePrivateInspection
  * @noinspection MethodShouldBeFinalInspection
  */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Table;
 use InvalidArgumentException;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantCategoryRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
@@ -15,8 +23,12 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use function in_array;
 
 /**
- * @Doctrine\ORM\Mapping\Entity(repositoryClass="OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantCategoryRepository")
- * @Doctrine\ORM\Mapping\Table(name="calendar_participant_category")
+ * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "name",
+ *     "description",
+ *     "note"
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -43,15 +55,11 @@ use function in_array;
  *     }
  *   }
  * )
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "description",
- *     "note"
- * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_participant")
  */
+#[Entity(repositoryClass: ParticipantCategoryRepository::class)]
+#[Table(name: 'calendar_participant_category')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[ApiFilter(OrderFilter::class)]
 class ParticipantCategory implements NameableInterface
 {
     use NameableTrait;
@@ -74,12 +82,11 @@ class ParticipantCategory implements NameableInterface
             self::TYPE_PARTNER, // Somebody (organization) who supports event.
             self::TYPE_GUEST, // Somebody who performs at the event.
             self::TYPE_MANAGER, // Somebody who manages the event.
+            self::TYPE_TEAM_MEMBER,
         ];
 
-    /**
-     * Send formal (or informal) e-mails?
-     * @Doctrine\ORM\Mapping\Column(type="boolean", nullable=true)
-     */
+    /** Send formal (or informal) e-mails? */
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $formal = null;
 
     /**

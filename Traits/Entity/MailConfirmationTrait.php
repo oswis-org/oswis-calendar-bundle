@@ -5,17 +5,21 @@
 
 namespace OswisOrg\OswisCalendarBundle\Traits\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
+use Doctrine\ORM\Mapping\Column;
+use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 
 trait MailConfirmationTrait
 {
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="datetime", nullable=true, options={"default" : null})
-     * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter::class, strategy="ipartial")
-     * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter::class)
-     * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter::class)
-     * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
-     */
+    #[Column(type: 'datetime', nullable: true, options: ['default' => null])]
+    #[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
+    #[ApiFilter(DateFilter::class)]
+    #[ApiFilter(ExistsFilter::class)]
+    #[ApiFilter(OrderFilter::class)]
     protected ?DateTime $confirmedByMailAt = null;
 
     public function isConfirmedByMail(): bool

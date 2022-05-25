@@ -9,6 +9,14 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagAmountRange;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\FlagAmountRangeTrait;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Publicity;
@@ -20,8 +28,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 
 /**
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_flag_group_range")
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -48,8 +54,10 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  *     }
  *   }
  * )
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag_range")
  */
+#[Entity]
+#[Table(name: 'calendar_flag_group_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag_range')]
 class RegistrationFlagGroupOffer implements NameableInterface
 {
     use NameableTrait {
@@ -63,33 +71,20 @@ class RegistrationFlagGroupOffer implements NameableInterface
     use FormValueTrait;
     use TextValueTrait;
 
-    /**
-     * @Doctrine\ORM\Mapping\Column(type="string", nullable=true)
-     */
+    #[Column(type: 'string', nullable: true)]
     protected ?string $emptyPlaceholder = null;
 
-    /**
-     * @Doctrine\ORM\Mapping\ManyToOne(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory",
-     *     fetch="EAGER",
-     * )
-     * @Doctrine\ORM\Mapping\JoinColumn(nullable=true)
-     */
+    #[ManyToOne(targetEntity: RegistrationFlagCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagCategory $flagCategory = null;
 
     /**
      * @var Collection<RegistrationFlagOffer>
-     * @Doctrine\ORM\Mapping\ManyToMany(
-     *     targetEntity="OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer",
-     *     cascade={"all"},
-     *     fetch="EAGER",
-     * )
-     * @Doctrine\ORM\Mapping\JoinTable(
-     *     name="calendar_flag_group_range_flag_connection",
-     *     joinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_group_range_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@Doctrine\ORM\Mapping\JoinColumn(name="flag_range_id", referencedColumnName="id", unique=true)}
-     * )
      */
+    #[ManyToMany(targetEntity: RegistrationFlagOffer::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinTable(name: 'calendar_flag_group_range_flag_connection', joinColumns: [
+        new JoinColumn(name: 'flag_group_range_id', referencedColumnName: 'id'),
+    ], inverseJoinColumns: [new JoinColumn(name: 'flag_range_id', referencedColumnName: 'id', unique: true)])]
     protected Collection $flagOffers;
 
     public function __construct(

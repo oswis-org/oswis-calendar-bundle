@@ -2,6 +2,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
@@ -11,8 +16,16 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * Some category (type) of participant flags.
- * @Doctrine\ORM\Mapping\Entity()
- * @Doctrine\ORM\Mapping\Table(name="calendar_flag_category")
+ * @@OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
+ *     "id",
+ *     "name",
+ *     "shortName",
+ *     "description",
+ *     "note",
+ *     "internalNote",
+ *     "type",
+ *     "color"
+ * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -39,19 +52,11 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  *     }
  *   }
  * )
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
- * @@OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "shortName",
- *     "description",
- *     "note",
- *     "internalNote",
- *     "type",
- *     "color"
- * })
- * @Doctrine\ORM\Mapping\Cache(usage="NONSTRICT_READ_WRITE", region="calendar_flag")
  */
+#[Entity]
+#[Table(name: 'calendar_flag_category')]
+#[ApiFilter(OrderFilter::class)]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag')]
 class RegistrationFlagCategory implements NameableInterface
 {
     use NameableTrait;
