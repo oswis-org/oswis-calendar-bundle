@@ -36,7 +36,7 @@ class FlagGroupOfParticipantType extends AbstractType
     public function __construct(RegistrationFlagOfferRepository $flagRangeRepository, LoggerInterface $logger)
     {
         $this->flagRangeRepository = $flagRangeRepository;
-        $this->logger = $logger;
+        $this->logger              = $logger;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -80,13 +80,13 @@ class FlagGroupOfParticipantType extends AbstractType
             throw new OswisException('Ve formuláři chybí instance účastníka...');
         }
         $flagGroupRange = $participantFlagGroup->getFlagGroupOffer();
-        $flagCategory = $participantFlagGroup->getFlagCategory();
+        $flagCategory   = $participantFlagGroup->getFlagCategory();
         if (null === $flagGroupRange || null === $flagCategory) {
             return;
         }
         $isFormal = false !== $participant->isFormal();
-        $min = $flagGroupRange->getMin();
-        $max = $flagGroupRange->getMax();
+        $min      = $flagGroupRange->getMin();
+        $max      = $flagGroupRange->getMax();
         if ($flagGroupRange->isFlagValueAllowed()) {
             self::addCheckboxes($event->getForm(), $participantFlagGroup, $min);
 
@@ -144,16 +144,16 @@ class FlagGroupOfParticipantType extends AbstractType
         if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupOffer())) {
             return;
         }
-        $flagCategory = $flagGroupRange->getFlagCategory();
-        $choices = $flagGroupRange->getFlagOffers();
-        $multiple = null === $max || $max > 1;
-        $expanded = count($choices) <= 1;
-        $help = $flagGroupRange->getDescription();
+        $flagCategory     = $flagGroupRange->getFlagCategory();
+        $choices          = $flagGroupRange->getFlagOffers();
+        $multiple         = null === $max || $max > 1;
+        $expanded         = count($choices) <= 1;
+        $help             = $flagGroupRange->getDescription();
         $flagCategoryName = $flagCategory ? $flagCategory->getDescription() : '';
-        $help = empty($help) ? $flagCategoryName : $help;
+        $help             = empty($help) ? $flagCategoryName : $help;
         if (!$expanded && $multiple) {
             $youCan = $isFormal ? 'můžete' : 'můžeš';
-            $help .= "<p>Pro výběr více položek nebo zrušení výběru $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
+            $help   .= "<p>Pro výběr více položek nebo zrušení výběru $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
         }
         $form->add("tempFlagRanges", EntityType::class, [
             'class'              => RegistrationFlagOffer::class,

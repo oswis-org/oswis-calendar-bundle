@@ -61,8 +61,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_participant_flag_group')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Table(name : 'calendar_participant_flag_group')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 class ParticipantFlagGroup implements BasicInterface, TextValueInterface, DeletedInterface
 {
     use BasicTrait;
@@ -72,22 +72,22 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     public Collection $tempFlagRanges;
-    #[ManyToOne(targetEntity: RegistrationFlagGroupOffer::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : RegistrationFlagGroupOffer::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?RegistrationFlagGroupOffer $flagGroupOffer = null;
 
     /**
      * @var Collection<ParticipantFlag>
      */
-    #[OneToMany(mappedBy: 'participantFlagGroup', targetEntity: ParticipantFlag::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'participantFlagGroup', targetEntity : ParticipantFlag::class, cascade : ['all'], fetch : 'EAGER')]
     #[MaxDepth(1)]
     protected Collection $participantFlags;
 
     public function __construct(?RegistrationFlagGroupOffer $flagGroupRange = null)
     {
         $this->participantFlags = new ArrayCollection();
-        $this->tempFlagRanges = new ArrayCollection();
-        $this->flagGroupOffer = $flagGroupRange;
+        $this->tempFlagRanges   = new ArrayCollection();
+        $this->flagGroupOffer   = $flagGroupRange;
     }
 
     public function getFlagType(): ?string
@@ -175,7 +175,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         }
         if (!$onlySimulate) {
             $removedFlags = $oldParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$newParticipantFlags->contains($flag),);
-            $addedFlags = $newParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$oldParticipantFlags->contains($flag),);
+            $addedFlags   = $newParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag && !$oldParticipantFlags->contains($flag),);
             foreach ($removedFlags as $removedFlag) {
                 assert($removedFlag instanceof ParticipantFlag);
                 $removedFlag->delete();
@@ -218,7 +218,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         $flagRange->checkInRange($newFlagRangeCount);
         $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
                                                                                       && $pFlag->getFlagOffer() === $flagRange,)->count();
-        $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
+        $differenceCount   = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
         }

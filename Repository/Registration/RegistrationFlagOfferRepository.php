@@ -16,13 +16,13 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 
 class RegistrationFlagOfferRepository extends ServiceEntityRepository
 {
-    public const CRITERIA_ID = 'id';
-    public const CRITERIA_SLUG = 'slug';
-    public const CRITERIA_TYPE = 'participantType';
-    public const CRITERIA_EVENT = 'event';
-    public const CRITERIA_TYPE_OF_TYPE = 'participantTypeOfType';
+    public const CRITERIA_ID                 = 'id';
+    public const CRITERIA_SLUG               = 'slug';
+    public const CRITERIA_TYPE               = 'participantType';
+    public const CRITERIA_EVENT              = 'event';
+    public const CRITERIA_TYPE_OF_TYPE       = 'participantTypeOfType';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
-    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
+    public const CRITERIA_INCLUDE_DELETED    = 'includeDeleted';
 
     /**
      * @param  ManagerRegistry  $registry

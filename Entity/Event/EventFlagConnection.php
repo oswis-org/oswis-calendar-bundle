@@ -46,20 +46,20 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_event_flag_connection')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
+#[Table(name : 'calendar_event_flag_connection')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
 class EventFlagConnection implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER', inversedBy: 'flagConnections')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER', inversedBy : 'flagConnections')]
+    #[JoinColumn(nullable : true)]
     protected ?Event $event = null;
 
-    #[ManyToOne(targetEntity: EventFlag::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : EventFlag::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?EventFlag $eventFlag = null;
 
     public function __construct(?EventFlag $eventFlag = null, ?string $textValue = null)

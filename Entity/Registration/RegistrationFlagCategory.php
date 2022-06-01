@@ -54,25 +54,25 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_flag_category')]
+#[Table(name : 'calendar_flag_category')]
 #[ApiFilter(OrderFilter::class)]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_flag')]
 class RegistrationFlagCategory implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
     use TypeTrait;
 
-    public const TYPE_FOOD = 'food';
-    public const TYPE_TRANSPORT = 'transport';
-    public const TYPE_T_SHIRT_SIZE = 't-shirt-size';
+    public const TYPE_FOOD                = 'food';
+    public const TYPE_TRANSPORT           = 'transport';
+    public const TYPE_T_SHIRT_SIZE        = 't-shirt-size';
     public const TYPE_T_SHIRT_HANDED_OVER = 't-shirt-handed-over';
-    public const TYPE_ACCOMMODATION_TYPE = 'accommodation-type';
-    public const TYPE_ARRIVED = 'arrived';
-    public const TYPE_LEFT = 'left';
-    public const TYPE_PARTNER_HOMEPAGE = 'partner-homepage';
-    public const TYPE_SCHOOL = 'school';
-    public const TYPE_CONFIRMATIONS = 'confirmations';
+    public const TYPE_ACCOMMODATION_TYPE  = 'accommodation-type';
+    public const TYPE_ARRIVED             = 'arrived';
+    public const TYPE_LEFT                = 'left';
+    public const TYPE_PARTNER_HOMEPAGE    = 'partner-homepage';
+    public const TYPE_SCHOOL              = 'school';
+    public const TYPE_CONFIRMATIONS       = 'confirmations';
 
     /**
      * @param  Nameable|null  $nameable

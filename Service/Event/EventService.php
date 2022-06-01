@@ -61,7 +61,7 @@ class EventService
         foreach ($this->calendarSettings->getDefaultEventFallbacks() as $fallback) {
             if (null === $event && !empty($fallback)) {
                 $opts[EventRepository::CRITERIA_SLUG] = $fallback;
-                $event = $this->getRepository()->getEvent($opts);
+                $event                                = $this->getRepository()->getEvent($opts);
             }
         }
 
@@ -89,12 +89,12 @@ class EventService
         ?string $eventSlug = null,
         ?bool $onlyRoot = true
     ): Collection {
-        $range ??= EventController::RANGE_ALL;
-        $limit = $limit < 1 ? null : $limit;
+        $range  ??= EventController::RANGE_ALL;
+        $limit  = $limit < 1 ? null : $limit;
         $offset = $offset < 1 ? null : $offset;
-        $start = DateTimeUtils::getDateTimeByRange($start, $range, false);
-        $end = DateTimeUtils::getDateTimeByRange($end, $range, true);
-        $opts = [
+        $start  = DateTimeUtils::getDateTimeByRange($start, $range, false);
+        $end    = DateTimeUtils::getDateTimeByRange($end, $range, true);
+        $opts   = [
             EventRepository::CRITERIA_START              => $start,
             EventRepository::CRITERIA_END                => $end,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,

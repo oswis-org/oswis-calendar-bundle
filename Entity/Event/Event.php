@@ -77,9 +77,9 @@ use function assert;
  *     "slug"
  * })
  */
-#[Entity(repositoryClass: EventRepository::class)]
-#[Table(name: 'calendar_event')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
+#[Entity(repositoryClass : EventRepository::class)]
+#[Table(name : 'calendar_event')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
 class Event implements NameableInterface
 {
     use NameableTrait;
@@ -91,57 +91,57 @@ class Event implements NameableInterface
     use DeletedTrait;
     use EntityPublicTrait;
 
-    #[ManyToOne(targetEntity: Place::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Place::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?Place $place = null;
 
-    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Participant::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?Participant $organizer = null;
 
     /**
      * @var Collection<EventFlagConnection> $flagConnections
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventFlagConnection::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'event', targetEntity : EventFlagConnection::class, cascade : ['all'], fetch : 'EAGER')]
     protected Collection $flagConnections;
 
     /**
      * Parent event (if this is not top level event).
      */
-    #[ManyToOne(targetEntity: self::class, fetch: 'EAGER', inversedBy: 'subEvents')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : self::class, fetch : 'EAGER', inversedBy : 'subEvents')]
+    #[JoinColumn(nullable : true)]
     protected ?self $superEvent = null;
 
     /**
      * @var Collection<Event> $subEvents
      */
-    #[OneToMany(mappedBy: 'superEvent', targetEntity: self::class)]
+    #[OneToMany(mappedBy : 'superEvent', targetEntity : self::class)]
     protected Collection $subEvents;
 
     /**
      * @var Collection<EventContent> $contents
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventContent::class, cascade: ['all'])]
+    #[OneToMany(mappedBy : 'event', targetEntity : EventContent::class, cascade : ['all'])]
     protected Collection $contents;
 
     /**
      * @var Collection<EventImage> $images
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventImage::class, cascade: ['all'], orphanRemoval: true)]
+    #[OneToMany(mappedBy : 'event', targetEntity : EventImage::class, cascade : ['all'], orphanRemoval : true)]
     protected Collection $images;
 
     /**
      * @var Collection<EventFile> $files
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventFile::class, cascade: ['all'], orphanRemoval: true)]
+    #[OneToMany(mappedBy : 'event', targetEntity : EventFile::class, cascade : ['all'], orphanRemoval : true)]
     protected Collection $files;
 
-    #[ManyToOne(targetEntity: EventCategory::class, fetch: 'EAGER')]
-    #[JoinColumn(name: 'type_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : EventCategory::class, fetch : 'EAGER')]
+    #[JoinColumn(name : 'type_id', referencedColumnName : 'id')]
     private ?EventCategory $category = null;
 
-    #[ManyToOne(targetEntity: EventGroup::class, fetch: 'EAGER', inversedBy: 'events')]
-    #[JoinColumn(name: 'event_series_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : EventGroup::class, fetch : 'EAGER', inversedBy : 'events')]
+    #[JoinColumn(name : 'event_series_id', referencedColumnName : 'id')]
     #[MaxDepth(1)]
     private ?EventGroup $group = null;
 
@@ -154,11 +154,11 @@ class Event implements NameableInterface
         ?EventGroup $group = null,
         ?Publicity $publicity = null
     ) {
-        $this->subEvents = new ArrayCollection();
-        $this->contents = new ArrayCollection();
+        $this->subEvents       = new ArrayCollection();
+        $this->contents        = new ArrayCollection();
         $this->flagConnections = new ArrayCollection();
-        $this->images = new ArrayCollection();
-        $this->files = new ArrayCollection();
+        $this->images          = new ArrayCollection();
+        $this->files           = new ArrayCollection();
         $this->setCategory($category);
         $this->setSuperEvent($superEvent);
         $this->setGroup($group);
@@ -357,7 +357,7 @@ class Event implements NameableInterface
 
     public function getStartDateTimeRecursive(): ?DateTime
     {
-        $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
+        $maxDateTime   = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
         $startDateTime = $this->getStartDateTime() ?? $maxDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);

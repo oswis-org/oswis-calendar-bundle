@@ -17,15 +17,15 @@ namespace OswisOrg\OswisCalendarBundle\Entity\NonPersistent;
 
 class CsvPaymentImportSettings
 {
-    public const DEFAULT_DELIMITER = ';';
-    public const DEFAULT_ENCLOSURE = '"';
-    public const DEFAULT_ESCAPE = '\\';
+    public const DEFAULT_DELIMITER                   = ';';
+    public const DEFAULT_ENCLOSURE                   = '"';
+    public const DEFAULT_ESCAPE                      = '\\';
     public const DEFAULT_VARIABLE_SYMBOL_COLUMN_NAME = 'VS';
-    public const DEFAULT_IDENTIFIER_COLUMN_NAME = 'ID operace';
-    public const DEFAULT_DATE_COLUMN_NAME = 'Datum';
-    public const DEFAULT_VALUE_COLUMN_NAME = 'Objem';
-    public const DEFAULT_CURRENCY_COLUMN_NAME = 'Měna';
-    public const DEFAULT_CURRENCY_ALLOWED = 'CZK';
+    public const DEFAULT_IDENTIFIER_COLUMN_NAME      = 'ID operace';
+    public const DEFAULT_DATE_COLUMN_NAME            = 'Datum';
+    public const DEFAULT_VALUE_COLUMN_NAME           = 'Objem';
+    public const DEFAULT_CURRENCY_COLUMN_NAME        = 'Měna';
+    public const DEFAULT_CURRENCY_ALLOWED            = 'CZK';
 
     protected ?string $delimiter = self::DEFAULT_DELIMITER;
 

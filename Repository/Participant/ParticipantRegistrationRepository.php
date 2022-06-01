@@ -17,8 +17,8 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 
 class ParticipantRegistrationRepository extends EntityRepository
 {
-    public const CRITERIA_ID = 'id';
-    public const CRITERIA_RANGE = 'offer';
+    public const CRITERIA_ID              = 'id';
+    public const CRITERIA_RANGE           = 'offer';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
 
     public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantRegistration
@@ -95,7 +95,7 @@ class ParticipantRegistrationRepository extends EntityRepository
     public function getRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts, $limit, $offset);
-        $result = $queryBuilder->getQuery()->getResult();
+        $result       = $queryBuilder->getQuery()->getResult();
 
         return new ArrayCollection(is_array($result) ? $result : []);
     }

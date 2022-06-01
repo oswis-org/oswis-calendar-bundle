@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
-#[ApiResource(collectionOperations: [
+#[ApiResource(collectionOperations : [
     'get',
     'post' => [
         'method'     => 'POST',
@@ -34,8 +34,8 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
     ],
 ])]
 #[Entity]
-#[Table(name: 'calendar_event_file')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event_file')]
+#[Table(name : 'calendar_event_file')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event_file')]
 #[Uploadable]
 class EventFile extends AbstractFile
 {
@@ -45,11 +45,11 @@ class EventFile extends AbstractFile
     use EntityPublicTrait;
 
     #[NotNull]
-    #[UploadableField(mapping: 'calendar_event_file', fileNameProperty: 'contentName', mimeType: 'contentMimeType')]
+    #[UploadableField(mapping : 'calendar_event_file', fileNameProperty : 'contentName', mimeType : 'contentMimeType')]
     public ?File $file = null;
 
-    #[ManyToOne(targetEntity: Event::class, inversedBy: 'files')]
-    #[JoinColumn(name: 'event_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : Event::class, inversedBy : 'files')]
+    #[JoinColumn(name : 'event_id', referencedColumnName : 'id')]
     protected ?Event $event = null;
 
     /**

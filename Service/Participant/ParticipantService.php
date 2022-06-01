@@ -84,7 +84,7 @@ class ParticipantService
             throw new OswisException('Přihláška není kompletní nebo je poškozená. V přihlášce chybí kontakt.');
         }
         $participantMailAddress = $contact->getEmail();
-        $participantName = $contact->getName();
+        $participantName        = $contact->getName();
         if (null === ($appUser = $participant->getAppUser()) && $this->appUserService->alreadyExists($eMail = ''.$contact->getEmail())) {
             $this->logger->error("User not unique with string '$eMail' and participant was NOT created!");
             throw new UserNotUniqueException('Uživatel se stejným e-mailem nebo jménem již existuje!');
@@ -92,7 +92,7 @@ class ParticipantService
         if (null === $appUser) {
             $this->logger->info("Creating new AppUser for participant with name '$participantName' and e-mail '$participantMailAddress'.");
             $appUserType = $this->appUserTypeService->getRepository()->findOneBy(['slug' => 'customer']);
-            $newAppUser = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress, null, $appUserType,);
+            $newAppUser  = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress, null, $appUserType,);
             $contact->setAppUser($this->appUserService->create($newAppUser, false, false, false));
             $this->logger->debug("New AppUser for participant '$participantMailAddress' created.");
         }
@@ -128,8 +128,8 @@ class ParticipantService
         }
         $this->em->persist($participant);
         $this->em->flush();
-        $participantId = $participant->getId();
-        $sent = 0;
+        $participantId       = $participant->getId();
+        $sent                = 0;
         $contactPersonsCount = $participant->getContactPersons(false)->count();
         $this->logger->info("Will send verification e-mail to $contactPersonsCount contact persons of participant $participantId.");
         foreach ($participant->getContactPersons(false) as $contactPerson) {
@@ -174,10 +174,10 @@ class ParticipantService
 
     private function getLogMessage(Participant $participant): string
     {
-        $id = $participant->getId();
+        $id          = $participant->getId();
         $contactName = $participant->getContact()?->getName() ?? '';
         $infoMessage = "Created participant (by service) with ID [$id] and contact name [$contactName]";
-        $rangeName = $participant->getOffer()?->getName() ?? '';
+        $rangeName   = $participant->getOffer()?->getName() ?? '';
         $infoMessage .= " to range [$rangeName].";
 
         return $infoMessage;
@@ -192,7 +192,7 @@ class ParticipantService
     public function checkParticipantSuperEvent(RegistrationOffer $range, Participant $participant): void
     {
         if (true === $range->isSuperEventRequired()) {
-            $included = false;
+            $included              = false;
             $participantsOfContact = $this->getParticipants([
                 ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
@@ -316,7 +316,9 @@ class ParticipantService
         $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE] ??= ParticipantCategory::TYPE_PARTNER;
 
         return $this->getParticipants($opts)->filter(fn(mixed $participant) => $participant instanceof Participant
-                                                                               && $participant->hasFlag(null, true, null,
+                                                                               && $participant->hasFlag(null,
+                true,
+                null,
                 RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE));
     }
 
@@ -382,7 +384,8 @@ class ParticipantService
         }
         $this->logger->info('Creating empty participant.');
 
-        return new Participant($regRange, $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']),
+        return new Participant($regRange,
+            $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']),
             new ArrayCollection([new ParticipantNote()]));
     }
 

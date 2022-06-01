@@ -52,21 +52,21 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
  *   }
  * )
  */
-#[Entity(repositoryClass: ParticipantRegistrationRepository::class)]
-#[Table(name: 'calendar_participant_range')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Entity(repositoryClass : ParticipantRegistrationRepository::class)]
+#[Table(name : 'calendar_participant_range')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 class ParticipantRegistration implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity: Participant::class, fetch: 'EXTRA_LAZY', inversedBy: 'participantRegistrations')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Participant::class, fetch : 'EXTRA_LAZY', inversedBy : 'participantRegistrations')]
+    #[JoinColumn(nullable : true)]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : RegistrationOffer::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?RegistrationOffer $offer = null;
 
     public function __construct(?RegistrationOffer $range = null)

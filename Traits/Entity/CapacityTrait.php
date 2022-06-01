@@ -11,10 +11,10 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 
 trait CapacityTrait
 {
-    #[Column(type: 'integer', nullable: true)]
+    #[Column(type : 'integer', nullable : true)]
     protected ?int $fullCapacity = null;
 
-    #[Column(type: 'integer', nullable: true)]
+    #[Column(type : 'integer', nullable : true)]
     protected ?int $baseCapacity = null;
 
     public function setCapacity(?Capacity $capacity = null): void
@@ -30,7 +30,7 @@ trait CapacityTrait
 
     public function setBaseCapacity(?int $baseCapacity): void
     {
-        $baseCapacity ??= 0;
+        $baseCapacity       ??= 0;
         $this->baseCapacity = max(0, $baseCapacity);
     }
 

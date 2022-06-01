@@ -14,7 +14,7 @@ class Configuration implements ConfigurationInterface
     final public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('oswis_org_oswis_calendar', 'array');
-        $rootNode = $treeBuilder->getRootNode();
+        $rootNode    = $treeBuilder->getRootNode();
         assert($rootNode instanceof ArrayNodeDefinition);
         $rootNode->info('Default configuration for calendar module for OSWIS (One Simple Web IS).');
         $this->addDefaultEvent($rootNode);

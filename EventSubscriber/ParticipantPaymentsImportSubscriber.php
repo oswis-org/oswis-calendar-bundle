@@ -39,7 +39,7 @@ final class ParticipantPaymentsImportSubscriber implements EventSubscriberInterf
     public function postWrite(ViewEvent $event): void
     {
         $paymentsImport = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method         = $event->getRequest()->getMethod();
         if (!$paymentsImport instanceof ParticipantPaymentsImport || Request::METHOD_POST !== $method) {
             return;
         }

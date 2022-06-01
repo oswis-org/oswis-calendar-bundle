@@ -40,9 +40,9 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
  *   }
  * )
  */
-#[Entity(repositoryClass: ParticipantMailCategoryRepository::class)]
-#[Table(name: 'calendar_participant_mail_category')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
+#[Entity(repositoryClass : ParticipantMailCategoryRepository::class)]
+#[Table(name : 'calendar_participant_mail_category')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant_mail')]
 class ParticipantMailCategory extends AbstractMailCategory
 {
 }

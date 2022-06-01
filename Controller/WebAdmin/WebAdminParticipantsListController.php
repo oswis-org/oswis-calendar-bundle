@@ -45,17 +45,17 @@ class WebAdminParticipantsListController extends AbstractController
 
     public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null): array
     {
-        $data = [];
+        $data                        = [];
         $data['participantCategory'] = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
-        $data['event'] = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
-        $data['participants'] = $this->participantService->getParticipants([
+        $data['event']               = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
+        $data['participants']        = $this->participantService->getParticipants([
             ParticipantRepository::CRITERIA_INCLUDE_DELETED       => true,
             ParticipantRepository::CRITERIA_EVENT                 => $data['event'],
             ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $data['participantCategory'],
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
         ]);
-        $data['title'] = "Přehled účastníků :: ADMIN";
-        $participantsArray = $data['participants']->toArray();
+        $data['title']               = "Přehled účastníků :: ADMIN";
+        $participantsArray           = $data['participants']->toArray();
         usort($participantsArray, static function (mixed $a, mixed $b) {
             assert($a instanceof Participant && $b instanceof Participant);
 
@@ -87,9 +87,9 @@ class WebAdminParticipantsListController extends AbstractController
      */
     public function showEvent(?string $eventSlug = null): Response
     {
-        $event = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
-        $defaultEvent = $this->eventService->getDefaultEvent();
-        $event ??= $defaultEvent;
+        $event          = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
+        $defaultEvent   = $this->eventService->getDefaultEvent();
+        $event          ??= $defaultEvent;
         $isDefaultEvent = $event === $defaultEvent;
         if (null === $event) {
             throw new NotFoundException("Událost '$eventSlug' nenalezena.");
@@ -100,7 +100,7 @@ class WebAdminParticipantsListController extends AbstractController
             ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
         ]);
-        $occupancy = [
+        $occupancy    = [
             'event'     => $event,
             'occupancy' => $participants->count(),
             'subEvents' => [],
@@ -117,17 +117,17 @@ class WebAdminParticipantsListController extends AbstractController
             ];
             // Do some recursion??
         }
-        $flagsUsageByRange = [];
-        $flagsUsageByFlag = [];
-        $otherAggregations = [];
-        $paymentsAggregation['Celkem cena (s příznaky)'] = 0;
+        $flagsUsageByRange                                          = [];
+        $flagsUsageByFlag                                           = [];
+        $otherAggregations                                          = [];
+        $paymentsAggregation['Celkem cena (s příznaky)']            = 0;
         $paymentsAggregation['Celkem základní cena (bez příznaků)'] = 0;
-        $paymentsAggregation['Celkem záloha (s příznaky)'] = 0;
-        $paymentsAggregation['Zaplacená cena'] = 0;
-        $paymentsAggregation['Celkem cena za příznaky'] = 0;
-        $paymentsAggregation['Celkem záloha za příznaky'] = 0;
-        $paymentsAggregation['Zbývající záloha (s příznaky)'] = 0;
-        $paymentsAggregation['Zbývající cena (s příznaky)'] = 0;
+        $paymentsAggregation['Celkem záloha (s příznaky)']          = 0;
+        $paymentsAggregation['Zaplacená cena']                      = 0;
+        $paymentsAggregation['Celkem cena za příznaky']             = 0;
+        $paymentsAggregation['Celkem záloha za příznaky']           = 0;
+        $paymentsAggregation['Zbývající záloha (s příznaky)']       = 0;
+        $paymentsAggregation['Zbývající cena (s příznaky)']         = 0;
         foreach ($participants as $participant) {
             assert($participant instanceof Participant);
             foreach ($participant->getParticipantFlags(null, null, true) as $participantFlag) {
@@ -137,22 +137,22 @@ class WebAdminParticipantsListController extends AbstractController
                     continue;
                 }
                 $participantFlagGroup = $participantFlag->getParticipantFlagGroup();
-                $flagGroupRange = $participantFlagGroup?->getFlagGroupOffer();
-                $flagGroupRangeId = $flagGroupRange?->getId() ?? 0;
-                $flag = $flagRange->getFlag();
-                $flagId = $flag ? $flag->getId() : 0;
-                $flagCategory = $flagRange->getCategory();
-                $flagCategoryId = $flagCategory ? $flagCategory->getId() : 0;
+                $flagGroupRange       = $participantFlagGroup?->getFlagGroupOffer();
+                $flagGroupRangeId     = $flagGroupRange?->getId() ?? 0;
+                $flag                 = $flagRange->getFlag();
+                $flagId               = $flag ? $flag->getId() : 0;
+                $flagCategory         = $flagRange->getCategory();
+                $flagCategoryId       = $flagCategory ? $flagCategory->getId() : 0;
                 // Flags usage by range.
-                $flagsUsageByRange[$flagGroupRangeId]['flagCategory'] = $flagCategory;
-                $flagsUsageByRange[$flagGroupRangeId]['flagGroupRange'] = $flagGroupRange;
+                $flagsUsageByRange[$flagGroupRangeId]['flagCategory']                         = $flagCategory;
+                $flagsUsageByRange[$flagGroupRangeId]['flagGroupRange']                       = $flagGroupRange;
                 $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['entity'] = $flagRange;
-                $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['usage'] ??= 0;
+                $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['usage']  ??= 0;
                 $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['usage']++;
                 // Flags usage by flag.
-                $flagsUsageByFlag[$flagCategoryId]['flagCategory'] = $flagCategory;
+                $flagsUsageByFlag[$flagCategoryId]['flagCategory']             = $flagCategory;
                 $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['entity'] = $flag;
-                $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['usage'] ??= 0;
+                $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['usage']  ??= 0;
                 $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['usage']++;
             }
             // Other aggregations.
@@ -195,14 +195,14 @@ class WebAdminParticipantsListController extends AbstractController
                     break;
             }
             // Payments aggregation.
-            $paymentsAggregation['Celkem cena (s příznaky)'] += $participant->getPrice();
+            $paymentsAggregation['Celkem cena (s příznaky)']            += $participant->getPrice();
             $paymentsAggregation['Celkem základní cena (bez příznaků)'] += $participant->getPrice() - $participant->getFlagsPrice();
-            $paymentsAggregation['Celkem záloha (s příznaky)'] += $participant->getDepositValue();
-            $paymentsAggregation['Zaplacená cena'] += $participant->getPaidPrice();
-            $paymentsAggregation['Celkem cena za příznaky'] += $participant->getFlagsPrice();
-            $paymentsAggregation['Celkem záloha za příznaky'] += $participant->getFlagsDepositValue();
-            $paymentsAggregation['Zbývající záloha (s příznaky)'] += $participant->getRemainingDeposit();
-            $paymentsAggregation['Zbývající cena (s příznaky)'] += $participant->getRemainingPrice();
+            $paymentsAggregation['Celkem záloha (s příznaky)']          += $participant->getDepositValue();
+            $paymentsAggregation['Zaplacená cena']                      += $participant->getPaidPrice();
+            $paymentsAggregation['Celkem cena za příznaky']             += $participant->getFlagsPrice();
+            $paymentsAggregation['Celkem záloha za příznaky']           += $participant->getFlagsDepositValue();
+            $paymentsAggregation['Zbývající záloha (s příznaky)']       += $participant->getRemainingDeposit();
+            $paymentsAggregation['Zbývající cena (s příznaky)']         += $participant->getRemainingPrice();
         }
         $regRanges = $this->participantRegistrationService->getRepository()->getRegistrationsRanges([RegistrationOfferRepository::CRITERIA_EVENT => $event]);
         ksort($flagsUsageByRange);

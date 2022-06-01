@@ -53,27 +53,27 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * })
  */
 #[Entity]
-#[Table(name: 'calendar_event_category')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
+#[Table(name : 'calendar_event_category')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
 class EventCategory implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
     use TypeTrait;
 
-    public const YEAR_OF_EVENT = 'year-of-event';
-    public const BATCH_OF_EVENT = 'batch-of-event';
-    public const LECTURE = 'lecture';
-    public const WORKSHOP = 'workshop';
+    public const YEAR_OF_EVENT        = 'year-of-event';
+    public const BATCH_OF_EVENT       = 'batch-of-event';
+    public const LECTURE              = 'lecture';
+    public const WORKSHOP             = 'workshop';
     public const MODERATED_DISCUSSION = 'moderated-discussion';
-    public const TRANSPORT = 'transport';
-    public const TEAM_BUILDING_STAY = 'team-building-stay';
-    public const TEAM_BUILDING = 'team-building';
-    public const EVIDENCE = 'evidence';
-    public const SPORT = 'sport';
-    public const FOOD = 'food';
+    public const TRANSPORT            = 'transport';
+    public const TEAM_BUILDING_STAY   = 'team-building-stay';
+    public const TEAM_BUILDING        = 'team-building';
+    public const EVIDENCE             = 'evidence';
+    public const SPORT                = 'sport';
+    public const FOOD                 = 'food';
     public const ALLOWED_TYPES
-        = [
+                                      = [
             self::YEAR_OF_EVENT,
             self::BATCH_OF_EVENT,
             self::LECTURE,

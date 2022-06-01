@@ -50,8 +50,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_event_flag')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
+#[Table(name : 'calendar_event_flag')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
 #[ApiFilter(OrderFilter::class)]
 class EventFlag
 {

@@ -48,20 +48,20 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_participant_contact')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Table(name : 'calendar_participant_contact')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 class ParticipantContact implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity: Participant::class, fetch: 'EXTRA_LAZY', inversedBy: 'participantContacts')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Participant::class, fetch : 'EXTRA_LAZY', inversedBy : 'participantContacts')]
+    #[JoinColumn(nullable : true)]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity: AbstractContact::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : AbstractContact::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?AbstractContact $contact = null;
 
     public function __construct(?AbstractContact $contact = null)

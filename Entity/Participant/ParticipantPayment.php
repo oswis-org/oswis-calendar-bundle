@@ -69,16 +69,16 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_participant_payment')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
-#[ApiFilter(DateFilter::class, properties: ["createdDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"])]
-#[ApiFilter(SearchFilter::class, properties: [
+#[Table(name : 'calendar_participant_payment')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
+#[ApiFilter(DateFilter::class, properties : ["createdDateTime", "updatedDateTime", "eMailConfirmationDateTime", "dateTime"])]
+#[ApiFilter(SearchFilter::class, properties : [
     "id"              => "iexact",
     "dateTime"        => "ipartial",
     "createdDateTime" => "ipartial",
     "numericValue"    => "ipartial",
 ])]
-#[ApiFilter(OrderFilter::class, properties: [
+#[ApiFilter(OrderFilter::class, properties : [
     "id" => "ASC",
     "dateTime",
     "createdDateTime",
@@ -99,12 +99,12 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     use MailConfirmationTrait;
 
     public const TYPE_BANK_TRANSFER = 'bank-transfer';
-    public const TYPE_CARD = 'card';
-    public const TYPE_CASH = 'cash';
-    public const TYPE_ON_LINE = 'on-line';
-    public const TYPE_INTERNAL = 'internal';
+    public const TYPE_CARD          = 'card';
+    public const TYPE_CASH          = 'cash';
+    public const TYPE_ON_LINE       = 'on-line';
+    public const TYPE_INTERNAL      = 'internal';
     public const ALLOWED_TYPES
-        = [
+                                    = [
             '',
             self::TYPE_CASH,
             self::TYPE_CARD,
@@ -112,17 +112,17 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             self::TYPE_ON_LINE,
             self::TYPE_INTERNAL,
         ];
-    #[ManyToOne(targetEntity: Participant::class, inversedBy: 'payments')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Participant::class, inversedBy : 'payments')]
+    #[JoinColumn(nullable : true)]
     #[MaxDepth(1)]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity: ParticipantPaymentsImport::class)]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : ParticipantPaymentsImport::class)]
+    #[JoinColumn(nullable : true)]
     #[MaxDepth(1)]
     protected ?ParticipantPaymentsImport $import = null;
 
-    #[Column(type: 'string', nullable: true)]
+    #[Column(type : 'string', nullable : true)]
     protected ?string $errorMessage = null;
 
     public function __construct(?int $numericValue = null, ?DateTime $dateTime = null, ?string $type = null)

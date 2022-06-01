@@ -12,11 +12,11 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CapacityUsage;
 trait CapacityUsageTrait
 {
     /** Usage including overflow. */
-    #[Column(type: 'integer', nullable: false)]
+    #[Column(type : 'integer', nullable : false)]
     protected int $fullUsage = 0;
 
     /** Usage. */
-    #[Column(type: 'integer', nullable: false)]
+    #[Column(type : 'integer', nullable : false)]
     protected int $baseUsage = 0;
 
     public function setUsage(?CapacityUsage $usage = null): void
@@ -32,7 +32,7 @@ trait CapacityUsageTrait
 
     public function setBaseUsage(?int $baseUsage): void
     {
-        $baseUsage ??= 0;
+        $baseUsage       ??= 0;
         $this->baseUsage = max(0, $baseUsage);
     }
 
@@ -48,7 +48,7 @@ trait CapacityUsageTrait
 
     public function setFullUsage(?int $fullUsage): void
     {
-        $fullUsage ??= 0;
+        $fullUsage       ??= 0;
         $this->fullUsage = max(0, $fullUsage);
     }
 

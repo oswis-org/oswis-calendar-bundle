@@ -90,22 +90,22 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * )
  */
 #[ApiFilter(ParentEventFilter::class)]
-#[ApiFilter(OrderFilter::class, properties: [
+#[ApiFilter(OrderFilter::class, properties : [
     'id',
     'createdAt',
     'contact.sortableName',
     'event.startDateTime',
     'event.id',
 ])]
-#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: [
+#[ApiFilter(SearchFilter::class, strategy : 'exact', properties : [
     'event.id',
     'event.superEvent.id',
     'offer.event.id',
     'offer.event.superEvent.id',
 ])]
-#[Entity(repositoryClass: ParticipantRepository::class)]
-#[Table(name: 'calendar_participant')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Entity(repositoryClass : ParticipantRepository::class)]
+#[Table(name : 'calendar_participant')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;
@@ -120,68 +120,68 @@ class Participant implements ParticipantInterface
     /**
      * @var Collection<ParticipantNote> $notes
      */
-    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantNote::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'participant', targetEntity : ParticipantNote::class, cascade : ['all'], fetch : 'EAGER')]
     #[MaxDepth(1)]
     protected Collection $notes;
 
     /**
      * @var Collection<ParticipantPayment>
      */
-    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantPayment::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'participant', targetEntity : ParticipantPayment::class, cascade : ['all'], fetch : 'EAGER')]
     #[MaxDepth(1)]
     protected Collection $payments;
 
     /**
      * @var Collection<ParticipantMail> $eMails
      */
-    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantMail::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'participant', targetEntity : ParticipantMail::class, cascade : ['all'], fetch : 'EAGER')]
     #[MaxDepth(1)]
     protected Collection $eMails;
 
     /**
      * Related contact (person or organization).
      */
-    #[ManyToOne(targetEntity: AbstractContact::class, cascade: ['all'], fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : AbstractContact::class, cascade : ['all'], fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?AbstractContact $contact = null;
 
-    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : RegistrationOffer::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?RegistrationOffer $offer = null;
 
-    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?Event $event = null;
 
-    #[ManyToOne(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : ParticipantCategory::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
      * @var Collection<ParticipantFlagGroup>
      */
-    #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
-    #[JoinTable(name: 'calendar_participant_flag_group_connection')]
-    #[JoinColumn(name: "participant_id", referencedColumnName: "id")]
-    #[InverseJoinColumn(name: "participant_flag_group_id", referencedColumnName: "id", unique: true)]
+    #[ManyToMany(targetEntity : ParticipantFlagGroup::class, cascade : ['all'], fetch : 'EAGER')]
+    #[JoinTable(name : 'calendar_participant_flag_group_connection')]
+    #[JoinColumn(name : "participant_id", referencedColumnName : "id")]
+    #[InverseJoinColumn(name : "participant_flag_group_id", referencedColumnName : "id", unique : true)]
     protected Collection $flagGroups;
 
     /**
      * @var Collection<ParticipantRegistration>
      */
-    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantRegistration::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'participant', targetEntity : ParticipantRegistration::class, cascade : ['all'], fetch : 'EAGER')]
     protected Collection $participantRegistrations;
 
     /**
      * @var Collection<ParticipantContact>
      */
-    #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantContact::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(mappedBy : 'participant', targetEntity : ParticipantContact::class, cascade : ['all'], fetch : 'EAGER')]
     protected Collection $participantContacts;
 
-    #[Column(type: 'boolean', nullable: true)]
+    #[Column(type : 'boolean', nullable : true)]
     protected ?bool $formal = null;
 
-    #[Column(type: 'string', nullable: true)]
+    #[Column(type : 'string', nullable : true)]
     protected ?string $variableSymbol = null;
 
     /**
@@ -200,13 +200,13 @@ class Participant implements ParticipantInterface
         AbstractContact $contact = null,
         ?Collection $participantNotes = null,
     ) {
-        $this->participantContacts = new ArrayCollection();
+        $this->participantContacts      = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
-        $this->notes = new ArrayCollection();
-        $this->flagGroups = new ArrayCollection();
-        $this->payments = new ArrayCollection();
-        $this->eMails = new ArrayCollection();
-        $participantContact = new ParticipantContact($contact);
+        $this->notes                    = new ArrayCollection();
+        $this->flagGroups               = new ArrayCollection();
+        $this->payments                 = new ArrayCollection();
+        $this->eMails                   = new ArrayCollection();
+        $participantContact             = new ParticipantContact($contact);
         $participantContact->activate(new DateTime());
         $this->setParticipantContact($participantContact);
         $this->setNotes($participantNotes);
@@ -311,9 +311,9 @@ class Participant implements ParticipantInterface
 
     public function updateCachedColumns(): void
     {
-        $this->offer = $this->getOffer();
-        $this->contact = $this->getContact();
-        $this->event = $this->offer?->getEvent();
+        $this->offer               = $this->getOffer();
+        $this->contact             = $this->getContact();
+        $this->event               = $this->offer?->getEvent();
         $this->participantCategory = $this->offer?->getParticipantCategory();
         $this->updateVariableSymbol();
         // $this->removeEmptyNotesAndDetails();
@@ -411,8 +411,8 @@ class Participant implements ParticipantInterface
     public function setParticipantRegistration(?ParticipantRegistration $newParticipantRegistration, bool $admin = false): void
     {
         $oldParticipantRange = $this->getParticipantRegistration();
-        $oldRegRange = $oldParticipantRange?->getOffer();
-        $newRegRange = $newParticipantRegistration?->getOffer();
+        $oldRegRange         = $oldParticipantRange?->getOffer();
+        $newRegRange         = $newParticipantRegistration?->getOffer();
         //
         // CASE 1: RegistrationOffer is same. Do nothing.
         if ($oldRegRange === $newRegRange) {
@@ -644,8 +644,10 @@ class Participant implements ParticipantInterface
      */
     public static function compareParticipants(mixed $participant1, mixed $participant2): int
     {
-        $cmpResult = (!$participant1->getContact() || !$participant2->getContact()) ? 0
-            : strcmp($participant1->getContact()->getSortableName(), $participant2->getContact()->getSortableName(),);
+        $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
+            ? 0
+            : strcmp($participant1->getContact()->getSortableName(),
+                $participant2->getContact()->getSortableName(),);
 
         return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
     }
@@ -750,10 +752,10 @@ class Participant implements ParticipantInterface
 
     public function differenceFromPayment(?int $value): ?int
     {
-        $priceRest = $this->getPriceRest();
-        $diff = abs($priceRest - $value);
+        $priceRest        = $this->getPriceRest();
+        $diff             = abs($priceRest - $value);
         $remainingDeposit = $this->getRemainingDeposit();
-        $depositDiff = abs($remainingDeposit - $value);
+        $depositDiff      = abs($remainingDeposit - $value);
 
         return min($depositDiff, $diff);
     }
@@ -822,7 +824,7 @@ class Participant implements ParticipantInterface
      */
     public function getRemainingDeposit(): int
     {
-        $deposit = $this->getDepositValue();
+        $deposit   = $this->getDepositValue();
         $remaining = null !== $deposit ? $deposit - $this->getPaidPrice() : 0;
 
         return max($remaining, 0);
@@ -871,15 +873,15 @@ class Participant implements ParticipantInterface
         $value = null;
         if ($deposit && $rest) {
             $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'celá částka';
-            $value = $this->getPrice();
+            $value     = $this->getPrice();
         }
         if ($deposit && !$rest) {
             $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'záloha';
-            $value = $this->getDepositValue();
+            $value     = $this->getDepositValue();
         }
         if (!$deposit && $rest) {
             $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'doplatek';
-            $value = $this->getPriceRest();
+            $value     = $this->getPriceRest();
         }
 
         return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);

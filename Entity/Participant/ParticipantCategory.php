@@ -56,22 +56,22 @@ use function in_array;
  *   }
  * )
  */
-#[Entity(repositoryClass: ParticipantCategoryRepository::class)]
-#[Table(name: 'calendar_participant_category')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Entity(repositoryClass : ParticipantCategoryRepository::class)]
+#[Table(name : 'calendar_participant_category')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 #[ApiFilter(OrderFilter::class)]
 class ParticipantCategory implements NameableInterface
 {
     use NameableTrait;
     use TypeTrait;
 
-    public const TYPE_ATTENDEE = 'attendee';
-    public const TYPE_ORGANIZER = 'organizer';
+    public const TYPE_ATTENDEE    = 'attendee';
+    public const TYPE_ORGANIZER   = 'organizer';
     public const TYPE_TEAM_MEMBER = 'team-member';
-    public const TYPE_STAFF = 'staff';
-    public const TYPE_PARTNER = 'partner';
-    public const TYPE_GUEST = 'guest';
-    public const TYPE_MANAGER = 'manager';
+    public const TYPE_STAFF       = 'staff';
+    public const TYPE_PARTNER     = 'partner';
+    public const TYPE_GUEST       = 'guest';
+    public const TYPE_MANAGER     = 'manager';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     public const ALLOWED_TYPES
@@ -86,7 +86,7 @@ class ParticipantCategory implements NameableInterface
         ];
 
     /** Send formal (or informal) e-mails? */
-    #[Column(type: 'boolean', nullable: true)]
+    #[Column(type : 'boolean', nullable : true)]
     protected ?bool $formal = null;
 
     /**

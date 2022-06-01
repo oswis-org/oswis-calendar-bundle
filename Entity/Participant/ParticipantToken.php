@@ -49,17 +49,17 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
  *   }
  * )
  */
-#[Entity(repositoryClass: ParticipantTokenRepository::class)]
-#[Table(name: 'calendar_participant_token')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Entity(repositoryClass : ParticipantTokenRepository::class)]
+#[Table(name : 'calendar_participant_token')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 class ParticipantToken extends AbstractToken
 {
-    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
-    #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : Participant::class, fetch : 'EAGER')]
+    #[JoinColumn(name : 'participant_id', referencedColumnName : 'id')]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity: AppUser::class, fetch: 'EAGER')]
-    #[JoinColumn(name: 'app_user_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : AppUser::class, fetch : 'EAGER')]
+    #[JoinColumn(name : 'app_user_id', referencedColumnName : 'id')]
     protected ?AppUser $appUser = null;
 
     public function __construct(
@@ -71,7 +71,7 @@ class ParticipantToken extends AbstractToken
         ?int $level = null
     ) {
         parent::__construct($appUser?->getEmail(), $type, $multipleUseAllowed, $validHours, $level);
-        $this->appUser = $appUser;
+        $this->appUser     = $appUser;
         $this->participant = $participant;
     }
 

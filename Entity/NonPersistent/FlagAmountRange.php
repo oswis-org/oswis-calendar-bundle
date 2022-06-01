@@ -34,7 +34,7 @@ class FlagAmountRange
 
     public function setMin(?int $min): void
     {
-        $min ??= 0;
+        $min       ??= 0;
         $this->min = max(0, $min);
     }
 

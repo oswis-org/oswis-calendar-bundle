@@ -54,28 +54,28 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_participant_mail')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
+#[Table(name : 'calendar_participant_mail')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant_mail')]
 class ParticipantMail extends AbstractMail
 {
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
-    public const TYPE_SUMMARY = 'summary';
-    public const TYPE_PAYMENT = 'payment';
+    public const TYPE_SUMMARY            = 'summary';
+    public const TYPE_PAYMENT            = 'payment';
 
-    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER', inversedBy: 'eMails')]
-    #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : Participant::class, fetch : 'EAGER', inversedBy : 'eMails')]
+    #[JoinColumn(name : 'participant_id', referencedColumnName : 'id')]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity: ParticipantMailCategory::class, fetch: 'EAGER')]
-    #[JoinColumn(name: 'participant_mail_category_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : ParticipantMailCategory::class, fetch : 'EAGER')]
+    #[JoinColumn(name : 'participant_mail_category_id', referencedColumnName : 'id')]
     protected ?ParticipantMailCategory $participantMailCategory = null;
 
-    #[ManyToOne(targetEntity: AppUser::class, fetch: 'EAGER')]
-    #[JoinColumn(name: 'app_user_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : AppUser::class, fetch : 'EAGER')]
+    #[JoinColumn(name : 'app_user_id', referencedColumnName : 'id')]
     protected ?AppUser $appUser = null;
 
-    #[ManyToOne(targetEntity: ParticipantToken::class, fetch: 'EAGER')]
-    #[JoinColumn(name: 'participant_token_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : ParticipantToken::class, fetch : 'EAGER')]
+    #[JoinColumn(name : 'participant_token_id', referencedColumnName : 'id')]
     protected ?ParticipantToken $participantToken = null;
 
     public function __construct(
@@ -90,8 +90,8 @@ class ParticipantMail extends AbstractMail
             parent::__construct($subject, $appUser->getEmail(), $type, $appUser->getName(), $messageId);
         }
         $this->participantToken = $token;
-        $this->participant = $participant;
-        $this->appUser = $appUser;
+        $this->participant      = $participant;
+        $this->appUser          = $appUser;
     }
 
     public function isParticipant(?Participant $participant): bool

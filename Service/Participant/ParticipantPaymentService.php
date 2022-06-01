@@ -49,9 +49,9 @@ class ParticipantPaymentService
             }
             $this->em->persist($payment);
             $this->em->flush();
-            $id = $payment->getId();
-            $vs = $payment->getVariableSymbol();
-            $value = $payment->getNumericValue();
+            $id          = $payment->getId();
+            $vs          = $payment->getVariableSymbol();
+            $value       = $payment->getNumericValue();
             $participant = $payment->getParticipant();
             $this->logger->info("CREATE: Created (or updated) participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
             if ($sendConfirmation && null !== $participant && !$payment->isConfirmedByMail()) {

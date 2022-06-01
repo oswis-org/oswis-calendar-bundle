@@ -43,7 +43,7 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     public function postValidate(ViewEvent $event): void
     {
         $participant = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method      = $event->getRequest()->getMethod();
         if (!($participant instanceof Participant) || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }
@@ -59,7 +59,7 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     public function postWrite(ViewEvent $event): void
     {
         $participant = $event->getControllerResult();
-        $method = $event->getRequest()->getMethod();
+        $method      = $event->getRequest()->getMethod();
         if (!($participant instanceof Participant) || !in_array($method, [Request::METHOD_POST, Request::METHOD_PUT], true)) {
             return;
         }

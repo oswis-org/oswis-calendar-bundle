@@ -55,7 +55,7 @@ class OswisCalendarSettingsProvider
         }
         foreach ($this->patterns as $pattern) {
             $parts = $this->regexMatch($slug, $pattern['pattern']);
-            $slug = empty($parts) ? $slug : $parts[1].$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]).$parts[5];
+            $slug  = empty($parts) ? $slug : $parts[1].$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]).$parts[5];
         }
 
         return $slug;

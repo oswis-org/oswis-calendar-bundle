@@ -23,16 +23,16 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends ServiceEntityRepository
 {
-    public const CRITERIA_ID = 'id';
-    public const CRITERIA_EVENT = 'event';
+    public const CRITERIA_ID                    = 'id';
+    public const CRITERIA_EVENT                 = 'event';
     public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
-    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
-    public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
-    public const CRITERIA_OFFER = 'offer';
-    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
-    public const CRITERIA_CONTACT = 'contact';
-    public const CRITERIA_APP_USER = 'appUser';
-    public const CRITERIA_VARIABLE_SYMBOL = 'variableSymbol';
+    public const CRITERIA_PARTICIPANT_TYPE      = 'participantType';
+    public const CRITERIA_PARTICIPANT_CATEGORY  = 'participantCategory';
+    public const CRITERIA_OFFER                 = 'offer';
+    public const CRITERIA_INCLUDE_DELETED       = 'includeDeleted';
+    public const CRITERIA_CONTACT               = 'contact';
+    public const CRITERIA_APP_USER              = 'appUser';
+    public const CRITERIA_VARIABLE_SYMBOL       = 'variableSymbol';
 
     /**
      * @param  ManagerRegistry  $registry
@@ -63,8 +63,8 @@ class ParticipantRepository extends ServiceEntityRepository
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
-        $select = 'participant, offer, contact, event, note, payment';
-        $select .= ', participantRegistration, participantContact, participantCategory';
+        $select       = 'participant, offer, contact, event, note, payment';
+        $select       .= ', participantRegistration, participantContact, participantCategory';
         $queryBuilder->select($select);
         $queryBuilder->leftJoin('participant.offer', 'offer');
         $queryBuilder->leftJoin('participant.contact', 'contact');
@@ -195,7 +195,7 @@ class ParticipantRepository extends ServiceEntityRepository
         ?int $offset = null,
     ): Collection {
         $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
-        $result = $queryBuilder->getQuery()->getResult();
+        $result       = $queryBuilder->getQuery()->getResult();
 
         return Participant::filterCollection(new ArrayCollection(is_array($result) ? $result : []), $includeNotActivated);
     }

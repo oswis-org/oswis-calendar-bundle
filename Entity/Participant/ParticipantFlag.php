@@ -58,9 +58,9 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *   }
  * )
  */
-#[Entity(repositoryClass: ParticipantFlagRepository::class)]
-#[Table(name: 'calendar_participant_flag')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
+#[Entity(repositoryClass : ParticipantFlagRepository::class)]
+#[Table(name : 'calendar_participant_flag')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
 class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInterface, TextValueInterface
 {
     use BasicTrait;
@@ -69,12 +69,12 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     use DeletedTrait;
 
     /** Event contact flag. */
-    #[ManyToOne(targetEntity: RegistrationFlagOffer::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : RegistrationFlagOffer::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?RegistrationFlagOffer $flagOffer = null;
 
-    #[ManyToOne(targetEntity: ParticipantFlagGroup::class, fetch: 'EAGER', inversedBy: 'participantFlags')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : ParticipantFlagGroup::class, fetch : 'EAGER', inversedBy : 'participantFlags')]
+    #[JoinColumn(nullable : true)]
     #[MaxDepth(1)]
     protected ?ParticipantFlagGroup $participantFlagGroup = null;
 

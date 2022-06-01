@@ -51,13 +51,13 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * )
  */
 #[Entity]
-#[Table(name: 'calendar_event_group')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
+#[Table(name : 'calendar_event_group')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
 class EventGroup implements NameableInterface
 {
     use NameableTrait;
 
-    #[OneToMany(mappedBy: 'group', targetEntity: Event::class)]
+    #[OneToMany(mappedBy : 'group', targetEntity : Event::class)]
     #[MaxDepth(1)]
     protected ?Collection $events = null;
 
@@ -103,7 +103,7 @@ class EventGroup implements NameableInterface
         if (!$event->getCategory() || !$event->getStartDate() || !$event->isBatchOrYear()) {
             return null;
         }
-        $seqId = 1;
+        $seqId  = 1;
         $events = $this->getEvents($event->getType(), ($event->isBatch() ? $event->getStartYear() : null), false);
         foreach ($events as $e) {
             if ($e instanceof Event && $e->getStartDate() && $e->getId() !== $event->getId() && $e->getStartDate() < $event->getStartDate()) {

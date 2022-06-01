@@ -75,10 +75,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  *   }
  * )
  */
-#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['event.id', 'event.superEvent.id'])]
-#[Entity(repositoryClass: RegistrationOfferRepository::class)]
-#[Table(name: 'calendar_reg_range')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_reg_range')]
+#[ApiFilter(SearchFilter::class, strategy : 'exact', properties : ['event.id', 'event.superEvent.id'])]
+#[Entity(repositoryClass : RegistrationOfferRepository::class)]
+#[Table(name : 'calendar_reg_range')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_reg_range')]
 class RegistrationOffer implements NameableInterface
 {
     use NameableTrait;
@@ -94,41 +94,41 @@ class RegistrationOffer implements NameableInterface
     use EntityPublicTrait;
     use PriorityTrait;
 
-    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : RegistrationOffer::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?RegistrationOffer $requiredRegRange;
 
-    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?Event $event = null;
 
-    #[ManyToOne(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
-    #[JoinColumn(nullable: true)]
+    #[ManyToOne(targetEntity : ParticipantCategory::class, fetch : 'EAGER')]
+    #[JoinColumn(nullable : true)]
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
      * @var Collection<RegistrationFlagGroupOffer> $flagGroupRanges
      */
-    #[ManyToMany(targetEntity: RegistrationFlagGroupOffer::class, cascade: ['all'])]
-    #[JoinTable(name: 'calendar_reg_range_flag_group_range')]
-    #[JoinColumn(name: "reg_range_id", referencedColumnName: "id")]
-    #[InverseJoinColumn(name: "flag_group_range_id", referencedColumnName: "id", unique: true)]
+    #[ManyToMany(targetEntity : RegistrationFlagGroupOffer::class, cascade : ['all'])]
+    #[JoinTable(name : 'calendar_reg_range_flag_group_range')]
+    #[JoinColumn(name : "reg_range_id", referencedColumnName : "id")]
+    #[InverseJoinColumn(name : "flag_group_range_id", referencedColumnName : "id", unique : true)]
     protected Collection $flagGroupRanges;
 
     /**
      * Indicates that price is relative to required range.
      * @todo Implement: Indicates that capacity is relative to required range too.
      */
-    #[Column(type: 'boolean', nullable: true)]
+    #[Column(type : 'boolean', nullable : true)]
     protected ?bool $relative = null;
 
-    #[Column(type: 'boolean', nullable: false)]
+    #[Column(type : 'boolean', nullable : false)]
     protected bool $surrogate = false;
 
     /**
      * Indicates that participation on super event is required.
      */
-    #[Column(type: 'boolean', nullable: true)]
+    #[Column(type : 'boolean', nullable : true)]
     protected ?bool $superEventRequired = null;
 
     /**
@@ -390,7 +390,7 @@ class RegistrationOffer implements NameableInterface
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag, $onlySimulate);
-            $newFlagRange = $newParticipantFlag->getFlagOffer();
+            $newFlagRange       = $newParticipantFlag->getFlagOffer();
             if (null !== $newFlagRange && $oldParticipantFlag->getFlagOffer() !== $newFlagRange) {
                 $remainingFlagRangeCapacity = $newFlagRange->getRemainingCapacity($admin);
                 if (null !== $remainingFlagRangeCapacity && (0 === $remainingFlagRangeCapacity || -1 >= $remainingFlagRangeCapacity)) {
@@ -428,7 +428,7 @@ class RegistrationOffer implements NameableInterface
             }
         }
         $flagGroupName = $flagGroupRange->getName();
-        $regRangeName = $this->getName();
+        $regRangeName  = $this->getName();
         throw new FlagOutOfRangeException("Skupinu příznaků '$flagGroupName' není možné v rozsahu přihlášek '$regRangeName' použít (neexistuje automatická náhrada).");
     }
 

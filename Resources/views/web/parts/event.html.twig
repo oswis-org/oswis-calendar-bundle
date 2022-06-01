@@ -35,7 +35,7 @@
             {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig'
                 with {'subEvents': subEvents} %}
         {% endif %}
-        {% if event.superEvent|default %}
+        {% if event.superEvent.publicOnWeb|default %}
             <h3>Je součástí akce:</h3>
             <ul class="mt-2">
                 <li itemprop="superEvent" itemscope itemtype="http://schema.org/Event">

@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
-#[ApiResource(collectionOperations: [
+#[ApiResource(collectionOperations : [
     'get',
     'post' => [
         'method'     => 'POST',
@@ -35,27 +35,27 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 ])]
 #[Uploadable]
 #[Entity]
-#[Table(name: 'calendar_event_image')]
-#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event_image')]
+#[Table(name : 'calendar_event_image')]
+#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event_image')]
 class EventImage extends AbstractImage
 {
     public const TYPE_LEAFLET = 'leaflet';
-    public const TYPE_IMAGE = 'image';
-    public const TYPE_SOCIAL = 'social';
-    public const TYPE_MAP = 'map';
-    public const TYPE_POSTER = 'poster';
+    public const TYPE_IMAGE   = 'image';
+    public const TYPE_SOCIAL  = 'social';
+    public const TYPE_MAP     = 'map';
+    public const TYPE_POSTER  = 'poster';
     public const TYPE_GALLERY = 'gallery';
     use BasicTrait;
     use TypeTrait;
     use PriorityTrait;
     use EntityPublicTrait;
 
-    #[UploadableField(mapping: 'calendar_event_image', fileNameProperty: 'contentName', mimeType: 'contentMimeType')]
+    #[UploadableField(mapping : 'calendar_event_image', fileNameProperty : 'contentName', mimeType : 'contentMimeType')]
     #[NotNull]
     public ?File $file = null;
 
-    #[ManyToOne(targetEntity: Event::class, cascade: ['all'], inversedBy: 'images')]
-    #[JoinColumn(name: 'event_id', referencedColumnName: 'id')]
+    #[ManyToOne(targetEntity : Event::class, cascade : ['all'], inversedBy : 'images')]
+    #[JoinColumn(name : 'event_id', referencedColumnName : 'id')]
     protected ?Event $event = null;
 
     /**
