@@ -38,7 +38,6 @@ final class ParentEventFilter extends AbstractContextAwareFilter
             return;
         }
         $alias = $queryBuilder->getRootAliases()[0] ?? throw new ErrorException("Can't find root alias for DB query.");
-        $alias .= '_parent_event_filter';
         $eventQuery = " $alias.event = :event_id ";
         $queryBuilder->leftJoin("$alias.event", 'e0');
         $recursiveDepth = 5;

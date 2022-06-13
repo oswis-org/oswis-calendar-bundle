@@ -173,10 +173,6 @@ T
 $Repository/Event/EventRepository.php,0/c/0c3835f84a230ed6e4591a669d9412695ab6d68d
 _
 /Service/Participant/ParticipantTokenService.php,4/b/4bf527e68ecde8552c948778fa7f76c8bd88dd27
-[
-+ApiPlatform/EventVisibleToUserExtension.php,2/2/2217493cd4cdaa21fdf2771cb934cf99fd14f81c
-`
-0ApiPlatform/ParticipantContainsUserExtension.php,2/f/2f1305e8ba8b83b6989fb517658bb1b867a5ad6e
 Z
 *Provider/OswisCalendarSettingsProvider.php,4/1/41570a68013963aedd2bfed827f33a162db1da9e
 _
