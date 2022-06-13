@@ -55,7 +55,6 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     "id",
  *     "variableSymbol",
  *     "contact.name",
- *     "contact.details.content",
  * })
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
