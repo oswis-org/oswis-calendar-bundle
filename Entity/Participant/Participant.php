@@ -55,7 +55,11 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  *     "id",
  *     "variableSymbol",
  *     "event.name",
+ *     "event.shortName",
+ *     "event.slug",
  *     "contact.name",
+ *     "contact.shortName",
+ *     "contact.sortableName",
  *     "contact.details.content",
  * })
  * @ApiPlatform\Core\Annotation\ApiResource(

@@ -199,5 +199,3 @@ Y
 )EventSubscriber/ParticipantSubscriber.php,6/2/62fc0546b2480ac4850d2094d0acadc0d8e6c7b1
 g
 7EventSubscriber/ParticipantPaymentsImportSubscriber.php,1/a/1a92fbfa3724e5016fb75c3d3c8eb48582f90c77
-L
-Filter/ParentEventFilter.php,5/4/549bca354982ae4696cbe5133cabe8b298e3a082
