@@ -54,7 +54,6 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "variableSymbol",
- *     "event.name",
  *     "contact.name",
  *     "contact.details.content",
  * })
