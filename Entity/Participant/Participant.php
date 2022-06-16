@@ -138,11 +138,10 @@ class Participant implements ParticipantInterface
     #[MaxDepth(1)]
     protected Collection $eMails;
 
-    /**
-     * Related contact (person or organization).
-     */
-    #[ManyToOne(targetEntity : AbstractContact::class, cascade : ['all'], fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    /** Related contact (person or organization). */
+    #[ManyToOne(targetEntity: AbstractContact::class, cascade: ['all'], fetch: 'EAGER')]
+    #[ApiFilter(SearchFilter::class, properties: ['contact.id' => 'exact', 'contact.appUser.id' => 'exact'])]
+    #[JoinColumn(nullable: true)]
     protected ?AbstractContact $contact = null;
 
     #[ManyToOne(targetEntity : RegistrationOffer::class, fetch : 'EAGER')]
