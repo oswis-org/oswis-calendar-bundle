@@ -221,6 +221,10 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
             groups:
                 - 'calendar_participants_get'
                 - 'calendar_participant_get'
+        oneImage:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
 
 
 OswisOrg\OswisCalendarBundle\Entity\Event\Event:
