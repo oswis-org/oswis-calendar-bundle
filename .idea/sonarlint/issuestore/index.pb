@@ -39,8 +39,6 @@ k
 ;Resources/views/other/summary/participant-summary.html.twig,0/a/0a30ef521578a184debd6ff076be008d0732d05d
 e
 5Resources/views/other/summary/event-summary.html.twig,3/e/3e938e0be0708363f1a5dc0ec68ce5e18d52baed
-k
-;Resources/config/serialization/Participant/Participant.yaml,3/2/326ada8d651ff0eb4277317ab676b6631cde85eb
 N
 Resources/config/services.yaml,d/b/dbd43cf723713c53a4f677b91e18e1a006e87905
 b

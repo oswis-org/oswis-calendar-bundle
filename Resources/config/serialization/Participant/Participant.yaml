@@ -336,3 +336,18 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment:
         eMailConfirmationSource:
             groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
+
+OswisOrg\OswisAddressBookBundle\Entity\MediaObject\ContactImage:
+    attributes:
+        id:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        public:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
+        contentName:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
