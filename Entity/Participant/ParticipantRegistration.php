@@ -33,11 +33,13 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
  *   collectionOperations={
  *     "get"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_ranges_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_ranges_get"},
+ *     "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_ranges_post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_ranges_post"},
+ *     "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
@@ -52,21 +54,21 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
  *   }
  * )
  */
-#[Entity(repositoryClass : ParticipantRegistrationRepository::class)]
-#[Table(name : 'calendar_participant_range')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
+#[Entity(repositoryClass: ParticipantRegistrationRepository::class)]
+#[Table(name: 'calendar_participant_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class ParticipantRegistration implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity : Participant::class, fetch : 'EXTRA_LAZY', inversedBy : 'participantRegistrations')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EXTRA_LAZY', inversedBy: 'participantRegistrations')]
+    #[JoinColumn(nullable: true)]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity : RegistrationOffer::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationOffer $offer = null;
 
     public function __construct(?RegistrationOffer $range = null)
@@ -87,7 +89,8 @@ class ParticipantRegistration implements BasicInterface
 
     public static function sortArray(array &$items): array
     {
-        usort($items, static fn(ParticipantRegistration $range1, ParticipantRegistration $range2) => self::cmp($range1, $range2));
+        usort($items,
+            static fn(ParticipantRegistration $range1, ParticipantRegistration $range2) => self::cmp($range1, $range2));
 
         return $items;
     }

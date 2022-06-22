@@ -75,10 +75,10 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
  *   }
  * )
  */
-#[ApiFilter(SearchFilter::class, strategy : 'exact', properties : ['event.id', 'event.superEvent.id'])]
-#[Entity(repositoryClass : RegistrationOfferRepository::class)]
-#[Table(name : 'calendar_reg_range')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_reg_range')]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['event.id', 'event.superEvent.id'])]
+#[Entity(repositoryClass: RegistrationOfferRepository::class)]
+#[Table(name: 'calendar_reg_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_reg_range')]
 class RegistrationOffer implements NameableInterface
 {
     use NameableTrait;
@@ -94,41 +94,39 @@ class RegistrationOffer implements NameableInterface
     use EntityPublicTrait;
     use PriorityTrait;
 
-    #[ManyToOne(targetEntity : RegistrationOffer::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationOffer $requiredRegRange;
 
-    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    #[ManyToOne(targetEntity : ParticipantCategory::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?ParticipantCategory $participantCategory = null;
 
-    /**
-     * @var Collection<RegistrationFlagGroupOffer> $flagGroupRanges
-     */
-    #[ManyToMany(targetEntity : RegistrationFlagGroupOffer::class, cascade : ['all'])]
-    #[JoinTable(name : 'calendar_reg_range_flag_group_range')]
-    #[JoinColumn(name : "reg_range_id", referencedColumnName : "id")]
-    #[InverseJoinColumn(name : "flag_group_range_id", referencedColumnName : "id", unique : true)]
+    /** @var Collection<RegistrationFlagGroupOffer> $flagGroupRanges */
+    #[ManyToMany(targetEntity: RegistrationFlagGroupOffer::class, cascade: ['all'])]
+    #[JoinTable(name: 'calendar_reg_range_flag_group_range')]
+    #[JoinColumn(name: "reg_range_id", referencedColumnName: "id")]
+    #[InverseJoinColumn(name: "flag_group_range_id", referencedColumnName: "id", unique: true)]
     protected Collection $flagGroupRanges;
 
     /**
      * Indicates that price is relative to required range.
      * @todo Implement: Indicates that capacity is relative to required range too.
      */
-    #[Column(type : 'boolean', nullable : true)]
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $relative = null;
 
-    #[Column(type : 'boolean', nullable : false)]
+    #[Column(type: 'boolean', nullable: false)]
     protected bool $surrogate = false;
 
     /**
      * Indicates that participation on super event is required.
      */
-    #[Column(type : 'boolean', nullable : true)]
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $superEventRequired = null;
 
     /**
@@ -207,7 +205,9 @@ class RegistrationOffer implements NameableInterface
 
     public function getRequiredRangePrice(?ParticipantCategory $participantType = null): int
     {
-        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getPrice($participantType);
+        return (!$this->isRelative() || null === $this->getRequiredRegRange())
+            ? 0 : $this->getRequiredRegRange()
+                       ->getPrice($participantType);
     }
 
     public function isRelative(): bool
@@ -227,7 +227,8 @@ class RegistrationOffer implements NameableInterface
 
     public function getPrice(?ParticipantCategory $participantType = null, bool $recursive = true): int
     {
-        $price = null === $participantType || $this->getParticipantCategory() === $participantType ? $this->traitGetPrice() : 0;
+        $price = null === $participantType || $this->getParticipantCategory() === $participantType
+            ? $this->traitGetPrice() : 0;
         if ($recursive) {
             $price += $this->getRequiredRangePrice($participantType);
         }
@@ -257,12 +258,15 @@ class RegistrationOffer implements NameableInterface
 
     public function getRequiredRangeDeposit(?ParticipantCategory $participantType = null): int
     {
-        return (!$this->isRelative() || null === $this->getRequiredRegRange()) ? 0 : $this->getRequiredRegRange()->getDepositValue($participantType);
+        return (!$this->isRelative() || null === $this->getRequiredRegRange())
+            ? 0 : $this->getRequiredRegRange()
+                       ->getDepositValue($participantType);
     }
 
     public function getDepositValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
     {
-        $price = null === $participantType || $this->getParticipantCategory() === $participantType ? $this->traitGetDeposit() : 0;
+        $price = null === $participantType || $this->getParticipantCategory() === $participantType
+            ? $this->traitGetDeposit() : 0;
         if ($recursive) {
             $price += $this->getRequiredRangeDeposit($participantType);
         }
@@ -276,7 +280,8 @@ class RegistrationOffer implements NameableInterface
     }
 
     /**
-     * Participation in super event is required before registration to this range. Must be checked in service/controller.
+     * Participation in super event is required before registration to this range. Must be checked in
+     * service/controller.
      * @return bool
      * @todo Use it and check it!
      */
@@ -307,13 +312,16 @@ class RegistrationOffer implements NameableInterface
     ): Collection {
         $flagGroupRanges = $this->flagGroupRanges;
         if (true === $onlyPublic) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isPublicOnWeb());
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
+                                                                            && $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isCategory($flagCategory));
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
+                                                                            && $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer && $range->isType($flagType));
+            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
+                                                                            && $range->isType($flagType));
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
             $flagGroupRanges = new ArrayCollection([
@@ -340,7 +348,8 @@ class RegistrationOffer implements NameableInterface
 
     public function isParticipantInSuperEvent(?Participant $participant = null): bool
     {
-        return $participant instanceof Participant && $this->getEvent() && $this->getEvent()->isEventSuperEvent($participant->getEvent());
+        return $participant instanceof Participant && $this->getEvent()
+               && $this->getEvent()->isEventSuperEvent($participant->getEvent());
     }
 
     public function getEvent(): ?Event
@@ -386,14 +395,17 @@ class RegistrationOffer implements NameableInterface
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags(true) as $oldParticipantFlag) {
             if (!($oldParticipantFlag instanceof ParticipantFlag)
-                || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer()))) {
+                || ($newParticipantFlagGroup->getAvailableFlagOffers()
+                                            ->contains($oldParticipantFlag->getFlagOffer()))) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag, $onlySimulate);
-            $newFlagRange       = $newParticipantFlag->getFlagOffer();
+            $newFlagRange = $newParticipantFlag->getFlagOffer();
             if (null !== $newFlagRange && $oldParticipantFlag->getFlagOffer() !== $newFlagRange) {
                 $remainingFlagRangeCapacity = $newFlagRange->getRemainingCapacity($admin);
-                if (null !== $remainingFlagRangeCapacity && (0 === $remainingFlagRangeCapacity || -1 >= $remainingFlagRangeCapacity)) {
+                if (null !== $remainingFlagRangeCapacity
+                    && (0 === $remainingFlagRangeCapacity
+                        || -1 >= $remainingFlagRangeCapacity)) {
                     throw new FlagCapacityExceededException($newFlagRange->getName());
                 }
             }
@@ -423,12 +435,13 @@ class RegistrationOffer implements NameableInterface
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $newFlagGroupRange) {
-            if ($newFlagGroupRange instanceof RegistrationFlagGroupOffer && $newFlagGroupRange->getFlagCategory() === $flagCategory) {
+            if ($newFlagGroupRange instanceof RegistrationFlagGroupOffer
+                && $newFlagGroupRange->getFlagCategory() === $flagCategory) {
                 return $newFlagGroupRange;
             }
         }
         $flagGroupName = $flagGroupRange->getName();
-        $regRangeName  = $this->getName();
+        $regRangeName = $this->getName();
         throw new FlagOutOfRangeException("Skupinu příznaků '$flagGroupName' není možné v rozsahu přihlášek '$regRangeName' použít (neexistuje automatická náhrada).");
     }
 
@@ -439,15 +452,18 @@ class RegistrationOffer implements NameableInterface
      * @return ParticipantFlag
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
      */
-    public function makeCompatibleParticipantFlag(ParticipantFlag $oldParticipantFlag, bool $onlySimulate = false): ParticipantFlag
-    {
+    public function makeCompatibleParticipantFlag(
+        ParticipantFlag $oldParticipantFlag,
+        bool $onlySimulate = false
+    ): ParticipantFlag {
         if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagOffer())) {
             throw new FlagOutOfRangeException('Prázdné přiřazení příznaku.');
         }
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldParticipantFlag;
         }
-        $newParticipantFlag = new ParticipantFlag($this->findCompatibleFlagRange($oldFlagRange), null, $oldParticipantFlag->getTextValue());
+        $newParticipantFlag = new ParticipantFlag($this->findCompatibleFlagRange($oldFlagRange), null,
+            $oldParticipantFlag->getTextValue());
         if (!$onlySimulate) {
             $oldParticipantFlag->delete();
         }
@@ -458,7 +474,8 @@ class RegistrationOffer implements NameableInterface
     public function isFlagRangeCompatible(?RegistrationFlagOffer $flagRange = null): bool
     {
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof RegistrationFlagGroupOffer && $flagGroupRange->getFlagOffers()->contains($flagRange)) {
+            if ($flagGroupRange instanceof RegistrationFlagGroupOffer
+                && $flagGroupRange->getFlagOffers()->contains($flagRange)) {
                 return true;
             }
         }
@@ -474,7 +491,8 @@ class RegistrationOffer implements NameableInterface
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
             if ($flagGroupRange instanceof RegistrationFlagGroupOffer) {
                 foreach ($flagGroupRange->getFlagOffers() as $oneFlagRange) {
-                    if ($oneFlagRange instanceof RegistrationFlagOffer && $oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
+                    if ($oneFlagRange instanceof RegistrationFlagOffer
+                        && $oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
                         return $oneFlagRange;
                     }
                 }

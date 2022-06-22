@@ -52,20 +52,20 @@ use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
  *   }
  * )
  */
-#[Entity(repositoryClass : ParticipantMailGroupRepository::class)]
-#[Table(name : 'calendar_participant_mail_group')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant_mail')]
+#[Entity(repositoryClass: ParticipantMailGroupRepository::class)]
+#[Table(name: 'calendar_participant_mail_group')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
 class ParticipantMailGroup extends AbstractMailGroup
 {
-    #[ManyToOne(targetEntity : ParticipantMailCategory::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: ParticipantMailCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?ParticipantMailCategory $category = null;
 
-    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    #[Column(type : 'boolean', nullable : false)]
+    #[Column(type: 'boolean', nullable: false)]
     protected bool $onlyActive = true;
 
     public function __construct(

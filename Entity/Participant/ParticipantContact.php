@@ -28,40 +28,44 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
  *   collectionOperations={
  *     "get"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_contacts_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_participant_contacts_get"},
+ *     "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_contacts_post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_contacts_post"},
+ *     "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_participant_contact_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entity_get", "calendar_participant_contact_get"},
+ *     "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_contact_put"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_contact_put"},
+ *     "enable_max_depth"=true}
  *     }
  *   }
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_participant_contact')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
+#[Table(name: 'calendar_participant_contact')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class ParticipantContact implements BasicInterface
 {
     use BasicTrait;
     use ActivatedTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity : Participant::class, fetch : 'EXTRA_LAZY', inversedBy : 'participantContacts')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EXTRA_LAZY', inversedBy: 'participantContacts')]
+    #[JoinColumn(nullable: true)]
     protected ?Participant $participant = null;
 
-    #[ManyToOne(targetEntity : AbstractContact::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: AbstractContact::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?AbstractContact $contact = null;
 
     public function __construct(?AbstractContact $contact = null)

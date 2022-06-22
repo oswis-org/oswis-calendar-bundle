@@ -1,3 +1,4 @@
+{% set range_text = date_range_string(event.startDateTime|default, event.endDateTime|default) %}
 <table class="list">
     <thead>
     <tr>
@@ -38,7 +39,8 @@
         <td>Termín události
             <div class="block small">Rok začátku akce</div>
         </td>
-        <td>{{ event.rangeAsText }}
+        <td>
+            {{ range_text }}
             <div class="block small">{{ event.startYear }}</div>
         </td>
     </tr>
@@ -51,7 +53,7 @@
                 <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': event.superEvent.slug}) }}">
                     {{ event.superEvent.shortName }}
                 </a>
-                <span class="block small">{{ event.rangeAsText }}</span>
+                <span class="block small">{{ range_text }}</span>
             </td>
         </tr>
         </tbody>

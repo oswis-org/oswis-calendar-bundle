@@ -61,7 +61,8 @@ class ParticipantFlagRepository extends EntityRepository
 
     private function addFlagRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_FLAG_RANGE]) && $opts[self::CRITERIA_FLAG_RANGE] instanceof RegistrationFlagOffer) {
+        if (!empty($opts[self::CRITERIA_FLAG_RANGE])
+            && $opts[self::CRITERIA_FLAG_RANGE] instanceof RegistrationFlagOffer) {
             $queryBuilder->andWhere('item.flagOffer = :flag_range_id');
             $queryBuilder->setParameter('flag_range_id', $opts[self::CRITERIA_FLAG_RANGE]->getId());
         }
@@ -92,7 +93,7 @@ class ParticipantFlagRepository extends EntityRepository
     public function getParticipantFlagGroups(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getQueryBuilder($opts, $limit, $offset);
-        $result       = $queryBuilder->getQuery()->getResult();
+        $result = $queryBuilder->getQuery()->getResult();
 
         return new ArrayCollection(is_array($result) ? $result : []);
     }

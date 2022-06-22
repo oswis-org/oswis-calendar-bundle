@@ -19,13 +19,15 @@ class FlagsByType
         $out = [];
         foreach ($flags as $flag) {
             if ($flag instanceof RegistrationFlag) {
-                $flagTypeSlug                              = $flag->getCategory()?->getSlug() ?? '0';
-                $flagSlug                                  = $flag->getSlug();
-                $out[$flagTypeSlug]                        ??= [];
+                $flagTypeSlug = $flag->getCategory()?->getSlug() ?? '0';
+                $flagSlug = $flag->getSlug();
+                $out[$flagTypeSlug] ??= [];
                 $out[$flagTypeSlug][$flagSlug]['flagType'] = $flag->getCategory();
-                $out[$flagTypeSlug][$flagSlug]['flag']     = $flag;
-                $count                                     = $out[$flagTypeSlug][$flagSlug]['count'] ?? false ? $out[$flagTypeSlug][$flagSlug]['count'] + 1 : 1;
-                $out[$flagTypeSlug][$flagSlug]['count']    = $count;
+                $out[$flagTypeSlug][$flagSlug]['flag'] = $flag;
+                $count = $out[$flagTypeSlug][$flagSlug]['count']
+                         ??
+                         false ? $out[$flagTypeSlug][$flagSlug]['count'] + 1 : 1;
+                $out[$flagTypeSlug][$flagSlug]['count'] = $count;
             }
         }
 

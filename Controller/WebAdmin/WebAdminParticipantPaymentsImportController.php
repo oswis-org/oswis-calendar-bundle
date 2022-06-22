@@ -34,10 +34,12 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
         try {
             $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
             $form->handleRequest($request);
-            if ($form->isSubmitted() && $form->isValid() && (($paymentsImport = $form->getData()) instanceof ParticipantPaymentsImport)) {
+            if ($form->isSubmitted() && $form->isValid()
+                && (($paymentsImport = $form->getData()) instanceof ParticipantPaymentsImport)) {
                 $this->paymentsImportService->processImport($paymentsImport);
 
-                return $this->renderMessage("Platby importovány!", "Import plateb proběhl úspěšně. Shrnutí bylo odesláno do archivu.");
+                return $this->renderMessage("Platby importovány!",
+                    "Import plateb proběhl úspěšně. Shrnutí bylo odesláno do archivu.");
             }
 
             return $this->renderImportForm($form);
@@ -47,7 +49,8 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
                 $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
                 $form->handleRequest($request);
             }
-            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage()));
+            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '
+                                          .$exception->getMessage()));
 
             return $this->renderImportForm($form);
         }

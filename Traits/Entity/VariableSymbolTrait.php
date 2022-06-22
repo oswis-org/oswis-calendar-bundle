@@ -12,8 +12,8 @@ use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 
 trait VariableSymbolTrait
 {
-    #[Column(type : 'string', nullable : true)]
-    #[ApiFilter(SearchFilter::class, strategy : 'ipartial')]
+    #[Column(type: 'string', nullable: true)]
+    #[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
     #[ApiFilter(OrderFilter::class)]
     protected ?string $variableSymbol = null;
 

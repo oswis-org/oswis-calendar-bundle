@@ -35,7 +35,8 @@ class OswisCalendarSettingsProvider
     {
         $this->patterns = [
             [
-                'pattern' => "/(.*){\s*(year)\s*([\+\-]?)\s*(\d*)}(.*)/", // [1] prefix [2] 'year' [3] sign [4] number [5] suffix
+                'pattern' => "/(.*){\s*(year)\s*([\+\-]?)\s*(\d*)}(.*)/",
+                // [1] prefix [2] 'year' [3] sign [4] number [5] suffix
                 'value'   => date('Y'),
             ],
         ];
@@ -55,7 +56,8 @@ class OswisCalendarSettingsProvider
         }
         foreach ($this->patterns as $pattern) {
             $parts = $this->regexMatch($slug, $pattern['pattern']);
-            $slug  = empty($parts) ? $slug : $parts[1].$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]).$parts[5];
+            $slug = empty($parts) ? $slug
+                : $parts[1].$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]).$parts[5];
         }
 
         return $slug;
@@ -110,7 +112,7 @@ class OswisCalendarSettingsProvider
     public function getArray(): array
     {
         return [
-            'default_event'          => $this->getDefaultEvent(),
+            'default_event' => $this->getDefaultEvent(),
             'default_event_fallback' => $this->getDefaultEventFallbacks(),
         ];
     }

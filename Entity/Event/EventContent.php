@@ -42,12 +42,12 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractWebContent;
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_event_content')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
+#[Table(name: 'calendar_event_content')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventContent extends AbstractWebContent
 {
-    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER', inversedBy : 'contents')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER', inversedBy: 'contents')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
     /**

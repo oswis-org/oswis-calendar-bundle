@@ -26,7 +26,7 @@
             {% endif %}
         </h3>
         <h3 class="mb-3 p-1 text-center text-primary">
-            <small class="p-1">{{ event.rangeAsText|default }}</small>
+            <small class="p-1">{{ date_range_string(event.startDateTime, event.endDateTime) }}</small>
         </h3>
         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
@@ -47,7 +47,11 @@
                         <strong class="d-none d-md-inline" itemprop="name">{{ event.superEvent.name }}</strong>
                     </a>
                     <wbr class="d-inline">
-                    {{ event.superEvent.rangeAsText ? '('~event.superEvent.rangeAsText~')' : null }}
+                    {% set range_text = date_range_string(
+                        event.superEvent.startDateTime|default,
+                        event.superEvent.endDateTime|default
+                    ) %}
+                    {{ range_text ? '('~range_text~')' : null }}
                     <meta itemprop="startDate" content="{{ event.superEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
                     <meta itemprop="endDate" content="{{ event.superEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
                     <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">

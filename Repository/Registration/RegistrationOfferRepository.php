@@ -35,13 +35,16 @@ class RegistrationOfferRepository extends EntityRepository
     public function getRegistrationsRanges(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getRegistrationsRangesQueryBuilder($opts, $limit, $offset);
-        $result       = $queryBuilder->getQuery()->getResult();
+        $result = $queryBuilder->getQuery()->getResult();
 
         return new ArrayCollection(is_array($result) ? $result : []);
     }
 
-    public function getRegistrationsRangesQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
-    {
+    public function getRegistrationsRangesQueryBuilder(
+        array $opts = [],
+        ?int $limit = null,
+        ?int $offset = null
+    ): QueryBuilder {
         $queryBuilder = $this->createQueryBuilder('range');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
@@ -80,7 +83,8 @@ class RegistrationOfferRepository extends EntityRepository
 
     private function addParticipantCategoryQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_CATEGORY]) && $opts[self::CRITERIA_PARTICIPANT_CATEGORY] instanceof ParticipantCategory) {
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_CATEGORY])
+            && $opts[self::CRITERIA_PARTICIPANT_CATEGORY] instanceof ParticipantCategory) {
             $queryBuilder->andWhere('range.participantCategory = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_CATEGORY]->getId());
         }
@@ -99,7 +103,7 @@ class RegistrationOfferRepository extends EntityRepository
     {
         if (!empty($opts[self::CRITERIA_ONLY_ACTIVE]) && true === (bool)$opts[self::CRITERIA_ONLY_ACTIVE]) {
             $startQuery = ' (range.startDateTime IS NULL) OR (:now > range.startDateTime) ';
-            $endQuery   = ' (range.endDateTime IS NULL) OR (:now < range.endDateTime) ';
+            $endQuery = ' (range.endDateTime IS NULL) OR (:now < range.endDateTime) ';
             $queryBuilder->andWhere($startQuery)->andWhere($endQuery)->setParameter('now', new DateTime());
         }
     }
@@ -107,7 +111,8 @@ class RegistrationOfferRepository extends EntityRepository
     private function addPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (null !== ($opts[self::CRITERIA_PUBLIC_ON_WEB] ?? null)) {
-            $queryBuilder->andWhere('range.publicOnWeb = :publicOnWeb')->setParameter('publicOnWeb', (bool)$opts[self::CRITERIA_PUBLIC_ON_WEB]);
+            $queryBuilder->andWhere('range.publicOnWeb = :publicOnWeb')
+                         ->setParameter('publicOnWeb', (bool)$opts[self::CRITERIA_PUBLIC_ON_WEB]);
         }
     }
 
@@ -129,7 +134,9 @@ class RegistrationOfferRepository extends EntityRepository
     public function getRegistrationsRange(?array $opts = []): ?RegistrationOffer
     {
         try {
-            $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts ?? [])->getQuery()->getOneOrNullResult();
+            $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts ?? [])
+                                       ->getQuery()
+                                       ->getOneOrNullResult();
         } catch (Exception) {
             return null;
         }

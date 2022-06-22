@@ -22,7 +22,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
- * RegistrationFlag is some specification of Participant. Each flag can adjust price and can be used only once in one participant.
+ * RegistrationFlag is some specification of Participant. Each flag can adjust price and can be used only once in one
+ * participant.
  * @example Type of accommodation, food allergy, time of arrival/departure...
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
@@ -58,20 +59,20 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  *   }
  * )
  */
-#[Entity(repositoryClass : RegistrationFlagRepository::class)]
-#[Table(name : 'calendar_flag')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_flag')]
+#[Entity(repositoryClass: RegistrationFlagRepository::class)]
+#[Table(name: 'calendar_flag')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag')]
 #[ApiFilter(OrderFilter::class)]
 class RegistrationFlag implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
 
-    #[ManyToOne(targetEntity : RegistrationFlagCategory::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: RegistrationFlagCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagCategory $category = null;
 
-    #[Column(type : 'string', nullable : true)]
+    #[Column(type: 'string', nullable: true)]
     protected ?string $flagFormGroup = null;
 
     public function __construct(?Nameable $nameable = null, ?RegistrationFlagCategory $flagType = null)

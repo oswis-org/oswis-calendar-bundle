@@ -20,7 +20,11 @@ class RegistrationFlagService
         try {
             $this->em->persist($participantFlag);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created flag (by service): '.$participantFlag->getId().' '.$participantFlag->getName().'.';
+            $infoMessage = 'CREATE: Created flag (by service): '
+                           .$participantFlag->getId()
+                           .' '
+                           .$participantFlag->getName()
+                           .'.';
             $this->logger->info($infoMessage);
 
             return $participantFlag;

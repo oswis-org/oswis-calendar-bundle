@@ -35,10 +35,11 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
             return;
         }
         /** @var \OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser $user */
-        $user         = $this->security->getUser();
+        $user = $this->security->getUser();
         $participants = $this->participantService->getParticipants([ParticipantRepository::CRITERIA_APP_USER => $user]);
-        $events       = array_map(static fn(mixed $p) => $p instanceof Participant ? $p->getEvent() : null, $participants->toArray());
-        $rootAlias    = $queryBuilder->getRootAliases()[0];
+        $events = array_map(static fn(mixed $p) => $p instanceof Participant ? $p->getEvent() : null,
+            $participants->toArray());
+        $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder->leftJoin("$rootAlias.superEvent", 'superEvent');
         $queryBuilder->andWhere(" $rootAlias.id IN (:ids) OR $rootAlias.superEvent IN (:ids) ");
         $queryBuilder->setParameter('ids', array_map(static fn(?Event $event) => $event?->getId(), $events));

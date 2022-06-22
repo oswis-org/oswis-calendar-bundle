@@ -39,7 +39,7 @@ class CapacityUsage
 
     public function setFullUsage(?int $fullUsage): void
     {
-        $fullUsage       ??= 0;
+        $fullUsage ??= 0;
         $this->fullUsage = max(0, $fullUsage);
     }
 
@@ -54,7 +54,7 @@ class CapacityUsage
 
     public function setBaseUsage(?int $baseUsage): void
     {
-        $baseUsage       ??= 0;
+        $baseUsage ??= 0;
         $this->baseUsage = max(0, $baseUsage);
     }
 }

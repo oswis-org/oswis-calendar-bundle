@@ -41,7 +41,7 @@ class ParticipantType extends AbstractType
             throw new PriceInvalidArgumentException('[špatný rozsah přihlášek]');
         }
         $participantType = $range->getParticipantCategory();
-        $event           = $range->getEvent();
+        $event = $range->getEvent();
         if (null === $participantType || null === $event) {
             $message = null === $participantType ? '[typ účastníka nenastaven]' : '';
             $message .= null !== $event ? '[událost nenastavena]' : '';

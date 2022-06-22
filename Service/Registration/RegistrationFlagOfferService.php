@@ -28,7 +28,11 @@ class RegistrationFlagOfferService
         try {
             $this->em->persist($flagRange);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created flag range (by service): '.$flagRange->getId().' '.$flagRange->getName().'.';
+            $infoMessage = 'CREATE: Created flag range (by service): '
+                           .$flagRange->getId()
+                           .' '
+                           .$flagRange->getName()
+                           .'.';
             $this->logger->info($infoMessage);
 
             return $flagRange;

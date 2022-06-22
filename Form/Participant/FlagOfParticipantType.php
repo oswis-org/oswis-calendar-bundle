@@ -38,7 +38,8 @@ class FlagOfParticipantType extends AbstractType
         if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof ParticipantFlag)) {
             return;
         }
-        if (null === ($flagRange = $participantFlag->getFlagOffer()) || !($flagRange instanceof RegistrationFlagOffer)) {
+        if (null === ($flagRange = $participantFlag->getFlagOffer())
+            || !($flagRange instanceof RegistrationFlagOffer)) {
             return;
         }
         $event->getForm()->add("flagRange", CheckboxType::class, [

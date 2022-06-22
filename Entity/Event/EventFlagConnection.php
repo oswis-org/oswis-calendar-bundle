@@ -26,40 +26,44 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
  *   collectionOperations={
  *     "get"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_event_flag_connections_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_event_flag_connections_get"},
+ *     "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_event_flag_connections_post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_event_flag_connections_post"},
+ *     "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
  *     "get"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_event_flag_connection_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entity_get", "calendar_event_flag_connection_get"},
+ *     "enable_max_depth"=true},
  *     },
  *     "put"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_event_flag_connection_put"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entity_put", "calendar_event_flag_connection_put"},
+ *     "enable_max_depth"=true}
  *     }
  *   }
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_event_flag_connection')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
+#[Table(name: 'calendar_event_flag_connection')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventFlagConnection implements BasicInterface
 {
     use BasicTrait;
     use TextValueTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity : Event::class, fetch : 'EAGER', inversedBy : 'flagConnections')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER', inversedBy: 'flagConnections')]
+    #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    #[ManyToOne(targetEntity : EventFlag::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: EventFlag::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?EventFlag $eventFlag = null;
 
     public function __construct(?EventFlag $eventFlag = null, ?string $textValue = null)

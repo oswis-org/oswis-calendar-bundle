@@ -77,9 +77,9 @@ use function assert;
  *     "slug"
  * })
  */
-#[Entity(repositoryClass : EventRepository::class)]
-#[Table(name : 'calendar_event')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
+#[Entity(repositoryClass: EventRepository::class)]
+#[Table(name: 'calendar_event')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class Event implements NameableInterface
 {
     use NameableTrait;
@@ -91,57 +91,57 @@ class Event implements NameableInterface
     use DeletedTrait;
     use EntityPublicTrait;
 
-    #[ManyToOne(targetEntity : Place::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Place::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Place $place = null;
 
-    #[ManyToOne(targetEntity : Participant::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?Participant $organizer = null;
 
     /**
      * @var Collection<EventFlagConnection> $flagConnections
      */
-    #[OneToMany(mappedBy : 'event', targetEntity : EventFlagConnection::class, cascade : ['all'], fetch : 'EAGER')]
+    #[OneToMany(mappedBy: 'event', targetEntity: EventFlagConnection::class, cascade: ['all'], fetch: 'EAGER')]
     protected Collection $flagConnections;
 
     /**
      * Parent event (if this is not top level event).
      */
-    #[ManyToOne(targetEntity : self::class, fetch : 'EAGER', inversedBy : 'subEvents')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: self::class, fetch: 'EAGER', inversedBy: 'subEvents')]
+    #[JoinColumn(nullable: true)]
     protected ?self $superEvent = null;
 
     /**
      * @var Collection<Event> $subEvents
      */
-    #[OneToMany(mappedBy : 'superEvent', targetEntity : self::class)]
+    #[OneToMany(mappedBy: 'superEvent', targetEntity: self::class)]
     protected Collection $subEvents;
 
     /**
      * @var Collection<EventContent> $contents
      */
-    #[OneToMany(mappedBy : 'event', targetEntity : EventContent::class, cascade : ['all'])]
+    #[OneToMany(mappedBy: 'event', targetEntity: EventContent::class, cascade: ['all'])]
     protected Collection $contents;
 
     /**
      * @var Collection<EventImage> $images
      */
-    #[OneToMany(mappedBy : 'event', targetEntity : EventImage::class, cascade : ['all'], orphanRemoval : true)]
+    #[OneToMany(mappedBy: 'event', targetEntity: EventImage::class, cascade: ['all'], orphanRemoval: true)]
     protected Collection $images;
 
     /**
      * @var Collection<EventFile> $files
      */
-    #[OneToMany(mappedBy : 'event', targetEntity : EventFile::class, cascade : ['all'], orphanRemoval : true)]
+    #[OneToMany(mappedBy: 'event', targetEntity: EventFile::class, cascade: ['all'], orphanRemoval: true)]
     protected Collection $files;
 
-    #[ManyToOne(targetEntity : EventCategory::class, fetch : 'EAGER')]
-    #[JoinColumn(name : 'type_id', referencedColumnName : 'id')]
+    #[ManyToOne(targetEntity: EventCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'type_id', referencedColumnName: 'id')]
     private ?EventCategory $category = null;
 
-    #[ManyToOne(targetEntity : EventGroup::class, fetch : 'EAGER', inversedBy : 'events')]
-    #[JoinColumn(name : 'event_series_id', referencedColumnName : 'id')]
+    #[ManyToOne(targetEntity: EventGroup::class, fetch: 'EAGER', inversedBy: 'events')]
+    #[JoinColumn(name: 'event_series_id', referencedColumnName: 'id')]
     #[MaxDepth(1)]
     private ?EventGroup $group = null;
 
@@ -154,11 +154,11 @@ class Event implements NameableInterface
         ?EventGroup $group = null,
         ?Publicity $publicity = null
     ) {
-        $this->subEvents       = new ArrayCollection();
-        $this->contents        = new ArrayCollection();
+        $this->subEvents = new ArrayCollection();
+        $this->contents = new ArrayCollection();
         $this->flagConnections = new ArrayCollection();
-        $this->images          = new ArrayCollection();
-        $this->files           = new ArrayCollection();
+        $this->images = new ArrayCollection();
+        $this->files = new ArrayCollection();
         $this->setCategory($category);
         $this->setSuperEvent($superEvent);
         $this->setGroup($group);
@@ -182,7 +182,8 @@ class Event implements NameableInterface
     {
         $images = $this->images;
         if (!empty($type)) {
-            $images = $images->filter(fn(mixed $eventImage) => $eventImage instanceof EventImage && $eventImage->getType() === $type,);
+            $images = $images->filter(fn(mixed $eventImage) => $eventImage instanceof EventImage
+                                                               && $eventImage->getType() === $type,);
         }
 
         /** @var Collection<EventImage> $images */
@@ -232,7 +233,8 @@ class Event implements NameableInterface
     {
         $files = $this->files;
         if (!empty($type)) {
-            $files = $files->filter(fn(mixed $eventFile) => $eventFile instanceof EventFile && $eventFile->getType() === $type,);
+            $files = $files->filter(fn(mixed $eventFile) => $eventFile instanceof EventFile
+                                                            && $eventFile->getType() === $type,);
         }
 
         /** @var Collection<EventFile> $files */
@@ -300,9 +302,12 @@ class Event implements NameableInterface
     public function getContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            $contents = $this->getContents()->filter(fn(mixed $webContent) => $webContent instanceof EventContent && $type === $webContent->getType(),);
+            $contents = $this->getContents()->filter(fn(mixed $webContent) => $webContent instanceof EventContent
+                                                                              && $type === $webContent->getType(),);
 
-            return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents) ?? new ArrayCollection();
+            return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents)
+                   ??
+                   new ArrayCollection();
         }
 
         return $this->contents;
@@ -349,7 +354,9 @@ class Event implements NameableInterface
     {
         $bankAccount = $this->traitGetBankAccount();
         if (empty($bankAccount->getFull())) {
-            $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()->getBankAccount(true) : null;
+            $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()
+                                                                                           ->getBankAccount(true)
+                : null;
         }
 
         return $bankAccount;
@@ -357,7 +364,7 @@ class Event implements NameableInterface
 
     public function getStartDateTimeRecursive(): ?DateTime
     {
-        $maxDateTime   = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
+        $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
         $startDateTime = $this->getStartDateTime() ?? $maxDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
             assert($subEvent instanceof self);
@@ -386,7 +393,8 @@ class Event implements NameableInterface
     {
         $connections = $this->flagConnections ?? new ArrayCollection();
         if ($onlyActive) {
-            $connections = $connections->filter(fn(mixed $conn) => $conn instanceof EventFlagConnection && $conn->isActive(),);
+            $connections = $connections->filter(fn(mixed $conn) => $conn instanceof EventFlagConnection
+                                                                   && $conn->isActive(),);
         }
 
         return $connections;
@@ -473,6 +481,11 @@ class Event implements NameableInterface
 
     public function getSuperEvents(): array
     {
-        return null === $this->getSuperEvent() ? [] : [...$this->getSuperEvent()->getSuperEvents(), $this->getSuperEvent()];
+        return null === $this->getSuperEvent()
+            ? []
+            : [
+                ...$this->getSuperEvent()->getSuperEvents(),
+                $this->getSuperEvent(),
+            ];
     }
 }

@@ -54,9 +54,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_flag_category')]
+#[Table(name: 'calendar_flag_category')]
 #[ApiFilter(OrderFilter::class)]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_flag')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag')]
 class RegistrationFlagCategory implements NameableInterface
 {
     use NameableTrait;

@@ -25,8 +25,10 @@ class ParticipantPaymentsImportService
     ) {
     }
 
-    public function processImport(ParticipantPaymentsImport $paymentsImport, ?CsvPaymentImportSettings $importSettings = null): void
-    {
+    public function processImport(
+        ParticipantPaymentsImport $paymentsImport,
+        ?CsvPaymentImportSettings $importSettings = null
+    ): void {
         $importedPayments = new ArrayCollection();
         $this->em->persist($paymentsImport);
         $this->em->flush();
@@ -54,22 +56,23 @@ class ParticipantPaymentsImportService
     public function getParticipantByPayment(ParticipantPayment $payment, bool $isSecondTry = false): ?Participant
     {
         $secondTryString = $isSecondTry ? " (second try, included deleted participants)" : '';
-        $value           = $payment->getNumericValue();
+        $value = $payment->getNumericValue();
         if (empty($vs = $payment->getVariableSymbol())) {
             $this->logger->warning("Participant NOT found for payment without VS and with value '$value'.");
 
             return null;
         }
-        $participants      = $this->participantService->getParticipants([
+        $participants = $this->participantService->getParticipants([
             ParticipantRepository::CRITERIA_VARIABLE_SYMBOL => $payment->getVariableSymbol(),
             ParticipantRepository::CRITERIA_INCLUDE_DELETED => $isSecondTry,
         ]);
         $participantsCount = $participants->count();
         $this->logger->info("Found $participantsCount participants for payment with VS '$vs' and value '$value'$secondTryString.");
         $participantsArray = $participants->toArray();
-        usort($participantsArray, static fn(mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),);
+        usort($participantsArray,
+            static fn(mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),);
         $participants = new ArrayCollection($participantsArray);
-        $participant  = $participants->first() instanceof Participant ? $participants->first() : null;
+        $participant = $participants->first() instanceof Participant ? $participants->first() : null;
         if (null === $participant && !$isSecondTry) {
             $participant = $this->getParticipantByPayment($payment, true);
         }

@@ -39,7 +39,8 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
             /** @var ParticipantMailGroup[] $appUserEMailGroups */
             $appUserEMailGroups = $queryBuilder->getQuery()->getResult();
             foreach ($appUserEMailGroups as $appUserMailGroup) {
-                if ($appUserMailGroup instanceof ParticipantMailGroup && $appUserMailGroup->isApplicable($participant)) {
+                if ($appUserMailGroup instanceof ParticipantMailGroup
+                    && $appUserMailGroup->isApplicable($participant)) {
                     return $appUserMailGroup;
                 }
             }

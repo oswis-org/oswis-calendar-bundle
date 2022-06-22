@@ -10,6 +10,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Common\PriorityInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\UserConfirmationInterface;
 
 interface ParticipantInterface
-    extends BasicInterface, PriorityInterface, ActivatedInterface, DeletedInterface, UserConfirmationInterface, ManagerConfirmationInterface
+    extends BasicInterface, PriorityInterface, ActivatedInterface, DeletedInterface, UserConfirmationInterface,
+            ManagerConfirmationInterface
 {
 }

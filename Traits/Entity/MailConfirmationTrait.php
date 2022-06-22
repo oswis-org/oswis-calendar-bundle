@@ -15,8 +15,8 @@ use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 
 trait MailConfirmationTrait
 {
-    #[Column(type : 'datetime', nullable : true, options : ['default' => null])]
-    #[ApiFilter(SearchFilter::class, strategy : 'ipartial')]
+    #[Column(type: 'datetime', nullable: true, options: ['default' => null])]
+    #[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
     #[ApiFilter(DateFilter::class)]
     #[ApiFilter(ExistsFilter::class)]
     #[ApiFilter(OrderFilter::class)]

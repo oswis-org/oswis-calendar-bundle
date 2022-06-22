@@ -22,7 +22,11 @@ class EventSeriesService
             $entity = new EventGroup($nameable);
             $this->em->persist($entity);
             $this->em->flush();
-            $this->logger->info('CREATE: Created event series (by service): '.$entity->getId().' '.$entity->getName().'.');
+            $this->logger->info('CREATE: Created event series (by service): '
+                                .$entity->getId()
+                                .' '
+                                .$entity->getName()
+                                .'.');
 
             return $entity;
         } catch (Exception $e) {

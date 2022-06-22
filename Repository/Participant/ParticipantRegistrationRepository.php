@@ -95,7 +95,7 @@ class ParticipantRegistrationRepository extends EntityRepository
     public function getRangesConnections(array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $queryBuilder = $this->getRangesConnectionsQueryBuilder($opts, $limit, $offset);
-        $result       = $queryBuilder->getQuery()->getResult();
+        $result = $queryBuilder->getQuery()->getResult();
 
         return new ArrayCollection(is_array($result) ? $result : []);
     }

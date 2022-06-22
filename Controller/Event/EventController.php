@@ -51,19 +51,25 @@ class EventController extends AbstractController
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]);
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event',
+                ['eventSlug' => $defaultEvent->getSlug()]);
         }
         if (null === $eventSlug) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
-        if (!(($event = $this->eventService->getRepository()->getEvent($this->getWebPublicEventOpts($eventSlug))) instanceof Event)) {
+        if (!(($event = $this->eventService->getRepository()->getEvent($this->getWebPublicEventOpts($eventSlug)))
+              instanceof
+              Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', [
             'title'       => $event->getShortName(),
             'description' => $event->getDescription(),
-            'ranges'      => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([$event, ...$event->getSubEvents()])),
+            'ranges'      => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([
+                $event,
+                ...$event->getSubEvents(),
+            ])),
             'event'       => $event,
             'organizer'   => $this->participantService->getOrganizer($event),
         ]);
@@ -84,7 +90,7 @@ class EventController extends AbstractController
         ?string $eventTypeString = null,
     ): Response {
         $eventRepo = $this->eventService->getRepository();
-        $event     = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
+        $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
 
         return $this->render('@OswisOrgOswisCalendar/web/parts/event-nav.html.twig', [
             'event'     => $event,
@@ -119,19 +125,20 @@ class EventController extends AbstractController
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEvent->getSlug()]);
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet',
+                ['eventSlug' => $defaultEvent->getSlug()]);
         }
         $eventRepo = $this->eventService->getRepository();
-        $opts      = [
+        $opts = [
             EventRepository::CRITERIA_SLUG               => $eventSlug,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
             EventRepository::CRITERIA_INCLUDE_DELETED    => false,
         ];
-        $event     = $eventRepo->getEvent($opts);
+        $event = $eventRepo->getEvent($opts);
         if (!($event instanceof Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
-        $data         = [
+        $data = [
             'title'       => $event->getShortName(),
             'description' => $event->getDescription(),
             'event'       => $event,
@@ -180,8 +187,13 @@ class EventController extends AbstractController
      * @return Response
      * @throws Exception
      */
-    public function showEvents(?string $range = null, ?DateTime $start = null, ?DateTime $end = null, ?int $limit = null, ?int $offset = null): Response
-    {
+    public function showEvents(
+        ?string $range = null,
+        ?DateTime $start = null,
+        ?DateTime $end = null,
+        ?int $limit = null,
+        ?int $offset = null
+    ): Response {
         $context = [
             'events'    => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
             'range'     => $range,
@@ -200,7 +212,7 @@ class EventController extends AbstractController
     public function showFutureEvents(?int $page = 0): Response
     {
         $pageSize = self::PAGINATION;
-        $page     ??= 0;
+        $page ??= 0;
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig',
             ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]);

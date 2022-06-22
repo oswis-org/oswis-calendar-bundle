@@ -56,9 +56,9 @@ use function in_array;
  *   }
  * )
  */
-#[Entity(repositoryClass : ParticipantCategoryRepository::class)]
-#[Table(name : 'calendar_participant_category')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
+#[Entity(repositoryClass: ParticipantCategoryRepository::class)]
+#[Table(name: 'calendar_participant_category')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 #[ApiFilter(OrderFilter::class)]
 class ParticipantCategory implements NameableInterface
 {
@@ -86,7 +86,7 @@ class ParticipantCategory implements NameableInterface
         ];
 
     /** Send formal (or informal) e-mails? */
-    #[Column(type : 'boolean', nullable : true)]
+    #[Column(type: 'boolean', nullable: true)]
     protected ?bool $formal = null;
 
     /**

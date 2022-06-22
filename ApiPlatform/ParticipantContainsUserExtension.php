@@ -31,7 +31,7 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
             return;
         }
         /** @var \OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser $user */
-        $user      = $this->security->getUser();
+        $user = $this->security->getUser();
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder->leftJoin("$rootAlias.contact", 'contact');
         $queryBuilder->leftJoin("contact.appUser", 'appUser');

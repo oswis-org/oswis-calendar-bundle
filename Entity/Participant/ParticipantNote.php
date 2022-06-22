@@ -56,8 +56,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_participant_note')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant')]
+#[Table(name: 'calendar_participant_note')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 #[ApiFilter(OrderFilter::class)]
 class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInterface
 {
@@ -65,13 +65,13 @@ class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInte
     use TextValueTrait;
     use DeletedTrait;
 
-    #[ManyToOne(targetEntity : Participant::class, inversedBy : 'notes')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: Participant::class, inversedBy: 'notes')]
+    #[JoinColumn(nullable: true)]
     #[MaxDepth(1)]
     protected ?Participant $participant = null;
 
     /** Is note public? */
-    #[Column(type : 'boolean')]
+    #[Column(type: 'boolean')]
     protected bool $publicNote = false;
 
     public function __construct(?Participant $participant = null, ?string $textValue = null)

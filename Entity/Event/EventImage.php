@@ -24,7 +24,7 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
-#[ApiResource(collectionOperations : [
+#[ApiResource(collectionOperations: [
     'get',
     'post' => [
         'method'     => 'POST',
@@ -35,8 +35,8 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 ])]
 #[Uploadable]
 #[Entity]
-#[Table(name : 'calendar_event_image')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event_image')]
+#[Table(name: 'calendar_event_image')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event_image')]
 class EventImage extends AbstractImage
 {
     public const TYPE_LEAFLET = 'leaflet';
@@ -50,12 +50,12 @@ class EventImage extends AbstractImage
     use PriorityTrait;
     use EntityPublicTrait;
 
-    #[UploadableField(mapping : 'calendar_event_image', fileNameProperty : 'contentName', mimeType : 'contentMimeType')]
+    #[UploadableField(mapping: 'calendar_event_image', fileNameProperty: 'contentName', mimeType: 'contentMimeType')]
     #[NotNull]
     public ?File $file = null;
 
-    #[ManyToOne(targetEntity : Event::class, cascade : ['all'], inversedBy : 'images')]
-    #[JoinColumn(name : 'event_id', referencedColumnName : 'id')]
+    #[ManyToOne(targetEntity: Event::class, cascade: ['all'], inversedBy: 'images')]
+    #[JoinColumn(name: 'event_id', referencedColumnName: 'id')]
     protected ?Event $event = null;
 
     /**
@@ -66,8 +66,12 @@ class EventImage extends AbstractImage
      *
      * @throws InvalidTypeException
      */
-    public function __construct(?File $file = null, ?string $type = null, ?int $priority = null, ?Publicity $publicity = null)
-    {
+    public function __construct(
+        ?File $file = null,
+        ?string $type = null,
+        ?int $priority = null,
+        ?Publicity $publicity = null
+    ) {
         $this->setFile($file);
         $this->setType($type);
         $this->setPriority($priority);

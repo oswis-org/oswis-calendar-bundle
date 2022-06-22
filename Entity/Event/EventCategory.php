@@ -53,8 +53,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * })
  */
 #[Entity]
-#[Table(name : 'calendar_event_category')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_event')]
+#[Table(name: 'calendar_event_category')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventCategory implements NameableInterface
 {
     use NameableTrait;

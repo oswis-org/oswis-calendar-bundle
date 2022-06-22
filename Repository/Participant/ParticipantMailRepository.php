@@ -39,7 +39,8 @@ class ParticipantMailRepository extends ServiceEntityRepository
     final public function findSent(Participant $participant, string $type): Collection
     {
         $queryBuilder = $this->createQueryBuilder('mail');
-        $queryBuilder->andWhere("mail.participant = :participant_id")->setParameter('participant_id', $participant->getId());
+        $queryBuilder->andWhere("mail.participant = :participant_id")
+                     ->setParameter('participant_id', $participant->getId());
         $queryBuilder->andWhere("mail.type = :type")->setParameter('type', $type);
         $queryBuilder->andWhere("mail.sent IS NOT NULL");
         $queryBuilder->addOrderBy('mail.id', 'DESC');
@@ -52,7 +53,8 @@ class ParticipantMailRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('mail');
         $queryBuilder->select(' COUNT(mail.id) ');
-        $queryBuilder->andWhere("mail.participant = :participant_id")->setParameter('participant_id', $participant->getId());
+        $queryBuilder->andWhere("mail.participant = :participant_id")
+                     ->setParameter('participant_id', $participant->getId());
         $queryBuilder->andWhere("mail.type = :type")->setParameter('type', $type)->andWhere("mail.sent IS NOT NULL");
         $queryBuilder->addOrderBy('mail.id', 'DESC');
         try {

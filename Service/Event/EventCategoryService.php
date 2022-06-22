@@ -16,8 +16,11 @@ class EventCategoryService
     ) {
     }
 
-    final public function create(?Nameable $nameable = null, ?string $type = null, ?string $color = null): ?EventCategory
-    {
+    final public function create(
+        ?Nameable $nameable = null,
+        ?string $type = null,
+        ?string $color = null
+    ): ?EventCategory {
         try {
             $entity = new EventCategory($nameable, $type, $color);
             $this->em->persist($entity);

@@ -24,8 +24,8 @@ trait PriceTrait
      * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter::class)
      * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
      */
-    #[Column(type : 'integer', nullable : true)]
-    #[ApiFilter(SearchFilter::class, strategy : 'exact')]
+    #[Column(type: 'integer', nullable: true)]
+    #[ApiFilter(SearchFilter::class, strategy: 'exact')]
     #[ApiFilter(RangeFilter::class)]
     #[ApiFilter(OrderFilter::class)]
     protected ?int $price = null;

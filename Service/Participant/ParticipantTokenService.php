@@ -41,10 +41,11 @@ class ParticipantTokenService
     ): ParticipantToken {
         try {
             // TODO: Complete refactoring needed. Or not???
-            $participantToken = new ParticipantToken($participant, $appUser, $type, $multipleUseAllowed ?? false, $validHours);
+            $participantToken = new ParticipantToken($participant, $appUser, $type, $multipleUseAllowed ?? false,
+                $validHours);
             $this->em->persist($participantToken);
             $this->em->flush();
-            $tokenId       = $participantToken->getId();
+            $tokenId = $participantToken->getId();
             $participantId = $participant->getId();
             $this->logger->info("Created new token ($tokenId) of type '$type' for user '$participantId'.");
 

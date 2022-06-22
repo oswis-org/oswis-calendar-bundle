@@ -36,7 +36,7 @@ class FlagGroupOfParticipantType extends AbstractType
     public function __construct(RegistrationFlagOfferRepository $flagRangeRepository, LoggerInterface $logger)
     {
         $this->flagRangeRepository = $flagRangeRepository;
-        $this->logger              = $logger;
+        $this->logger = $logger;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -45,7 +45,8 @@ class FlagGroupOfParticipantType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) {
             $data = $event->getData();
             if (!empty($data) && is_array($data)) {
-                $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']] : $data['flagRanges'];
+                $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']]
+                    : $data['flagRanges'];
             }
             $event->setData($data);
         });
@@ -80,13 +81,13 @@ class FlagGroupOfParticipantType extends AbstractType
             throw new OswisException('Ve formuláři chybí instance účastníka...');
         }
         $flagGroupRange = $participantFlagGroup->getFlagGroupOffer();
-        $flagCategory   = $participantFlagGroup->getFlagCategory();
+        $flagCategory = $participantFlagGroup->getFlagCategory();
         if (null === $flagGroupRange || null === $flagCategory) {
             return;
         }
         $isFormal = false !== $participant->isFormal();
-        $min      = $flagGroupRange->getMin();
-        $max      = $flagGroupRange->getMax();
+        $min = $flagGroupRange->getMin();
+        $max = $flagGroupRange->getMax();
         if ($flagGroupRange->isFlagValueAllowed()) {
             self::addCheckboxes($event->getForm(), $participantFlagGroup, $min);
 
@@ -118,7 +119,8 @@ class FlagGroupOfParticipantType extends AbstractType
             'entry_type' => FlagOfParticipantType::class,
             'required'   => $min !== null && $min > 0,
             'label'      => $flagGroupRange->getName() ?? 'Ostatní příznaky',
-            'help'       => empty($helpText) ? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>' : $helpText,
+            'help'       => empty($helpText) ? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>'
+                : $helpText,
             'help_html'  => true,
         ]);
     }
@@ -139,21 +141,26 @@ class FlagGroupOfParticipantType extends AbstractType
      * @throws LogicException
      * @throws UnexpectedTypeException
      */
-    public static function addSelect(FormInterface $form, ParticipantFlagGroup $participantFlagGroup, int $min, ?int $max, bool $isFormal = true): void
-    {
+    public static function addSelect(
+        FormInterface $form,
+        ParticipantFlagGroup $participantFlagGroup,
+        int $min,
+        ?int $max,
+        bool $isFormal = true
+    ): void {
         if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupOffer())) {
             return;
         }
-        $flagCategory     = $flagGroupRange->getFlagCategory();
-        $choices          = $flagGroupRange->getFlagOffers();
-        $multiple         = null === $max || $max > 1;
-        $expanded         = count($choices) <= 1;
-        $help             = $flagGroupRange->getDescription();
+        $flagCategory = $flagGroupRange->getFlagCategory();
+        $choices = $flagGroupRange->getFlagOffers();
+        $multiple = null === $max || $max > 1;
+        $expanded = count($choices) <= 1;
+        $help = $flagGroupRange->getDescription();
         $flagCategoryName = $flagCategory ? $flagCategory->getDescription() : '';
-        $help             = empty($help) ? $flagCategoryName : $help;
+        $help = empty($help) ? $flagCategoryName : $help;
         if (!$expanded && $multiple) {
             $youCan = $isFormal ? 'můžete' : 'můžeš';
-            $help   .= "<p>Pro výběr více položek nebo zrušení výběru $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
+            $help .= "<p>Pro výběr více položek nebo zrušení výběru $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
         }
         $form->add("tempFlagRanges", EntityType::class, [
             'class'              => RegistrationFlagOffer::class,
@@ -178,9 +185,15 @@ class FlagGroupOfParticipantType extends AbstractType
             'expanded'     => $expanded,
             // 'empty_data'   => new ArrayCollection(),
             'multiple'     => $multiple,
-            'attr'         => ['size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null],
+            'attr'         => [
+                'size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null,
+            ],
             'choice_label' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
-            'choice_attr'  => fn(RegistrationFlagOffer $flagRange, $key, $value) => self::getChoiceAttributes($flagRange),
+            'choice_attr'  => fn(
+                RegistrationFlagOffer $flagRange,
+                $key,
+                $value
+            ) => self::getChoiceAttributes($flagRange),
             'group_by'     => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
             'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
         ]);

@@ -10,7 +10,7 @@ class Price
 
     public function __construct(?int $price = null, ?int $deposit = null)
     {
-        $this->price   = $price;
+        $this->price = $price;
         $this->deposit = $deposit;
     }
 }

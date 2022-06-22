@@ -1,4 +1,5 @@
 {% set eventImage = absolute_url(asset(event.oneImage(true) ? '/images/events/'~event.oneImage(true) : 'img/web/og-image.jpg'))|default %}
+{% set range_text = date_range_string(event.startDateTime|default, event.endDateTime|default) %}
 
 <div class="row text-justify" itemscope itemtype="http://schema.org/Event">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">
@@ -34,7 +35,7 @@
             <div class="card-footer">
                 <div class="row no-gutters">
                     <div class="col-12 col-md-4 text-md-start">
-                        <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-2">{{ event.rangeAsText|default }}</small>
+                        <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-2">{{ range_text }}</small>
                         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                     </div>

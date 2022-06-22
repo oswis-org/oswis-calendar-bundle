@@ -89,13 +89,15 @@ class EventRepository extends ServiceEntityRepository
         if (!empty($opts[self::CRITERIA_SUPER_EVENT]) && $opts[self::CRITERIA_SUPER_EVENT] instanceof Event) {
             $eventQuery = ' e.superEvent = :super_event_id ';
             $queryBuilder->leftJoin('e.superEvent', 'e0');
-            $superEventDepth = !empty($opts[self::CRITERIA_SUPER_EVENT_DEPTH]) ? (int)$opts[self::CRITERIA_SUPER_EVENT_DEPTH] : 0;
+            $superEventDepth = !empty($opts[self::CRITERIA_SUPER_EVENT_DEPTH])
+                ? (int)$opts[self::CRITERIA_SUPER_EVENT_DEPTH] : 0;
             for ($i = 0; $i < $superEventDepth; $i++) {
                 $j = $i + 1;
                 $queryBuilder->leftJoin("e$i.superEvent", "e$j");
                 $eventQuery .= " OR e$j = :event_id ";
             }
-            $queryBuilder->andWhere($eventQuery)->setParameter('super_event_id', $opts[self::CRITERIA_SUPER_EVENT]->getId());
+            $queryBuilder->andWhere($eventQuery)
+                         ->setParameter('super_event_id', $opts[self::CRITERIA_SUPER_EVENT]->getId());
         }
     }
 
@@ -162,7 +164,8 @@ class EventRepository extends ServiceEntityRepository
     private function setLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_LOCATION] instanceof Place) {
-            $queryBuilder->andWhere('e.location = :location_id')->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
+            $queryBuilder->andWhere('e.location = :location_id')
+                         ->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
         }
     }
 

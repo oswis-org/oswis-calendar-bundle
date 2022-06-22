@@ -33,7 +33,11 @@ class RegistrationOfferService
         try {
             $this->em->persist($range);
             $this->em->flush();
-            $this->logger->info('CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.');
+            $this->logger->info('CREATE: Created registrations range (by service): '
+                                .$range->getId()
+                                .' '
+                                .$range->getName()
+                                .'.');
 
             return $range;
         } catch (Exception $e) {
@@ -55,8 +59,10 @@ class RegistrationOfferService
         }
     }
 
-    public function countRegistrationsRangeConnectionsByRange(RegistrationOffer $range, bool $includeDeleted = false): ?int
-    {
+    public function countRegistrationsRangeConnectionsByRange(
+        RegistrationOffer $range,
+        bool $includeDeleted = false
+    ): ?int {
         return $this->getParticipantRangeConnectionRepository()->countRangesConnections([
             ParticipantRepository::CRITERIA_OFFER           => $range,
             ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
@@ -79,16 +85,21 @@ class RegistrationOfferService
         return $repository;
     }
 
-    public function getRegistrationsRangeConnectionsByRange(RegistrationOffer $range, bool $includeDeleted = false): Collection
-    {
+    public function getRegistrationsRangeConnectionsByRange(
+        RegistrationOffer $range,
+        bool $includeDeleted = false
+    ): Collection {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections([
             ParticipantRepository::CRITERIA_OFFER           => $range,
             ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
         ]);
     }
 
-    public function getRangeBySlug(string $rangeSlug, bool $publicOnWeb = true, bool $onlyActive = true): ?RegistrationOffer
-    {
+    public function getRangeBySlug(
+        string $rangeSlug,
+        bool $publicOnWeb = true,
+        bool $onlyActive = true
+    ): ?RegistrationOffer {
         return $this->getRepository()->getRegistrationsRange([
             RegistrationOfferRepository::CRITERIA_SLUG          => $rangeSlug,
             RegistrationOfferRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
@@ -121,8 +132,11 @@ class RegistrationOfferService
      *
      * @return Collection
      */
-    public function getEventRegistrationRanges(Collection $events, ?string $participantType = null, bool $onlyPublicOnWeb = true): Collection
-    {
+    public function getEventRegistrationRanges(
+        Collection $events,
+        ?string $participantType = null,
+        bool $onlyPublicOnWeb = true
+    ): Collection {
         $ranges = [];
         foreach ($events as $event) {
             if ($event instanceof Event) {

@@ -49,11 +49,11 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_participant_payments_import')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_participant_payments_import')]
-#[ApiFilter(OrderFilter::class, properties : ["id" => "ASC", "createdAt"])]
-#[ApiFilter(DateFilter::class, properties : [])]
-#[ApiFilter(SearchFilter::class, properties : ['id' => 'exact', 'createdAt' => 'ipartial'])]
+#[Table(name: 'calendar_participant_payments_import')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_payments_import')]
+#[ApiFilter(OrderFilter::class, properties: ["id" => "ASC", "createdAt"])]
+#[ApiFilter(DateFilter::class, properties: [])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'createdAt' => 'ipartial'])]
 class ParticipantPaymentsImport
 {
     use BasicTrait;
@@ -65,7 +65,7 @@ class ParticipantPaymentsImport
     public const ALLOWED_TYPES  = [self::TYPE_CSV];
     public const SETTINGS_CODES = ['fio' => 'Fio banka, a.s.'];
 
-    #[Column(type : 'string', nullable : true)]
+    #[Column(type: 'string', nullable: true)]
     public ?string $settingsCode = 'fio';
 
     /**
@@ -94,8 +94,8 @@ class ParticipantPaymentsImport
 
     public function extractPayments(CsvPaymentImportSettings $csvSettings): Collection
     {
-        $payments       = new ArrayCollection();
-        $csvRows        = str_getcsv(''.$this->getTextValue(), "\n");
+        $payments = new ArrayCollection();
+        $csvRows = str_getcsv(''.$this->getTextValue(), "\n");
         $csvPaymentRows = array_map(static fn($row) => self::getColumnsFromCsvRow($row, $csvSettings), $csvRows);
         array_walk($csvPaymentRows, static fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
         array_shift($csvPaymentRows); # remove column header
@@ -108,16 +108,19 @@ class ParticipantPaymentsImport
 
     private static function getColumnsFromCsvRow(string $row, CsvPaymentImportSettings $csvSettings): array
     {
-        return str_getcsv($row, ''.$csvSettings->getDelimiter(), ''.$csvSettings->getEnclosure(), ''.$csvSettings->getEscape(),);
+        return str_getcsv($row, ''.$csvSettings->getDelimiter(), ''.$csvSettings->getEnclosure(),
+            ''.$csvSettings->getEscape(),);
     }
 
-    public function makePaymentFromCsv(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings, string $csvRow): ParticipantPayment
-    {
-        $csvCurrency     = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
+    public function makePaymentFromCsv(
+        array $csvPaymentRow,
+        CsvPaymentImportSettings $csvSettings,
+        string $csvRow
+    ): ParticipantPayment {
+        $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
         $currencyAllowed = $csvSettings->getCurrencyAllowed();
-        $payment         = new ParticipantPayment((int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
-            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings),
-            ParticipantPayment::TYPE_BANK_TRANSFER);
+        $payment = new ParticipantPayment((int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
+            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings), ParticipantPayment::TYPE_BANK_TRANSFER);
         $payment->setInternalNote($csvRow);
         $payment->setExternalId($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null);
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {

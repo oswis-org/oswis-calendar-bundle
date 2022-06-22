@@ -13,6 +13,10 @@
                     {% endif %}
                     <div class="batches-sidebar-box col-12 mb-0">
                         {% for subEvent in event.subEvents|default([])|filter(e => e.batch) %}
+                            {% set range_text = date_range_string(
+                                subEvent.startDateTime|default,
+                                subEvent.endDateTime|default,
+                                true) %}
                             <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}">
                                 <div>
                                     <div class="fa-stack">
@@ -20,7 +24,7 @@
                                         <strong class="fa-stack-1x">{{ subEvent.seqId }}</strong>
                                     </div>
                                 </div>
-                                <strong>{{ subEvent.getRangeAsText(true) }}</strong>
+                                <strong>{{ range_text }}</strong>
                             </a>
                         {% endfor %}
                     </div>

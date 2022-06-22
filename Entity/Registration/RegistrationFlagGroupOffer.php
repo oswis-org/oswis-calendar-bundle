@@ -37,11 +37,13 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  *   collectionOperations={
  *     "get"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_flag_group_ranges_get"}, "enable_max_depth"=true},
+ *       "normalization_context"={"groups"={"entities_get", "calendar_flag_group_ranges_get"},
+ *     "enable_max_depth"=true},
  *     },
  *     "post"={
  *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_flag_group_ranges_post"}, "enable_max_depth"=true}
+ *       "denormalization_context"={"groups"={"entities_post", "calendar_flag_group_ranges_post"},
+ *     "enable_max_depth"=true}
  *     }
  *   },
  *   itemOperations={
@@ -57,8 +59,8 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_flag_group_range')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_flag_range')]
+#[Table(name: 'calendar_flag_group_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag_range')]
 class RegistrationFlagGroupOffer implements NameableInterface
 {
     use NameableTrait {
@@ -72,20 +74,20 @@ class RegistrationFlagGroupOffer implements NameableInterface
     use FormValueTrait;
     use TextValueTrait;
 
-    #[Column(type : 'string', nullable : true)]
+    #[Column(type: 'string', nullable: true)]
     protected ?string $emptyPlaceholder = null;
 
-    #[ManyToOne(targetEntity : RegistrationFlagCategory::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: RegistrationFlagCategory::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagCategory $flagCategory = null;
 
     /**
      * @var Collection<RegistrationFlagOffer>
      */
-    #[ManyToMany(targetEntity : RegistrationFlagOffer::class, cascade : ['all'], fetch : 'EAGER')]
-    #[JoinTable(name : 'calendar_flag_group_range_flag_connection')]
-    #[JoinColumn(name : "flag_group_range_id", referencedColumnName : "id")]
-    #[InverseJoinColumn(name : "flag_range_id", referencedColumnName : "id", unique : true)]
+    #[ManyToMany(targetEntity: RegistrationFlagOffer::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinTable(name: 'calendar_flag_group_range_flag_connection')]
+    #[JoinColumn(name: "flag_group_range_id", referencedColumnName: "id")]
+    #[InverseJoinColumn(name: "flag_range_id", referencedColumnName: "id", unique: true)]
     protected Collection $flagOffers;
 
     public function __construct(
@@ -128,10 +130,12 @@ class RegistrationFlagGroupOffer implements NameableInterface
     {
         $flagRanges = $this->flagOffers;
         if (true === $onlyPublic) {
-            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isPublicOnWeb(),);
+            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                                                                      && $flagRange->isPublicOnWeb(),);
         }
         if (null !== $flag) {
-            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->getFlag() === $flag,);
+            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                                                                      && $flagRange->getFlag() === $flag,);
         }
 
         /** @var Collection<RegistrationFlagOffer> $flagRanges */
@@ -182,14 +186,18 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function isFlagValueAllowed(bool $onlyPublic = false, ?RegistrationFlag $flag = null): bool
     {
-        return $this->getFlagOffers($onlyPublic, $flag)->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
-                                                                                        && $flagRange->isFormValueAllowed(),)->count() > 0;
+        return $this->getFlagOffers($onlyPublic, $flag)
+                    ->filter(fn(mixed $flagRange) => $flagRange
+                                                     instanceof
+                                                     RegistrationFlagOffer
+                                                     && $flagRange->isFormValueAllowed(),)
+                    ->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagOffers()
-                    ->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer && $flagRange->isFormValueAllowed(),)
+        return $this->getFlagOffers()->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                                                                             && $flagRange->isFormValueAllowed(),)
                     ->count() > 0;
     }
 
@@ -197,7 +205,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     {
         $groups = [];
         foreach ($this->getFlagOffers(true) as $flagRange) {
-            $groupName          = $flagRange->getFlagGroupName();
+            $groupName = $flagRange->getFlagGroupName();
             $groups[$groupName] = ($groups[$groupName] ?? 0) + 1;
         }
 

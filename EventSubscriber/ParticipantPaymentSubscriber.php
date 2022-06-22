@@ -40,7 +40,7 @@ final class ParticipantPaymentSubscriber implements EventSubscriberInterface
     public function postValidate(ViewEvent $event): void
     {
         $participantPayment = $event->getControllerResult();
-        $method             = $event->getRequest()->getMethod();
+        $method = $event->getRequest()->getMethod();
         if (!$participantPayment instanceof ParticipantPayment) {
             return;
         }

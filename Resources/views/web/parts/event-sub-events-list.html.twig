@@ -1,5 +1,6 @@
 <ul class="mt-2 mb-2 text-center">
     {% for subEvent in subEvents %}
+        {% set range_text = date_range_string(subEvent.startDateTime|default, subEvent.endDateTime|default) %}
         <li itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
             <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}" title="{{ subEvent.name }}">
                 <i class="fas fa-calendar-week"></i>
@@ -7,7 +8,7 @@
                 <strong class="d-none d-md-inline" itemprop="name">{{ subEvent.name }}</strong>
             </a>
             <wbr>
-            {{ subEvent.rangeAsText ? '('~subEvent.rangeAsText~')' : null }}
+            {{ range_text ? '('~range_text~')' : null }}
             <meta itemprop="startDate" content="{{ subEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
             <meta itemprop="endDate" content="{{ subEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
             <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">

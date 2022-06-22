@@ -63,8 +63,8 @@ class ParticipantRepository extends ServiceEntityRepository
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
-        $select       = 'participant, offer, contact, event, note, payment';
-        $select       .= ', participantRegistration, participantContact, participantCategory';
+        $select = 'participant, offer, contact, event, note, payment';
+        $select .= ', participantRegistration, participantContact, participantCategory';
         $queryBuilder->select($select);
         $queryBuilder->leftJoin('participant.offer', 'offer');
         $queryBuilder->leftJoin('participant.contact', 'contact');
@@ -94,7 +94,8 @@ class ParticipantRepository extends ServiceEntityRepository
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
             $eventQuery = ' participant.event = :event_id ';
             $queryBuilder->leftJoin('participant.event', 'e0');
-            $recursiveDepth = !empty($opts[self::CRITERIA_EVENT_RECURSIVE_DEPTH]) ? $opts[self::CRITERIA_EVENT_RECURSIVE_DEPTH] : 0;
+            $recursiveDepth = !empty($opts[self::CRITERIA_EVENT_RECURSIVE_DEPTH])
+                ? $opts[self::CRITERIA_EVENT_RECURSIVE_DEPTH] : 0;
             for ($i = 0; $i < $recursiveDepth; $i++) {
                 $j = $i + 1;
                 $queryBuilder->leftJoin("e$i.superEvent", "e$j");
@@ -121,7 +122,8 @@ class ParticipantRepository extends ServiceEntityRepository
 
     private function setParticipantCategoryQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_PARTICIPANT_CATEGORY]) && $opts[self::CRITERIA_PARTICIPANT_CATEGORY] instanceof ParticipantCategory) {
+        if (!empty($opts[self::CRITERIA_PARTICIPANT_CATEGORY])
+            && $opts[self::CRITERIA_PARTICIPANT_CATEGORY] instanceof ParticipantCategory) {
             $queryBuilder->andWhere('participant.participantCategory = :type_id');
             $queryBuilder->setParameter('type_id', $opts[self::CRITERIA_PARTICIPANT_CATEGORY]->getId());
         }
@@ -146,7 +148,8 @@ class ParticipantRepository extends ServiceEntityRepository
     private function setContactQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_CONTACT]) && $opts[self::CRITERIA_CONTACT] instanceof AbstractContact) {
-            $queryBuilder->andWhere('participant.contact = :contact_id')->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
+            $queryBuilder->andWhere('participant.contact = :contact_id')
+                         ->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
         }
     }
 
@@ -193,11 +196,13 @@ class ParticipantRepository extends ServiceEntityRepository
         ?bool $includeNotActivated = true,
         ?int $limit = null,
         ?int $offset = null,
-    ): Collection {
+    ): Collection
+    {
         $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
-        $result       = $queryBuilder->getQuery()->getResult();
+        $result = $queryBuilder->getQuery()->getResult();
 
-        return Participant::filterCollection(new ArrayCollection(is_array($result) ? $result : []), $includeNotActivated);
+        return Participant::filterCollection(new ArrayCollection(is_array($result) ? $result : []),
+            $includeNotActivated);
     }
 
     public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant
@@ -207,7 +212,9 @@ class ParticipantRepository extends ServiceEntityRepository
         } catch (NonUniqueResultException) {
             return null;
         }
-        if (!($participant instanceof Participant) || (!$includeNotActivated && !$participant->hasActivatedContactUser())) {
+        if (!($participant instanceof Participant)
+            || (!$includeNotActivated
+                && !$participant->hasActivatedContactUser())) {
             return null;
         }
 

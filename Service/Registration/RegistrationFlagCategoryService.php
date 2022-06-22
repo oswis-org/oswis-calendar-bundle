@@ -20,7 +20,11 @@ class RegistrationFlagCategoryService
         try {
             $this->em->persist($flagType);
             $this->em->flush();
-            $this->logger->info('CREATE: Created flag category (by service): '.$flagType->getId().' '.$flagType->getShortName().'.');
+            $this->logger->info('CREATE: Created flag category (by service): '
+                                .$flagType->getId()
+                                .' '
+                                .$flagType->getShortName()
+                                .'.');
 
             return $flagType;
         } catch (Exception $e) {

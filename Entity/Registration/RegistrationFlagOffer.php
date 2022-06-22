@@ -57,8 +57,8 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
  * )
  */
 #[Entity]
-#[Table(name : 'calendar_flag_range')]
-#[Cache(usage : 'NONSTRICT_READ_WRITE', region : 'calendar_flag_range')]
+#[Table(name: 'calendar_flag_range')]
+#[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag_range')]
 class RegistrationFlagOffer implements NameableInterface
 {
     use NameableTrait {
@@ -74,11 +74,11 @@ class RegistrationFlagOffer implements NameableInterface
     use FlagAmountRangeTrait;
     use FormValueTrait;
 
-    #[ManyToOne(targetEntity : RegistrationFlag::class, fetch : 'EAGER')]
-    #[JoinColumn(nullable : true)]
+    #[ManyToOne(targetEntity: RegistrationFlag::class, fetch: 'EAGER')]
+    #[JoinColumn(nullable: true)]
     protected ?RegistrationFlag $flag = null;
 
-    #[Column(type : 'string', nullable : true)]
+    #[Column(type: 'string', nullable: true)]
     protected ?string $flagFormGroup = null;
 
     public function __construct(
@@ -141,7 +141,7 @@ class RegistrationFlagOffer implements NameableInterface
     {
         $flagName = $this->getName();
         if ($addPrice) {
-            $price    = $this->getPrice();
+            $price = $this->getPrice();
             $flagName .= 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
         }
         if ($addCapacityOverflow && !$this->hasRemainingCapacity()) {
