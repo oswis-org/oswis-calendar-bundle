@@ -74,10 +74,14 @@ class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInte
     #[Column(type: 'boolean')]
     protected bool $publicNote = false;
 
-    public function __construct(?Participant $participant = null, ?string $textValue = null)
-    {
+    public function __construct(
+        ?Participant $participant = null,
+        ?string $textValue = null,
+        ?bool $publicNote = false,
+    ) {
         $this->setParticipant($participant);
         $this->setTextValue($textValue);
+        $this->setPublicNote((bool)$publicNote);
     }
 
     public function isPublicNote(): bool

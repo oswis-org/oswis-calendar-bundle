@@ -409,7 +409,7 @@ class ParticipantService
 
         return new Participant($regRange,
             $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']),
-            new ArrayCollection([new ParticipantNote()]));
+            new ArrayCollection([new ParticipantNote(null, null, true)]),);
     }
 
     /**

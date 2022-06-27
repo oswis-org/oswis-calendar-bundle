@@ -53,8 +53,6 @@ L
 Filter/ParentEventFilter.php,5/4/549bca354982ae4696cbe5133cabe8b298e3a082
 _
 /Resources/config/serialization/Event/Event.yaml,7/c/7cbe298adfd7ed39993a387a30dbaedc87b512ef
-k
-;Resources/config/serialization/Participant/Participant.yaml,3/2/326ada8d651ff0eb4277317ab676b6631cde85eb
 Y
 )Resources/views/web/pages/event.html.twig,4/2/42a82f71a7e228e541ba3c900bc6a82e5bdb247b
 T
@@ -107,12 +105,8 @@ b
 composer.lock,c/3/c3262e2a0879195bd6a727e90f768bc85ad79ffd
 X
 (Entity/NonPersistent/FlagAmountRange.php,2/8/28b273914a7c9b6f20c9dca071eeb09210f3cc63
-Z
-*Service/Participant/ParticipantService.php,6/8/686ce73427f31086dc3a0a7c26407e3d6e7bd9d4
 _
 /Service/Participant/ParticipantTokenService.php,4/b/4bf527e68ecde8552c948778fa7f76c8bd88dd27
-F
-Entity/Event/Event.php,a/7/a79e47978677cc075442f5d468e702db2ad843cd
 h
 8Service/Registration/RegistrationFlagCategoryService.php,6/a/6af54e3630aca4ead3252ab7e69e4a08a8e0aea1
 `
@@ -137,8 +131,6 @@ Y
 )EventSubscriber/ParticipantSubscriber.php,6/2/62fc0546b2480ac4850d2094d0acadc0d8e6c7b1
 K
 Entity/Event/EventImage.php,c/7/c7343df9141e643de1f1dc92c20a951b6c60ed03
-R
-"Entity/Participant/Participant.php,9/c/9c565f1faed87ca37f1470eecb98ea7ac76e37a4
 V
 &Entity/NonPersistent/CapacityUsage.php,c/0/c02729033442a4ce77e684e0709a937bb5bd6154
 X
@@ -147,10 +139,6 @@ T
 $Controller/Event/EventController.php,f/a/fa48981769fc6e2d4de100130c343094edd32a49
 g
 7EventSubscriber/ParticipantPaymentsImportSubscriber.php,1/a/1a92fbfa3724e5016fb75c3d3c8eb48582f90c77
-`
-0Controller/Participant/ParticipantController.php,3/7/3717f8a4344f0a8e855fc1a02bef93c3a7d535cd
-V
-&Entity/Participant/ParticipantNote.php,0/5/0519b1e0d591d9b8a3c05e656aec1cf790739bc5
 `
 0Entity/Participant/ParticipantPaymentsImport.php,d/8/d814a620114b3d5505061ff894c3df2db01c0ae8
 s
@@ -213,3 +201,5 @@ e
 .Service/Participant/ParticipantMailService.php,8/1/8178b7825b118956945069c223651883046fd040
 U
 %Traits/Entity/VariableSymbolTrait.php,c/3/c3e72ba9f416e78a866c44522dd72a8faa0816fd
+[
++ApiPlatform/EventVisibleToUserExtension.php,2/2/2217493cd4cdaa21fdf2771cb934cf99fd14f81c
