@@ -79,6 +79,10 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
                 - 'calendar_participants_post'
                 - 'calendar_participant_get'
                 - 'calendar_participant_put'
+        price:
+            groups:
+                - 'calendar_participants_get'
+                - 'calendar_participant_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer:
     attributes:
