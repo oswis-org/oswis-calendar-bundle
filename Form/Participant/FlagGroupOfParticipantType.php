@@ -82,7 +82,7 @@ class FlagGroupOfParticipantType extends AbstractType
         }
         $flagGroupRange = $participantFlagGroup->getFlagGroupOffer();
         $flagCategory = $participantFlagGroup->getFlagCategory();
-        if (null === $flagGroupRange || null === $flagCategory) {
+        if (null === $flagGroupRange || null === $flagCategory || empty($flagGroupRange->isPublicOnWeb())) {
             return;
         }
         $isFormal = false !== $participant->isFormal();
