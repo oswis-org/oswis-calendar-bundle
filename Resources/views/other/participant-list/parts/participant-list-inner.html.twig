@@ -52,8 +52,8 @@
                 </li>
             {% endfor %}
             {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
-                <li style="list-style-type: '📝'; {{ note.deletedAt|default ? 'text-decoration:line-through;' : '' }}">
-                    <span class="block small">{{ note.textValue }}</span>
+                <li style="list-style-type: '📝'; {{ note.deletedAt|default ? 'text-decoration:line-through;' : '' }}; color: darkorange;">
+                    <strong class="block small">{{ note.textValue }}</strong>
                 </li>
             {% endfor %}
         </ul>
