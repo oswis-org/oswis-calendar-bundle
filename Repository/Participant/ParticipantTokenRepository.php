@@ -12,7 +12,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 class ParticipantTokenRepository extends ServiceEntityRepository
 {
     /**
-     * @param  ManagerRegistry  $registry
+     * @param ManagerRegistry $registry
      *
      * @throws LogicException
      */

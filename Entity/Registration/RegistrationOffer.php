@@ -132,16 +132,16 @@ class RegistrationOffer implements NameableInterface
     /**
      * RegistrationsRange constructor.
      *
-     * @param  Nameable|null  $nameable
-     * @param  Event|null  $event
-     * @param  ParticipantCategory|null  $participantType
-     * @param  Price|null  $eventPrice
-     * @param  DateTimeRange|null  $dateTimeRange
-     * @param  bool|null  $isRelative
-     * @param  RegistrationOffer|null  $requiredRange
-     * @param  Capacity|null  $eventCapacity
-     * @param  Publicity|null  $publicity
-     * @param  bool|null  $superEventRequired
+     * @param Nameable|null            $nameable
+     * @param Event|null               $event
+     * @param ParticipantCategory|null $participantType
+     * @param Price|null               $eventPrice
+     * @param DateTimeRange|null       $dateTimeRange
+     * @param bool|null                $isRelative
+     * @param RegistrationOffer|null   $requiredRange
+     * @param Capacity|null            $eventCapacity
+     * @param Publicity|null           $publicity
+     * @param bool|null                $superEventRequired
      *
      * @throws NotImplementedException
      */
@@ -242,7 +242,7 @@ class RegistrationOffer implements NameableInterface
     }
 
     /**
-     * @param  ParticipantCategory|null  $participantCategory
+     * @param ParticipantCategory|null $participantCategory
      *
      * @throws NotImplementedException
      */
@@ -259,8 +259,10 @@ class RegistrationOffer implements NameableInterface
     public function getRequiredRangeDeposit(?ParticipantCategory $participantType = null): int
     {
         return (!$this->isRelative() || null === $this->getRequiredRegRange())
-            ? 0 : $this->getRequiredRegRange()
-                       ->getDepositValue($participantType);
+            ? 0
+            : $this->getRequiredRegRange()->getDepositValue(
+                    $participantType
+                );
     }
 
     public function getDepositValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
@@ -334,7 +336,7 @@ class RegistrationOffer implements NameableInterface
     }
 
     /**
-     * @param  RegistrationFlagGroupOffer|null  $flagGroupRange
+     * @param RegistrationFlagGroupOffer|null $flagGroupRange
      *
      * @throws NotImplementedException
      */
@@ -358,7 +360,7 @@ class RegistrationOffer implements NameableInterface
     }
 
     /**
-     * @param  Event|null  $event
+     * @param Event|null $event
      *
      * @throws NotImplementedException
      * @TODO Catch change of event in subscribers and resend participant summaries!
@@ -372,9 +374,9 @@ class RegistrationOffer implements NameableInterface
     }
 
     /**
-     * @param  ParticipantFlagGroup  $oldParticipantFlagGroup
-     * @param  bool  $admin
-     * @param  bool  $onlySimulate
+     * @param ParticipantFlagGroup $oldParticipantFlagGroup
+     * @param bool                 $admin
+     * @param bool                 $onlySimulate
      *
      * @return ParticipantFlagGroup
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
@@ -395,8 +397,9 @@ class RegistrationOffer implements NameableInterface
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags(true) as $oldParticipantFlag) {
             if (!($oldParticipantFlag instanceof ParticipantFlag)
-                || ($newParticipantFlagGroup->getAvailableFlagOffers()
-                                            ->contains($oldParticipantFlag->getFlagOffer()))) {
+                || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains(
+                    $oldParticipantFlag->getFlagOffer()
+                ))) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag, $onlySimulate);
@@ -423,7 +426,7 @@ class RegistrationOffer implements NameableInterface
     }
 
     /**
-     * @param  RegistrationFlagGroupOffer  $flagGroupRange
+     * @param RegistrationFlagGroupOffer $flagGroupRange
      *
      * @return RegistrationFlagGroupOffer
      * @throws FlagOutOfRangeException
@@ -442,12 +445,14 @@ class RegistrationOffer implements NameableInterface
         }
         $flagGroupName = $flagGroupRange->getName();
         $regRangeName = $this->getName();
-        throw new FlagOutOfRangeException("Skupinu příznaků '$flagGroupName' není možné v rozsahu přihlášek '$regRangeName' použít (neexistuje automatická náhrada).");
+        throw new FlagOutOfRangeException(
+            "Skupinu příznaků '$flagGroupName' není možné v rozsahu přihlášek '$regRangeName' použít (neexistuje automatická náhrada)."
+        );
     }
 
     /**
-     * @param  ParticipantFlag  $oldParticipantFlag
-     * @param  bool  $onlySimulate
+     * @param ParticipantFlag $oldParticipantFlag
+     * @param bool            $onlySimulate
      *
      * @return ParticipantFlag
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
@@ -455,15 +460,17 @@ class RegistrationOffer implements NameableInterface
     public function makeCompatibleParticipantFlag(
         ParticipantFlag $oldParticipantFlag,
         bool $onlySimulate = false
-    ): ParticipantFlag {
+    ): ParticipantFlag
+    {
         if (null === $oldParticipantFlag->getFlag() || null === ($oldFlagRange = $oldParticipantFlag->getFlagOffer())) {
             throw new FlagOutOfRangeException('Prázdné přiřazení příznaku.');
         }
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldParticipantFlag;
         }
-        $newParticipantFlag = new ParticipantFlag($this->findCompatibleFlagRange($oldFlagRange), null,
-            $oldParticipantFlag->getTextValue());
+        $newParticipantFlag = new ParticipantFlag(
+            $this->findCompatibleFlagRange($oldFlagRange), null, $oldParticipantFlag->getTextValue()
+        );
         if (!$onlySimulate) {
             $oldParticipantFlag->delete();
         }

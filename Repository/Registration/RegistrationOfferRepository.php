@@ -17,13 +17,13 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 
 class RegistrationOfferRepository extends EntityRepository
 {
-    public const CRITERIA_ID                   = 'id';
-    public const CRITERIA_SLUG                 = 'slug';
-    public const CRITERIA_EVENT                = 'event';
-    public const CRITERIA_PARTICIPANT_TYPE     = 'participantType';
+    public const CRITERIA_ID = 'id';
+    public const CRITERIA_SLUG = 'slug';
+    public const CRITERIA_EVENT = 'event';
+    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
-    public const CRITERIA_PUBLIC_ON_WEB        = 'publicOnWeb';
-    public const CRITERIA_ONLY_ACTIVE          = 'onlyActive';
+    public const CRITERIA_PUBLIC_ON_WEB = 'publicOnWeb';
+    public const CRITERIA_ONLY_ACTIVE = 'onlyActive';
 
     public function findOneBy(array $criteria, ?array $orderBy = null): ?RegistrationOffer
     {
@@ -111,8 +111,10 @@ class RegistrationOfferRepository extends EntityRepository
     private function addPublicOnWebQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (null !== ($opts[self::CRITERIA_PUBLIC_ON_WEB] ?? null)) {
-            $queryBuilder->andWhere('range.publicOnWeb = :publicOnWeb')
-                         ->setParameter('publicOnWeb', (bool)$opts[self::CRITERIA_PUBLIC_ON_WEB]);
+            $queryBuilder->andWhere('range.publicOnWeb = :publicOnWeb')->setParameter(
+                'publicOnWeb',
+                (bool)$opts[self::CRITERIA_PUBLIC_ON_WEB]
+            );
         }
     }
 

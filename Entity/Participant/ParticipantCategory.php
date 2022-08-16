@@ -19,7 +19,6 @@ use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
-
 use function in_array;
 
 /**
@@ -65,23 +64,23 @@ class ParticipantCategory implements NameableInterface
     use NameableTrait;
     use TypeTrait;
 
-    public const TYPE_ATTENDEE    = 'attendee';
-    public const TYPE_ORGANIZER   = 'organizer';
+    public const TYPE_ATTENDEE = 'attendee';
+    public const TYPE_ORGANIZER = 'organizer';
     public const TYPE_TEAM_MEMBER = 'team-member';
-    public const TYPE_STAFF       = 'staff';
-    public const TYPE_PARTNER     = 'partner';
-    public const TYPE_GUEST       = 'guest';
-    public const TYPE_MANAGER     = 'manager';
+    public const TYPE_STAFF = 'staff';
+    public const TYPE_PARTNER = 'partner';
+    public const TYPE_GUEST = 'guest';
+    public const TYPE_MANAGER = 'manager';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     public const ALLOWED_TYPES
         = [
-            self::TYPE_ATTENDEE, // Attendee of event.
+            self::TYPE_ATTENDEE,  // Attendee of event.
             self::TYPE_ORGANIZER, // Organization/department/person who organizes event.
-            self::TYPE_STAFF, // Somebody who works (is member of realization team) in event.
-            self::TYPE_PARTNER, // Somebody (organization) who supports event.
-            self::TYPE_GUEST, // Somebody who performs at the event.
-            self::TYPE_MANAGER, // Somebody who manages the event.
+            self::TYPE_STAFF,     // Somebody who works (is member of realization team) in event.
+            self::TYPE_PARTNER,   // Somebody (organization) who supports event.
+            self::TYPE_GUEST,     // Somebody who performs at the event.
+            self::TYPE_MANAGER,   // Somebody who manages the event.
             self::TYPE_TEAM_MEMBER,
         ];
 
@@ -92,9 +91,9 @@ class ParticipantCategory implements NameableInterface
     /**
      * EmployerFlag constructor.
      *
-     * @param  Nameable|null  $nameable
-     * @param  string|null  $type
-     * @param  bool|null  $formal
+     * @param Nameable|null $nameable
+     * @param string|null   $type
+     * @param bool|null     $formal
      *
      * @throws InvalidArgumentException
      */

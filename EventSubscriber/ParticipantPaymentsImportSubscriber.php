@@ -32,7 +32,7 @@ final class ParticipantPaymentsImportSubscriber implements EventSubscriberInterf
     }
 
     /**
-     * @param  ViewEvent  $event
+     * @param ViewEvent $event
      *
      * @throws Exception
      */

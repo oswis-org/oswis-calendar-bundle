@@ -13,9 +13,9 @@ final class ParentEventFilter extends AbstractContextAwareFilter
     {
         $description['recursiveEventId'] = [
             'property' => 'recursiveEventId',
-            'type'     => 'string',
+            'type' => 'string',
             'required' => false,
-            'swagger'  => [
+            'swagger' => [
                 'description' => "Event filter with recursion on superEvent property.",
             ],
         ];

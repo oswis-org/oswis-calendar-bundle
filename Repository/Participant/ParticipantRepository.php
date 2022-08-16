@@ -23,19 +23,19 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 class ParticipantRepository extends ServiceEntityRepository
 {
-    public const CRITERIA_ID                    = 'id';
-    public const CRITERIA_EVENT                 = 'event';
+    public const CRITERIA_ID = 'id';
+    public const CRITERIA_EVENT = 'event';
     public const CRITERIA_EVENT_RECURSIVE_DEPTH = 'eventRecursiveDepth';
-    public const CRITERIA_PARTICIPANT_TYPE      = 'participantType';
-    public const CRITERIA_PARTICIPANT_CATEGORY  = 'participantCategory';
-    public const CRITERIA_OFFER                 = 'offer';
-    public const CRITERIA_INCLUDE_DELETED       = 'includeDeleted';
-    public const CRITERIA_CONTACT               = 'contact';
-    public const CRITERIA_APP_USER              = 'appUser';
-    public const CRITERIA_VARIABLE_SYMBOL       = 'variableSymbol';
+    public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
+    public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
+    public const CRITERIA_OFFER = 'offer';
+    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
+    public const CRITERIA_CONTACT = 'contact';
+    public const CRITERIA_APP_USER = 'appUser';
+    public const CRITERIA_VARIABLE_SYMBOL = 'variableSymbol';
 
     /**
-     * @param  ManagerRegistry  $registry
+     * @param ManagerRegistry $registry
      *
      * @throws LogicException
      */
@@ -54,6 +54,21 @@ class ParticipantRepository extends ServiceEntityRepository
     public function countParticipants(array $opts = []): ?int
     {
         return $this->getParticipants($opts)->count();
+    }
+
+    public function getParticipants(
+        array $opts = [],
+        ?bool $includeNotActivated = true,
+        ?int $limit = null,
+        ?int $offset = null,
+    ): Collection {
+        $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
+        $result = $queryBuilder->getQuery()->getResult();
+
+        return Participant::filterCollection(
+            new ArrayCollection(is_array($result) ? $result : []),
+            $includeNotActivated
+        );
     }
 
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
@@ -144,8 +159,10 @@ class ParticipantRepository extends ServiceEntityRepository
     private function setContactQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_CONTACT]) && $opts[self::CRITERIA_CONTACT] instanceof AbstractContact) {
-            $queryBuilder->andWhere('participant.contact = :contact_id')
-                         ->setParameter('contact_id', $opts[self::CRITERIA_CONTACT]->getId());
+            $queryBuilder->andWhere('participant.contact = :contact_id')->setParameter(
+                'contact_id',
+                $opts[self::CRITERIA_CONTACT]->getId()
+            );
         }
     }
 
@@ -185,20 +202,6 @@ class ParticipantRepository extends ServiceEntityRepository
             $queryBuilder->addOrderBy('contact_0.sortableName', 'ASC');
         }
         $queryBuilder->addOrderBy('participant.id', 'ASC');
-    }
-
-    public function getParticipants(
-        array $opts = [],
-        ?bool $includeNotActivated = true,
-        ?int $limit = null,
-        ?int $offset = null,
-    ): Collection
-    {
-        $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
-        $result = $queryBuilder->getQuery()->getResult();
-
-        return Participant::filterCollection(new ArrayCollection(is_array($result) ? $result : []),
-            $includeNotActivated);
     }
 
     public function getParticipant(?array $opts = [], ?bool $includeNotActivated = true): ?Participant

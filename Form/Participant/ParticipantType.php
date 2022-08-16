@@ -24,8 +24,8 @@ class ParticipantType extends AbstractType
     }
 
     /**
-     * @param  FormBuilderInterface  $builder
-     * @param  array  $options
+     * @param FormBuilderInterface $builder
+     * @param array                $options
      *
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException
      */
@@ -56,7 +56,7 @@ class ParticipantType extends AbstractType
     public static function addContactField(FormBuilderInterface $builder, bool $existing = false): void
     {
         $builder->add('contact', PersonType::class, [
-            'label'    => 'Účastník',
+            'label' => 'Účastník',
             'required' => true,
             'disabled' => $existing,
         ]);
@@ -65,12 +65,12 @@ class ParticipantType extends AbstractType
     public function addParticipantFlagGroupFields(FormBuilderInterface $builder, Participant $participant): void
     {
         $builder->add('flagGroups', CollectionType::class, [
-            'label'              => false,
-            'entry_type'         => FlagGroupOfParticipantType::class,
-            'mapped'             => true,
+            'label' => false,
+            'entry_type' => FlagGroupOfParticipantType::class,
+            'mapped' => true,
             'allow_extra_fields' => true,
-            'entry_options'      => [
-                'label'       => false,
+            'entry_options' => [
+                'label' => false,
                 'participant' => $participant,
             ],
         ]);
@@ -80,8 +80,8 @@ class ParticipantType extends AbstractType
     {
         // TODO: PRE_SUBMIT => Remove empty notes.
         $builder->add('notes', CollectionType::class, [
-            'label'         => false,
-            'entry_type'    => ParticipantNoteFormType::class,
+            'label' => false,
+            'entry_type' => ParticipantNoteFormType::class,
             'entry_options' => [
                 'label' => false,
             ],
@@ -92,12 +92,12 @@ class ParticipantType extends AbstractType
     {
         $builder->add('save', SubmitType::class, [
             'label' => 'Přihlásit se',
-            'attr'  => ['class' => 'btn-lg btn-primary btn-block w-100 font-weight-bold text-uppercase'],
+            'attr' => ['class' => 'btn-lg btn-primary btn-block w-100 font-weight-bold text-uppercase'],
         ]);
     }
 
     /**
-     * @param  OptionsResolver  $resolver
+     * @param OptionsResolver $resolver
      *
      * @throws AccessException
      */

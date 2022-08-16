@@ -27,7 +27,7 @@ class FlagOfParticipantType extends AbstractType
     }
 
     /**
-     * @param  FormEvent  $event
+     * @param FormEvent $event
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -44,26 +44,26 @@ class FlagOfParticipantType extends AbstractType
         }
         $event->getForm()->add("flagRange", CheckboxType::class, [
             'label_html' => true,
-            'label'      => $flagRange->getExtendedName(),
-            'required'   => $flagRange->getMin() > 0,
-            'value'      => $flagRange,
-            'disabled'   => !$flagRange->hasRemainingCapacity(),
-            'help_html'  => true,
-            'help'       => $flagRange->getDescription(),
+            'label' => $flagRange->getExtendedName(),
+            'required' => $flagRange->getMin() > 0,
+            'value' => $flagRange,
+            'disabled' => !$flagRange->hasRemainingCapacity(),
+            'help_html' => true,
+            'help' => $flagRange->getDescription(),
         ]);
         if ($participantFlag->getFlagOffer() && $participantFlag->getFlagOffer()->isFormValueAllowed()) {
             $event->getForm()->add("textValue", TextType::class, [
                 'label_html' => true,
-                'label'      => $flagRange->getFormValueLabel(),
-                'attr'       => ['pattern' => $flagRange->getFormValueRegex()],
-                'required'   => $flagRange->getMin() > 0,
-                'disabled'   => !$flagRange->hasRemainingCapacity(),
+                'label' => $flagRange->getFormValueLabel(),
+                'attr' => ['pattern' => $flagRange->getFormValueRegex()],
+                'required' => $flagRange->getMin() > 0,
+                'disabled' => !$flagRange->hasRemainingCapacity(),
             ]);
         }
     }
 
     /**
-     * @param  OptionsResolver  $resolver
+     * @param OptionsResolver $resolver
      *
      * @throws AccessException
      */

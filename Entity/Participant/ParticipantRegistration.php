@@ -89,8 +89,10 @@ class ParticipantRegistration implements BasicInterface
 
     public static function sortArray(array &$items): array
     {
-        usort($items,
-            static fn(ParticipantRegistration $range1, ParticipantRegistration $range2) => self::cmp($range1, $range2));
+        usort(
+            $items,
+            static fn(ParticipantRegistration $range1, ParticipantRegistration $range2) => self::cmp($range1, $range2)
+        );
 
         return $items;
     }
@@ -132,7 +134,7 @@ class ParticipantRegistration implements BasicInterface
     }
 
     /**
-     * @param  RegistrationOffer|null  $offer
+     * @param RegistrationOffer|null $offer
      *
      * @throws NotImplementedException
      */

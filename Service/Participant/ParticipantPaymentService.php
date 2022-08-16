@@ -56,10 +56,14 @@ class ParticipantPaymentService
             $vs = $payment->getVariableSymbol();
             $value = $payment->getNumericValue();
             $participant = $payment->getParticipant();
-            $this->logger->info("CREATE: Created (or updated) participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
+            $this->logger->info(
+                "CREATE: Created (or updated) participant payment (by service): ID $id, VS $vs, value $value,- Kč."
+            );
             if ($sendConfirmation && null !== $participant && !$payment->isConfirmedByMail()) {
                 $this->participantMailService->sendPaymentConfirmation($payment);
-                $this->logger->info("CREATE: Sent confirmation for participant payment (by service): ID $id, VS $vs, value $value,- Kč.");
+                $this->logger->info(
+                    "CREATE: Sent confirmation for participant payment (by service): ID $id, VS $vs, value $value,- Kč."
+                );
             }
 
             return $payment;
@@ -71,7 +75,7 @@ class ParticipantPaymentService
     }
 
     /**
-     * @param  Collection  $payments
+     * @param Collection $payments
      *
      * @return bool
      * @throws OswisException
@@ -80,9 +84,11 @@ class ParticipantPaymentService
     {
         try {
             $email = new TemplatedEmail();
-            $email->to($this->coreSettings->getArchiveMailerAddress()
-                       ??
-                       throw new OswisException('Není nastavená adresa archivu.'));
+            $email->to(
+                $this->coreSettings->getArchiveMailerAddress()
+                ??
+                throw new OswisException('Není nastavená adresa archivu.')
+            );
             $email->subject(EmailUtils::mimeEnc('Report nových plateb'));
             $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig');
             $email->context(['payments' => $payments]);

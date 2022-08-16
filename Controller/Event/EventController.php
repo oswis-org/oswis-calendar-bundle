@@ -27,11 +27,11 @@ class EventController extends AbstractController
 {
     public const PAGINATION = 10;
 
-    public const RANGE_ALL   = null;
-    public const RANGE_YEAR  = 'year';
+    public const RANGE_ALL = null;
+    public const RANGE_YEAR = 'year';
     public const RANGE_MONTH = 'month';
-    public const RANGE_WEEK  = 'week';
-    public const RANGE_DAY   = 'day';
+    public const RANGE_WEEK = 'week';
+    public const RANGE_DAY = 'day';
 
     public function __construct(
         protected EventService $eventService,
@@ -42,7 +42,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param  string|null  $eventSlug
+     * @param string|null $eventSlug
      *
      * @return Response
      * @throws NotFoundException
@@ -51,8 +51,9 @@ class EventController extends AbstractController
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event',
-                ['eventSlug' => $defaultEvent->getSlug()]);
+            return $this->redirectToRoute(
+                'oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]
+            );
         }
         if (null === $eventSlug) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
@@ -64,23 +65,25 @@ class EventController extends AbstractController
         }
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/event.html.twig', [
-            'title'       => $event->getShortName(),
+            'title' => $event->getShortName(),
             'description' => $event->getDescription(),
-            'ranges'      => $this->regRangeService->getEventRegistrationRanges(new ArrayCollection([
-                $event,
-                ...$event->getSubEvents(),
-            ])),
-            'event'       => $event,
-            'organizer'   => $this->participantService->getOrganizer($event),
+            'ranges' => $this->regRangeService->getEventRegistrationRanges(
+                new ArrayCollection([
+                    $event,
+                    ...$event->getSubEvents(),
+                ])
+            ),
+            'event' => $event,
+            'organizer' => $this->participantService->getOrganizer($event),
         ]);
     }
 
     public function getWebPublicEventOpts(?string $eventSlug = null): array
     {
         return [
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
+            EventRepository::CRITERIA_SLUG => $eventSlug,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_INCLUDE_DELETED => false,
         ];
     }
 
@@ -93,7 +96,7 @@ class EventController extends AbstractController
         $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
 
         return $this->render('@OswisOrgOswisCalendar/web/parts/event-nav.html.twig', [
-            'event'     => $event,
+            'event' => $event,
             'navEvents' => $this->getNavigationEvents($event, $eventGroupString, $eventTypeString),
         ]);
     }
@@ -105,8 +108,8 @@ class EventController extends AbstractController
     ): Collection {
         $eventTypeString ??= $event?->getType();
         $series = $event?->getGroup() ?? $this->em->getRepository(EventGroup::class)->findOneBy([
-                'slug' => $eventGroupString,
-            ]);
+            'slug' => $eventGroupString,
+        ]);
         if (!$series) {
             return new ArrayCollection();
         }
@@ -115,8 +118,8 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param  \Twig\Environment  $twig
-     * @param  string|null  $eventSlug
+     * @param \Twig\Environment $twig
+     * @param string|null       $eventSlug
      *
      * @return Response
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
@@ -125,24 +128,25 @@ class EventController extends AbstractController
     {
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_event_leaflet',
-                ['eventSlug' => $defaultEvent->getSlug()]);
+            return $this->redirectToRoute(
+                'oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEvent->getSlug()]
+            );
         }
         $eventRepo = $this->eventService->getRepository();
         $opts = [
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
+            EventRepository::CRITERIA_SLUG => $eventSlug,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_INCLUDE_DELETED => false,
         ];
         $event = $eventRepo->getEvent($opts);
         if (!($event instanceof Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
         $data = [
-            'title'       => $event->getShortName(),
+            'title' => $event->getShortName(),
             'description' => $event->getDescription(),
-            'event'       => $event,
-            'organizer'   => $this->participantService->getOrganizer($event),
+            'event' => $event,
+            'organizer' => $this->participantService->getOrganizer($event),
         ];
         $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
         if ($twig->getLoader()->exists($templatePath)) {
@@ -154,10 +158,10 @@ class EventController extends AbstractController
     public function getMagicEvents(): Collection
     {
         $opts = [
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_INCLUDE_DELETED => false,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_WITHOUT_DATE  => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => true,
+            EventRepository::CRITERIA_ONLY_WITHOUT_DATE => true,
+            EventRepository::CRITERIA_ONLY_ROOT => true,
         ];
 
         return $this->getEventRepository()->getEvents($opts);
@@ -178,11 +182,11 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param  string|null  $range
-     * @param  DateTime|null  $start
-     * @param  DateTime|null  $end
-     * @param  int|null  $limit
-     * @param  int|null  $offset
+     * @param string|null $range
+     * @param DateTime|null $start
+     * @param DateTime|null $end
+     * @param int|null $limit
+     * @param int|null $offset
      *
      * @return Response
      * @throws Exception
@@ -195,8 +199,8 @@ class EventController extends AbstractController
         ?int $offset = null
     ): Response {
         $context = [
-            'events'    => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
-            'range'     => $range,
+            'events' => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
+            'range' => $range,
             'navEvents' => [],
         ];
 
@@ -204,7 +208,7 @@ class EventController extends AbstractController
     }
 
     /**
-     * @param  int|null  $page
+     * @param int|null $page
      *
      * @return Response
      * @throws Exception
@@ -214,14 +218,16 @@ class EventController extends AbstractController
         $pageSize = self::PAGINATION;
         $page ??= 0;
 
-        return $this->render('@OswisOrgOswisCalendar/web/pages/events.html.twig',
-            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/pages/events.html.twig',
+            ['events' => $this->eventService->getEvents(null, new DateTime(), null, $pageSize, $page * $pageSize),]
+        );
     }
 
     public function showCurrentEvent(?string $prefix = null, ?string $suffix = null): Response
     {
         return $this->render('@OswisOrgOswisCalendar/web/parts/event-info-banner.html.twig', [
-            'event'  => $this->eventService->getDefaultEvent(),
+            'event' => $this->eventService->getDefaultEvent(),
             'prefix' => $prefix,
             'suffix' => $suffix,
         ]);

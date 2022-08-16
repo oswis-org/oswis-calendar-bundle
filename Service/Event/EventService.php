@@ -53,9 +53,9 @@ class EventService
     public function setDefaultEvent(): ?Event
     {
         $opts = [
-            EventRepository::CRITERIA_SLUG               => $this->calendarSettings->getDefaultEvent(),
+            EventRepository::CRITERIA_SLUG => $this->calendarSettings->getDefaultEvent(),
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_INCLUDE_DELETED => false,
         ];
         $event = $this->getRepository()->getEvent($opts);
         foreach ($this->calendarSettings->getDefaultEventFallbacks() as $fallback) {
@@ -69,13 +69,13 @@ class EventService
     }
 
     /**
-     * @param  string|null  $range
-     * @param  DateTime|null  $start
-     * @param  DateTime|null  $end
-     * @param  int|null  $limit
-     * @param  int|null  $offset
-     * @param  string|null  $eventSlug
-     * @param  bool|null  $onlyRoot
+     * @param string|null   $range
+     * @param DateTime|null $start
+     * @param DateTime|null $end
+     * @param int|null      $limit
+     * @param int|null      $offset
+     * @param string|null   $eventSlug
+     * @param bool|null     $onlyRoot
      *
      * @return Collection
      * @throws Exception
@@ -88,20 +88,19 @@ class EventService
         ?int $offset = null,
         ?string $eventSlug = null,
         ?bool $onlyRoot = true
-    ): Collection
-    {
+    ): Collection {
         $range ??= EventController::RANGE_ALL;
         $limit = $limit < 1 ? null : $limit;
         $offset = $offset < 1 ? null : $offset;
         $start = DateTimeUtils::getDateTimeByRange($start, $range, false);
         $end = DateTimeUtils::getDateTimeByRange($end, $range, true);
         $opts = [
-            EventRepository::CRITERIA_START              => $start,
-            EventRepository::CRITERIA_END                => $end,
-            EventRepository::CRITERIA_INCLUDE_DELETED    => false,
+            EventRepository::CRITERIA_START => $start,
+            EventRepository::CRITERIA_END => $end,
+            EventRepository::CRITERIA_INCLUDE_DELETED => false,
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_ONLY_ROOT          => $onlyRoot,
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
+            EventRepository::CRITERIA_ONLY_ROOT => $onlyRoot,
+            EventRepository::CRITERIA_SLUG => $eventSlug,
         ];
 
         return $this->getRepository()->getEvents($opts, $limit, $offset);

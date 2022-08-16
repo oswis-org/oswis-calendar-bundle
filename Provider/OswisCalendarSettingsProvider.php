@@ -28,8 +28,8 @@ class OswisCalendarSettingsProvider
     /**
      * OswisCalendarSettingsProvider constructor.
      *
-     * @param  string|null  $defaultEvent
-     * @param  array|null  $defaultEventFallbacks
+     * @param string|null $defaultEvent
+     * @param array|null  $defaultEventFallbacks
      */
     public function __construct(?string $defaultEvent = null, ?array $defaultEventFallbacks = null)
     {
@@ -37,7 +37,7 @@ class OswisCalendarSettingsProvider
             [
                 'pattern' => "/(.*){\s*(year)\s*([\+\-]?)\s*(\d*)}(.*)/",
                 // [1] prefix [2] 'year' [3] sign [4] number [5] suffix
-                'value'   => date('Y'),
+                'value' => date('Y'),
             ],
         ];
         $this->setDefaultEvent($defaultEvent);
@@ -45,7 +45,7 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param  string|null  $slug
+     * @param string|null $slug
      *
      * @return string|null
      */
@@ -56,16 +56,21 @@ class OswisCalendarSettingsProvider
         }
         foreach ($this->patterns as $pattern) {
             $parts = $this->regexMatch($slug, $pattern['pattern']);
-            $slug = empty($parts) ? $slug
-                : $parts[1].$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]).$parts[5];
+            $slug = empty($parts)
+                ? $slug
+                : $parts[1].$this->processMath(
+                    (int)$pattern['value'],
+                    (string)$parts[3],
+                    (int)$parts[4]
+                ).$parts[5];
         }
 
         return $slug;
     }
 
     /**
-     * @param  string  $slug
-     * @param  string  $pattern
+     * @param string $slug
+     * @param string $pattern
      *
      * @return array
      */
@@ -78,19 +83,19 @@ class OswisCalendarSettingsProvider
         }
 
         return [
-            $parts[0] ?? '',    // Whole string.
-            $parts[1] ?? '',    // Prefix.
-            $parts[2] ?? '',    // Keyword ("year").
-            $parts[3] ?? null,  // Sign.
-            $parts[4] ?? 0,     // Number.
-            $parts[5] ?? '',    // Suffix.
+                $parts[0] ?? '',    // Whole string.
+                $parts[1] ?? '',    // Prefix.
+                $parts[2] ?? '',    // Keyword ("year").
+                $parts[3] ?? null,  // Sign.
+                $parts[4] ?? 0,     // Number.
+                $parts[5] ?? '',    // Suffix.
         ];
     }
 
     /**
-     * @param  int  $a
-     * @param  string  $sign
-     * @param  int  $b
+     * @param int    $a
+     * @param string $sign
+     * @param int    $b
      *
      * @return int
      */
@@ -126,7 +131,7 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param  string|null  $slug
+     * @param string|null $slug
      */
     public function setDefaultEvent(?string $slug): void
     {
@@ -142,7 +147,7 @@ class OswisCalendarSettingsProvider
     }
 
     /**
-     * @param  string[]  $fallbacks
+     * @param string[] $fallbacks
      */
     public function setDefaultEventFallbacks(array $fallbacks): void
     {

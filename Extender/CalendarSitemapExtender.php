@@ -29,23 +29,33 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
     {
         $itemsData = new ArrayCollection([
             [
-                'path'            => '',
+                'path' => '',
                 'changeFrequency' => SiteMapItem::CHANGE_FREQUENCY_DAILY,
             ],
         ]);
         $items = $itemsData->map(fn(array $data) => new SiteMapItem($data['path'], $data['changeFrequency']),);
         foreach (
-            $this->eventService->getRepository()
-                               ->getEvents([EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true]) as $event
+            $this->eventService->getRepository()->getEvents([EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true]
+            ) as $event
         ) {
             if (!($event instanceof Event)) {
                 continue;
             }
             try {
-                $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_event',
-                    ['eventSlug' => $event->getSlug()]), null, $event->getUpdatedAt()));
-                $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_event_leaflet',
-                    ['eventSlug' => $event->getSlug()]), null, $event->getUpdatedAt()));
+                $items->add(
+                    new SiteMapItem(
+                        $this->urlGenerator->generate(
+                            'oswis_org_oswis_calendar_web_event', ['eventSlug' => $event->getSlug()]
+                        ), null, $event->getUpdatedAt()
+                    )
+                );
+                $items->add(
+                    new SiteMapItem(
+                        $this->urlGenerator->generate(
+                            'oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $event->getSlug()]
+                        ), null, $event->getUpdatedAt()
+                    )
+                );
             } catch (InvalidParameterException|RouteNotFoundException|MissingMandatoryParametersException) {
             }
         }

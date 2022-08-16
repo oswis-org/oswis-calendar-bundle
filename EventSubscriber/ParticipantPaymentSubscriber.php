@@ -32,7 +32,7 @@ final class ParticipantPaymentSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param  ViewEvent  $event
+     * @param ViewEvent $event
      *
      * @throws OswisException
      * @throws SuspiciousOperationException

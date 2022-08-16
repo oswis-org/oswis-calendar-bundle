@@ -10,7 +10,7 @@ class FlagsByType
     /**
      * Gets array of flags aggregated by their types.
      *
-     * @param  Collection  $flags
+     * @param Collection $flags
      *
      * @return array
      */
@@ -24,9 +24,8 @@ class FlagsByType
                 $out[$flagTypeSlug] ??= [];
                 $out[$flagTypeSlug][$flagSlug]['flagType'] = $flag->getCategory();
                 $out[$flagTypeSlug][$flagSlug]['flag'] = $flag;
-                $count = $out[$flagTypeSlug][$flagSlug]['count']
-                         ??
-                         false ? $out[$flagTypeSlug][$flagSlug]['count'] + 1 : 1;
+                $count = $out[$flagTypeSlug][$flagSlug]['count'] ?? false ? $out[$flagTypeSlug][$flagSlug]['count'] + 1
+                    : 1;
                 $out[$flagTypeSlug][$flagSlug]['count'] = $count;
             }
         }

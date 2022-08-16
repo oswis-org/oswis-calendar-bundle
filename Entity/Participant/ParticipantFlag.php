@@ -106,6 +106,18 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         $this->setTextValue($textValue);
     }
 
+    public function invalidate(): void
+    {
+        if (!$this->isInvalidated()) {
+            $this->invalidatedAt = new DateTime();
+        }
+    }
+
+    public function isInvalidated(?DateTime $dateTime = null): bool
+    {
+        return $this->getInvalidatedAt() && ($this->getInvalidatedAt() <= ($dateTime ?? new DateTime()));
+    }
+
     public function getInvalidatedAt(): ?DateTime
     {
         return $this->invalidatedAt;
@@ -114,18 +126,6 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     public function setInvalidatedAt(?DateTime $dateTime = null): void
     {
         $this->invalidatedAt = $dateTime ? clone $dateTime : null;
-    }
-
-    public function isInvalidated(?DateTime $dateTime = null): bool
-    {
-        return $this->getInvalidatedAt() && ($this->getInvalidatedAt() <= ($dateTime ?? new DateTime()));
-    }
-
-    public function invalidate(): void
-    {
-        if (!$this->isInvalidated()) {
-            $this->invalidatedAt = new DateTime();
-        }
     }
 
     public function getFlagType(): ?string
@@ -184,7 +184,7 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     }
 
     /**
-     * @param  ParticipantFlagGroup|null  $participantFlagGroup
+     * @param ParticipantFlagGroup|null $participantFlagGroup
      *
      * @throws NotImplementedException
      */

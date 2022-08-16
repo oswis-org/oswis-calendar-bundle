@@ -8,7 +8,7 @@ use Rector\Nette\Set\NetteSetList;
 use Rector\Symfony\Set\SensiolabsSetList;
 use Rector\Symfony\Set\SymfonySetList;
 
-return static function (RectorConfig $rectorConfig): void {
+return static function(RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
         __DIR__.'/Entity',
         __DIR__.'/Traits',

@@ -15,8 +15,8 @@ class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensi
     /**
      * Loads a specific configuration.
      *
-     * @param  array<array>  $configs
-     * @param  ContainerBuilder  $container
+     * @param array<array>     $configs
+     * @param ContainerBuilder $container
      *
      * @throws Exception
      */
@@ -32,8 +32,8 @@ class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensi
     }
 
     /**
-     * @param  ContainerBuilder  $container
-     * @param  array  $config
+     * @param ContainerBuilder $container
+     * @param array            $config
      *
      * @throws ServiceNotFoundException
      */

@@ -42,7 +42,7 @@ class ParticipantMailService
     }
 
     /**
-     * @param  Participant  $participant
+     * @param Participant $participant
      *
      * @throws OswisException
      */
@@ -61,7 +61,9 @@ class ParticipantMailService
                 $participantId = $participant->getId();
                 $userId = $appUser->getId();
                 $message = $exception->getMessage();
-                $this->logger->error("ERROR: Not sent summary for participant '$participantId' to user '$userId' ($message).");
+                $this->logger->error(
+                    "ERROR: Not sent summary for participant '$participantId' to user '$userId' ($message)."
+                );
             }
         }
         $this->logger->debug("SENT $sent from ".$contactPersons->count());
@@ -71,10 +73,10 @@ class ParticipantMailService
     }
 
     /**
-     * @param  Participant  $participant
-     * @param  AppUser  $appUser
-     * @param  string  $type
-     * @param  ParticipantToken|null  $participantToken
+     * @param Participant           $participant
+     * @param AppUser               $appUser
+     * @param string                $type
+     * @param ParticipantToken|null $participantToken
      *
      * @throws NotFoundException
      * @throws NotImplementedException
@@ -114,14 +116,14 @@ class ParticipantMailService
         $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
         $contact = $participant->getContact();
         $data = [
-            'participant'      => $participant,
-            'appUser'          => $appUser,
-            'contact'          => $contact,
-            'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-            'category'         => $mailCategory,
-            'type'             => $type,
+            'participant' => $participant,
+            'appUser' => $appUser,
+            'contact' => $contact,
+            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+            'category' => $mailCategory,
+            'type' => $type,
             'participantToken' => $participantToken,
-            'isIS'             => $isIS,
+            'isIS' => $isIS,
         ];
         $templatedEmail = $participantMail->getTemplatedEmail();
         if (ParticipantMail::TYPE_SUMMARY === $type) {
@@ -156,7 +158,7 @@ class ParticipantMailService
         foreach (
             [
                 'depositQr' => ['deposit' => true, 'rest' => false],
-                'restQr'    => ['deposit' => false, 'rest' => true],
+                'restQr' => ['deposit' => false, 'rest' => true],
             ] as $key => $opts
         ) {
             if ($qrPng = $participant->generateQrPng($opts['deposit'], $opts['rest'], $qrComment)) {
@@ -174,7 +176,7 @@ class ParticipantMailService
     }
 
     /**
-     * @param  ParticipantPayment  $payment
+     * @param ParticipantPayment $payment
      *
      * @throws OswisException
      */
@@ -197,7 +199,9 @@ class ParticipantMailService
             } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                 $userId = $contactPerson->getAppUser()?->getId();
                 $message = $exception->getMessage();
-                $this->logger->error("ERROR: Not sent confirmation of payment '$paymentId' to user '$userId' ($message).");
+                $this->logger->error(
+                    "ERROR: Not sent confirmation of payment '$paymentId' to user '$userId' ($message)."
+                );
             }
         }
         if (1 > $sent && $contactPersons->count() > 0) {
@@ -206,8 +210,8 @@ class ParticipantMailService
     }
 
     /**
-     * @param  ParticipantPayment  $payment
-     * @param  AppUser  $appUser
+     * @param ParticipantPayment $payment
+     * @param AppUser            $appUser
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
@@ -235,14 +239,14 @@ class ParticipantMailService
         $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
         $contact = $participant->getContact();
         $data = [
-            'payment'        => $payment,
-            'participant'    => $participant,
-            'appUser'        => $appUser,
-            'contact'        => $contact,
+            'payment' => $payment,
+            'participant' => $participant,
+            'appUser' => $appUser,
+            'contact' => $contact,
             'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-            'category'       => $mailCategory,
-            'type'           => ParticipantMail::TYPE_PAYMENT,
-            'isIS'           => false,
+            'category' => $mailCategory,
+            'type' => ParticipantMail::TYPE_PAYMENT,
+            'isIS' => false,
         ];
         $this->em->persist($participantMail);
         $this->em->persist($payment);
@@ -257,8 +261,8 @@ class ParticipantMailService
     }
 
     /**
-     * @param  Participant  $participant
-     * @param  ParticipantMailGroup  $group
+     * @param Participant          $participant
+     * @param ParticipantMailGroup $group
      *
      * @throws OswisException
      */
@@ -268,7 +272,9 @@ class ParticipantMailService
         $type = $group->getType();
         $sent = 0;
         if ($this->participantMailRepository->countSent($participant, ''.$type) > 0) {
-            $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user (message already sent).");
+            $this->logger->error(
+                "ERROR: Not sent message '$type' for participant '$participantId' to user (message already sent)."
+            );
 
             return;
         }
@@ -280,7 +286,9 @@ class ParticipantMailService
                 } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                     $userId = $appUser->getId();
                     $message = $exception->getMessage();
-                    $this->logger->error("ERROR: Not sent message '$type' for participant '$participantId' to user '$userId' ($message).");
+                    $this->logger->error(
+                        "ERROR: Not sent message '$type' for participant '$participantId' to user '$userId' ($message)."
+                    );
                 }
             }
         }
@@ -290,9 +298,9 @@ class ParticipantMailService
     }
 
     /**
-     * @param  Participant  $participant
-     * @param  AppUser  $appUser
-     * @param  ParticipantMailGroup  $group
+     * @param Participant          $participant
+     * @param AppUser              $appUser
+     * @param ParticipantMailGroup $group
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
@@ -313,12 +321,12 @@ class ParticipantMailService
         $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
         $contact = $participant->getContact();
         $data = [
-            'participant'    => $participant,
-            'appUser'        => $appUser,
-            'contact'        => $contact,
+            'participant' => $participant,
+            'appUser' => $appUser,
+            'contact' => $contact,
             'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-            'category'       => $mailCategory,
-            'type'           => $group->getType(),
+            'category' => $mailCategory,
+            'type' => $group->getType(),
         ];
         $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName()

@@ -59,8 +59,8 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 class ParticipantMail extends AbstractMail
 {
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
-    public const TYPE_SUMMARY            = 'summary';
-    public const TYPE_PAYMENT            = 'payment';
+    public const TYPE_SUMMARY = 'summary';
+    public const TYPE_PAYMENT = 'payment';
 
     #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER', inversedBy: 'eMails')]
     #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]
@@ -105,7 +105,7 @@ class ParticipantMail extends AbstractMail
     }
 
     /**
-     * @param  Participant|null  $participant
+     * @param Participant|null $participant
      *
      * @throws NotImplementedException
      */

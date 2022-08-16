@@ -10,7 +10,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 class RegistrationFlagRepository extends ServiceEntityRepository
 {
     /**
-     * @param  ManagerRegistry  $registry
+     * @param ManagerRegistry $registry
      *
      * @throws LogicException
      */

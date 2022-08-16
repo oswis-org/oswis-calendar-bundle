@@ -33,7 +33,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\BankAccountTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-
 use function assert;
 
 /**
@@ -113,10 +112,10 @@ class Event implements NameableInterface
     protected ?self $superEvent = null;
 
     /**
-     * @var Collection<Event> $subEvents
+     * @var Collection<Event>|null $subEvents
      */
     #[OneToMany(mappedBy: 'superEvent', targetEntity: self::class)]
-    protected Collection $subEvents;
+    protected ?Collection $subEvents = null;
 
     /**
      * @var Collection<EventContent> $contents

@@ -57,7 +57,7 @@ class ParticipantService
     }
 
     /**
-     * @param  Participant|null  $participant
+     * @param Participant|null $participant
      *
      * @return Participant
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException
@@ -91,10 +91,13 @@ class ParticipantService
             throw new UserNotUniqueException('Uživatel se stejným e-mailem nebo jménem již existuje!');
         }
         if (null === $appUser) {
-            $this->logger->info("Creating new AppUser for participant with name '$participantName' and e-mail '$participantMailAddress'.");
+            $this->logger->info(
+                "Creating new AppUser for participant with name '$participantName' and e-mail '$participantMailAddress'."
+            );
             $appUserType = $this->appUserTypeService->getRepository()->findOneBy(['slug' => 'customer']);
-            $newAppUser = new AppUser($contact->getName(), $participantMailAddress, $participantMailAddress, null,
-                $appUserType,);
+            $newAppUser = new AppUser(
+                $contact->getName(), $participantMailAddress, $participantMailAddress, null, $appUserType,
+            );
             $contact->setAppUser($this->appUserService->create($newAppUser, false, false, false));
             $this->logger->debug("New AppUser for participant '$participantMailAddress' created.");
         }
@@ -118,7 +121,7 @@ class ParticipantService
     }
 
     /**
-     * @param  Participant|null  $participant
+     * @param Participant|null $participant
      *
      * @throws OswisException|NotFoundException
      */
@@ -133,23 +136,31 @@ class ParticipantService
         $participantId = $participant->getId();
         $sent = 0;
         $contactPersonsCount = $participant->getContactPersons(false)->count();
-        $this->logger->info("Will send verification e-mail to $contactPersonsCount contact persons of participant $participantId.");
+        $this->logger->info(
+            "Will send verification e-mail to $contactPersonsCount contact persons of participant $participantId."
+        );
         foreach ($participant->getContactPersons(false) as $contactPerson) {
             if (!($contactPerson instanceof AbstractContact) || null === ($appUser = $contactPerson->getAppUser())) {
                 $this->logger->notice("Contact person is not AbstractPerson or doesn't have AppUser assigned.");
                 /** @var object $contactPerson */
-                $this->logger->notice("Contact person is of type ".get_class($contactPerson)." and is ".($contactPerson
-                                                                                                         instanceof
-                                                                                                         AbstractContact
-                        ? '' : 'NOT')." AbstractContact");
+                $this->logger->notice(
+                    "Contact person is of type "
+                    .get_class($contactPerson)
+                    ." and is "
+                    .($contactPerson
+                      instanceof
+                      AbstractContact ? '' : 'NOT')
+                    ." AbstractContact"
+                );
                 continue;
             }
             try {
                 $this->requestActivationForUser($participant, $appUser);
                 $sent++;
             } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
-                $this->logger->error("Participant ($participantId) activation request FAILED. "
-                                     .$exception->getMessage());
+                $this->logger->error(
+                    "Participant ($participantId) activation request FAILED. ".$exception->getMessage()
+                );
             }
         }
         if ($sent < 1 && $contactPersonsCount > 0) {
@@ -159,8 +170,8 @@ class ParticipantService
     }
 
     /**
-     * @param  Participant  $participant
-     * @param  AppUser  $appUser
+     * @param Participant $participant
+     * @param AppUser     $appUser
      *
      * @throws InvalidTypeException
      * @throws NotFoundException
@@ -170,13 +181,15 @@ class ParticipantService
     private function requestActivationForUser(Participant $participant, AppUser $appUser): void
     {
         $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
-        $this->participantMailService->sendSummaryToUser($participant, $appUser,
-            ParticipantMail::TYPE_ACTIVATION_REQUEST, $participantToken);
-        $this->logger->info('Sent activation request for participant '
-                            .$participant->getId()
-                            .' to user '
-                            .$appUser->getId()
-                            .'.');
+        $this->participantMailService->sendSummaryToUser(
+            $participant,
+            $appUser,
+            ParticipantMail::TYPE_ACTIVATION_REQUEST,
+            $participantToken
+        );
+        $this->logger->info(
+            'Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.'
+        );
     }
 
     private function getLogMessage(Participant $participant): string
@@ -191,8 +204,8 @@ class ParticipantService
     }
 
     /**
-     * @param  RegistrationOffer  $range
-     * @param  Participant  $participant
+     * @param RegistrationOffer $range
+     * @param Participant       $participant
      *
      * @throws EventCapacityExceededException
      */
@@ -201,7 +214,7 @@ class ParticipantService
         if (true === $range->isSuperEventRequired()) {
             $included = false;
             $participantsOfContact = $this->getParticipants([
-                ParticipantRepository::CRITERIA_CONTACT         => $participant->getContact(),
+                ParticipantRepository::CRITERIA_CONTACT => $participant->getContact(),
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
             ]);
             foreach ($participantsOfContact as $participantOfContact) {
@@ -211,16 +224,18 @@ class ParticipantService
                 }
             }
             if (!$included) {
-                throw new EventCapacityExceededException('Pro přihlášku v tomto rozsahu je nutné se zúčastnit i nadřazené akce.');
+                throw new EventCapacityExceededException(
+                    'Pro přihlášku v tomto rozsahu je nutné se zúčastnit i nadřazené akce.'
+                );
             }
         }
     }
 
     /**
-     * @param  array  $opts
-     * @param  bool|null  $includeNotActivated
-     * @param  int|null  $limit
-     * @param  int|null  $offset
+     * @param array     $opts
+     * @param bool|null $includeNotActivated
+     * @param int|null  $limit
+     * @param int|null  $offset
      *
      * @return \Doctrine\Common\Collections\Collection<Participant>
      */
@@ -239,9 +254,9 @@ class ParticipantService
     }
 
     /**
-     * @param  \OswisOrg\OswisCalendarBundle\Entity\Participant\Participant|null  $participant
-     * @param  ParticipantToken  $participantToken
-     * @param  bool  $sendConfirmation
+     * @param \OswisOrg\OswisCalendarBundle\Entity\Participant\Participant|null $participant
+     * @param ParticipantToken                                                  $participantToken
+     * @param bool                                                              $sendConfirmation
      *
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
      */
@@ -263,10 +278,9 @@ class ParticipantService
             $this->em->flush();
             $this->logger->info('Successfully activated participant ('.$participant->getId().').');
         } catch (OswisException|NotFoundException|InvalidTypeException $exception) {
-            $this->logger->error('Participant ('
-                                 .$participant?->getId()
-                                 .') activation FAILED. '
-                                 .$exception->getMessage());
+            $this->logger->error(
+                'Participant ('.$participant?->getId().') activation FAILED. '.$exception->getMessage()
+            );
             throw new OswisException("Aktivace přihlášky se nezdařila. ".$exception->getMessage());
         }
     }
@@ -274,9 +288,9 @@ class ParticipantService
     /**
      * Checks if contact is participant in event as given participantType.
      *
-     * @param  Event  $event
-     * @param  AbstractContact  $contact
-     * @param  ParticipantCategory|null  $participantType
+     * @param Event                    $event
+     * @param AbstractContact          $contact
+     * @param ParticipantCategory|null $participantType
      *
      * @return bool
      */
@@ -286,9 +300,9 @@ class ParticipantService
         ParticipantCategory $participantType = null
     ): bool {
         $opts = [
-            ParticipantRepository::CRITERIA_EVENT                => $event,
+            ParticipantRepository::CRITERIA_EVENT => $event,
             ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantType,
-            ParticipantRepository::CRITERIA_CONTACT              => $contact,
+            ParticipantRepository::CRITERIA_CONTACT => $contact,
         ];
 
         return $this->getRepository()->countParticipants($opts) > 0;
@@ -304,8 +318,9 @@ class ParticipantService
         if (null === $event) {
             return null;
         }
-        $organizer = $this->getOrganizers($event)->map(fn(mixed $p) => (($p instanceof Participant) ? $p->getContact()
-            : null))->first() ?: null;
+        $organizer = $this->getOrganizers($event)->map(
+            fn(mixed $p) => (($p instanceof Participant) ? $p->getContact() : null)
+        )->first() ?: null;
         if (null === $organizer) {
             $organizer = $event->getSuperEvent() ? $this->getOrganizer($event->getSuperEvent()) : null;
         }
@@ -326,9 +341,9 @@ class ParticipantService
         ?int $depth = 1
     ): Collection {
         return $this->getParticipants([
-            ParticipantRepository::CRITERIA_EVENT                 => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $participantType,
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
+            ParticipantRepository::CRITERIA_EVENT => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
         ], $includeNotActivated);
     }
@@ -338,8 +353,12 @@ class ParticipantService
         $opts[ParticipantRepository::CRITERIA_PARTICIPANT_TYPE] ??= ParticipantCategory::TYPE_PARTNER;
 
         return $this->getParticipants($opts)->filter(fn(mixed $participant) => $participant instanceof Participant
-                                                                               && $participant->hasFlag(null, true,
-                null, RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE));
+                                                                               && $participant->hasFlag(
+                null,
+                true,
+                null,
+                RegistrationFlagCategory::TYPE_PARTNER_HOMEPAGE
+            ));
     }
 
     final public function containsAppUser(
@@ -348,17 +367,17 @@ class ParticipantService
         ParticipantCategory $participantType = null
     ): bool {
         $opts = [
-            ParticipantRepository::CRITERIA_EVENT                => $event,
+            ParticipantRepository::CRITERIA_EVENT => $event,
             ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantType,
-            ParticipantRepository::CRITERIA_APP_USER             => $appUser,
+            ParticipantRepository::CRITERIA_APP_USER => $appUser,
         ];
 
         return $this->getRepository()->countParticipants($opts) > 0;
     }
 
     /**
-     * @param  string|null  $token
-     * @param  int|null  $participantId
+     * @param string|null $token
+     * @param int|null    $participantId
      *
      * @return ParticipantToken
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException
@@ -385,8 +404,8 @@ class ParticipantService
     /**
      * Create empty eventParticipant for use in forms.
      *
-     * @param  RegistrationOffer  $regRange
-     * @param  AbstractContact|null  $contact
+     * @param RegistrationOffer    $regRange
+     * @param AbstractContact|null $contact
      *
      * @return Participant
      * @throws \InvalidArgumentException
@@ -403,13 +422,17 @@ class ParticipantService
             throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazenou událost.');
         }
         if (null === $regRange->getParticipantCategory()) {
-            throw new ParticipantNotFoundException('Registrační rozsah nelze použít, protože nemá přiřazený typ účastníka.');
+            throw new ParticipantNotFoundException(
+                'Registrační rozsah nelze použít, protože nemá přiřazený typ účastníka.'
+            );
         }
         $this->logger->info('Creating empty participant.');
 
-        return new Participant($regRange,
+        return new Participant(
+            $regRange,
             $this->abstractContactService->getContact($contact, ['participant-e-mail', 'participant-phone']),
-            new ArrayCollection([new ParticipantNote(null, null, true)]),);
+            new ArrayCollection([new ParticipantNote(null, null, true)]),
+        );
     }
 
     /**
@@ -423,8 +446,8 @@ class ParticipantService
                 continue;
             }
             $participants = $this->getParticipants([
-                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => !$group->isOnlyActive(),
-                ParticipantRepository::CRITERIA_EVENT                 => $group->getEvent(),
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => !$group->isOnlyActive(),
+                ParticipantRepository::CRITERIA_EVENT => $group->getEvent(),
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
             ])->filter(fn(mixed $p) => $p instanceof Participant
                                        && !$p->hasEMailOfType($group->getType()),)->slice(0, $limit);

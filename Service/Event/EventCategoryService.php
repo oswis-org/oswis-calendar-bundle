@@ -38,11 +38,11 @@ class EventCategoryService
 
     final public function updateActiveRevisions(): void
     {
-//        foreach ($this->em->getRepository(EventType::class)->findAll() as $eventType) {
-//            assert($eventType instanceof EventType);
-//            $eventType->destroyRevisions();
-//            $this->em->persist($eventType);
-//        }
-//        $this->em->flush();
+        //        foreach ($this->em->getRepository(EventType::class)->findAll() as $eventType) {
+        //            assert($eventType instanceof EventType);
+        //            $eventType->destroyRevisions();
+        //            $this->em->persist($eventType);
+        //        }
+        //        $this->em->flush();
     }
 }

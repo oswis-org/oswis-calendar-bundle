@@ -61,17 +61,17 @@ class ParticipantPaymentsImport
     use NoteTrait;
     use TextValueTrait;
 
-    public const TYPE_CSV       = 'csv';
-    public const ALLOWED_TYPES  = [self::TYPE_CSV];
+    public const TYPE_CSV = 'csv';
+    public const ALLOWED_TYPES = [self::TYPE_CSV];
     public const SETTINGS_CODES = ['fio' => 'Fio banka, a.s.'];
 
     #[Column(type: 'string', nullable: true)]
     public ?string $settingsCode = 'fio';
 
     /**
-     * @param  string|null  $type
-     * @param  string|null  $textValue
-     * @param  string|null  $note
+     * @param string|null $type
+     * @param string|null $textValue
+     * @param string|null $note
      *
      * @throws InvalidTypeException
      */
@@ -108,19 +108,27 @@ class ParticipantPaymentsImport
 
     private static function getColumnsFromCsvRow(string $row, CsvPaymentImportSettings $csvSettings): array
     {
-        return str_getcsv($row, ''.$csvSettings->getDelimiter(), ''.$csvSettings->getEnclosure(),
-            ''.$csvSettings->getEscape(),);
+        return str_getcsv(
+            $row,
+            ''.$csvSettings->getDelimiter(),
+            ''.$csvSettings->getEnclosure(),
+            ''.$csvSettings->getEscape(),
+        );
     }
 
     public function makePaymentFromCsv(
         array $csvPaymentRow,
         CsvPaymentImportSettings $csvSettings,
         string $csvRow
-    ): ParticipantPayment {
+    ): ParticipantPayment
+    {
         $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
         $currencyAllowed = $csvSettings->getCurrencyAllowed();
-        $payment = new ParticipantPayment((int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
-            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings), ParticipantPayment::TYPE_BANK_TRANSFER);
+        $payment = new ParticipantPayment(
+            (int)($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
+            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings),
+            ParticipantPayment::TYPE_BANK_TRANSFER
+        );
         $payment->setInternalNote($csvRow);
         $payment->setExternalId($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null);
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {

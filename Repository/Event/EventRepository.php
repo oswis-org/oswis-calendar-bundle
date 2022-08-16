@@ -19,23 +19,23 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 
 class EventRepository extends ServiceEntityRepository
 {
-    public const CRITERIA_ID                 = 'id';
-    public const CRITERIA_SLUG               = 'slug';
-    public const CRITERIA_TYPE               = 'type';
-    public const CRITERIA_TYPE_STRING        = 'typeString';
-    public const CRITERIA_SERIES             = 'series';
-    public const CRITERIA_SUPER_EVENT        = 'superEvent';
-    public const CRITERIA_SUPER_EVENT_DEPTH  = 'superEventDepth';
-    public const CRITERIA_ONLY_ROOT          = 'onlyRoot';
-    public const CRITERIA_INCLUDE_DELETED    = 'includeDeleted';
-    public const CRITERIA_LOCATION           = 'location';
-    public const CRITERIA_START              = 'start';
-    public const CRITERIA_END                = 'end';
-    public const CRITERIA_ONLY_WITHOUT_DATE  = 'onlyWithoutDate';
+    public const CRITERIA_ID = 'id';
+    public const CRITERIA_SLUG = 'slug';
+    public const CRITERIA_TYPE = 'type';
+    public const CRITERIA_TYPE_STRING = 'typeString';
+    public const CRITERIA_SERIES = 'series';
+    public const CRITERIA_SUPER_EVENT = 'superEvent';
+    public const CRITERIA_SUPER_EVENT_DEPTH = 'superEventDepth';
+    public const CRITERIA_ONLY_ROOT = 'onlyRoot';
+    public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
+    public const CRITERIA_LOCATION = 'location';
+    public const CRITERIA_START = 'start';
+    public const CRITERIA_END = 'end';
+    public const CRITERIA_ONLY_WITHOUT_DATE = 'onlyWithoutDate';
     public const CRITERIA_ONLY_PUBLIC_ON_WEB = 'onlyPublicOnWeb';
 
     /**
-     * @param  ManagerRegistry  $registry
+     * @param ManagerRegistry $registry
      *
      * @throws LogicException
      */
@@ -96,8 +96,10 @@ class EventRepository extends ServiceEntityRepository
                 $queryBuilder->leftJoin("e$i.superEvent", "e$j");
                 $eventQuery .= " OR e$j = :event_id ";
             }
-            $queryBuilder->andWhere($eventQuery)
-                         ->setParameter('super_event_id', $opts[self::CRITERIA_SUPER_EVENT]->getId());
+            $queryBuilder->andWhere($eventQuery)->setParameter(
+                'super_event_id',
+                $opts[self::CRITERIA_SUPER_EVENT]->getId()
+            );
         }
     }
 
@@ -164,8 +166,10 @@ class EventRepository extends ServiceEntityRepository
     private function setLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_LOCATION] instanceof Place) {
-            $queryBuilder->andWhere('e.location = :location_id')
-                         ->setParameter('location_id', $opts[self::CRITERIA_LOCATION]->getId());
+            $queryBuilder->andWhere('e.location = :location_id')->setParameter(
+                'location_id',
+                $opts[self::CRITERIA_LOCATION]->getId()
+            );
         }
     }
 
@@ -212,9 +216,9 @@ class EventRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param  array|null  $opts
-     * @param  int|null  $limit
-     * @param  int|null  $offset
+     * @param array|null $opts
+     * @param int|null   $limit
+     * @param int|null   $offset
      *
      * @return Collection<Event>
      */

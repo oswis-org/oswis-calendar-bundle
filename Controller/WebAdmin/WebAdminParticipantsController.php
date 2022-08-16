@@ -25,9 +25,9 @@ class WebAdminParticipantsController extends AbstractController
         $this->participantService->sendAutoMails(null, $type, $limit);
 
         return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
-            'title'     => "Akce provedena.",
+            'title' => "Akce provedena.",
             'pageTitle' => "Akce provedena.",
-            'message'   => "E-maily rozeslány.",
+            'message' => "E-maily rozeslány.",
         ]);
     }
 
@@ -37,21 +37,21 @@ class WebAdminParticipantsController extends AbstractController
         if (true === $arrival) {
             // Process arrival.
             $participant = $this->participantService->getParticipant([
-                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_ID => $participantId,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
             ], false);
         }
         if (false === $arrival) {
             // Process de-arrival.
             $participant = $this->participantService->getParticipant([
-                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_ID => $participantId,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
             ], true);
         }
         if (null === $arrival) {
             // Only show.
             $participant = $this->participantService->getParticipant([
-                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_ID => $participantId,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
             ], true);
         }

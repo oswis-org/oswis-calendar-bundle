@@ -33,11 +33,9 @@ class RegistrationOfferService
         try {
             $this->em->persist($range);
             $this->em->flush();
-            $this->logger->info('CREATE: Created registrations range (by service): '
-                                .$range->getId()
-                                .' '
-                                .$range->getName()
-                                .'.');
+            $this->logger->info(
+                'CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.'
+            );
 
             return $range;
         } catch (Exception $e) {
@@ -64,7 +62,7 @@ class RegistrationOfferService
         bool $includeDeleted = false
     ): ?int {
         return $this->getParticipantRangeConnectionRepository()->countRangesConnections([
-            ParticipantRepository::CRITERIA_OFFER           => $range,
+            ParticipantRepository::CRITERIA_OFFER => $range,
             ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
         ]);
     }
@@ -90,7 +88,7 @@ class RegistrationOfferService
         bool $includeDeleted = false
     ): Collection {
         return $this->getParticipantRangeConnectionRepository()->getRangesConnections([
-            ParticipantRepository::CRITERIA_OFFER           => $range,
+            ParticipantRepository::CRITERIA_OFFER => $range,
             ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
         ]);
     }
@@ -101,8 +99,8 @@ class RegistrationOfferService
         bool $onlyActive = true
     ): ?RegistrationOffer {
         return $this->getRepository()->getRegistrationsRange([
-            RegistrationOfferRepository::CRITERIA_SLUG          => $rangeSlug,
-            RegistrationOfferRepository::CRITERIA_ONLY_ACTIVE   => $onlyActive,
+            RegistrationOfferRepository::CRITERIA_SLUG => $rangeSlug,
+            RegistrationOfferRepository::CRITERIA_ONLY_ACTIVE => $onlyActive,
             RegistrationOfferRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
         ]);
     }
@@ -115,20 +113,20 @@ class RegistrationOfferService
         bool $onlyActive = true
     ): ?RegistrationOffer {
         return $this->getRepository()->getRegistrationsRange([
-            RegistrationOfferRepository::CRITERIA_EVENT                => $event,
+            RegistrationOfferRepository::CRITERIA_EVENT => $event,
             RegistrationOfferRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantCategory,
-            RegistrationOfferRepository::CRITERIA_PARTICIPANT_TYPE     => $participantType,
-            RegistrationOfferRepository::CRITERIA_ONLY_ACTIVE          => $onlyActive,
-            RegistrationOfferRepository::CRITERIA_PUBLIC_ON_WEB        => $publicOnWeb,
+            RegistrationOfferRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
+            RegistrationOfferRepository::CRITERIA_ONLY_ACTIVE => $onlyActive,
+            RegistrationOfferRepository::CRITERIA_PUBLIC_ON_WEB => $publicOnWeb,
         ]);
     }
 
     /**
      * Helper for getting structured array of registration ranges from given collection of events.
      *
-     * @param  Collection  $events  Collection of events to extract registration ranges.
-     * @param  string|null  $participantType  Restriction to event participant type.
-     * @param  bool  $onlyPublicOnWeb  Restriction only for web-public ranges.
+     * @param Collection  $events          Collection of events to extract registration ranges.
+     * @param string|null $participantType Restriction to event participant type.
+     * @param bool        $onlyPublicOnWeb Restriction only for web-public ranges.
      *
      * @return Collection
      */
@@ -143,9 +141,9 @@ class RegistrationOfferService
                 $ranges = [
                     ...$ranges,
                     ...$this->getRepository()->getRegistrationsRanges([
-                        RegistrationOfferRepository::CRITERIA_EVENT            => $event,
+                        RegistrationOfferRepository::CRITERIA_EVENT => $event,
                         RegistrationOfferRepository::CRITERIA_PARTICIPANT_TYPE => $participantType,
-                        RegistrationOfferRepository::CRITERIA_PUBLIC_ON_WEB    => $onlyPublicOnWeb,
+                        RegistrationOfferRepository::CRITERIA_PUBLIC_ON_WEB => $onlyPublicOnWeb,
                     ]),
                 ];
             }

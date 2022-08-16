@@ -27,10 +27,10 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 #[ApiResource(collectionOperations: [
     'get',
     'post' => [
-        'method'     => 'POST',
-        'path'       => '/calendar_event_file',
+        'method' => 'POST',
+        'path' => '/calendar_event_file',
         'controller' => EventFileAction::class,
-        'defaults'   => ['_api_receive' => false],
+        'defaults' => ['_api_receive' => false],
     ],
 ])]
 #[Entity]
@@ -53,10 +53,10 @@ class EventFile extends AbstractFile
     protected ?Event $event = null;
 
     /**
-     * @param  File|null  $file
-     * @param  string|null  $type
-     * @param  int|null  $priority
-     * @param  Publicity|null  $publicity
+     * @param File|null      $file
+     * @param string|null    $type
+     * @param int|null       $priority
+     * @param Publicity|null $publicity
      *
      * @throws InvalidTypeException
      */

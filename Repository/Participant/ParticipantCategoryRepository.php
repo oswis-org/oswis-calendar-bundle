@@ -15,12 +15,12 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 
 class ParticipantCategoryRepository extends ServiceEntityRepository
 {
-    public const CRITERIA_ID   = 'id';
+    public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_TYPE = 'participantType';
 
     /**
-     * @param  ManagerRegistry  $registry
+     * @param ManagerRegistry $registry
      *
      * @throws \LogicException
      */

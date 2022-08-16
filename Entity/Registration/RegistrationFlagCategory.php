@@ -63,21 +63,21 @@ class RegistrationFlagCategory implements NameableInterface
     use ColorTrait;
     use TypeTrait;
 
-    public const TYPE_FOOD                = 'food';
-    public const TYPE_TRANSPORT           = 'transport';
-    public const TYPE_T_SHIRT_SIZE        = 't-shirt-size';
+    public const TYPE_FOOD = 'food';
+    public const TYPE_TRANSPORT = 'transport';
+    public const TYPE_T_SHIRT_SIZE = 't-shirt-size';
     public const TYPE_T_SHIRT_HANDED_OVER = 't-shirt-handed-over';
-    public const TYPE_ACCOMMODATION_TYPE  = 'accommodation-type';
-    public const TYPE_ARRIVED             = 'arrived';
-    public const TYPE_LEFT                = 'left';
-    public const TYPE_PARTNER_HOMEPAGE    = 'partner-homepage';
-    public const TYPE_SCHOOL              = 'school';
-    public const TYPE_CONFIRMATIONS       = 'confirmations';
+    public const TYPE_ACCOMMODATION_TYPE = 'accommodation-type';
+    public const TYPE_ARRIVED = 'arrived';
+    public const TYPE_LEFT = 'left';
+    public const TYPE_PARTNER_HOMEPAGE = 'partner-homepage';
+    public const TYPE_SCHOOL = 'school';
+    public const TYPE_CONFIRMATIONS = 'confirmations';
 
     /**
-     * @param  Nameable|null  $nameable
-     * @param  string|null  $type
-     * @param  string|null  $color
+     * @param Nameable|null $nameable
+     * @param string|null   $type
+     * @param string|null   $color
      *
      * @throws InvalidTypeException
      */

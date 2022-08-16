@@ -63,7 +63,7 @@ class RegistrationFlagOfferService
     public function countParticipantFlags(RegistrationFlagOffer $flagRange, bool $includeDeleted = false): ?int
     {
         return $this->getParticipantFlagRepository()->countParticipantFlagGroups([
-            ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+            ParticipantFlagRepository::CRITERIA_FLAG_RANGE => $flagRange,
             ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
         ]);
     }
@@ -87,7 +87,7 @@ class RegistrationFlagOfferService
     public function getParticipantFlags(RegistrationFlagOffer $flagRange, bool $includeDeleted = false): Collection
     {
         return $this->getParticipantFlagRepository()->getParticipantFlagGroups([
-            ParticipantFlagRepository::CRITERIA_FLAG_RANGE      => $flagRange,
+            ParticipantFlagRepository::CRITERIA_FLAG_RANGE => $flagRange,
             ParticipantFlagRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
         ]);
     }

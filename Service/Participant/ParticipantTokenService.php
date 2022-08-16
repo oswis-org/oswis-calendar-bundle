@@ -23,11 +23,11 @@ class ParticipantTokenService
     }
 
     /**
-     * @param  Participant  $participant
-     * @param  AppUser  $appUser
-     * @param  string|null  $type
-     * @param  bool|null  $multipleUseAllowed
-     * @param  int|null  $validHours
+     * @param Participant $participant
+     * @param AppUser     $appUser
+     * @param string|null $type
+     * @param bool|null   $multipleUseAllowed
+     * @param int|null    $validHours
      *
      * @return ParticipantToken
      * @throws InvalidTypeException
@@ -41,8 +41,9 @@ class ParticipantTokenService
     ): ParticipantToken {
         try {
             // TODO: Complete refactoring needed. Or not???
-            $participantToken = new ParticipantToken($participant, $appUser, $type, $multipleUseAllowed ?? false,
-                $validHours);
+            $participantToken = new ParticipantToken(
+                $participant, $appUser, $type, $multipleUseAllowed ?? false, $validHours
+            );
             $this->em->persist($participantToken);
             $this->em->flush();
             $tokenId = $participantToken->getId();

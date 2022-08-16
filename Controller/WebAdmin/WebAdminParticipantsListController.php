@@ -40,8 +40,10 @@ class WebAdminParticipantsListController extends AbstractController
 
     public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
-        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug),);
+        return $this->render(
+            "@OswisOrgOswisCalendar/web_admin/participants.html.twig",
+            $this->getParticipantsData($eventSlug, $participantCategorySlug),
+        );
     }
 
     public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null): array
@@ -51,14 +53,14 @@ class WebAdminParticipantsListController extends AbstractController
             = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $data['event'] = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
         $data['participants'] = $this->participantService->getParticipants([
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => true,
-            ParticipantRepository::CRITERIA_EVENT                 => $data['event'],
-            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $data['participantCategory'],
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ParticipantRepository::CRITERIA_EVENT => $data['event'],
+            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $data['participantCategory'],
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
         ]);
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, static function (mixed $a, mixed $b) {
+        usort($participantsArray, static function(mixed $a, mixed $b) {
             assert($a instanceof Participant && $b instanceof Participant);
 
             return strcoll($a->getSortableName(), $b->getSortableName());
@@ -70,20 +72,22 @@ class WebAdminParticipantsListController extends AbstractController
 
     public function showParticipantsCsv(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
-        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug),);
+        return $this->render(
+            "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
+            $this->getParticipantsData($eventSlug, $participantCategorySlug),
+        );
     }
 
     public function showPayments(): Response
     {
         return $this->render("@OswisOrgOswisCalendar/web_admin/payments.html.twig", [
             'payments' => $this->em->getRepository(ParticipantPayment::class)->findAll(),
-            'title'    => "Přehled plateb účastníků :: ADMIN",
+            'title' => "Přehled plateb účastníků :: ADMIN",
         ]);
     }
 
     /**
-     * @param  string|null  $eventSlug
+     * @param string|null $eventSlug
      *
      * @return Response
      * @throws NotFoundException
@@ -98,23 +102,23 @@ class WebAdminParticipantsListController extends AbstractController
             throw new NotFoundException("Událost '$eventSlug' nenalezena.");
         }
         $participants = $this->participantService->getParticipants([
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
-            ParticipantRepository::CRITERIA_EVENT                 => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+            ParticipantRepository::CRITERIA_EVENT => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => ParticipantCategory::TYPE_ATTENDEE,
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
         ]);
         $occupancy = [
-            'event'     => $event,
+            'event' => $event,
             'occupancy' => $participants->count(),
             'subEvents' => [],
         ];
         foreach ($event->getSubEvents() as $subEvent) {
             $occupancy['subEvents'][] = [
-                'event'     => $subEvent,
+                'event' => $subEvent,
                 'occupancy' => $this->participantService->countParticipants([
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
-                    ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
-                    ParticipantRepository::CRITERIA_EVENT                 => $subEvent,
+                    ParticipantRepository::CRITERIA_INCLUDE_DELETED => false,
+                    ParticipantRepository::CRITERIA_PARTICIPANT_TYPE => ParticipantCategory::TYPE_ATTENDEE,
+                    ParticipantRepository::CRITERIA_EVENT => $subEvent,
                     ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
                 ]),
             ];
@@ -209,21 +213,22 @@ class WebAdminParticipantsListController extends AbstractController
             $paymentsAggregation['Zbývající záloha (s příznaky)'] += $participant->getRemainingDeposit();
             $paymentsAggregation['Zbývající cena (s příznaky)'] += $participant->getRemainingPrice();
         }
-        $regRanges = $this->participantRegistrationService->getRepository()
-                                                          ->getRegistrationsRanges([RegistrationOfferRepository::CRITERIA_EVENT => $event]);
+        $regRanges = $this->participantRegistrationService->getRepository()->getRegistrationsRanges(
+            [RegistrationOfferRepository::CRITERIA_EVENT => $event]
+        );
         ksort($flagsUsageByRange);
         ksort($flagsUsageByFlag);
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/event.html.twig', [
-            'title'               => "Přehled události :: ADMIN",
-            'event'               => $event,
-            'occupancy'           => $occupancy,
-            'flagsUsageByRange'   => $flagsUsageByRange,
-            'flagsUsageByFlag'    => $flagsUsageByFlag,
-            'offers'              => $regRanges,
-            'otherAggregations'   => $otherAggregations,
+            'title' => "Přehled události :: ADMIN",
+            'event' => $event,
+            'occupancy' => $occupancy,
+            'flagsUsageByRange' => $flagsUsageByRange,
+            'flagsUsageByFlag' => $flagsUsageByFlag,
+            'offers' => $regRanges,
+            'otherAggregations' => $otherAggregations,
             'paymentsAggregation' => $paymentsAggregation,
-            'isDefaultEvent'      => $isDefaultEvent,
+            'isDefaultEvent' => $isDefaultEvent,
         ]);
     }
 }

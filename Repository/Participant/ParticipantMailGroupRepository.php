@@ -18,7 +18,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 class ParticipantMailGroupRepository extends ServiceEntityRepository
 {
     /**
-     * @param  ManagerRegistry  $registry
+     * @param ManagerRegistry $registry
      *
      * @throws LogicException
      */
@@ -55,7 +55,9 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('mg')->setParameter('now', new DateTime());
         $queryBuilder->where("mg.automaticMailing = 1");
-        $queryBuilder->andWhere("(mg.startDateTime IS NULL) OR (:now < mg.startDateTime) AND  (mg.endDateTime IS NULL) OR (:now > mg.endDateTime)");
+        $queryBuilder->andWhere(
+            "(mg.startDateTime IS NULL) OR (:now < mg.startDateTime) AND  (mg.endDateTime IS NULL) OR (:now > mg.endDateTime)"
+        );
         $queryBuilder->addOrderBy('mg.priority', 'DESC');
         if (null !== $event) {
             $queryBuilder->andWhere("mg.event = :event_id")->setParameter('event_id', $event->getId());

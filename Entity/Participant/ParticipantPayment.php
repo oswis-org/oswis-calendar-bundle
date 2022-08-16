@@ -78,10 +78,10 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
     "dateTime",
 ])]
 #[ApiFilter(SearchFilter::class, properties: [
-    "id"              => "iexact",
-    "dateTime"        => "ipartial",
+    "id" => "iexact",
+    "dateTime" => "ipartial",
     "createdDateTime" => "ipartial",
-    "numericValue"    => "ipartial",
+    "numericValue" => "ipartial",
 ])]
 #[ApiFilter(OrderFilter::class, properties: [
     "id" => "ASC",
@@ -104,12 +104,12 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     use MailConfirmationTrait;
 
     public const TYPE_BANK_TRANSFER = 'bank-transfer';
-    public const TYPE_CARD          = 'card';
-    public const TYPE_CASH          = 'cash';
-    public const TYPE_ON_LINE       = 'on-line';
-    public const TYPE_INTERNAL      = 'internal';
+    public const TYPE_CARD = 'card';
+    public const TYPE_CASH = 'cash';
+    public const TYPE_ON_LINE = 'on-line';
+    public const TYPE_INTERNAL = 'internal';
     public const ALLOWED_TYPES
-                                    = [
+        = [
             '',
             self::TYPE_CASH,
             self::TYPE_CARD,
@@ -184,7 +184,7 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     }
 
     /**
-     * @param  Participant|null  $participant
+     * @param Participant|null $participant
      *
      * @throws NotImplementedException
      */

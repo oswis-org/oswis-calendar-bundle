@@ -184,9 +184,9 @@ class Participant implements ParticipantInterface
     protected ?string $variableSymbol = null;
 
     /**
-     * @param  RegistrationOffer|null  $regRange
-     * @param  AbstractContact|null  $contact
-     * @param  Collection|null  $participantNotes
+     * @param RegistrationOffer|null $regRange
+     * @param AbstractContact|null   $contact
+     * @param Collection|null        $participantNotes
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -198,8 +198,7 @@ class Participant implements ParticipantInterface
         RegistrationOffer $regRange = null,
         AbstractContact $contact = null,
         ?Collection $participantNotes = null,
-    )
-    {
+    ) {
         $this->participantContacts = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
@@ -216,7 +215,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  ParticipantContact|null  $participantContact
+     * @param ParticipantContact|null $participantContact
      *
      * @throws OswisException
      */
@@ -237,7 +236,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  bool  $onlyActive
+     * @param bool $onlyActive
      *
      * @return \OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantContact|null
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
@@ -283,7 +282,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  bool  $onlyActive
+     * @param bool $onlyActive
      *
      * @return \OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact|null
      */
@@ -298,7 +297,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  AbstractContact  $contact
+     * @param AbstractContact $contact
      *
      * @throws OswisException
      */
@@ -328,7 +327,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  RegistrationOffer|null  $offer
+     * @param RegistrationOffer|null $offer
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -405,8 +404,8 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  ParticipantRegistration|null  $newParticipantRegistration
-     * @param  bool  $admin
+     * @param ParticipantRegistration|null $newParticipantRegistration
+     * @param bool                         $admin
      *
      * @throws EventCapacityExceededException
      * @throws FlagCapacityExceededException
@@ -501,9 +500,9 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory|null  $flagCategory
-     * @param  string|null  $flagType
-     * @param  bool  $onlyActive
+     * @param \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory|null $flagCategory
+     * @param string|null                                                                     $flagType
+     * @param bool                                                                            $onlyActive
      *
      * @return \Doctrine\Common\Collections\Collection<ParticipantFlagGroup>
      */
@@ -532,7 +531,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  Collection|null  $newFlagGroups
+     * @param Collection|null $newFlagGroups
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -544,7 +543,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  RegistrationOffer  $registrationOffer
+     * @param RegistrationOffer $registrationOffer
      *
      * @throws NotImplementedException
      */
@@ -572,19 +571,18 @@ class Participant implements ParticipantInterface
         ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
         bool $onlyActive = false,
-    ): Collection
-    {
-        return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(fn(mixed $connection) => $connection
-                                                                                                         instanceof
-                                                                                                         ParticipantFlagGroup
-            ? $connection->getFlagGroupOffer() : null,);
+    ): Collection {
+        return $this->getFlagGroups($flagCategory, $flagType, $onlyActive)->map(
+            fn(mixed $connection) => $connection instanceof ParticipantFlagGroup ? $connection->getFlagGroupOffer()
+                : null,
+        );
     }
 
     /**
-     * @param  \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer|null  $newRange
-     * @param  bool  $onlySimulate
-     * @param  bool  $admin
-     * @param  Collection<ParticipantFlagGroup>|null  $newFlagGroups
+     * @param \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer|null $newRange
+     * @param bool                                                                     $onlySimulate
+     * @param bool                                                                     $admin
+     * @param Collection<ParticipantFlagGroup>|null                                    $newFlagGroups
      *
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
@@ -603,8 +601,11 @@ class Participant implements ParticipantInterface
         $newFlagGroups ??= $this->getFlagGroups(null, null, true);
         foreach ($newFlagGroups as $oldParticipantFlagGroup) {
             /** @var ParticipantFlagGroup $oldParticipantFlagGroup */
-            $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup($oldParticipantFlagGroup, $admin,
-                $onlySimulate);
+            $newParticipantFlagGroup = $newRange->makeCompatibleParticipantFlagGroup(
+                $oldParticipantFlagGroup,
+                $admin,
+                $onlySimulate
+            );
             if (false === $onlySimulate && $oldParticipantFlagGroup !== $newParticipantFlagGroup) {
                 $this->replaceParticipantFlagGroup($oldParticipantFlagGroup, $newParticipantFlagGroup);
             }
@@ -651,15 +652,19 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  Participant  $participant1
-     * @param  Participant  $participant2
+     * @param Participant $participant1
+     * @param Participant $participant2
      *
      * @return int
      */
     public static function compareParticipants(mixed $participant1, mixed $participant2): int
     {
-        $cmpResult = (!$participant1->getContact() || !$participant2->getContact()) ? 0
-            : strcmp($participant1->getContact()->getSortableName(), $participant2->getContact()->getSortableName(),);
+        $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
+            ? 0
+            : strcmp(
+                $participant1->getContact()->getSortableName(),
+                $participant2->getContact()->getSortableName(),
+            );
 
         return $cmpResult === 0 ? self::compare($participant1, $participant2) : $cmpResult;
     }
@@ -686,8 +691,10 @@ class Participant implements ParticipantInterface
 
     public function removeEmptyParticipantNotes(): void
     {
-        $this->setNotes($this->getNotes()->filter(fn(mixed $note): bool => $note instanceof ParticipantNote
-                                                                           && !empty($note->getTextValue()),),);
+        $this->setNotes(
+            $this->getNotes()->filter(fn(mixed $note): bool => $note instanceof ParticipantNote
+                                                               && !empty($note->getTextValue()),),
+        );
     }
 
     /**
@@ -930,10 +937,11 @@ class Participant implements ParticipantInterface
         ?string $flagType = null,
         bool $onlyActive = true,
         RegistrationFlag $flag = null
-    ): Collection
-    {
-        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(fn(mixed $participantFlag
-        ) => $participantFlag instanceof ParticipantFlag ? $participantFlag->getFlag() : null,);
+    ): Collection {
+        return $this->getParticipantFlags($flagCategory, $flagType, $onlyActive, $flag)->map(
+            fn(mixed $participantFlag) => $participantFlag instanceof ParticipantFlag ? $participantFlag->getFlag()
+                : null,
+        );
     }
 
     public function isRangeActivated(): bool
@@ -944,7 +952,7 @@ class Participant implements ParticipantInterface
     /**
      * Recognizes if participant must be addressed in a formal way.
      *
-     * @param  bool  $recursive
+     * @param bool $recursive
      *
      * @return bool|null Participant must be addressed in a formal way.
      */
@@ -991,7 +999,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  Collection|null  $newRanges
+     * @param Collection|null $newRanges
      *
      * @throws NotImplementedException
      */
@@ -1036,7 +1044,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  ParticipantPayment|null  $participantPayment
+     * @param ParticipantPayment|null $participantPayment
      *
      * @throws NotImplementedException
      */
@@ -1048,7 +1056,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  ParticipantMail|null  $participantMail
+     * @param ParticipantMail|null $participantMail
      *
      * @throws NotImplementedException
      */
@@ -1060,7 +1068,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param  ParticipantPayment|null  $participantPayment
+     * @param ParticipantPayment|null $participantPayment
      *
      * @throws NotImplementedException
      */

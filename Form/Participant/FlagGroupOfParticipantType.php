@@ -42,7 +42,7 @@ class FlagGroupOfParticipantType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) {
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, static function(FormEvent $event) {
             $data = $event->getData();
             if (!empty($data) && is_array($data)) {
                 $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']]
@@ -50,7 +50,7 @@ class FlagGroupOfParticipantType extends AbstractType
             }
             $event->setData($data);
         });
-        $builder->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event) {
+        $builder->addEventListener(FormEvents::SUBMIT, static function(FormEvent $event) {
             $participantFlagGroup = $event->getData();
             assert($participantFlagGroup instanceof ParticipantFlagGroup);
             $participantFlags = new ArrayCollection();
@@ -65,7 +65,7 @@ class FlagGroupOfParticipantType extends AbstractType
     }
 
     /**
-     * @param  FormEvent  $event
+     * @param FormEvent $event
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -97,9 +97,9 @@ class FlagGroupOfParticipantType extends AbstractType
     }
 
     /**
-     * @param  FormInterface  $form
-     * @param  ParticipantFlagGroup  $participantFlagCategory
-     * @param  int|null  $min
+     * @param FormInterface        $form
+     * @param ParticipantFlagGroup $participantFlagCategory
+     * @param int|null             $min
      *
      * @throws \Symfony\Component\Form\Exception\AlreadySubmittedException
      * @throws \Symfony\Component\Form\Exception\LogicException
@@ -117,11 +117,10 @@ class FlagGroupOfParticipantType extends AbstractType
         $helpText = $flagGroupRange->getDescription();
         $form->add("participantFlags", CollectionType::class, [
             'entry_type' => FlagOfParticipantType::class,
-            'required'   => $min !== null && $min > 0,
-            'label'      => $flagGroupRange->getName() ?? 'Ostatní příznaky',
-            'help'       => empty($helpText) ? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>'
-                : $helpText,
-            'help_html'  => true,
+            'required' => $min !== null && $min > 0,
+            'label' => $flagGroupRange->getName() ?? 'Ostatní příznaky',
+            'help' => empty($helpText) ? '<p>Ostatní příznaky, které nespadají do žádné kategorie.</p>' : $helpText,
+            'help_html' => true,
         ]);
     }
 
@@ -131,11 +130,11 @@ class FlagGroupOfParticipantType extends AbstractType
     }
 
     /**
-     * @param  FormInterface  $form
-     * @param  ParticipantFlagGroup  $participantFlagGroup
-     * @param  int  $min
-     * @param  int|null  $max
-     * @param  bool  $isFormal
+     * @param FormInterface        $form
+     * @param ParticipantFlagGroup $participantFlagGroup
+     * @param int                  $min
+     * @param int|null             $max
+     * @param bool                 $isFormal
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -163,43 +162,43 @@ class FlagGroupOfParticipantType extends AbstractType
             $help .= "<p>Pro výběr více položek nebo zrušení výběru $youCan použít klávesu <span class='keyboard-key'>CTRL</span>.</p>";
         }
         $form->add("tempFlagRanges", EntityType::class, [
-            'class'              => RegistrationFlagOffer::class,
-            'label'              => false,
-            'required'           => false,
-            'help_html'          => true,
-            'choices'            => $flagGroupRange->getFlagOffers(),
+            'class' => RegistrationFlagOffer::class,
+            'label' => false,
+            'required' => false,
+            'help_html' => true,
+            'choices' => $flagGroupRange->getFlagOffers(),
             // 'empty_data'         => null,
-            'multiple'           => true,
-            'attr'               => ['style' => 'display:none'],
-            'choice_label'       => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
+            'multiple' => true,
+            'attr' => ['style' => 'display:none'],
+            'choice_label' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
             'allow_extra_fields' => true,
         ]);
         $form->add("flagRanges", EntityType::class, [
-            'class'        => RegistrationFlagOffer::class,
-            'mapped'       => false,
-            'label'        => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
-            'help_html'    => true,
-            'help'         => $help,
-            'required'     => !empty($min) || $min > 0,
-            'choices'      => $choices,
-            'expanded'     => $expanded,
+            'class' => RegistrationFlagOffer::class,
+            'mapped' => false,
+            'label' => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
+            'help_html' => true,
+            'help' => $help,
+            'required' => !empty($min) || $min > 0,
+            'choices' => $choices,
+            'expanded' => $expanded,
             // 'empty_data'   => new ArrayCollection(),
-            'multiple'     => $multiple,
-            'attr'         => [
+            'multiple' => $multiple,
+            'attr' => [
                 'size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null,
             ],
             'choice_label' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
-            'choice_attr'  => fn(
+            'choice_attr' => fn(
                 RegistrationFlagOffer $flagRange,
                 $key,
                 $value
             ) => self::getChoiceAttributes($flagRange),
-            'group_by'     => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
-            'placeholder'  => $flagGroupRange->getEmptyPlaceholder(),
+            'group_by' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
+            'placeholder' => $flagGroupRange->getEmptyPlaceholder(),
         ]);
         if ($flagGroupRange->isCategoryValueAllowed()) {
             $form->add("textValue", TextType::class, [
-                'label'     => $flagGroupRange->getFormValueLabel(),
+                'label' => $flagGroupRange->getFormValueLabel(),
                 'help_html' => true,
             ]);
         }
@@ -219,16 +218,16 @@ class FlagGroupOfParticipantType extends AbstractType
     }
 
     /**
-     * @param  OptionsResolver  $resolver
+     * @param OptionsResolver $resolver
      *
      * @throws AccessException
      */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class'  => ParticipantFlagGroup::class,
+            'data_class' => ParticipantFlagGroup::class,
             'participant' => null,
-            'empty_data'  => new ArrayCollection(),
+            'empty_data' => new ArrayCollection(),
             // 'attr' => ['class' => 'col-md-6'],
         ]);
     }

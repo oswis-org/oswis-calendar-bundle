@@ -27,10 +27,10 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 #[ApiResource(collectionOperations: [
     'get',
     'post' => [
-        'method'     => 'POST',
-        'path'       => '/calendar_event_image',
+        'method' => 'POST',
+        'path' => '/calendar_event_image',
         'controller' => EventImageAction::class,
-        'defaults'   => ['_api_receive' => false],
+        'defaults' => ['_api_receive' => false],
     ],
 ])]
 #[Uploadable]
@@ -40,10 +40,10 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 class EventImage extends AbstractImage
 {
     public const TYPE_LEAFLET = 'leaflet';
-    public const TYPE_IMAGE   = 'image';
-    public const TYPE_SOCIAL  = 'social';
-    public const TYPE_MAP     = 'map';
-    public const TYPE_POSTER  = 'poster';
+    public const TYPE_IMAGE = 'image';
+    public const TYPE_SOCIAL = 'social';
+    public const TYPE_MAP = 'map';
+    public const TYPE_POSTER = 'poster';
     public const TYPE_GALLERY = 'gallery';
     use BasicTrait;
     use TypeTrait;
@@ -59,10 +59,10 @@ class EventImage extends AbstractImage
     protected ?Event $event = null;
 
     /**
-     * @param  File|null  $file
-     * @param  string|null  $type
-     * @param  int|null  $priority
-     * @param  Publicity|null  $publicity
+     * @param File|null      $file
+     * @param string|null    $type
+     * @param int|null       $priority
+     * @param Publicity|null $publicity
      *
      * @throws InvalidTypeException
      */

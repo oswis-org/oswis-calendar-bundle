@@ -67,8 +67,8 @@ class ParticipantController extends AbstractController
      * Route shows registration form or process it if form was sent.
      * Data from form is validated, user is created and than summary and activation e-mail is sent.
      *
-     * @param  Request  $request
-     * @param  string|null  $rangeSlug
+     * @param Request     $request
+     * @param string|null $rangeSlug
      *
      * @return Response
      * @throws \InvalidArgumentException
@@ -116,14 +116,26 @@ class ParticipantController extends AbstractController
                 $participant = $this->participantService->create($participant);
                 $eventName = $participant->getEvent()?->getShortName();
 
-                return $this->getResponse('success', 'Přihláška odeslána!', false, $participant->getEvent(),
+                return $this->getResponse(
+                    'success',
+                    'Přihláška odeslána!',
+                    false,
+                    $participant->getEvent(),
                     $participant->getOffer(),
                     "Tvoje přihláška na akci $eventName byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
-                    $form->createView());
+                    $form->createView()
+                );
             }
 
-            return $this->getResponse('form', "Přihláška na akci ".$range->getEvent()?->getShortName(), false,
-                $range->getEvent(), $range, null, $form->createView());
+            return $this->getResponse(
+                'form',
+                "Přihláška na akci ".$range->getEvent()?->getShortName(),
+                false,
+                $range->getEvent(),
+                $range,
+                null,
+                $form->createView()
+            );
         } catch (Exception $e) {
             $participant = $this->participantService->getEmptyParticipant($range);
             /** @phpstan-ignore-next-line */
@@ -135,8 +147,15 @@ class ParticipantController extends AbstractController
             $event = $range->getEvent();
             $eventName = $event?->getShortName();
 
-            return $this->getResponse('form', "Přihláška na akci $eventName", false, $event, $range, null,
-                $form->createView(),);
+            return $this->getResponse(
+                'form',
+                "Přihláška na akci $eventName",
+                false,
+                $event,
+                $range,
+                null,
+                $form->createView(),
+            );
         }
     }
 
@@ -148,15 +167,19 @@ class ParticipantController extends AbstractController
     {
         $defaultEvent = $this->eventService->getDefaultEvent();
         if (null === $defaultEvent) {
-            throw new NotFoundException('Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.');
+            throw new NotFoundException(
+                'Vyberte si, prosím, konkrétní akci, na kterou se chcete přihlásit, ze seznamu událostí.'
+            );
         }
 
-        return $this->redirectToRoute('oswis_org_oswis_calendar_web_registration_ranges',
-            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]);
+        return $this->redirectToRoute(
+            'oswis_org_oswis_calendar_web_registration_ranges',
+            ['eventSlug' => $defaultEvent->getSlug(), 'participantType' => ParticipantCategory::TYPE_ATTENDEE]
+        );
     }
 
     /**
-     * @param  string  $eventSlug
+     * @param string $eventSlug
      *
      * @return Event
      * @throws NotFoundException
@@ -165,7 +188,7 @@ class ParticipantController extends AbstractController
     {
         $event = $this->eventService->getRepository()->getEvent([
             EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true,
-            EventRepository::CRITERIA_SLUG               => $eventSlug,
+            EventRepository::CRITERIA_SLUG => $eventSlug,
         ]);
         if (null === $event) {
             throw new NotFoundException('Akce nebyla nalezena.');
@@ -189,20 +212,20 @@ class ParticipantController extends AbstractController
         }
 
         return $this->render($template, [
-            'form'                => $formView,
-            'title'               => $title,
-            'pageTitle'           => $title,
-            'event'               => $event,
-            'range'               => $range,
-            'message'             => $message,
-            'type'                => $type,
+            'form' => $formView,
+            'title' => $title,
+            'pageTitle' => $title,
+            'event' => $event,
+            'range' => $range,
+            'message' => $message,
+            'type' => $type,
             'registrationsActive' => $range && $range->isRangeActive(),
         ]);
     }
 
     /**
-     * @param  string|null  $token
-     * @param  int|null  $participantId
+     * @param string|null $token
+     * @param int|null    $participantId
      *
      * @return Response
      * @throws TokenInvalidException|OswisException
@@ -218,7 +241,7 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param  ParticipantToken  $participantToken
+     * @param ParticipantToken $participantToken
      *
      * @return Response
      * @throws OswisException
@@ -233,7 +256,7 @@ class ParticipantController extends AbstractController
     public function participantActivated(): Response
     {
         return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
-            'title'   => 'Přihláška aktivována!',
+            'title' => 'Přihláška aktivována!',
             'message' => 'Přihláška byla úspěšně ověřena.',
         ]);
     }
@@ -244,18 +267,26 @@ class ParticipantController extends AbstractController
      */
     public function resendActivationEmail(?int $participantId = null): Response
     {
-        $this->participantService->requestActivation($this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId]));
+        $this->participantService->requestActivation(
+            $this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId])
+        );
 
-        return $this->getResponse('success', 'Ověřovací zpráva odeslána!', false, null, null,
-            "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",);
+        return $this->getResponse(
+            'success',
+            'Ověřovací zpráva odeslána!',
+            false,
+            null,
+            null,
+            "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
+        );
     }
 
     /**
      * Finds correct registration range by event and participantType.
      *
-     * @param  Event  $event  Event.
-     * @param  ParticipantCategory|null  $participantCategory  Type of participant.
-     * @param  string|null  $participantType
+     * @param Event                    $event               Event.
+     * @param ParticipantCategory|null $participantCategory Type of participant.
+     * @param string|null              $participantType
      *
      * @return \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer|null
      */
@@ -273,8 +304,8 @@ class ParticipantController extends AbstractController
      * If eventSlug is defined, renders page with registration ranges for this event and subEvents, if it's not
      * defined, renders list for all events.
      *
-     * @param  string|null  $eventSlug  Slug for selected event.
-     * @param  string|null  $participantType  Restriction by participant type.
+     * @param string|null $eventSlug       Slug for selected event.
+     * @param string|null $participantType Restriction by participant type.
      *
      * @return Response Page with registration ranges.
      * @throws Exception Error occurred when getting events.
@@ -292,24 +323,26 @@ class ParticipantController extends AbstractController
         $title = "Přihlášky na akc".($event instanceof Event ? "i $shortName" : "e");
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', [
-            'event'      => $event,
-            'ranges'     => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
-            'title'      => $title,
+            'event' => $event,
+            'ranges' => $this->regRangeService->getEventRegistrationRanges($events, $participantType, true),
+            'title' => $title,
             'shortTitle' => 'Přihlášky',
         ]);
     }
 
     public function partnersFooter(): Response
     {
-        return $this->render('@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig',
-            ['footerPartners' => $this->participantService->getWebPartners()]);
+        return $this->render(
+            '@OswisOrgOswisCalendar/web/parts/partners-footer.html.twig',
+            ['footerPartners' => $this->participantService->getWebPartners()]
+        );
     }
 
     /**
-     * @param  Request  $request
-     * @param  OswisCoreSettingsProvider  $coreSettings
-     * @param  int|null  $limit
-     * @param  int|null  $offset
+     * @param Request                   $request
+     * @param OswisCoreSettingsProvider $coreSettings
+     * @param int|null                  $limit
+     * @param int|null                  $offset
      *
      * @return Response
      * @throws AccessDeniedHttpException
@@ -328,7 +361,7 @@ class ParticipantController extends AbstractController
         }
 
         return $this->render("@OswisOrgOswisCore/web/pages/message.html.twig", [
-            'title'   => 'Přihlášky aktualizovány!',
+            'title' => 'Přihlášky aktualizovány!',
             'message' => 'Přihlášky byly úspěšně aktualizovány.',
         ]);
     }

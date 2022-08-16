@@ -38,8 +38,10 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
                 && (($paymentsImport = $form->getData()) instanceof ParticipantPaymentsImport)) {
                 $this->paymentsImportService->processImport($paymentsImport);
 
-                return $this->renderMessage("Platby importovány!",
-                    "Import plateb proběhl úspěšně. Shrnutí bylo odesláno do archivu.");
+                return $this->renderMessage(
+                    "Platby importovány!",
+                    "Import plateb proběhl úspěšně. Shrnutí bylo odesláno do archivu."
+                );
             }
 
             return $this->renderImportForm($form);
@@ -49,8 +51,11 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
                 $form = $this->createForm(ParticipantPaymentsImportType::class, $paymentsImport);
                 $form->handleRequest($request);
             }
-            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '
-                                          .$exception->getMessage()));
+            $form->addError(
+                new FormError(
+                    'Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage()
+                )
+            );
 
             return $this->renderImportForm($form);
         }
@@ -59,19 +64,19 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
     public function renderMessage(string $title, string $message): Response
     {
         return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
-            'title'     => $title,
+            'title' => $title,
             'pageTitle' => $title,
-            'message'   => $message,
+            'message' => $message,
         ]);
     }
 
     public function renderImportForm(FormInterface $form): Response
     {
         return $this->render("@OswisOrgOswisCalendar/web/pages/participant-payments-import-form.html.twig", [
-            'form'      => $form->createView(),
-            'title'     => "Import plateb účastníků",
+            'form' => $form->createView(),
+            'title' => "Import plateb účastníků",
             'pageTitle' => "Import plateb účastníků",
-            'type'      => "form",
+            'type' => "form",
         ]);
     }
 }

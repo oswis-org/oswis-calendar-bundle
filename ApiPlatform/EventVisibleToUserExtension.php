@@ -31,7 +31,10 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if ($resourceClass !== Event::class || $this->security->isGranted('ROLE_ADMIN') || $this->security->isGranted('ROLE_ROOT')) {
+        if ($resourceClass !== Event::class || $this->security->isGranted('ROLE_ADMIN')
+            || $this->security->isGranted(
+                'ROLE_ROOT'
+            )) {
             return;
         }
         /** @var \OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser $user */

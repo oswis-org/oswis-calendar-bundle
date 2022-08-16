@@ -105,7 +105,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  RegistrationFlagGroupOffer|null  $flagGroupOffer
+     * @param RegistrationFlagGroupOffer|null $flagGroupOffer
      *
      * @throws NotImplementedException
      */
@@ -135,8 +135,8 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  bool  $onlyActive
-     * @param  RegistrationFlag|null  $flag
+     * @param bool                  $onlyActive
+     * @param RegistrationFlag|null $flag
      *
      * @return Collection<ParticipantFlag>
      */
@@ -157,9 +157,9 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  Collection|null  $newParticipantFlags
-     * @param  bool|false  $admin
-     * @param  bool  $onlySimulate
+     * @param Collection|null $newParticipantFlags
+     * @param bool|false      $admin
+     * @param bool            $onlySimulate
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -168,13 +168,14 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         ?Collection $newParticipantFlags,
         bool $admin = false,
         bool $onlySimulate = false
-    ): void {
+    ): void
+    {
         $oldParticipantFlags = $this->getParticipantFlags();
         $newParticipantFlags ??= new ArrayCollection();
         // 1. All flags are of allowed category.
-//        if (!$newParticipantFlags->forAll(fn(ParticipantFlag $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
-//            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
-//        }
+        //        if (!$newParticipantFlags->forAll(fn(ParticipantFlag $newPFlag) => $this->getAvailableFlagRanges()->contains($newPFlag->getFlagRange()))) {
+        //            throw new FlagOutOfRangeException('Příznak není kompatibilní s příslušnou skupinou příznaků.');
+        //        }
         // 2. Number of flags is in range of minInParticipant and maxInParticipant of RegistrationFlagGroupOffer. OK
         $this->getFlagGroupOffer()?->checkInRange($newParticipantFlags->count());
         // 3. minInParticipant and maxInParticipant of each RegistrationFlagOffer from RegistrationFlagGroupOffer. + 4. There is remaining capacity of each flag.
@@ -184,9 +185,13 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         }
         if (!$onlySimulate) {
             $removedFlags = $oldParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag
-                                                                                   && !$newParticipantFlags->contains($flag),);
+                                                                                   && !$newParticipantFlags->contains(
+                    $flag
+                ),);
             $addedFlags = $newParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag
-                                                                                 && !$oldParticipantFlags->contains($flag),);
+                                                                                 && !$oldParticipantFlags->contains(
+                    $flag
+                ),);
             foreach ($removedFlags as $removedFlag) {
                 assert($removedFlag instanceof ParticipantFlag);
                 $removedFlag->delete();
@@ -214,9 +219,9 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  RegistrationFlagOffer  $flagRange
-     * @param  Collection  $newPartiFlags
-     * @param  bool|false  $admin
+     * @param RegistrationFlagOffer $flagRange
+     * @param Collection            $newPartiFlags
+     * @param bool|false            $admin
      *
      * @throws FlagOutOfRangeException|FlagCapacityExceededException
      */
@@ -224,8 +229,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         RegistrationFlagOffer $flagRange,
         Collection $newPartiFlags,
         bool $admin = false,
-    ): void
-    {
+    ): void {
         $newFlagRangeCount = $newPartiFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
                                                                         && $pFlag->getFlagOffer() === $flagRange,)
                                            ->count();
@@ -273,10 +277,10 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param  ParticipantFlag  $oldParticipantFlag
-     * @param  ParticipantFlag  $newParticipantFlag
-     * @param  bool  $admin
-     * @param  bool  $onlySimulate
+     * @param ParticipantFlag $oldParticipantFlag
+     * @param ParticipantFlag $newParticipantFlag
+     * @param bool            $admin
+     * @param bool            $onlySimulate
      *
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException

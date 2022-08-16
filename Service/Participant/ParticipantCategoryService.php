@@ -24,11 +24,13 @@ class ParticipantCategoryService
         try {
             $this->em->persist($participantCategory);
             $this->em->flush();
-            $this->logger->info('CREATE: Created event participant type (by service): '
-                                .$participantCategory->getId()
-                                .' '
-                                .$participantCategory->getName()
-                                .'.');
+            $this->logger->info(
+                'CREATE: Created event participant type (by service): '
+                .$participantCategory->getId()
+                .' '
+                .$participantCategory->getName()
+                .'.'
+            );
 
             return $participantCategory;
         } catch (Exception $e) {
@@ -45,8 +47,9 @@ class ParticipantCategoryService
         }
         $type = $this->getRepository()->getParticipantCategory([ParticipantCategoryRepository::CRITERIA_SLUG => $slug]);
         if (null === $type) {
-            $type = $this->getRepository()
-                         ->getParticipantCategory([ParticipantCategoryRepository::CRITERIA_TYPE => $slug]);
+            $type = $this->getRepository()->getParticipantCategory(
+                [ParticipantCategoryRepository::CRITERIA_TYPE => $slug]
+            );
         }
 
         return $type;

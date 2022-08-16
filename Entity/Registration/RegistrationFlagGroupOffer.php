@@ -121,8 +121,8 @@ class RegistrationFlagGroupOffer implements NameableInterface
     }
 
     /**
-     * @param  bool  $onlyPublic
-     * @param  RegistrationFlag|null  $flag
+     * @param bool                  $onlyPublic
+     * @param RegistrationFlag|null $flag
      *
      * @return Collection<RegistrationFlagOffer>
      */
@@ -143,7 +143,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     }
 
     /**
-     * @param  RegistrationFlagOffer|null  $flagRange
+     * @param RegistrationFlagOffer|null $flagRange
      *
      * @throws NotImplementedException
      */
@@ -186,18 +186,17 @@ class RegistrationFlagGroupOffer implements NameableInterface
 
     public function isFlagValueAllowed(bool $onlyPublic = false, ?RegistrationFlag $flag = null): bool
     {
-        return $this->getFlagOffers($onlyPublic, $flag)
-                    ->filter(fn(mixed $flagRange) => $flagRange
-                                                     instanceof
-                                                     RegistrationFlagOffer
-                                                     && $flagRange->isFormValueAllowed(),)
-                    ->count() > 0;
+        return $this->getFlagOffers($onlyPublic, $flag)->filter(
+                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                                        && $flagRange->isFormValueAllowed(),
+            )->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
-        return $this->getFlagOffers()->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
-                                                                             && $flagRange->isFormValueAllowed(),)
+        return $this->getFlagOffers()
+                    ->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                                                            && $flagRange->isFormValueAllowed(),)
                     ->count() > 0;
     }
 

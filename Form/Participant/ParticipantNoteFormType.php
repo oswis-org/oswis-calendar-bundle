@@ -14,15 +14,15 @@ class ParticipantNoteFormType extends AbstractType
     final public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('textValue', TextareaType::class, [
-            'label'    => 'Poznámka',
+            'label' => 'Poznámka',
             'required' => false,
-            'help'     => 'Zde můžeš zadat svůj dotaz, poznámku nebo vzkaz pořadatelům.',
-            'attr'     => ['placeholder' => false],
+            'help' => 'Zde můžeš zadat svůj dotaz, poznámku nebo vzkaz pořadatelům.',
+            'attr' => ['placeholder' => false],
         ]);
     }
 
     /**
-     * @param  OptionsResolver  $resolver
+     * @param OptionsResolver $resolver
      *
      * @throws AccessException
      */
