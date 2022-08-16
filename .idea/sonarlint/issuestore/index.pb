@@ -68,8 +68,6 @@ W
 'Entity/Participant/ParticipantToken.php,c/f/cf6778ad1f2b17fe8a47b0a39d10b9e322e11c6f
 N
 Entity/NonPersistent/Price.php,9/2/9230a35909b873fdcb05004e6060913e9545e3ed
-z
-JResources/views/web/parts/participant-registration-range-preview.html.twig,e/7/e7c5e5142891e5858cf4134d373cf4805e5070d4
 K
 Entity/Event/EventGroup.php,f/6/f6609772ea2358b9d431d16e338b2607863252dc
 T

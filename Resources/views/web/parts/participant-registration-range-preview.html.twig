@@ -67,11 +67,13 @@
                         </div>
                     {% endif %}
                     #}
+                    {#
                     {% if range.endDateTime and date(range.endDateTime).diff(date()).days > 0 %}
                         <div class="badge bg-warning py-1 px-2 mt-1">
                             Zbývá {{ date(range.endDateTime).diff(date()).days }} dní.
                         </div>
                     {% endif %}
+                    #}
                 </div>
                 <span itemprop="availability" content="http://schema.org/InStock"></span>
                 <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
