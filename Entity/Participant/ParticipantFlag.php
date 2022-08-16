@@ -7,8 +7,13 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTime;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
@@ -18,6 +23,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantFlagRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\ActivatedInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\DeletedInterface;
@@ -30,7 +36,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
- * RegistrationFlag assigned to event participant (ie. special food requirement...) through some "flag range".
+ * RegistrationFlag assigned to event participant (i.e. special food requirement...) through some "flag range".
  * @ApiPlatform\Core\Annotation\ApiResource(
  *   attributes={
  *     "filters"={"search"},
@@ -80,6 +86,13 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     #[MaxDepth(1)]
     protected ?ParticipantFlagGroup $participantFlagGroup = null;
 
+    /** Date and time of invalidation/use of flag. */
+    #[Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['default' => null])]
+    #[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
+    #[ApiFilter(OrderFilter::class)]
+    #[ApiFilter(DateFilter::class)]
+    protected ?DateTime $invalidatedAt = null;
+
     public function __construct(
         ?RegistrationFlagOffer $flagRange = null,
         ParticipantFlagGroup $participantFlagGroup = null,
@@ -91,6 +104,28 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
         }
         $this->setFlagOffer($flagRange);
         $this->setTextValue($textValue);
+    }
+
+    public function getInvalidatedAt(): ?DateTime
+    {
+        return $this->invalidatedAt;
+    }
+
+    public function setInvalidatedAt(?DateTime $dateTime = null): void
+    {
+        $this->invalidatedAt = $dateTime ? clone $dateTime : null;
+    }
+
+    public function isInvalidated(?DateTime $dateTime = null): bool
+    {
+        return $this->getInvalidatedAt() && ($this->getInvalidatedAt() <= ($dateTime ?? new DateTime()));
+    }
+
+    public function invalidate(): void
+    {
+        if (!$this->isInvalidated()) {
+            $this->invalidatedAt = new DateTime();
+        }
     }
 
     public function getFlagType(): ?string
