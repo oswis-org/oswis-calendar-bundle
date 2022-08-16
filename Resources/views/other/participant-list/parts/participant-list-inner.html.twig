@@ -54,6 +54,9 @@
             {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
                 <li style="list-style-type: '📝'; {{ note.deletedAt|default ? 'text-decoration:line-through;' : '' }}; color: darkorange;">
                     <strong class="block small">{{ note.textValue }}</strong>
+                    {% if note.createdBy.shortName|default or note.createdBy.name|default %}
+                        <small>({{ note.createdBy.shortName|default(note.createdBy.name|default) }})</small>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
