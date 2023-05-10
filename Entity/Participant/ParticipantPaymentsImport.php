@@ -95,12 +95,12 @@ class ParticipantPaymentsImport
     public function extractPayments(CsvPaymentImportSettings $csvSettings): Collection
     {
         $payments = new ArrayCollection();
-        $csvRows = str_getcsv(''.$this->getTextValue(), "\n");
-        $csvPaymentRows = array_map(static fn($row) => self::getColumnsFromCsvRow($row, $csvSettings), $csvRows);
+        $csvRows = str_getcsv('' . $this->getTextValue(), "\n");
+        $csvPaymentRows = array_map(static fn($row) => self::getColumnsFromCsvRow('' . $row, $csvSettings), $csvRows);
         array_walk($csvPaymentRows, static fn(&$a) => $a = array_combine($csvPaymentRows[0], $a));
         array_shift($csvPaymentRows); # remove column header
         foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
-            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, $csvRows[$csvPaymentRowKey + 1]));
+            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, '' . $csvRows[$csvPaymentRowKey + 1]));
         }
 
         return $payments;

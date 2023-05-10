@@ -628,7 +628,7 @@ class Participant implements ParticipantInterface
                 || (!$includeNotActivated && !$newParticipant->hasActivatedContactUser())) {
                 continue;
             }
-            if (!$filtered->contains($newParticipant)) {
+            if (false === $filtered->contains($newParticipant)) {
                 $filtered->add($newParticipant);
             }
         }

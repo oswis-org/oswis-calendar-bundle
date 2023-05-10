@@ -179,6 +179,7 @@ class FlagGroupOfParticipantType extends AbstractType
             'label' => $flagGroupRange->getFlagGroupName() ?? 'Ostatní příznaky',
             'help_html' => true,
             'help' => $help,
+            /** @phpstan-ignore-next-line */
             'required' => !empty($min) || $min > 0,
             'choices' => $choices,
             'expanded' => $expanded,

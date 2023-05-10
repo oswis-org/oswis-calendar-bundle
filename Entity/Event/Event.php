@@ -112,10 +112,10 @@ class Event implements NameableInterface
     protected ?self $superEvent = null;
 
     /**
-     * @var Collection<Event>|null $subEvents
+     * @var Collection<Event> $subEvents
      */
     #[OneToMany(mappedBy: 'superEvent', targetEntity: self::class)]
-    protected ?Collection $subEvents = null;
+    protected Collection $subEvents;
 
     /**
      * @var Collection<EventContent> $contents
@@ -145,14 +145,15 @@ class Event implements NameableInterface
     private ?EventGroup $group = null;
 
     public function __construct(
-        ?Nameable $nameable = null,
-        ?self $superEvent = null,
-        ?Place $place = null,
+        ?Nameable      $nameable = null,
+        ?self          $superEvent = null,
+        ?Place         $place = null,
         ?EventCategory $category = null,
         ?DateTimeRange $dateTimeRange = null,
-        ?EventGroup $group = null,
-        ?Publicity $publicity = null
-    ) {
+        ?EventGroup    $group = null,
+        ?Publicity     $publicity = null
+    )
+    {
         $this->subEvents = new ArrayCollection();
         $this->contents = new ArrayCollection();
         $this->flagConnections = new ArrayCollection();
@@ -182,7 +183,7 @@ class Event implements NameableInterface
         $images = $this->images;
         if (!empty($type)) {
             $images = $images->filter(fn(mixed $eventImage) => $eventImage instanceof EventImage
-                                                               && $eventImage->getType() === $type,);
+                && $eventImage->getType() === $type,);
         }
 
         /** @var Collection<EventImage> $images */
@@ -233,7 +234,7 @@ class Event implements NameableInterface
         $files = $this->files;
         if (!empty($type)) {
             $files = $files->filter(fn(mixed $eventFile) => $eventFile instanceof EventFile
-                                                            && $eventFile->getType() === $type,);
+                && $eventFile->getType() === $type,);
         }
 
         /** @var Collection<EventFile> $files */
@@ -302,11 +303,11 @@ class Event implements NameableInterface
     {
         if (null !== $type) {
             $contents = $this->getContents()->filter(fn(mixed $webContent) => $webContent instanceof EventContent
-                                                                              && $type === $webContent->getType(),);
+                && $type === $webContent->getType(),);
 
             return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents)
-                   ??
-                   new ArrayCollection();
+                ??
+                new ArrayCollection();
         }
 
         return $this->contents;
@@ -354,7 +355,7 @@ class Event implements NameableInterface
         $bankAccount = $this->traitGetBankAccount();
         if (empty($bankAccount->getFull())) {
             $bankAccount = (true === $recursive && null !== $this->getSuperEvent()) ? $this->getSuperEvent()
-                                                                                           ->getBankAccount(true)
+                ->getBankAccount(true)
                 : null;
         }
 
@@ -393,7 +394,7 @@ class Event implements NameableInterface
         $connections = $this->flagConnections ?? new ArrayCollection();
         if ($onlyActive) {
             $connections = $connections->filter(fn(mixed $conn) => $conn instanceof EventFlagConnection
-                                                                   && $conn->isActive(),);
+                && $conn->isActive(),);
         }
 
         return $connections;
@@ -431,7 +432,7 @@ class Event implements NameableInterface
             $name .= " ($rangeString)";
         }
 
-        return ''.$name;
+        return '' . $name;
     }
 
     public function isBatchOrYear(): bool
@@ -475,7 +476,7 @@ class Event implements NameableInterface
     public function isEventSuperEvent(?self $event = null, ?bool $recursive = true): bool
     {
         return (null !== $event)
-               && in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
+            && in_array($event, $recursive ? $this->getSuperEvents() : [$this->getSuperEvent()], true);
     }
 
     public function getSuperEvents(): array
