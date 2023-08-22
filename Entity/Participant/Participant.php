@@ -206,8 +206,7 @@ class Participant implements ParticipantInterface
         $this->participantContacts = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
-        $this->setFlagGroups($flagGroups);
-        $this->flagGroups = new ArrayCollection();
+        $this->flagGroups = (is_array($flagGroups) ? new ArrayCollection($flagGroups) : $flagGroups) ?? new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->eMails = new ArrayCollection();
         $participantContact = new ParticipantContact($contact);
