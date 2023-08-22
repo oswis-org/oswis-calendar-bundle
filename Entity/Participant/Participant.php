@@ -206,7 +206,7 @@ class Participant implements ParticipantInterface
         $this->participantContacts = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
-        $this->setFlagGroups((is_array($flagGroups) ? new ArrayCollection($flagGroups) : $flagGroups) ?? new ArrayCollection());
+        $this->setFlagGroups($this->flagGroups);
         $this->flagGroups = new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->eMails = new ArrayCollection();
@@ -539,15 +539,20 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param Collection|null $newFlagGroups
+     * @param Collection|array|null $newFlagGroups
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
-     * @throws OswisException
+     * @throws NotImplementedException
      */
-    public function setFlagGroups(?Collection $newFlagGroups): void
+    public function setFlagGroups(Collection|array|null $newFlagGroups): void
     {
-        $this->changeFlagsByNewOffer($this->getOffer(), false, false, $newFlagGroups ?? new ArrayCollection(),);
+        $this->changeFlagsByNewOffer(
+            $this->getOffer(),
+            false,
+            false,
+            (is_array($newFlagGroups) ? new ArrayCollection($newFlagGroups) : $newFlagGroups) ?? new ArrayCollection(),
+        );
     }
 
     /**
