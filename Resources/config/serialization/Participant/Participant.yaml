@@ -131,6 +131,10 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+    requiredRegRange:
+      groups:
+        - 'calendar_participants_get'
+        - 'calendar_participant_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
   attributes:
