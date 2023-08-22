@@ -34,11 +34,12 @@ class EventController extends AbstractController
     public const RANGE_DAY = 'day';
 
     public function __construct(
-        protected EventService $eventService,
-        protected ParticipantService $participantService,
+        protected EventService           $eventService,
+        protected ParticipantService     $participantService,
         protected RegistrationOfferService $regRangeService,
         protected EntityManagerInterface $em,
-    ) {
+    )
+    {
     }
 
     /**
@@ -59,8 +60,8 @@ class EventController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_events');
         }
         if (!(($event = $this->eventService->getRepository()->getEvent($this->getWebPublicEventOpts($eventSlug)))
-              instanceof
-              Event)) {
+            instanceof
+            Event)) {
             throw new NotFoundException('Událost nenalezena.');
         }
 
@@ -91,7 +92,8 @@ class EventController extends AbstractController
         ?string $eventSlug = null,
         ?string $eventGroupString = null,
         ?string $eventTypeString = null,
-    ): Response {
+    ): Response
+    {
         $eventRepo = $this->eventService->getRepository();
         $event = $eventRepo->getEvent($this->getWebPublicEventOpts($eventSlug));
 
@@ -105,7 +107,8 @@ class EventController extends AbstractController
         ?Event $event = null,
         ?string $eventGroupString = null,
         ?string $eventTypeString = null,
-    ): Collection {
+    ): Collection
+    {
         $eventTypeString ??= $event?->getType();
         $series = $event?->getGroup() ?? $this->em->getRepository(EventGroup::class)->findOneBy([
             'slug' => $eventGroupString,
@@ -114,12 +117,12 @@ class EventController extends AbstractController
             return new ArrayCollection();
         }
 
-        return $series->getEvents(''.$eventTypeString, $event && $event->isBatch() ? $event->getStartYear() : null);
+        return $series->getEvents('' . $eventTypeString, $event && $event->isBatch() ? $event->getStartYear() : null);
     }
 
     /**
      * @param \Twig\Environment $twig
-     * @param string|null       $eventSlug
+     * @param string|null $eventSlug
      *
      * @return Response
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
@@ -148,7 +151,7 @@ class EventController extends AbstractController
             'event' => $event,
             'organizer' => $this->participantService->getOrganizer($event),
         ];
-        $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
+        $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/' . $event->getSlug() . '.html.twig';
         if ($twig->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
@@ -195,9 +198,10 @@ class EventController extends AbstractController
         ?string $range = null,
         ?DateTime $start = null,
         ?DateTime $end = null,
-        ?int $limit = null,
-        ?int $offset = null
-    ): Response {
+        ?int    $limit = null,
+        ?int    $offset = null
+    ): Response
+    {
         $context = [
             'events' => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
             'range' => $range,

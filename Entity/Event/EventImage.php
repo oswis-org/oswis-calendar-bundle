@@ -59,19 +59,20 @@ class EventImage extends AbstractImage
     protected ?Event $event = null;
 
     /**
-     * @param File|null      $file
-     * @param string|null    $type
-     * @param int|null       $priority
+     * @param File|null $file
+     * @param string|null $type
+     * @param int|null $priority
      * @param Publicity|null $publicity
      *
      * @throws InvalidTypeException
      */
     public function __construct(
-        ?File $file = null,
-        ?string $type = null,
-        ?int $priority = null,
+        ?File      $file = null,
+        ?string    $type = null,
+        ?int       $priority = null,
         ?Publicity $publicity = null
-    ) {
+    )
+    {
         $this->setFile($file);
         $this->setType($type);
         $this->setPriority($priority);

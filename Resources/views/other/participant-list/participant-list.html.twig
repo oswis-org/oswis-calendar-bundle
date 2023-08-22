@@ -18,7 +18,9 @@
                     <tbody>
                     <tr>
                         <td>Kategorie účastníka:</td>
-                        <td><strong>{{ participantCategory.name|default(participantCategory.slug|default('bez názvu')) }}</strong></td>
+                        <td>
+                            <strong>{{ participantCategory.name|default(participantCategory.slug|default('bez názvu')) }}</strong>
+                        </td>
                     </tr>
                     </tbody>
                 {% endif %}

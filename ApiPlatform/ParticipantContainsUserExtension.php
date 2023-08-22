@@ -13,15 +13,17 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
 {
     public function __construct(
         private readonly Security $security,
-    ) {
+    )
+    {
     }
 
     final public function applyToCollection(
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        string $operationName = null
-    ): void {
+        string       $resourceClass,
+        string       $operationName = null
+    ): void
+    {
         $this->addWhere($queryBuilder, $resourceClass);
     }
 
@@ -41,11 +43,12 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
     final public function applyToItem(
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        array $identifiers,
-        string $operationName = null,
-        array $context = []
-    ): void {
+        string       $resourceClass,
+        array        $identifiers,
+        string       $operationName = null,
+        array        $context = []
+    ): void
+    {
         $this->addWhere($queryBuilder, $resourceClass);
     }
 }

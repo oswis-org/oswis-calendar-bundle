@@ -83,12 +83,13 @@ class RegistrationFlagOffer implements NameableInterface
 
     public function __construct(
         ?RegistrationFlag $flag = null,
-        ?Capacity $eventCapacity = null,
-        ?Price $eventPrice = null,
+        ?Capacity        $eventCapacity = null,
+        ?Price           $eventPrice = null,
         ?FlagAmountRange $flagAmountRange = null,
-        ?Publicity $publicity = null,
-        ?FormValue $formValue = null
-    ) {
+        ?Publicity       $publicity = null,
+        ?FormValue       $formValue = null
+    )
+    {
         $this->setFlag($flag);
         $this->setCapacity($eventCapacity);
         $this->setEventPrice($eventPrice);
@@ -142,7 +143,7 @@ class RegistrationFlagOffer implements NameableInterface
         $flagName = $this->getName();
         if ($addPrice) {
             $price = $this->getPrice();
-            $flagName .= 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
+            $flagName .= 0 !== $price ? ' [' . ($price > 0 ? '+' : '') . $price . ',- Kč]' : '';
         }
         if ($addCapacityOverflow && !$this->hasRemainingCapacity()) {
             $flagName .= ' (kapacita vyčerpána)';
@@ -210,13 +211,13 @@ class RegistrationFlagOffer implements NameableInterface
     public function getTShirtGroup(): string
     {
         $flagName = $this->getName();
-        if (str_contains(''.$flagName, 'Pán')) {
+        if (str_contains('' . $flagName, 'Pán')) {
             return '♂ Pánské tričko';
         }
-        if (str_contains(''.$flagName, 'Dám')) {
+        if (str_contains('' . $flagName, 'Dám')) {
             return '♀ Dámské tričko';
         }
-        if (str_contains(''.$flagName, 'Uni')) {
+        if (str_contains('' . $flagName, 'Uni')) {
             return '⚲ Unisex tričko';
         }
 

@@ -1,100 +1,104 @@
 oswis_org_oswis_calendar_participant_resend_activation_email:
-    controller: oswis_org_oswis_calendar.participant.participant_controller::resendActivationEmail
-    path: "/akce/prihlaska/email-overeni/{participantId}"
-    requirements:
-        participantId: '\d+'
+  controller: oswis_org_oswis_calendar.participant.participant_controller::resendActivationEmail
+  path: "/akce/prihlaska/email-overeni/{participantId}"
+  requirements:
+    participantId: '\d+'
 
 oswis_org_oswis_calendar_participant_process_token:
-    controller: oswis_org_oswis_calendar.participant.participant_controller::processToken
-    path: "/akce/prihlaska/token/{token}/{participantId}"
-    requirements:
-        participantId: '\d+'
+  controller: oswis_org_oswis_calendar.participant.participant_controller::processToken
+  path: "/akce/prihlaska/token/{token}/{participantId}"
+  requirements:
+    participantId: '\d+'
 
 oswis_org_oswis_calendar_participant_activation_request:
-    controller: oswis_org_oswis_calendar.participant.participant_controller::activationRequest
-    path: "/akce/prihlaska/overeni"
+  controller: oswis_org_oswis_calendar.participant.participant_controller::activationRequest
+  path: "/akce/prihlaska/overeni"
 
 oswis_org_oswis_calendar_web_registration:
-    controller: oswis_org_oswis_calendar.participant.participant_controller::registration
-    path: "/akce/prihlaska/{rangeSlug?}"
+  controller: oswis_org_oswis_calendar.participant.participant_controller::registration
+  path: "/akce/prihlaska/{rangeSlug?}"
 
 oswis_org_oswis_calendar_web_registration_ranges:
-    controller: oswis_org_oswis_calendar.participant.participant_controller::showRanges
-    path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
+  controller: oswis_org_oswis_calendar.participant.participant_controller::showRanges
+  path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
 
 oswis_org_oswis_calendar_web_event_leaflet:
-    controller: oswis_org_oswis_calendar.event.event_controller::showEventLeaflet
-    path: "/akce/letak/{eventSlug?}"
+  controller: oswis_org_oswis_calendar.event.event_controller::showEventLeaflet
+  path: "/akce/letak/{eventSlug?}"
 
 oswis_org_oswis_calendar_web_events_kalendar: ## ??????????????????????????????????????
-    controller: oswis_org_oswis_calendar.event.event_controller::showEvents
-    path: "/akce/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
-    defaults:
-        range: null
-        start: null
-        end: null
-        limit: null
-        offset: null
+  controller: oswis_org_oswis_calendar.event.event_controller::showEvents
+  path: "/akce/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
+  defaults:
+    range: null
+    start: null
+    end: null
+    limit: null
+    offset: null
 
 oswis_org_oswis_calendar_web_events_calendar:
-    controller: oswis_org_oswis_calendar.event.event_controller::showEvents
-    path: "/akce/kalendar/{range?}/{rangeValue?}"
-    defaults:
-        range: null
-        rangeValue: null
+  controller: oswis_org_oswis_calendar.event.event_controller::showEvents
+  path: "/akce/kalendar/{range?}/{rangeValue?}"
+  defaults:
+    range: null
+    rangeValue: null
 
 oswis_org_oswis_calendar_web_events:
-    controller: oswis_org_oswis_calendar.event.event_controller::showFutureEvents
-    path: "/akce/vsechny/{page?}"
-    defaults:
-        page: null
+  controller: oswis_org_oswis_calendar.event.event_controller::showFutureEvents
+  path: "/akce/vsechny/{page?}"
+  defaults:
+    page: null
 
 oswis_org_oswis_calendar_web_events_future:
-    controller: oswis_org_oswis_calendar.event.event_controller::showFutureEvents
-    path: "/akce/budouci/{page?}"
-    defaults:
-        page: null
+  controller: oswis_org_oswis_calendar.event.event_controller::showFutureEvents
+  path: "/akce/budouci/{page?}"
+  defaults:
+    page: null
 
 oswis_org_oswis_calendar_web_events_past:
-    controller: oswis_org_oswis_calendar.event.event_controller::showPastEvents
-    path: "/akce/minule/{page?}"
-    defaults:
-        page: null
+  controller: oswis_org_oswis_calendar.event.event_controller::showPastEvents
+  path: "/akce/minule/{page?}"
+  defaults:
+    page: null
 
 oswis_org_oswis_calendar_web_event:
-    controller: oswis_org_oswis_calendar.event.event_controller::showEvent
-    path: "/akce/{eventSlug?}"
+  controller: oswis_org_oswis_calendar.event.event_controller::showEvent
+  path: "/akce/{eventSlug?}"
 
 oswis_org_oswis_calendar_update_participants:
-    controller: oswis_org_oswis_calendar.participant.participant_controller::updateParticipants
-    path: "/akce/prihlasky/aktualizace/{limit?}/{offset?}"
+  controller: oswis_org_oswis_calendar.participant.participant_controller::updateParticipants
+  path: "/akce/prihlasky/aktualizace/{limit?}/{offset?}"
 
 oswis_org_oswis_calendar_web_admin_participants_list:
-    controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipants
-    path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipants
+  path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
 
 oswis_org_oswis_calendar_web_admin_participants_list_csv:
-    controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsCsv
-    path: "/web_admin/seznam-prihlasek-csv/{eventSlug?}/{participantCategorySlug?}"
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsCsv
+  path: "/web_admin/seznam-prihlasek-csv/{eventSlug?}/{participantCategorySlug?}"
 
 oswis_org_oswis_calendar_web_admin_event:
-    controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showEvent
-    path: "/web_admin/udalost/{eventSlug?}"
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showEvent
+  path: "/web_admin/udalost/{eventSlug?}"
+
+oswis_org_oswis_calendar_web_admin_compare_years:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showYearsCompare
+  path: "/web_admin/srovnani-rocniku/{eventSeriesSlug?}"
 
 oswis_org_oswis_calendar_web_admin_participant_payments_list:
-    controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showPayments
-    path: "/web_admin/prihlasky/prehled-plateb"
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showPayments
+  path: "/web_admin/prihlasky/prehled-plateb"
 
 oswis_org_oswis_calendar_web_admin_participant_payments_import:
-    controller: oswis_org_oswis_calendar.web_admin.participant_payments_import_controller::import
-    path: "/web_admin/prihlasky/import-plateb"
+  controller: oswis_org_oswis_calendar.web_admin.participant_payments_import_controller::import
+  path: "/web_admin/prihlasky/import-plateb"
 
 oswis_org_oswis_calendar_web_admin_participant_send_automails:
-    controller: oswis_org_oswis_calendar.web_admin.participants_controller::sendAutoMails
-    path: "/web_admin/prihlasky/send-automails/{limit?}/{type?}"
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::sendAutoMails
+  path: "/web_admin/prihlasky/send-automails/{limit?}/{type?}"
 
 oswis_org_oswis_calendar_web_admin_participant_arrival:
-    controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
-    path: "/web_admin/prijezd/{participantId}/{arrival?}"
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
+  path: "/web_admin/prijezd/{participantId}/{arrival?}"
 
 

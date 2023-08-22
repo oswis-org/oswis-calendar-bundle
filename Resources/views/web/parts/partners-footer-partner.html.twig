@@ -1,8 +1,10 @@
 {% if partner.contact.oneImage|default %}
     <div class="swiper-slide py-1 px-1">
         {% if partner.contact.url %}
-            <a href="{{ partner.contact.url }}" target="_blank" title="{{ partner.name }}" data-bs-toggle="tooltip" data-bs-placement="top">
-                <div data-background="{{ asset('/images/contacts/'~partner.contact.oneImage) }}" class="swiper-lazy" title="{{ partner.name }}">
+            <a href="{{ partner.contact.url }}" target="_blank" title="{{ partner.name }}" data-bs-toggle="tooltip"
+               data-bs-placement="top">
+                <div data-background="{{ asset('/images/contacts/'~partner.contact.oneImage) }}" class="swiper-lazy"
+                     title="{{ partner.name }}">
                     <div class="swiper-lazy-preloader"></div>
                 </div>
             </a>

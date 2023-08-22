@@ -2,12 +2,14 @@
     <div class="card-deck">
         <div class="card mt-2 mb-4">
             {% if range.rangeActive|default %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}" itemprop="url">
+                <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}"
+                   itemprop="url">
                     {% block range_preview_title %}
                         <div class="card-header p-2">
                             <h5 class="card-title mb-0 fw-bold font-1em">
                                 <span class="d-inline d-xl-none">{{ range.shortName|default('Přihláška na '~range.event.shortName|default) }}</span>
-                                <span class="d-none d-xl-inline" itemprop="name">{{ range.name|default('Přihláška na akci '~range.event.name|default) }}</span>
+                                <span class="d-none d-xl-inline"
+                                      itemprop="name">{{ range.name|default('Přihláška na akci '~range.event.name|default) }}</span>
                                 <span class="float-end align-middle text-muted"><i class="fas fa-ticket-alt"></i></span>
                             </h5>
                         </div>
@@ -28,7 +30,8 @@
                 {% endif %}
                 <h6 class="card-subtitle mb-2 text-muted">
                     <strong>Akce:</strong>
-                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug|default}) }}" itemprop="itemOffered"
+                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug|default}) }}"
+                       itemprop="itemOffered"
                        title="{{ range.event|default }}" content="{{ range.event|default }}" data-bs-toggle="tooltip">
                         {{ range.event.shortName|default }}
                     </a>
@@ -41,7 +44,8 @@
                     <h6 class="card-subtitle mb-2 text-muted"><strong>Termín akce:</strong> {{ event_range_text }}</h6>
                 {% endif %}
                 {% if range.participantCategory|default and not range.participantCategory.defaultType %}
-                    <h6 class="card-subtitle mb-2 text-muted"><strong>Typ přihlášky:</strong> {{ range.participantCategory.name|default }}</h6>
+                    <h6 class="card-subtitle mb-2 text-muted"><strong>Typ
+                            přihlášky:</strong> {{ range.participantCategory.name|default }}</h6>
                 {% endif %}
                 {% if range.description %}
                     <div class="mt-2 mb-2 small text-justify" itemprop="description">{{ range.description }}</div>
@@ -99,8 +103,10 @@
                         <tr>
                             <td></td>
                             <td><strong>Cena celkem:</strong></td>
-                            <td><span itemprop="price">{{ range.price(range.participantCategory)|default(0) }}</span><span itemprop="priceCurrency"
-                                                                                                                           content="CZK">,-&nbsp;Kč</span>
+                            <td>
+                                <span itemprop="price">{{ range.price(range.participantCategory)|default(0) }}</span><span
+                                        itemprop="priceCurrency"
+                                        content="CZK">,-&nbsp;Kč</span>
                             </td>
                         </tr>
                     </table>

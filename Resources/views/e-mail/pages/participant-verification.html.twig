@@ -43,7 +43,8 @@
             <p>
                 <b>Ještě je nutné přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
                 že zadaná adresa patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
-                <a href="{{ tokenUrl }}" class="token-box" title="Odkaz pro aktivaci účtu" target="_blank">{{ tokenUrl }}</a>
+                <a href="{{ tokenUrl }}" class="token-box" title="Odkaz pro aktivaci účtu"
+                   target="_blank">{{ tokenUrl }}</a>
                 {% if participantToken.validHours|default %}
                     <br><small>Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.</small>
                 {% endif %}
@@ -67,15 +68,18 @@
         </div>
 
         <p>
-            Potvrzením registrace také souhlasí{{ f ? 'te' : 'š' }} se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této
+            Potvrzením registrace také souhlasí{{ f ? 'te' : 'š' }} se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních
+            údajů nutných pro zorganizování této
             akce.
             {% if participant.event.organizer.contact.name|default %}
                 Tyto údaje budou zpracovány subjektem {{ participant.event.organizer.contact.name }}
                 a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
-                <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank">našich webových stránkách</a>.
+                <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank">našich webových
+                    stránkách</a>.
             {% else %}
-                Informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na<a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}"
-                                                                               target="_blank"> webových
+                Informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na<a
+                    href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}"
+                    target="_blank"> webových
                 stránkách</a>.
             {% endif %}
         </p>
@@ -84,7 +88,8 @@
 
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             <meta itemprop="name" content="{{ participant.event.name }}"/>
-            <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
+            <link itemprop="url"
+                  href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
             <meta itemprop="startDate" content="{{ participant.event.startDate|date("c") }}"/>
             <meta itemprop="endDate" content="{{ participant.event.endDate|date("c") }}"/>
             {% if participant.event.place(true)|default %}
@@ -110,7 +115,8 @@
                         {% endif %}
                         {% if participant.event.place(true).url|default %}
                             <!--suppress HtmlUnknownAttribute -->
-                            <meta itemprop="url" href="{{ participant.event.place(true).url }}" content="{{ participant.event.place(true).url }}"/>
+                            <meta itemprop="url" href="{{ participant.event.place(true).url }}"
+                                  content="{{ participant.event.place(true).url }}"/>
                         {% endif %}
                         <meta itemprop=Country" content="CZ"/>
                     </div>

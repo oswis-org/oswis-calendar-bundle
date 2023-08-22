@@ -9,7 +9,8 @@
             <div class="row no-gutters">
                 <div class="col-md-3">
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug}) }}">
-                        <img class="card-img" alt="{{ event.name }}" itemprop="image" content="{{ eventImage }}" src="{{ eventImage }}">
+                        <img class="card-img" alt="{{ event.name }}" itemprop="image" content="{{ eventImage }}"
+                             src="{{ eventImage }}">
                     </a>
                 </div>
                 <div class="col-md-9">
@@ -27,7 +28,8 @@
                             {% endif %}
                         </p>
                         {% if event.description %}
-                            <div class="card-text small mb-3" itemprop="description">{{ event.description|default }}</div>
+                            <div class="card-text small mb-3"
+                                 itemprop="description">{{ event.description|default }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -36,8 +38,10 @@
                 <div class="row no-gutters">
                     <div class="col-12 col-md-4 text-md-start">
                         <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-2">{{ range_text }}</small>
-                        <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
-                        <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+                        <span itemprop="startDate"
+                              content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+                        <span itemprop="endDate"
+                              content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
                     </div>
                     <div class="col-12 col-md-4 text-md-center">
                         {% if event.place(true)|default %}
@@ -80,7 +84,8 @@
                             </div>
                         {% endif %}
                     </div>
-                    <div class="col-12 col-md-4 text-md-end" itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                    <div class="col-12 col-md-4 text-md-end" itemprop="organizer" itemscope
+                         itemtype="http://schema.org/Organization">
                         <i class="fas fa-users-cog text-muted"></i>&nbsp;<small class="p-2"
                                                                                 itemprop="name">{{ event.organizer(true).contact.name|default }}</small>
                         <meta itemprop="url" content="{{ event.organizer(true).contact.url|default }}"/>

@@ -17,17 +17,18 @@ class ParticipantTokenService
 {
     public function __construct(
         protected EntityManagerInterface $em,
-        protected LoggerInterface $logger,
+        protected LoggerInterface        $logger,
         protected ParticipantTokenRepository $participantTokenRepository,
-    ) {
+    )
+    {
     }
 
     /**
      * @param Participant $participant
-     * @param AppUser     $appUser
+     * @param AppUser $appUser
      * @param string|null $type
-     * @param bool|null   $multipleUseAllowed
-     * @param int|null    $validHours
+     * @param bool|null $multipleUseAllowed
+     * @param int|null $validHours
      *
      * @return ParticipantToken
      * @throws InvalidTypeException
@@ -36,9 +37,10 @@ class ParticipantTokenService
         Participant $participant,
         AppUser $appUser,
         ?string $type = null,
-        ?bool $multipleUseAllowed = null,
-        ?int $validHours = null
-    ): ParticipantToken {
+        ?bool   $multipleUseAllowed = null,
+        ?int    $validHours = null
+    ): ParticipantToken
+    {
         try {
             // TODO: Complete refactoring needed. Or not???
             $participantToken = new ParticipantToken(

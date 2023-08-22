@@ -20,7 +20,8 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
 {
     public function __construct(
         public ParticipantPaymentsImportService $paymentsImportService,
-    ) {
+    )
+    {
     }
 
     public function getPaymentsImportService(): ParticipantPaymentsImportService
@@ -53,7 +54,7 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
             }
             $form->addError(
                 new FormError(
-                    'Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage()
+                    'Nastala chyba. Zkuste to znovu nebo nás kontaktujte. ' . $exception->getMessage()
                 )
             );
 

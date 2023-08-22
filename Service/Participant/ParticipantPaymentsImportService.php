@@ -19,16 +19,18 @@ class ParticipantPaymentsImportService
 {
     public function __construct(
         protected EntityManagerInterface $em,
-        protected LoggerInterface $logger,
-        protected ParticipantService $participantService,
+        protected LoggerInterface        $logger,
+        protected ParticipantService     $participantService,
         protected ParticipantPaymentService $paymentService,
-    ) {
+    )
+    {
     }
 
     public function processImport(
         ParticipantPaymentsImport $paymentsImport,
         ?CsvPaymentImportSettings $importSettings = null
-    ): void {
+    ): void
+    {
         $importedPayments = new ArrayCollection();
         $this->em->persist($paymentsImport);
         $this->em->flush();
@@ -48,8 +50,8 @@ class ParticipantPaymentsImportService
             $this->paymentService->sendPaymentsReport($importedPayments);
             $this->logger->info("OK: Payments report sent! ");
         } catch (OswisException $e) {
-            $this->logger->error("ERROR: Payments report not sent! ".$e->getMessage());
-            $this->logger->error("ERROR: Payments report not sent! ".$e->getTraceAsString());
+            $this->logger->error("ERROR: Payments report not sent! " . $e->getMessage());
+            $this->logger->error("ERROR: Payments report not sent! " . $e->getTraceAsString());
         }
     }
 
@@ -87,7 +89,7 @@ class ParticipantPaymentsImportService
 
             return null;
         }
-        $participantString = $participant->getId().' '.$participant->getName();
+        $participantString = $participant->getId() . ' ' . $participant->getName();
         $this->logger->info("Found participant '$participantString' for payment with VS '$vs' and value '$value'.");
 
         return $participant;

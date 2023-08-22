@@ -1,159 +1,159 @@
 OswisOrg\OswisCalendarBundle\Entity\Event\Event:
-    attributes:
-        id:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        createdDateTime:
-            groups: [ 'calendar_event_get' ]
-        updatedDateTime:
-            groups: [ 'calendar_event_get' ]
-        createdAppUser:
-            groups: [ 'calendar_event_get' ]
-        updatedAppUser:
-            groups: [ 'calendar_event_get' ]
-        name:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        shortName:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        description:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        note:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        internalNote:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        slug:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        forcedSlug:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        startDateTime:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        endDateTime:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        startDateTimeRecursive:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        endDateTimeRecursive:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        type:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        category:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        series:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        location:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        superEvent:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        activeEventParticipantsAggregatedBySchool:
-            groups:
-                - 'calendar_event_get'
-        activeEventParticipantsAggregatedByFlags:
-            groups:
-                - 'calendar_event_get'
+  attributes:
+    id:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    createdDateTime:
+      groups: [ 'calendar_event_get' ]
+    updatedDateTime:
+      groups: [ 'calendar_event_get' ]
+    createdAppUser:
+      groups: [ 'calendar_event_get' ]
+    updatedAppUser:
+      groups: [ 'calendar_event_get' ]
+    name:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    shortName:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    description:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    note:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    internalNote:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    slug:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    forcedSlug:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    startDateTime:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    endDateTime:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    startDateTimeRecursive:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    endDateTimeRecursive:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    type:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    category:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    series:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    location:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    superEvent:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    activeEventParticipantsAggregatedBySchool:
+      groups:
+        - 'calendar_event_get'
+    activeEventParticipantsAggregatedByFlags:
+      groups:
+        - 'calendar_event_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
-    attributes:
-        id:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        name:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        shortName:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        slug:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        color:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
+  attributes:
+    id:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    name:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    shortName:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    slug:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    color:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
 
 OswisOrg\OswisAddressBookBundle\Entity\Place:
-    attributes:
-        id:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_events_post'
-                - 'calendar_event_get'
-                - 'calendar_event_put'
-        name:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        shortName:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
-        slug:
-            groups:
-                - 'calendar_events_get'
-                - 'calendar_event_get'
+  attributes:
+    id:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    name:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    shortName:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    slug:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
 

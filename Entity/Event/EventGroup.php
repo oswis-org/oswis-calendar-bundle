@@ -86,7 +86,7 @@ class EventGroup implements NameableInterface
         }
         if (null !== $year) {
             $events = $events->filter(fn(mixed $event) => $event instanceof Event && $event->getStartYear()
-                                                          && $year === $event->getStartYear(),);
+                && $year === $event->getStartYear(),);
         }
 
         return $events;

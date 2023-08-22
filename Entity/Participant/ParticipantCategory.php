@@ -92,8 +92,8 @@ class ParticipantCategory implements NameableInterface
      * EmployerFlag constructor.
      *
      * @param Nameable|null $nameable
-     * @param string|null   $type
-     * @param bool|null     $formal
+     * @param string|null $type
+     * @param bool|null $formal
      *
      * @throws InvalidArgumentException
      */

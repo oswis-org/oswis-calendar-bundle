@@ -61,7 +61,8 @@ class ParticipantRepository extends ServiceEntityRepository
         ?bool $includeNotActivated = true,
         ?int $limit = null,
         ?int $offset = null,
-    ): Collection {
+    ): Collection
+    {
         $queryBuilder = $this->getParticipantsQueryBuilder($opts, $limit, $offset);
         $result = $queryBuilder->getQuery()->getResult();
 

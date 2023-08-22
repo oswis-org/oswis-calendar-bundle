@@ -69,13 +69,14 @@ class ParticipantMailGroup extends AbstractMailGroup
     protected bool $onlyActive = true;
 
     public function __construct(
-        ?Nameable $nameable = null,
-        ?int $priority = null,
-        ?DateTimeRange $range = null,
-        ?TwigTemplate $twigTemplate = null,
-        bool $automaticMailing = false,
+        ?Nameable               $nameable = null,
+        ?int                    $priority = null,
+        ?DateTimeRange          $range = null,
+        ?TwigTemplate           $twigTemplate = null,
+        bool                    $automaticMailing = false,
         ParticipantMailCategory $participantMailCategory = null
-    ) {
+    )
+    {
         parent::__construct($nameable, $priority, $range, $twigTemplate, $automaticMailing);
         $this->setCategory($participantMailCategory);
     }

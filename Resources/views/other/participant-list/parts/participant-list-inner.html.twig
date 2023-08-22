@@ -84,9 +84,11 @@
                              {{ flagGroup.deletedAt ? 'SMAZÁNA: '~flagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
                             {% if participantFlag.flagOffer.price|default(0) != 0 %}
-                                <div class="badge bg-danger" style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
+                                <div class="badge bg-danger"
+                                     style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
                                     <strong>
-                                        {{ participantFlag.flagOffer.price > 0 ? '+' : '' }}{{ participantFlag.flagOffer.price }},- Kč
+                                        {{ participantFlag.flagOffer.price > 0 ? '+' : '' }}{{ participantFlag.flagOffer.price }}
+                                        ,- Kč
                                     </strong>
                                 </div>
                             {% endif %}
@@ -124,7 +126,8 @@
             {% set paidColor = participant.remainingDeposit > 0 ? 'warning' : paidColor %}
             {% set paidColor = participant.remainingPrice < 0 ? 'secondary' : paidColor %}
             <div class="progress">
-                <div class="progress-bar progress-bar-striped bg-{{ paidColor }}" role="progressbar" style="width: {{ paidPercentage }}%"
+                <div class="progress-bar progress-bar-striped bg-{{ paidColor }}" role="progressbar"
+                     style="width: {{ paidPercentage }}%"
                      aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">
                     {{ paidPercentage }} %
                 </div>

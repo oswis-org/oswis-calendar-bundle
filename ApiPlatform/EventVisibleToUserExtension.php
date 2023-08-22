@@ -17,15 +17,17 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
     public function __construct(
         private readonly Security $security,
         private readonly ParticipantService $participantService,
-    ) {
+    )
+    {
     }
 
     final public function applyToCollection(
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        string $operationName = null
-    ): void {
+        string       $resourceClass,
+        string       $operationName = null
+    ): void
+    {
         $this->addWhere($queryBuilder, $resourceClass);
     }
 
@@ -51,11 +53,12 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
     final public function applyToItem(
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        array $identifiers,
-        string $operationName = null,
-        array $context = []
-    ): void {
+        string       $resourceClass,
+        array        $identifiers,
+        string       $operationName = null,
+        array        $context = []
+    ): void
+    {
         $this->addWhere($queryBuilder, $resourceClass);
     }
 }

@@ -19,7 +19,8 @@ final class ParticipantPaymentsImportSubscriber implements EventSubscriberInterf
 {
     public function __construct(
         private readonly ParticipantPaymentsImportService $paymentsImportService,
-    ) {
+    )
+    {
     }
 
     public static function getSubscribedEvents(): array

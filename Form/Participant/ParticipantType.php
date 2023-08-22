@@ -25,7 +25,7 @@ class ParticipantType extends AbstractType
 
     /**
      * @param FormBuilderInterface $builder
-     * @param array                $options
+     * @param array $options
      *
      * @throws \OswisOrg\OswisCoreBundle\Exceptions\PriceInvalidArgumentException
      */

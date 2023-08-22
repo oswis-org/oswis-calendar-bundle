@@ -81,9 +81,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagCategory $flagCategory = null;
 
-    /**
-     * @var Collection<RegistrationFlagOffer>
-     */
+    /** @var Collection<RegistrationFlagOffer> */
     #[ManyToMany(targetEntity: RegistrationFlagOffer::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'calendar_flag_group_range_flag_connection')]
     #[JoinColumn(name: "flag_group_range_id", referencedColumnName: "id")]
@@ -93,9 +91,10 @@ class RegistrationFlagGroupOffer implements NameableInterface
     public function __construct(
         ?RegistrationFlagCategory $category = null,
         ?FlagAmountRange $flagAmountRange = null,
-        ?Publicity $publicity = null,
-        ?string $emptyPlaceholder = null
-    ) {
+        ?Publicity       $publicity = null,
+        ?string          $emptyPlaceholder = null
+    )
+    {
         $this->flagOffers = new ArrayCollection();
         $this->setFlagCategory($category);
         $this->setFlagAmountRange($flagAmountRange);
@@ -121,7 +120,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     }
 
     /**
-     * @param bool                  $onlyPublic
+     * @param bool $onlyPublic
      * @param RegistrationFlag|null $flag
      *
      * @return Collection<RegistrationFlagOffer>
@@ -131,11 +130,11 @@ class RegistrationFlagGroupOffer implements NameableInterface
         $flagRanges = $this->flagOffers;
         if (true === $onlyPublic) {
             $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
-                                                                      && $flagRange->isPublicOnWeb(),);
+                && $flagRange->isPublicOnWeb(),);
         }
         if (null !== $flag) {
             $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
-                                                                      && $flagRange->getFlag() === $flag,);
+                && $flagRange->getFlag() === $flag,);
         }
 
         /** @var Collection<RegistrationFlagOffer> $flagRanges */
@@ -188,16 +187,16 @@ class RegistrationFlagGroupOffer implements NameableInterface
     {
         return $this->getFlagOffers($onlyPublic, $flag)->filter(
                 fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
-                                        && $flagRange->isFormValueAllowed(),
+                    && $flagRange->isFormValueAllowed(),
             )->count() > 0;
     }
 
     public function hasFlagValueAllowed(): bool
     {
         return $this->getFlagOffers()
-                    ->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
-                                                            && $flagRange->isFormValueAllowed(),)
-                    ->count() > 0;
+                ->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                    && $flagRange->isFormValueAllowed(),)
+                ->count() > 0;
     }
 
     public function getFlagsGroupNames(): array

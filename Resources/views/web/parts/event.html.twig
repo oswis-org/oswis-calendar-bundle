@@ -52,7 +52,8 @@
                         event.superEvent.endDateTime|default
                     ) %}
                     {{ range_text ? '('~range_text~')' : null }}
-                    <meta itemprop="startDate" content="{{ event.superEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+                    <meta itemprop="startDate"
+                          content="{{ event.superEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
                     <meta itemprop="endDate" content="{{ event.superEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
                     <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
                         <meta itemprop="name" content="{{ event.superEvent.organizer(true).contact.name|default }}"/>

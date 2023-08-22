@@ -89,8 +89,8 @@ class EventCategory implements NameableInterface
 
     /**
      * @param Nameable|null $nameable
-     * @param string|null   $type
-     * @param string|null   $color
+     * @param string|null $type
+     * @param string|null $color
      *
      * @throws InvalidArgumentException
      */

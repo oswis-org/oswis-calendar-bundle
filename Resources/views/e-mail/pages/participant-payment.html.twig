@@ -22,10 +22,12 @@
     {% block message_payment_outer %}
         {% if (not participant.deleted) and payment.participant.remainingPrice > 0 %}
             <p>
-                Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ payment.participant.remainingPrice }},-&nbsp;Kč</b>, a&nbsp;to
+                Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ payment.participant.remainingPrice }},-&nbsp;Kč</b>,
+                a&nbsp;to
                 {% if payment.participant.event.bankAccountComplete|default %}
                     na&nbsp;účet <b>{{ payment.participant.event.bankAccountComplete|default('') }}</b>
-                    s&nbsp;variabilním symbolem <b>{{ payment.participant.variableSymbol|default(payment.participant.id|default) }}</b>.
+                    s&nbsp;variabilním symbolem
+                    <b>{{ payment.participant.variableSymbol|default(payment.participant.id|default) }}</b>.
                 {% else %}
                     dle údajů uvedených na webových stránkách.
                 {% endif %}
@@ -51,7 +53,8 @@
             {% if payment.participant.remainingDeposit > 0 and payment.participant.remainingRest > 0 %}
                 <p>
                     Celou částku můžeš zaplatit i&nbsp;v&nbsp;jedné společné platbě, potom jde o&nbsp;částku
-                    <span itemprop="totalPrice">{{ payment.participant.remainingPrice }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
+                    <span itemprop="totalPrice">{{ payment.participant.remainingPrice }}</span>,-&nbsp;<span
+                            itemprop="priceCurrency" content="CZK">Kč</span>.
                 </p>
             {% endif %}
         {% elseif not participant.deleted %}

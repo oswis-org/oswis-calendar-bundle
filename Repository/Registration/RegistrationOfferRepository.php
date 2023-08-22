@@ -44,7 +44,8 @@ class RegistrationOfferRepository extends EntityRepository
         array $opts = [],
         ?int $limit = null,
         ?int $offset = null
-    ): QueryBuilder {
+    ): QueryBuilder
+    {
         $queryBuilder = $this->createQueryBuilder('range');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
@@ -137,8 +138,8 @@ class RegistrationOfferRepository extends EntityRepository
     {
         try {
             $registrationsRange = $this->getRegistrationsRangesQueryBuilder($opts ?? [])
-                                       ->getQuery()
-                                       ->getOneOrNullResult();
+                ->getQuery()
+                ->getOneOrNullResult();
         } catch (Exception) {
             return null;
         }

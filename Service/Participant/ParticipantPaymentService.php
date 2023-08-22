@@ -22,18 +22,20 @@ class ParticipantPaymentService
 {
     public function __construct(
         protected EntityManagerInterface $em,
-        protected MailerInterface $mailer,
-        protected LoggerInterface $logger,
+        protected MailerInterface        $mailer,
+        protected LoggerInterface        $logger,
         protected OswisCoreSettingsProvider $coreSettings,
         protected ParticipantMailService $participantMailService
-    ) {
+    )
+    {
     }
 
     public function create(
         ParticipantPayment $payment,
-        bool $sendConfirmation = true,
+        bool         $sendConfirmation = true,
         ?Participant $participant = null
-    ): ?ParticipantPayment {
+    ): ?ParticipantPayment
+    {
         $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
             $paymentId = $payment->getId();
@@ -68,7 +70,7 @@ class ParticipantPaymentService
 
             return $payment;
         } catch (Exception $e) {
-            $this->logger->notice('ERROR: Participant payment not created (by service): '.$e->getMessage());
+            $this->logger->notice('ERROR: Participant payment not created (by service): ' . $e->getMessage());
 
             return null;
         }
@@ -96,9 +98,9 @@ class ParticipantPaymentService
 
             return true;
         } catch (TransportExceptionInterface $e) {
-            throw new OswisException('Problém s odesláním reportu o CSV platbách. '.$e->getMessage());
+            throw new OswisException('Problém s odesláním reportu o CSV platbách. ' . $e->getMessage());
         } catch (Exception $e) {
-            throw new OswisException('Problém s vytvářením reportu o CSV platbách. '.$e->getMessage());
+            throw new OswisException('Problém s vytvářením reportu o CSV platbách. ' . $e->getMessage());
         }
     }
 }

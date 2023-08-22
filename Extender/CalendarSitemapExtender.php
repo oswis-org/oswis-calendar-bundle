@@ -22,7 +22,8 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
     public function __construct(
         protected UrlGeneratorInterface $urlGenerator,
         protected EventService $eventService,
-    ) {
+    )
+    {
     }
 
     public function getItems(): Collection

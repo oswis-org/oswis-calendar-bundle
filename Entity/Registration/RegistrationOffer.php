@@ -132,31 +132,32 @@ class RegistrationOffer implements NameableInterface
     /**
      * RegistrationsRange constructor.
      *
-     * @param Nameable|null            $nameable
-     * @param Event|null               $event
+     * @param Nameable|null $nameable
+     * @param Event|null $event
      * @param ParticipantCategory|null $participantType
-     * @param Price|null               $eventPrice
-     * @param DateTimeRange|null       $dateTimeRange
-     * @param bool|null                $isRelative
-     * @param RegistrationOffer|null   $requiredRange
-     * @param Capacity|null            $eventCapacity
-     * @param Publicity|null           $publicity
-     * @param bool|null                $superEventRequired
+     * @param Price|null $eventPrice
+     * @param DateTimeRange|null $dateTimeRange
+     * @param bool|null $isRelative
+     * @param RegistrationOffer|null $requiredRange
+     * @param Capacity|null $eventCapacity
+     * @param Publicity|null $publicity
+     * @param bool|null $superEventRequired
      *
      * @throws NotImplementedException
      */
     public function __construct(
-        ?Nameable $nameable = null,
-        ?Event $event = null,
+        ?Nameable          $nameable = null,
+        ?Event             $event = null,
         ?ParticipantCategory $participantType = null,
-        ?Price $eventPrice = null,
-        ?DateTimeRange $dateTimeRange = null,
-        ?bool $isRelative = null,
+        ?Price             $eventPrice = null,
+        ?DateTimeRange     $dateTimeRange = null,
+        ?bool              $isRelative = null,
         ?RegistrationOffer $requiredRange = null,
-        ?Capacity $eventCapacity = null,
-        Publicity $publicity = null,
-        ?bool $superEventRequired = null
-    ) {
+        ?Capacity          $eventCapacity = null,
+        Publicity          $publicity = null,
+        ?bool              $superEventRequired = null
+    )
+    {
         $this->flagGroupRanges = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEvent($event);
@@ -207,7 +208,7 @@ class RegistrationOffer implements NameableInterface
     {
         return (!$this->isRelative() || null === $this->getRequiredRegRange())
             ? 0 : $this->getRequiredRegRange()
-                       ->getPrice($participantType);
+                ->getPrice($participantType);
     }
 
     public function isRelative(): bool
@@ -261,8 +262,8 @@ class RegistrationOffer implements NameableInterface
         return (!$this->isRelative() || null === $this->getRequiredRegRange())
             ? 0
             : $this->getRequiredRegRange()->getDepositValue(
-                    $participantType
-                );
+                $participantType
+            );
     }
 
     public function getDepositValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
@@ -309,21 +310,22 @@ class RegistrationOffer implements NameableInterface
     public function getFlagGroupRanges(
         ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
-        ?bool $onlyPublic = false,
-        bool $recursive = false
-    ): Collection {
+        ?bool   $onlyPublic = false,
+        bool    $recursive = false
+    ): Collection
+    {
         $flagGroupRanges = $this->flagGroupRanges;
         if (true === $onlyPublic) {
             $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
-                                                                            && $range->isPublicOnWeb());
+                && $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
             $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
-                                                                            && $range->isCategory($flagCategory));
+                && $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
             $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
-                                                                            && $range->isType($flagType));
+                && $range->isType($flagType));
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
             $flagGroupRanges = new ArrayCollection([
@@ -351,7 +353,7 @@ class RegistrationOffer implements NameableInterface
     public function isParticipantInSuperEvent(?Participant $participant = null): bool
     {
         return $participant instanceof Participant && $this->getEvent()
-               && $this->getEvent()->isEventSuperEvent($participant->getEvent());
+            && $this->getEvent()->isEventSuperEvent($participant->getEvent());
     }
 
     public function getEvent(): ?Event
@@ -375,8 +377,8 @@ class RegistrationOffer implements NameableInterface
 
     /**
      * @param ParticipantFlagGroup $oldParticipantFlagGroup
-     * @param bool                 $admin
-     * @param bool                 $onlySimulate
+     * @param bool $admin
+     * @param bool $onlySimulate
      *
      * @return ParticipantFlagGroup
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
@@ -387,7 +389,8 @@ class RegistrationOffer implements NameableInterface
         ParticipantFlagGroup $oldParticipantFlagGroup,
         bool $admin = false,
         bool $onlySimulate = false,
-    ): ParticipantFlagGroup {
+    ): ParticipantFlagGroup
+    {
         if (null === ($oldFlagGroupRange = $oldParticipantFlagGroup->getFlagGroupOffer())) {
             throw new FlagOutOfRangeException('Neplatný rozsah příznaků.');
         }
@@ -452,7 +455,7 @@ class RegistrationOffer implements NameableInterface
 
     /**
      * @param ParticipantFlag $oldParticipantFlag
-     * @param bool            $onlySimulate
+     * @param bool $onlySimulate
      *
      * @return ParticipantFlag
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException

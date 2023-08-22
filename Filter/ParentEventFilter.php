@@ -27,13 +27,14 @@ final class ParentEventFilter extends AbstractContextAwareFilter
      * @throws \ErrorException
      */
     public function filterProperty(
-        string $property,
-        mixed $value,
+        string       $property,
+        mixed        $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string $resourceClass,
-        string $operationName = null
-    ): void {
+        string       $resourceClass,
+        string       $operationName = null
+    ): void
+    {
         if ('recursiveEventId' !== $property || null === $value) {
             return;
         }

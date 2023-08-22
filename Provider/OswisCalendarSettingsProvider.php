@@ -29,7 +29,7 @@ class OswisCalendarSettingsProvider
      * OswisCalendarSettingsProvider constructor.
      *
      * @param string|null $defaultEvent
-     * @param array|null  $defaultEventFallbacks
+     * @param array|null $defaultEventFallbacks
      */
     public function __construct(?string $defaultEvent = null, ?array $defaultEventFallbacks = null)
     {
@@ -58,11 +58,11 @@ class OswisCalendarSettingsProvider
             $parts = $this->regexMatch($slug, $pattern['pattern']);
             $slug = empty($parts)
                 ? $slug
-                : $parts[1].$this->processMath(
+                : $parts[1] . $this->processMath(
                     (int)$pattern['value'],
                     (string)$parts[3],
                     (int)$parts[4]
-                ).$parts[5];
+                ) . $parts[5];
         }
 
         return $slug;
@@ -83,19 +83,19 @@ class OswisCalendarSettingsProvider
         }
 
         return [
-                $parts[0] ?? '',    // Whole string.
-                $parts[1] ?? '',    // Prefix.
-                $parts[2] ?? '',    // Keyword ("year").
-                $parts[3] ?? null,  // Sign.
-                $parts[4] ?? 0,     // Number.
-                $parts[5] ?? '',    // Suffix.
+            $parts[0] ?? '',    // Whole string.
+            $parts[1] ?? '',    // Prefix.
+            $parts[2] ?? '',    // Keyword ("year").
+            $parts[3] ?? null,  // Sign.
+            $parts[4] ?? 0,     // Number.
+            $parts[5] ?? '',    // Suffix.
         ];
     }
 
     /**
-     * @param int    $a
+     * @param int $a
      * @param string $sign
-     * @param int    $b
+     * @param int $b
      *
      * @return int
      */

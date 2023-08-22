@@ -34,13 +34,13 @@ class Configuration implements ConfigurationInterface
     private function addDefaultEventFallback(ArrayNodeDefinition $rootNode): void
     {
         $rootNode->fixXmlConfig('default_event_fallback')
-                 ->children()
-                 ->arrayNode('default_event_fallbacks')
-                 ->defaultValue([])
-                 ->scalarPrototype()
-                 ->end()
-                 ->end()
-                 ->end();
+            ->children()
+            ->arrayNode('default_event_fallbacks')
+            ->defaultValue([])
+            ->scalarPrototype()
+            ->end()
+            ->end()
+            ->end();
     }
 
 }

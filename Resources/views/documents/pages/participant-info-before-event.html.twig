@@ -65,7 +65,8 @@
                         {% if flagConnection.eventParticipantFlag.price is defined and flagConnection.eventParticipantFlag.price and flagConnection.eventParticipantFlag.price != 0 %}
                             <small>
                                 <b>
-                                    ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }},- Kč)
+                                    ({{ flagConnection.eventParticipantFlag.price > 0 ? '+' : '' }}{{ flagConnection.eventParticipantFlag.price }}
+                                    ,- Kč)
                                 </b>
                             </small>
                         {% endif %}
@@ -121,7 +122,8 @@
                     {% endif %}
                     {% if data.eventParticipant.event.location.url is defined and data.eventParticipant.event.location.url %}
                         <li>
-                            <a href="{{ data.eventParticipant.event.location.url }}" title="{{ data.eventParticipant.event.location.name|default() }}"
+                            <a href="{{ data.eventParticipant.event.location.url }}"
+                               title="{{ data.eventParticipant.event.location.name|default() }}"
                                target="_blank">{{ data.eventParticipant.event.location.url }}</a>
                         </li>
                     {% endif %}
@@ -133,7 +135,8 @@
                         <li>
                             <a target="_blank" title="Mapa"
                                href="https://mapy.cz?x={{ data.eventParticipant.event.location.geoLon }}&y={{ data.eventParticipant.event.location.geoLat }}&z={{ data.eventParticipant.event.location.geoEle|default() }}">
-                                www.mapy.cz?x={{ data.eventParticipant.event.location.geoLon }}&y={{ data.eventParticipant.event.location.geoLat }}
+                                www.mapy.cz?x={{ data.eventParticipant.event.location.geoLon }}
+                                &y={{ data.eventParticipant.event.location.geoLat }}
                                 &z={{ data.eventParticipant.event.location.geoEle|default() }}
                             </a>
                         </li>

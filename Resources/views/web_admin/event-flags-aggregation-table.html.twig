@@ -12,7 +12,8 @@
                 {% if flagCategoryUsage.flagGroupRange|default
                     and (flagCategoryUsage.flagGroupRange.min|default(0) > 0 or flagCategoryUsage.flagGroupRange.max|default != null) %}
                     <div class="block small">
-                        Vyžadováno {{ flagCategoryUsage.flagGroupRange.min|default(0) }} až {{ flagCategoryUsage.flagGroupRange.max|default('neomezeno') }} v
+                        Vyžadováno {{ flagCategoryUsage.flagGroupRange.min|default(0) }}
+                        až {{ flagCategoryUsage.flagGroupRange.max|default('neomezeno') }} v
                         každé přihlášce.
                     </div>
                 {% endif %}
@@ -37,7 +38,8 @@
                     </div>
                     {% if flagUsage.entity.min|default(0) > 0 or flagUsage.entity.max|default != null %}
                         <div class="block small">
-                            Vyžadováno {{ flagUsage.entity.min|default(0) }} až {{ flagUsage.entity.max|default('neomezeno') }} v každé přihlášce.
+                            Vyžadováno {{ flagUsage.entity.min|default(0) }}
+                            až {{ flagUsage.entity.max|default('neomezeno') }} v každé přihlášce.
                         </div>
                     {% endif %}
                 </td>
@@ -48,8 +50,10 @@
                         {% set usagePercentage = (flagUsage.usage|default(0) / flagUsage.entity.baseCapacity * 100)|round(1) %}
                         {% set usageColor = usagePercentage > 70 ? 'danger' : 'success' %}
                         <div class="progress">
-                            <div class="progress-bar progress-bar-striped bg-{{ usageColor }}" role="progressbar" aria-valuemin="0"
-                                 style="width: {{ usagePercentage }}%" aria-valuenow="{{ usagePercentage }}" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped bg-{{ usageColor }}" role="progressbar"
+                                 aria-valuemin="0"
+                                 style="width: {{ usagePercentage }}%" aria-valuenow="{{ usagePercentage }}"
+                                 aria-valuemax="100">
                             </div>
                         </div>
                     {% endif %}

@@ -96,8 +96,9 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
     public function __construct(
         ?RegistrationFlagOffer $flagRange = null,
         ParticipantFlagGroup $participantFlagGroup = null,
-        ?string $textValue = null
-    ) {
+        ?string              $textValue = null
+    )
+    {
         try {
             $this->setParticipantFlagGroup($participantFlagGroup);
         } catch (NotImplementedException) {

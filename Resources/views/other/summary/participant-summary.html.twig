@@ -10,7 +10,8 @@
     <li>
         ID přihlášky: <span itemprop="reservationNumber" style="font-weight:bold;">{{ participant.id }}</span>,
         <meta itemprop="reservationId" content="{{ participant.id }}"/>
-        <small itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</small>
+        <small itemprop="bookingTime"
+               content="{{ participant.createdAt|date("c") }}">{{ participant.createdAt|date("j. n. Y, H:i") }}</small>
         {% if participant.createdAt|date("c") != participant.updatedAt|date("c") %}
             <small>, poslední změna {{ participant.updatedAt|date("j. n. Y, H:i") }}</small>
         {% endif %}
@@ -43,9 +44,11 @@
     {% endfor %}
     <li>
         <b>Cena celkem: {{ participant.price }},- Kč</b>
-        <small style="color:grey;"> (záloha {{ participant.depositValue }},- Kč + doplatek: {{ participant.priceRest }},- Kč)</small>
+        <small style="color:grey;"> (záloha {{ participant.depositValue }},- Kč + doplatek: {{ participant.priceRest }}
+            ,- Kč)</small>
         <br>
-        <small style="color:grey;">V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení přihlášky.</small>
+        <small style="color:grey;">V ceně jsou již započteny případné příplatky a slevy vyplývající z nastavení
+            přihlášky.</small>
     </li>
     <li>
         {% if participant.variableSymbol|default %}
@@ -84,14 +87,16 @@
     {% for registration in registrations %}
         <li style="{{ registration.deletedAt ? 'text-decoration: line-through; color: grey;' : '' }}">
             <b>
-                <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': registration.event.slug|default})) }}" target="_blank">
+                <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': registration.event.slug|default})) }}"
+                   target="_blank">
                     {{ registration.event.name|default }}
                 </a>
             </b>
         </li>
     {% endfor %}
     <li>
-        od {{ activeEvent.startDate|date("j. n. Y H:i")|default('neuvedeno') }} do {{ activeEvent.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
+        od {{ activeEvent.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
+        do {{ activeEvent.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
     </li>
     {% if activeEvent.place(true)|default %}
         {% set place = activeEvent.place(true) %}
@@ -107,7 +112,8 @@
         {% set org = activeEvent.organizer.contact %}
         <li>
             {% if org.url|default %}
-                <a href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': org.slug|default})) }}" target="_blank">
+                <a href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': org.slug|default})) }}"
+                   target="_blank">
                     {{ org.name }}
                 </a>
             {% else %}
@@ -134,7 +140,8 @@
                 title="ID přiřazení skupiny {{ participantFlagGroup.id }}, ID rozsahu skupiny {{ participantFlagGroup.flagGroupOffer.id }}">
                 <span style="{{ participantFlagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">{{ participantFlagGroup.flagGroupOffer.name|default('Ostatní příznaky') }}</span>
                 {% if participantFlagGroup.deletedAt %}
-                    <span style="color:red;font-weight:bold;" title="SMAZÁNO {{ participantFlagGroup.deletedAt|date("j. n. Y H:i") }}">
+                    <span style="color:red;font-weight:bold;"
+                          title="SMAZÁNO {{ participantFlagGroup.deletedAt|date("j. n. Y H:i") }}">
                         [SMAZÁNO]
                     </span>
                 {% endif %}
@@ -149,7 +156,8 @@
                                 </span>
                             {% endif %}
                             {% if participantFlag.deletedAt|default %}
-                                <strong style="font-weight:bold;color:red;" title="SMAZÁNO {{ participantFlag.deletedAt|date("j. n. Y H:i") }}">
+                                <strong style="font-weight:bold;color:red;"
+                                        title="SMAZÁNO {{ participantFlag.deletedAt|date("j. n. Y H:i") }}">
                                     [SMAZÁNO]
                                 </strong>
                             {% endif %}

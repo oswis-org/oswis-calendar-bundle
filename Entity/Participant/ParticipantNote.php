@@ -77,8 +77,9 @@ class ParticipantNote implements BasicInterface, TextValueInterface, DeletedInte
     public function __construct(
         ?Participant $participant = null,
         ?string $textValue = null,
-        ?bool $publicNote = false,
-    ) {
+        ?bool   $publicNote = false,
+    )
+    {
         $this->setParticipant($participant);
         $this->setTextValue($textValue);
         $this->setPublicNote((bool)$publicNote);

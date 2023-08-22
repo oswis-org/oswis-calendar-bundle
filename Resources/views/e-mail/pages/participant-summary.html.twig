@@ -43,7 +43,8 @@
         {% block message_payment_outer %}
             {% if (not participant.deletedAt|default) and (participant.depositValue > 0 or participant.price > 0) %}
                 <p>
-                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
+                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši
+                    <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
                     a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
                     {% if event.getBankAccount(true)|default %}
                         na&nbsp;účet <b>{{ event.getBankAccount(true).getFull() }}</b>
@@ -54,15 +55,18 @@
                 </p>
                 {% if participant.price > 0 %}
                     <p>
-                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b> zašl{{ f ? 'ete' : 'i' }}, prosím,
-                        úplně stejným způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
+                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b>
+                        zašl{{ f ? 'ete' : 'i' }}, prosím,
+                        úplně stejným
+                        způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
                     </p>
                 {% endif %}
 
                 {% if participant.depositValue > 0 and participant.price > 0 %}
                     <p>
                         Zálohu i doplatek můžeš zaplatit i v&nbsp;jedné společné platbě, potom se jedná o&nbsp;částku
-                        <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
+                        <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency"
+                                                                                                content="CZK">Kč</span>.
                     </p>
                 {% endif %}
             {% endif %}
@@ -71,7 +75,8 @@
         {% if (not participant.deletedAt|default) and appUser|default %}
             <p>
                 Uživatelské jméno u uživatelského účtu pro přístup do aplikace
-                <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}" target="_blank">{{ oswis.app.name|default }}</a> je
+                <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}"
+                   target="_blank">{{ oswis.app.name|default }}</a> je
                 <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>
                 {%- if appUser.email|default and appUser.email|default != appUser.username|default %}
                 a&nbsp;hlavní e-mail je <strong>{{ appUser.email|default }}</strong>
@@ -79,14 +84,16 @@
             </p>
             <p>
                 {% if appUser.plainPassword|default %}
-                    Bylo nastaveno nové, náhodně vygenerované, heslo: <span class="token-box">{{ appUser.plainPassword }}</span>
+                    Bylo nastaveno nové, náhodně vygenerované, heslo: <span
+                        class="token-box">{{ appUser.plainPassword }}</span>
                 {% elseif appUser.password|default %}
                     Heslo bylo nastaveno uživatelem při registraci nebo aktivaci uživatele.
                 {% else %}
                     Heslo si nastaví{{ f ? 'te' : 'š' }} při aktivaci účtu.
                 {% endif %}
             </p>
-            <p>Pokud heslo zapomene{{ f ? 'te' : 'š' }}, může{{ f ? 'te' : 'š' }} jej obnovit pomocí tlačítka na přihlašovací stránce aplikace.</p>
+            <p>Pokud heslo zapomene{{ f ? 'te' : 'š' }}, může{{ f ? 'te' : 'š' }} jej obnovit pomocí tlačítka na
+                přihlašovací stránce aplikace.</p>
         {% endif %}
 
         {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
@@ -102,10 +109,12 @@
         {% block message_footer %}
             {% if participant.deletedAt %}
                 <p>
-                    Přihláška byla zrušena na základě požadavku na zrušení nebo z důvodu duplicitního odeslání přihlášky.
+                    Přihláška byla zrušena na základě požadavku na zrušení nebo z důvodu duplicitního odeslání
+                    přihlášky.
                 </p>
                 <p>
-                    Pokud js{{ f ? 'te' : 'i' }} nás o zrušení přihlášky na akci nežádal{{ a }}, tak nás, prosím, kontaktuj{{ f ? 'te' : '' }}.
+                    Pokud js{{ f ? 'te' : 'i' }} nás o zrušení přihlášky na akci nežádal{{ a }}, tak nás, prosím,
+                    kontaktuj{{ f ? 'te' : '' }}.
                 </p>
             {% endif %}
             <p>Pokud zpráva přišla opakovaně, přihláška byla pravděpodobně aktualizována uživatelem nebo správcem.</p>

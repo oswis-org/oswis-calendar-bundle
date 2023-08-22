@@ -44,7 +44,8 @@ class ParticipantRegistrationRepository extends EntityRepository
         array $opts = [],
         ?int $limit = null,
         ?int $offset = null,
-    ): QueryBuilder {
+    ): QueryBuilder
+    {
         $queryBuilder = $this->createQueryBuilder('participant_range');
         $this->addIdQuery($queryBuilder, $opts);
         $this->addRangeQuery($queryBuilder, $opts);

@@ -24,6 +24,7 @@ class EventRepository extends ServiceEntityRepository
     public const CRITERIA_TYPE = 'type';
     public const CRITERIA_TYPE_STRING = 'typeString';
     public const CRITERIA_SERIES = 'series';
+    public const CRITERIA_SERIES_SLUG = 'series_slug';
     public const CRITERIA_SUPER_EVENT = 'superEvent';
     public const CRITERIA_SUPER_EVENT_DEPTH = 'superEventDepth';
     public const CRITERIA_ONLY_ROOT = 'onlyRoot';
@@ -74,6 +75,7 @@ class EventRepository extends ServiceEntityRepository
         $this->setOnlyRootQuery($queryBuilder, $opts);
         $this->setOnlyWithoutDateQuery($queryBuilder, $opts);
         $this->setSeriesQuery($queryBuilder, $opts);
+        $this->setSeriesSlugQuery($queryBuilder, $opts);
         $this->setLocationQuery($queryBuilder, $opts);
         $this->setOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->setTypeStringQuery($queryBuilder, $opts);
@@ -163,6 +165,15 @@ class EventRepository extends ServiceEntityRepository
         }
     }
 
+    private function setSeriesSlugQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
+        if (!empty($opts[self::CRITERIA_SERIES_SLUG]) && is_string($opts[self::CRITERIA_SERIES_SLUG])) {
+            $queryBuilder->leftJoin('e.group', 'series_for_slug');
+            $queryBuilder->andWhere('series_for_slug.slug = :series_slug');
+            $queryBuilder->setParameter('series_slug', $opts[self::CRITERIA_SERIES_SLUG]);
+        }
+    }
+
     private function setLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_LOCATION] instanceof Place) {
@@ -217,8 +228,8 @@ class EventRepository extends ServiceEntityRepository
 
     /**
      * @param array|null $opts
-     * @param int|null   $limit
-     * @param int|null   $offset
+     * @param int|null $limit
+     * @param int|null $offset
      *
      * @return Collection<Event>
      */

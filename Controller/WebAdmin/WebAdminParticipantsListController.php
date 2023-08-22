@@ -16,6 +16,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository;
+use OswisOrg\OswisCalendarBundle\Service\Event\EventSeriesService;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
@@ -30,12 +31,14 @@ class WebAdminParticipantsListController extends AbstractController
     private const GENDER_APPROX_KEY = 'Pohlaví (odhad)';
 
     public function __construct(
-        public EventService $eventService,
-        public ParticipantService $participantService,
+        public EventService             $eventService,
+        public ParticipantService       $participantService,
         public ParticipantCategoryService $participantCategoryService,
         public RegistrationOfferService $participantRegistrationService,
-        public EntityManagerInterface $em
-    ) {
+        public EntityManagerInterface   $em,
+        public EventSeriesService       $eventSeriesService,
+    )
+    {
     }
 
     public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
@@ -60,7 +63,7 @@ class WebAdminParticipantsListController extends AbstractController
         ]);
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, static function(mixed $a, mixed $b) {
+        usort($participantsArray, static function (mixed $a, mixed $b) {
             assert($a instanceof Participant && $b instanceof Participant);
 
             return strcoll($a->getSortableName(), $b->getSortableName());
@@ -85,6 +88,20 @@ class WebAdminParticipantsListController extends AbstractController
             'title' => "Přehled plateb účastníků :: ADMIN",
         ]);
     }
+
+    public function showYearsCompare(?string $eventSeriesSlug = null): Response
+    {
+        $events = $this->eventService->getRepository()->getEvents([
+            EventRepository::CRITERIA_SERIES_SLUG => $eventSeriesSlug,
+            EventRepository::CRITERIA_TYPE_STRING => 'year-of-event',
+        ]);
+
+        return $this->render("@OswisOrgOswisCalendar/web_admin/years-compare.html.twig", [
+            'title' => "Srovnání ročníků :: ADMIN",
+            'events' => $events,
+        ]);
+    }
+
 
     /**
      * @param string|null $eventSlug
@@ -180,7 +197,7 @@ class WebAdminParticipantsListController extends AbstractController
                 $otherAggregations['Přihláška']['Přihláška ověřena']++;
             }
             if ($participant->getNotes()->filter(fn(mixed $note) => $note instanceof ParticipantNote
-                                                                    && !empty($note->getTextValue()))->count() > 0) {
+                    && !empty($note->getTextValue()))->count() > 0) {
                 $otherAggregations['Poznámky']['S poznámkou'] ??= 0;
                 $otherAggregations['Poznámky']['S poznámkou']++;
             }
@@ -205,7 +222,7 @@ class WebAdminParticipantsListController extends AbstractController
             // Payments aggregation.
             $paymentsAggregation['Celkem cena (s příznaky)'] += $participant->getPrice();
             $paymentsAggregation['Celkem základní cena (bez příznaků)'] += $participant->getPrice()
-                                                                           - $participant->getFlagsPrice();
+                - $participant->getFlagsPrice();
             $paymentsAggregation['Celkem záloha (s příznaky)'] += $participant->getDepositValue();
             $paymentsAggregation['Zaplacená cena'] += $participant->getPaidPrice();
             $paymentsAggregation['Celkem cena za příznaky'] += $participant->getFlagsPrice();

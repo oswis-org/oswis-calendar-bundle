@@ -4,7 +4,8 @@
             {% if event|default and event.year %}
                 <section class="row">
                     <div class="col-12 text-center text-uppercase">
-                        <a href="{{ path('oswis_org_oswis_calendar_web_event') }}"><h2><span class="text-black">Ročník</span> {{ event.startYear }}</h2></a>
+                        <a href="{{ path('oswis_org_oswis_calendar_web_event') }}"><h2><span
+                                        class="text-black">Ročník</span> {{ event.startYear }}</h2></a>
                     </div>
                     {% if prefix|default %}
                         <div class="col-12 text-center mb-1">

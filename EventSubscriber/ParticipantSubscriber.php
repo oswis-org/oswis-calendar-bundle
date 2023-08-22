@@ -21,7 +21,8 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly ParticipantMailService $participantMailService,
         private readonly LoggerInterface $logger,
-    ) {
+    )
+    {
     }
 
     public static function getSubscribedEvents(): array

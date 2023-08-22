@@ -13,24 +13,26 @@ class EventCategoryService
     public function __construct(
         protected EntityManagerInterface $em,
         protected LoggerInterface $logger,
-    ) {
+    )
+    {
     }
 
     final public function create(
         ?Nameable $nameable = null,
         ?string $type = null,
         ?string $color = null
-    ): ?EventCategory {
+    ): ?EventCategory
+    {
         try {
             $entity = new EventCategory($nameable, $type, $color);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event type (by service): '.$entity->getId().' '.$entity->getName().'.';
+            $infoMessage = 'CREATE: Created event type (by service): ' . $entity->getId() . ' ' . $entity->getName() . '.';
             $this->logger->info($infoMessage);
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Event event type not created (by service): '.$e->getMessage());
+            $this->logger->info('ERROR: Event event type not created (by service): ' . $e->getMessage());
 
             return null;
         }

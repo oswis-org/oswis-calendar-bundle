@@ -16,7 +16,8 @@
                             {% include '@OswisOrgOswisCalendar/web_admin/event-details-table.html.twig' %}
                         </div>
                         <div class="col-12">
-                            <h3>Počet nezrušených přihlášek <span class="block small text-muted">běžných účastníků</span></h3>
+                            <h3>Počet nezrušených přihlášek <span
+                                        class="block small text-muted">běžných účastníků</span></h3>
                             <table class="list">
                                 <thead>
                                 <tr>
@@ -56,7 +57,8 @@
                                             </a>
                                             {% if occupancy.occupancy|default(0) > 0 %}
                                                 <div class="block small">
-                                                    {{ (subEventOccupancy.occupancy|default(0) / occupancy.occupancy * 100)|round(1) }} % nadřazené
+                                                    {{ (subEventOccupancy.occupancy|default(0) / occupancy.occupancy * 100)|round(1) }}
+                                                    % nadřazené
                                                 </div>
                                             {% endif %}
                                         </td>
@@ -90,7 +92,8 @@
                                                 {% if regRange.baseCapacity|default(null) != 0 and regRange.baseCapacity|default(null) != null %}
                                                     <span class="small">z {{ regRange.baseCapacity }}</span>
                                                     <div class="block small">
-                                                        {{ regRange.usageInt|default(0) / regRange.baseCapacity * 100 }} %
+                                                        {{ regRange.usageInt|default(0) / regRange.baseCapacity * 100 }}
+                                                        %
                                                     </div>
                                                 {% endif %}
                                             {% endif %}
@@ -102,12 +105,14 @@
                         </div>
 
                         <div class="col-12">
-                            <h3>Ostatní agregace <span class="block small text-muted">nezrušených běžných účastníků</span></h3>
+                            <h3>Ostatní agregace <span
+                                        class="block small text-muted">nezrušených běžných účastníků</span></h3>
                             {% include '@OswisOrgOswisCalendar/web_admin/event-other-aggregation-table.html.twig' %}
                         </div>
 
                         <div class="col-12">
-                            <h3>Agregace plateb <span class="block small text-muted">nezrušených běžných účastníků</span></h3>
+                            <h3>Agregace plateb <span
+                                        class="block small text-muted">nezrušených běžných účastníků</span></h3>
                             {% include '@OswisOrgOswisCalendar/web_admin/event-payments-aggregation-table.html.twig' %}
                         </div>
 
@@ -118,11 +123,13 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-12">
-                            <h3>Příznaky <span class="block small text-muted">nezrušených běžných účastníků (dle rozsahů)</span></h3>
+                            <h3>Příznaky <span class="block small text-muted">nezrušených běžných účastníků (dle rozsahů)</span>
+                            </h3>
                             {% include '@OswisOrgOswisCalendar/web_admin/event-flags-aggregation-table.html.twig' with {'flagsUsageArray': flagsUsageByRange} %}
                         </div>
                         <div class="col-12">
-                            <h3>Příznaky <span class="block small text-muted">nezrušených běžných účastníků (dle příznaků)</span></h3>
+                            <h3>Příznaky <span class="block small text-muted">nezrušených běžných účastníků (dle příznaků)</span>
+                            </h3>
                             {% include '@OswisOrgOswisCalendar/web_admin/event-flags-aggregation-table.html.twig' with {'flagsUsageArray': flagsUsageByFlag} %}
                         </div>
                     </div>

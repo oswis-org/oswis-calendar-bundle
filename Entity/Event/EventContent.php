@@ -52,8 +52,8 @@ class EventContent extends AbstractWebContent
 
     /**
      * @param \OswisOrg\OswisCalendarBundle\Entity\Event\Event|null $event
-     * @param string|null                                           $textValue
-     * @param string|null                                           $type
+     * @param string|null $textValue
+     * @param string|null $type
      *
      * @throws \InvalidArgumentException
      */
@@ -61,7 +61,8 @@ class EventContent extends AbstractWebContent
         ?Event $event = null,
         ?string $textValue = null,
         ?string $type = null,
-    ) {
+    )
+    {
         parent::__construct($textValue, $type);
         $this->event = $event;
     }

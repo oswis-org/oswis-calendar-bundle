@@ -1,5 +1,6 @@
 <meta itemprop="name" content="{{ event.name|default }}"/>
-<link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'slug': event.slug|default})) }}"/>
+<link itemprop="url"
+      href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'slug': event.slug|default})) }}"/>
 <meta itemprop="startDate" content="{{ event.startDate|date("c")|default }}"/>
 <meta itemprop="endDate" content="{{ event.endDate|date("c")|default }}"/>
 {% set place = event.place(true)|default %}

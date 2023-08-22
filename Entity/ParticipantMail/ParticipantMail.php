@@ -80,12 +80,13 @@ class ParticipantMail extends AbstractMail
 
     public function __construct(
         Participant $participant = null,
-        AppUser $appUser = null,
-        string $subject = null,
-        ?string $type = null,
+        AppUser     $appUser = null,
+        string      $subject = null,
+        ?string     $type = null,
         ParticipantToken $token = null,
-        ?string $messageId = null
-    ) {
+        ?string     $messageId = null
+    )
+    {
         if ($appUser) {
             parent::__construct($subject, $appUser->getEmail(), $type, $appUser->getName(), $messageId);
         }

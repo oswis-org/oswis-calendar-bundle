@@ -76,6 +76,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     public Collection $tempFlagRanges;
+
     #[ManyToOne(targetEntity: RegistrationFlagGroupOffer::class, fetch: 'EAGER')]
     #[JoinColumn(nullable: true)]
     protected ?RegistrationFlagGroupOffer $flagGroupOffer = null;
@@ -135,7 +136,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     }
 
     /**
-     * @param bool                  $onlyActive
+     * @param bool $onlyActive
      * @param RegistrationFlag|null $flag
      *
      * @return Collection<ParticipantFlag>
@@ -145,11 +146,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         $participantFlags = $this->participantFlags;
         if ($onlyActive) {
             $participantFlags = $participantFlags->filter(fn(mixed $pFlag) => ($pFlag instanceof ParticipantFlag)
-                                                                              && $pFlag->isActive(),);
+                && $pFlag->isActive(),);
         }
         if (null !== $flag) {
             $participantFlags = $participantFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
-                                                                              && ($pFlag->getFlag() === $flag),);
+                && ($pFlag->getFlag() === $flag),);
         }
 
         /** @var Collection<ParticipantFlag> $participantFlags */
@@ -158,8 +159,8 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     /**
      * @param Collection|null $newParticipantFlags
-     * @param bool|false      $admin
-     * @param bool            $onlySimulate
+     * @param bool|false $admin
+     * @param bool $onlySimulate
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -185,11 +186,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         }
         if (!$onlySimulate) {
             $removedFlags = $oldParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag
-                                                                                   && !$newParticipantFlags->contains(
+                && !$newParticipantFlags->contains(
                     $flag
                 ),);
             $addedFlags = $newParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag
-                                                                                 && !$oldParticipantFlags->contains(
+                && !$oldParticipantFlags->contains(
                     $flag
                 ),);
             foreach ($removedFlags as $removedFlag) {
@@ -220,23 +221,24 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
 
     /**
      * @param RegistrationFlagOffer $flagRange
-     * @param Collection            $newPartiFlags
-     * @param bool|false            $admin
+     * @param Collection $newPartiFlags
+     * @param bool|false $admin
      *
      * @throws FlagOutOfRangeException|FlagCapacityExceededException
      */
     private function checkAvailableFlagRange(
         RegistrationFlagOffer $flagRange,
         Collection $newPartiFlags,
-        bool $admin = false,
-    ): void {
+        bool       $admin = false,
+    ): void
+    {
         $newFlagRangeCount = $newPartiFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
-                                                                        && $pFlag->getFlagOffer() === $flagRange,)
-                                           ->count();
+            && $pFlag->getFlagOffer() === $flagRange,)
+            ->count();
         $flagRange->checkInRange($newFlagRangeCount);
         $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
-                                                                                      && $pFlag->getFlagOffer()
-                                                                                         === $flagRange,)->count();
+            && $pFlag->getFlagOffer()
+            === $flagRange,)->count();
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
         if ($differenceCount > 0 && $flagRange->getRemainingCapacity($admin) < $differenceCount) {
             throw new FlagCapacityExceededException($flagRange->getName());
@@ -279,8 +281,8 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     /**
      * @param ParticipantFlag $oldParticipantFlag
      * @param ParticipantFlag $newParticipantFlag
-     * @param bool            $admin
-     * @param bool            $onlySimulate
+     * @param bool $admin
+     * @param bool $onlySimulate
      *
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
      * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
@@ -291,7 +293,8 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
         ParticipantFlag $newParticipantFlag,
         bool $admin = false,
         bool $onlySimulate = false,
-    ): void {
+    ): void
+    {
         $oldFlagRange = $oldParticipantFlag->getFlagOffer();
         $newFlagRange = $newParticipantFlag->getFlagOffer();
         if ($oldFlagRange !== $newFlagRange) {

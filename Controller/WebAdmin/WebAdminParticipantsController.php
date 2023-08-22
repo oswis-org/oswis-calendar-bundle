@@ -14,7 +14,8 @@ class WebAdminParticipantsController extends AbstractController
 {
     public function __construct(
         public ParticipantService $participantService,
-    ) {
+    )
+    {
     }
 
     /**

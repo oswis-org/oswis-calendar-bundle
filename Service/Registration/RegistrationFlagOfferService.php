@@ -20,7 +20,8 @@ class RegistrationFlagOfferService
     public function __construct(
         protected EntityManagerInterface $em,
         protected LoggerInterface $logger,
-    ) {
+    )
+    {
     }
 
     final public function create(RegistrationFlagOffer $flagRange): ?RegistrationFlagOffer
@@ -29,15 +30,15 @@ class RegistrationFlagOfferService
             $this->em->persist($flagRange);
             $this->em->flush();
             $infoMessage = 'CREATE: Created flag range (by service): '
-                           .$flagRange->getId()
-                           .' '
-                           .$flagRange->getName()
-                           .'.';
+                . $flagRange->getId()
+                . ' '
+                . $flagRange->getName()
+                . '.';
             $this->logger->info($infoMessage);
 
             return $flagRange;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: RegistrationFlag range not created (by service): '.$e->getMessage());
+            $this->logger->info('ERROR: RegistrationFlag range not created (by service): ' . $e->getMessage());
 
             return null;
         }

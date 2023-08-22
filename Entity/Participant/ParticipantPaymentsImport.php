@@ -110,14 +110,14 @@ class ParticipantPaymentsImport
     {
         return str_getcsv(
             $row,
-            ''.$csvSettings->getDelimiter(),
-            ''.$csvSettings->getEnclosure(),
-            ''.$csvSettings->getEscape(),
+            '' . $csvSettings->getDelimiter(),
+            '' . $csvSettings->getEnclosure(),
+            '' . $csvSettings->getEscape(),
         );
     }
 
     public function makePaymentFromCsv(
-        array $csvPaymentRow,
+        array  $csvPaymentRow,
         CsvPaymentImportSettings $csvSettings,
         string $csvRow
     ): ParticipantPayment
@@ -144,14 +144,14 @@ class ParticipantPaymentsImport
     {
         try {
             $dateKey = (preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: [])[0] ?? null;
-            if (array_key_exists(''.$csvSettings->getDateColumnName(), $csvPaymentRow)) {
+            if (array_key_exists('' . $csvSettings->getDateColumnName(), $csvPaymentRow)) {
                 return new DateTime($csvPaymentRow[$csvSettings->getDateColumnName()]);
             }
-            if (array_key_exists('"'.$csvSettings->getDateColumnName().'"', $csvPaymentRow)) {
-                return new DateTime($csvPaymentRow['"'.$csvSettings->getDateColumnName().'"']);
+            if (array_key_exists('"' . $csvSettings->getDateColumnName() . '"', $csvPaymentRow)) {
+                return new DateTime($csvPaymentRow['"' . $csvSettings->getDateColumnName() . '"']);
             }
-            if (array_key_exists('\"'.$csvSettings->getDateColumnName().'\"', $csvPaymentRow)) {
-                return new DateTime($csvPaymentRow['\"'.$csvSettings->getDateColumnName().'\"']);
+            if (array_key_exists('\"' . $csvSettings->getDateColumnName() . '\"', $csvPaymentRow)) {
+                return new DateTime($csvPaymentRow['\"' . $csvSettings->getDateColumnName() . '\"']);
             }
             if (array_key_exists($dateKey, $csvPaymentRow)) {
                 return new DateTime($csvPaymentRow[$dateKey]);

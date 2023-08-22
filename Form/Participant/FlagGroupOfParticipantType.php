@@ -42,7 +42,7 @@ class FlagGroupOfParticipantType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, static function(FormEvent $event) {
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) {
             $data = $event->getData();
             if (!empty($data) && is_array($data)) {
                 $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']]
@@ -50,7 +50,7 @@ class FlagGroupOfParticipantType extends AbstractType
             }
             $event->setData($data);
         });
-        $builder->addEventListener(FormEvents::SUBMIT, static function(FormEvent $event) {
+        $builder->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event) {
             $participantFlagGroup = $event->getData();
             assert($participantFlagGroup instanceof ParticipantFlagGroup);
             $participantFlags = new ArrayCollection();
@@ -97,9 +97,9 @@ class FlagGroupOfParticipantType extends AbstractType
     }
 
     /**
-     * @param FormInterface        $form
+     * @param FormInterface $form
      * @param ParticipantFlagGroup $participantFlagCategory
-     * @param int|null             $min
+     * @param int|null $min
      *
      * @throws \Symfony\Component\Form\Exception\AlreadySubmittedException
      * @throws \Symfony\Component\Form\Exception\LogicException
@@ -108,8 +108,9 @@ class FlagGroupOfParticipantType extends AbstractType
     public static function addCheckboxes(
         FormInterface $form,
         ParticipantFlagGroup $participantFlagCategory,
-        int $min = null,
-    ): void {
+        int           $min = null,
+    ): void
+    {
         $flagGroupRange = $participantFlagCategory->getFlagGroupOffer();
         if (null === $flagGroupRange) {
             return;
@@ -130,11 +131,11 @@ class FlagGroupOfParticipantType extends AbstractType
     }
 
     /**
-     * @param FormInterface        $form
+     * @param FormInterface $form
      * @param ParticipantFlagGroup $participantFlagGroup
-     * @param int                  $min
-     * @param int|null             $max
-     * @param bool                 $isFormal
+     * @param int $min
+     * @param int|null $max
+     * @param bool $isFormal
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -143,10 +144,11 @@ class FlagGroupOfParticipantType extends AbstractType
     public static function addSelect(
         FormInterface $form,
         ParticipantFlagGroup $participantFlagGroup,
-        int $min,
-        ?int $max,
-        bool $isFormal = true
-    ): void {
+        int           $min,
+        ?int          $max,
+        bool          $isFormal = true
+    ): void
+    {
         if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupOffer())) {
             return;
         }

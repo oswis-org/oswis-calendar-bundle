@@ -15,14 +15,14 @@ class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensi
     /**
      * Loads a specific configuration.
      *
-     * @param array<array>     $configs
+     * @param array<array> $configs
      * @param ContainerBuilder $container
      *
      * @throws Exception
      */
     final public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');
         $configuration = $this->getConfiguration($configs, $container);
         if ($configuration) {
@@ -33,7 +33,7 @@ class OswisOrgOswisCalendarExtension extends Extension implements PrependExtensi
 
     /**
      * @param ContainerBuilder $container
-     * @param array            $config
+     * @param array $config
      *
      * @throws ServiceNotFoundException
      */

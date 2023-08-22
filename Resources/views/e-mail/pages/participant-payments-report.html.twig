@@ -9,7 +9,8 @@
         <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
             <thead>
             <tr>
-                <th style="min-width:25%;">ID<br><small>Externí ID</small><br><small>Datum platby</small><br><small>ID importu</small></th>
+                <th style="min-width:25%;">ID<br><small>Externí ID</small><br><small>Datum platby</small><br><small>ID
+                        importu</small></th>
                 <th style="min-width:25%;">Částka<br><small>Var. symbol (VS)</small><br><small>Typ platby</small></th>
                 <th style="max-width:25%;">Účastník<br><small>Potvrzení na e-mail</small></th>
             </tr>
@@ -56,7 +57,8 @@
                 </tr>
                 {% if payment.errorMessage %}
                     <tr>
-                        <td style="background-color: rgba(255,50,50,.2)" colspan="3"><small>CHYBA: {{ payment.errorMessage }}</small></td>
+                        <td style="background-color: rgba(255,50,50,.2)" colspan="3">
+                            <small>CHYBA: {{ payment.errorMessage }}</small></td>
                     </tr>
                 {% endif %}
                 {% if payment.note %}

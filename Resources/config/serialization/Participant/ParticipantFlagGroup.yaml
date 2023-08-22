@@ -1,69 +1,69 @@
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
-    attributes:
-        min:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        max:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        availableFlagOffers:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        participantFlags:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_group_put'
-                - 'calendar_participant_flag_groups_get'
+  attributes:
+    min:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    max:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    availableFlagOffers:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    participantFlags:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_group_put'
+        - 'calendar_participant_flag_groups_get'
 
 
 OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer:
-    attributes:
-        id:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_group_put'
-                - 'calendar_participant_flag_groups_get'
-        flag:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        min:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        max:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        deposit:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
-        price:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_groups_get'
+  attributes:
+    id:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_group_put'
+        - 'calendar_participant_flag_groups_get'
+    flag:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    min:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    max:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    deposit:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
+    price:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_groups_get'
 
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
-    attributes:
-        id:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_group_put'
-                - 'calendar_participant_flag_groups_get'
-        flagOffer:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_group_put'
-                - 'calendar_participant_flag_groups_get'
-        active:
-            groups:
-                - 'calendar_participant_flag_group_get'
-                - 'calendar_participant_flag_group_put'
-                - 'calendar_participant_flag_groups_get'
+  attributes:
+    id:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_group_put'
+        - 'calendar_participant_flag_groups_get'
+    flagOffer:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_group_put'
+        - 'calendar_participant_flag_groups_get'
+    active:
+      groups:
+        - 'calendar_participant_flag_group_get'
+        - 'calendar_participant_flag_group_put'
+        - 'calendar_participant_flag_groups_get'
 
 
