@@ -160,6 +160,7 @@ class Participant implements ParticipantInterface
     /**
      * @var Collection<int, ParticipantFlagGroup>
      */
+    #[ApiProperty(readableLink: true, writableLink: true)]
     #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'calendar_participant_flag_group_connection')]
     #[JoinColumn(name: "participant_id", referencedColumnName: "id")]
@@ -196,14 +197,16 @@ class Participant implements ParticipantInterface
      * @throws OswisException
      */
     public function __construct(
-        RegistrationOffer $regRange = null,
-        AbstractContact $contact = null,
-        ?Collection     $participantNotes = null,
+        RegistrationOffer     $regRange = null,
+        AbstractContact       $contact = null,
+        ?Collection           $participantNotes = null,
+        Collection|array|null $flagGroups = null,
     )
     {
         $this->participantContacts = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
+        $this->setFlagGroups((is_array($flagGroups) ? new ArrayCollection($flagGroups) : $flagGroups) ?? new ArrayCollection());
         $this->flagGroups = new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->eMails = new ArrayCollection();
@@ -510,7 +513,6 @@ class Participant implements ParticipantInterface
      *
      * @return Collection<ParticipantFlagGroup>
      */
-    #[ApiProperty(readableLink: true)]
     public function getFlagGroups(
         ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
@@ -543,7 +545,6 @@ class Participant implements ParticipantInterface
      * @throws FlagOutOfRangeException
      * @throws OswisException
      */
-    #[ApiProperty(writableLink: true)]
     public function setFlagGroups(?Collection $newFlagGroups): void
     {
         $this->changeFlagsByNewOffer($this->getOffer(), false, false, $newFlagGroups ?? new ArrayCollection(),);
