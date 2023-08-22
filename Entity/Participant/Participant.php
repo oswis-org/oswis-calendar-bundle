@@ -10,6 +10,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -157,8 +158,9 @@ class Participant implements ParticipantInterface
     protected ?ParticipantCategory $participantCategory = null;
 
     /**
-     * @var Collection<ParticipantFlagGroup>
+     * @var Collection<int, ParticipantFlagGroup>
      */
+    #[ApiProperty(readableLink: true, writableLink: true)]
     #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'calendar_participant_flag_group_connection')]
     #[JoinColumn(name: "participant_id", referencedColumnName: "id")]
