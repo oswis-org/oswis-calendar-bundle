@@ -160,7 +160,6 @@ class Participant implements ParticipantInterface
     /**
      * @var Collection<int, ParticipantFlagGroup>
      */
-    #[ApiProperty(readableLink: true, writableLink: true)]
     #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'calendar_participant_flag_group_connection')]
     #[JoinColumn(name: "participant_id", referencedColumnName: "id")]
@@ -511,6 +510,7 @@ class Participant implements ParticipantInterface
      *
      * @return Collection<ParticipantFlagGroup>
      */
+    #[ApiProperty(readableLink: true)]
     public function getFlagGroups(
         ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
@@ -543,6 +543,7 @@ class Participant implements ParticipantInterface
      * @throws FlagOutOfRangeException
      * @throws OswisException
      */
+    #[ApiProperty(writableLink: true)]
     public function setFlagGroups(?Collection $newFlagGroups): void
     {
         $this->changeFlagsByNewOffer($this->getOffer(), false, false, $newFlagGroups ?? new ArrayCollection(),);
