@@ -22,7 +22,7 @@
                 {{ block('range_preview_title') }}
             {% endif %}
             <div class="card-body p-3">
-                {% set range_text = date_range_string(range.startDateTime|default, range.endDateTime|default)|default %}
+                {% set range_text = date_range_string(range.startDateTime|default(null), range.endDateTime|default(null))|default %}
                 {% if range_text %}
                     <h6 class="card-subtitle mb-2 text-muted">
                         <strong>Možnost podání přihlášky:</strong> {{ range_text }}
@@ -37,8 +37,8 @@
                     </a>
                 </h6>
                 {% set event_range_text = date_range_string(
-                    range.event.startDateTime|default,
-                    range.event.endDateTime|default
+                    range.event.startDateTime|default(null),
+                    range.event.endDateTime|default(null)
                 )|default %}
                 {% if event_range_text %}
                     <h6 class="card-subtitle mb-2 text-muted"><strong>Termín akce:</strong> {{ event_range_text }}</h6>

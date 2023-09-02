@@ -26,7 +26,7 @@
             {% endif %}
         </h3>
         <h3 class="mb-3 p-1 text-center text-primary">
-            <small class="p-1">{{ date_range_string(event.startDateTime, event.endDateTime) }}</small>
+            <small class="p-1">{{ date_range_string(event.startDateTime(null), event.endDateTime(null)) }}</small>
         </h3>
         <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
         <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
@@ -48,8 +48,8 @@
                     </a>
                     <wbr class="d-inline">
                     {% set range_text = date_range_string(
-                        event.superEvent.startDateTime|default,
-                        event.superEvent.endDateTime|default
+                        event.superEvent.startDateTime|default(null),
+                        event.superEvent.endDateTime|default(null)
                     ) %}
                     {{ range_text ? '('~range_text~')' : null }}
                     <meta itemprop="startDate"

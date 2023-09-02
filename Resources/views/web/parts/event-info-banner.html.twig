@@ -15,8 +15,8 @@
                     <div class="batches-sidebar-box col-12 mb-0">
                         {% for subEvent in event.subEvents|default([])|filter(e => e.batch) %}
                             {% set range_text = date_range_string(
-                                subEvent.startDateTime|default,
-                                subEvent.endDateTime|default,
+                                subEvent.startDateTime|default(null),
+                                subEvent.endDateTime|default(null),
                                 true) %}
                             <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}">
                                 <div>

@@ -1,5 +1,5 @@
 {% set eventImage = absolute_url(asset(event.oneImage(true) ? '/images/events/'~event.oneImage(true) : 'img/web/og-image.jpg'))|default %}
-{% set range_text = date_range_string(event.startDateTime|default, event.endDateTime|default) %}
+{% set range_text = date_range_string(event.startDateTime|default(null), event.endDateTime|default(null)) %}
 
 <div class="row text-justify" itemscope itemtype="http://schema.org/Event">
     <meta itemprop="eventAttendanceMode" content="http://schema.org/MixedEventAttendanceMode">

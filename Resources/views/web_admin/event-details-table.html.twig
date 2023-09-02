@@ -1,4 +1,4 @@
-{% set range_text = date_range_string(event.startDateTime|default, event.endDateTime|default) %}
+{% set range_text = date_range_string(event.startDateTime|default(null), event.endDateTime(null)|default) %}
 <table class="list">
     <thead>
     <tr>

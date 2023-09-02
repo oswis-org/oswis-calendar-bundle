@@ -1,6 +1,6 @@
 <ul class="mt-2 mb-2 text-center">
     {% for subEvent in subEvents %}
-        {% set range_text = date_range_string(subEvent.startDateTime|default, subEvent.endDateTime|default) %}
+        {% set range_text = date_range_string(subEvent.startDateTime|default(null), subEvent.endDateTime|default(null)) %}
         <li itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
             <a itemprop="url" href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': subEvent.slug}) }}"
                title="{{ subEvent.name }}">
