@@ -28,13 +28,7 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
 
     public function getItems(): Collection
     {
-        $itemsData = new ArrayCollection([
-            [
-                'path' => '',
-                'changeFrequency' => SiteMapItem::CHANGE_FREQUENCY_DAILY,
-            ],
-        ]);
-        $items = $itemsData->map(fn(array $data) => new SiteMapItem($data['path'], $data['changeFrequency']),);
+        $items = new ArrayCollection();
         foreach (
             $this->eventService->getRepository()->getEvents([EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true]
             ) as $event
