@@ -447,7 +447,7 @@ services:
     public: true
     arguments:
         - '@router.default'
-        - '@oswis_org_oswis_calendar.event_service'
+        - '@oswis_org_oswis_calendar.event.event_service'
     tags:
         - 'oswis.site_map_extender'
   OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender:
