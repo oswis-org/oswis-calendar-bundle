@@ -57,25 +57,14 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
                         ), null, $event->getUpdatedAt()
                     )
                 );
-                $items->add(
-                    new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events'))
-                );
-                $items->add(
-                    new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_future'))
-                );
-                $items->add(
-                    new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_past'))
-                );
-                $items->add(
-                    new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_calendar'))
-                );
-                $items->add(
-                    new SiteMapItem($this->urlGenerator->generate(''))
-                );
             } catch (InvalidParameterException|RouteNotFoundException|MissingMandatoryParametersException $e) {
-                dd($e->getMessage());
             }
         }
+        $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events')));
+        $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_future')));
+        $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_past')));
+        $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_calendar')));
+        $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_kalendar')));
 
         return $items;
     }
