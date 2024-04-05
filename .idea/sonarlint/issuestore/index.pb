@@ -244,3 +244,5 @@ j
 :Controller/WebAdmin/WebAdminParticipantsListController.php,f/1/f1d0c0419efb1a2bdb3307db6b9a899b5b656858
 L
 Resources/config/routes.yaml,c/7/c7e7cf739616e8673064dd9edd4c8365f22aacd9
+j
+:Resources/views/documents/pages/participant-list.html.twig,7/7/77d3a3f2195b1f815e304291779d071f6e27c849

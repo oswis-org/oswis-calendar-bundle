@@ -72,6 +72,7 @@
       <path value="$PROJECT_DIR$/vendor/masterminds/html5" />
       <path value="$PROJECT_DIR$/vendor/monolog/monolog" />
       <path value="$PROJECT_DIR$/vendor/mpdf/mpdf" />
+      <path value="$PROJECT_DIR$/vendor/mpdf/psr-http-message-shim" />
       <path value="$PROJECT_DIR$/vendor/mpdf/psr-log-aware-trait" />
       <path value="$PROJECT_DIR$/vendor/myclabs/deep-copy" />
       <path value="$PROJECT_DIR$/vendor/myclabs/php-enum" />
@@ -196,7 +197,7 @@
   </component>
   <component name="PhpInterpreters">
     <interpreters>
-      <interpreter id="30c961db-27e9-4afe-88ba-000ef6ea8695" name="PHP latest" home="$USER_HOME$/.cache/JetBrains/PhpStorm2020.2/plugins/idea-php-latest-plugin/php-v7.3.1/php.sh" false="false" debugger_id="php.debugger.XDebug" />
+      <interpreter id="30c961db-27e9-4afe-88ba-000ef6ea8695" name="PHP latest" home="$USER_HOME$/.cache/JetBrains/PhpStorm2020.2/plugins/idea-php-latest-plugin/php-v7.3.1/php.sh" auto="false" debugger_id="php.debugger.XDebug" />
     </interpreters>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />

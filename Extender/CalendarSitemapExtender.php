@@ -57,7 +57,8 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
                         ), null, $event->getUpdatedAt()
                     )
                 );
-            } catch (InvalidParameterException|RouteNotFoundException|MissingMandatoryParametersException) {
+            } catch (InvalidParameterException|RouteNotFoundException|MissingMandatoryParametersException $e) {
+                dd($e->getMessage());
             }
         }
 
