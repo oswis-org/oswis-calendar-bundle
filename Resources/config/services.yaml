@@ -441,7 +441,7 @@ services:
     public: true
 
 
-  oswis_org_oswis_calendar.calendar_map_extender:
+  oswis_org_oswis_calendar.calendar_site_map_extender:
     class: OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender
     autowire: true
     public: true
