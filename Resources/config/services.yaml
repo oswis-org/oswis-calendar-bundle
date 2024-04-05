@@ -441,15 +441,16 @@ services:
     public: true
 
 
-    oswis_org_oswis_calendar.calendar_map_extender:
-        class: OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender
-        autowire: true
-        public: true
-        arguments:
-            - '@router.default'
-            - '@oswis_org_oswis_calendar.event_service'
-        tags:
-            - 'oswis.site_map_extender'
-    OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender:
-        alias: oswis_org_oswis_calendar.calendar_site_map_extender
-        public: true
+  oswis_org_oswis_calendar.calendar_map_extender:
+    class: OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender
+    autowire: true
+    public: true
+    arguments:
+        - '@router.default'
+        - '@oswis_org_oswis_calendar.event_service'
+    tags:
+        - 'oswis.site_map_extender'
+  OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender:
+    alias: oswis_org_oswis_calendar.calendar_site_map_extender
+    public: true
+
