@@ -1,7 +1,7 @@
 <section class="col-xs-12 col-lg" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
     <div class="card-deck">
         <div class="card mt-2 mb-4">
-            {% if range.rangeActive|default %}
+            {% if not simplified|default and range.rangeActive|default %}
                 <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}"
                    itemprop="url">
                     {% block range_preview_title %}
@@ -30,11 +30,16 @@
                 {% endif %}
                 <h6 class="card-subtitle mb-2 text-muted">
                     <strong>Akce:</strong>
-                    <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug|default}) }}"
-                       itemprop="itemOffered"
-                       title="{{ range.event|default }}" content="{{ range.event|default }}" data-bs-toggle="tooltip">
+                    {% if not simplified|default %}
+                        <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': range.event.slug|default}) }}"
+                           itemprop="itemOffered"
+                           title="{{ range.event|default }}" content="{{ range.event|default }}"
+                           data-bs-toggle="tooltip">
+                            {{ range.event.shortName|default }}
+                        </a>
+                    {% else %}
                         {{ range.event.shortName|default }}
-                    </a>
+                    {% endif %}
                 </h6>
                 {% set event_range_text = date_range_string(
                     range.event.startDateTime|default(null),
@@ -54,7 +59,7 @@
                     <div class="text-muted mt-2 mb-2 text-justify" itemprop="description">{{ range.note }}</div>
                 {% endif %}
                 <div style="font-size: 1.3em;">
-                    {% if range.rangeActive %}
+                    {% if not simplified|default and range.rangeActive %}
                         {% set badgeClassColor = range.surrogate ? 'warning' : 'success' %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
                             <div class="badge bg-{{ badgeClassColor }} py-1 px-2 mt-1">
