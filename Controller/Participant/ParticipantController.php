@@ -49,12 +49,12 @@ use UnexpectedValueException;
 class ParticipantController extends AbstractController
 {
     public function __construct(
-        public EventService             $eventService,
-        public RegistrationOfferService $regRangeService,
-        public ParticipantService       $participantService,
+        public EventService              $eventService,
+        public RegistrationOfferService  $regRangeService,
+        public ParticipantService        $participantService,
         protected EntityManagerInterface $entityManager,
-        protected Security              $security,
-        protected LoggerInterface       $logger,
+        protected Security               $security,
+        protected LoggerInterface        $logger,
         protected OswisCalendarSettingsProvider $calendarSettings,
     )
     {
@@ -238,16 +238,37 @@ class ParticipantController extends AbstractController
      * @param int|null $participantId
      *
      * @return Response
-     * @throws TokenInvalidException|OswisException
+     * @throws TokenInvalidException
      */
     public function processToken(?string $token = null, ?int $participantId = null): Response
     {
-        $participantToken = $this->participantService->getVerifiedToken($token, $participantId);
-        $type = $participantToken->getType();
-        if (AbstractToken::TYPE_ACTIVATION === $type) {
-            return $this->doActivation($participantToken);
+        try {
+            $participantToken = $this->participantService->getVerifiedToken($token, $participantId);
+            $type = $participantToken->getType();
+            if (AbstractToken::TYPE_ACTIVATION === $type) {
+                return $this->doActivation($participantToken);
+            }
+
+            throw new TokenInvalidException('špatný typ tokenu');
+        } catch (Exception $e) {
+            $activatedRedirectUrl = $this->calendarSettings->getExternalRedirects()['participant_invalid_token'];
+            if ($activatedRedirectUrl) {
+                $title = 'Neplatný token';
+                $message = "Použitý ověřovací odkaz není platný, pravděpodobně mu vypršela platnost. Kontaktujte nás, prosím.";
+                if ($e->getMessage()) {
+                    $message .= ' (' . $e->getMessage() . ')';
+                }
+                $activatedRedirectUrl = str_replace(
+                    ['{title}', '{message}'],
+                    [urlencode($title), urlencode($message)],
+                    $activatedRedirectUrl,
+                );
+
+                return $this->redirect($activatedRedirectUrl);
+            }
+
+            throw new TokenInvalidException('nebyla vykonána žádná akce');
         }
-        throw new TokenInvalidException('nebyla vykonána žádná akce');
     }
 
     /**
@@ -295,13 +316,27 @@ class ParticipantController extends AbstractController
             $this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId])
         );
 
+        $title = 'Ověřovací zpráva odeslána!';
+        $message = "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.";
+
+        $activatedRedirectUrl = $this->calendarSettings->getExternalRedirects()['participant_verification_resent'];
+        if ($activatedRedirectUrl) {
+            $activatedRedirectUrl = str_replace(
+                ['{title}', '{message}'],
+                [urlencode($title), urlencode($message)],
+                $activatedRedirectUrl,
+            );
+
+            return $this->redirect($activatedRedirectUrl);
+        }
+
         return $this->getResponse(
             'success',
-            'Ověřovací zpráva odeslána!',
+            $title,
             false,
             null,
             null,
-            "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
+            $message,
         );
     }
 

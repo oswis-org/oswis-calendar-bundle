@@ -8,6 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactNote;
 use OswisOrg\OswisAddressBookBundle\Service\AbstractContactService;
@@ -21,6 +22,8 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
@@ -31,6 +34,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
+use OswisOrg\OswisCoreBundle\Exceptions\UserNotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use OswisOrg\OswisCoreBundle\Service\AppUserTypeService;
@@ -61,12 +65,12 @@ class ParticipantService
      * @param Participant|null $participant
      *
      * @return Participant
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\UserNotFoundException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException
+     * @throws InvalidTypeException
+     * @throws NotFoundException
+     * @throws NotImplementedException
+     * @throws OswisException
+     * @throws UserNotFoundException
+     * @throws UserNotUniqueException
      */
     public function create(?Participant $participant): Participant
     {
@@ -238,7 +242,7 @@ class ParticipantService
      * @param int|null $limit
      * @param int|null $offset
      *
-     * @return \Doctrine\Common\Collections\Collection<Participant>
+     * @return Collection<Participant>
      */
     public function getParticipants(
         array $opts = [],
@@ -256,11 +260,11 @@ class ParticipantService
     }
 
     /**
-     * @param \OswisOrg\OswisCalendarBundle\Entity\Participant\Participant|null $participant
+     * @param Participant|null $participant
      * @param ParticipantToken $participantToken
      * @param bool $sendConfirmation
      *
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws OswisException
      */
     public function activate(
         ?Participant $participant,
@@ -386,7 +390,7 @@ class ParticipantService
      * @param int|null $participantId
      *
      * @return ParticipantToken
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException
+     * @throws TokenInvalidException
      */
     public function getVerifiedToken(?string $token, ?int $participantId): ParticipantToken
     {
@@ -414,13 +418,13 @@ class ParticipantService
      * @param AbstractContact|null $contact
      *
      * @return Participant
-     * @throws \InvalidArgumentException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws InvalidArgumentException
+     * @throws EventCapacityExceededException
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws ParticipantNotFoundException
+     * @throws NotImplementedException
+     * @throws OswisException
      */
     public function getEmptyParticipant(RegistrationOffer $regRange, ?AbstractContact $contact = null): Participant
     {
@@ -442,7 +446,7 @@ class ParticipantService
     }
 
     /**
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws OswisException
      */
     public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): void
     {
