@@ -51,7 +51,8 @@ class FlagOfParticipantType extends AbstractType
             'help_html' => true,
             'help' => $flagRange->getDescription(),
         ]);
-        if ($participantFlag->getFlagOffer() && $participantFlag->getFlagOffer()->isFormValueAllowed()) {
+        /** @phpstan-ignore-next-line */
+        if ($participantFlag->getFlagOffer()?->isFormValueAllowed()) {
             $event->getForm()->add("textValue", TextType::class, [
                 'label_html' => true,
                 'label' => $flagRange->getFormValueLabel(),

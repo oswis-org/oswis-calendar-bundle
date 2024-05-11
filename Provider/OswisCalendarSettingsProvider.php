@@ -26,12 +26,27 @@ class OswisCalendarSettingsProvider
     private array $defaultEventFallbacks = [];
 
     /**
+     * @var array{participant_activated: string|null, participant_invalid_token: string|null, participant_activation_error: string|null, participant_verification_resent: string|null} External redirects.
+     */
+    private array $externalRedirects = [
+        'participant_activated' => null,
+        'participant_invalid_token' => null,
+        'participant_activation_error' => null,
+        'participant_verification_resent' => null,
+    ];
+
+    /**
      * OswisCalendarSettingsProvider constructor.
      *
      * @param string|null $defaultEvent
      * @param array|null $defaultEventFallbacks
+     * @param array{participant_activated: string|null, participant_invalid_token: string|null, participant_activation_error: string|null, participant_verification_resent: string|null}|null $externalRedirects
      */
-    public function __construct(?string $defaultEvent = null, ?array $defaultEventFallbacks = null)
+    public function __construct(
+        ?string $defaultEvent = null,
+        ?array  $defaultEventFallbacks = null,
+        ?array  $externalRedirects = null,
+    )
     {
         $this->patterns = [
             [
@@ -42,6 +57,7 @@ class OswisCalendarSettingsProvider
         ];
         $this->setDefaultEvent($defaultEvent);
         $this->setDefaultEventFallbacks($defaultEventFallbacks ?? []);
+        $this->setExternalRedirects($externalRedirects);
     }
 
     /**
@@ -157,6 +173,25 @@ class OswisCalendarSettingsProvider
             if ($fallbackString) {
                 $this->defaultEventFallbacks[] = $fallbackString;
             }
+        }
+    }
+
+    /**
+     * @return array{participant_activated: string|null, participant_invalid_token: string|null, participant_activation_error: string|null, participant_verification_resent: string|null}
+     */
+    public function getExternalRedirects(): array
+    {
+        return $this->externalRedirects;
+    }
+
+    /**
+     * @param array{participant_activated: string|null, participant_invalid_token: string|null, participant_activation_error: string|null, participant_verification_resent: string|null}|null $externalRedirects
+     * @return void
+     */
+    public function setExternalRedirects(?array $externalRedirects): void
+    {
+        if ($externalRedirects) {
+            $this->externalRedirects = $externalRedirects;
         }
     }
 }

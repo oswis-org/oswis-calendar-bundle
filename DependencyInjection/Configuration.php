@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface
         $rootNode->info('Default configuration for calendar module for OSWIS (One Simple Web IS).');
         $this->addDefaultEvent($rootNode);
         $this->addDefaultEventFallback($rootNode);
+        $this->addExternalRedirects($rootNode);
         $rootNode->end();
 
         return $treeBuilder;
@@ -42,5 +43,38 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end();
     }
+
+
+    private function addExternalRedirects(ArrayNodeDefinition $rootNode): void
+    {
+        $rootNode->children()
+            ->arrayNode('external_redirects')
+            ->info('Redirects after actions such as participant verification.')
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode('participant_activated')
+            ->info("Participant successfully activated by token from e-mail.")
+            ->defaultValue(null)
+            ->example('https://www.example.com/participant_activated?title={title}&message={message}')
+            ->end()
+            ->scalarNode('participant_invalid_token')
+            ->info('Token is not valid for given participant.')
+            ->defaultValue(null)
+            ->example('https://www.example.com/participant_invalid_token?title={title}&message={message}')
+            ->end()
+            ->scalarNode('participant_activation_error')
+            ->info('Participant not activated for some reason.')
+            ->defaultValue(null)
+            ->example('https://www.example.com/participant_activation_error?title={title}&message={message}')
+            ->end()
+            ->scalarNode('participant_verification_resent')
+            ->info('Verification message was sent once again.')
+            ->defaultValue(null)
+            ->example('https://www.example.com/participant_verification_resent?title={title}&message={message}')
+            ->end()
+            ->end()
+            ->end();
+    }
+
 
 }

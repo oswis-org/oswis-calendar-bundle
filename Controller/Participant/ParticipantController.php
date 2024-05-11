@@ -9,6 +9,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\Participant;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use InvalidArgumentException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -16,7 +17,12 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
+use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
+use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
+use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
@@ -26,6 +32,7 @@ use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
+use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
@@ -48,6 +55,7 @@ class ParticipantController extends AbstractController
         protected EntityManagerInterface $entityManager,
         protected Security              $security,
         protected LoggerInterface       $logger,
+        protected OswisCalendarSettingsProvider $calendarSettings,
     )
     {
     }
@@ -72,14 +80,14 @@ class ParticipantController extends AbstractController
      * @param string|null $rangeSlug
      *
      * @return Response
-     * @throws \InvalidArgumentException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws InvalidArgumentException
+     * @throws EventCapacityExceededException
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws ParticipantNotFoundException
+     * @throws NotFoundException
+     * @throws NotImplementedException
+     * @throws OswisException
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {
@@ -257,15 +265,29 @@ class ParticipantController extends AbstractController
 
     public function participantActivated(): Response
     {
+        $title = 'Přihláška aktivována!';
+        $message = 'Přihláška byla úspěšně ověřena.';
+
+        $activatedRedirectUrl = $this->calendarSettings->getExternalRedirects()['participant_activated'];
+        if ($activatedRedirectUrl) {
+            $activatedRedirectUrl = str_replace(
+                ['{title}', '{message}'],
+                [$title, $message],
+                $activatedRedirectUrl,
+            );
+
+            return $this->redirect($activatedRedirectUrl);
+        }
+
         return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
-            'title' => 'Přihláška aktivována!',
-            'message' => 'Přihláška byla úspěšně ověřena.',
+            'title' => $title,
+            'message' => $message,
         ]);
     }
 
     /**
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotFoundException
+     * @throws OswisException
+     * @throws NotFoundException
      */
     public function resendActivationEmail(?int $participantId = null): Response
     {
@@ -290,7 +312,7 @@ class ParticipantController extends AbstractController
      * @param ParticipantCategory|null $participantCategory Type of participant.
      * @param string|null $participantType
      *
-     * @return \OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer|null
+     * @return RegistrationOffer|null
      */
     public function getRange(
         Event   $event,

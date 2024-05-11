@@ -200,6 +200,7 @@ class ParticipantMailService
                 $this->sendPaymentConfirmationToUser($payment, $appUser);
                 $sent++;
             } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
+                /** @phpstan-ignore-next-line */
                 $userId = $contactPerson->getAppUser()?->getId();
                 $message = $exception->getMessage();
                 $this->logger->error(
