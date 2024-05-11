@@ -59,14 +59,14 @@
                     <div class="text-muted mt-2 mb-2 text-justify" itemprop="description">{{ range.note }}</div>
                 {% endif %}
                 <div style="font-size: 1.3em;">
-                    {% if not simplified|default and range.rangeActive %}
+                    {% if range.rangeActive %}
                         {% set badgeClassColor = range.surrogate ? 'warning' : 'success' %}
                         <a href="{{ path('oswis_org_oswis_calendar_web_registration', {'rangeSlug': range.slug|default}) }}">
                             <div class="badge bg-{{ badgeClassColor }} py-1 px-2 mt-1">
                                 Přihlas se nyní{{- range.surrogate ? ' (jako náhradník)' : '' -}}!
                             </div>
                         </a>
-                    {% else %}
+                    {% elseif not simplified|default %}
                         <div class="badge bg-dark py-1 px-2 mt-1">Aktuálně neaktivní.</div>
                     {% endif %}
                     {#
