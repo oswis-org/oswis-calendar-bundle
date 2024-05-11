@@ -272,7 +272,7 @@ class ParticipantController extends AbstractController
         if ($activatedRedirectUrl) {
             $activatedRedirectUrl = str_replace(
                 ['{title}', '{message}'],
-                [$title, $message],
+                [urlencode($title), urlencode($message)],
                 $activatedRedirectUrl,
             );
 
