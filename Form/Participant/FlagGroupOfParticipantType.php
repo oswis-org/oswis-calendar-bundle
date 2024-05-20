@@ -169,6 +169,7 @@ class FlagGroupOfParticipantType extends AbstractType
             'required' => false,
             'help_html' => true,
             'choices' => $flagGroupRange->getFlagOffers(),
+            'placeholder' => $flagGroupRange->getEmptyPlaceholder(),
             // 'empty_data'         => null,
             'multiple' => true,
             'attr' => ['style' => 'display:none'],

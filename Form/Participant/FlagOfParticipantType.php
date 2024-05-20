@@ -46,7 +46,6 @@ class FlagOfParticipantType extends AbstractType
             'label_html' => true,
             'label' => $flagRange->getExtendedName(),
             'required' => $flagRange->getMin() > 0,
-            'placeholder' => '',
             'value' => $flagRange,
             'disabled' => !$flagRange->hasRemainingCapacity(),
             'help_html' => true,
