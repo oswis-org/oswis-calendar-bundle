@@ -1,6 +1,17 @@
 {% form_theme form 'bootstrap_4_layout.html.twig' %}
 {% extends '@OswisOrgOswisCore/web/page-skeleton-default.html.twig' %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-group small {
+            display: block;
+            padding-left: 0.5em;
+            padding-right: 0.5em;
+        }
+    </style>
+{% endblock stylesheets %}
+
 {% block body_content %}
     <main class="container" id="main-content-container">
         {% include '@OswisOrgOswisCalendar/web/parts/participant-registration.html.twig' %}
