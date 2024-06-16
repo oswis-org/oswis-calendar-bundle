@@ -1,0 +1,17 @@
+{% extends '@OswisOrgOswisCore/web_admin/web-admin-homepage.html.twig' %}
+
+{% block additional_actions %}
+    {{ parent() }}
+
+    <h2>Události</h2>
+    <ul>
+        <li>
+            <a href="{{ path('oswis_org_oswis_calendar_update_participants') }}">Aktualizace DB přihlášek</a>
+        </li>
+        <li>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_send_automails') }}">Odeslat e-maily</a>
+        </li>
+    </ul>
+
+
+{% endblock %}

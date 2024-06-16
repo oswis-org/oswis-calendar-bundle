@@ -246,3 +246,13 @@ L
 Resources/config/routes.yaml,c/7/c7e7cf739616e8673064dd9edd4c8365f22aacd9
 j
 :Resources/views/documents/pages/participant-list.html.twig,7/7/77d3a3f2195b1f815e304291779d071f6e27c849
+Z
+*Resources/views/web/pages/events.html.twig,3/6/36011b8a6ac28a55f2458eada1cd0893f302210c
+t
+DResources/views/web/pages/participant-payments-import-form.html.twig,1/6/1654ec0928caa51a8739f2e8a121c8429fcfa0bd
+y
+IResources/views/web/pages/participant-registration-confirmation.html.twig,c/e/ceaf47b735f612e7cb63b1510a2a070d1f2e89ce
+y
+IResources/views/web/parts/participant-registration-comming-soon.html.twig,7/f/7f6dae8bb608f2a7981feb95e4c292d25466fd7b
+†
+VResources/views/bundles/ZakjakubOswisCoreBundle/web_admin/web-admin-homepage.html.twig,d/c/dc27e86bcf00d0486db4a9f1470659499133013b

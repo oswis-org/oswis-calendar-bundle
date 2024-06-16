@@ -119,7 +119,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @var Collection<ParticipantNote> $notes
+     * @var Collection<int, ParticipantNote> $notes
      */
     #[OneToMany(mappedBy: 'participant', targetEntity: ParticipantNote::class, cascade: ['all'], fetch: 'EAGER')]
     #[MaxDepth(1)]
@@ -661,7 +661,7 @@ class Participant implements ParticipantInterface
 
     public static function sortParticipantsArray(array &$participants): array
     {
-        usort($participants, static fn(mixed $p1, mixed $p2) => self::compareParticipants($p1, $p2),);
+        usort($participants, static fn(Participant $p1, Participant $p2) => self::compareParticipants($p1, $p2),);
 
         return $participants;
     }
@@ -713,7 +713,7 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @return Collection
+     * @return Collection<int, ParticipantNote>
      */
     public function getNotes(): Collection
     {
