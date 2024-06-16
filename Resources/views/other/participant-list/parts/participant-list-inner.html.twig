@@ -106,7 +106,7 @@
     {% set paidPercentage = (participant.paidPricePercentage * 100)|round %}
     {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
     {% set paidColor = participant.remainingDeposit <= 0 ? 'warning' : paidColor %}
-    {% set paidColor = participant.remainingPrice < 0 ? 'secondary' : paidColor %}
+    {% set paidColor = participant.remainingPrice < 0 ? 'info' : paidColor %}
     {% set paidColor = participant.remainingPrice == 0 ? 'success' : paidColor %}
     <td style="border:1px solid grey; padding:.3em .6em; text-align:right;" class="text-{{ paidColor }}">
         <div class="block">
