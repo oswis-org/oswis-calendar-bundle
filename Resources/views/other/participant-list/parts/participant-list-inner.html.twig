@@ -103,7 +103,11 @@
             {% endfor %}
         </div>
     </td>
-    <td style="border:1px solid grey; padding:.3em .6em; text-align:right;color:{{ participant.remainingPrice|default(0) == 0 ? 'green' : 'red' }}">
+    {% set paidPercentage = (participant.paidPricePercentage * 100)|round %}
+    {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
+    {% set paidColor = participant.remainingDeposit < 0 ? 'warning' : paidColor %}
+    {% set paidColor = participant.remainingPrice < 0 ? 'secondary' : paidColor %}
+    <td style="border:1px solid grey; padding:.3em .6em; text-align:right;" class="text-{{ paidColor }}">
         <div class="block">
             <strong>💰 {{ participant.paidPrice|default(0) }},-&nbsp;Kč</strong>
         </div>
@@ -121,16 +125,12 @@
             {%- endif -%}
         </div>
         {% if participant.price != 0 %}
-            {% set paidPercentage = (participant.paidPricePercentage * 100)|round %}
-            {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
-            {% set paidColor = participant.remainingDeposit > 0 ? 'warning' : paidColor %}
-            {% set paidColor = participant.remainingPrice < 0 ? 'secondary' : paidColor %}
             <div class="progress">
-                <div class="progress-bar progress-bar-striped bg-{{ paidColor }}" role="progressbar"
+                <progress class="progress-bar progress-bar-striped bg-{{ paidColor }}"
                      style="width: {{ paidPercentage }}%"
                      aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">
                     {{ paidPercentage }} %
-                </div>
+                </progress>
             </div>
         {% endif %}
         <div>
