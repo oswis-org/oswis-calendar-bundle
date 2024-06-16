@@ -76,7 +76,7 @@
             </table>
             <p>
                 <small>
-                    {{ participants|filter(participant => not participant.deleted)|join(', ') }}
+                    {{ participants|filter(participant => not participant.deleted)|map(p => p.contact.email)|join(', ') }}
                 </small>
             </p>
         </div>
@@ -99,7 +99,7 @@
             </table>
             <p>
                 <small>
-                    {{ participants|filter(participant => participant.deleted)|join(', ') }}
+                    {{ participants|filter(participant => participant.deleted)|map(p => p.contact.email)|join(', ') }}
                 </small>
             </p>
         </div>
