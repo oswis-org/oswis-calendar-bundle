@@ -108,7 +108,8 @@
     {% set paidColor = participant.remainingDeposit <= 0 ? 'warning' : paidColor %}
     {% set paidColor = participant.remainingPrice < 0 ? 'info' : paidColor %}
     {% set paidColor = participant.remainingPrice == 0 ? 'success' : paidColor %}
-    <td style="border:1px solid grey; padding:.3em .6em; text-align:right;" class="text-{{ paidColor }}">
+    <td style="border:1px solid grey; padding:.3em .6em; text-align:right; white-space: nowrap;"
+        class="text-{{ paidColor }}">
         <div class="block">
             <strong>💰 {{ participant.paidPrice|default(0) }},-&nbsp;Kč</strong>
         </div>
