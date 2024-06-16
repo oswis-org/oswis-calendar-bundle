@@ -75,9 +75,9 @@
                 {% endfor %}
             </table>
             <p>
-                {% for participant in participants|filter(participant => not participant.deleted) %}
-                    {{ participant.contact.email|default }},
-                {% endfor %}
+                <small>
+                    {{ participants|filter(participant => not participant.deleted)|join(', ') }}
+                </small>
             </p>
         </div>
     </div>
@@ -98,9 +98,9 @@
                 {% endfor %}
             </table>
             <p>
-                {% for participant in participants|filter(participant => participant.deleted) %}
-                    {{ participant.contact.email|default }},
-                {% endfor %}
+                <small>
+                    {{ participants|filter(participant => participant.deleted)|join(', ') }}
+                </small>
             </p>
         </div>
     </div>
