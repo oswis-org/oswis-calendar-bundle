@@ -72,7 +72,7 @@
                         {% set badgeColorString = participantFlag.deletedAt
                             ? 'background-color:lightgrey!important;color:darkgrey!important;'
                             : badgeColorString %}
-                        <div class="badge bg-info smaller m-1" data-bs-toggle="tooltip" data-bs-html="true"
+                        <div class="badge bg-info smaller mt-1" data-bs-toggle="tooltip" data-bs-html="true"
                              style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
                              title="Příznak: {{ participantFlag.flag.name|default }}<br>
                              ID přiřazení {{ participantFlag.id }}<br>
