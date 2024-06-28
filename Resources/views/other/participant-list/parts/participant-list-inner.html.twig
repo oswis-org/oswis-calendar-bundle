@@ -132,7 +132,10 @@
                      style="width: {{ paidPercentage }}%"
                      aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">
                 </div>
-                <small class="justify-content-center d-flex position-absolute w-100">{{ paidPercentage }} %</small>
+                <small class="justify-content-center d-flex position-absolute w-100"
+                       style="z-index: 100; font-weight: bold;">
+                    {{ paidPercentage }}&nbsp;%
+                </small>
             </div>
         {% endif %}
         <div class="block small">
