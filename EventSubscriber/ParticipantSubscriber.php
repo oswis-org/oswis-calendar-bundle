@@ -5,10 +5,12 @@
 
 namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +23,8 @@ final class ParticipantSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly ParticipantMailService $participantMailService,
         private readonly LoggerInterface $logger,
+        protected readonly RegistrationFlagOfferService $flagRangeService,
+        protected readonly RegistrationOfferService     $registrationOfferService,
     )
     {
     }
@@ -67,5 +71,10 @@ final class ParticipantSubscriber implements EventSubscriberInterface
         }
         $this->logger->notice("ParticipantSubscriber->postWrite()");
         $this->participantMailService->sendSummary($participant);
+        $this->flagRangeService->updateUsages($participant);
+        $regRange = $participant->getOffer();
+        if ($regRange) {
+            $this->registrationOfferService->updateUsage($regRange);
+        }
     }
 }

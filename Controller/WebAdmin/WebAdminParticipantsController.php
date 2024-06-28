@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,7 +20,7 @@ class WebAdminParticipantsController extends AbstractController
     }
 
     /**
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\OswisException
+     * @throws OswisException
      */
     public function sendAutoMails(int $limit = 100, ?string $type = null): Response
     {

@@ -7,6 +7,7 @@
 namespace OswisOrg\OswisCalendarBundle\Controller\Participant;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
@@ -28,6 +29,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantTokenService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
@@ -38,24 +40,25 @@ use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\Security\Core\Security;
 use UnexpectedValueException;
 
 class ParticipantController extends AbstractController
 {
     public function __construct(
-        public EventService              $eventService,
-        public RegistrationOfferService  $regRangeService,
-        public ParticipantService        $participantService,
-        protected EntityManagerInterface $entityManager,
-        protected Security               $security,
-        protected LoggerInterface        $logger,
-        protected OswisCalendarSettingsProvider $calendarSettings,
+        public readonly EventService                     $eventService,
+        public readonly RegistrationOfferService         $regRangeService,
+        protected readonly RegistrationFlagOfferService  $flagRangeService,
+        public readonly ParticipantService               $participantService,
+        protected readonly EntityManagerInterface        $entityManager,
+        protected readonly Security                      $security,
+        protected readonly LoggerInterface               $logger,
+        protected readonly OswisCalendarSettingsProvider $calendarSettings,
     )
     {
     }
@@ -415,9 +418,21 @@ class ParticipantController extends AbstractController
     ): Response
     {
         $coreSettings->checkAdminIP($request->getClientIp());
+        /** @var Collection<int, RegistrationOffer> $regRanges */
+        $regRanges = new ArrayCollection();
         foreach ($this->participantService->getParticipants([], true, $limit, $offset) as $participant) {
-            if ($participant instanceof Participant) {
-                $participant->updateCachedColumns();
+            assert($participant instanceof Participant);
+            $participant->updateCachedColumns();
+            $regRange = $participant->getOffer();
+            if ($regRange && !$regRanges->contains($regRange)) {
+                $regRanges->add($regRange);
+            }
+            $this->flagRangeService->updateUsages($participant);
+        }
+
+        foreach ($regRanges as $regRange) {
+            if ($regRange instanceof RegistrationOffer) {
+                $this->regRangeService->updateUsage($regRange);
             }
         }
 

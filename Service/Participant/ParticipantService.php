@@ -27,6 +27,7 @@ use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
+use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUserToken;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
@@ -51,6 +52,7 @@ class ParticipantService
         protected readonly ParticipantMailService  $participantMailService,
         protected readonly AbstractContactService  $abstractContactService,
         protected readonly RegistrationFlagOfferService $flagRangeService,
+        protected readonly RegistrationOfferService $registrationOfferService,
         protected readonly AppUserTypeService      $appUserTypeService,
     )
     {
@@ -114,6 +116,10 @@ class ParticipantService
         $participant->updateCachedColumns();
         $this->requestActivation($participant);
         $this->flagRangeService->updateUsages($participant);
+        $regRange = $participant->getOffer();
+        if ($regRange) {
+            $this->registrationOfferService->updateUsage($regRange);
+        }
         $this->em->flush();
         $this->logger->info($this->getLogMessage($participant));
 
