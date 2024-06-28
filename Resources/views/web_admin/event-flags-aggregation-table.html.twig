@@ -33,14 +33,14 @@
                     {% if flagUsage.entity.shortName != flagUsage.entity.name %}
                         <span class="block small">{{ flagUsage.entity.name|default }}</span>
                     {% endif %}
-                    <div class="block small">
+                    <span class="block small">
                         {{ flagUsage.entity.id|default }}, <em>{{ flagUsage.entity.slug|default }}</em>
-                    </div>
+                    </span>
                     {% if flagUsage.entity.min|default(0) > 0 or flagUsage.entity.max|default != null %}
-                        <div class="block small">
+                        <span class="block small">
                             Vyžadováno {{ flagUsage.entity.min|default(0) }}
                             až {{ flagUsage.entity.max|default('neomezeno') }} v každé přihlášce.
-                        </div>
+                        </span>
                     {% endif %}
                 </td>
                 <td class="text-center">
@@ -58,9 +58,9 @@
                         </div>
                     {% endif %}
                     {% if occupancy.occupancy|default > 0 %}
-                        <div class="block small">
+                        <span class="block small">
                             {{ (flagUsage.usage|default(0) / occupancy.occupancy * 100)|round(1) }} % účastníků
-                        </div>
+                        </span>
                     {% endif %}
                 </td>
             </tr>
