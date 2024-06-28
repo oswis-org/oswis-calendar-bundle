@@ -430,7 +430,7 @@ class ParticipantController extends AbstractController
             $this->flagRangeService->updateUsages($participant);
         }
 
-        foreach ($regRanges as $regRange) {
+        foreach (array_unique($regRanges->toArray()) as $regRange) {
             if ($regRange instanceof RegistrationOffer) {
                 $this->regRangeService->updateUsage($regRange);
             }
