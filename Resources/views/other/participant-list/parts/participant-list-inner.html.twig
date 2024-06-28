@@ -113,7 +113,7 @@
         <div class="block">
             <strong>💰 {{ participant.paidPrice|default(0) }},-&nbsp;Kč</strong>
         </div>
-        <div class="block">
+        <div class="block small">
             z&nbsp;{{ participant.price|default(0) }},-&nbsp;Kč
         </div>
         <div class="block small" style="{{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
@@ -127,18 +127,16 @@
             {%- endif -%}
         </div>
         {% if participant.price != 0 %}
-            <div class="progress">
+            <div class="progress position-relative">
                 <div class="progress-bar progress-bar-striped bg-{{ paidColor }}"
                      style="width: {{ paidPercentage }}%"
                      aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">
                 </div>
-                {{ paidPercentage }} %
+                <small class="justify-content-center d-flex position-absolute w-100">{{ paidPercentage }} %</small>
             </div>
         {% endif %}
-        <div>
-            <small>
-                VS: {{ participant.variableSymbol|default('nenastaven') }}
-            </small>
+        <div class="block small">
+            VS: {{ participant.variableSymbol|default('nenastaven') }}
         </div>
     </td>
 </tr>
