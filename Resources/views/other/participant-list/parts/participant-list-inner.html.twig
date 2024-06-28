@@ -16,7 +16,7 @@
         </div>
         {% if appUser and appUser.activated %}
             <div class="block small" style="color:green;">
-                <strong>✔</strong>&nbsp;{{ appUser.activated|date("j. n. Y, H:i") }}
+                <strong>✓</strong>&nbsp;{{ appUser.activated|date("j. n. Y, H:i") }}
             </div>
         {% else %}
             <div class="block small" style="color:red;">
@@ -24,7 +24,7 @@
             </div>
         {% endif %}
         <div class="block small">
-            ☎ <a href="call:{{ contact.phone|default }}" target="_blank">{{ contact.phone|default }}</a>
+            ☏ <a href="call:{{ contact.phone|default }}" target="_blank">{{ contact.phone|default }}</a>
         </div>
         <div class="block small">
             ✉ <a href="mailto:{{ contact.email|default }}" target="_blank">{{ contact.email|default }}</a>
