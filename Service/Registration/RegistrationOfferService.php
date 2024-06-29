@@ -13,7 +13,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CapacityUsage;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantRegistration;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRegistrationRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
@@ -53,9 +53,11 @@ class RegistrationOfferService
         if (null !== $usage) {
             $range->setUsage(new CapacityUsage($usage, $usage));
         }
-        foreach ($range->getFlagGroupRanges() as $flagRange) {
-            /** @var RegistrationFlagOffer $flagRange */
-            $this->flagRangeService->updateUsage($flagRange);
+        foreach ($range->getFlagGroupRanges() as $flagGroupRange) {
+            /** @var RegistrationFlagGroupOffer $flagGroupRange */
+            foreach ($flagGroupRange->getFlagOffers() as $flagRange) {
+                $this->flagRangeService->updateUsage($flagRange);
+            }
         }
     }
 
