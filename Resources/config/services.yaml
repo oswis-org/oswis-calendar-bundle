@@ -38,6 +38,7 @@ services:
     arguments:
       - '@oswis_org_oswis_calendar.event.event_service'
       - '@oswis_org_oswis_calendar.registration.registration_offer_service'
+      - '@oswis_org_oswis_calendar.registration.registration_flag_offer_service'
       - '@oswis_org_oswis_calendar.participant.participant_service'
   OswisOrg\OswisCalendarBundle\Controller\Participant\ParticipantController:
     alias: oswis_org_oswis_calendar.participant.participant_controller
