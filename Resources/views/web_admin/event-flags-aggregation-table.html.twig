@@ -8,14 +8,20 @@
                 {% if groupOrCategory.shortName != groupOrCategory.name %}
                     <div class="block small">{{ groupOrCategory.name|default }}</div>
                 {% endif %}
-                <div class="block small">{{ groupOrCategory.id|default }}, {{ groupOrCategory.slug|default }}</div>
+                <span class="block small">{{ groupOrCategory.id|default }}, {{ groupOrCategory.slug|default }}</span>
                 {% if flagCategoryUsage.flagGroupRange|default
                     and (flagCategoryUsage.flagGroupRange.min|default(0) > 0 or flagCategoryUsage.flagGroupRange.max|default != null) %}
-                    <div class="block small">
-                        Vyžadováno {{ flagCategoryUsage.flagGroupRange.min|default(0) }}
-                        až {{ flagCategoryUsage.flagGroupRange.max|default('neomezeno') }} v
-                        každé přihlášce.
-                    </div>
+                    <span class="block small" style="font-weight: normal;">
+                        <small>
+                            Vyžadováno
+                            <strong>
+                                {{ flagCategoryUsage.flagGroupRange.min|default(0) -}}
+                                &nbsp;až&nbsp;
+                                {{- flagCategoryUsage.flagGroupRange.max|default('neomezeno') }}
+                            </strong>
+                            v&nbsp;každé přihlášce.
+                        </small>
+                    </span>
                 {% endif %}
             </th>
             <th>Počet použití
@@ -29,13 +35,15 @@
             <tbody>
             <tr>
                 <td>
-                    <strong style="{{ textColorCss }}">{{ flagUsage.entity.shortName|default }}</strong>
+                    <span class="block">
+                        <strong style="{{ textColorCss }}">{{ flagUsage.entity.shortName|default }}</strong>
+                        <span class="small">
+                            {{ flagUsage.entity.id|default }}, <em>{{ flagUsage.entity.slug|default }}</em>
+                        </span>
+                    </span>
                     {% if flagUsage.entity.shortName != flagUsage.entity.name %}
                         <span class="block small">{{ flagUsage.entity.name|default }}</span>
                     {% endif %}
-                    <span class="block small">
-                        {{ flagUsage.entity.id|default }}, <em>{{ flagUsage.entity.slug|default }}</em>
-                    </span>
                     {% if flagUsage.entity.min|default(0) > 0 or flagUsage.entity.max|default != null %}
                         <span class="block small">
                             Vyžadováno {{ flagUsage.entity.min|default(0) }}
