@@ -1,4 +1,4 @@
-"ID", "Celé jméno", "Velikost trička"
+"ID", "Příjmení", "Křestní jméno", "Celé jméno", "E-mail", "Telefon", "Velikost trička", "Zaplaceno"
 {% for participant in participants %}
-    {{ participant.id|default }}, "{{ participant.contact.fullName|default }}", "{{ participant.tShirt }}"
+    {{ participant.id|default }}, "{{ participant.conatct.familyName }}", "{{ participant.conatct.givenName }}", "{{ participant.contact.fullName|default }}", "{{ participant.contact.email|default }}", "{{ participant.contact.phone|default }}", "{{ participant.tShirt }}", "{{ participant.paidPricePercantage|default(0) }} %"
 {% endfor %}
