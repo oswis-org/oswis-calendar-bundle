@@ -53,7 +53,7 @@
                 <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': event.superEvent.slug}) }}">
                     {{ event.superEvent.shortName }}
                 </a>
-                <span class="block small">{{ range_text }}</span>
+                <span class="block small">{{ event.superEvent.rangeAsText }}</span>
             </td>
         </tr>
         </tbody>
@@ -125,17 +125,15 @@
         </tr>
         </tbody>
     {% endif %}
-    {% if event.organizer|default %}
-        <tbody>
-        <tr>
-            <td>Výchozí událost?
-                <div class="block small">Událost nejvyššího řádu?</div>
-            </td>
-            <td>
-                {{ isDefaultEvent ? 'ANO' : 'NE' }}
-                <div class="block small">{{ event.root|default ? 'ANO' : 'NE' }}</div>
-            </td>
-        </tr>
-        </tbody>
-    {% endif %}
+    <tbody>
+    <tr>
+        <td>Výchozí událost?
+            <div class="block small">Událost nejvyššího řádu?</div>
+        </td>
+        <td>
+            {{ isDefaultEvent ? 'ANO' : 'NE' }}
+            <div class="block small">{{ event.root|default ? 'ANO' : 'NE' }}</div>
+        </td>
+    </tr>
+    </tbody>
 </table>
