@@ -34,7 +34,7 @@ class ParticipantRegistrationRepository extends EntityRepository
         try {
             $result = $queryBuilder->getQuery()->getSingleScalarResult();
 
-            return is_string($result) || is_numeric($result) ? (int)$result : null;
+            return (is_string($result) || is_numeric($result)) ? (int)$result : null;
         } catch (NoResultException|NonUniqueResultException) {
             return null;
         }
