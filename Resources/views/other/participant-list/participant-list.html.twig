@@ -59,7 +59,12 @@
 
     <div class="row">
         <div class="col">
-            <h3>Přehled nezrušených přihlášek</h3>
+            <h3>
+                Přehled nezrušených přihlášek
+                <small>
+                    [<a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': subEventOccupancy.event.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">csv</a>]
+                </small>
+            </h3>
             <table class="list">
                 {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
                 {% for participant in participants|filter(participant => not participant.deleted) %}
@@ -98,9 +103,11 @@
                 {% endfor %}
             </table>
             <p>
-                <small>
-                    {{ participants|filter(participant => participant.deleted)|map(p => p.contact.email)|join(', ') }}
-                </small>
+                <span class="block small">
+                    <small>
+                        {{ participants|filter(participant => participant.deleted)|map(p => p.contact.email)|join(', ') }}
+                    </small>
+                </span>
             </p>
         </div>
     </div>

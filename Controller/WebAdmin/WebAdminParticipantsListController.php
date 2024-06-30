@@ -6,6 +6,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
@@ -42,22 +43,26 @@ class WebAdminParticipantsListController extends AbstractController
     {
     }
 
-    public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    public function showParticipants(
+        ?string $eventSlug = null,
+        ?string $participantCategorySlug = null,
+        bool    $includeDeleted = true,
+    ): Response
     {
         return $this->render(
             "@OswisOrgOswisCalendar/web_admin/participants.html.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug),
+            $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted),
         );
     }
 
-    public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null): array
+    public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null, bool $includeDeleted = true): array
     {
         $data = [];
         $data['participantCategory']
             = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $data['event'] = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
         $data['participants'] = $this->participantService->getParticipants([
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED => $includeDeleted,
             ParticipantRepository::CRITERIA_EVENT => $data['event'],
             ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $data['participantCategory'],
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
@@ -77,16 +82,20 @@ class WebAdminParticipantsListController extends AbstractController
     /**
      * @throws InvalidArgumentException
      */
-    public function showParticipantsCsv(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    public function showParticipantsCsv(
+        ?string $eventSlug = null,
+        ?string $participantCategorySlug = null,
+        bool    $includeDeleted = false,
+    ): Response
     {
         $fileName = "participants";
         $fileName .= $eventSlug ? ('_' . $eventSlug) : '';
         $fileName .= $participantCategorySlug ? ('_' . $participantCategorySlug) : '';
-        $fileName .= '_' . str_replace('T', '_', (new \DateTime())->format('c'));
+        $fileName .= '_' . str_replace('T', '_', (new DateTime())->format('c'));
         $fileName .= '.csv';
         return $this->render(
             "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug),
+            $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted),
             new Response(headers: [
                 'Content-Type' => 'text/csv',
                 'Content-Disposition' => "attachment; filename=\"{$fileName}\""
