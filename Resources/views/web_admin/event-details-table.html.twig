@@ -80,6 +80,11 @@
             <td>
                 {{ event.group.name }}
                 <span class="block small">{{ event.seqId }}.</span>
+                {% if event.category.type === 'year-of-event' %}
+                    ročník
+                {% elseif event.category.type === 'batch-of-event' %}
+                    turnus
+                {% endif %}
             </td>
         </tr>
         </tbody>
