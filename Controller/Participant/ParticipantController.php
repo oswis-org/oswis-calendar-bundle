@@ -33,6 +33,7 @@ use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferServi
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractToken;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUserRole;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -417,7 +418,10 @@ class ParticipantController extends AbstractController
         ?int    $offset = null
     ): Response
     {
-        $coreSettings->checkAdminIP($request->getClientIp());
+        error_log('Updating participants...');
+        if (!in_array(AppUserRole::ROLE_ROOT, $this->security->getUser()?->getRoles() ?? [], true)) {
+            $coreSettings->checkAdminIP($request->getClientIp());
+        }
         /** @var Collection<int, RegistrationOffer> $regRanges */
         $regRanges = new ArrayCollection();
         foreach ($this->participantService->getParticipants([], true, $limit, $offset) as $participant) {
@@ -430,12 +434,13 @@ class ParticipantController extends AbstractController
             $this->flagRangeService->updateUsages($participant);
         }
 
-        foreach (array_unique($regRanges->toArray()) as $regRange) {
+        foreach ($regRanges as $regRange) {
             $this->logger->error('Update usage of regRange #' . $regRange->getId() . '.');
             if ($regRange instanceof RegistrationOffer) {
                 $this->regRangeService->updateUsage($regRange);
             }
         }
+        $this->entityManager->flush();
 
         return $this->render("@OswisOrgOswisCore/web/pages/message.html.twig", [
             'title' => 'Přihlášky aktualizovány!',

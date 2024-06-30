@@ -50,6 +50,7 @@ class RegistrationOfferService
     public function updateUsage(RegistrationOffer $range): void
     {
         $usage = $this->countRegistrationsRangeConnectionsByRange($range);
+        $this->logger->error('Usage of range #' . $range->getId() . ' is ' . $usage . '.');
         if (null !== $usage) {
             $range->setUsage(new CapacityUsage($usage, $usage));
         }
