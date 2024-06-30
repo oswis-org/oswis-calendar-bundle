@@ -86,7 +86,7 @@ class RegistrationOfferRepository extends EntityRepository
 
     private function addRequiredRegRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_REQUIRED_REG_RANGE]) && $opts[self::CRITERIA_REQUIRED_REG_RANGE] instanceof Event) {
+        if (!empty($opts[self::CRITERIA_REQUIRED_REG_RANGE]) && $opts[self::CRITERIA_REQUIRED_REG_RANGE] instanceof RegistrationOffer) {
             $queryBuilder->andWhere('range.requiredRegRange = :required__reg_range_id');
             $queryBuilder->setParameter('required__reg_range_id', $opts[self::CRITERIA_REQUIRED_REG_RANGE]->getId());
         }
