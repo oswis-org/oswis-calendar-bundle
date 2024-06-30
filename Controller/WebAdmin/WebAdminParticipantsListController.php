@@ -233,6 +233,14 @@ class WebAdminParticipantsListController extends AbstractController
         $regRanges = $this->participantRegistrationService->getRepository()->getRegistrationsRanges(
             [RegistrationOfferRepository::CRITERIA_EVENT => $event]
         );
+        foreach ($regRanges as $regRange) {
+            $newRegRanges = [
+                ...($newRegRanges ?? []),
+                $this->participantRegistrationService->getRepository()->getRegistrationsRanges(
+                    [RegistrationOfferRepository::CRITERIA_REQUIRED_REG_RANGE => $regRange],
+                )
+            ];
+        }
         ksort($flagsUsageByRange);
         ksort($flagsUsageByFlag);
 

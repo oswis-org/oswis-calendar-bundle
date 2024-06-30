@@ -435,7 +435,6 @@ class ParticipantController extends AbstractController
         }
 
         foreach ($regRanges as $regRange) {
-            $this->logger->error('Update usage of regRange #' . $regRange->getId() . '.');
             if ($regRange instanceof RegistrationOffer) {
                 $this->regRangeService->updateUsage($regRange);
             }

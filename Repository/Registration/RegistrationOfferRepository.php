@@ -20,6 +20,7 @@ class RegistrationOfferRepository extends EntityRepository
     public const CRITERIA_ID = 'id';
     public const CRITERIA_SLUG = 'slug';
     public const CRITERIA_EVENT = 'event';
+    public const CRITERIA_REQUIRED_REG_RANGE = 'requiredRegRange';
     public const CRITERIA_PARTICIPANT_TYPE = 'participantType';
     public const CRITERIA_PARTICIPANT_CATEGORY = 'participantCategory';
     public const CRITERIA_PUBLIC_ON_WEB = 'publicOnWeb';
@@ -50,6 +51,7 @@ class RegistrationOfferRepository extends EntityRepository
         $this->addIdQuery($queryBuilder, $opts);
         $this->addSlugQuery($queryBuilder, $opts);
         $this->addEventQuery($queryBuilder, $opts);
+        $this->addRequiredRegRangeQuery($queryBuilder, $opts);
         $this->addParticipantCategoryQuery($queryBuilder, $opts);
         $this->addParticipantTypeQuery($queryBuilder, $opts);
         $this->addOnlyActiveQuery($queryBuilder, $opts);
@@ -79,6 +81,14 @@ class RegistrationOfferRepository extends EntityRepository
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
             $queryBuilder->andWhere('range.event = :event_id');
             $queryBuilder->setParameter('event_id', $opts[self::CRITERIA_EVENT]->getId());
+        }
+    }
+
+    private function addRequiredRegRangeQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    {
+        if (!empty($opts[self::CRITERIA_REQUIRED_REG_RANGE]) && $opts[self::CRITERIA_REQUIRED_REG_RANGE] instanceof Event) {
+            $queryBuilder->andWhere('range.requiredRegRange = :required__reg_range_id');
+            $queryBuilder->setParameter('required__reg_range_id', $opts[self::CRITERIA_REQUIRED_REG_RANGE]->getId());
         }
     }
 
