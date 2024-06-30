@@ -82,7 +82,7 @@ class WebAdminParticipantsListController extends AbstractController
         $fileName = "participants";
         $fileName .= $eventSlug ? ('_' . $eventSlug) : '';
         $fileName .= $participantCategorySlug ? ('_' . $participantCategorySlug) : '';
-        $fileName .= str_replace('T', '_', (new \DateTime())->format('c'));
+        $fileName .= '_' . str_replace('T', '_', (new \DateTime())->format('c'));
         $fileName .= '.csv';
         return $this->render(
             "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",

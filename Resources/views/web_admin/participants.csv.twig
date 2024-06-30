@@ -1,3 +1,3 @@
 {% for participant in participants %}
-    {{ participant.id|default }}, "{{ participant.contact.fullName|default }}"; "{{ participant.tShirt }}"
+    {{ participant.id|default }}, "{{ participant.contact.fullName|default }}", "{{ participant.tShirt }}"
 {% endfor %}
