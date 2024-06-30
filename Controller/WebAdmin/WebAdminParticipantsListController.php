@@ -241,6 +241,11 @@ class WebAdminParticipantsListController extends AbstractController
                 )
             ];
         }
+        foreach (($newRegRanges ?? []) as $newRegRange) {
+            if (!$regRanges->contains($newRegRange)) {
+                $regRanges->add($newRegRange);
+            }
+        }
         ksort($flagsUsageByRange);
         ksort($flagsUsageByFlag);
 
