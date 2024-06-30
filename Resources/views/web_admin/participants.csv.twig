@@ -1,3 +1,4 @@
+"ID", "Celé jméno", "Velikost trička"
 {% for participant in participants %}
     {{ participant.id|default }}, "{{ participant.contact.fullName|default }}", "{{ participant.tShirt }}"
 {% endfor %}
