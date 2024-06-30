@@ -1059,7 +1059,7 @@ class Participant implements ParticipantInterface
      */
     public function getPaidPricePercentage(): float
     {
-        return empty($price = $this->getPrice()) ? 1.0 : $this->getPaidPrice() / $price;
+        return empty($price = $this->getPrice()) ? 1.0 : ($this->getPaidPrice() / $price);
     }
 
     /**
