@@ -45,7 +45,7 @@
                                     <tr>
                                         <td>
                                             <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': subEventOccupancy.event.slug|default}) }}">
-                                                ➤ {{ subEventOccupancy.event.shortName|default }}
+                                                &nbsp;➤&nbsp;{{ subEventOccupancy.event.shortName|default }}
                                             </a>
                                             {% if subEventOccupancy.event.shortName != subEventOccupancy.event.name %}
                                                 <span class="block small">{{ subEventOccupancy.event.name|default }}</span>
@@ -92,8 +92,8 @@
                                                 {% if regRange.baseCapacity|default(null) != 0 and regRange.baseCapacity|default(null) != null %}
                                                     <span class="small">z {{ regRange.baseCapacity }}</span>
                                                     <div class="block small">
-                                                        {{ regRange.usageInt|default(0) / regRange.baseCapacity * 100 }}
-                                                        %
+                                                        {{ regRange.usageInt|default(0) / regRange.baseCapacity * 100 -}}
+                                                        &nbsp;%
                                                     </div>
                                                 {% endif %}
                                             {% endif %}

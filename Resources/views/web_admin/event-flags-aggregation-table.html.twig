@@ -12,15 +12,13 @@
                 {% if flagCategoryUsage.flagGroupRange|default
                     and (flagCategoryUsage.flagGroupRange.min|default(0) > 0 or flagCategoryUsage.flagGroupRange.max|default != null) %}
                     <span class="block small" style="font-weight: normal;">
-                        <small>
-                            Vyžadováno
-                            <strong>
-                                {{ flagCategoryUsage.flagGroupRange.min|default(0) -}}
-                                &nbsp;až&nbsp;
-                                {{- flagCategoryUsage.flagGroupRange.max|default('neomezeno') }}
-                            </strong>
-                            v&nbsp;každé přihlášce.
-                        </small>
+                        Vyžadováno
+                        <strong>
+                            {{ flagCategoryUsage.flagGroupRange.min|default(0) -}}
+                            &nbsp;až&nbsp;
+                            {{- flagCategoryUsage.flagGroupRange.max|default('neomezeno') }}
+                        </strong>
+                        v&nbsp;každé přihlášce.
                     </span>
                 {% endif %}
             </th>
@@ -37,7 +35,7 @@
                 <td>
                     <span class="block">
                         <strong style="{{ textColorCss }}">{{ flagUsage.entity.shortName|default }}</strong>
-                        <span class="small">
+                        <span class="small" style="padding-left: 2em;">
                             {{ flagUsage.entity.id|default }}, <em>{{ flagUsage.entity.slug|default }}</em>
                         </span>
                     </span>
@@ -46,8 +44,13 @@
                     {% endif %}
                     {% if flagUsage.entity.min|default(0) > 0 or flagUsage.entity.max|default != null %}
                         <span class="block small">
-                            Vyžadováno {{ flagUsage.entity.min|default(0) }}
-                            až {{ flagUsage.entity.max|default('neomezeno') }} v každé přihlášce.
+                            Vyžadováno
+                            <strong>
+                                {{ flagUsage.entity.min|default(0) -}}
+                                &nbsp;až&nbsp;
+                                {{- flagUsage.entity.max|default('neomezeno') }}
+                            </strong>
+                            v&nbsp;každé přihlášce.
                         </span>
                     {% endif %}
                 </td>
@@ -62,12 +65,13 @@
                                  aria-valuemin="0"
                                  style="width: {{ usagePercentage }}%" aria-valuenow="{{ usagePercentage }}"
                                  aria-valuemax="100">
+                                {{ usagePercentage }}
                             </div>
                         </div>
                     {% endif %}
                     {% if occupancy.occupancy|default > 0 %}
                         <span class="block small">
-                            {{ (flagUsage.usage|default(0) / occupancy.occupancy * 100)|round(1) }} % účastníků
+                            {{ (flagUsage.usage|default(0) / occupancy.occupancy * 100)|round(1) }}&nbsp;% účastníků
                         </span>
                     {% endif %}
                 </td>
