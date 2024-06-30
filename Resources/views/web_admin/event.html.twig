@@ -45,7 +45,7 @@
                                     <tr>
                                         <td>
                                             <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': subEventOccupancy.event.slug|default}) }}">
-                                                &nbsp;➤&nbsp;{{ subEventOccupancy.event.shortName|default }}
+                                                &nbsp;➤&nbsp;&nbsp;{{ subEventOccupancy.event.shortName|default }}
                                             </a>
                                             {% if subEventOccupancy.event.shortName != subEventOccupancy.event.name %}
                                                 <span class="block small">{{ subEventOccupancy.event.name|default }}</span>
