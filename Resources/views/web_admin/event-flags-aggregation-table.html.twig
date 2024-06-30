@@ -33,10 +33,10 @@
             <tbody>
             <tr>
                 <td>
-                    <span class="block">
+                    <span class="block" style="vertical-align: middle;">
                         <strong style="{{ textColorCss }}">{{ flagUsage.entity.shortName|default }}</strong>
-                        <span class="small" style="display: inline;">
-                            [{{ flagUsage.entity.id|default }}] (<em>{{ flagUsage.entity.slug|default }}</em>)
+                        <span class="small" style="display: inline; line-height: 1;">
+                            [{{ flagUsage.entity.id|default }}] <em>{{ flagUsage.entity.slug|default }}</em>
                         </span>
                     </span>
                     {% if flagUsage.entity.shortName != flagUsage.entity.name %}
@@ -63,7 +63,8 @@
                         <div class="progress">
                             <div class="progress-bar progress-bar-striped bg-{{ usageColor }}" role="progressbar"
                                  aria-valuemin="0"
-                                 style="width: {{ usagePercentage }}%" aria-valuenow="{{ usagePercentage }}"
+                                 style="width: {{ usagePercentage }}%; overflow-x: visible;"
+                                 aria-valuenow="{{ usagePercentage }}"
                                  aria-valuemax="100">
                                 <small>{{ usagePercentage }}&nbsp;%</small>
                             </div>
