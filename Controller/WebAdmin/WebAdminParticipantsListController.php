@@ -237,7 +237,7 @@ class WebAdminParticipantsListController extends AbstractController
         foreach ($regRanges as $regRange) {
             $newRegRanges = [
                 ...$newRegRanges,
-                $this->participantRegistrationService->getRepository()->getRegistrationsRanges(
+                ...$this->participantRegistrationService->getRepository()->getRegistrationsRanges(
                     [RegistrationOfferRepository::CRITERIA_REQUIRED_REG_RANGE => $regRange],
                 ),
             ];
