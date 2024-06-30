@@ -18,6 +18,10 @@ oswis_org_oswis_calendar_web_registration:
   controller: oswis_org_oswis_calendar.participant.participant_controller::registration
   path: "/akce/prihlaska/{rangeSlug?}"
 
+oswis_org_oswis_calendar_update_participants:
+  controller: oswis_org_oswis_calendar.participant.participant_controller::updateParticipants
+  path: "/akce/prihlasky/aktualizace/{limit?}/{offset?}"
+
 oswis_org_oswis_calendar_web_registration_ranges:
   controller: oswis_org_oswis_calendar.participant.participant_controller::showRanges
   path: "/akce/prihlasky/{eventSlug?}/{participantType?}"
@@ -64,10 +68,6 @@ oswis_org_oswis_calendar_web_events_past:
 oswis_org_oswis_calendar_web_event:
   controller: oswis_org_oswis_calendar.event.event_controller::showEvent
   path: "/akce/{eventSlug?}"
-
-oswis_org_oswis_calendar_update_participants:
-  controller: oswis_org_oswis_calendar.participant.participant_controller::updateParticipants
-  path: "/akce/prihlasky/aktualizace/{limit?}/{offset?}"
 
 oswis_org_oswis_calendar_web_admin_participants_list:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipants
