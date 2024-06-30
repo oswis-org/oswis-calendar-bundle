@@ -8,6 +8,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
@@ -73,11 +74,23 @@ class WebAdminParticipantsListController extends AbstractController
         return $data;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function showParticipantsCsv(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
     {
+        $fileName = "participants";
+        $fileName .= $eventSlug ? ('_' . $eventSlug) : '';
+        $fileName .= $participantCategorySlug ? ('_' . $participantCategorySlug) : '';
+        $fileName .= str_replace('T', '_', (new \DateTime())->format('c'));
+        $fileName .= '.csv';
         return $this->render(
             "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
             $this->getParticipantsData($eventSlug, $participantCategorySlug),
+            new Response(headers: [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"{$fileName}\""
+            ]),
         );
     }
 
