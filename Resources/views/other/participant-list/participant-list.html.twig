@@ -61,8 +61,9 @@
         <div class="col">
             <h3>
                 Přehled nezrušených přihlášek
-                <small>
-                    [<a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': subEventOccupancy.event.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">csv</a>]
+                <small class="small text-secondary">
+                    [<a class="text-secondary"
+                        href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">csv</a>]
                 </small>
             </h3>
             <table class="list">
