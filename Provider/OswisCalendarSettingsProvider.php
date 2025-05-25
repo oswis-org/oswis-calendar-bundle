@@ -10,19 +10,13 @@ namespace OswisOrg\OswisCalendarBundle\Provider;
  */
 class OswisCalendarSettingsProvider
 {
-    /**
-     * @var array
-     */
+    /** @var array<array{pattern: string, value: string}> $patterns */
     public array $patterns = [];
 
-    /**
-     * @var string|null
-     */
+    /** @var string|null */
     private ?string $defaultEvent = null;
 
-    /**
-     * @var string[] Fallback default events.
-     */
+    /** @var string[] Fallback default events. */
     private array $defaultEventFallbacks = [];
 
     /**
@@ -38,16 +32,15 @@ class OswisCalendarSettingsProvider
     /**
      * OswisCalendarSettingsProvider constructor.
      *
-     * @param string|null $defaultEvent
-     * @param array|null $defaultEventFallbacks
+     * @param string|null   $defaultEvent
+     * @param string[]|null $defaultEventFallbacks
      * @param array{participant_activated: string|null, participant_invalid_token: string|null, participant_activation_error: string|null, participant_verification_resent: string|null}|null $externalRedirects
      */
     public function __construct(
         ?string $defaultEvent = null,
-        ?array  $defaultEventFallbacks = null,
-        ?array  $externalRedirects = null,
-    )
-    {
+        ?array $defaultEventFallbacks = null,
+        ?array $externalRedirects = null,
+    ) {
         $this->patterns = [
             [
                 'pattern' => "/(.*){\s*(year)\s*([\+\-]?)\s*(\d*)}(.*)/",
@@ -71,14 +64,10 @@ class OswisCalendarSettingsProvider
             return null;
         }
         foreach ($this->patterns as $pattern) {
+            /** @var string[] $parts */
             $parts = $this->regexMatch($slug, $pattern['pattern']);
-            $slug = empty($parts)
-                ? $slug
-                : $parts[1] . $this->processMath(
-                    (int)$pattern['value'],
-                    (string)$parts[3],
-                    (int)$parts[4]
-                ) . $parts[5];
+            $math = (string)$this->processMath((int)$pattern['value'], (string)$parts[3], (int)$parts[4]);
+            $slug = empty($parts) ? $slug : ($parts[1].$math.$parts[5]);
         }
 
         return $slug;
@@ -92,19 +81,20 @@ class OswisCalendarSettingsProvider
      */
     private function regexMatch(string $slug, string $pattern = '//'): array
     {
-        $parts = null;
+        /** @var string[] $parts */
+        $parts = [];
         preg_match($pattern, $slug, $parts);
         if (empty($parts)) {
             return [];
         }
 
         return [
-            $parts[0] ?? '',    // Whole string.
-            $parts[1] ?? '',    // Prefix.
-            $parts[2] ?? '',    // Keyword ("year").
-            $parts[3] ?? null,  // Sign.
-            $parts[4] ?? 0,     // Number.
-            $parts[5] ?? '',    // Suffix.
+            $parts[0],    // Whole string.
+            $parts[1],    // Prefix.
+            $parts[2],    // Keyword ("year").
+            $parts[3],    // Sign.
+            $parts[4],    // Number.
+            $parts[5],    // Suffix.
         ];
     }
 
@@ -159,7 +149,7 @@ class OswisCalendarSettingsProvider
      */
     public function getDefaultEventFallbacks(): array
     {
-        return $this->defaultEventFallbacks ?? [];
+        return $this->defaultEventFallbacks;
     }
 
     /**

@@ -7,6 +7,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
@@ -28,36 +33,38 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 
-/**
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_flag_group_ranges_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_flag_group_ranges_post"},
- *     "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_flag_group_range_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_flag_group_range_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
- */
+#[ApiResource(
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
+#[GetCollection(
+    normalizationContext: [
+        'groups' => ['entities_get', 'calendar_flag_group_ranges_get'],
+        'enable_max_depth' => true,
+    ],
+    security: "is_granted('ROLE_MANAGER')"
+)]
+#[Post(
+    denormalizationContext: [
+        'groups' => ['entities_post', 'calendar_flag_group_ranges_post'],
+        'enable_max_depth' => true,
+    ],
+    security: "is_granted('ROLE_MANAGER')"
+)]
+#[Get(
+    normalizationContext: [
+        'groups' => ['entity_get', 'calendar_flag_group_range_get'],
+        'enable_max_depth' => true,
+    ],
+    security: "is_granted('ROLE_MANAGER')"
+)]
+#[Put(
+    denormalizationContext: [
+        'groups' => ['entity_put', 'calendar_flag_group_range_put'],
+        'enable_max_depth' => true,
+    ],
+    security: "is_granted('ROLE_MANAGER')"
+)]
 #[Entity]
 #[Table(name: 'calendar_flag_group_range')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag_range')]
@@ -91,10 +98,9 @@ class RegistrationFlagGroupOffer implements NameableInterface
     public function __construct(
         ?RegistrationFlagCategory $category = null,
         ?FlagAmountRange $flagAmountRange = null,
-        ?Publicity       $publicity = null,
-        ?string          $emptyPlaceholder = null
-    )
-    {
+        ?Publicity $publicity = null,
+        ?string $emptyPlaceholder = null
+    ) {
         $this->flagOffers = new ArrayCollection();
         $this->setFlagCategory($category);
         $this->setFlagAmountRange($flagAmountRange);
@@ -125,15 +131,15 @@ class RegistrationFlagGroupOffer implements NameableInterface
      *
      * @return Collection<RegistrationFlagOffer>
      */
-    public function getFlagOffers(bool $onlyPublic = false, RegistrationFlag $flag = null): Collection
+    public function getFlagOffers(bool $onlyPublic = false, ?RegistrationFlag $flag = null): Collection
     {
         $flagRanges = $this->flagOffers;
         if (true === $onlyPublic) {
-            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+            $flagRanges = $flagRanges->filter(fn (mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
                 && $flagRange->isPublicOnWeb(),);
         }
         if (null !== $flag) {
-            $flagRanges = $flagRanges->filter(fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+            $flagRanges = $flagRanges->filter(fn (mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
                 && $flagRange->getFlag() === $flag,);
         }
 
@@ -186,7 +192,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     public function isFlagValueAllowed(bool $onlyPublic = false, ?RegistrationFlag $flag = null): bool
     {
         return $this->getFlagOffers($onlyPublic, $flag)->filter(
-                fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                fn (mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
                     && $flagRange->isFormValueAllowed(),
             )->count() > 0;
     }
@@ -194,7 +200,7 @@ class RegistrationFlagGroupOffer implements NameableInterface
     public function hasFlagValueAllowed(): bool
     {
         return $this->getFlagOffers()
-                ->filter(static fn(mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
+                ->filter(static fn (mixed $flagRange) => $flagRange instanceof RegistrationFlagOffer
                     && $flagRange->isFormValueAllowed(),)
                 ->count() > 0;
     }

@@ -7,6 +7,12 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
@@ -18,38 +24,32 @@ use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
-/**
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_event_groups_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_event_groups_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_event_group_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_event_group_put"}, "enable_max_depth"=true}
- *     },
- *     "delete"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_group_delete"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
- */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['entities_get', 'calendar_event_groups_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_event_groups_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_group_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['entity_put', 'calendar_event_group_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Delete(
+            denormalizationContext: ['groups' => ['calendar_event_group_delete'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+    ],
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
 #[Entity]
 #[Table(name: 'calendar_event_group')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
@@ -57,7 +57,7 @@ class EventGroup implements NameableInterface
 {
     use NameableTrait;
 
-    #[OneToMany(mappedBy: 'group', targetEntity: Event::class)]
+    #[OneToMany(targetEntity: Event::class, mappedBy: 'group')]
     #[MaxDepth(1)]
     protected ?Collection $events = null;
 
@@ -79,13 +79,13 @@ class EventGroup implements NameableInterface
     {
         $events = $this->events ??= new ArrayCollection();
         if (!$deleted) {
-            $events = $events->filter(fn(mixed $event) => $event instanceof Event && !$event->isDeleted(),);
+            $events = $events->filter(fn (mixed $event) => $event instanceof Event && !$event->isDeleted());
         }
         if (null !== $eventType) {
-            $events = $events->filter(fn(mixed $event) => $event instanceof Event && $event->getType() === $eventType,);
+            $events = $events->filter(fn (mixed $event) => $event instanceof Event && $event->getType() === $eventType);
         }
         if (null !== $year) {
-            $events = $events->filter(fn(mixed $event) => $event instanceof Event && $event->getStartYear()
+            $events = $events->filter(fn (mixed $event) => $event instanceof Event && $event->getStartYear()
                 && $year === $event->getStartYear(),);
         }
 

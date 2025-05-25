@@ -2,12 +2,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\ApiPlatform;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
+use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use Symfony\Component\Security\Core\Security;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ParticipantContainsUserExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
 {
@@ -20,10 +22,10 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
     final public function applyToCollection(
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string       $resourceClass,
-        string       $operationName = null
-    ): void
-    {
+        string $resourceClass,
+        ?Operation $operation = null,
+        ?array $context = [],
+    ): void {
         $this->addWhere($queryBuilder, $resourceClass);
     }
 
@@ -32,7 +34,7 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
         if ($resourceClass !== Participant::class || $this->security->isGranted('ROLE_ADMIN')) {
             return;
         }
-        /** @var \OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser $user */
+        /** @var AppUser $user */
         $user = $this->security->getUser();
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder->leftJoin("$rootAlias.contact", 'contact');
@@ -43,12 +45,11 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
     final public function applyToItem(
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string       $resourceClass,
-        array        $identifiers,
-        string       $operationName = null,
-        array        $context = []
-    ): void
-    {
+        string $resourceClass,
+        array $identifiers,
+        ?Operation $operation = null,
+        array $context = []
+    ): void {
         $this->addWhere($queryBuilder, $resourceClass);
     }
 }

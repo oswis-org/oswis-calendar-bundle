@@ -7,8 +7,13 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -28,33 +33,29 @@ use function in_array;
  *     "description",
  *     "note"
  * })
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_categories_get"}},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_categories_post"}}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_participant_category_get"}},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_participant_category_put"}}
- *     }
- *   }
- * )
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['calendar_participant_categories_get']],
+            security: 'is_granted("ROLE_MANAGER")',
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['calendar_participant_categories_post']],
+            security: 'is_granted("ROLE_MANAGER")',
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['calendar_participant_category_get']],
+            security: 'is_granted("ROLE_MANAGER")',
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['calendar_participant_category_put']],
+            security: 'is_granted("ROLE_MANAGER")',
+        ),
+    ],
+    filters: ['search'],
+    security: 'is_granted("ROLE_MANAGER")'
+)]
 #[Entity(repositoryClass: ParticipantCategoryRepository::class)]
 #[Table(name: 'calendar_participant_category')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
@@ -93,7 +94,7 @@ class ParticipantCategory implements NameableInterface
      *
      * @param Nameable|null $nameable
      * @param string|null $type
-     * @param bool|null $formal
+     * @param bool|null   $formal
      *
      * @throws InvalidArgumentException
      */

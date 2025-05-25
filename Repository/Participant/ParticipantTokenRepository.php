@@ -39,7 +39,7 @@ class ParticipantTokenRepository extends ServiceEntityRepository
         }
     }
 
-    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantToken
+    final public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantToken
     {
         $result = parent::findOneBy($criteria, $orderBy);
 

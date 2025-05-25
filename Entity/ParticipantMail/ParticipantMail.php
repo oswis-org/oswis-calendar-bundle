@@ -6,6 +6,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
@@ -17,42 +22,28 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 
-/**
- * E-mail sent to some user included in participant.
- * @author Jakub Zak <mail@jakubzak.eu>
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "token"
- * })
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_ADMIN')",
- *     "normalization_context"={"groups"={"app_user_mails_get"}, "enable_max_depth"=true},
- *     "denormalization_context"={"groups"={"app_user_mails_post"}, "enable_max_depth"=true}
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"app_user_mails_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"app_user_mails_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"app_user_mail_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"app_user_mail_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
- */
+#[ApiResource(
+    normalizationContext: ['groups' => ['app_user_mails_get'], 'enable_max_depth' => true],
+    denormalizationContext: ['groups' => ['app_user_mails_post'], 'enable_max_depth' => true],
+    security: "is_granted('ROLE_ADMIN')",
+    filters: ['search']
+)]
+#[GetCollection(
+    security: "is_granted('ROLE_ADMIN')",
+    normalizationContext: ['groups' => ['app_user_mails_get'], 'enable_max_depth' => true]
+)]
+#[Post(
+    security: "is_granted('ROLE_ADMIN')",
+    denormalizationContext: ['groups' => ['app_user_mails_post'], 'enable_max_depth' => true]
+)]
+#[Get(
+    security: "is_granted('ROLE_ADMIN')",
+    normalizationContext: ['groups' => ['app_user_mail_get'], 'enable_max_depth' => true]
+)]
+#[Put(
+    security: "is_granted('ROLE_ADMIN')",
+    denormalizationContext: ['groups' => ['app_user_mail_put'], 'enable_max_depth' => true]
+)]
 #[Entity]
 #[Table(name: 'calendar_participant_mail')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
@@ -79,14 +70,13 @@ class ParticipantMail extends AbstractMail
     protected ?ParticipantToken $participantToken = null;
 
     public function __construct(
-        Participant $participant = null,
-        AppUser     $appUser = null,
-        string      $subject = null,
-        ?string     $type = null,
-        ParticipantToken $token = null,
-        ?string     $messageId = null
-    )
-    {
+        ?Participant $participant = null,
+        ?AppUser $appUser = null,
+        ?string $subject = null,
+        ?string $type = null,
+        ?ParticipantToken $token = null,
+        ?string $messageId = null,
+    ) {
         if ($appUser) {
             parent::__construct($subject, $appUser->getEmail(), $type, $appUser->getName(), $messageId);
         }

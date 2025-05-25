@@ -23,12 +23,12 @@ class EventFlagService
             $entity = new EventFlag($nameable);
             $this->em->persist($entity);
             $this->em->flush();
-            $infoMessage = 'CREATE: Created event flag (by service): ' . $entity->getId() . ' ' . $entity->getName() . '.';
+            $infoMessage = 'CREATE: Created event flag (by service): '.$entity->getId().' '.$entity->getName().'.';
             $this->logger->info($infoMessage);
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Event event flag not created (by service): ' . $e->getMessage());
+            $this->logger->info('ERROR: Event event flag not created (by service): '.$e->getMessage());
 
             return null;
         }

@@ -5,7 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;

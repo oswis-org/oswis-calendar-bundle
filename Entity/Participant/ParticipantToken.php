@@ -5,6 +5,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
@@ -20,35 +25,31 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
  *     "id",
  *     "token"
  * })
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_ADMIN')",
- *     "normalization_context"={"groups"={"participant_tokens_get"}, "enable_max_depth"=true},
- *     "denormalization_context"={"groups"={"participant_tokens_post"}, "enable_max_depth"=true}
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"participant_tokens_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"participant_tokens_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"participant_token_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"participant_token_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['participant_tokens_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')",
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['participant_tokens_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')",
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['participant_token_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')",
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['participant_token_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')",
+        ),
+    ],
+    normalizationContext: ['groups' => ['participant_tokens_get'], 'enable_max_depth' => true],
+    denormalizationContext: ['groups' => ['participant_tokens_post'], 'enable_max_depth' => true],
+    filters: ['search'],
+    security: "is_granted('ROLE_ADMIN')",
+)]
 #[Entity(repositoryClass: ParticipantTokenRepository::class)]
 #[Table(name: 'calendar_participant_token')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
@@ -65,12 +66,11 @@ class ParticipantToken extends AbstractToken
     public function __construct(
         ?Participant $participant = null,
         ?AppUser $appUser = null,
-        ?string  $type = null,
-        bool     $multipleUseAllowed = false,
-        ?int     $validHours = null,
-        ?int     $level = null
-    )
-    {
+        ?string $type = null,
+        bool $multipleUseAllowed = false,
+        ?int $validHours = null,
+        ?int $level = null
+    ) {
         parent::__construct($appUser?->getEmail(), $type, $multipleUseAllowed, $validHours, $level);
         $this->appUser = $appUser;
         $this->participant = $participant;

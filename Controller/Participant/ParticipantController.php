@@ -15,7 +15,6 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
@@ -52,16 +51,15 @@ use UnexpectedValueException;
 class ParticipantController extends AbstractController
 {
     public function __construct(
-        public readonly EventService                     $eventService,
-        public readonly RegistrationOfferService         $regRangeService,
-        protected readonly RegistrationFlagOfferService  $flagRangeService,
-        public readonly ParticipantService               $participantService,
-        protected readonly EntityManagerInterface        $entityManager,
-        protected readonly Security                      $security,
-        protected readonly LoggerInterface               $logger,
+        public readonly EventService $eventService,
+        public readonly RegistrationOfferService $regRangeService,
+        protected readonly RegistrationFlagOfferService $flagRangeService,
+        public readonly ParticipantService $participantService,
+        protected readonly EntityManagerInterface $entityManager,
+        protected readonly Security $security,
+        protected readonly LoggerInterface $logger,
         protected readonly OswisCalendarSettingsProvider $calendarSettings,
-    )
-    {
+    ) {
     }
 
     public function getTokenService(): ParticipantTokenService
@@ -123,7 +121,6 @@ class ParticipantController extends AbstractController
                 $participant = $form->getData();
                 assert($participant instanceof Participant);
                 foreach ($participant->getFlagGroups(null, null, true) as $flagGroup) {
-                    assert($flagGroup instanceof ParticipantFlagGroup);
                     $flagGroup->setParticipantFlags($flagGroup->getParticipantFlags(true), false, true);
                 }
                 $participant = $this->participantService->create($participant);
@@ -142,7 +139,7 @@ class ParticipantController extends AbstractController
 
             return $this->getResponse(
                 'form',
-                "Přihláška na akci " . $range->getEvent()?->getShortName(),
+                "Přihláška na akci ".$range->getEvent()?->getShortName(),
                 false,
                 $range->getEvent(),
                 $range,
@@ -156,7 +153,7 @@ class ParticipantController extends AbstractController
                 $form = $this->createForm(ParticipantType::class, $participant);
                 $form->handleRequest($request);
             }
-            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. ' . $e->getMessage()));
+            $form->addError(new FormError('Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$e->getMessage()));
             $event = $range->getEvent();
             $eventName = $event?->getShortName();
 
@@ -211,15 +208,14 @@ class ParticipantController extends AbstractController
     }
 
     public function getResponse(
-        ?string   $type,
-        string    $title,
-        bool      $verification = false,
-        ?Event    $event = null,
+        ?string $type,
+        string $title,
+        bool $verification = false,
+        ?Event $event = null,
         ?RegistrationOffer $range = null,
-        ?string   $message = null,
+        ?string $message = null,
         ?FormView $formView = null
-    ): Response
-    {
+    ): Response {
         $template = '@OswisOrgOswisCalendar/web/pages/participant-registration-form.html.twig';
         if ($verification) {
             $template = '@OswisOrgOswisCalendar/web/pages/participant-registration-confirmation.html.twig';
@@ -260,7 +256,7 @@ class ParticipantController extends AbstractController
                 $title = 'Neplatný token';
                 $message = "Použitý ověřovací odkaz není platný, pravděpodobně mu vypršela platnost. Kontaktujte nás, prosím.";
                 if ($e->getMessage()) {
-                    $message .= ' (' . $e->getMessage() . ')';
+                    $message .= ' ('.$e->getMessage().')';
                 }
                 $activatedRedirectUrl = str_replace(
                     ['{title}', '{message}'],
@@ -347,18 +343,17 @@ class ParticipantController extends AbstractController
     /**
      * Finds correct registration range by event and participantType.
      *
-     * @param Event $event Event.
+     * @param Event       $event Event.
      * @param ParticipantCategory|null $participantCategory Type of participant.
      * @param string|null $participantType
      *
      * @return RegistrationOffer|null
      */
     public function getRange(
-        Event   $event,
+        Event $event,
         ?ParticipantCategory $participantCategory,
         ?string $participantType
-    ): ?RegistrationOffer
-    {
+    ): ?RegistrationOffer {
         return $this->regRangeService->getRange($event, $participantCategory, $participantType, true, true);
     }
 
@@ -374,7 +369,7 @@ class ParticipantController extends AbstractController
      * @return Response Page with registration ranges.
      * @throws Exception Error occurred when getting events.
      */
-    public function showRanges(string $eventSlug = null, ?string $participantType = null): Response
+    public function showRanges(?string $eventSlug = null, ?string $participantType = null): Response
     {
         $event = $eventSlug ? $this->eventService->getEvents(null, null, null, null, null, $eventSlug, false)[0] ?? null
             : null;
@@ -384,7 +379,7 @@ class ParticipantController extends AbstractController
         $events = $event instanceof Event ? new ArrayCollection([$event, ...$event->getSubEvents()])
             : $this->eventService->getEvents(null, null, null, null, null, null, false);
         $shortName = $event instanceof Event ? $event->getShortName() : '';
-        $title = "Přihlášky na akc" . ($event instanceof Event ? "i $shortName" : "e");
+        $title = "Přihlášky na akc".($event instanceof Event ? "i $shortName" : "e");
 
         return $this->render('@OswisOrgOswisCalendar/web/pages/registration-ranges.html.twig', [
             'event' => $event,
@@ -403,7 +398,7 @@ class ParticipantController extends AbstractController
     }
 
     /**
-     * @param Request $request
+     * @param Request  $request
      * @param OswisCoreSettingsProvider $coreSettings
      * @param int|null $limit
      * @param int|null $offset
@@ -414,10 +409,9 @@ class ParticipantController extends AbstractController
     public function updateParticipants(
         Request $request,
         OswisCoreSettingsProvider $coreSettings,
-        ?int    $limit = null,
-        ?int    $offset = null
-    ): Response
-    {
+        ?int $limit = null,
+        ?int $offset = null
+    ): Response {
         error_log('Updating participants...');
         if (!in_array(AppUserRole::ROLE_ROOT, $this->security->getUser()?->getRoles() ?? [], true)) {
             $coreSettings->checkAdminIP($request->getClientIp());
@@ -425,7 +419,6 @@ class ParticipantController extends AbstractController
         /** @var Collection<int, RegistrationOffer> $regRanges */
         $regRanges = new ArrayCollection();
         foreach ($this->participantService->getParticipants([], true, $limit, $offset) as $participant) {
-            assert($participant instanceof Participant);
             $participant->updateCachedColumns();
             $regRange = $participant->getOffer();
             if ($regRange && !$regRanges->contains($regRange)) {
@@ -435,9 +428,7 @@ class ParticipantController extends AbstractController
         }
 
         foreach ($regRanges as $regRange) {
-            if ($regRange instanceof RegistrationOffer) {
-                $this->regRangeService->updateUsage($regRange);
-            }
+            $this->regRangeService->updateUsage($regRange);
         }
         $this->entityManager->flush();
 

@@ -1,11 +1,12 @@
 <?php
-/**
- * @noinspection PropertyCanBePrivateInspection
- * @noinspection MethodShouldBeFinalInspection
- */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -24,36 +25,40 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 
-/**
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_ranges_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_ranges_post"},
- *     "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_participant_range_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_range_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
- */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_MANAGER')",
+            normalizationContext: [
+                'groups' => ['entities_get', 'calendar_participant_ranges_get'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Post(
+            security: "is_granted('ROLE_MANAGER')",
+            denormalizationContext: [
+                'groups' => ['entities_post', 'calendar_participant_ranges_post'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Get(
+            security: "is_granted('ROLE_MANAGER')",
+            normalizationContext: [
+                'groups' => ['entity_get', 'calendar_participant_range_get'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Put(
+            security: "is_granted('ROLE_MANAGER')",
+            denormalizationContext: [
+                'groups' => ['entity_put', 'calendar_participant_range_put'],
+                'enable_max_depth' => true,
+            ]
+        ),
+    ],
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
 #[Entity(repositoryClass: ParticipantRegistrationRepository::class)]
 #[Table(name: 'calendar_participant_range')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
@@ -79,6 +84,11 @@ class ParticipantRegistration implements BasicInterface
         }
     }
 
+    /**
+     * @param Collection<int, ParticipantRegistration> $items
+     *
+     * @return Collection<int, ParticipantRegistration>
+     */
     public static function sortCollection(Collection $items): Collection
     {
         $rangesArray = $items->toArray();
@@ -87,11 +97,15 @@ class ParticipantRegistration implements BasicInterface
         return new ArrayCollection($rangesArray);
     }
 
+    /**
+     * @param ParticipantRegistration[] $items
+     * @return ParticipantRegistration[]
+     */
     public static function sortArray(array &$items): array
     {
         usort(
             $items,
-            static fn(ParticipantRegistration $range1, ParticipantRegistration $range2) => self::cmp($range1, $range2)
+            static fn (ParticipantRegistration $range1, ParticipantRegistration $range2) => self::cmp($range1, $range2)
         );
 
         return $items;

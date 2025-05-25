@@ -11,7 +11,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
@@ -37,15 +36,13 @@ class EventRepository extends ServiceEntityRepository
 
     /**
      * @param ManagerRegistry $registry
-     *
-     * @throws LogicException
      */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Event::class);
     }
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?Event
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?Event
     {
         $event = parent::findOneBy($criteria, $orderBy);
 
@@ -91,7 +88,7 @@ class EventRepository extends ServiceEntityRepository
         if (!empty($opts[self::CRITERIA_SUPER_EVENT]) && $opts[self::CRITERIA_SUPER_EVENT] instanceof Event) {
             $eventQuery = ' e.superEvent = :super_event_id ';
             $queryBuilder->leftJoin('e.superEvent', 'e0');
-            $superEventDepth = !empty($opts[self::CRITERIA_SUPER_EVENT_DEPTH])
+            $superEventDepth = (!empty($opts[self::CRITERIA_SUPER_EVENT_DEPTH]) && is_int($opts[self::CRITERIA_SUPER_EVENT_DEPTH]))
                 ? (int)$opts[self::CRITERIA_SUPER_EVENT_DEPTH] : 0;
             for ($i = 0; $i < $superEventDepth; $i++) {
                 $j = $i + 1;
@@ -231,12 +228,13 @@ class EventRepository extends ServiceEntityRepository
      * @param int|null $limit
      * @param int|null $offset
      *
-     * @return Collection<Event>
+     * @return Collection<int, Event>
      */
     public function getEvents(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
+        /** @var ?array<int, Event> $result */
         $result = $this->getEventsQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult();
 
-        return new ArrayCollection(is_array($result) ? $result : []);
+        return new ArrayCollection($result ?? []);
     }
 }

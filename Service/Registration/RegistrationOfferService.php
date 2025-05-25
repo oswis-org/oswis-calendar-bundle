@@ -25,10 +25,9 @@ class RegistrationOfferService
 {
     public function __construct(
         protected EntityManagerInterface $em,
-        protected LoggerInterface        $logger,
+        protected LoggerInterface $logger,
         protected RegistrationFlagOfferService $flagRangeService,
-    )
-    {
+    ) {
     }
 
     final public function create(RegistrationOffer $range): ?RegistrationOffer
@@ -37,12 +36,12 @@ class RegistrationOfferService
             $this->em->persist($range);
             $this->em->flush();
             $this->logger->info(
-                'CREATE: Created registrations range (by service): ' . $range->getId() . ' ' . $range->getName() . '.'
+                'CREATE: Created registrations range (by service): '.$range->getId().' '.$range->getName().'.'
             );
 
             return $range;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Registrations range not created (by service): ' . $e->getMessage());
+            $this->logger->info('ERROR: Registrations range not created (by service): '.$e->getMessage());
 
             return null;
         }
@@ -115,13 +114,12 @@ class RegistrationOfferService
     }
 
     public function getRange(
-        Event   $event,
+        Event $event,
         ?ParticipantCategory $participantCategory,
         ?string $participantType,
-        bool    $publicOnWeb = false,
-        bool    $onlyActive = true
-    ): ?RegistrationOffer
-    {
+        bool $publicOnWeb = false,
+        bool $onlyActive = true
+    ): ?RegistrationOffer {
         return $this->getRepository()->getRegistrationsRange([
             RegistrationOfferRepository::CRITERIA_EVENT => $event,
             RegistrationOfferRepository::CRITERIA_PARTICIPANT_CATEGORY => $participantCategory,
@@ -134,18 +132,17 @@ class RegistrationOfferService
     /**
      * Helper for getting structured array of registration ranges from given collection of events.
      *
-     * @param Collection $events Collection of events to extract registration ranges.
+     * @param Collection $events          Collection of events to extract registration ranges.
      * @param string|null $participantType Restriction to event participant type.
-     * @param bool $onlyPublicOnWeb Restriction only for web-public ranges.
+     * @param bool       $onlyPublicOnWeb Restriction only for web-public ranges.
      *
      * @return Collection
      */
     public function getEventRegistrationRanges(
         Collection $events,
         ?string $participantType = null,
-        bool    $onlyPublicOnWeb = true
-    ): Collection
-    {
+        bool $onlyPublicOnWeb = true
+    ): Collection {
         $ranges = [];
         foreach ($events as $event) {
             if ($event instanceof Event) {

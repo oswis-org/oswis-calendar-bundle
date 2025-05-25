@@ -9,7 +9,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
@@ -19,8 +18,6 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
-     *
-     * @throws LogicException
      */
     public function __construct(ManagerRegistry $registry)
     {
@@ -39,8 +36,7 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
             /** @var ParticipantMailGroup[] $appUserEMailGroups */
             $appUserEMailGroups = $queryBuilder->getQuery()->getResult();
             foreach ($appUserEMailGroups as $appUserMailGroup) {
-                if ($appUserMailGroup instanceof ParticipantMailGroup
-                    && $appUserMailGroup->isApplicable($participant)) {
+                if ($appUserMailGroup->isApplicable($participant)) {
                     return $appUserMailGroup;
                 }
             }
@@ -71,7 +67,7 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
         return new ArrayCollection(is_array($result) ? $result : []);
     }
 
-    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMailGroup
+    final public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantMailGroup
     {
         $result = parent::findOneBy($criteria, $orderBy);
 

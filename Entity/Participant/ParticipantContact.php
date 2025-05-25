@@ -6,6 +6,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTime;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
@@ -19,38 +24,40 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 
-/**
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_contacts_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_contacts_post"},
- *     "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_participant_contact_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_contact_put"},
- *     "enable_max_depth"=true}
- *     }
- *   }
- * )
- */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: [
+                'groups' => ['entities_get', 'calendar_participant_contacts_get'],
+                'enable_max_depth' => true,
+            ],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Post(
+            denormalizationContext: [
+                'groups' => ['entities_post', 'calendar_participant_contacts_post'],
+                'enable_max_depth' => true,
+            ],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Get(
+            normalizationContext: [
+                'groups' => ['entity_get', 'calendar_participant_contact_get'],
+                'enable_max_depth' => true,
+            ],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Put(
+            denormalizationContext: [
+                'groups' => ['entity_put', 'calendar_participant_contact_put'],
+                'enable_max_depth' => true,
+            ],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+    ],
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
 #[Entity]
 #[Table(name: 'calendar_participant_contact')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]

@@ -5,7 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\EventSubscriber;
 
-use ApiPlatform\Core\EventListener\EventPriorities;
+use ApiPlatform\Symfony\EventListener\EventPriorities;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport;

@@ -36,7 +36,7 @@ class ParticipantMailCategoryRepository extends ServiceEntityRepository
         }
     }
 
-    final public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantMailCategory
+    final public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantMailCategory
     {
         $result = parent::findOneBy($criteria, $orderBy);
 

@@ -24,11 +24,10 @@ class EventService
 
     public function __construct(
         protected EntityManagerInterface $em,
-        protected LoggerInterface        $logger,
+        protected LoggerInterface $logger,
         protected OswisCalendarSettingsProvider $calendarSettings,
-        protected EventRepository        $eventRepository
-    )
-    {
+        protected EventRepository $eventRepository
+    ) {
         $this->setDefaultEvent();
     }
 
@@ -41,7 +40,7 @@ class EventService
     {
         $this->em->persist($event);
         $this->em->flush();
-        $this->logger->info('CREATE: Created event (by service): ' . $event->getId() . ' ' . $event->getName() . '.');
+        $this->logger->info('CREATE: Created event (by service): '.$event->getId().' '.$event->getName().'.');
 
         return $event;
     }
@@ -73,10 +72,10 @@ class EventService
      * @param string|null $range
      * @param DateTime|null $start
      * @param DateTime|null $end
-     * @param int|null $limit
-     * @param int|null $offset
+     * @param int|null    $limit
+     * @param int|null    $offset
      * @param string|null $eventSlug
-     * @param bool|null $onlyRoot
+     * @param bool|null   $onlyRoot
      *
      * @return Collection
      * @throws Exception
@@ -85,12 +84,11 @@ class EventService
         ?string $range = null,
         ?DateTime $start = null,
         ?DateTime $end = null,
-        ?int    $limit = null,
-        ?int    $offset = null,
+        ?int $limit = null,
+        ?int $offset = null,
         ?string $eventSlug = null,
-        ?bool   $onlyRoot = true
-    ): Collection
-    {
+        ?bool $onlyRoot = true
+    ): Collection {
         $range ??= EventController::RANGE_ALL;
         $limit = $limit < 1 ? null : $limit;
         $offset = $offset < 1 ? null : $offset;

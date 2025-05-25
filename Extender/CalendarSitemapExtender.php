@@ -7,7 +7,6 @@ namespace OswisOrg\OswisCalendarBundle\Extender;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\SiteMapItem;
@@ -33,21 +32,20 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
             $this->eventService->getRepository()->getEvents([EventRepository::CRITERIA_ONLY_PUBLIC_ON_WEB => true]
             ) as $event
         ) {
-            if (!($event instanceof Event)) {
-                continue;
-            }
             try {
                 $items->add(
                     new SiteMapItem(
                         $this->urlGenerator->generate(
-                            'oswis_org_oswis_calendar_web_event', ['eventSlug' => $event->getSlug()]
+                            'oswis_org_oswis_calendar_web_event',
+                            ['eventSlug' => $event->getSlug()]
                         ), null, $event->getUpdatedAt()
                     )
                 );
                 $items->add(
                     new SiteMapItem(
                         $this->urlGenerator->generate(
-                            'oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $event->getSlug()]
+                            'oswis_org_oswis_calendar_web_event_leaflet',
+                            ['eventSlug' => $event->getSlug()]
                         ), null, $event->getUpdatedAt()
                     )
                 );

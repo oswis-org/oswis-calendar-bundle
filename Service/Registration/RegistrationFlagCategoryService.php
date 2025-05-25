@@ -22,12 +22,12 @@ class RegistrationFlagCategoryService
             $this->em->persist($flagType);
             $this->em->flush();
             $this->logger->info(
-                'CREATE: Created flag category (by service): ' . $flagType->getId() . ' ' . $flagType->getShortName() . '.'
+                'CREATE: Created flag category (by service): '.$flagType->getId().' '.$flagType->getShortName().'.'
             );
 
             return $flagType;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: RegistrationFlag category type not created (by service): ' . $e->getMessage());
+            $this->logger->info('ERROR: RegistrationFlag category type not created (by service): '.$e->getMessage());
 
             return null;
         }

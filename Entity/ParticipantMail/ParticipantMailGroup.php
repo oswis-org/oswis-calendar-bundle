@@ -6,6 +6,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -23,35 +28,31 @@ use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 /**
  * @author Jakub Zak <mail@jakubzak.eu>
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({"id"})
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_ADMIN')",
- *     "normalization_context"={"groups"={"participant_mail_groups_get"}, "enable_max_depth"=true},
- *     "denormalization_context"={"groups"={"participant_mail_groups_post"}, "enable_max_depth"=true}
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"participant_mail_groups_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"participant_mail_groups_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "normalization_context"={"groups"={"participant_mail_group_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"participant_mail_group_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['participant_mail_groups_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['participant_mail_groups_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['participant_mail_group_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['participant_mail_group_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+    ],
+    normalizationContext: ['groups' => ['participant_mail_groups_get'], 'enable_max_depth' => true],
+    denormalizationContext: ['groups' => ['participant_mail_groups_post'], 'enable_max_depth' => true],
+    filters: ['search'],
+    security: "is_granted('ROLE_ADMIN')"
+)]
 #[Entity(repositoryClass: ParticipantMailGroupRepository::class)]
 #[Table(name: 'calendar_participant_mail_group')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
@@ -69,14 +70,13 @@ class ParticipantMailGroup extends AbstractMailGroup
     protected bool $onlyActive = true;
 
     public function __construct(
-        ?Nameable               $nameable = null,
-        ?int                    $priority = null,
-        ?DateTimeRange          $range = null,
-        ?TwigTemplate           $twigTemplate = null,
-        bool                    $automaticMailing = false,
-        ParticipantMailCategory $participantMailCategory = null
-    )
-    {
+        ?Nameable $nameable = null,
+        ?int $priority = null,
+        ?DateTimeRange $range = null,
+        ?TwigTemplate $twigTemplate = null,
+        bool $automaticMailing = false,
+        ?ParticipantMailCategory $participantMailCategory = null
+    ) {
         parent::__construct($nameable, $priority, $range, $twigTemplate, $automaticMailing);
         $this->setCategory($participantMailCategory);
     }

@@ -7,9 +7,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Cache;
@@ -37,35 +42,29 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * RegistrationFlag assigned to event participant (i.e. special food requirement...) through some "flag range".
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_flags_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_flags_post"},
- *     "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_participant_flag_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_flag_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['entities_get', 'calendar_participant_flags_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_participant_flags_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_participant_flag_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['entity_put', 'calendar_participant_flag_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+    ],
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
 #[Entity(repositoryClass: ParticipantFlagRepository::class)]
 #[Table(name: 'calendar_participant_flag')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
@@ -95,10 +94,9 @@ class ParticipantFlag implements BasicInterface, DeletedInterface, ActivatedInte
 
     public function __construct(
         ?RegistrationFlagOffer $flagRange = null,
-        ParticipantFlagGroup $participantFlagGroup = null,
-        ?string              $textValue = null
-    )
-    {
+        ?ParticipantFlagGroup $participantFlagGroup = null,
+        ?string $textValue = null
+    ) {
         try {
             $this->setParticipantFlagGroup($participantFlagGroup);
         } catch (NotImplementedException) {

@@ -24,12 +24,12 @@ class EventSeriesService
             $this->em->persist($entity);
             $this->em->flush();
             $this->logger->info(
-                'CREATE: Created event series (by service): ' . $entity->getId() . ' ' . $entity->getName() . '.'
+                'CREATE: Created event series (by service): '.$entity->getId().' '.$entity->getName().'.'
             );
 
             return $entity;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: Event event series not created (by service): ' . $e->getMessage());
+            $this->logger->info('ERROR: Event event series not created (by service): '.$e->getMessage());
 
             return null;
         }

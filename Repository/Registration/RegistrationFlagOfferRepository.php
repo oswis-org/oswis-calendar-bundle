@@ -34,7 +34,7 @@ class RegistrationFlagOfferRepository extends ServiceEntityRepository
         parent::__construct($registry, RegistrationFlagOffer::class);
     }
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?RegistrationFlagOffer
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?RegistrationFlagOffer
     {
         $flagRange = parent::findOneBy($criteria, $orderBy);
 

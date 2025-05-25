@@ -29,7 +29,7 @@ class ParticipantCategoryRepository extends ServiceEntityRepository
         parent::__construct($registry, ParticipantCategory::class);
     }
 
-    public function findOneBy(array $criteria, array $orderBy = null): ?ParticipantCategory
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantCategory
     {
         $participantType = parent::findOneBy($criteria, $orderBy);
 

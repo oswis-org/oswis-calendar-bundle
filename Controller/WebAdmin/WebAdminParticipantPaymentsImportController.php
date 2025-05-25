@@ -54,7 +54,7 @@ class WebAdminParticipantPaymentsImportController extends AbstractController
             }
             $form->addError(
                 new FormError(
-                    'Nastala chyba. Zkuste to znovu nebo nás kontaktujte. ' . $exception->getMessage()
+                    'Nastala chyba. Zkuste to znovu nebo nás kontaktujte. '.$exception->getMessage()
                 )
             );
 

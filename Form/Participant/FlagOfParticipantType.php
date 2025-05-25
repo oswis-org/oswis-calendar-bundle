@@ -6,7 +6,6 @@
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Exception\AlreadySubmittedException;
 use Symfony\Component\Form\Exception\LogicException;
@@ -38,8 +37,7 @@ class FlagOfParticipantType extends AbstractType
         if (null === ($participantFlag = $event->getData()) || !($participantFlag instanceof ParticipantFlag)) {
             return;
         }
-        if (null === ($flagRange = $participantFlag->getFlagOffer())
-            || !($flagRange instanceof RegistrationFlagOffer)) {
+        if (null === ($flagRange = $participantFlag->getFlagOffer())) {
             return;
         }
         $event->getForm()->add("flagRange", CheckboxType::class, [

@@ -27,12 +27,12 @@ class ParticipantPaymentsImportType extends AbstractType
         $builder->add('type', ChoiceType::class, [
             "label" => "Formát importu",
             "choices" => ParticipantPaymentsImport::getAllowedTypes(),
-            "choice_label" => fn($choice, $key, $value) => $value,
+            "choice_label" => fn ($choice, $key, $value) => $value,
         ]);
         $builder->add('settingsCode', ChoiceType::class, [
             "label" => "Nastavení formátu importu",
             "choices" => ParticipantPaymentsImport::SETTINGS_CODES,
-            "choice_label" => fn($choice, $key, $value) => $value,
+            "choice_label" => fn ($choice, $key, $value) => $value,
         ]);
         $builder->add('save', SubmitType::class, [
             'label' => 'Importovat platby',

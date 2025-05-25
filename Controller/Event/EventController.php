@@ -34,12 +34,11 @@ class EventController extends AbstractController
     public const RANGE_DAY = 'day';
 
     public function __construct(
-        protected EventService           $eventService,
-        protected ParticipantService     $participantService,
+        protected EventService $eventService,
+        protected ParticipantService $participantService,
         protected RegistrationOfferService $regRangeService,
         protected EntityManagerInterface $em,
-    )
-    {
+    ) {
     }
 
     /**
@@ -53,7 +52,8 @@ class EventController extends AbstractController
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
             return $this->redirectToRoute(
-                'oswis_org_oswis_calendar_web_event', ['eventSlug' => $defaultEvent->getSlug()]
+                'oswis_org_oswis_calendar_web_event',
+                ['eventSlug' => $defaultEvent->getSlug()]
             );
         }
         if (null === $eventSlug) {
@@ -117,7 +117,7 @@ class EventController extends AbstractController
             return new ArrayCollection();
         }
 
-        return $series->getEvents('' . $eventTypeString, $event && $event->isBatch() ? $event->getStartYear() : null);
+        return $series->getEvents(''.$eventTypeString, $event && $event->isBatch() ? $event->getStartYear() : null);
     }
 
     /**
@@ -132,7 +132,8 @@ class EventController extends AbstractController
         $defaultEvent = empty($eventSlug) ? $this->eventService->getDefaultEvent() : null;
         if (null !== $defaultEvent) {
             return $this->redirectToRoute(
-                'oswis_org_oswis_calendar_web_event_leaflet', ['eventSlug' => $defaultEvent->getSlug()]
+                'oswis_org_oswis_calendar_web_event_leaflet',
+                ['eventSlug' => $defaultEvent->getSlug()]
             );
         }
         $eventRepo = $this->eventService->getRepository();
@@ -151,7 +152,7 @@ class EventController extends AbstractController
             'event' => $event,
             'organizer' => $this->participantService->getOrganizer($event),
         ];
-        $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/' . $event->getSlug() . '.html.twig';
+        $templatePath = '@OswisOrgOswisCalendar/web/pages/leaflet/'.$event->getSlug().'.html.twig';
         if ($twig->getLoader()->exists($templatePath)) {
             return $this->render($templatePath, $data);
         }
@@ -198,10 +199,9 @@ class EventController extends AbstractController
         ?string $range = null,
         ?DateTime $start = null,
         ?DateTime $end = null,
-        ?int    $limit = null,
-        ?int    $offset = null
-    ): Response
-    {
+        ?int $limit = null,
+        ?int $offset = null
+    ): Response {
         $context = [
             'events' => $this->eventService->getEvents($range, $start, $end, $limit, $offset),
             'range' => $range,

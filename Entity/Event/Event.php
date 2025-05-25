@@ -7,6 +7,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -35,37 +43,34 @@ use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use function assert;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['entities_get', 'calendar_events_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_CUSTOMER')"
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_events_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_CUSTOMER')"
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['entity_put', 'calendar_event_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+        new Delete(
+            denormalizationContext: ['groups' => ['calendar_event_delete'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
+    ],
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
+#[ApiFilter(OrderFilter::class)]
 /**
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_CUSTOMER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_events_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_events_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_CUSTOMER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_event_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_event_put"}, "enable_max_depth"=true}
- *     },
- *     "delete"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_delete"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
  * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
@@ -99,9 +104,9 @@ class Event implements NameableInterface
     protected ?Participant $organizer = null;
 
     /**
-     * @var Collection<EventFlagConnection> $flagConnections
+     * @var Collection<int, EventFlagConnection> $flagConnections
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventFlagConnection::class, cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(targetEntity: EventFlagConnection::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
     protected Collection $flagConnections;
 
     /**
@@ -112,27 +117,25 @@ class Event implements NameableInterface
     protected ?self $superEvent = null;
 
     /**
-     * @var Collection<Event> $subEvents
+     * @var Collection<int, Event> $subEvents
      */
-    #[OneToMany(mappedBy: 'superEvent', targetEntity: self::class)]
+    #[OneToMany(targetEntity: self::class, mappedBy: 'superEvent')]
     protected Collection $subEvents;
 
-    /**
-     * @var Collection<EventContent> $contents
-     */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventContent::class, cascade: ['all'])]
+    /** @var Collection<int, EventContent> $contents */
+    #[OneToMany(targetEntity: EventContent::class, mappedBy: 'event', cascade: ['all'])]
     protected Collection $contents;
 
     /**
-     * @var Collection<EventImage> $images
+     * @var Collection<int, EventImage> $images
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventImage::class, cascade: ['all'], orphanRemoval: true)]
+    #[OneToMany(targetEntity: EventImage::class, mappedBy: 'event', cascade: ['all'], orphanRemoval: true)]
     protected Collection $images;
 
     /**
-     * @var Collection<EventFile> $files
+     * @var Collection<int, EventFile> $files
      */
-    #[OneToMany(mappedBy: 'event', targetEntity: EventFile::class, cascade: ['all'], orphanRemoval: true)]
+    #[OneToMany(targetEntity: EventFile::class, mappedBy: 'event', cascade: ['all'], orphanRemoval: true)]
     protected Collection $files;
 
     #[ManyToOne(targetEntity: EventCategory::class, fetch: 'EAGER')]
@@ -145,15 +148,14 @@ class Event implements NameableInterface
     private ?EventGroup $group = null;
 
     public function __construct(
-        ?Nameable      $nameable = null,
-        ?self          $superEvent = null,
-        ?Place         $place = null,
+        ?Nameable $nameable = null,
+        ?self $superEvent = null,
+        ?Place $place = null,
         ?EventCategory $category = null,
         ?DateTimeRange $dateTimeRange = null,
-        ?EventGroup    $group = null,
-        ?Publicity     $publicity = null
-    )
-    {
+        ?EventGroup $group = null,
+        ?Publicity $publicity = null
+    ) {
         $this->subEvents = new ArrayCollection();
         $this->contents = new ArrayCollection();
         $this->flagConnections = new ArrayCollection();
@@ -178,15 +180,17 @@ class Event implements NameableInterface
         return true === $recursive ? $this->getSuperEvent()?->getOneImage(true, $type) : null;
     }
 
+    /**
+     * @param string|null $type
+     * @return Collection<int, EventImage>
+     */
     public function getImages(?string $type = null): Collection
     {
         $images = $this->images;
         if (!empty($type)) {
-            $images = $images->filter(fn(mixed $eventImage) => $eventImage instanceof EventImage
-                && $eventImage->getType() === $type,);
+            $images = $images->filter(static fn (EventImage $eventImage) => $eventImage->getType() === $type);
         }
 
-        /** @var Collection<EventImage> $images */
         return $images;
     }
 
@@ -229,15 +233,17 @@ class Event implements NameableInterface
         return true === $recursive ? $this->getSuperEvent()?->getOneFile(true, $type) : null;
     }
 
+    /**
+     * @param string|null $type
+     * @return Collection<int, EventFile>
+     */
     public function getFiles(?string $type = null): Collection
     {
         $files = $this->files;
         if (!empty($type)) {
-            $files = $files->filter(fn(mixed $eventFile) => $eventFile instanceof EventFile
-                && $eventFile->getType() === $type,);
+            $files = $files->filter(static fn (EventFile $eventFile) => $eventFile->getType() === $type);
         }
 
-        /** @var Collection<EventFile> $files */
         return $files;
     }
 
@@ -299,11 +305,15 @@ class Event implements NameableInterface
         }
     }
 
+    /**
+     * @param string|null $type
+     * @param bool|null   $recursive
+     * @return Collection<int, EventContent>
+     */
     public function getContents(?string $type = null, ?bool $recursive = false): Collection
     {
         if (null !== $type) {
-            $contents = $this->getContents()->filter(fn(mixed $webContent) => $webContent instanceof EventContent
-                && $type === $webContent->getType(),);
+            $contents = $this->getContents()->filter(fn (mixed $webContent) => $type === $webContent->getType());
 
             return ($recursive && $contents->count() < 1 ? $this->getSuperEvent()?->getContents($type) : $contents)
                 ??
@@ -315,14 +325,15 @@ class Event implements NameableInterface
 
     public function removeContent(?EventContent $eventContent): void
     {
+        if (null === $eventContent) {
+            return;
+        }
         $this->getContents()->removeElement($eventContent);
     }
 
     public function getContent(?string $type = 'html'): ?EventContent
     {
-        $content = $this->getContents($type, true)->first();
-
-        return $content instanceof EventContent ? $content : null;
+        return $this->getContents($type, true)->first() ?: null;
     }
 
     public function getPlace(?bool $recursive = false): ?Place
@@ -391,10 +402,9 @@ class Event implements NameableInterface
 
     public function getFlagConnections(bool $onlyActive = false): Collection
     {
-        $connections = $this->flagConnections ?? new ArrayCollection();
+        $connections = $this->flagConnections;
         if ($onlyActive) {
-            $connections = $connections->filter(fn(mixed $conn) => $conn instanceof EventFlagConnection
-                && $conn->isActive(),);
+            $connections = $connections->filter(static fn (EventFlagConnection $conn) => $conn->isActive());
         }
 
         return $connections;
@@ -432,7 +442,7 @@ class Event implements NameableInterface
             $name .= " ($rangeString)";
         }
 
-        return '' . $name;
+        return ''.$name;
     }
 
     public function isBatchOrYear(): bool

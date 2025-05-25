@@ -2,6 +2,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Table;
@@ -14,44 +22,34 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * Category (type) of event.
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_categories_get"}},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_categories_post"}}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"calendar_event_category_get"}},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"calendar_event_category_put"}}
- *     },
- *     "delete"={
- *       "security"="is_granted('ROLE_ADMIN')",
- *       "denormalization_context"={"groups"={"calendar_event_category_delete"}}
- *     }
- *   }
- * )
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "description",
- *     "note"
- * })
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_MANAGER')",
+            normalizationContext: ['groups' => ['calendar_event_categories_get']],
+        ),
+        new Post(
+            security: "is_granted('ROLE_MANAGER')",
+            denormalizationContext: ['groups' => ['calendar_event_categories_post']]
+        ),
+        new Get(
+            security: "is_granted('ROLE_MANAGER')",
+            normalizationContext: ['groups' => ['calendar_event_category_get']],
+        ),
+        new Put(
+            security: "is_granted('ROLE_MANAGER')",
+            denormalizationContext: ['groups' => ['calendar_event_category_put']]
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['calendar_event_category_delete']]
+        ),
+    ],
+    security: "is_granted('ROLE_MANAGER')",
+    filters: ["search"]
+)]
+#[ApiFilter(OrderFilter::class)]
 #[Entity]
 #[Table(name: 'calendar_event_category')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]

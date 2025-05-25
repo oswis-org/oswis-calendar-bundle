@@ -24,9 +24,8 @@ final class ParticipantSubscriber implements EventSubscriberInterface
         private readonly ParticipantMailService $participantMailService,
         private readonly LoggerInterface $logger,
         protected readonly RegistrationFlagOfferService $flagRangeService,
-        protected readonly RegistrationOfferService     $registrationOfferService,
-    )
-    {
+        protected readonly RegistrationOfferService $registrationOfferService,
+    ) {
     }
 
     public static function getSubscribedEvents(): array

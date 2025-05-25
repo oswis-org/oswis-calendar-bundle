@@ -7,6 +7,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -29,33 +34,41 @@ use OswisOrg\OswisCoreBundle\Traits\Form\FormValueTrait;
 
 /**
  * Date range when flag can be used (with some capacity).
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_flag_ranges_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_flag_ranges_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_flag_range_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_flag_range_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
  */
+#[ApiResource(
+    security: 'is_granted("ROLE_MANAGER")',
+    filters: ['search'],
+    operations: [
+        new GetCollection(
+            security: 'is_granted("ROLE_MANAGER")',
+            normalizationContext: [
+                'groups' => ['entities_get', 'calendar_flag_ranges_get'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Post(
+            security: 'is_granted("ROLE_MANAGER")',
+            denormalizationContext: [
+                'groups' => ['entities_post', 'calendar_flag_ranges_post'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Get(
+            security: 'is_granted("ROLE_MANAGER")',
+            normalizationContext: [
+                'groups' => ['entity_get', 'calendar_flag_range_get'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Put(
+            security: 'is_granted("ROLE_MANAGER")',
+            denormalizationContext: [
+                'groups' => ['entity_put', 'calendar_flag_range_put'],
+                'enable_max_depth' => true,
+            ]
+        ),
+    ]
+)]
 #[Entity]
 #[Table(name: 'calendar_flag_range')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag_range')]
@@ -83,13 +96,12 @@ class RegistrationFlagOffer implements NameableInterface
 
     public function __construct(
         ?RegistrationFlag $flag = null,
-        ?Capacity        $eventCapacity = null,
-        ?Price           $eventPrice = null,
+        ?Capacity $eventCapacity = null,
+        ?Price $eventPrice = null,
         ?FlagAmountRange $flagAmountRange = null,
-        ?Publicity       $publicity = null,
-        ?FormValue       $formValue = null
-    )
-    {
+        ?Publicity $publicity = null,
+        ?FormValue $formValue = null
+    ) {
         $this->setFlag($flag);
         $this->setCapacity($eventCapacity);
         $this->setEventPrice($eventPrice);
@@ -143,7 +155,7 @@ class RegistrationFlagOffer implements NameableInterface
         $flagName = $this->getName();
         if ($addPrice) {
             $price = $this->getPrice();
-            $flagName .= 0 !== $price ? ' [' . ($price > 0 ? '+' : '') . $price . ',- Kč]' : '';
+            $flagName .= 0 !== $price ? ' ['.($price > 0 ? '+' : '').$price.',- Kč]' : '';
         }
         if ($addCapacityOverflow && !$this->hasRemainingCapacity()) {
             $flagName .= ' (kapacita vyčerpána)';
@@ -211,13 +223,13 @@ class RegistrationFlagOffer implements NameableInterface
     public function getTShirtGroup(): string
     {
         $flagName = $this->getName();
-        if (str_contains('' . $flagName, 'Pán')) {
+        if (str_contains(''.$flagName, 'Pán')) {
             return '♂ Pánské tričko';
         }
-        if (str_contains('' . $flagName, 'Dám')) {
+        if (str_contains(''.$flagName, 'Dám')) {
             return '♀ Dámské tričko';
         }
-        if (str_contains('' . $flagName, 'Uni')) {
+        if (str_contains(''.$flagName, 'Uni')) {
             return '⚲ Unisex tričko';
         }
 

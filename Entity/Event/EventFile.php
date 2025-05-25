@@ -1,11 +1,11 @@
 <?php
-/**
- * @noinspection MethodShouldBeFinalInspection
- */
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
@@ -24,15 +24,17 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
-#[ApiResource(collectionOperations: [
-    'get',
-    'post' => [
-        'method' => 'POST',
-        'path' => '/calendar_event_file',
-        'controller' => EventFileAction::class,
-        'defaults' => ['_api_receive' => false],
-    ],
-])]
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(
+            uriTemplate: '/calendar_event_file',
+            controller: EventFileAction::class,
+            deserialize: false
+        ),
+    ]
+)]
 #[Entity]
 #[Table(name: 'calendar_event_file')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event_file')]
@@ -53,20 +55,19 @@ class EventFile extends AbstractFile
     protected ?Event $event = null;
 
     /**
-     * @param File|null $file
+     * @param File|null   $file
      * @param string|null $type
-     * @param int|null $priority
+     * @param int|null    $priority
      * @param Publicity|null $publicity
      *
      * @throws InvalidTypeException
      */
     public function __construct(
-        ?File      $file = null,
-        ?string    $type = null,
-        ?int       $priority = null,
+        ?File $file = null,
+        ?string $type = null,
+        ?int $priority = null,
         ?Publicity $publicity = null
-    )
-    {
+    ) {
         $this->setFile($file);
         $this->setType($type);
         $this->setPriority($priority);

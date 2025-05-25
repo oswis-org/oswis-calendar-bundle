@@ -99,18 +99,17 @@ class FlagGroupOfParticipantType extends AbstractType
     /**
      * @param FormInterface $form
      * @param ParticipantFlagGroup $participantFlagCategory
-     * @param int|null $min
+     * @param int|null      $min
      *
-     * @throws \Symfony\Component\Form\Exception\AlreadySubmittedException
-     * @throws \Symfony\Component\Form\Exception\LogicException
-     * @throws \Symfony\Component\Form\Exception\UnexpectedTypeException
+     * @throws AlreadySubmittedException
+     * @throws LogicException
+     * @throws UnexpectedTypeException
      */
     public static function addCheckboxes(
         FormInterface $form,
         ParticipantFlagGroup $participantFlagCategory,
-        int           $min = null,
-    ): void
-    {
+        ?int $min = null,
+    ): void {
         $flagGroupRange = $participantFlagCategory->getFlagGroupOffer();
         if (null === $flagGroupRange) {
             return;
@@ -133,9 +132,9 @@ class FlagGroupOfParticipantType extends AbstractType
     /**
      * @param FormInterface $form
      * @param ParticipantFlagGroup $participantFlagGroup
-     * @param int $min
-     * @param int|null $max
-     * @param bool $isFormal
+     * @param int           $min
+     * @param int|null      $max
+     * @param bool          $isFormal
      *
      * @throws AlreadySubmittedException
      * @throws LogicException
@@ -144,11 +143,10 @@ class FlagGroupOfParticipantType extends AbstractType
     public static function addSelect(
         FormInterface $form,
         ParticipantFlagGroup $participantFlagGroup,
-        int           $min,
-        ?int          $max,
-        bool          $isFormal = true
-    ): void
-    {
+        int $min,
+        ?int $max,
+        bool $isFormal = true
+    ): void {
         if (null === ($flagGroupRange = $participantFlagGroup->getFlagGroupOffer())) {
             return;
         }
@@ -173,7 +171,7 @@ class FlagGroupOfParticipantType extends AbstractType
             // 'empty_data'         => null,
             'multiple' => true,
             'attr' => ['style' => 'display:none'],
-            'choice_label' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
+            'choice_label' => fn (RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
             'allow_extra_fields' => true,
         ]);
         $form->add("flagRanges", EntityType::class, [
@@ -191,13 +189,13 @@ class FlagGroupOfParticipantType extends AbstractType
             'attr' => [
                 'size' => $multiple ? (count($choices) + count($flagGroupRange->getFlagsGroupNames())) : null,
             ],
-            'choice_label' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
-            'choice_attr' => fn(
+            'choice_label' => fn (RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getExtendedName(),
+            'choice_attr' => fn (
                 RegistrationFlagOffer $flagRange,
                 $key,
                 $value
             ) => self::getChoiceAttributes($flagRange),
-            'group_by' => fn(RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
+            'group_by' => fn (RegistrationFlagOffer $flagRange, $key, $value) => $flagRange->getFlagGroupName(),
             'placeholder' => $flagGroupRange->getEmptyPlaceholder(),
         ]);
         if ($flagGroupRange->isCategoryValueAllowed()) {

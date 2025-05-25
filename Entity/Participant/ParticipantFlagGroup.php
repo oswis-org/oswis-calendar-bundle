@@ -7,6 +7,11 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -32,38 +37,40 @@ use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
-/**
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_participant_flag_groups_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_participant_flag_groups_post"},
- *     "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_participant_flag_group_get"},
- *     "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_participant_flag_group_put"},
- *     "enable_max_depth"=true}
- *     }
- *   }
- * )
- */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            security: 'is_granted("ROLE_MANAGER")',
+            normalizationContext: [
+                'groups' => ['entities_get', 'calendar_participant_flag_groups_get'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Post(
+            security: 'is_granted("ROLE_MANAGER")',
+            denormalizationContext: [
+                'groups' => ['entities_post', 'calendar_participant_flag_groups_post'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Get(
+            security: 'is_granted("ROLE_MANAGER")',
+            normalizationContext: [
+                'groups' => ['entity_get', 'calendar_participant_flag_group_get'],
+                'enable_max_depth' => true,
+            ]
+        ),
+        new Put(
+            security: 'is_granted("ROLE_MANAGER")',
+            denormalizationContext: [
+                'groups' => ['entity_put', 'calendar_participant_flag_group_put'],
+                'enable_max_depth' => true,
+            ]
+        ),
+    ],
+    filters: ['search'],
+    security: 'is_granted("ROLE_MANAGER")'
+)]
 #[Entity]
 #[Table(name: 'calendar_participant_flag_group')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
@@ -145,11 +152,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     {
         $participantFlags = $this->participantFlags;
         if ($onlyActive) {
-            $participantFlags = $participantFlags->filter(fn(mixed $pFlag) => ($pFlag instanceof ParticipantFlag)
+            $participantFlags = $participantFlags->filter(fn (mixed $pFlag) => ($pFlag instanceof ParticipantFlag)
                 && $pFlag->isActive(),);
         }
         if (null !== $flag) {
-            $participantFlags = $participantFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
+            $participantFlags = $participantFlags->filter(fn (mixed $pFlag) => $pFlag instanceof ParticipantFlag
                 && ($pFlag->getFlag() === $flag),);
         }
 
@@ -160,7 +167,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     /**
      * @param Collection|null $newParticipantFlags
      * @param bool|false $admin
-     * @param bool $onlySimulate
+     * @param bool       $onlySimulate
      *
      * @throws FlagCapacityExceededException
      * @throws FlagOutOfRangeException
@@ -185,11 +192,11 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             $this->checkAvailableFlagRange($availFlagRange, $newParticipantFlags, $admin);
         }
         if (!$onlySimulate) {
-            $removedFlags = $oldParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag
+            $removedFlags = $oldParticipantFlags->filter(static fn (mixed $flag) => $flag instanceof ParticipantFlag
                 && !$newParticipantFlags->contains(
                     $flag
                 ),);
-            $addedFlags = $newParticipantFlags->filter(static fn(mixed $flag) => $flag instanceof ParticipantFlag
+            $addedFlags = $newParticipantFlags->filter(static fn (mixed $flag) => $flag instanceof ParticipantFlag
                 && !$oldParticipantFlags->contains(
                     $flag
                 ),);
@@ -229,14 +236,13 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     private function checkAvailableFlagRange(
         RegistrationFlagOffer $flagRange,
         Collection $newPartiFlags,
-        bool       $admin = false,
-    ): void
-    {
-        $newFlagRangeCount = $newPartiFlags->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
+        bool $admin = false,
+    ): void {
+        $newFlagRangeCount = $newPartiFlags->filter(fn (mixed $pFlag) => $pFlag instanceof ParticipantFlag
             && $pFlag->getFlagOffer() === $flagRange,)
             ->count();
         $flagRange->checkInRange($newFlagRangeCount);
-        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn(mixed $pFlag) => $pFlag instanceof ParticipantFlag
+        $oldFlagRangeCount = $this->getParticipantFlags()->filter(fn (mixed $pFlag) => $pFlag instanceof ParticipantFlag
             && $pFlag->getFlagOffer()
             === $flagRange,)->count();
         $differenceCount = $newFlagRangeCount - $oldFlagRangeCount;
@@ -253,9 +259,7 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
     public function delete(?DateTime $dateTime = null): void
     {
         foreach ($this->getParticipantFlags() as $participantFlag) {
-            if ($participantFlag instanceof ParticipantFlag) {
-                $participantFlag->delete($dateTime);
-            }
+            $participantFlag->delete($dateTime);
         }
         $this->traitDelete($dateTime);
     }

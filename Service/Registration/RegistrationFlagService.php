@@ -22,15 +22,15 @@ class RegistrationFlagService
             $this->em->persist($participantFlag);
             $this->em->flush();
             $infoMessage = 'CREATE: Created flag (by service): '
-                . $participantFlag->getId()
-                . ' '
-                . $participantFlag->getName()
-                . '.';
+                .$participantFlag->getId()
+                .' '
+                .$participantFlag->getName()
+                .'.';
             $this->logger->info($infoMessage);
 
             return $participantFlag;
         } catch (Exception $e) {
-            $this->logger->info('ERROR: RegistrationFlag not created (by service): ' . $e->getMessage());
+            $this->logger->info('ERROR: RegistrationFlag not created (by service): '.$e->getMessage());
 
             return null;
         }

@@ -28,10 +28,10 @@
     }
   ],
   "require": {
-    "php": ">=8.2",
+    "php": ">=8.4",
     "ext-iconv": "*",
     "bigit/vokativ": "dev-zakjakub-master",
-    "endroid/qr-code": "^4.4.8",
+    "endroid/qr-code": "^6.0.4",
     "rikudou/czqrpayment": "^v5.0",
     "oswis-org/oswis-core-bundle": "^0.0",
     "oswis-org/oswis-address-book-bundle": "^0.0"

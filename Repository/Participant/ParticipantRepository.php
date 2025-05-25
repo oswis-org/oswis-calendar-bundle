@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
+/** @extends ServiceEntityRepository<Participant> */
 class ParticipantRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';
@@ -44,7 +45,7 @@ class ParticipantRepository extends ServiceEntityRepository
         parent::__construct($registry, Participant::class);
     }
 
-    final public function findOneBy(array $criteria, array $orderBy = null): ?Participant
+    final public function findOneBy(array $criteria, ?array $orderBy = null): ?Participant
     {
         $result = parent::findOneBy($criteria, $orderBy);
 
@@ -67,6 +68,7 @@ class ParticipantRepository extends ServiceEntityRepository
         $result = $queryBuilder->getQuery()->getResult();
 
         return Participant::filterCollection(
+        /** @phpstan-ignore-next-line */
             new ArrayCollection(is_array($result) ? $result : []),
             $includeNotActivated
         );

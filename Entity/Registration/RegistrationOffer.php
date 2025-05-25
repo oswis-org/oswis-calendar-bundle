@@ -7,8 +7,13 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -48,33 +53,29 @@ use OswisOrg\OswisCoreBundle\Traits\Common\PriorityTrait;
 /**
  * Time range available for registrations of participants of some type to some event (with some price, capacity...).
  * @todo Implement: Check capacity of required "super" ranges (add somehow participant to them?).
- * @ApiPlatform\Core\Annotation\ApiResource(
- *   attributes={
- *     "filters"={"search"},
- *     "security"="is_granted('ROLE_MANAGER')"
- *   },
- *   collectionOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entities_get", "calendar_reg_ranges_get"}, "enable_max_depth"=true},
- *     },
- *     "post"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entities_post", "calendar_reg_ranges_post"}, "enable_max_depth"=true}
- *     }
- *   },
- *   itemOperations={
- *     "get"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "normalization_context"={"groups"={"entity_get", "calendar_reg_range_get"}, "enable_max_depth"=true},
- *     },
- *     "put"={
- *       "security"="is_granted('ROLE_MANAGER')",
- *       "denormalization_context"={"groups"={"entity_put", "calendar_reg_range_put"}, "enable_max_depth"=true}
- *     }
- *   }
- * )
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['entities_get', 'calendar_reg_ranges_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_reg_ranges_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_reg_range_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Put(
+            denormalizationContext: ['groups' => ['entity_put', 'calendar_reg_range_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+    ],
+    filters: ['search'],
+    security: "is_granted('ROLE_MANAGER')"
+)]
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['event.id', 'event.superEvent.id'])]
 #[Entity(repositoryClass: RegistrationOfferRepository::class)]
 #[Table(name: 'calendar_reg_range')]
@@ -106,7 +107,7 @@ class RegistrationOffer implements NameableInterface
     #[JoinColumn(nullable: true)]
     protected ?ParticipantCategory $participantCategory = null;
 
-    /** @var Collection<RegistrationFlagGroupOffer> $flagGroupRanges */
+    /** @var Collection<int, RegistrationFlagGroupOffer> $flagGroupRanges */
     #[ManyToMany(targetEntity: RegistrationFlagGroupOffer::class, cascade: ['all'])]
     #[JoinTable(name: 'calendar_reg_range_flag_group_range')]
     #[JoinColumn(name: "reg_range_id", referencedColumnName: "id")]
@@ -132,32 +133,31 @@ class RegistrationOffer implements NameableInterface
     /**
      * RegistrationsRange constructor.
      *
-     * @param Nameable|null $nameable
-     * @param Event|null $event
+     * @param Nameable|null          $nameable
+     * @param Event|null             $event
      * @param ParticipantCategory|null $participantType
-     * @param Price|null $eventPrice
-     * @param DateTimeRange|null $dateTimeRange
-     * @param bool|null $isRelative
+     * @param Price|null             $eventPrice
+     * @param DateTimeRange|null     $dateTimeRange
+     * @param bool|null              $isRelative
      * @param RegistrationOffer|null $requiredRange
-     * @param Capacity|null $eventCapacity
-     * @param Publicity|null $publicity
-     * @param bool|null $superEventRequired
+     * @param Capacity|null          $eventCapacity
+     * @param Publicity|null         $publicity
+     * @param bool|null              $superEventRequired
      *
      * @throws NotImplementedException
      */
     public function __construct(
-        ?Nameable          $nameable = null,
-        ?Event             $event = null,
+        ?Nameable $nameable = null,
+        ?Event $event = null,
         ?ParticipantCategory $participantType = null,
-        ?Price             $eventPrice = null,
-        ?DateTimeRange     $dateTimeRange = null,
-        ?bool              $isRelative = null,
+        ?Price $eventPrice = null,
+        ?DateTimeRange $dateTimeRange = null,
+        ?bool $isRelative = null,
         ?RegistrationOffer $requiredRange = null,
-        ?Capacity          $eventCapacity = null,
-        Publicity          $publicity = null,
-        ?bool              $superEventRequired = null
-    )
-    {
+        ?Capacity $eventCapacity = null,
+        ?Publicity $publicity = null,
+        ?bool $superEventRequired = null
+    ) {
         $this->flagGroupRanges = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
         $this->setEvent($event);
@@ -274,7 +274,7 @@ class RegistrationOffer implements NameableInterface
             $price += $this->getRequiredRangeDeposit($participantType);
         }
 
-        return null !== $price && $price <= 0 ? 0 : $price;
+        return max($price, 0);
     }
 
     public function getRestValue(?ParticipantCategory $participantType = null, bool $recursive = true): int
@@ -307,25 +307,28 @@ class RegistrationOffer implements NameableInterface
         }
     }
 
+    /**
+     * @param RegistrationFlagCategory|null $flagCategory
+     * @param string|null                   $flagType
+     * @param bool|null                     $onlyPublic
+     * @param bool                          $recursive
+     * @return Collection<int, RegistrationFlagGroupOffer>
+     */
     public function getFlagGroupRanges(
         ?RegistrationFlagCategory $flagCategory = null,
         ?string $flagType = null,
-        ?bool   $onlyPublic = false,
-        bool    $recursive = false
-    ): Collection
-    {
+        ?bool $onlyPublic = false,
+        bool $recursive = false
+    ): Collection {
         $flagGroupRanges = $this->flagGroupRanges;
         if (true === $onlyPublic) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
-                && $range->isPublicOnWeb());
+            $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
-                && $range->isCategory($flagCategory));
+            $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isCategory($flagCategory));
         }
         if (null !== $flagType) {
-            $flagGroupRanges = $flagGroupRanges->filter(fn(mixed $range) => $range instanceof RegistrationFlagGroupOffer
-                && $range->isType($flagType));
+            $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isType($flagType));
         }
         if (true === $recursive && null !== $this->getRequiredRegRange()) {
             $flagGroupRanges = new ArrayCollection([
@@ -352,7 +355,7 @@ class RegistrationOffer implements NameableInterface
 
     public function isParticipantInSuperEvent(?Participant $participant = null): bool
     {
-        return $participant instanceof Participant && $this->getEvent()
+        return $participant && $this->getEvent()
             && $this->getEvent()->isEventSuperEvent($participant->getEvent());
     }
 
@@ -381,9 +384,9 @@ class RegistrationOffer implements NameableInterface
      * @param bool $onlySimulate
      *
      * @return ParticipantFlagGroup
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
-     * @throws \OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException
+     * @throws FlagCapacityExceededException
+     * @throws FlagOutOfRangeException
+     * @throws NotImplementedException
      */
     public function makeCompatibleParticipantFlagGroup(
         ParticipantFlagGroup $oldParticipantFlagGroup,
@@ -399,10 +402,7 @@ class RegistrationOffer implements NameableInterface
         }
         $newParticipantFlagGroup = new ParticipantFlagGroup($this->findCompatibleFlagGroupRange($oldFlagGroupRange));
         foreach ($oldParticipantFlagGroup->getParticipantFlags(true) as $oldParticipantFlag) {
-            if (!($oldParticipantFlag instanceof ParticipantFlag)
-                || ($newParticipantFlagGroup->getAvailableFlagOffers()->contains(
-                    $oldParticipantFlag->getFlagOffer()
-                ))) {
+            if ($newParticipantFlagGroup->getAvailableFlagOffers()->contains($oldParticipantFlag->getFlagOffer())) {
                 continue;
             }
             $newParticipantFlag = $this->makeCompatibleParticipantFlag($oldParticipantFlag, $onlySimulate);
@@ -441,8 +441,7 @@ class RegistrationOffer implements NameableInterface
         }
         $flagCategory = $flagGroupRange->getFlagCategory();
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $newFlagGroupRange) {
-            if ($newFlagGroupRange instanceof RegistrationFlagGroupOffer
-                && $newFlagGroupRange->getFlagCategory() === $flagCategory) {
+            if ($newFlagGroupRange->getFlagCategory() === $flagCategory) {
                 return $newFlagGroupRange;
             }
         }
@@ -458,7 +457,7 @@ class RegistrationOffer implements NameableInterface
      * @param bool $onlySimulate
      *
      * @return ParticipantFlag
-     * @throws \OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException
+     * @throws FlagOutOfRangeException
      */
     public function makeCompatibleParticipantFlag(
         ParticipantFlag $oldParticipantFlag,
@@ -484,8 +483,7 @@ class RegistrationOffer implements NameableInterface
     public function isFlagRangeCompatible(?RegistrationFlagOffer $flagRange = null): bool
     {
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof RegistrationFlagGroupOffer
-                && $flagGroupRange->getFlagOffers()->contains($flagRange)) {
+            if ($flagGroupRange->getFlagOffers()->contains($flagRange)) {
                 return true;
             }
         }
@@ -499,12 +497,9 @@ class RegistrationOffer implements NameableInterface
             return $oldFlagRange;
         }
         foreach ($this->getFlagGroupRanges(null, null, false, true) as $flagGroupRange) {
-            if ($flagGroupRange instanceof RegistrationFlagGroupOffer) {
-                foreach ($flagGroupRange->getFlagOffers() as $oneFlagRange) {
-                    if ($oneFlagRange instanceof RegistrationFlagOffer
-                        && $oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
-                        return $oneFlagRange;
-                    }
+            foreach ($flagGroupRange->getFlagOffers() as $oneFlagRange) {
+                if ($oneFlagRange->getFlag() === $oldFlagRange->getFlag()) {
+                    return $oneFlagRange;
                 }
             }
         }

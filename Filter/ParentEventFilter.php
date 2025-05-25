@@ -2,39 +2,40 @@
 
 namespace OswisOrg\OswisCalendarBundle\Filter;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\AbstractContextAwareFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
 use ErrorException;
 
-final class ParentEventFilter extends AbstractContextAwareFilter
+final class ParentEventFilter extends AbstractFilter
 {
     public function getDescription(string $resourceClass): array
     {
-        $description['recursiveEventId'] = [
-            'property' => 'recursiveEventId',
-            'type' => 'string',
-            'required' => false,
-            'swagger' => [
-                'description' => "Event filter with recursion on superEvent property.",
+        return [
+            'recursiveEventId' => [
+                'property' => 'recursiveEventId',
+                'type' => 'string',
+                'required' => false,
+                'swagger' => [
+                    'description' => "Event filter with recursion on superEvent property.",
+                ],
             ],
         ];
-
-        return $description;
     }
 
     /**
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     public function filterProperty(
-        string       $property,
-        mixed        $value,
+        string $property,
+        mixed $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
-        string       $resourceClass,
-        string       $operationName = null
-    ): void
-    {
+        string $resourceClass,
+        ?Operation $operation = null,
+        ?array $context = null,
+    ): void {
         if ('recursiveEventId' !== $property || null === $value) {
             return;
         }

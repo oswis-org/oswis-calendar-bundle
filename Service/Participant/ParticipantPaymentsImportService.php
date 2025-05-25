@@ -19,11 +19,10 @@ class ParticipantPaymentsImportService
 {
     public function __construct(
         protected EntityManagerInterface $em,
-        protected LoggerInterface        $logger,
-        protected ParticipantService     $participantService,
+        protected LoggerInterface $logger,
+        protected ParticipantService $participantService,
         protected ParticipantPaymentService $paymentService,
-    )
-    {
+    ) {
     }
 
     public function processImport(
@@ -50,8 +49,8 @@ class ParticipantPaymentsImportService
             $this->paymentService->sendPaymentsReport($importedPayments);
             $this->logger->info("OK: Payments report sent! ");
         } catch (OswisException $e) {
-            $this->logger->error("ERROR: Payments report not sent! " . $e->getMessage());
-            $this->logger->error("ERROR: Payments report not sent! " . $e->getTraceAsString());
+            $this->logger->error("ERROR: Payments report not sent! ".$e->getMessage());
+            $this->logger->error("ERROR: Payments report not sent! ".$e->getTraceAsString());
         }
     }
 
@@ -75,7 +74,7 @@ class ParticipantPaymentsImportService
         $participantsArray = $participants->toArray();
         usort(
             $participantsArray,
-            static fn(mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
+            static fn (mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
         );
         $participants = new ArrayCollection($participantsArray);
         $participant = $participants->first() instanceof Participant ? $participants->first() : null;
@@ -89,7 +88,7 @@ class ParticipantPaymentsImportService
 
             return null;
         }
-        $participantString = $participant->getId() . ' ' . $participant->getName();
+        $participantString = $participant->getId().' '.$participant->getName();
         $this->logger->info("Found participant '$participantString' for payment with VS '$vs' and value '$value'.");
 
         return $participant;

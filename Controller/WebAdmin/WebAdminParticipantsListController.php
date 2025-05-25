@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
@@ -33,30 +32,31 @@ class WebAdminParticipantsListController extends AbstractController
     private const GENDER_APPROX_KEY = 'Pohlaví (odhad)';
 
     public function __construct(
-        public EventService             $eventService,
-        public ParticipantService       $participantService,
+        public EventService $eventService,
+        public ParticipantService $participantService,
         public ParticipantCategoryService $participantCategoryService,
         public RegistrationOfferService $participantRegistrationService,
-        public EntityManagerInterface   $em,
-        public EventSeriesService       $eventSeriesService,
-    )
-    {
+        public EntityManagerInterface $em,
+        public EventSeriesService $eventSeriesService,
+    ) {
     }
 
     public function showParticipants(
         ?string $eventSlug = null,
         ?string $participantCategorySlug = null,
-        bool    $includeDeleted = true,
-    ): Response
-    {
+        bool $includeDeleted = true,
+    ): Response {
         return $this->render(
             "@OswisOrgOswisCalendar/web_admin/participants.html.twig",
             $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted),
         );
     }
 
-    public function getParticipantsData(?string $eventSlug = null, ?string $participantCategorySlug = null, bool $includeDeleted = true): array
-    {
+    public function getParticipantsData(
+        ?string $eventSlug = null,
+        ?string $participantCategorySlug = null,
+        bool $includeDeleted = true
+    ): array {
         $data = [];
         $data['participantCategory']
             = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
@@ -69,11 +69,9 @@ class WebAdminParticipantsListController extends AbstractController
         ]);
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
-        usort($participantsArray, static function (mixed $a, mixed $b) {
-            assert($a instanceof Participant && $b instanceof Participant);
-
+        usort($participantsArray, static function (Participant $a, Participant $b) {
             return strcoll($a->getSortableName(), $b->getSortableName());
-        },);
+        });
         $data['participants'] = new ArrayCollection($participantsArray);
 
         return $data;
@@ -85,20 +83,20 @@ class WebAdminParticipantsListController extends AbstractController
     public function showParticipantsCsv(
         ?string $eventSlug = null,
         ?string $participantCategorySlug = null,
-        bool    $includeDeleted = false,
-    ): Response
-    {
+        bool $includeDeleted = false,
+    ): Response {
         $fileName = "participants";
-        $fileName .= $eventSlug ? ('_' . $eventSlug) : '';
-        $fileName .= $participantCategorySlug ? ('_' . $participantCategorySlug) : '';
-        $fileName .= '_' . str_replace('T', '_', (new DateTime())->format('c'));
+        $fileName .= $eventSlug ? ('_'.$eventSlug) : '';
+        $fileName .= $participantCategorySlug ? ('_'.$participantCategorySlug) : '';
+        $fileName .= '_'.str_replace('T', '_', (new DateTime())->format('c'));
         $fileName .= '.csv';
+
         return $this->render(
             "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
             $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted),
             new Response(headers: [
                 'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\""
+                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
             ]),
         );
     }
@@ -166,6 +164,8 @@ class WebAdminParticipantsListController extends AbstractController
         $flagsUsageByRange = [];
         $flagsUsageByFlag = [];
         $otherAggregations = [];
+        /** @var array<string, int> $paymentsAggregation */
+        $paymentsAggregation = [];
         $paymentsAggregation['Celkem cena (s příznaky)'] = 0;
         $paymentsAggregation['Celkem základní cena (bez příznaků)'] = 0;
         $paymentsAggregation['Celkem záloha (s příznaky)'] = 0;
@@ -175,9 +175,7 @@ class WebAdminParticipantsListController extends AbstractController
         $paymentsAggregation['Zbývající záloha (s příznaky)'] = 0;
         $paymentsAggregation['Zbývající cena (s příznaky)'] = 0;
         foreach ($participants as $participant) {
-            assert($participant instanceof Participant);
             foreach ($participant->getParticipantFlags(null, null, true) as $participantFlag) {
-                assert($participantFlag instanceof ParticipantFlag);
                 $flagRange = $participantFlag->getFlagOffer();
                 if (null === $flagRange) {
                     continue;
@@ -218,8 +216,7 @@ class WebAdminParticipantsListController extends AbstractController
                 $otherAggregations['Přihláška']['Přihláška ověřena'] ??= 0;
                 $otherAggregations['Přihláška']['Přihláška ověřena']++;
             }
-            if ($participant->getNotes()->filter(fn(mixed $note) => $note instanceof ParticipantNote
-                    && !empty($note->getTextValue()))->count() > 0) {
+            if ($participant->getNotes()->filter(static fn (ParticipantNote $note) => !empty($note->getTextValue()))->count() > 0) {
                 $otherAggregations['Poznámky']['S poznámkou'] ??= 0;
                 $otherAggregations['Poznámky']['S poznámkou']++;
             }
