@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -110,18 +111,34 @@ class ParticipantService
             $contact->addNote(new ContactNote("Vytvořeno k přihlášce na akci '$eventName'."));
         }
         $participant->removeEmptyNotesAndDetails();
-        $this->em->persist($participant);
-        $participant->updateCachedColumns();
-        $this->requestActivation($participant);
-        $this->flagRangeService->updateUsages($participant);
-        $regRange = $participant->getOffer();
-        if ($regRange) {
-            $this->registrationOfferService->updateUsage($regRange);
-        }
-        $this->em->flush();
-        $this->logger->info($this->getLogMessage($participant));
 
-        return $participant;
+        // Persist + lock-protected capacity recheck happen atomically.
+        // The capacity check inside Participant::setParticipantRegistration runs during
+        // API Platform deserialization (no lock) and only catches obviously-full ranges
+        // for friendly errors. Concurrent registrations would still race; serialize them
+        // here on the RegistrationOffer row.
+        return $this->em->wrapInTransaction(function () use ($participant): Participant {
+            $regRange = $participant->getOffer();
+            if (null !== $regRange && null !== $regRange->getId()) {
+                $this->em->lock($regRange, LockMode::PESSIMISTIC_WRITE);
+                $this->em->refresh($regRange);
+                $remaining = $regRange->getRemainingCapacity();
+                if (null !== $remaining && $remaining <= 0) {
+                    throw new EventCapacityExceededException($regRange->getName());
+                }
+            }
+            $this->em->persist($participant);
+            $participant->updateCachedColumns();
+            $this->requestActivation($participant);
+            $this->flagRangeService->updateUsages($participant);
+            if (null !== $regRange) {
+                $this->registrationOfferService->updateUsage($regRange);
+            }
+            $this->em->flush();
+            $this->logger->info($this->getLogMessage($participant));
+
+            return $participant;
+        });
     }
 
     final public function getRepository(): ParticipantRepository
