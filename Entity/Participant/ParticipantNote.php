@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -29,10 +30,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TextValueTrait;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 /**
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "textValue"
- * })
  */
 #[ApiResource(
     operations: [
@@ -56,6 +53,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     filters: ['search'],
     security: "is_granted('ROLE_MANAGER')"
 )]
+#[SearchAnnotation(['id', 'textValue'])]
 #[Entity]
 #[Table(name: 'calendar_participant_note')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]

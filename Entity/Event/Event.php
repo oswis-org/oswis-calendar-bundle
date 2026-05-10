@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -69,16 +70,9 @@ use function assert;
     filters: ['search'],
     security: "is_granted('ROLE_MANAGER')"
 )]
+#[SearchAnnotation(['id', 'name', 'description', 'note', 'shortName', 'slug'])]
 #[ApiFilter(OrderFilter::class)]
 /**
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "description",
- *     "note",
- *     "shortName",
- *     "slug"
- * })
  */
 #[Entity(repositoryClass: EventRepository::class)]
 #[Table(name: 'calendar_event')]

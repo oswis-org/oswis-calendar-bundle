@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -30,13 +31,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  * RegistrationFlag is some specification of Participant. Each flag can adjust price and can be used only once in one
  * participant.
  * @example Type of accommodation, food allergy, time of arrival/departure...
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "shortName",
- *     "description",
- *     "note"
- * })
  */
 #[ApiResource(
     operations: [
@@ -60,6 +54,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
     filters: ['search'],
     security: "is_granted('ROLE_MANAGER')"
 )]
+#[SearchAnnotation(['id', 'name', 'shortName', 'description', 'note'])]
 #[Entity(repositoryClass: RegistrationFlagRepository::class)]
 #[Table(name: 'calendar_flag')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_flag')]

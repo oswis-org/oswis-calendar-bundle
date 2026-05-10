@@ -2,6 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
@@ -36,12 +37,6 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 /**
  * Payment (or return - when numericValue is negative).
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "dateTime",
- *     "createdDateTime",
- *     "numericValue"
- * })
  */
 #[ApiResource(
     operations: [
@@ -85,6 +80,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     "createdDateTime",
     "numericValue",
 ])]
+#[SearchAnnotation(['id', 'dateTime', 'createdDateTime', 'numericValue'])]
 class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInterface
 {
     use BasicTrait;

@@ -5,6 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -21,10 +22,6 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
 /**
  * @author Jakub Zak <mail@jakubzak.eu>
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "token"
- * })
  */
 #[ApiResource(
     operations: [
@@ -50,6 +47,7 @@ use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
     filters: ['search'],
     security: "is_granted('ROLE_ADMIN')",
 )]
+#[SearchAnnotation(['id', 'token'])]
 #[Entity(repositoryClass: ParticipantTokenRepository::class)]
 #[Table(name: 'calendar_participant_token')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]

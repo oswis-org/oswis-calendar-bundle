@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -27,12 +28,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 use function in_array;
 
 /**
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "description",
- *     "note"
- * })
  */
 #[ApiResource(
     operations: [
@@ -56,6 +51,7 @@ use function in_array;
     filters: ['search'],
     security: 'is_granted("ROLE_MANAGER")'
 )]
+#[SearchAnnotation(['id', 'name', 'description', 'note'])]
 #[Entity(repositoryClass: ParticipantCategoryRepository::class)]
 #[Table(name: 'calendar_participant_category')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]

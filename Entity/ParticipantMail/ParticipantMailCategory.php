@@ -2,6 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantMail;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -15,7 +16,6 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
 
 /**
  * @author Jakub Zak <mail@jakubzak.eu>
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({"id"})
  */
 #[ApiResource(
     operations: [
@@ -41,6 +41,7 @@ use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailCategory;
     denormalizationContext: ['groups' => ['participant_mail_templates_post'], 'enable_max_depth' => true],
     security: "is_granted('ROLE_ADMIN')",
 )]
+#[SearchAnnotation(['id'])]
 #[Entity(repositoryClass: ParticipantMailCategoryRepository::class)]
 #[Table(name: 'calendar_participant_mail_category')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]

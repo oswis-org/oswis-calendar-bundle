@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
@@ -57,17 +58,6 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 /**
  * Participation of contact in event (attendee, sponsor, organizer, guest, partner...).
  *
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "variableSymbol",
- *     "event.name",
- *     "event.shortName",
- *     "event.slug",
- *     "contact.name",
- *     "contact.shortName",
- *     "contact.sortableName",
- *     "contact.details.content",
- * })
  */
 #[ApiFilter(ParentEventFilter::class)]
 #[ApiFilter(OrderFilter::class, properties: [
@@ -107,6 +97,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     ],
     security: "is_granted('ROLE_MANAGER')"
 )]
+#[SearchAnnotation(['id', 'variableSymbol', 'event.name', 'event.shortName', 'event.slug', 'contact.name', 'contact.shortName', 'contact.sortableName', 'contact.details.content'])]
 class Participant implements ParticipantInterface
 {
     use BasicTrait;

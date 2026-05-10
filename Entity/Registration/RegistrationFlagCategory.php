@@ -2,6 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Registration;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -21,16 +22,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * Some category (type) of participant flags.
- * @@OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "shortName",
- *     "description",
- *     "note",
- *     "internalNote",
- *     "type",
- *     "color"
- * })
  */
 #[ApiResource(
     operations: [
@@ -54,6 +45,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
     filters: ['search'],
     security: "is_granted('ROLE_MANAGER')"
 )]
+#[SearchAnnotation(['id', 'name', 'shortName', 'description', 'note', 'internalNote', 'type', 'color'])]
 #[Entity]
 #[Table(name: 'calendar_flag_category')]
 #[ApiFilter(OrderFilter::class)]

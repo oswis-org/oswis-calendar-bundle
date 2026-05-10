@@ -2,6 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -18,12 +19,6 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 
 /**
- * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
- *     "id",
- *     "name",
- *     "description",
- *     "note"
- * })
  */
 #[Entity]
 #[Table(name: 'calendar_event_flag')]
@@ -55,6 +50,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
     filters: ['search'],
     security: "is_granted('ROLE_MANAGER')"
 )]
+#[SearchAnnotation(['id', 'name', 'description', 'note'])]
 class EventFlag
 {
     use NameableTrait;
