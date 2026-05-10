@@ -1,0 +1,349 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% set page = "message" %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/5.2.0/screenfull.min.js"></script>
+    <script>
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chartDom = document.getElementById('chart');
+            const myChart = echarts.init(chartDom);
+
+            function isFullscreen(element) {
+                return screenfull.element === element;
+            }
+
+            async function fullscreen(element) {
+                if (isFullscreen(element)) {
+                    myChart?.setOption({
+                        toolbox: {
+                            feature: {
+                                myFullScreen: {
+                                    icon: 'path://M7,14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12,7h-3v2h5v-5h-2v3zM14,5v2h3v3h2V5h-5z',
+                                }
+                            }
+                        }
+                    });
+                    return await screenfull.exit();
+                }
+                myChart?.setOption({
+                    toolbox: {
+                        feature: {
+                            myFullScreen: {
+                                icon: 'path://m5,16h3v3h2v-5h-5v2zm3-8h-3v2h5v-5h-2v3zm6,11h2v-3h3v-2h-5v5zm2-11v-3h-2v5h5v-2h-3z',
+                            }
+                        }
+                    }
+                });
+                return await screenfull.request(chartDom);
+            }
+
+            const option = {
+                grid: {left: 40, top: 60, right: 40, bottom: 30,},
+                tooltip: {trigger: 'axis',},
+                legend: {top: 5, left: 'center', padding: [5, 40, 5, 40]},
+                toolbox: {
+                    orient: 'vertical',
+                    feature: {
+                        dataZoom: {yAxisIndex: 'none',},
+                        saveAsImage: {
+                            show: true,
+                            title: 'Uložit',
+                            pixelRatio: 3
+                        },
+                        magicType: {
+                            type: ['line', 'bar'],
+                            title: {line: 'line', bar: 'bar'},
+                        },
+                        myFullScreen: {
+                            show: true,
+                            title: 'Fullscreen',
+                            icon: 'path://M7,14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12,7h-3v2h5v-5h-2v3zM14,5v2h3v3h2V5h-5z',
+                            onclick: function () {
+                                fullscreen(chartDom);
+                            },
+                        },
+                    },
+                },
+                xAxis: {
+                    type: 'time',
+                    axisPointer: {
+                        label: {
+                            formatter: label => {
+                                const date = new Date(label.value);
+                                return date.getDate() + '. ' + (date.getMonth() + 1) + '. ';
+                            },
+                        }
+                    },
+                    axisLabel: {
+                        formatter: {
+                            year: '',
+                            month: '1. {M}.',
+                            day: '{d}. {M}.',
+                            hour: '{HH}:{mm}',
+                            minute: '{HH}:{mm}',
+                            second: '{HH}:{mm}:{ss}',
+                            millisecond: '{hh}:{mm}:{ss} {SSS}',
+                        },
+                        fontWeight: "bold",
+                    },
+                },
+                yAxis: {
+                    type: 'value',
+                },
+                series:
+                    [
+                        {% set aggregation_index = 0 %}
+                        {% for aggregation in aggregations|filter(agg => agg.days|length > 0) %}
+                        {% set width = (3.5 - aggregation_index * 0.5) %}
+                        {% set color_green = "'rgba(0, "~(150 + aggregation_index * 15)~", 0, " ~ (1 - aggregation_index * 0.2) ~ ")'" %}
+                        {% set color_red = "'rgba("~(150 + aggregation_index * 15)~", 0, 0, " ~ (1 - aggregation_index * 0.2) ~ ")'" %}
+                        {% set color_blue = "'rgba(0, 0, "~(150 + aggregation_index * 15)~", " ~ (1 - aggregation_index * 0.2) ~ ")'" %}
+                        {
+                            name: '{{ aggregation.event.startYear }}',
+                            color: {{ color_green|raw }},
+                            lineStyle: {width: {{ width }}},
+                            type: 'line',
+                            symbol: 'none',
+                            smooth: true,
+                            data: {{ aggregation.created_attendees_sum_chart|raw }},
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        },
+                        {
+                            name: '{{ aggregation.event.startYear }} ✗',
+                            color: {{ color_red|raw }},
+                            lineStyle: {width: {{ width }}},
+                            type: 'line',
+                            symbol: 'none',
+                            smooth: true,
+                            data: {{ aggregation.deleted_attendees_sum_chart|raw }},
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        },
+                        {
+                            name: '{{ aggregation.event.startYear }} ✓',
+                            color: {{ color_blue|raw }},
+                            lineStyle: {width: {{ width }}},
+                            type: 'line',
+                            symbol: 'none',
+                            smooth: true,
+                            data: {{ aggregation.active_attendees_sum_chart|raw }},
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        },
+                        {% set aggregation_index = aggregation_index + 1 %}
+                        {% endfor %}
+                    ]
+            };
+            option && myChart.setOption(option);
+            new ResizeObserver(myChart.resize).observe(chartDom);
+        }, false);
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chartDom2 = document.getElementById('chart2');
+            const myChart2 = echarts.init(chartDom2);
+
+            function isFullscreen2(element) {
+                return screenfull.element === element;
+            }
+
+            async function fullscreen2(element) {
+                if (isFullscreen2(element)) {
+                    myChart2?.setOption({
+                        toolbox: {
+                            feature: {
+                                myFullScreen: {
+                                    icon: 'path://M7,14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12,7h-3v2h5v-5h-2v3zM14,5v2h3v3h2V5h-5z',
+                                }
+                            }
+                        }
+                    });
+                    return await screenfull.exit();
+                }
+                myChart2?.setOption({
+                    toolbox: {
+                        feature: {
+                            myFullScreen: {
+                                icon: 'path://m5,16h3v3h2v-5h-5v2zm3-8h-3v2h5v-5h-2v3zm6,11h2v-3h3v-2h-5v5zm2-11v-3h-2v5h5v-2h-3z',
+                            }
+                        }
+                    }
+                });
+                return await screenfull.request(chartDom2);
+            }
+
+            const option2 = {
+                grid: {left: 40, top: 60, right: 40, bottom: 30,},
+                tooltip: {trigger: 'axis',},
+                legend: {top: 5, left: 'center', padding: [5, 40, 5, 40]},
+                toolbox: {
+                    orient: 'vertical',
+                    feature: {
+                        dataZoom: {yAxisIndex: 'none',},
+                        saveAsImage: {
+                            show: true,
+                            title: 'Uložit',
+                            pixelRatio: 3
+                        },
+                        magicType: {
+                            type: ['line', 'bar'],
+                            title: {line: 'line', bar: 'bar'},
+                        },
+                        myFullScreen: {
+                            show: true,
+                            title: 'Fullscreen',
+                            icon: 'path://M7,14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12,7h-3v2h5v-5h-2v3zM14,5v2h3v3h2V5h-5z',
+                            onclick: function () {
+                                fullscreen2(chartDom2);
+                            },
+                        },
+                    },
+                },
+                xAxis: {
+                    type: 'time',
+                    axisPointer: {
+                        label: {
+                            formatter: label => {
+                                const date = new Date(label.value);
+                                return date.getDate() + '. ' + (date.getMonth() + 1) + '. ';
+                            },
+                        }
+                    },
+                    axisLabel: {
+                        formatter: {
+                            year: '',
+                            month: '1. {M}.',
+                            day: '{d}. {M}.',
+                            hour: '{HH}:{mm}',
+                            minute: '{HH}:{mm}',
+                            second: '{HH}:{mm}:{ss}',
+                            millisecond: '{hh}:{mm}:{ss} {SSS}',
+                        },
+                        fontWeight: "bold",
+                    },
+                },
+                yAxis: {
+                    type: 'value',
+                },
+                series:
+                    [
+                        {% set aggregation_index = 0 %}
+                        {% for aggregation in aggregations|filter(agg => agg.days|length > 0) %}
+                        {% set width = (3.5 - aggregation_index * 0.5) %}
+                        {% set color_green = "'rgba(0, "~(150 + aggregation_index * 15)~", 0, " ~ (1 - aggregation_index * 0.2) ~ ")'" %}
+                        {% set color_red = "'rgba("~(150 + aggregation_index * 15)~", 0, 0, " ~ (1 - aggregation_index * 0.2) ~ ")'" %}
+                        {% set color_blue = "'rgba(0, 0, "~(150 + aggregation_index * 15)~", " ~ (1 - aggregation_index * 0.2) ~ ")'" %}
+                        {
+                            name: '{{ aggregation.event.startYear }}',
+                            color: {{ color_green|raw }},
+                            lineStyle: {width: {{ width }}},
+                            type: 'line',
+                            symbol: 'none',
+                            smooth: true,
+                            data: {{ aggregation.created_attendees_chart|raw }},
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        },
+                        {
+                            name: '{{ aggregation.event.startYear }} ✗',
+                            color: {{ color_red|raw }},
+                            lineStyle: {width: {{ width }}},
+                            type: 'line',
+                            symbol: 'none',
+                            smooth: true,
+                            data: {{ aggregation.deleted_attendees_chart|raw }},
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        },
+                        {
+                            name: '{{ aggregation.event.startYear }} ✓',
+                            color: {{ color_blue|raw }},
+                            lineStyle: {width: {{ width }}},
+                            type: 'line',
+                            symbol: 'none',
+                            smooth: true,
+                            data: {{ aggregation.active_attendees_chart|raw }},
+                            emphasis: {
+                                focus: 'series'
+                            },
+                        },
+                        {% set aggregation_index = aggregation_index + 1 %}
+                        {% endfor %}
+                    ]
+            };
+            option2 && myChart2.setOption(option2);
+            new ResizeObserver(myChart2.resize).observe(chartDom2);
+        }, false);
+    </script>
+{% endblock javascripts %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        table.list td {
+            text-align: right;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block body_content %}
+
+    <div class="container-fluid" style="overflow-x: auto; overflow-y: visible;">
+        <div class="row" style="min-width: 600px; overflow-y: visible; z-index: 40;">
+            <div class="col-12" id="chartDiv">
+                <div id="chart" style="aspect-ratio: 22/9; margin: 3em auto; background: white;"></div>
+            </div>
+            <div class="col-12" id="chart2Div">
+                <div id="chart2" style="aspect-ratio: 22/9; margin: 3em auto; background: white;"></div>
+            </div>
+        </div>
+    </div>
+
+    <main class="container" id="main-content-container">
+        <div class="row">
+            <div class="col-12">
+                {% for aggregation in aggregations|filter(agg => agg.days|length > 0) %}
+                    <div>
+                        <h3>{{ aggregation.event.name }}</h3>
+                        <table class="list">
+                            <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th colspan="2">Vytvořené</th>
+                                <th colspan="2">Smazané</th>
+                                <th colspan="2">Nesmazané</th>
+                            </tr>
+                            </thead>
+                            {% for day in aggregation.days %}
+                                <tbody>
+                                <tr>
+                                    <td><strong>{{ day.date_human }}</strong></td>
+                                    <td style="color: rgb(40, 220, 40);">{{ day.created_attendees }}</td>
+                                    <td style="color: rgb(40, 220, 40);">
+                                        <strong>{{ day.created_attendees_sum }}</strong></td>
+                                    <td style="color: red;">{{ day.deleted_attendees }}</td>
+                                    <td style="color: red;"><strong>{{ day.deleted_attendees_sum }}</strong></td>
+                                    <td style="color: green;">{{ day.not_deleted_attendees }}</td>
+                                    <td style="color: green;"><strong>{{ day.not_deleted_attendees_sum }}</strong></td>
+                                </tr>
+                                </tbody>
+                            {% endfor %}
+                        </table>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
+

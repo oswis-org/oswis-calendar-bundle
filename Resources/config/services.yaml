@@ -455,3 +455,21 @@ services:
     alias: oswis_org_oswis_calendar.calendar_site_map_extender
     public: true
 
+
+
+  ## Aggregations service + controller (per-year participant registration aggregations).
+  oswis_org_oswis_calendar.aggregations.aggregations_service:
+    class: OswisOrg\OswisCalendarBundle\Service\Aggregations\AggregationsService
+    autowire: true
+    public: true
+  OswisOrg\OswisCalendarBundle\Service\Aggregations\AggregationsService:
+    alias: oswis_org_oswis_calendar.aggregations.aggregations_service
+    public: true
+
+  oswis_org_oswis_calendar.web_admin.aggregations_controller:
+    class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\AggregationsController
+    autowire: true
+    public: true
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\AggregationsController:
+    alias: oswis_org_oswis_calendar.web_admin.aggregations_controller
+    public: true

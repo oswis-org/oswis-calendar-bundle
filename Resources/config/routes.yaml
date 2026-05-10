@@ -102,3 +102,7 @@ oswis_org_oswis_calendar_web_admin_participant_arrival:
   path: "/web_admin/prijezd/{participantId}/{arrival?}"
 
 
+
+oswis_org_oswis_calendar_web_admin_aggregations:
+    controller: oswis_org_oswis_calendar.web_admin.aggregations_controller::showAggregations
+    path: "/web_admin/prihlasky/agregace"
