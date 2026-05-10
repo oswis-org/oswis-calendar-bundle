@@ -40,7 +40,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\BankAccountTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
 use function assert;
 
 #[ApiResource(

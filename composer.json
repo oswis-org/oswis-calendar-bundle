@@ -31,10 +31,10 @@
     "php": ">=8.4",
     "ext-iconv": "*",
     "bigit/vokativ": "dev-zakjakub-master",
-    "endroid/qr-code": "^6.0.4",
-    "rikudou/czqrpayment": "^v5.0",
+    "endroid/qr-code": "^6.1",
+    "oswis-org/oswis-address-book-bundle": "^0.0",
     "oswis-org/oswis-core-bundle": "^0.0",
-    "oswis-org/oswis-address-book-bundle": "^0.0"
+    "rikudou/czqrpayment": "^v5.0"
   },
   "require-dev": {
     "phpstan/extension-installer": "^1.1.0",

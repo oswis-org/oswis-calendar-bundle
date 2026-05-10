@@ -32,7 +32,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\InternalNoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NumericValueTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 /**
  * Payment (or return - when numericValue is negative).
