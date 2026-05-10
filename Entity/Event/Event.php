@@ -71,7 +71,6 @@ use function assert;
 )]
 #[ApiFilter(OrderFilter::class)]
 /**
- * @ApiPlatform\Core\Annotation\ApiFilter(ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter::class)
  * @OswisOrg\OswisCoreBundle\Filter\SearchAnnotation({
  *     "id",
  *     "name",
