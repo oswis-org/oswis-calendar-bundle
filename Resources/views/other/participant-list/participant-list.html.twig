@@ -1,4 +1,13 @@
 <div class="container">
+    {% if filterTabs is defined %}
+        <ul class="nav nav-tabs mb-3">
+            {% for tab in filterTabs %}
+                <li class="nav-item">
+                    <a class="nav-link{{ tab.active ? ' active' : '' }}" href="{{ tab.url }}">{{ tab.label }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
     <div class="row">
         <div class="col">
             <h2>Přehled přihlášek</h2>
@@ -69,9 +78,7 @@
             <table class="list">
                 {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
                 {% for participant in participants|filter(participant => not participant.deleted) %}
-                    {% if not participant.deleted %}
-                        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
-                    {% endif %}
+                    {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
                 {% else %}
                     <tbody>
                     <tr>
