@@ -212,10 +212,6 @@ class WebAdminParticipantsListController extends AbstractController
                 $otherAggregations['Uživatelský účet']['Účet ověřen'] ??= 0;
                 $otherAggregations['Uživatelský účet']['Účet ověřen']++;
             }
-            if ($participant->hasActivatedContactUser()) {
-                $otherAggregations['Přihláška']['Přihláška ověřena'] ??= 0;
-                $otherAggregations['Přihláška']['Přihláška ověřena']++;
-            }
             if ($participant->getNotes()->filter(static fn (ParticipantNote $note) => !empty($note->getTextValue()))->count() > 0) {
                 $otherAggregations['Poznámky']['S poznámkou'] ??= 0;
                 $otherAggregations['Poznámky']['S poznámkou']++;
