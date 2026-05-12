@@ -473,3 +473,12 @@ services:
   OswisOrg\OswisCalendarBundle\Controller\WebAdmin\AggregationsController:
     alias: oswis_org_oswis_calendar.web_admin.aggregations_controller
     public: true
+
+  ## Per-event aggregations (flag usage, payments, gender estimate, etc.) consumed by the admin event dashboard.
+  oswis_org_oswis_calendar.aggregations.event_aggregations_service:
+    class: OswisOrg\OswisCalendarBundle\Service\Aggregations\EventAggregationsService
+    autowire: true
+    public: true
+  OswisOrg\OswisCalendarBundle\Service\Aggregations\EventAggregationsService:
+    alias: oswis_org_oswis_calendar.aggregations.event_aggregations_service
+    public: true
