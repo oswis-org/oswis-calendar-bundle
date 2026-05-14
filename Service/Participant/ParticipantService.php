@@ -25,6 +25,7 @@ use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
+use OswisOrg\OswisCalendarBundle\Exception\ReturningParticipantException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
@@ -93,6 +94,28 @@ class ParticipantService
         $participantName = $contact->getName();
         if (null === ($appUser = $participant->getAppUser())
             && $this->appUserService->alreadyExists($eMail = ''.$contact->getEmail())) {
+            // Returning participant — they already have an AppUser from a previous year.
+            // Instead of throwing a hard "duplicate user" error and forcing admin to send
+            // a login link manually (the workflow up to 2025), send a single-use magic-link
+            // email automatically and let the user resume registration with one click.
+            $existingAppUser = $this->appUserService->getRepository()->findOneBy(['email' => $eMail]);
+            $rangeSlug = $participant->getOffer()?->getSlug();
+            if ($existingAppUser instanceof AppUser && null !== $rangeSlug) {
+                // Mirror the target ParticipantCategory tone (formal vs informal)
+                // so the magic-link email matches the rest of the registration
+                // flow's tone (Seznamovák = informal, business event = formal).
+                $formal = (bool) ($participant->getOffer()?->getParticipantCategory()?->isFormal() ?? false);
+                $this->appUserService->sendRegistrationLoginLink($existingAppUser, $rangeSlug, $formal);
+                $this->logger->info(
+                    "Returning participant collision for '$eMail' — magic-link sent for range '$rangeSlug'.",
+                );
+
+                throw new ReturningParticipantException(
+                    'Tento e-mail u nás z dřívějška už máme. Právě jsme Ti poslali e-mail '
+                    .'s odkazem pro pokračování v přihlášce — klikni na něj a vrátíš se '
+                    .'na formulář s předvyplněnými údaji o sobě.',
+                );
+            }
             $this->logger->error("User not unique with string '$eMail' and participant was NOT created!");
             throw new UserNotUniqueException('Uživatel se stejným e-mailem nebo jménem již existuje!');
         }

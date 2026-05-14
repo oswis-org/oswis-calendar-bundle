@@ -5,6 +5,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Form\Participant;
 
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Form\PersonType;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
@@ -14,6 +15,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -104,7 +106,24 @@ class ParticipantType extends AbstractType
     final public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Participant::class,
+            'data_class'        => Participant::class,
+            // For new contacts (no ID yet) enforce the stricter `registration`
+            // validation group — server-side NotBlank on name/phone/email
+            // closes the path that lets ~0.5-1% of submissions land with empty
+            // identity fields (browsers / autofill / WebView clients that
+            // skip the HTML5 `required` attribute). Existing contacts keep
+            // their data as-is; the registration form disables those fields
+            // intentionally so the user can't accidentally clear them, and
+            // any required correction goes through an out-of-band request.
+            'validation_groups' => static function (FormInterface $form): array {
+                $participant = $form->getData();
+                $contact = $participant instanceof Participant ? $participant->getContact() : null;
+                if ($contact instanceof AbstractContact && null === $contact->getId()) {
+                    return ['Default', 'registration'];
+                }
+
+                return ['Default'];
+            },
         ]);
     }
 

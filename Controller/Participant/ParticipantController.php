@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
+use OswisOrg\OswisCalendarBundle\Exception\ReturningParticipantException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
@@ -97,12 +98,19 @@ class ParticipantController extends AbstractController
         if (null === $rangeSlug) {
             return $this->redirectToDefaultEventRanges();
         }
-        //
-        $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, true);
+        $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, false);
         $this->logger->info("GOT RANGE");
-        //
         if (!($range instanceof RegistrationOffer) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
+        }
+        if (!$range->isRangeActive()) {
+            $this->logger->error('RANGE NOT ACTIVE!!!');
+
+            return $this->getResponse(
+                type: 'disabled',
+                title: 'Přihlášky nejsou aktivní',
+                disabled: true,
+            );
         }
         $user = $this->security->getUser();
         if ($user instanceof AppUser) {
@@ -145,6 +153,14 @@ class ParticipantController extends AbstractController
                 $range,
                 null,
                 $form->createView()
+            );
+        } catch (ReturningParticipantException $rpe) {
+            return $this->getResponse(
+                type: 'success',
+                title: 'Zaslali jsme Ti přihlašovací odkaz',
+                event: $range->getEvent(),
+                range: $range,
+                message: $rpe->getMessage(),
             );
         } catch (Exception $e) {
             $participant = $this->participantService->getEmptyParticipant($range);
@@ -214,12 +230,12 @@ class ParticipantController extends AbstractController
         ?Event $event = null,
         ?RegistrationOffer $range = null,
         ?string $message = null,
-        ?FormView $formView = null
+        ?FormView $formView = null,
+        bool $disabled = false,
     ): Response {
-        $template = '@OswisOrgOswisCalendar/web/pages/participant-registration-form.html.twig';
-        if ($verification) {
-            $template = '@OswisOrgOswisCalendar/web/pages/participant-registration-confirmation.html.twig';
-        }
+        $template = $verification
+            ? '@OswisOrgOswisCalendar/web/pages/participant-registration-confirmation.html.twig'
+            : '@OswisOrgOswisCalendar/web/pages/participant-registration-form.html.twig';
 
         return $this->render($template, [
             'form' => $formView,
@@ -229,7 +245,8 @@ class ParticipantController extends AbstractController
             'range' => $range,
             'message' => $message,
             'type' => $type,
-            'registrationsActive' => $range && $range->isRangeActive(),
+            'disabled' => $disabled,
+            'registrationsActive' => null !== $range && $range->isRangeActive(),
         ]);
     }
 
