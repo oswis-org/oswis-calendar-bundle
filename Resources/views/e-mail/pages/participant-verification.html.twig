@@ -2,138 +2,94 @@
 
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
 
-{% block content_inner %}
-    <div itemscope itemtype="http://schema.org/EventReservation">
-        <link itemprop="reservationStatus" href="http://schema.org/ReservationPending"/>
-        <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
-        <meta itemprop="bookingTime" content="{{ participant.createdAt|date("c") }}"/>
-        <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>{# TODO #}
-        <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
-        <meta itemprop="reservationNumber" content="{{ participant.id }}"/>
-        <meta itemprop="numSeats" content="1"/>
-        <span itemprop="totalPrice" content="{{ participant.price }}"></span>
-        <span itemprop="priceCurrency" content="CZK"></span>
-        <span itemprop="underName" itemscope itemtype="http://schema.org/Person">
-            <span itemprop="name" content="{{ participant.contact.name }}"></span>
-            <span itemprop="email" content="{{ participant.contact.email }}"></span>
-        </span>
-
-        {% block message_message_outer %}
-            <p itemprop="additionalTicketText">
-                {% block message_message_inner %}
-                    {% if participant.contact.organization|default %}
-                        Vaše organizace {{ participant.contact.name }} byl{{ a }}
-                    {% else %}
-                        Byl{{ a }} js{{ f ? 'te' : 'i' }}
-                    {% endif %}
-                    úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>,
-                    {% if participant.event.organizer.contact.name|default %}
-                        kterou pořádá {{ participant.event.organizer.contact.name }}.
-                    {% elseif participant.event.startDateTime|default %}
-                        která se koná od {{ participant.event.startDateTime|date("j. n. Y") }}.
-                    {%- else -%}
-                        .
-                    {% endif %}
-                {% endblock message_message_inner %}
-            </p>
-        {% endblock message_message_outer %}
-
-        {% if tokenUrl|default %}
-            <h3>Ověření přihlášky</h3>
-            <p>
-                <b>Ještě je nutné přihlášku dokončit kliknutím na následující odkaz</b> a potvrdit tím,
-                že zadaná adresa patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
-                <a href="{{ tokenUrl }}" class="token-box" title="Odkaz pro aktivaci účtu"
-                   target="_blank">{{ tokenUrl }}</a>
-                {% if participantToken.validHours|default %}
-                    <br><small>Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.</small>
+{% block content_outer %}
+    {# Schema.org microdata — invisible meta/link tags consumed by email
+       clients (Gmail, etc.) to surface event reservation cards in the
+       inbox. Wrapped in mj-raw so MJML doesn't try to wrap them in a
+       <table> — they need to stay flat in the HTML body. #}
+    <mj-raw>
+        <div itemscope itemtype="http://schema.org/EventReservation">
+            <link itemprop="reservationStatus" href="http://schema.org/ReservationPending"/>
+            <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
+            <meta itemprop="bookingTime" content="{{ participant.createdAt|date('c') }}"/>
+            <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>
+            <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
+            <meta itemprop="reservationNumber" content="{{ participant.id }}"/>
+            <meta itemprop="numSeats" content="1"/>
+            <span itemprop="totalPrice" content="{{ participant.price }}"></span>
+            <span itemprop="priceCurrency" content="CZK"></span>
+            <span itemprop="underName" itemscope itemtype="http://schema.org/Person">
+                <span itemprop="name" content="{{ participant.contact.name }}"></span>
+                <span itemprop="email" content="{{ participant.contact.email }}"></span>
+            </span>
+            <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+            <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+            {% if tokenUrl|default %}
+                <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
+                    <meta itemprop="name" content="Potvrdit"/>
+                    <link itemprop="url" href="{{ tokenUrl }}"/>
+                </div>
+            {% endif %}
+            <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
+                <meta itemprop="name" content="{{ participant.event.name }}"/>
+                <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
+                {% if participant.event.startDateTime|default %}
+                    <meta itemprop="startDate" content="{{ participant.event.startDateTime|date('c') }}"/>
                 {% endif %}
-            </p>
-        {% endif %}
-
-        <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
-            <meta itemprop="name" content="Potvrdit"/>
-            <link itemprop="url" href="{{ tokenUrl }}"/>
-            <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
-                <link itemprop="url" href="{{ tokenUrl }}">
-            </div>
-        </div>
-
-        <div itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction">
-            <meta itemprop="name" content="Potvrdit"/>
-            <link itemprop="url" href="{{ tokenUrl }}"/>
-            <div itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler">
-                <link itemprop="url" href="{{ tokenUrl }}"/>
-            </div>
-        </div>
-
-        <p>
-            Potvrzením registrace také souhlasí{{ f ? 'te' : 'š' }} se zpracováním {{ f ? 'Vašich' : 'Tvých' }} osobních
-            údajů nutných pro zorganizování této
-            akce.
-            {% if participant.event.organizer.contact.name|default %}
-                Tyto údaje budou zpracovány subjektem {{ participant.event.organizer.contact.name }}
-                a informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na
-                <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank">našich webových
-                    stránkách</a>.
-            {% else %}
-                Informace o jejich zpracování nalezne{{ f ? 'te' : 'š' }} na<a
-                    href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}"
-                    target="_blank"> webových
-                stránkách</a>.
-            {% endif %}
-        </p>
-
-        <p>Pro zrušení nebo změnu přihlášky nás kontaktuj{{ f ? 'te' : '' }} odpovědí na tuto zprávu.</p>
-
-        <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
-            <meta itemprop="name" content="{{ participant.event.name }}"/>
-            <link itemprop="url"
-                  href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
-            <meta itemprop="startDate" content="{{ participant.event.startDate|date("c") }}"/>
-            <meta itemprop="endDate" content="{{ participant.event.endDate|date("c") }}"/>
-            {% if participant.event.place(true)|default %}
-                <div itemprop="participant.event.place" itemscope itemtype="http://schema.org/Place">
-                    {% if participant.event.place(true).name|default %}
-                        <meta itemprop="name" content="{{ participant.event.place(true).name }}"/>
-                    {% endif %}
-                    <div itemprop="address" itemscope itemtype="http://schema.org/PostalAddress">
-                        {% if participant.event.place(true).name|default %}
-                            <meta itemprop="name" content="{{ participant.event.place(true).name }}"/>
-                        {% endif %}
-                        {% if participant.event.place(true).streetAddress|default %}
-                            <meta itemprop="streetAddress" content="{{ participant.event.place(true).streetAddress }}"/>
-                        {% endif %}
-                        {% if participant.event.place(true).city|default %}
-                            <meta itemprop="addressLocality" content="{{ participant.event.place(true).city }}"/>
-                        {% endif %}
-                        {% if participant.event.place(true).postalCode|default %}
-                            <meta itemprop="postalCode" content="{{ participant.event.place(true).postalCode }}"/>
-                        {% endif %}
-                        {% if participant.event.place(true).city|default %}
-                            <meta itemprop="addressRegion" content="{{ participant.event.place(true).city }}"/>
-                        {% endif %}
-                        {% if participant.event.place(true).url|default %}
-                            <!--suppress HtmlUnknownAttribute -->
-                            <meta itemprop="url" href="{{ participant.event.place(true).url }}"
-                                  content="{{ participant.event.place(true).url }}"/>
-                        {% endif %}
-                        <meta itemprop=Country" content="CZ"/>
+                {% if participant.event.endDateTime|default %}
+                    <meta itemprop="endDate" content="{{ participant.event.endDateTime|date('c') }}"/>
+                {% endif %}
+                {% if participant.event.organizer.contact.name|default %}
+                    <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                        <meta itemprop="name" content="{{ participant.event.organizer.contact.name }}"/>
                     </div>
-                </div>
-            {% endif %}
-            {% if participant.event.organizer.contact.name|default %}
-                <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
-                    <meta itemprop="name" content="{{ participant.event.organizer.contact.name }}"/>
-                    <link itemprop="image" href="{{ absolute_url(asset('img/web/og-image.jpg')) }}"/>
-                    <!--<link itemprop="image" href="https://www.seznamovakup.cz/img/web/og-image.jpg"/>-->
-                    <link itemprop="url"
-                          href="{{ absolute_url(path('oswis_org_oswis_address_book_organization',
-                              {'slug': participant.event.organizer.contact.slug|default})) }}"/>
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
-    </div>
-{% endblock content_inner %}
+    </mj-raw>
+
+    <mj-text>
+        {% if participant.contact.organization|default %}
+            Vaše organizace <b>{{ participant.contact.name }}</b> byl{{ a }}
+        {% else %}
+            Byl{{ a }} js{{ f ? 'te' : 'i' }}
+        {% endif %}
+        úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ participant.event.name }}</b>{% if participant.event.organizer.contact.name|default %}, kterou pořádá {{ participant.event.organizer.contact.name }}{% elseif participant.event.startDateTime|default %}, která se koná od {{ participant.event.startDateTime|date('j. n. Y') }}{% endif %}.
+    </mj-text>
+
+    {% if tokenUrl|default %}
+        <mj-text font-size="18px" font-weight="700" color="#006FAD">
+            Ověření přihlášky
+        </mj-text>
+        <mj-text>
+            <b>Ještě je nutné přihlášku dokončit</b> a potvrdit tím, že zadaná adresa
+            patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
+        </mj-text>
+        <mj-button href="{{ tokenUrl }}" background-color="#006FAD" color="#ffffff" font-weight="700" font-size="16px" inner-padding="14px 24px" border-radius="4px">
+            Ověřit přihlášku
+        </mj-button>
+        <mj-text font-size="11px" color="#666666">
+            Pokud tlačítko nefunguje, zkopíruj{{ f ? 'te' : '' }} si tuto adresu do prohlížeče:<br>
+            <a href="{{ tokenUrl }}" style="color:#006FAD; word-break:break-all;">{{ tokenUrl }}</a>
+        </mj-text>
+        {% if participantToken.validHours|default %}
+            <mj-text font-size="11px" color="#888888">
+                Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.
+            </mj-text>
+        {% endif %}
+    {% endif %}
+
+    <mj-text font-size="12px" color="#666666">
+        Potvrzením registrace souhlasí{{ f ? 'te' : 'š' }} se zpracováním
+        {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
+        {% if participant.event.organizer.contact.name|default %}
+            Tyto údaje budou zpracovány subjektem {{ participant.event.organizer.contact.name }};
+        {% endif %}
+        informace o jejich zpracování najde{{ f ? 'te' : 'š' }} na
+        <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank" style="color:#006FAD;">našich webových stránkách</a>.
+    </mj-text>
+
+    <mj-text font-size="12px" color="#666666">
+        Pro zrušení nebo změnu přihlášky nás kontaktuj{{ f ? 'te' : '' }} odpovědí na tuto zprávu.
+    </mj-text>
+{% endblock content_outer %}

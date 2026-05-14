@@ -1,14 +1,14 @@
 {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Přehled přihlášek') }}{% endblock %}
-{% block meta_description %}{{ block('html_title') }}{% endblock %}
 
-{% block content_inner %}
+{% block content_outer %}
     {% if message|default %}
-        <div style="color: red;font-weight: bold;padding: 1em; background-color: lightcoral;border: 2px solid red;">
-            <p>{{ message }}</p>
-        </div>
+        <mj-text background-color="#f8d7da" color="#721c24" padding="12px 16px" font-weight="700">
+            {{ message }}
+        </mj-text>
     {% endif %}
-    {% include '@OswisOrgOswisCalendar/other/participant-list/participant-list.html.twig' %}
+    <mj-raw>
+        {% include '@OswisOrgOswisCalendar/other/participant-list/participant-list.html.twig' %}
+    </mj-raw>
 {% endblock %}
-

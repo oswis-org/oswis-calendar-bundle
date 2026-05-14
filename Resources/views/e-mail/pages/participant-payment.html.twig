@@ -1,29 +1,25 @@
-{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
-{% set contact = participant is defined ? participant.contact : null %}
-{% set f = f is defined ? f : (participant.formal is defined ? participant.formal : true) %}
-{% set a = a is defined ? a : (contact.czechSuffixA is defined ? contact.czechSuffixA : '') %}
-{% set salName = salutationName|default(contact.salutationName|default) %}
+{% extends '@OswisOrgOswisCalendar/e-mail/pages/participant.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Přijetí/vrácení/oprava platby') }}{% endblock %}
 
-{% block content_inner %}
-    <p>
+{% block content_outer %}
+    <mj-text>
         Právě jsme úspěšně zpracovali
         {% if payment.numericValue < 0 %}
             navrácení/zrušení/opravu {{ f ? 'Vaší' : 'Tvé' }} platby
         {% else %}
             {{ f ? 'Vaši' : 'Tvou' }} platbu
         {% endif %}
-        ve výši <b>{{ payment.numericValue|default(0) }},- Kč</b>
-        ze dne <b>{{ payment.dateTime|date("j. n. Y") }}</b>
+        ve výši <b>{{ payment.numericValue|default(0) }},-&nbsp;Kč</b>
+        ze dne <b>{{ payment.dateTime|date('j. n. Y') }}</b>
         u události <b>{{ payment.participant.event(false).name|default }}</b>.
-    </p>
+    </mj-text>
 
     {% block message_payment_outer %}
         {% if (not participant.deleted) and payment.participant.remainingPrice > 0 %}
-            <p>
-                Celkem zbývá uhradit ještě částku ve&nbsp;výši <b>{{ payment.participant.remainingPrice }},-&nbsp;Kč</b>,
-                a&nbsp;to
+            <mj-text>
+                Celkem zbývá uhradit ještě částku ve&nbsp;výši
+                <b>{{ payment.participant.remainingPrice }},-&nbsp;Kč</b>, a&nbsp;to
                 {% if payment.participant.event.bankAccountComplete|default %}
                     na&nbsp;účet <b>{{ payment.participant.event.bankAccountComplete|default('') }}</b>
                     s&nbsp;variabilním symbolem
@@ -31,35 +27,35 @@
                 {% else %}
                     dle údajů uvedených na webových stránkách.
                 {% endif %}
-            </p>
+            </mj-text>
 
             {% if payment.participant.remainingDeposit > 0 %}
-                <p>
+                <mj-text>
                     Pro plné uhrazení <b>zálohy</b> zbývá doplatit ještě
                     <b>{{ payment.participant.remainingDeposit }},-&nbsp;Kč</b>
-                    {%- block message_payment_deposit_date -%}{%- endblock message_payment_deposit_date -%}
-                    .
-                </p>
+                    {%- block message_payment_deposit_date -%}{%- endblock -%}.
+                </mj-text>
             {% endif %}
 
             {% if payment.participant.remainingRest > 0 %}
-                <p>
+                <mj-text>
                     Pro plné uhrazení <b>doplatku</b> zbývá doplatit ještě
                     <b>{{ payment.participant.remainingRest }},-&nbsp;Kč</b>
-                    {%- block message_payment_rest_date -%}{%- endblock message_payment_rest_date -%}.
-                </p>
+                    {%- block message_payment_rest_date -%}{%- endblock -%}.
+                </mj-text>
             {% endif %}
 
             {% if payment.participant.remainingDeposit > 0 and payment.participant.remainingRest > 0 %}
-                <p>
-                    Celou částku můžeš zaplatit i&nbsp;v&nbsp;jedné společné platbě, potom jde o&nbsp;částku
-                    <span itemprop="totalPrice">{{ payment.participant.remainingPrice }}</span>,-&nbsp;<span
-                            itemprop="priceCurrency" content="CZK">Kč</span>.
-                </p>
+                <mj-text>
+                    Celou částku {{ f ? 'můžete' : 'můžeš' }} zaplatit i&nbsp;v&nbsp;jedné společné platbě
+                    — potom jde o&nbsp;částku
+                    <span itemprop="totalPrice">{{ payment.participant.remainingPrice }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
+                </mj-text>
             {% endif %}
         {% elseif not participant.deleted %}
-            Celá částka je nyní zaplacená.
+            <mj-text font-weight="700" color="#006FAD">
+                Celá částka je nyní zaplacená.
+            </mj-text>
         {% endif %}
     {% endblock message_payment_outer %}
-
-{% endblock content_inner %}
+{% endblock content_outer %}

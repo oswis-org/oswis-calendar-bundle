@@ -1,16 +1,16 @@
 {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 
 {% block html_title %}{{ email.subject|default('Přehled nových plateb') }}{% endblock html_title %}
-{% block meta_description %}{{ block('html_title') }}{% endblock meta_description %}
 
-{% block content_inner %}
-    <div>
-        <h1>Přehled nových plateb</h1>
-        <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto;">
+{% block content_outer %}
+    <mj-text font-size="20px" font-weight="700" color="#006FAD" align="center">
+        Přehled nových plateb
+    </mj-text>
+    <mj-raw>
+        <table class="e-mail-list" style="border-collapse: collapse; border: 3px solid black; margin: 1em auto; width: 100%;">
             <thead>
             <tr>
-                <th style="min-width:25%;">ID<br><small>Externí ID</small><br><small>Datum platby</small><br><small>ID
-                        importu</small></th>
+                <th style="min-width:25%;">ID<br><small>Externí ID</small><br><small>Datum platby</small><br><small>ID importu</small></th>
                 <th style="min-width:25%;">Částka<br><small>Var. symbol (VS)</small><br><small>Typ platby</small></th>
                 <th style="max-width:25%;">Účastník<br><small>Potvrzení na e-mail</small></th>
             </tr>
@@ -20,19 +20,13 @@
                 <tr style="border-top: 2px solid grey;">
                     <td>
                         <strong>ID {{ payment.id|default }}</strong><br>
-                        {% if payment.externalId|default %}
-                            <small>EXT. ID: {{ payment.externalId|default }}</small><br>
-                        {% endif %}
-                        {% if payment.dateTime|default %}
-                            <small>{{ payment.dateTime|date("j. n. Y")|default }}</small><br>
-                        {% endif %}
-                        {% if payment.import.id|default %}
-                            <small>IMPORT {{ payment.import.id|default('0') }}</small><br>
-                        {% endif %}
+                        {% if payment.externalId|default %}<small>EXT. ID: {{ payment.externalId|default }}</small><br>{% endif %}
+                        {% if payment.dateTime|default %}<small>{{ payment.dateTime|date('j. n. Y')|default }}</small><br>{% endif %}
+                        {% if payment.import.id|default %}<small>IMPORT {{ payment.import.id|default('0') }}</small><br>{% endif %}
                     </td>
                     <td>
                         {% set valueColor = payment.numericValue|default < 0 ? 'red' : 'green' %}
-                        <strong style="color: {{ valueColor }}">{{ payment.numericValue|default(0) }},- Kč</strong><br>
+                        <strong style="color: {{ valueColor }}">{{ payment.numericValue|default(0) }},-&nbsp;Kč</strong><br>
                         <small>VS: {{ payment.variableSymbol|default }}</small><br>
                         <small>{{ payment.type|default }}</small>
                     </td>
@@ -48,7 +42,7 @@
                         </strong><br>
                         <small>
                             {% if payment.confirmedByMailAt|default %}
-                                {{ payment.confirmedByMailAt|date("j. n. Y, H:i") }}
+                                {{ payment.confirmedByMailAt|date('j. n. Y, H:i') }}
                             {% else %}
                                 Potvrzení neodesláno!
                             {% endif %}
@@ -56,23 +50,16 @@
                     </td>
                 </tr>
                 {% if payment.errorMessage %}
-                    <tr>
-                        <td style="background-color: rgba(255,50,50,.2)" colspan="3">
-                            <small>CHYBA: {{ payment.errorMessage }}</small></td>
-                    </tr>
+                    <tr><td style="background-color: rgba(255,50,50,.2)" colspan="3"><small>CHYBA: {{ payment.errorMessage }}</small></td></tr>
                 {% endif %}
                 {% if payment.note %}
-                    <tr>
-                        <td colspan="3"><small>Poznámka: {{ payment.note }}</small></td>
-                    </tr>
+                    <tr><td colspan="3"><small>Poznámka: {{ payment.note }}</small></td></tr>
                 {% endif %}
                 {% if payment.internalNote %}
-                    <tr>
-                        <td colspan="3"><small>Interní poznámka: {{ payment.internalNote }}</small></td>
-                    </tr>
+                    <tr><td colspan="3"><small>Interní poznámka: {{ payment.internalNote }}</small></td></tr>
                 {% endif %}
                 </tbody>
             {% endfor %}
         </table>
-    </div>
-{% endblock content_inner %}
+    </mj-raw>
+{% endblock content_outer %}

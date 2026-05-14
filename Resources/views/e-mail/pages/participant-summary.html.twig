@@ -1,101 +1,110 @@
-{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+{% extends '@OswisOrgOswisCalendar/e-mail/pages/participant.html.twig' %}
 
 {% set event = participant.event(false)|default %}
 
 {% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
 
-{% block content_inner %}
-    <div itemscope itemtype="http://schema.org/EventReservation">
-        {% if participant.deletedAt|default %}
-            <link itemprop="reservationStatus" href="http://schema.org/ReservationCancelled"/>
-        {% else %}
-            <link itemprop="reservationStatus" href="http://schema.org/ReservationConfirmed"/>
-        {% endif %}
-        <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
-        <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>{# TODO #}
-        <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
-        <meta itemprop="numSeats" content="1"/>
-
-        {% block message_message_outer %}
-            <p itemprop="additionalTicketText">
-                {% block message_message_inner %}
-                    {% if participant.deletedAt|default %}
-                        {% if participant.contact.organization|default %}
-                            Vaše organizace {{ participant.contact.name }} byl{{ a }} {{ participant.deletedAt|date("j. n. Y")|default('') }}
-                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ event.name|default }}</b>.
-                        {% else %}
-                            Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.deletedAt|date("j. n. Y")|default('') }}
-                            úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ event.name|default }}</b>.
-                        {% endif %}
-                    {% else %}
-                        {% if participant.contact.organization|default %}
-                            Vaše organizace {{ participant.contact.name }} byl{{ a }} {{ participant.createdAt|date("j. n. Y")|default('') }}
-                            úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name|default }}</b>.
-                        {% else %}
-                            Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.createdAt|date("j. n. Y")|default('') }}
-                            úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name|default }}</b>.
-                        {% endif %}
-                    {% endif %}
-                {% endblock message_message_inner %}
-            </p>
-        {% endblock message_message_outer %}
-
-        {% block message_payment_outer %}
-            {% if (not participant.deletedAt|default) and (participant.depositValue > 0 or participant.price > 0) %}
-                <p>
-                    Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši
-                    <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
-                    a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
-                    {% if event.getBankAccount(true)|default %}
-                        na&nbsp;účet <b>{{ event.getBankAccount(true).getFull() }}</b>
-                        s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
-                    {% else %}
-                        dle údajů uvedených na webových stránkách.
-                    {% endif %}
-                </p>
-                {% if participant.price > 0 %}
-                    <p>
-                        <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b>
-                        zašl{{ f ? 'ete' : 'i' }}, prosím,
-                        úplně stejným
-                        způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
-                    </p>
-                {% endif %}
-
-                {% if participant.depositValue > 0 and participant.price > 0 %}
-                    <p>
-                        Zálohu i doplatek můžeš zaplatit i v&nbsp;jedné společné platbě, potom se jedná o&nbsp;částku
-                        <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency"
-                                                                                                content="CZK">Kč</span>.
-                    </p>
-                {% endif %}
+{% block content_outer %}
+    <mj-raw>
+        <div itemscope itemtype="http://schema.org/EventReservation">
+            {% if participant.deletedAt|default %}
+                <link itemprop="reservationStatus" href="http://schema.org/ReservationCancelled"/>
+            {% else %}
+                <link itemprop="reservationStatus" href="http://schema.org/ReservationConfirmed"/>
             {% endif %}
-        {% endblock message_payment_outer %}
+            <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
+            <meta itemprop="ticketToken" content="qrCode:{{ participant.id }}"/>
+            <meta itemprop="ticketNumber" content="{{ participant.id }}"/>
+            <meta itemprop="numSeats" content="1"/>
+            <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+            <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+        </div>
+    </mj-raw>
 
-        {% if (not participant.deletedAt|default) and appUser|default %}
-            <p>
-                Uživatelské jméno u uživatelského účtu pro přístup do aplikace
-                <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}"
-                   target="_blank">{{ oswis.app.name|default }}</a> je
-                <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>
-                {%- if appUser.email|default and appUser.email|default != appUser.username|default %}
-                a&nbsp;hlavní e-mail je <strong>{{ appUser.email|default }}</strong>
-                {%- endif -%}.
-            </p>
-            <p>
-                {% if appUser.plainPassword|default %}
-                    Bylo nastaveno nové, náhodně vygenerované, heslo: <span
-                        class="token-box">{{ appUser.plainPassword }}</span>
-                {% elseif appUser.password|default %}
-                    Heslo bylo nastaveno uživatelem při registraci nebo aktivaci uživatele.
+    {% block message_message_outer %}
+        <mj-text>
+            {% block message_message_inner %}
+                {% if participant.deletedAt|default %}
+                    {% if participant.contact.organization|default %}
+                        Vaše organizace <b>{{ participant.contact.name }}</b> byl{{ a }}
+                        {{ participant.deletedAt|date('j. n. Y')|default('') }}
+                        úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ event.name|default }}</b>.
+                    {% else %}
+                        Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.deletedAt|date('j. n. Y')|default('') }}
+                        úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ event.name|default }}</b>.
+                    {% endif %}
                 {% else %}
-                    Heslo si nastaví{{ f ? 'te' : 'š' }} při aktivaci účtu.
+                    {% if participant.contact.organization|default %}
+                        Vaše organizace <b>{{ participant.contact.name }}</b> byl{{ a }}
+                        {{ participant.createdAt|date('j. n. Y')|default('') }}
+                        úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name|default }}</b>.
+                    {% else %}
+                        Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.createdAt|date('j. n. Y')|default('') }}
+                        úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name|default }}</b>.
+                    {% endif %}
                 {% endif %}
-            </p>
-            <p>Pokud heslo zapomene{{ f ? 'te' : 'š' }}, může{{ f ? 'te' : 'š' }} jej obnovit pomocí tlačítka na
-                přihlašovací stránce aplikace.</p>
-        {% endif %}
+            {% endblock message_message_inner %}
+        </mj-text>
+    {% endblock message_message_outer %}
 
+    {% block message_payment_outer %}
+        {% if (not participant.deletedAt|default) and (participant.depositValue > 0 or participant.price > 0) %}
+            <mj-text>
+                Nyní {{ f ? 'Vás' : 'Tě' }} poprosíme o&nbsp;zaplacení zálohy ve&nbsp;výši
+                <b>{{ participant.depositValue }},-&nbsp;Kč</b>,
+                a&nbsp;to {% block message_payment_deposit_date %}{% endblock message_payment_deposit_date %}
+                {% if event.getBankAccount(true)|default %}
+                    na&nbsp;účet <b>{{ event.getBankAccount(true).getFull() }}</b>
+                    s&nbsp;variabilním symbolem <b>{{ participant.variableSymbol }}</b>.
+                {% else %}
+                    dle údajů uvedených na webových stránkách.
+                {% endif %}
+            </mj-text>
+            {% if participant.price > 0 %}
+                <mj-text>
+                    <b>Doplatek</b> ve&nbsp;výši <b>{{ participant.priceRest }},-&nbsp;Kč</b>
+                    zašl{{ f ? 'ete' : 'i' }}, prosím, úplně stejným
+                    způsobem{% block message_payment_rest_date %}{% endblock message_payment_rest_date %}.
+                </mj-text>
+            {% endif %}
+            {% if participant.depositValue > 0 and participant.price > 0 %}
+                <mj-text>
+                    Zálohu i doplatek {{ f ? 'můžete' : 'můžeš' }} zaplatit i v&nbsp;jedné společné platbě, potom se jedná o&nbsp;částku
+                    <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
+                </mj-text>
+            {% endif %}
+        {% endif %}
+    {% endblock message_payment_outer %}
+
+    {% if (not participant.deletedAt|default) and appUser|default %}
+        <mj-text>
+            <strong>Uživatelské jméno</strong> u uživatelského účtu pro přístup do aplikace
+            <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}" target="_blank" style="color:#006FAD;">{{ oswis.app.name|default }}</a>:
+            <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>
+            {% if appUser.email|default and appUser.email|default != appUser.username|default %}
+                <br><strong>Hlavní e-mail</strong>: {{ appUser.email|default }}
+            {% endif %}
+        </mj-text>
+        {% if appUser.plainPassword|default %}
+            <mj-text>Bylo nastaveno nové, náhodně vygenerované heslo:</mj-text>
+            <mj-text font-family="monospace" font-size="16px" background-color="#f0f0f0" padding="10px 20px" align="center">
+                {{ appUser.plainPassword }}
+            </mj-text>
+        {% elseif appUser.password|default %}
+            <mj-text font-size="12px" color="#666666">
+                Heslo bylo nastaveno uživatelem při registraci nebo aktivaci uživatele.
+            </mj-text>
+        {% else %}
+            <mj-text font-size="12px" color="#666666">
+                Heslo si nastaví{{ f ? 'te' : 'š' }} při aktivaci účtu.
+            </mj-text>
+        {% endif %}
+        <mj-text font-size="12px" color="#666666">
+            Pokud heslo zapomene{{ f ? 'te' : 'š' }}, může{{ f ? 'te' : 'š' }} jej obnovit pomocí tlačítka na přihlašovací stránce aplikace.
+        </mj-text>
+    {% endif %}
+
+    <mj-raw>
         {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
         {% if not participant.deletedAt %}
             {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
@@ -103,24 +112,24 @@
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with {'event': participant.event(false)} %}
         </div>
-        <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
-        <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
+    </mj-raw>
 
-        {% block message_footer %}
-            {% if participant.deletedAt %}
-                <p>
-                    Přihláška byla zrušena na základě požadavku na zrušení nebo z důvodu duplicitního odeslání
-                    přihlášky.
-                </p>
-                <p>
-                    Pokud js{{ f ? 'te' : 'i' }} nás o zrušení přihlášky na akci nežádal{{ a }}, tak nás, prosím,
-                    kontaktuj{{ f ? 'te' : '' }}.
-                </p>
-            {% endif %}
-            <p>Pokud zpráva přišla opakovaně, přihláška byla pravděpodobně aktualizována uživatelem nebo správcem.</p>
-            {% if not participant.deletedat %}
-                <p>Před akcí očekávej ještě další informační e-mail s upřesněním podrobností.</p>
-            {% endif %}
-        {% endblock message_footer %}
-    </div>
-{% endblock %}
+    {% block message_footer %}
+        {% if participant.deletedAt %}
+            <mj-text>
+                Přihláška byla zrušena na základě požadavku na zrušení nebo z důvodu duplicitního odeslání přihlášky.
+            </mj-text>
+            <mj-text font-size="12px" color="#666666">
+                Pokud js{{ f ? 'te' : 'i' }} nás o zrušení přihlášky na akci nežádal{{ a }}, kontaktuj{{ f ? 'te' : '' }} nás, prosím.
+            </mj-text>
+        {% endif %}
+        <mj-text font-size="12px" color="#666666">
+            Pokud zpráva přišla opakovaně, přihláška byla pravděpodobně aktualizována uživatelem nebo správcem.
+        </mj-text>
+        {% if not participant.deletedAt %}
+            <mj-text font-size="12px" color="#666666">
+                Před akcí očekávej{{ f ? 'te' : '' }} ještě další informační e-mail s upřesněním podrobností.
+            </mj-text>
+        {% endif %}
+    {% endblock message_footer %}
+{% endblock content_outer %}
