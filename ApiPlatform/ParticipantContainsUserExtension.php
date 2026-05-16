@@ -34,8 +34,12 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
         if ($resourceClass !== Participant::class || $this->security->isGranted('ROLE_ADMIN')) {
             return;
         }
-        /** @var AppUser $user */
         $user = $this->security->getUser();
+        if (!$user instanceof AppUser) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder->leftJoin("$rootAlias.contact", 'contact');
         $queryBuilder->leftJoin("contact.appUser", 'appUser');

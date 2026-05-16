@@ -41,8 +41,12 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
             )) {
             return;
         }
-        /** @var AppUser $user */
         $user = $this->security->getUser();
+        if (!$user instanceof AppUser) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
         $participants = $this->participantService->getParticipants([ParticipantRepository::CRITERIA_APP_USER => $user]);
         $events = array_map(static fn (Participant $p) => $p->getEvent(), $participants->toArray());
         $rootAlias = $queryBuilder->getRootAliases()[0];
