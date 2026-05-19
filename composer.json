@@ -32,8 +32,8 @@
     "ext-iconv": "*",
     "bigit/vokativ": "dev-zakjakub-master",
     "endroid/qr-code": "^6.1",
-    "oswis-org/oswis-address-book-bundle": "^0.0",
-    "oswis-org/oswis-core-bundle": "^0.0",
+    "oswis-org/oswis-address-book-bundle": "^0.1.0",
+    "oswis-org/oswis-core-bundle": "^0.1.0",
     "rikudou/czqrpayment": "^v5.0"
   },
   "require-dev": {
