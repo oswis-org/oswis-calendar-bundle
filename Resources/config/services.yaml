@@ -131,6 +131,11 @@ services:
     alias: oswis_org_oswis_calendar.event.event_category_service
     public: true
 
+  ### Year Clone Service
+  OswisOrg\OswisCalendarBundle\Service\Event\YearCloneService:
+    autowire: true
+    public: true
+
   oswis_org_oswis_calendar.registration.registration_flag_offer_service:
     class: OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService
     autowire: true
