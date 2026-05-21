@@ -150,4 +150,16 @@ OswisOrg\OswisAddressBookBundle\Entity\Place:
       groups:
         - 'calendar_events_get'
         - 'calendar_event_get'
+    geoLatitude:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    geoLongitude:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    ionIcon:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
 
