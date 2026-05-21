@@ -7,11 +7,20 @@ namespace OswisOrg\OswisCalendarBundle\Service\Event;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\OfferOverride;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\YearCloneRequest;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Exception\DuplicateSlugException;
 use OswisOrg\OswisCalendarBundle\Exception\YearCloneDryRunCompleteException;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationOfferRepository;
 use Psr\Log\LoggerInterface;
+
+// RegistrationOfferRepository is not registered as an autowired service
+// (extends Doctrine\ORM\EntityRepository, not ServiceEntityRepository).
+// Fetch lazily via $em->getRepository(RegistrationOffer::class) below.
 
 /**
  * Clones a complete year of a Seznamovák-style event programme into
@@ -28,6 +37,14 @@ final class YearCloneService
         private readonly EventRepository $eventRepository,
         private readonly LoggerInterface $logger,
     ) {
+    }
+
+    private function offerRepository(): RegistrationOfferRepository
+    {
+        $repo = $this->em->getRepository(RegistrationOffer::class);
+        assert($repo instanceof RegistrationOfferRepository);
+
+        return $repo;
     }
 
     public function cloneYear(YearCloneRequest $request): Event
@@ -112,6 +129,7 @@ final class YearCloneService
         $this->logger->info('YearCloneService: cloned year "{slug}".', ['slug' => $newYear->getSlug()]);
 
         $timeOffsetSeconds = $targetStart->getTimestamp() - $sourceStart->getTimestamp();
+        $eventCloneMap = [$source->getSlug() ?? '' => $newYear];
         $this->cloneSubtreeRecursively(
             $source,
             $newYear,
@@ -119,11 +137,25 @@ final class YearCloneService
             $targetYear,
             $timeOffsetSeconds,
             $request->cloneSubActivities,
+            $eventCloneMap,
         );
+
+        $offerCloneMap = $this->cloneRegistrationOffersPass1(
+            $source,
+            $eventCloneMap,
+            $sourceYear,
+            $targetYear,
+            $timeOffsetSeconds,
+            $request->offerOverrides,
+        );
+        $this->remapRequiredRegRanges($source, $eventCloneMap, $offerCloneMap);
 
         return $newYear;
     }
 
+    /**
+     * @param array<string, Event> $eventCloneMap keyed by source slug; mutated in-place
+     */
     private function cloneSubtreeRecursively(
         Event $source,
         Event $newParent,
@@ -131,6 +163,7 @@ final class YearCloneService
         int $targetYear,
         int $timeOffsetSeconds,
         bool $cloneSubActivities,
+        array &$eventCloneMap,
     ): void {
         foreach ($source->getSubEvents() as $sourceChild) {
             $categoryType = $sourceChild->getCategory()?->getType();
@@ -165,6 +198,7 @@ final class YearCloneService
                 $newParent,
             );
             $this->em->persist($newChild);
+            $eventCloneMap[$sourceChild->getSlug() ?? ''] = $newChild;
 
             // Recurse: sub-activities can themselves have sub-activities (program structure).
             $this->cloneSubtreeRecursively(
@@ -174,8 +208,185 @@ final class YearCloneService
                 $targetYear,
                 $timeOffsetSeconds,
                 $cloneSubActivities,
+                $eventCloneMap,
             );
         }
+    }
+
+    /**
+     * Pass 7a — clone every source RegistrationOffer attached to any
+     * cloned event, with usage counters reset and requiredRegRange left
+     * null. Pass 7b (remapRequiredRegRanges) wires the parent chain.
+     *
+     * @param array<string, Event>          $eventCloneMap  keyed by source slug
+     * @param array<int, OfferOverride>     $offerOverrides keyed by source RegistrationOffer.id
+     * @return array<int, RegistrationOffer>                keyed by source RegistrationOffer.id
+     */
+    private function cloneRegistrationOffersPass1(
+        Event $sourceRoot,
+        array $eventCloneMap,
+        int $sourceYear,
+        int $targetYear,
+        int $timeOffsetSeconds,
+        array $offerOverrides,
+    ): array {
+        $offerCloneMap = [];
+        $sourceEvents = $this->collectSourceEventsByOriginalSlug($sourceRoot);
+        foreach ($sourceEvents as $sourceSlug => $sourceEvent) {
+            $newEvent = $eventCloneMap[$sourceSlug] ?? null;
+            if (null === $newEvent) {
+                continue; // sub-activity skipped because cloneSubActivities=false
+            }
+            $sourceOffers = $this->offerRepository()->getRegistrationsRanges(
+                [RegistrationOfferRepository::CRITERIA_EVENT => $sourceEvent],
+            );
+            foreach ($sourceOffers as $sourceOffer) {
+                if (!$sourceOffer instanceof RegistrationOffer) {
+                    continue;
+                }
+                $sourceOfferId = $sourceOffer->getId();
+                if (null === $sourceOfferId) {
+                    continue;
+                }
+                $clone = $this->cloneRegistrationOfferShallow(
+                    $sourceOffer,
+                    $newEvent,
+                    $sourceYear,
+                    $targetYear,
+                    $timeOffsetSeconds,
+                    $offerOverrides[$sourceOfferId] ?? null,
+                );
+                $this->em->persist($clone);
+                $offerCloneMap[$sourceOfferId] = $clone;
+            }
+        }
+
+        return $offerCloneMap;
+    }
+
+    /**
+     * Pass 7b — wire requiredRegRange on cloned offers to the cloned parent.
+     *
+     * @param array<string, Event>          $eventCloneMap
+     * @param array<int, RegistrationOffer> $offerCloneMap keyed by source RegistrationOffer.id
+     */
+    private function remapRequiredRegRanges(Event $sourceRoot, array $eventCloneMap, array $offerCloneMap): void
+    {
+        $sourceEvents = $this->collectSourceEventsByOriginalSlug($sourceRoot);
+        foreach ($sourceEvents as $sourceSlug => $sourceEvent) {
+            if (!isset($eventCloneMap[$sourceSlug])) {
+                continue;
+            }
+            $sourceOffers = $this->offerRepository()->getRegistrationsRanges(
+                [RegistrationOfferRepository::CRITERIA_EVENT => $sourceEvent],
+            );
+            foreach ($sourceOffers as $sourceOffer) {
+                if (!$sourceOffer instanceof RegistrationOffer) {
+                    continue;
+                }
+                $sourceParent = $sourceOffer->getRequiredRegRange();
+                if (null === $sourceParent) {
+                    continue;
+                }
+                $sourceOfferId = $sourceOffer->getId();
+                $sourceParentId = $sourceParent->getId();
+                if (null === $sourceOfferId || null === $sourceParentId) {
+                    continue;
+                }
+                $clone = $offerCloneMap[$sourceOfferId] ?? null;
+                if (null === $clone) {
+                    continue;
+                }
+                $parentClone = $offerCloneMap[$sourceParentId] ?? null;
+                if (null === $parentClone) {
+                    $this->logger->warning(
+                        'requiredRegRange remap: source offer {id} has a parent ({parent_id}) outside the cloned set; leaving null on the clone.',
+                        ['id' => $sourceOfferId, 'parent_id' => $sourceParentId],
+                    );
+                    continue;
+                }
+                $clone->setRequiredRegRange($parentClone);
+            }
+        }
+    }
+
+    /**
+     * @return array<string, Event> keyed by source slug, all source events transitively
+     */
+    private function collectSourceEventsByOriginalSlug(Event $root): array
+    {
+        $map = [];
+        $stack = [$root];
+        while ($current = array_pop($stack)) {
+            $slug = $current->getSlug();
+            if (null !== $slug) {
+                $map[$slug] = $current;
+            }
+            foreach ($current->getSubEvents() as $child) {
+                $stack[] = $child;
+            }
+        }
+
+        return $map;
+    }
+
+    private function cloneRegistrationOfferShallow(
+        RegistrationOffer $source,
+        Event $newEvent,
+        int $sourceYear,
+        int $targetYear,
+        int $timeOffsetSeconds,
+        ?OfferOverride $override,
+    ): RegistrationOffer {
+        $clone = new RegistrationOffer();
+        $clone->setName($source->getName() ?? '');
+        $clone->setSlug($this->substituteYearInSlug($source->getSlug() ?? '', $sourceYear, $targetYear));
+        $clone->setShortName($source->getShortName());
+        $clone->setDescription($source->getDescription());
+        $clone->setNote($source->getNote());
+        $clone->setInternalNote($source->getInternalNote());
+        $clone->setEvent($newEvent);
+        $clone->setParticipantCategory($source->getParticipantCategory());
+        $clone->setPriority($source->getPriority());
+        $clone->setRelative($source->isRelative());
+        $clone->setSurrogate($source->isSurrogate());
+        $clone->setSuperEventRequired($source->isSuperEventRequired());
+        $clone->setRequiredRegRange(null); // remap in Pass 7b
+        $clone->setPublicOnWeb(false);
+        $clone->setPublicInApp(false);
+        // Reset per-year usage counters; capacity comes from source/override below.
+        $clone->setBaseUsage(0);
+        $clone->setFullUsage(0);
+
+        // Dates (registration window): shift by offset, then apply override.
+        $sourceStart = $source->getStartDateTime();
+        $sourceEnd = $source->getEndDate();
+        if (null !== $sourceStart) {
+            $clone->setStartDateTime(new \DateTime('@'.($sourceStart->getTimestamp() + $timeOffsetSeconds)));
+        }
+        if (null !== $sourceEnd) {
+            $clone->setEndDateTime(new \DateTime('@'.($sourceEnd->getTimestamp() + $timeOffsetSeconds)), true);
+        }
+
+        // Price + capacity: source values; override wins if provided.
+        $sourcePrice = $source->getPrice();
+        $sourceDeposit = $source->getDepositValue();
+        $finalPrice = $override?->price ?? $sourcePrice;
+        $finalDeposit = $override?->depositValue ?? $sourceDeposit;
+        $clone->setEventPrice(new Price($finalPrice, $finalDeposit));
+
+        $finalBaseCapacity = $override?->baseCapacity ?? $source->getBaseCapacity();
+        $finalFullCapacity = $override?->fullCapacity ?? $source->getFullCapacity();
+        $clone->setCapacity(new Capacity($finalBaseCapacity, $finalFullCapacity));
+
+        if (null !== $override?->startDateTime) {
+            $clone->setStartDateTime(\DateTime::createFromInterface($override->startDateTime));
+        }
+        if (null !== $override?->endDateTime) {
+            $clone->setEndDateTime(\DateTime::createFromInterface($override->endDateTime), true);
+        }
+
+        return $clone;
     }
 
     /**
