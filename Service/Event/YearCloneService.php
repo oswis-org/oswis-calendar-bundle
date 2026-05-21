@@ -7,6 +7,8 @@ namespace OswisOrg\OswisCalendarBundle\Service\Event;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventContent;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventFlagConnection;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\OfferOverride;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
@@ -547,6 +549,26 @@ final class YearCloneService
         $clone->setSuperEvent($newSuperEvent);
         $clone->setPublicOnWeb(false);
         $clone->setPublicInApp(false);
+
+        // EventContent: text values copied verbatim. Admin reviews + edits later.
+        // EventImage / EventFile intentionally skipped — orphanRemoval on the source
+        // would (cascade) delete shared filesystem files if the clone were later removed.
+        foreach ($source->getContents() as $sourceContent) {
+            if (!$sourceContent instanceof EventContent) {
+                continue;
+            }
+            $clonedContent = new EventContent(null, $sourceContent->getTextValue(), $sourceContent->getType());
+            $clone->addContent($clonedContent);
+        }
+
+        // EventFlagConnection: tags carry over (EventFlag taxonomy is shared).
+        foreach ($source->getFlagConnections() as $sourceConnection) {
+            if (!$sourceConnection instanceof EventFlagConnection) {
+                continue;
+            }
+            $clonedConnection = new EventFlagConnection($sourceConnection->getEventFlag(), $sourceConnection->getTextValue());
+            $clone->addFlagConnection($clonedConnection);
+        }
 
         return $clone;
     }
