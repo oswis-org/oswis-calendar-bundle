@@ -11,6 +11,9 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\OfferOverride;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\YearCloneRequest;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagOverride;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Exception\DuplicateSlugException;
 use OswisOrg\OswisCalendarBundle\Exception\YearCloneDryRunCompleteException;
@@ -149,8 +152,133 @@ final class YearCloneService
             $request->offerOverrides,
         );
         $this->remapRequiredRegRanges($source, $eventCloneMap, $offerCloneMap);
+        $this->cloneFlagTree($source, $offerCloneMap, $sourceYear, $targetYear, $request->flagOverrides);
 
         return $newYear;
+    }
+
+    /**
+     * For every cloned RegistrationOffer, clone its FlagGroupOffer rows
+     * and the underlying FlagOffer rows. Categories and Flag taxonomy
+     * entities are referenced, not cloned (shared across years).
+     *
+     * @param array<int, RegistrationOffer> $offerCloneMap keyed by source RegistrationOffer.id
+     * @param array<int, FlagOverride>      $flagOverrides keyed by source RegistrationFlagOffer.id
+     */
+    private function cloneFlagTree(
+        Event $sourceRoot,
+        array $offerCloneMap,
+        int $sourceYear,
+        int $targetYear,
+        array $flagOverrides,
+    ): void {
+        $sourceEvents = $this->collectSourceEventsByOriginalSlug($sourceRoot);
+        foreach ($sourceEvents as $sourceEvent) {
+            $sourceOffers = $this->offerRepository()->getRegistrationsRanges(
+                [RegistrationOfferRepository::CRITERIA_EVENT => $sourceEvent],
+            );
+            foreach ($sourceOffers as $sourceOffer) {
+                if (!$sourceOffer instanceof RegistrationOffer) {
+                    continue;
+                }
+                $sourceOfferId = $sourceOffer->getId();
+                if (null === $sourceOfferId) {
+                    continue;
+                }
+                $clonedOffer = $offerCloneMap[$sourceOfferId] ?? null;
+                if (null === $clonedOffer) {
+                    continue;
+                }
+                foreach ($sourceOffer->getFlagGroupRanges() as $sourceFlagGroupOffer) {
+                    if (!$sourceFlagGroupOffer instanceof RegistrationFlagGroupOffer) {
+                        continue;
+                    }
+                    $clonedFlagGroupOffer = $this->cloneRegistrationFlagGroupOffer(
+                        $sourceFlagGroupOffer,
+                        $sourceYear,
+                        $targetYear,
+                        $flagOverrides,
+                    );
+                    $this->em->persist($clonedFlagGroupOffer);
+                    $clonedOffer->addFlagGroupRange($clonedFlagGroupOffer);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array<int, FlagOverride> $flagOverrides keyed by source RegistrationFlagOffer.id
+     */
+    private function cloneRegistrationFlagGroupOffer(
+        RegistrationFlagGroupOffer $source,
+        int $sourceYear,
+        int $targetYear,
+        array $flagOverrides,
+    ): RegistrationFlagGroupOffer {
+        $clone = new RegistrationFlagGroupOffer(
+            $source->getFlagCategory(),
+            $source->getFlagAmountRange(),
+            null,
+            $source->getEmptyPlaceholder(),
+        );
+        $clone->setName($source->getName() ?? '');
+        $clone->setShortName($source->getShortName());
+        $clone->setDescription($source->getDescription());
+        $clone->setNote($source->getNote());
+        $clone->setInternalNote($source->getInternalNote());
+        $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug(), $sourceYear, $targetYear));
+        $clone->setPublicOnWeb(false);
+        $clone->setPublicInApp(false);
+
+        foreach ($source->getFlagOffers() as $sourceFlagOffer) {
+            if (!$sourceFlagOffer instanceof RegistrationFlagOffer) {
+                continue;
+            }
+            $sourceFlagOfferId = $sourceFlagOffer->getId();
+            $override = (null !== $sourceFlagOfferId) ? ($flagOverrides[$sourceFlagOfferId] ?? null) : null;
+            $clonedFlagOffer = $this->cloneRegistrationFlagOffer(
+                $sourceFlagOffer,
+                $sourceYear,
+                $targetYear,
+                $override,
+            );
+            $clone->addFlagRange($clonedFlagOffer);
+        }
+
+        return $clone;
+    }
+
+    private function cloneRegistrationFlagOffer(
+        RegistrationFlagOffer $source,
+        int $sourceYear,
+        int $targetYear,
+        ?FlagOverride $override,
+    ): RegistrationFlagOffer {
+        $sourcePrice = $source->getPrice();
+        $sourceDeposit = $source->getDepositValue();
+        $finalPrice = $override?->price ?? $sourcePrice;
+        $finalBaseCapacity = $override?->baseCapacity ?? $source->getBaseCapacity();
+        $finalFullCapacity = $override?->fullCapacity ?? $source->getFullCapacity();
+
+        $clone = new RegistrationFlagOffer(
+            $source->getFlag(),
+            new Capacity($finalBaseCapacity, $finalFullCapacity),
+            new Price($finalPrice, $sourceDeposit),
+            $source->getFlagAmountRange(),
+            null,
+        );
+        $clone->setName($source->getName() ?? '');
+        $clone->setShortName($source->getShortName());
+        $clone->setDescription($source->getDescription());
+        $clone->setNote($source->getNote());
+        $clone->setInternalNote($source->getInternalNote());
+        $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug(), $sourceYear, $targetYear));
+        $clone->setPublicOnWeb(false);
+        $clone->setPublicInApp(false);
+        $clone->setBaseUsage(0);
+        $clone->setFullUsage(0);
+
+        return $clone;
     }
 
     /**
@@ -340,7 +468,7 @@ final class YearCloneService
     ): RegistrationOffer {
         $clone = new RegistrationOffer();
         $clone->setName($source->getName() ?? '');
-        $clone->setSlug($this->substituteYearInSlug($source->getSlug() ?? '', $sourceYear, $targetYear));
+        $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug() ?? '', $sourceYear, $targetYear));
         $clone->setShortName($source->getShortName());
         $clone->setDescription($source->getDescription());
         $clone->setNote($source->getNote());
@@ -404,7 +532,7 @@ final class YearCloneService
     ): Event {
         $clone = new Event();
         $clone->setName($newName);
-        $clone->setSlug($newSlug);
+        $clone->setForcedSlug($newSlug);
         $clone->setShortName($source->getShortName());
         $clone->setDescription($source->getDescription());
         $clone->setNote($source->getNote());
