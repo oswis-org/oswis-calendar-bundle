@@ -86,10 +86,92 @@ final class YearCloneService
         }
     }
 
+    /**
+     * Phase 1: clone the YEAR_OF_EVENT and its BATCH_OF_EVENT children.
+     * Sub-activities and registration offers added in later tasks.
+     *
+     * @return Event the newly persisted year-level event
+     */
     private function doClone(YearCloneRequest $request): Event
     {
-        // Stubbed in this task — implemented in Task 3+.
-        throw new \LogicException('doClone not yet implemented; lands in Task 3.');
+        $source = $request->sourceYearEvent;
+        $sourceStart = $source->getStartDateTime() ?? throw new \LogicException('Source year missing startDateTime.');
+        $targetStart = $request->targetYearStartDate;
+        $sourceYear = (int) $sourceStart->format('Y');
+        $targetYear = (int) $targetStart->format('Y');
+
+        $newYear = $this->cloneEventShallow(
+            $source,
+            $request->targetYearSlug,
+            $request->targetYearName,
+            $request->targetYearStartDate,
+            $request->targetYearEndDate,
+            null,
+        );
+        $this->em->persist($newYear);
+        $this->logger->info('YearCloneService: cloned year "{slug}".', ['slug' => $newYear->getSlug()]);
+
+        $offset = $targetStart->getTimestamp() - $sourceStart->getTimestamp();
+
+        foreach ($source->getSubEvents() as $sourceChild) {
+            if ($sourceChild->getCategory()?->getType() !== EventCategory::BATCH_OF_EVENT) {
+                continue; // sub-activities handled in Task 4
+            }
+            $childStart = $sourceChild->getStartDateTime();
+            $childEnd = $sourceChild->getEndDateTime();
+            if (null === $childStart || null === $childEnd) {
+                $this->logger->warning('Skipping batch with missing dates: {slug}', ['slug' => $sourceChild->getSlug()]);
+                continue;
+            }
+            $newChildStart = (new \DateTimeImmutable())->setTimestamp($childStart->getTimestamp() + $offset);
+            $newChildEnd = (new \DateTimeImmutable())->setTimestamp($childEnd->getTimestamp() + $offset);
+
+            $newChild = $this->cloneEventShallow(
+                $sourceChild,
+                $this->substituteYearInSlug($sourceChild->getSlug() ?? '', $sourceYear, $targetYear),
+                $sourceChild->getName() ?? '',
+                $newChildStart,
+                $newChildEnd,
+                $newYear,
+            );
+            $this->em->persist($newChild);
+        }
+
+        return $newYear;
+    }
+
+    /**
+     * Clone the basic Event fields. RegistrationOffers and metadata
+     * (contents, flag connections, images, files) handled in subsequent
+     * tasks.
+     */
+    private function cloneEventShallow(
+        Event $source,
+        string $newSlug,
+        string $newName,
+        \DateTimeInterface $newStart,
+        \DateTimeInterface $newEnd,
+        ?Event $newSuperEvent,
+    ): Event {
+        $clone = new Event();
+        $clone->setName($newName);
+        $clone->setSlug($newSlug);
+        $clone->setShortName($source->getShortName());
+        $clone->setDescription($source->getDescription());
+        $clone->setNote($source->getNote());
+        $clone->setInternalNote($source->getInternalNote());
+        $clone->setStartDateTime(\DateTime::createFromInterface($newStart));
+        $clone->setEndDateTime(\DateTime::createFromInterface($newEnd));
+        $clone->setColor($source->getColor());
+        $clone->setPlace($source->getPlace(false));
+        $clone->setOrganizer($source->getOrganizer(false));
+        $clone->setCategory($source->getCategory());
+        $clone->setGroup($source->getGroup());
+        $clone->setSuperEvent($newSuperEvent);
+        $clone->setPublicOnWeb(false);
+        $clone->setPublicInApp(false);
+
+        return $clone;
     }
 
     /**
