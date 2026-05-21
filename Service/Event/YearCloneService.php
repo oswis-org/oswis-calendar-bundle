@@ -111,20 +111,50 @@ final class YearCloneService
         $this->em->persist($newYear);
         $this->logger->info('YearCloneService: cloned year "{slug}".', ['slug' => $newYear->getSlug()]);
 
-        $offset = $targetStart->getTimestamp() - $sourceStart->getTimestamp();
+        $timeOffsetSeconds = $targetStart->getTimestamp() - $sourceStart->getTimestamp();
+        $this->cloneSubtreeRecursively(
+            $source,
+            $newYear,
+            $sourceYear,
+            $targetYear,
+            $timeOffsetSeconds,
+            $request->cloneSubActivities,
+        );
 
+        return $newYear;
+    }
+
+    private function cloneSubtreeRecursively(
+        Event $source,
+        Event $newParent,
+        int $sourceYear,
+        int $targetYear,
+        int $timeOffsetSeconds,
+        bool $cloneSubActivities,
+    ): void {
         foreach ($source->getSubEvents() as $sourceChild) {
-            if ($sourceChild->getCategory()?->getType() !== EventCategory::BATCH_OF_EVENT) {
-                continue; // sub-activities handled in Task 4
+            $categoryType = $sourceChild->getCategory()?->getType();
+            $isBatch = $categoryType === EventCategory::BATCH_OF_EVENT;
+            $isYear = $categoryType === EventCategory::YEAR_OF_EVENT;
+
+            // Never clone nested YEAR_OF_EVENT — that would imply weird data.
+            if ($isYear) {
+                $this->logger->warning('Skipping nested YEAR_OF_EVENT sub-event: {slug}', ['slug' => $sourceChild->getSlug()]);
+                continue;
             }
+            // Batches always clone; sub-activities only if requested.
+            if (!$isBatch && !$cloneSubActivities) {
+                continue;
+            }
+
             $childStart = $sourceChild->getStartDateTime();
             $childEnd = $sourceChild->getEndDateTime();
             if (null === $childStart || null === $childEnd) {
-                $this->logger->warning('Skipping batch with missing dates: {slug}', ['slug' => $sourceChild->getSlug()]);
+                $this->logger->warning('Skipping child with missing dates: {slug}', ['slug' => $sourceChild->getSlug()]);
                 continue;
             }
-            $newChildStart = (new \DateTimeImmutable())->setTimestamp($childStart->getTimestamp() + $offset);
-            $newChildEnd = (new \DateTimeImmutable())->setTimestamp($childEnd->getTimestamp() + $offset);
+            $newChildStart = (new \DateTimeImmutable())->setTimestamp($childStart->getTimestamp() + $timeOffsetSeconds);
+            $newChildEnd = (new \DateTimeImmutable())->setTimestamp($childEnd->getTimestamp() + $timeOffsetSeconds);
 
             $newChild = $this->cloneEventShallow(
                 $sourceChild,
@@ -132,12 +162,20 @@ final class YearCloneService
                 $sourceChild->getName() ?? '',
                 $newChildStart,
                 $newChildEnd,
-                $newYear,
+                $newParent,
             );
             $this->em->persist($newChild);
-        }
 
-        return $newYear;
+            // Recurse: sub-activities can themselves have sub-activities (program structure).
+            $this->cloneSubtreeRecursively(
+                $sourceChild,
+                $newChild,
+                $sourceYear,
+                $targetYear,
+                $timeOffsetSeconds,
+                $cloneSubActivities,
+            );
+        }
     }
 
     /**
