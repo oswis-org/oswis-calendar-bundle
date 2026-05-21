@@ -7,6 +7,7 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class WebAdminParticipantsController extends AbstractController
 {
@@ -18,6 +19,7 @@ final class WebAdminParticipantsController extends AbstractController
     /**
      * @throws OswisException
      */
+    #[IsGranted('ROLE_ADMIN')]
     public function sendAutoMails(int $limit = 100, ?string $type = null): Response
     {
         $this->participantService->sendAutoMails(null, $type, $limit);
