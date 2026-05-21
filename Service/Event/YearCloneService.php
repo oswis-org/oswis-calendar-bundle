@@ -57,11 +57,17 @@ final class YearCloneService
         $this->validate($request);
 
         return $this->em->wrapInTransaction(function () use ($request): Event {
-            $cloned = $this->doClone($request);
+            $summary = [
+                'event_count'            => 0,
+                'event_slugs'            => [],
+                'offer_count'            => 0,
+                'offer_slugs'            => [],
+                'flag_group_offer_count' => 0,
+                'flag_offer_count'       => 0,
+            ];
+            $cloned = $this->doClone($request, $summary);
             if ($request->dryRun) {
-                throw new YearCloneDryRunCompleteException(
-                    $this->buildSummary($cloned),
-                );
+                throw new YearCloneDryRunCompleteException($summary);
             }
 
             return $cloned;
@@ -109,12 +115,11 @@ final class YearCloneService
     }
 
     /**
-     * Phase 1: clone the YEAR_OF_EVENT and its BATCH_OF_EVENT children.
-     * Sub-activities and registration offers added in later tasks.
+     * Walk the source year and clone everything per spec.
      *
-     * @return Event the newly persisted year-level event
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
      */
-    private function doClone(YearCloneRequest $request): Event
+    private function doClone(YearCloneRequest $request, array &$summary): Event
     {
         $source = $request->sourceYearEvent;
         $sourceStart = $source->getStartDateTime() ?? throw new \LogicException('Source year missing startDateTime.');
@@ -131,6 +136,8 @@ final class YearCloneService
             null,
         );
         $this->em->persist($newYear);
+        $summary['event_count']++;
+        $summary['event_slugs'][] = $newYear->getSlug();
         $this->logger->info('YearCloneService: cloned year "{slug}".', ['slug' => $newYear->getSlug()]);
 
         $timeOffsetSeconds = $targetStart->getTimestamp() - $sourceStart->getTimestamp();
@@ -143,6 +150,7 @@ final class YearCloneService
             $timeOffsetSeconds,
             $request->cloneSubActivities,
             $eventCloneMap,
+            $summary,
         );
 
         $offerCloneMap = $this->cloneRegistrationOffersPass1(
@@ -152,9 +160,10 @@ final class YearCloneService
             $targetYear,
             $timeOffsetSeconds,
             $request->offerOverrides,
+            $summary,
         );
         $this->remapRequiredRegRanges($source, $eventCloneMap, $offerCloneMap);
-        $this->cloneFlagTree($source, $offerCloneMap, $sourceYear, $targetYear, $request->flagOverrides);
+        $this->cloneFlagTree($source, $offerCloneMap, $sourceYear, $targetYear, $request->flagOverrides, $summary);
 
         return $newYear;
     }
@@ -166,6 +175,7 @@ final class YearCloneService
      *
      * @param array<int, RegistrationOffer> $offerCloneMap keyed by source RegistrationOffer.id
      * @param array<int, FlagOverride>      $flagOverrides keyed by source RegistrationFlagOffer.id
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
      */
     private function cloneFlagTree(
         Event $sourceRoot,
@@ -173,6 +183,7 @@ final class YearCloneService
         int $sourceYear,
         int $targetYear,
         array $flagOverrides,
+        array &$summary,
     ): void {
         $sourceEvents = $this->collectSourceEventsByOriginalSlug($sourceRoot);
         foreach ($sourceEvents as $sourceEvent) {
@@ -200,9 +211,11 @@ final class YearCloneService
                         $sourceYear,
                         $targetYear,
                         $flagOverrides,
+                        $summary,
                     );
                     $this->em->persist($clonedFlagGroupOffer);
                     $clonedOffer->addFlagGroupRange($clonedFlagGroupOffer);
+                    $summary['flag_group_offer_count']++;
                 }
             }
         }
@@ -210,12 +223,14 @@ final class YearCloneService
 
     /**
      * @param array<int, FlagOverride> $flagOverrides keyed by source RegistrationFlagOffer.id
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
      */
     private function cloneRegistrationFlagGroupOffer(
         RegistrationFlagGroupOffer $source,
         int $sourceYear,
         int $targetYear,
         array $flagOverrides,
+        array &$summary,
     ): RegistrationFlagGroupOffer {
         $clone = new RegistrationFlagGroupOffer(
             $source->getFlagCategory(),
@@ -245,6 +260,7 @@ final class YearCloneService
                 $override,
             );
             $clone->addFlagRange($clonedFlagOffer);
+            $summary['flag_offer_count']++;
         }
 
         return $clone;
@@ -285,6 +301,7 @@ final class YearCloneService
 
     /**
      * @param array<string, Event> $eventCloneMap keyed by source slug; mutated in-place
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
      */
     private function cloneSubtreeRecursively(
         Event $source,
@@ -294,6 +311,7 @@ final class YearCloneService
         int $timeOffsetSeconds,
         bool $cloneSubActivities,
         array &$eventCloneMap,
+        array &$summary,
     ): void {
         foreach ($source->getSubEvents() as $sourceChild) {
             $categoryType = $sourceChild->getCategory()?->getType();
@@ -329,6 +347,8 @@ final class YearCloneService
             );
             $this->em->persist($newChild);
             $eventCloneMap[$sourceChild->getSlug() ?? ''] = $newChild;
+            $summary['event_count']++;
+            $summary['event_slugs'][] = $newChild->getSlug();
 
             // Recurse: sub-activities can themselves have sub-activities (program structure).
             $this->cloneSubtreeRecursively(
@@ -339,6 +359,7 @@ final class YearCloneService
                 $timeOffsetSeconds,
                 $cloneSubActivities,
                 $eventCloneMap,
+                $summary,
             );
         }
     }
@@ -350,6 +371,7 @@ final class YearCloneService
      *
      * @param array<string, Event>          $eventCloneMap  keyed by source slug
      * @param array<int, OfferOverride>     $offerOverrides keyed by source RegistrationOffer.id
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
      * @return array<int, RegistrationOffer>                keyed by source RegistrationOffer.id
      */
     private function cloneRegistrationOffersPass1(
@@ -359,6 +381,7 @@ final class YearCloneService
         int $targetYear,
         int $timeOffsetSeconds,
         array $offerOverrides,
+        array &$summary,
     ): array {
         $offerCloneMap = [];
         $sourceEvents = $this->collectSourceEventsByOriginalSlug($sourceRoot);
@@ -388,6 +411,8 @@ final class YearCloneService
                 );
                 $this->em->persist($clone);
                 $offerCloneMap[$sourceOfferId] = $clone;
+                $summary['offer_count']++;
+                $summary['offer_slugs'][] = $clone->getSlug();
             }
         }
 
@@ -573,12 +598,4 @@ final class YearCloneService
         return $clone;
     }
 
-    /**
-     * @return array<string, int|array<int, string>>
-     */
-    private function buildSummary(Event $cloned): array
-    {
-        // Stubbed in this task — implemented in Task 9 (dry-run controller integration).
-        return ['cloned_event_id' => $cloned->getId() ?? 0];
-    }
 }
