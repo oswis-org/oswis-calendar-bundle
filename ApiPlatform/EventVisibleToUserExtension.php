@@ -8,6 +8,7 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
@@ -50,9 +51,17 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         $participants = $this->participantService->getParticipants([ParticipantRepository::CRITERIA_APP_USER => $user]);
         $events = array_map(static fn (Participant $p) => $p->getEvent(), $participants->toArray());
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder->leftJoin("$rootAlias.superEvent", 'superEvent');
-        $queryBuilder->andWhere(" $rootAlias.id IN (:ids) OR $rootAlias.superEvent IN (:ids) ");
-        $queryBuilder->setParameter('ids', array_map(static fn (?Event $event) => $event?->getId(), $events));
+        $queryBuilder
+            ->leftJoin("$rootAlias.superEvent", 'superEvent')
+            ->leftJoin("$rootAlias.category", 'visibilityCategory')
+            ->andWhere(sprintf(
+                '(%s.id IN (:user_event_ids)'
+                .' OR %s.superEvent IN (:user_event_ids)'
+                .' OR (%s.publicInApp = true AND visibilityCategory.type IN (:public_category_types)))',
+                $rootAlias, $rootAlias, $rootAlias,
+            ))
+            ->setParameter('user_event_ids', array_map(static fn (?Event $event) => $event?->getId(), $events))
+            ->setParameter('public_category_types', [EventCategory::YEAR_OF_EVENT, EventCategory::BATCH_OF_EVENT]);
     }
 
     final public function applyToItem(
