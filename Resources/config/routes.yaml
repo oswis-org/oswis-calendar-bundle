@@ -30,7 +30,7 @@ oswis_org_oswis_calendar_web_event_leaflet:
   controller: oswis_org_oswis_calendar.event.event_controller::showEventLeaflet
   path: "/akce/letak/{eventSlug?}"
 
-oswis_org_oswis_calendar_web_events_kalendar: ## ??????????????????????????????????????
+oswis_org_oswis_calendar_web_events_kalendar:
   controller: oswis_org_oswis_calendar.event.event_controller::showEvents
   path: "/akce/kalendar/{range?}/{start?}/{end?}/{limit?}/{offset?}"
   defaults:
@@ -39,13 +39,6 @@ oswis_org_oswis_calendar_web_events_kalendar: ## ???????????????????????????????
     end: null
     limit: null
     offset: null
-
-oswis_org_oswis_calendar_web_events_calendar:
-  controller: oswis_org_oswis_calendar.event.event_controller::showEvents
-  path: "/akce/kalendar/{range?}/{rangeValue?}"
-  defaults:
-    range: null
-    rangeValue: null
 
 oswis_org_oswis_calendar_web_events:
   controller: oswis_org_oswis_calendar.event.event_controller::showFutureEvents

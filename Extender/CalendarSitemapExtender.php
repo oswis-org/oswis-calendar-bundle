@@ -55,7 +55,6 @@ class CalendarSitemapExtender implements SiteMapExtenderInterface
         $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events')));
         $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_future')));
         $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_past')));
-        $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_calendar')));
         $items->add(new SiteMapItem($this->urlGenerator->generate('oswis_org_oswis_calendar_web_events_kalendar')));
 
         return $items;
