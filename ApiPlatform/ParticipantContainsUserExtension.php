@@ -31,7 +31,9 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if ($resourceClass !== Participant::class || $this->security->isGranted('ROLE_ADMIN')) {
+        if ($resourceClass !== Participant::class
+            || $this->security->isGranted('ROLE_MANAGER')
+            || $this->security->isGranted('ROLE_ADMIN')) {
             return;
         }
         $user = $this->security->getUser();
