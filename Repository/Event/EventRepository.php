@@ -28,7 +28,7 @@ class EventRepository extends ServiceEntityRepository
     public const CRITERIA_SUPER_EVENT_DEPTH = 'superEventDepth';
     public const CRITERIA_ONLY_ROOT = 'onlyRoot';
     public const CRITERIA_INCLUDE_DELETED = 'includeDeleted';
-    public const CRITERIA_LOCATION = 'location';
+    public const CRITERIA_PLACE = 'place';
     public const CRITERIA_START = 'start';
     public const CRITERIA_END = 'end';
     public const CRITERIA_ONLY_WITHOUT_DATE = 'onlyWithoutDate';
@@ -73,7 +73,7 @@ class EventRepository extends ServiceEntityRepository
         $this->setOnlyWithoutDateQuery($queryBuilder, $opts);
         $this->setSeriesQuery($queryBuilder, $opts);
         $this->setSeriesSlugQuery($queryBuilder, $opts);
-        $this->setLocationQuery($queryBuilder, $opts);
+        $this->setPlaceQuery($queryBuilder, $opts);
         $this->setOnlyPublicOnWebQuery($queryBuilder, $opts);
         $this->setTypeStringQuery($queryBuilder, $opts);
         $this->addTypeQuery($queryBuilder, $opts);
@@ -171,12 +171,12 @@ class EventRepository extends ServiceEntityRepository
         }
     }
 
-    private function setLocationQuery(QueryBuilder $queryBuilder, array $opts = []): void
+    private function setPlaceQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (!empty($opts[self::CRITERIA_LOCATION]) && $opts[self::CRITERIA_LOCATION] instanceof Place) {
-            $queryBuilder->andWhere('e.location = :location_id')->setParameter(
-                'location_id',
-                $opts[self::CRITERIA_LOCATION]->getId()
+        if (!empty($opts[self::CRITERIA_PLACE]) && $opts[self::CRITERIA_PLACE] instanceof Place) {
+            $queryBuilder->andWhere('e.place = :place_id')->setParameter(
+                'place_id',
+                $opts[self::CRITERIA_PLACE]->getId()
             );
         }
     }
