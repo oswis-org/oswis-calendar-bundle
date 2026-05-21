@@ -86,13 +86,13 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
-    series:
+    group:
       groups:
         - 'calendar_events_get'
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
-    location:
+    place:
       groups:
         - 'calendar_events_get'
         - 'calendar_events_post'
