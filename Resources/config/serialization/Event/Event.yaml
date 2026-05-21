@@ -104,12 +104,6 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
-    activeEventParticipantsAggregatedBySchool:
-      groups:
-        - 'calendar_event_get'
-    activeEventParticipantsAggregatedByFlags:
-      groups:
-        - 'calendar_event_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
   attributes:
