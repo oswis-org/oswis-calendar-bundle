@@ -124,6 +124,10 @@ class Participant implements ParticipantInterface
     #[MaxDepth(1)]
     protected Collection $eMails;
 
+    /** @var Collection<int, SubEventAttendance> */
+    #[OneToMany(targetEntity: SubEventAttendance::class, mappedBy: 'participant', cascade: [])]
+    protected Collection $subEventAttendances;
+
     /** Related contact (person or organization). */
     #[ManyToOne(targetEntity: AbstractContact::class, cascade: ['all'], fetch: 'EAGER')]
     #[ApiFilter(SearchFilter::class, properties: ['contact.id' => 'exact', 'contact.appUser.id' => 'exact'])]
@@ -188,6 +192,7 @@ class Participant implements ParticipantInterface
         $this->flagGroups = (is_array($flagGroups) ? new ArrayCollection($flagGroups) : $flagGroups) ?? new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->eMails = new ArrayCollection();
+        $this->subEventAttendances = new ArrayCollection();
         $participantContact = new ParticipantContact($contact);
         $participantContact->activate(new DateTime());
         $this->setParticipantContact($participantContact);
@@ -701,6 +706,14 @@ class Participant implements ParticipantInterface
         $this->setNotes(
             $this->getNotes()->filter(fn (mixed $note): bool => !empty($note->getTextValue())),
         );
+    }
+
+    /**
+     * @return Collection<int, SubEventAttendance>
+     */
+    public function getSubEventAttendances(): Collection
+    {
+        return $this->subEventAttendances;
     }
 
     /**
