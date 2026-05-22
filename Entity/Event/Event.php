@@ -494,4 +494,17 @@ class Event implements NameableInterface
                 $this->getSuperEvent(),
             ];
     }
+
+    /**
+     * Compute the current active SubEventAttendance count via the supplied repository.
+     * Called by EventCapacityNormalizer to populate currentAttendanceCount in API output;
+     * keeps the entity service-free.
+     *
+     * Spec: docs/superpowers/specs/2026-05-22-S2-S3-S4-calendar-ux-2.0-design.md S2 step 4.1.1
+     */
+    public function computeCurrentAttendanceCount(
+        \OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository $repo
+    ): int {
+        return $repo->countActiveByEvent($this);
+    }
 }
