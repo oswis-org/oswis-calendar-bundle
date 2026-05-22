@@ -104,6 +104,19 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
+    subEvents:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+      max_depth: 2
+    baseCapacity:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    fullCapacity:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
 
 OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
   attributes:

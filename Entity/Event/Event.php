@@ -115,6 +115,7 @@ class Event implements NameableInterface
      * @var Collection<int, Event> $subEvents
      */
     #[OneToMany(targetEntity: self::class, mappedBy: 'superEvent')]
+    #[MaxDepth(2)]
     protected Collection $subEvents;
 
     /** @var Collection<int, EventContent> $contents */
