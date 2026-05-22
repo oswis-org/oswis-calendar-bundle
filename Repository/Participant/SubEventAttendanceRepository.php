@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Repository\Participant;
 
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\SubEventAttendance;
 
 /**
- * @extends EntityRepository<SubEventAttendance>
+ * @extends ServiceEntityRepository<SubEventAttendance>
  */
-class SubEventAttendanceRepository extends EntityRepository
+class SubEventAttendanceRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, SubEventAttendance::class);
+    }
+
+
     public const CRITERIA_PARTICIPANT = 'participant';
     public const CRITERIA_EVENT       = 'event';
     public const CRITERIA_STATUS      = 'status';

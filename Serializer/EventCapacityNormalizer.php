@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OswisOrg\OswisCalendarBundle\Serializer;
+
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+
+/**
+ * Decorates the default API Platform JSON-LD item normalizer to inject
+ * Event.currentAttendanceCount on calendar_event(s)_get group output.
+ *
+ * Spec: docs/superpowers/specs/2026-05-22-S2-S3-S4-calendar-ux-2.0-design.md S2 step 4.1.1
+ */
+final class EventCapacityNormalizer implements NormalizerInterface
+{
+    public function __construct(
+        private readonly NormalizerInterface $decorated,
+        private readonly SubEventAttendanceRepository $attendanceRepository,
+    ) {
+    }
+
+    public function normalize(mixed $object, ?string $format = null, array $context = []): array|string|int|float|bool|\ArrayObject|null
+    {
+        $data = $this->decorated->normalize($object, $format, $context);
+
+        if ($object instanceof Event && is_array($data)) {
+            $groups = (array) ($context['groups'] ?? []);
+            if (in_array('calendar_events_get', $groups, true) || in_array('calendar_event_get', $groups, true)) {
+                $data['currentAttendanceCount'] = $this->attendanceRepository->countActiveByEvent($object);
+            }
+        }
+
+        return $data;
+    }
+
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
+    {
+        return $this->decorated->supportsNormalization($data, $format, $context);
+    }
+
+    /**
+     * @return array<string, bool|null>
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        if (method_exists($this->decorated, 'getSupportedTypes')) {
+            $types = $this->decorated->getSupportedTypes($format);
+            if (is_array($types)) {
+                return $types;
+            }
+        }
+
+        return ['*' => false];
+    }
+}

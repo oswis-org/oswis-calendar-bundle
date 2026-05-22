@@ -285,6 +285,21 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Serializer\EventCapacityNormalizer:
+    decorates: 'api_platform.jsonld.normalizer.item'
+    arguments:
+      $decorated: '@.inner'
+      $attendanceRepository: '@OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository'
+
   OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository
     autowire: true
