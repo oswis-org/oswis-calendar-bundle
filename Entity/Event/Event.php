@@ -28,6 +28,7 @@ use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\ApiPlatform\EventRangeFilter;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
@@ -73,6 +74,7 @@ use function assert;
 )]
 #[SearchAnnotation(['id', 'name', 'description', 'note', 'shortName', 'slug'])]
 #[ApiFilter(OrderFilter::class)]
+#[ApiFilter(EventRangeFilter::class)]
 /**
  */
 #[Entity(repositoryClass: EventRepository::class)]
