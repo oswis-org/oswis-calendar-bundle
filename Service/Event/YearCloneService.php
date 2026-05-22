@@ -141,7 +141,7 @@ final class YearCloneService
         $this->logger->info('YearCloneService: cloned year "{slug}".', ['slug' => $newYear->getSlug()]);
 
         $timeOffsetSeconds = $targetStart->getTimestamp() - $sourceStart->getTimestamp();
-        $eventCloneMap = [$source->getSlug() ?? '' => $newYear];
+        $eventCloneMap = [$source->getSlug() => $newYear];
         $this->cloneSubtreeRecursively(
             $source,
             $newYear,
@@ -203,9 +203,6 @@ final class YearCloneService
                     continue;
                 }
                 foreach ($sourceOffer->getFlagGroupRanges() as $sourceFlagGroupOffer) {
-                    if (!$sourceFlagGroupOffer instanceof RegistrationFlagGroupOffer) {
-                        continue;
-                    }
                     $clonedFlagGroupOffer = $this->cloneRegistrationFlagGroupOffer(
                         $sourceFlagGroupOffer,
                         $sourceYear,
@@ -248,9 +245,6 @@ final class YearCloneService
         $clone->setPublicInApp(false);
 
         foreach ($source->getFlagOffers() as $sourceFlagOffer) {
-            if (!$sourceFlagOffer instanceof RegistrationFlagOffer) {
-                continue;
-            }
             $sourceFlagOfferId = $sourceFlagOffer->getId();
             $override = (null !== $sourceFlagOfferId) ? ($flagOverrides[$sourceFlagOfferId] ?? null) : null;
             $clonedFlagOffer = $this->cloneRegistrationFlagOffer(
@@ -274,9 +268,12 @@ final class YearCloneService
     ): RegistrationFlagOffer {
         $sourcePrice = $source->getPrice();
         $sourceDeposit = $source->getDepositValue();
-        $finalPrice = $override?->price ?? $sourcePrice;
-        $finalBaseCapacity = $override?->baseCapacity ?? $source->getBaseCapacity();
-        $finalFullCapacity = $override?->fullCapacity ?? $source->getFullCapacity();
+        $overridePrice = $override === null ? null : $override->price;
+        $overrideBaseCapacity = $override === null ? null : $override->baseCapacity;
+        $overrideFullCapacity = $override === null ? null : $override->fullCapacity;
+        $finalPrice = $overridePrice ?? $sourcePrice;
+        $finalBaseCapacity = $overrideBaseCapacity ?? $source->getBaseCapacity();
+        $finalFullCapacity = $overrideFullCapacity ?? $source->getFullCapacity();
 
         $clone = new RegistrationFlagOffer(
             $source->getFlag(),
@@ -339,14 +336,14 @@ final class YearCloneService
 
             $newChild = $this->cloneEventShallow(
                 $sourceChild,
-                $this->substituteYearInSlug($sourceChild->getSlug() ?? '', $sourceYear, $targetYear),
+                $this->substituteYearInSlug($sourceChild->getSlug(), $sourceYear, $targetYear),
                 $sourceChild->getName() ?? '',
                 $newChildStart,
                 $newChildEnd,
                 $newParent,
             );
             $this->em->persist($newChild);
-            $eventCloneMap[$sourceChild->getSlug() ?? ''] = $newChild;
+            $eventCloneMap[$sourceChild->getSlug()] = $newChild;
             $summary['event_count']++;
             $summary['event_slugs'][] = $newChild->getSlug();
 
@@ -473,10 +470,7 @@ final class YearCloneService
         $map = [];
         $stack = [$root];
         while ($current = array_pop($stack)) {
-            $slug = $current->getSlug();
-            if (null !== $slug) {
-                $map[$slug] = $current;
-            }
+            $map[$current->getSlug()] = $current;
             foreach ($current->getSubEvents() as $child) {
                 $stack[] = $child;
             }
@@ -495,7 +489,7 @@ final class YearCloneService
     ): RegistrationOffer {
         $clone = new RegistrationOffer();
         $clone->setName($source->getName() ?? '');
-        $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug() ?? '', $sourceYear, $targetYear));
+        $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug(), $sourceYear, $targetYear));
         $clone->setShortName($source->getShortName());
         $clone->setDescription($source->getDescription());
         $clone->setNote($source->getNote());
@@ -526,12 +520,17 @@ final class YearCloneService
         // Price + capacity: source values; override wins if provided.
         $sourcePrice = $source->getPrice();
         $sourceDeposit = $source->getDepositValue();
-        $finalPrice = $override?->price ?? $sourcePrice;
-        $finalDeposit = $override?->depositValue ?? $sourceDeposit;
+        $overridePrice = $override === null ? null : $override->price;
+        $overrideDeposit = $override === null ? null : $override->depositValue;
+        $overrideBaseCapacity = $override === null ? null : $override->baseCapacity;
+        $overrideFullCapacity = $override === null ? null : $override->fullCapacity;
+
+        $finalPrice = $overridePrice ?? $sourcePrice;
+        $finalDeposit = $overrideDeposit ?? $sourceDeposit;
         $clone->setEventPrice(new Price($finalPrice, $finalDeposit));
 
-        $finalBaseCapacity = $override?->baseCapacity ?? $source->getBaseCapacity();
-        $finalFullCapacity = $override?->fullCapacity ?? $source->getFullCapacity();
+        $finalBaseCapacity = $overrideBaseCapacity ?? $source->getBaseCapacity();
+        $finalFullCapacity = $overrideFullCapacity ?? $source->getFullCapacity();
         $clone->setCapacity(new Capacity($finalBaseCapacity, $finalFullCapacity));
 
         if (null !== $override?->startDateTime) {
@@ -579,9 +578,6 @@ final class YearCloneService
         // EventImage / EventFile intentionally skipped — orphanRemoval on the source
         // would (cascade) delete shared filesystem files if the clone were later removed.
         foreach ($source->getContents() as $sourceContent) {
-            if (!$sourceContent instanceof EventContent) {
-                continue;
-            }
             $clonedContent = new EventContent(null, $sourceContent->getTextValue(), $sourceContent->getType());
             $clone->addContent($clonedContent);
         }

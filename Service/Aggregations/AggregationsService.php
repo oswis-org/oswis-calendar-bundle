@@ -60,11 +60,9 @@ readonly class AggregationsService
         );
         $aggregations = [];
         foreach ($events as $event) {
-            assert($event instanceof Event);
             $year = $event->getStartYear();
             $eventIds = [$event->getId()];
             foreach ($event->getSubEvents() as $subEvent) {
-                assert($subEvent instanceof Event);
                 $eventIds[] = $subEvent->getId();
             }
             $eventIdsString = '(' . implode(', ', $eventIds) . ')';

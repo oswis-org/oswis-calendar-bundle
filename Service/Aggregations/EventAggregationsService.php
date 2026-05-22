@@ -81,7 +81,7 @@ final readonly class EventAggregationsService
                     ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
                     ParticipantRepository::CRITERIA_EVENT                 => $subEvent,
                     ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
-                ]),
+                ]) ?? 0,
             ];
         }
 
@@ -138,17 +138,36 @@ final readonly class EventAggregationsService
             $flagId = $flag?->getId() ?? 0;
             $flagCategory = $flagRange->getCategory();
             $flagCategoryId = $flagCategory?->getId() ?? 0;
+            $flagRangeId = $flagRange->getId() ?? 0;
 
-            $flagsUsageByRange[$flagGroupRangeId]['flagCategory']                              = $flagCategory;
-            $flagsUsageByRange[$flagGroupRangeId]['flagGroupRange']                            = $flagGroupRange;
-            $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['entity']      = $flagRange;
-            $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['usage']     ??= 0;
-            $flagsUsageByRange[$flagGroupRangeId]['items'][$flagRange->getId()]['usage']++;
+            // Initialise the per-flagGroupRange entry with all required keys.
+            $rangeEntry = is_array($flagsUsageByRange[$flagGroupRangeId] ?? null)
+                ? $flagsUsageByRange[$flagGroupRangeId]
+                : [];
+            $rangeEntry['flagCategory']   = $flagCategory;
+            $rangeEntry['flagGroupRange'] = $flagGroupRange;
+            $rangeItems = is_array($rangeEntry['items'] ?? null) ? $rangeEntry['items'] : [];
+            $rangeItem = is_array($rangeItems[$flagRangeId] ?? null) ? $rangeItems[$flagRangeId] : [];
+            $rangeItem['entity'] = $flagRange;
+            $rangeCurrent = $rangeItem['usage'] ?? 0;
+            $rangeItem['usage'] = (is_int($rangeCurrent) ? $rangeCurrent : 0) + 1;
+            $rangeItems[$flagRangeId] = $rangeItem;
+            $rangeEntry['items'] = $rangeItems;
+            $flagsUsageByRange[$flagGroupRangeId] = $rangeEntry;
 
-            $flagsUsageByFlag[$flagCategoryId]['flagCategory']                = $flagCategory;
-            $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['entity']    = $flag;
-            $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['usage']   ??= 0;
-            $flagsUsageByFlag[$flagCategoryId]['items'][$flagId]['usage']++;
+            // Same pattern for byFlag (one level shallower).
+            $flagEntry = is_array($flagsUsageByFlag[$flagCategoryId] ?? null)
+                ? $flagsUsageByFlag[$flagCategoryId]
+                : [];
+            $flagEntry['flagCategory'] = $flagCategory;
+            $flagItems = is_array($flagEntry['items'] ?? null) ? $flagEntry['items'] : [];
+            $flagItem = is_array($flagItems[$flagId] ?? null) ? $flagItems[$flagId] : [];
+            $flagItem['entity'] = $flag;
+            $flagCurrent = $flagItem['usage'] ?? 0;
+            $flagItem['usage'] = (is_int($flagCurrent) ? $flagCurrent : 0) + 1;
+            $flagItems[$flagId] = $flagItem;
+            $flagEntry['items'] = $flagItems;
+            $flagsUsageByFlag[$flagCategoryId] = $flagEntry;
         }
     }
 

@@ -104,7 +104,7 @@ class ParticipantService
                 // Mirror the target ParticipantCategory tone (formal vs informal)
                 // so the magic-link email matches the rest of the registration
                 // flow's tone (Seznamovák = informal, business event = formal).
-                $formal = (bool) ($participant->getOffer()?->getParticipantCategory()?->isFormal() ?? false);
+                $formal = (bool) ($participant->getOffer()->getParticipantCategory()?->isFormal() ?? false);
                 $this->appUserService->sendRegistrationLoginLink($existingAppUser, $rangeSlug, $formal);
                 $this->logger->info(
                     "Returning participant collision for '$eMail' — magic-link sent for range '$rangeSlug'.",

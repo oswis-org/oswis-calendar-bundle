@@ -128,15 +128,15 @@ class ParticipantPaymentsImport
         CsvPaymentImportSettings $csvSettings,
         string $csvRow
     ): ParticipantPayment {
-        $csvCurrency = $csvPaymentRow[$csvSettings->getCurrencyColumnName()] ?? null;
+        $csvCurrency = $csvPaymentRow[(string) $csvSettings->getCurrencyColumnName()] ?? null;
         $currencyAllowed = $csvSettings->getCurrencyAllowed();
         $payment = new ParticipantPayment(
-            self::toInt($csvPaymentRow[$csvSettings->getValueColumnName()] ?? 0),
+            self::toInt($csvPaymentRow[(string) $csvSettings->getValueColumnName()] ?? 0),
             $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings),
             ParticipantPayment::TYPE_BANK_TRANSFER
         );
         $payment->setInternalNote($csvRow);
-        $payment->setExternalId(self::toString($csvPaymentRow[$csvSettings->getIdentifierColumnName()] ?? null));
+        $payment->setExternalId(self::toString($csvPaymentRow[(string) $csvSettings->getIdentifierColumnName()] ?? null));
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
             $payment->setNumericValue(0);
             $csvCurrencyString = self::toString($csvCurrency);
@@ -190,7 +190,7 @@ class ParticipantPaymentsImport
             $dateKey = self::toString((preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: [])[0]);
             $dateColumnName = $csvSettings->getDateColumnName();
             if (array_key_exists(''.$dateColumnName, $csvPaymentRow)) {
-                $dateColumnValue = self::toString($csvPaymentRow[$dateColumnName]);
+                $dateColumnValue = self::toString($csvPaymentRow[(string) $dateColumnName]);
 
                 return new DateTime($dateColumnValue);
             }
@@ -272,6 +272,6 @@ class ParticipantPaymentsImport
 
     public function getVsFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?string
     {
-        return Participant::vsStringFix(self::toString($csvPaymentRow[$csvSettings->getVariableSymbolColumnName()] ?? null));
+        return Participant::vsStringFix(self::toString($csvPaymentRow[(string) $csvSettings->getVariableSymbolColumnName()] ?? null));
     }
 }

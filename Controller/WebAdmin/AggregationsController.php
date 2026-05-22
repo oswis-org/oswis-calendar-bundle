@@ -44,10 +44,10 @@ class AggregationsController extends AbstractController
                 $day['active_attendees']      = $active;
                 $day['active_attendees_sum']  = $year['active_attendees_sum'] = $activeSum;
 
-                $ts = (new DateTimeImmutable($day['fake_date']))->format('Y-m-d\T00:00:00.0');
-                $year['created_attendees_chart']     .= "['$ts', " . $day['created_attendees'] . '],';
+                $ts = (new DateTimeImmutable((string) ($day['fake_date'] ?? '')))->format('Y-m-d\T00:00:00.0');
+                $year['created_attendees_chart']     .= "['$ts', " . ($day['created_attendees'] ?? 0) . '],';
                 $year['created_attendees_sum_chart'] .= "['$ts', $createdSum],";
-                $year['deleted_attendees_chart']     .= "['$ts', " . $day['deleted_attendees'] . '],';
+                $year['deleted_attendees_chart']     .= "['$ts', " . ($day['deleted_attendees'] ?? 0) . '],';
                 $year['deleted_attendees_sum_chart'] .= "['$ts', $deletedSum],";
                 $year['active_attendees_chart']      .= "['$ts', $active],";
                 $year['active_attendees_sum_chart']  .= "['$ts', $activeSum],";

@@ -589,7 +589,6 @@ class Participant implements ParticipantInterface
         if (null === $newRange) {
             throw new NotImplementedException();
         }
-        /** @var Collection<ParticipantFlagGroup>|null $newFlagGroups */
         $newFlagGroups ??= $this->getFlagGroups(null, null, true);
         foreach ($newFlagGroups as $oldParticipantFlagGroup) {
             /** @var ParticipantFlagGroup $oldParticipantFlagGroup */
@@ -712,9 +711,11 @@ class Participant implements ParticipantInterface
         return $this->notes;
     }
 
+    /**
+     * @param Collection<int, ParticipantNote>|null $newNotes
+     */
     public function setNotes(?Collection $newNotes): void
     {
-        /** @var Collection<ParticipantNote>|null $newNotes */
         $newNotes ??= new ArrayCollection();
         foreach ($this->getNotes() as $oldNote) {
             /** @var ParticipantNote $oldNote */

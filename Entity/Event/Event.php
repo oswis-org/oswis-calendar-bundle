@@ -371,7 +371,6 @@ class Event implements NameableInterface
         $maxDateTime = new DateTime(DateTimeUtils::MAX_DATE_TIME_STRING);
         $startDateTime = $this->getStartDateTime() ?? $maxDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
-            assert($subEvent instanceof self);
             $dateTime = $subEvent->getStartDateTimeRecursive();
             if ($dateTime && $dateTime < $startDateTime) {
                 $startDateTime = $dateTime;
@@ -381,6 +380,9 @@ class Event implements NameableInterface
         return $startDateTime === $maxDateTime ? null : $startDateTime;
     }
 
+    /**
+     * @return Collection<int, Event>
+     */
     public function getSubEvents(): Collection
     {
         return $this->subEvents;
@@ -413,7 +415,6 @@ class Event implements NameableInterface
         $minDateTime = new DateTime(DateTimeUtils::MIN_DATE_TIME_STRING);
         $endDateTime = $this->getEndDateTime() ?? $minDateTime;
         foreach ($this->getSubEvents() as $subEvent) {
-            assert($subEvent instanceof self);
             $dateTime = $subEvent->getEndDateTimeRecursive();
             if ($dateTime && $dateTime > $endDateTime) {
                 $endDateTime = $dateTime;

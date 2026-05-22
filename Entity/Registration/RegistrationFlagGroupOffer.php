@@ -205,11 +205,14 @@ class RegistrationFlagGroupOffer implements NameableInterface
                 ->count() > 0;
     }
 
+    /**
+     * @return array<string, int>
+     */
     public function getFlagsGroupNames(): array
     {
         $groups = [];
         foreach ($this->getFlagOffers(true) as $flagRange) {
-            $groupName = $flagRange->getFlagGroupName();
+            $groupName = $flagRange->getFlagGroupName() ?? '';
             $groups[$groupName] = ($groups[$groupName] ?? 0) + 1;
         }
 
