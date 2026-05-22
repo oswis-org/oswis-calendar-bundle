@@ -38,6 +38,7 @@ use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DateRangeTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\EntityPublicTrait;
+use OswisOrg\OswisCalendarBundle\Traits\Entity\CapacityTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
 use OswisOrg\OswisCoreBundle\Traits\Payment\BankAccountTrait;
 use OswisOrg\OswisCoreBundle\Utils\DateTimeUtils;
@@ -82,6 +83,7 @@ class Event implements NameableInterface
     use NameableTrait;
     use DateRangeTrait;
     use ColorTrait;
+    use CapacityTrait;
     use BankAccountTrait {
         getBankAccount as traitGetBankAccount;
     }
