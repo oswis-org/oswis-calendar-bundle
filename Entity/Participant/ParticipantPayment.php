@@ -18,6 +18,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\MailConfirmationTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\VariableSymbolTrait;
 use OswisOrg\OswisCoreBundle\Exceptions\InvalidTypeException;
@@ -59,7 +60,7 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     ],
     security: "is_granted('ROLE_MANAGER')"
 )]
-#[Entity]
+#[Entity(repositoryClass: ParticipantPaymentRepository::class)]
 #[Table(name: 'calendar_participant_payment')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 #[ApiFilter(DateFilter::class, properties: [
