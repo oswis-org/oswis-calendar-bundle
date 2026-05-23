@@ -183,6 +183,12 @@ services:
     alias: oswis_org_oswis_calendar.participant.participant_payment_service
     public: true
 
+  OswisOrg\OswisCalendarBundle\Service\Participant\PaymentMatchingService:
+    autowire: true
+    public: true
+    arguments:
+      - '@oswis_org_oswis_calendar.participant.participant_service'
+
   oswis_org_oswis_calendar.participant.participant_payments_import_service:
     class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentsImportService
     autowire: true
@@ -192,6 +198,7 @@ services:
       - '@monolog.logger'
       - '@oswis_org_oswis_calendar.participant.participant_service'
       - '@oswis_org_oswis_calendar.participant.participant_payment_service'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\PaymentMatchingService'
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentsImportService:
     alias: oswis_org_oswis_calendar.participant.participant_payments_import_service
     public: true

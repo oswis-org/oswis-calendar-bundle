@@ -11,7 +11,6 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\CsvPaymentImportSettings;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPaymentsImport;
-use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Psr\Log\LoggerInterface;
 
@@ -22,6 +21,7 @@ class ParticipantPaymentsImportService
         protected LoggerInterface $logger,
         protected ParticipantService $participantService,
         protected ParticipantPaymentService $paymentService,
+        protected PaymentMatchingService $matchingService,
     ) {
     }
 
@@ -54,50 +54,43 @@ class ParticipantPaymentsImportService
         }
     }
 
-    public function getParticipantByPayment(ParticipantPayment $payment, bool $isSecondTry = false): ?Participant
+    /**
+     * Look up the best participant for a payment via PaymentMatchingService.
+     * Only the unambiguous top candidate is auto-applied; ambiguous payments
+     * are left orphaned (participant=null) for manual matching in the admin UI.
+     */
+    public function getParticipantByPayment(ParticipantPayment $payment): ?Participant
     {
-        $secondTryString = $isSecondTry ? " (second try, included deleted participants)" : '';
+        $vs = (string) $payment->getVariableSymbol();
         $value = $payment->getNumericValue();
-        if (empty($vs = $payment->getVariableSymbol())) {
-            $this->logger->warning("Participant NOT found for payment without VS and with value '$value'.");
+        $note = (string) $payment->getNote();
+        $internalNote = (string) $payment->getInternalNote();
+        if ('' === trim($vs) && '' === trim($note) && '' === trim($internalNote)) {
+            $this->logger->warning("Payment has no VS / note / internalNote — cannot auto-match (value '$value').");
 
             return null;
         }
-        $participants = $this->participantService->getParticipants([
-            ParticipantRepository::CRITERIA_VARIABLE_SYMBOL => $payment->getVariableSymbol(),
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED => $isSecondTry,
-        ]);
-        $participantsCount = $participants->count();
-        $this->logger->info(
-            "Found $participantsCount participants for payment with VS '$vs' and value '$value'$secondTryString."
-        );
-        $participantsArray = $participants->toArray();
-        usort(
-            $participantsArray,
-            static fn (mixed $p1, mixed $p2) => self::compareParticipantsByPayment($value ?? 0, $p1, $p2),
-        );
-        $participants = new ArrayCollection($participantsArray);
-        $participant = $participants->first() instanceof Participant ? $participants->first() : null;
-        if (null === $participant && !$isSecondTry) {
-            $participant = $this->getParticipantByPayment($payment, true);
-        }
-        if (null === $participant) {
-            $this->logger->warning(
-                "Participant NOT found for payment with VS '$vs' and value '$value'$secondTryString."
+
+        $candidate = $this->matchingService->pickUnambiguous($payment);
+        if (null === $candidate) {
+            $this->logger->info(
+                "Payment VS '$vs' value '$value': no unambiguous candidate; left for manual matching."
             );
 
             return null;
         }
-        $participantString = $participant->getId().' '.$participant->getName();
-        $this->logger->info("Found participant '$participantString' for payment with VS '$vs' and value '$value'.");
+
+        $participant = $candidate->participant;
+        $this->logger->info(sprintf(
+            "Auto-matched payment VS '%s' value '%s' -> participant #%s '%s' (score=%d, reasons=[%s]).",
+            $vs,
+            (string) $value,
+            (string) $participant->getId(),
+            (string) $participant->getName(),
+            $candidate->score,
+            implode(', ', $candidate->reasons),
+        ));
 
         return $participant;
-    }
-
-    public static function compareParticipantsByPayment(int $value, mixed $participant1, mixed $participant2): int
-    {
-        /** @var Participant $participant1 */
-        /** @var Participant $participant2 */
-        return $participant1->differenceFromPayment($value) <=> $participant2->differenceFromPayment($value);
     }
 }
