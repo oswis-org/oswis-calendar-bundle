@@ -472,6 +472,10 @@ services:
       - { name: api_platform.doctrine.orm.query_extension.collection }
       - { name: api_platform.doctrine.orm.query_extension.item }
 
+  OswisOrg\OswisCalendarBundle\State\SubEventAttendanceProcessor:
+    autowire: true
+    tags: [ 'api_platform.state_processor' ]
+
 
   oswis_org_oswis_calendar.calendar_site_map_extender:
     class: OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender

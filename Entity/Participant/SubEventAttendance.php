@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository;
+use OswisOrg\OswisCalendarBundle\State\SubEventAttendanceProcessor;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
@@ -45,6 +46,7 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
         new Post(
             security: "is_granted('ROLE_CUSTOMER')",
             denormalizationContext: ['groups' => ['entities_post', 'calendar_sub_event_attendances_post']],
+            processor: SubEventAttendanceProcessor::class,
         ),
         new Delete(
             security: "is_granted('ROLE_CUSTOMER')",
