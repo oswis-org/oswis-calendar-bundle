@@ -103,6 +103,40 @@ class ParticipantRepository extends ServiceEntityRepository
         return $queryBuilder;
     }
 
+    /**
+     * Count active attendee participants per direct sub-event of $parentEvent.
+     *
+     * Returns a map { (int)subEventId => (int)count } so callers can index without
+     * issuing an extra COUNT() per sub-event in a loop.
+     *
+     * @return array<int, int>
+     */
+    public function countAttendeesGroupedBySubEvent(Event $parentEvent): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('IDENTITY(p.event) AS eventId, COUNT(p.id) AS cnt')
+            ->innerJoin('p.event', 'e')
+            ->leftJoin('p.participantCategory', 'pc')
+            ->where('e.superEvent = :parent')
+            ->andWhere('pc.type = :attendeeType')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('parent', $parentEvent)
+            ->setParameter('attendeeType', ParticipantCategory::TYPE_ATTENDEE)
+            ->groupBy('p.event')
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $r) {
+            if (!is_array($r) || !isset($r['eventId'], $r['cnt']) || !is_numeric($r['eventId']) || !is_numeric($r['cnt'])) {
+                continue;
+            }
+            $out[(int) $r['eventId']] = (int) $r['cnt'];
+        }
+
+        return $out;
+    }
+
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {

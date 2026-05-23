@@ -72,16 +72,12 @@ final readonly class EventAggregationsService
      */
     private function buildOccupancy(Event $event, int $occupancy): array
     {
+        $subEventCounts = $this->participantService->getRepository()->countAttendeesGroupedBySubEvent($event);
         $subEvents = [];
         foreach ($event->getSubEvents() as $subEvent) {
             $subEvents[] = [
                 'event'     => $subEvent,
-                'occupancy' => $this->participantService->countParticipants([
-                    ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
-                    ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
-                    ParticipantRepository::CRITERIA_EVENT                 => $subEvent,
-                    ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
-                ]) ?? 0,
+                'occupancy' => $subEventCounts[(int) $subEvent->getId()] ?? 0,
             ];
         }
 
