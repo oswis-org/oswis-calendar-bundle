@@ -19,7 +19,7 @@ final class EventRangeFilter extends AbstractFilter
 {
     protected function filterProperty(
         string $property,
-        $value,
+        mixed $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
@@ -70,9 +70,6 @@ final class EventRangeFilter extends AbstractFilter
         }
     }
 
-    /**
-     * @return array<string, array{type: string, required: bool, description: string, openapi: array<string, mixed>}>
-     */
     public function getDescription(string $resourceClass): array
     {
         return [
@@ -80,7 +77,6 @@ final class EventRangeFilter extends AbstractFilter
                 'type' => 'string',
                 'required' => false,
                 'description' => 'Convenience filter: upcoming | past | today | thisweek | thismonth',
-                'openapi' => ['example' => 'upcoming'],
             ],
         ];
     }

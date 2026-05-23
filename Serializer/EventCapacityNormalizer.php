@@ -46,13 +46,6 @@ final class EventCapacityNormalizer implements NormalizerInterface
      */
     public function getSupportedTypes(?string $format): array
     {
-        if (method_exists($this->decorated, 'getSupportedTypes')) {
-            $types = $this->decorated->getSupportedTypes($format);
-            if (is_array($types)) {
-                return $types;
-            }
-        }
-
-        return ['*' => false];
+        return $this->decorated->getSupportedTypes($format);
     }
 }
