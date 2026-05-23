@@ -466,6 +466,12 @@ services:
     tags:
       - { name: api_platform.doctrine.orm.query_extension.collection }
 
+  OswisOrg\OswisCalendarBundle\ApiPlatform\OwnSubEventAttendanceExtension:
+    autowire: true
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+      - { name: api_platform.doctrine.orm.query_extension.item }
+
 
   oswis_org_oswis_calendar.calendar_site_map_extender:
     class: OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender
