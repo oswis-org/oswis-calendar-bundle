@@ -25,6 +25,8 @@ use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Twig\Environment;
 
 class WebAdminParticipantsListController extends AbstractController
 {
@@ -175,6 +177,7 @@ class WebAdminParticipantsListController extends AbstractController
      * @throws InvalidArgumentException
      */
     public function showParticipantsCsv(
+        Environment $twig,
         ?string $eventSlug = null,
         ?string $participantCategorySlug = null,
         bool $includeDeleted = false,
@@ -185,14 +188,16 @@ class WebAdminParticipantsListController extends AbstractController
         $fileName .= '_'.str_replace('T', '_', (new DateTime())->format('c'));
         $fileName .= '.csv';
 
-        return $this->render(
-            "@OswisOrgOswisCalendar/web_admin/participants.csv.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted),
-            new Response(headers: [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            ]),
-        );
+        $data = $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted);
+
+        $response = new StreamedResponse(static function () use ($twig, $data): void {
+            $twig->display('@OswisOrgOswisCalendar/web_admin/participants.csv.twig', $data);
+            flush();
+        });
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', "attachment; filename=\"{$fileName}\"");
+
+        return $response;
     }
 
     public function showPayments(): Response
