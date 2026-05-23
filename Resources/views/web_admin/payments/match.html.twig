@@ -1,0 +1,99 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        <h2>{{ title }}</h2>
+
+        <table class="list">
+            <tbody>
+            <tr><th>ID platby</th><td>{{ payment.id }}</td></tr>
+            <tr><th>Částka</th><td>{{ payment.numericValue|default(0) }},- Kč</td></tr>
+            <tr><th>VS</th><td>{{ payment.variableSymbol|default('—') }}</td></tr>
+            <tr><th>Datum</th><td>{{ payment.dateTime ? payment.dateTime|date('j. n. Y H:i') : '—' }}</td></tr>
+            <tr><th>Poznámka</th><td>{{ payment.note|default('—') }}</td></tr>
+            <tr><th>Interní poznámka</th><td>{{ payment.internalNote|default('—') }}</td></tr>
+            <tr>
+                <th>Aktuální přiřazení</th>
+                <td>
+                    {% if payment.participant %}
+                        #{{ payment.participant.id }} {{ payment.participant.name|default('') }}
+                        <form method="post"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_payment_unmatch', { id: payment.id }) }}"
+                              style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                    onclick="return confirm('Opravdu odpojit?');">Odpojit</button>
+                        </form>
+                    {% else %}
+                        ⚠️ NEPŘIŘAZENO
+                    {% endif %}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3 class="mt-4">Návrhy účastníků</h3>
+
+        {% if candidates is empty %}
+            <p>Žádné návrhy. Otevřete
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_payment_edit', { id: payment.id }) }}">úpravu platby</a>
+                a doplňte VS / poznámku, nebo platbu ponechte nepřiřazenou.</p>
+        {% else %}
+            <table class="list">
+                <thead>
+                <tr>
+                    <th>Skóre</th>
+                    <th>Účastník</th>
+                    <th>Akce / Telefon / VS</th>
+                    <th>Důvody</th>
+                    <th>Akce</th>
+                </tr>
+                </thead>
+                {% for candidate in candidates %}
+                    <tbody>
+                    <tr>
+                        <td><strong>{{ candidate.score }}</strong></td>
+                        <td>
+                            #{{ candidate.participant.id }}
+                            {{ candidate.participant.name|default('(bez jména)') }}
+                            {% if candidate.participant.deletedAt %}
+                                <br><small style="color:red">SMAZÁN {{ candidate.participant.deletedAt|date('Y-m-d') }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ candidate.participant.event.shortName|default(candidate.participant.event.name|default('—')) }}</small><br>
+                            <small>Tel: {{ candidate.participant.contact.phone|default('—') }}</small><br>
+                            <small>VS: {{ candidate.participant.variableSymbol|default('—') }}</small>
+                        </td>
+                        <td>
+                            <ul style="margin:0; padding-left:1rem;">
+                                {% for reason in candidate.reasons %}
+                                    <li><small>{{ reason }}</small></li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <form method="post"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_payment_assign',
+                                                   { id: payment.id, participantId: candidate.participant.id }) }}">
+                                <button type="submit" class="btn btn-sm btn-primary"
+                                        onclick="return confirm('Přiřadit účastníka #{{ candidate.participant.id }}?');">
+                                    Přiřadit
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                {% endfor %}
+            </table>
+        {% endif %}
+
+        <p class="mt-3">
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_payment_edit', { id: payment.id }) }}"
+               class="btn btn-outline-primary">Upravit platbu</a>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_payments_list', { filter: 'orphaned' }) }}"
+               class="btn btn-link">Zpět na nepřiřazené</a>
+        </p>
+    </main>
+{% endblock %}

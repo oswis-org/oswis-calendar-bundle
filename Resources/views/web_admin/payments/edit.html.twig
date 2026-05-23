@@ -1,0 +1,35 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        <h2>{{ title }}</h2>
+
+        <p>
+            <strong>ID:</strong> {{ payment.id }} ·
+            <strong>Externí ID:</strong> {{ payment.externalId|default('—') }} ·
+            <strong>Import:</strong> {{ payment.import.id|default('—') }}
+        </p>
+
+        <p>
+            <strong>Aktuálně přiřazený účastník:</strong>
+            {% if payment.participant %}
+                #{{ payment.participant.id }} {{ payment.participant.name|default('(bez jména)') }}
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_payment_match', { id: payment.id }) }}"
+                   class="btn btn-sm btn-outline-secondary">Změnit / přiřadit jiného</a>
+            {% else %}
+                ⚠️ NEPŘIŘAZENO
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_payment_match', { id: payment.id }) }}"
+                   class="btn btn-sm btn-warning">Spárovat</a>
+            {% endif %}
+        </p>
+
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit" class="btn btn-primary">Uložit změny</button>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_payments_list') }}"
+           class="btn btn-link">Zpět na přehled</a>
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

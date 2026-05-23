@@ -4,5 +4,6 @@
             importu</small></th>
     <th style="min-width:25%;">Částka<br><small>Var. symbol (VS)</small><br><small>Typ platby</small></th>
     <th style="max-width:25%;">Účastník<br><small>Potvrzení na e-mail</small></th>
+    {% if isAdmin|default(false) %}<th>Akce</th>{% endif %}
 </tr>
 </thead>
