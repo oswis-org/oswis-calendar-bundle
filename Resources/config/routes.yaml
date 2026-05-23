@@ -95,8 +95,39 @@ oswis_org_oswis_calendar_web_admin_compare_years:
   path: "/web_admin/srovnani-rocniku/{eventSeriesSlug?}"
 
 oswis_org_oswis_calendar_web_admin_participant_payments_list:
-  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showPayments
-  path: "/web_admin/prihlasky/prehled-plateb"
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminPaymentController::list
+  path: "/web_admin/prihlasky/prehled-plateb/{filter}"
+  defaults:
+    filter: all
+  requirements:
+    filter: 'all|orphaned|with-error|assigned'
+
+oswis_org_oswis_calendar_web_admin_payment_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminPaymentController::edit
+  path: "/web_admin/platby/{id}/upravit"
+  requirements:
+    id: '\d+'
+
+oswis_org_oswis_calendar_web_admin_payment_match:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminPaymentController::match
+  path: "/web_admin/platby/{id}/sparovat"
+  requirements:
+    id: '\d+'
+
+oswis_org_oswis_calendar_web_admin_payment_assign:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminPaymentController::assign
+  path: "/web_admin/platby/{id}/priradit/{participantId}"
+  requirements:
+    id: '\d+'
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_payment_unmatch:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminPaymentController::unmatch
+  path: "/web_admin/platby/{id}/odpojit"
+  requirements:
+    id: '\d+'
+  methods: [POST]
 
 oswis_org_oswis_calendar_web_admin_participant_payments_import:
   controller: oswis_org_oswis_calendar.web_admin.participant_payments_import_controller::import

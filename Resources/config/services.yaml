@@ -292,6 +292,15 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
   OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository
     autowire: true

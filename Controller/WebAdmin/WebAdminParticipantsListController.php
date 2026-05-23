@@ -12,7 +12,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
@@ -198,15 +197,6 @@ class WebAdminParticipantsListController extends AbstractController
         $response->headers->set('Content-Disposition', "attachment; filename=\"{$fileName}\"");
 
         return $response;
-    }
-
-    public function showPayments(): Response
-    {
-        return $this->render("@OswisOrgOswisCalendar/web_admin/payments.html.twig", [
-            'payments' => $this->em->getRepository(ParticipantPayment::class)
-                ->findBy([], ['dateTime' => 'DESC'], 500),
-            'title' => "Přehled plateb účastníků :: ADMIN",
-        ]);
     }
 
     public function showYearsCompare(?string $eventSeriesSlug = null): Response
