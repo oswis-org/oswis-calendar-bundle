@@ -6,12 +6,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use Closure;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Aggregations\EventAggregationsService;
@@ -26,6 +28,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WebAdminParticipantsListController extends AbstractController
 {
+    public const string FILTER_ALL            = 'all';
+    public const string FILTER_UNPAID         = 'unpaid';
+    public const string FILTER_UNPAID_DEPOSIT = 'unpaid-deposit';
+    public const string FILTER_OVERPAID       = 'overpaid';
+    public const string FILTER_FOOD           = 'food';
+
     public function __construct(
         public EventService $eventService,
         public ParticipantService $participantService,
@@ -37,15 +45,105 @@ class WebAdminParticipantsListController extends AbstractController
     ) {
     }
 
-    public function showParticipants(
-        ?string $eventSlug = null,
-        ?string $participantCategorySlug = null,
-        bool $includeDeleted = true,
-    ): Response {
-        return $this->render(
-            "@OswisOrgOswisCalendar/web_admin/participants.html.twig",
-            $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted),
+    public function showParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    {
+        return $this->renderFiltered(
+            $eventSlug, $participantCategorySlug,
+            self::FILTER_ALL, 'Přehled přihlášek :: ADMIN',
+            static fn (Participant $p) => true,
         );
+    }
+
+    public function showUnpaidParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    {
+        return $this->renderFiltered(
+            $eventSlug, $participantCategorySlug,
+            self::FILTER_UNPAID, 'Přehled nezaplacených účastníků :: ADMIN',
+            static fn (Participant $p) => $p->getRemainingPrice() > 0,
+        );
+    }
+
+    public function showUnpaidDepositParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    {
+        return $this->renderFiltered(
+            $eventSlug, $participantCategorySlug,
+            self::FILTER_UNPAID_DEPOSIT, 'Přehled přihlášek s nezaplacenou zálohou :: ADMIN',
+            static fn (Participant $p) => $p->getRemainingDeposit() > 0,
+        );
+    }
+
+    public function showOverpaidParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    {
+        return $this->renderFiltered(
+            $eventSlug, $participantCategorySlug,
+            self::FILTER_OVERPAID, 'Přehled přeplacených účastníků :: ADMIN',
+            static fn (Participant $p) => $p->getRemainingPrice() < 0,
+        );
+    }
+
+    public function showFoodParticipants(?string $eventSlug = null, ?string $participantCategorySlug = null): Response
+    {
+        return $this->renderFiltered(
+            $eventSlug, $participantCategorySlug,
+            self::FILTER_FOOD, 'Přehled účastníků se stravovacím omezením :: ADMIN',
+            static fn (Participant $p) => $p->getParticipantFlags(null, RegistrationFlagCategory::TYPE_FOOD, true)->count() > 0,
+        );
+    }
+
+    /**
+     * Render the participant list scoped to event + category and filtered by the given
+     * predicate, with the five-tab nav (Vše / Nezaplacení / Nezaplacená záloha /
+     * Přeplacení / Stravovací omezení) so admins can switch between views without
+     * re-typing URLs.
+     *
+     * @param Closure(Participant): bool $filterPredicate
+     */
+    private function renderFiltered(
+        ?string $eventSlug,
+        ?string $participantCategorySlug,
+        string $activeFilter,
+        string $title,
+        Closure $filterPredicate,
+    ): Response {
+        $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
+        $event = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
+
+        $participants = $this->participantService->getParticipants([
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => true,
+            ParticipantRepository::CRITERIA_EVENT                 => $event,
+            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $participantCategory,
+            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
+        ])->filter($filterPredicate);
+
+        $participantsArray = $participants->toArray();
+        usort($participantsArray, static fn (Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
+
+        return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", [
+            'participantCategory' => $participantCategory,
+            'event'               => $event,
+            'participants'        => new ArrayCollection($participantsArray),
+            'title'               => $title,
+            'filterTabs'          => $this->buildFilterTabs($eventSlug, $participantCategorySlug, $activeFilter),
+        ]);
+    }
+
+    /**
+     * @return list<array{url: string, label: string, active: bool}>
+     */
+    private function buildFilterTabs(?string $eventSlug, ?string $participantCategorySlug, string $active): array
+    {
+        $routeArgs = [
+            'eventSlug'               => $eventSlug,
+            'participantCategorySlug' => $participantCategorySlug,
+        ];
+
+        return [
+            ['url' => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_list',            $routeArgs), 'label' => 'Vše',                'active' => self::FILTER_ALL            === $active],
+            ['url' => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_unpaid',          $routeArgs), 'label' => 'Nezaplacení',        'active' => self::FILTER_UNPAID         === $active],
+            ['url' => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_unpaid_deposit',  $routeArgs), 'label' => 'Nezaplacená záloha', 'active' => self::FILTER_UNPAID_DEPOSIT === $active],
+            ['url' => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_overpaid',        $routeArgs), 'label' => 'Přeplacení',         'active' => self::FILTER_OVERPAID       === $active],
+            ['url' => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_food',            $routeArgs), 'label' => 'Stravovací omezení', 'active' => self::FILTER_FOOD           === $active],
+        ];
     }
 
     public function getParticipantsData(

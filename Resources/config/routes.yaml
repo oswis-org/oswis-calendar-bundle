@@ -66,6 +66,22 @@ oswis_org_oswis_calendar_web_admin_participants_list:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipants
   path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
 
+oswis_org_oswis_calendar_web_admin_participants_unpaid:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showUnpaidParticipants
+  path: "/web_admin/prihlasky/nezaplacene/{eventSlug?}/{participantCategorySlug?}"
+
+oswis_org_oswis_calendar_web_admin_participants_unpaid_deposit:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showUnpaidDepositParticipants
+  path: "/web_admin/prihlasky/nezaplacene-zalohy/{eventSlug?}/{participantCategorySlug?}"
+
+oswis_org_oswis_calendar_web_admin_participants_overpaid:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showOverpaidParticipants
+  path: "/web_admin/prihlasky/preplacene/{eventSlug?}/{participantCategorySlug?}"
+
+oswis_org_oswis_calendar_web_admin_participants_food:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showFoodParticipants
+  path: "/web_admin/prihlasky/stravovaci-omezeni/{eventSlug?}/{participantCategorySlug?}"
+
 oswis_org_oswis_calendar_web_admin_participants_list_csv:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsCsv
   path: "/web_admin/seznam-prihlasek-csv/{eventSlug?}/{participantCategorySlug?}"
