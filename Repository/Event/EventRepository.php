@@ -63,6 +63,9 @@ class EventRepository extends ServiceEntityRepository
     public function getEventsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->leftJoin('e.category', 'eCategory')->addSelect('eCategory');
+        $queryBuilder->leftJoin('e.place', 'ePlace')->addSelect('ePlace');
+        $queryBuilder->leftJoin('e.superEvent', 'eSuperEvent')->addSelect('eSuperEvent');
         $this->setSuperEventQuery($queryBuilder, $opts);
         $this->setIdQuery($queryBuilder, $opts);
         $this->setSlugQuery($queryBuilder, $opts);
