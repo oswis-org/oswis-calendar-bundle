@@ -109,7 +109,7 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             self::TYPE_ON_LINE,
             self::TYPE_INTERNAL,
         ];
-    #[ManyToOne(targetEntity: Participant::class, inversedBy: 'payments')]
+    #[ManyToOne(targetEntity: Participant::class, inversedBy: 'payments', fetch: 'EAGER')]
     #[JoinColumn(nullable: true)]
     #[MaxDepth(1)]
     protected ?Participant $participant = null;

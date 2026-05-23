@@ -198,7 +198,8 @@ class WebAdminParticipantsListController extends AbstractController
     public function showPayments(): Response
     {
         return $this->render("@OswisOrgOswisCalendar/web_admin/payments.html.twig", [
-            'payments' => $this->em->getRepository(ParticipantPayment::class)->findAll(),
+            'payments' => $this->em->getRepository(ParticipantPayment::class)
+                ->findBy([], ['dateTime' => 'DESC'], 500),
             'title' => "Přehled plateb účastníků :: ADMIN",
         ]);
     }
