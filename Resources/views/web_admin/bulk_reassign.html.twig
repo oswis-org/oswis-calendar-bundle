@@ -1,0 +1,114 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container-fluid" style="padding: 1rem;">
+        <h2>{{ pageTitle }}</h2>
+
+        <p class="text-muted">
+            <small>
+                Vybere zdrojový rozsah (akce + kategorie), zaškrtne účastníky a vybere cílovou „přihlášku" (RegistrationOffer).
+                Po stisku „Přesunout" každému označenému účastníkovi nastaví novou přihlášku přes <code>setOffer()</code>
+                (tj. změní rozsah/kategorii). Tvrdý limit {{ hardCap }} účastníků na request.
+            </small>
+        </p>
+
+        <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}" class="row g-2" style="margin-bottom: 1rem;">
+            <div class="col-12 col-md-5">
+                <label>Zdrojová akce</label>
+                <select name="sourceEventSlug" class="form-control">
+                    <option value="">(vyber akci…)</option>
+                    {% for event in events %}
+                        <option value="{{ event.slug }}" {{ sourceEvent and event.id == sourceEvent.id ? 'selected' : '' }}>
+                            {{ event.shortName|default(event.name)|default('(bez názvu)') }}
+                            {% if event.startDateTime %}— {{ event.startDateTime|date('Y') }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-5">
+                <label>Zdrojová kategorie účastníka</label>
+                <select name="sourceCategorySlug" class="form-control">
+                    <option value="">(jakákoliv)</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {{ sourceCategory and cat.id == sourceCategory.id ? 'selected' : '' }}>
+                            {{ cat.name|default(cat.slug) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-secondary">Načíst</button>
+            </div>
+        </form>
+
+        {% if sourceEvent %}
+            <form method="post"
+                  action="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign', {sourceEventSlug: sourceEvent.slug, sourceCategorySlug: sourceCategory ? sourceCategory.slug : null}) }}"
+                  onsubmit="return confirm('Opravdu přesunout označené účastníky? Tato akce změní jejich přihlášku.');">
+                <input type="hidden" name="_token" value="{{ csrf_token('bulk_reassign') }}">
+                <input type="hidden" name="_action" value="execute">
+
+                <div class="row" style="margin-bottom: 1rem;">
+                    <div class="col-12 col-md-8">
+                        <label>Cílová přihláška (RegistrationOffer)</label>
+                        <select name="targetOfferId" class="form-control" required>
+                            <option value="">(vyber cíl…)</option>
+                            {% for offer in offers %}
+                                <option value="{{ offer.id }}">
+                                    {{ offer.name|default(offer.shortName)|default('(bez názvu)') }}
+                                    {% if offer.event|default %} — {{ offer.event.shortName|default(offer.event.name)|default }}{% endif %}
+                                    {% if offer.participantCategory|default %} — {{ offer.participantCategory.name|default }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-warning">Přesunout označené účastníky</button>
+                    </div>
+                </div>
+
+                <p>
+                    <small>
+                        Nalezeno {{ participants|length }} účastníků.
+                        <a href="#" onclick="document.querySelectorAll('.bulk-row-check').forEach(c => c.checked = true); return false;">Vybrat všechny</a>
+                        · <a href="#" onclick="document.querySelectorAll('.bulk-row-check').forEach(c => c.checked = false); return false;">Odznačit vše</a>
+                    </small>
+                </p>
+
+                <table class="list" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;"></th>
+                            <th>ID</th>
+                            <th>Jméno</th>
+                            <th>Kontakt</th>
+                            <th>Aktuální přihláška</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participant in participants %}
+                            {% set contact = participant.contact(false)|default %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="participantIds[]" value="{{ participant.id }}" class="bulk-row-check">
+                                </td>
+                                <td><strong>{{ participant.id }}</strong></td>
+                                <td>{{ contact.name|default('(bez jména)') }}</td>
+                                <td>
+                                    {% if contact.email|default %}<div class="small">{{ contact.email }}</div>{% endif %}
+                                    {% if contact.phone|default %}<div class="small">{{ contact.phone }}</div>{% endif %}
+                                </td>
+                                <td>
+                                    {% set offer = participant.offer|default %}
+                                    {{ offer.name|default('(bez přihlášky)') }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+        {% endif %}
+    </main>
+{% endblock %}

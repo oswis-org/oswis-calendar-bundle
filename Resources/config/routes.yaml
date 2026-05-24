@@ -203,3 +203,8 @@ oswis_org_oswis_calendar_web_admin_participant_manual_note:
   requirements:
     participantId: '\d+'
   methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_reassign:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkReassignController::wizard
+  path: "/web_admin/prihlasky/hromadny-presun"
+  methods: [GET, POST]
