@@ -211,10 +211,7 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
         return true;
     }
 
-    public function getMessageId(): ?string
-    {
-        return $this->getMessageID();
-    }
+    // getMessageId() satisfied by parent::getMessageID() — PHP method names are case-insensitive.
 
     public function getInReplyTo(): ?string
     {
