@@ -6,6 +6,8 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -54,5 +56,38 @@ final class WebAdminParticipantsController extends AbstractController
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
             'participant' => $participant,
         ]);
+    }
+
+    /**
+     * Restore a soft-deleted participant (set deletedAt back to null).
+     * Cascade-deleted children (flags, registrations) stay deleted — admin
+     * can verify and act on them from the participant detail page.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function restore(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_restore_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            true,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        $this->participantService->restore($participant);
+        $this->addFlash('success', sprintf(
+            'Účastník #%d obnoven. Případné smazané flagy a registrace zůstávají smazané — zkontroluj na detailu.',
+            $participantId,
+        ));
+
+        $redirectUrl = (string) $request->request->get('_redirect', $this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_arrival',
+            ['participantId' => $participantId, 'arrival' => '0'],
+        ));
+
+        return new RedirectResponse($redirectUrl);
     }
 }

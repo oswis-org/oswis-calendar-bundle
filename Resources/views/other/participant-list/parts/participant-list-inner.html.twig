@@ -10,6 +10,17 @@
             <div class="block small" style="color:red;">
                 <strong>❌</strong>&nbsp;smazáno {{ participant.deletedAt|date("j. n. Y, H:i") }}
             </div>
+            {% if is_granted('ROLE_ADMIN') %}
+                <form method="post"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
+                      style="display: inline-block; margin-top: .25rem;"
+                      onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-success" style="padding: 1px 8px; font-size: .75rem;">
+                        ↻ Obnovit
+                    </button>
+                </form>
+            {% endif %}
         {% endif %}
         <div class="block small">
             <strong class="badge bg-primary font-1em">{{ participant.id }}</strong> {{ participant.createdAt|date("j. n. Y, H:i") }}

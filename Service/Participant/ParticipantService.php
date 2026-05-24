@@ -303,6 +303,24 @@ class ParticipantService
     }
 
     /**
+     * Restore a soft-deleted participant.
+     *
+     * Sets deletedAt back to null. Does NOT cascade-restore child collections
+     * (flag groups, registrations) — those keep their original deletedAt timestamps.
+     * Admin must restore them separately if needed.
+     */
+    public function restore(Participant $participant): void
+    {
+        if (!$participant->isDeleted()) {
+            return;
+        }
+        $participant->setDeletedAt(null);
+        $this->em->persist($participant);
+        $this->em->flush();
+        $this->logger->info("Participant ({$participant->getId()}) restored from soft-delete.");
+    }
+
+    /**
      * @param Participant|null $participant
      * @param ParticipantToken $participantToken
      * @param bool $sendConfirmation

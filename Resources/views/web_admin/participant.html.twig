@@ -20,6 +20,17 @@
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_communication', { participantId: participant.id }) }}">
                     Komunikace s účastníkem →
                 </a>
+                {% if participant.deletedAt|default and is_granted('ROLE_ADMIN') %}
+                    <form method="post"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
+                          style="display: inline-block; margin-left: .5rem;"
+                          onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                            ↻ Obnovit smazaného účastníka
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
         <div class="row">

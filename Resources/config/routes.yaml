@@ -141,6 +141,13 @@ oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
   path: "/web_admin/prijezd/{participantId}/{arrival?}"
 
+oswis_org_oswis_calendar_web_admin_participant_restore:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::restore
+  path: "/web_admin/ucastnici/{participantId}/obnovit"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 
 
 oswis_org_oswis_calendar_web_admin_aggregations:
