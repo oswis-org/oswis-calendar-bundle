@@ -159,7 +159,7 @@ final class ImapFetchService
                 continue;
             }
 
-            $subject = (string) $message->getSubject();
+            $subject = $this->decodeMimeHeader((string) $message->getSubject());
             $occurredAt = $message->getDate()->first()?->toDate() ?? new DateTime();
             if (!$occurredAt instanceof DateTime) {
                 $occurredAt = new DateTime((string) $occurredAt->format('c'));
@@ -168,9 +168,10 @@ final class ImapFetchService
             $bodyHtml = (string) $message->getHtmlBody();
             $fromObj = $message->getFrom()->first();
             $fromAddress = $fromObj ? (string) $fromObj->mail : null;
-            $fromName = $fromObj && method_exists($fromObj, 'getPersonal')
+            $rawFromName = $fromObj && method_exists($fromObj, 'getPersonal')
                 ? (string) $fromObj->getPersonal()
-                : ($fromObj && property_exists($fromObj, 'personal') ? (string) $fromObj->personal : null);
+                : ($fromObj && property_exists($fromObj, 'personal') ? (string) $fromObj->personal : '');
+            $fromName = '' !== $rawFromName ? $this->decodeMimeHeader($rawFromName) : null;
             $inReplyTo = trim((string) $message->getInReplyTo(), "<> \t\n\r\0\x0B") ?: null;
 
             $direction = $this->detectDirection($fromAddress, $folderName);
@@ -275,6 +276,29 @@ final class ImapFetchService
         }
 
         return null;
+    }
+
+    /**
+     * Decode a MIME-encoded header (RFC 2047) like
+     * "=?UTF-8?B?UmU6IHpkcmF2b3Ruw61r?=" → "Re: zdravotník".
+     *
+     * `iconv_mime_decode_headers` would return arrays for multi-field headers;
+     * for a single value we use iconv_mime_decode which is more predictable.
+     * If decoding fails for any reason, fall back to the raw input rather
+     * than throwing.
+     */
+    private function decodeMimeHeader(string $raw): string
+    {
+        if ('' === $raw) {
+            return '';
+        }
+        // Quick check: if there's no MIME-encoded-word marker, skip the decode.
+        if (!str_contains($raw, '=?')) {
+            return $raw;
+        }
+        $decoded = @iconv_mime_decode($raw, ICONV_MIME_DECODE_CONTINUE_ON_ERROR, 'UTF-8');
+
+        return false === $decoded ? $raw : $decoded;
     }
 
     /**
