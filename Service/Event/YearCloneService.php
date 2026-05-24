@@ -112,6 +112,26 @@ final class YearCloneService
         if (null !== $existing) {
             throw new DuplicateSlugException($request->targetYearSlug);
         }
+        // Sub-event slug pre-check: if any sub-event of the source year has
+        // already been cloned with a substituted slug, abort before doClone
+        // runs. Without this, a second wizard run with the same source year
+        // would silently write duplicate sub-event slugs (Doctrine has no
+        // UNIQUE constraint on Event.slug) and break slug-based lookups.
+        $sourceYear = $request->sourceYearEvent->getStartYear();
+        $targetYear = (int) $request->targetYearStartDate->format('Y');
+        foreach ($request->sourceYearEvent->getSubEvents() as $subEvent) {
+            $sourceSlug = $subEvent->getSlug();
+            if (null === $sourceSlug || '' === $sourceSlug) {
+                continue;
+            }
+            $targetSlug = $this->substituteYearInSlug($sourceSlug, $sourceYear, $targetYear);
+            if ($targetSlug === $sourceSlug) {
+                continue;
+            }
+            if (null !== $this->eventRepository->findOneBy(['slug' => $targetSlug])) {
+                throw new DuplicateSlugException($targetSlug);
+            }
+        }
     }
 
     /**
