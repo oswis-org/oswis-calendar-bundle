@@ -4,9 +4,43 @@
     <div class="container">
         <div class="row">
             <div class="col">
-                <h2>Přehled události</h2>
+                <h2>
+                    Přehled události
+                    {% if event.deletedAt|default %}
+                        <span class="badge bg-danger" style="font-size: .55em; vertical-align: middle;">
+                            SMAZÁNO {{ event.deletedAt|date('j. n. Y, H:i') }}
+                        </span>
+                    {% endif %}
+                </h2>
             </div>
         </div>
+        {% if is_granted('ROLE_ADMIN') and event.slug|default %}
+            <div class="row" style="margin: .5rem 0 1rem;">
+                <div class="col-12" style="display: flex; gap: .5rem; flex-wrap: wrap;">
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="{{ path('oswis_org_oswis_calendar_web_admin_event_edit', { eventSlug: event.slug }) }}">
+                        ✎ Upravit
+                    </a>
+                    {% if event.deletedAt|default %}
+                        <form method="post"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_event_restore', { eventSlug: event.slug }) }}"
+                              style="display: inline-block;"
+                              onsubmit="return confirm('Opravdu obnovit událost?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('event_restore_' ~ event.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
+                        </form>
+                    {% else %}
+                        <form method="post"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_event_delete', { eventSlug: event.slug }) }}"
+                              style="display: inline-block;"
+                              onsubmit="return confirm('Opravdu smazat? Smazání lze obnovit.');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('event_delete_' ~ event.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
         <div class="row">
             <div class="col-12 col-xl-6">
                 <div class="container">

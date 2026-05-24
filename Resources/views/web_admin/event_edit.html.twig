@@ -1,0 +1,50 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title|default(pageTitle) }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>
+            {{ pageTitle|default('Upravit událost') }}
+            {% if event.deletedAt|default %}
+                <span class="badge bg-danger" style="font-size: .55em; vertical-align: middle;">SMAZÁNO</span>
+            {% endif %}
+        </h2>
+
+        <p>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) }}"
+               class="btn btn-sm btn-link">← Zpět na přehled události</a>
+        </p>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        <div class="row">
+            <div class="col-12 col-md-6">{{ form_row(form.name) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.shortName) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-8">{{ form_row(form.slug) }}</div>
+            <div class="col-12 col-md-2">{{ form_row(form.color) }}</div>
+            <div class="col-12 col-md-2">{{ form_row(form.publicOnWeb) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6">{{ form_row(form.startDate) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.endDate) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6">{{ form_row(form.baseCapacity) }}</div>
+            <div class="col-12 col-md-6">{{ form_row(form.fullCapacity) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12">{{ form_row(form.description) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12">{{ form_row(form.note) }}</div>
+        </div>
+        <div class="row" style="margin-top: 1rem;">
+            <div class="col-12">
+                {{ form_row(form.submit) }}
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

@@ -90,6 +90,21 @@ oswis_org_oswis_calendar_web_admin_event:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showEvent
   path: "/web_admin/udalost/{eventSlug?}"
 
+oswis_org_oswis_calendar_web_admin_event_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminEventController::edit
+  path: "/web_admin/udalost/{eventSlug}/upravit"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_event_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminEventController::delete
+  path: "/web_admin/udalost/{eventSlug}/smazat"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_event_restore:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminEventController::restore
+  path: "/web_admin/udalost/{eventSlug}/obnovit"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_compare_years:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showYearsCompare
   path: "/web_admin/srovnani-rocniku/{eventSeriesSlug?}"

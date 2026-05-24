@@ -68,6 +68,11 @@ services:
     alias: oswis_org_oswis_calendar.web_admin.participants_controller
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminEventController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   oswis_org_oswis_calendar.web_admin.participant_payments_import_controller:
     class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController
     autowire: true
