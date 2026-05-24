@@ -14,6 +14,11 @@
             <a class="col-6">
             </a>
         </div>
+        <div class="row" style="margin: .25rem 0 .5rem;">
+            <div class="col-12">
+                {% include '@OswisOrgOswisCalendar/web_admin/communication/_quick_actions.html.twig' with { participant: participant } only %}
+            </div>
+        </div>
         <div class="row" style="margin: .75rem 0;">
             <div class="col-12">
                 <a class="btn btn-outline-primary btn-sm"

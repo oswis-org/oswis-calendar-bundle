@@ -1,0 +1,65 @@
+{# Quick-action deep-links for a participant.
+   Renders mailto/tel/sms/WhatsApp links + clipboard buttons for the
+   participant's contact. Disabled state with tooltip when a contact
+   field is missing.
+
+   Variables expected:
+     - participant: Participant
+     - subject_prefill: ?string  (default: "Re: tvá přihláška na {event}")
+#}
+{% set contact = participant.contact|default %}
+{% set email   = contact.email|default %}
+{% set phone   = contact.phone|default %}
+{% set eventName = (participant.event(false).shortName|default) ?: (participant.event(false).name|default) %}
+{% set subject = subject_prefill|default('Tvá přihláška' ~ (eventName ? ' — ' ~ eventName : '')) %}
+
+{# Czech-style phone normalization for tel:/sms:/wa.me links.
+   Wa.me wants E.164 without "+": e.g. "+420 776 123 456" → "420776123456".
+   Naïve: strip non-digits, prepend 420 if 9 digits, drop leading 0/00. #}
+{% set rawPhone = phone|default('')|trim %}
+{% set phoneDigits = rawPhone|replace({' ': '', '-': '', '(': '', ')': '', '+': ''}) %}
+{% set phoneE164 =
+    phoneDigits matches '/^00/' ? phoneDigits|slice(2) :
+    (phoneDigits matches '/^\\d{9}$/' ? '420' ~ phoneDigits : phoneDigits) %}
+
+<div class="quick-actions" style="display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin: .5rem 0;">
+    {# E-mail #}
+    {% if email %}
+        <a class="btn btn-sm btn-outline-primary"
+           href="mailto:{{ email }}?subject={{ subject|url_encode }}"
+           title="Odeslat e-mail">✉ E-mail</a>
+        <button type="button" class="btn btn-sm btn-outline-secondary"
+                title="Zkopírovat e-mail"
+                data-clipboard="{{ email }}"
+                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓';">
+            📋
+        </button>
+    {% else %}
+        <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                title="E-mail neznáme">✉ E-mail</button>
+    {% endif %}
+
+    {# Telefon #}
+    {% if phone %}
+        <a class="btn btn-sm btn-outline-primary"
+           href="tel:{{ rawPhone|replace({' ': ''}) }}"
+           title="Zavolat">☏ Volat</a>
+        <a class="btn btn-sm btn-outline-primary"
+           href="sms:{{ rawPhone|replace({' ': ''}) }}"
+           title="Poslat SMS">💬 SMS</a>
+        <a class="btn btn-sm btn-outline-success"
+           href="https://wa.me/{{ phoneE164 }}"
+           target="_blank"
+           rel="noopener"
+           title="WhatsApp">🟢 WhatsApp</a>
+        <button type="button" class="btn btn-sm btn-outline-secondary"
+                title="Zkopírovat telefon"
+                data-clipboard="{{ rawPhone }}"
+                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓';">
+            📋
+        </button>
+    {% else %}
+        <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                title="Telefon neznáme">☏ Volat</button>
+    {% endif %}
+</div>
