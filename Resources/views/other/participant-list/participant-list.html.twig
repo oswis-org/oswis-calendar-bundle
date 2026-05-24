@@ -113,7 +113,7 @@
             <p>
                 <span class="block small">
                     <small>
-                        {{ participants|filter(participant => participant.deleted)|map(p => p.contact.email)|join(', ') }}
+                        {{ participants|filter(participant => participant.deleted and participant.contact|default)|map(p => p.contact.email|default(''))|filter(e => e != '')|join(', ') }}
                     </small>
                 </span>
             </p>
