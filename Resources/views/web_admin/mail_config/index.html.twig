@@ -1,0 +1,90 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container-fluid" style="padding: 1rem;">
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted">
+            <small>
+                Konfigurace odchozích e-mailů pro účastníky: mail-skupiny (definují kdy se posílá), kategorie (typ), Twig šablony (HTML obsah).
+                Edit přímo v DB už není potřeba — použij tlačítka níže.
+            </small>
+        </p>
+
+        <h3>Mail-skupiny (ParticipantMailGroup)</h3>
+        <table class="list" style="width: 100%;">
+            <thead><tr>
+                <th>ID</th><th>Název</th><th>Typ</th><th>Šablona</th><th>Kategorie</th><th>Událost</th><th>Auto</th><th>Pouze aktivní</th><th></th>
+            </tr></thead>
+            <tbody>
+                {% for g in groups %}
+                    <tr>
+                        <td>{{ g.id }}</td>
+                        <td><strong>{{ g.name|default('—') }}</strong></td>
+                        <td><code>{{ g.type|default('—') }}</code></td>
+                        <td>{{ g.twigTemplate ? g.twigTemplate.name : '—' }}</td>
+                        <td>{{ g.category ? g.category.name : '—' }}</td>
+                        <td>{{ g.event ? (g.event.shortName ?: g.event.name) : '— (globální)' }}</td>
+                        <td>{{ g.automaticMailing ? '✓' : '—' }}</td>
+                        <td>{{ g.onlyActive ? '✓' : '—' }}</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}">✎ Upravit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="9">Žádné skupiny.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 2rem;">Kategorie e-mailů (ParticipantMailCategory)</h3>
+        <table class="list" style="width: 100%;">
+            <thead><tr>
+                <th>ID</th><th>Název</th><th>Typ</th><th>Priorita</th><th>Slug</th><th></th>
+            </tr></thead>
+            <tbody>
+                {% for c in categories %}
+                    <tr>
+                        <td>{{ c.id }}</td>
+                        <td><strong>{{ c.name|default('—') }}</strong></td>
+                        <td><code>{{ c.type|default('—') }}</code></td>
+                        <td>{{ c.priority|default('—') }}</td>
+                        <td><code>{{ c.slug|default('—') }}</code></td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_edit', { id: c.id }) }}">✎ Upravit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6">Žádné kategorie.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 2rem;">Twig šablony (TwigTemplate)</h3>
+        <table class="list" style="width: 100%;">
+            <thead><tr>
+                <th>ID</th><th>Název</th><th>Slug</th><th>Cesta</th><th>Inline obsah?</th><th></th>
+            </tr></thead>
+            <tbody>
+                {% for t in templates %}
+                    <tr>
+                        <td>{{ t.id }}</td>
+                        <td><strong>{{ t.name|default('—') }}</strong></td>
+                        <td><code>{{ t.slug|default('—') }}</code></td>
+                        <td><code>{{ t.regularTemplateName|default('—') }}</code></td>
+                        <td>{{ t.textValue|default ? '✓ ('~t.textValue|length~' znaků)' : '—' }}</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: t.id }) }}">✎ Upravit</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6">Žádné šablony.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+{% endblock %}

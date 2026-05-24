@@ -93,6 +93,11 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Repository\ParticipantNote\ParticipantManualNoteRepository:
     autowire: true
     autoconfigure: true

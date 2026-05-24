@@ -1,0 +1,16 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>{{ pageTitle }}</h2>
+        <p>
+            <a class="btn btn-sm btn-link"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_mail_config') }}">← Zpět na konfiguraci e-mailů</a>
+        </p>
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        {{ form_widget(form) }}
+        {{ form_end(form, { render_rest: false }) }}
+    </main>
+{% endblock %}
