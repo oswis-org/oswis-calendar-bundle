@@ -33,15 +33,22 @@ final class ImapFetchCommand extends Command
             'Max messages per folder per run',
             '100',
         );
+        $this->addOption(
+            'init-from-now',
+            null,
+            InputOption::VALUE_NONE,
+            'First-time init: set lastSeenUid to current MAX UID per folder without fetching bodies. Use once before enabling cron on a folder with years of historical mail.',
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $cap = max(1, (int) $input->getOption('cap'));
+        $initFromNow = (bool) $input->getOption('init-from-now');
 
-        $io->section('IMAP fetch (READ-ONLY)');
-        $report = $this->imapFetchService->fetchAll($cap);
+        $io->section('IMAP fetch (READ-ONLY)'.($initFromNow ? ' — INIT-FROM-NOW' : ''));
+        $report = $this->imapFetchService->fetchAll($cap, $initFromNow);
 
         if (!$report['enabled']) {
             $io->warning('IMAP fetch disabled (OSWIS_IMAP_ENABLED=0). Set =1 in .env.local and retry.');

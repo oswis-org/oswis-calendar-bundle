@@ -59,7 +59,7 @@ final class ImapFetchService
     /**
      * @return array{enabled: bool, folders: array<string, array{fetched: int, matched: int, unmatched: int, lastUid: int}>}
      */
-    public function fetchAll(int $perFolderCap = 100): array
+    public function fetchAll(int $perFolderCap = 100, bool $initFromNow = false): array
     {
         if (!$this->enabled) {
             $this->logger->info('IMAP fetch disabled (OSWIS_IMAP_ENABLED=0); skipping.');
@@ -89,7 +89,7 @@ final class ImapFetchService
                     $this->logger->warning(sprintf('IMAP folder "%s" not found, skipping.', $folderName));
                     continue;
                 }
-                $report['folders'][$folderName] = $this->fetchFolder($folder, $folderName, $perFolderCap);
+                $report['folders'][$folderName] = $this->fetchFolder($folder, $folderName, $perFolderCap, $initFromNow);
             } catch (\Throwable $e) {
                 $this->logger->error(sprintf('IMAP fetch on folder "%s" failed: %s', $folderName, $e->getMessage()));
                 $report['folders'][$folderName] = ['fetched' => 0, 'matched' => 0, 'unmatched' => 0, 'lastUid' => 0, 'error' => $e->getMessage()];
@@ -108,10 +108,34 @@ final class ImapFetchService
     /**
      * @return array{fetched: int, matched: int, unmatched: int, lastUid: int}
      */
-    private function fetchFolder(Folder $folder, string $folderName, int $cap): array
+    private function fetchFolder(Folder $folder, string $folderName, int $cap, bool $initFromNow = false): array
     {
         $state = $this->syncStateRepository->getOrCreate($folderName);
         $lastUid = $state->getLastSeenUid();
+
+        // First-run init: skip historical mail. Find the current MAX UID in the
+        // folder, store it as lastSeenUid, and return without persisting any
+        // bodies. Subsequent runs (with $initFromNow=false) only pull mail
+        // received AFTER this initialisation.
+        if ($lastUid === 0 && $initFromNow) {
+            $maxMsg = $folder->messages()
+                ->all()
+                ->setFetchBody(false)
+                ->setFetchFlags(false)
+                ->leaveUnread()
+                ->setFetchOrderDesc()
+                ->limit(1)
+                ->get()
+                ->first();
+            $maxUid = $maxMsg instanceof Message ? (int) $maxMsg->getUid() : 0;
+            $state->setLastSeenUid($maxUid);
+            $state->setLastFetchAt(new DateTime());
+            $this->em->persist($state);
+            $this->em->flush();
+            $this->em->clear();
+
+            return ['fetched' => 0, 'matched' => 0, 'unmatched' => 0, 'lastUid' => $maxUid];
+        }
 
         // Per-folder UID-range search — UID > lastSeenUid; webklex's query uses
         // BODY.PEEK by default (leaveUnread() + setFetchFlags(false)) → no

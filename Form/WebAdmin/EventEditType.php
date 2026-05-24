@@ -8,7 +8,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -51,17 +51,19 @@ final class EventEditType extends AbstractType
                 'required' => false,
                 'attr'     => ['rows' => 2],
             ])
-            ->add('startDate', DateType::class, [
-                'label'    => 'Začátek',
+            ->add('startDate', DateTimeType::class, [
+                'label'    => 'Začátek (datum a čas)',
                 'required' => false,
                 'widget'   => 'single_text',
                 'mapped'   => false,
+                'input'    => 'datetime',
             ])
-            ->add('endDate', DateType::class, [
-                'label'    => 'Konec',
+            ->add('endDate', DateTimeType::class, [
+                'label'    => 'Konec (datum a čas)',
                 'required' => false,
                 'widget'   => 'single_text',
                 'mapped'   => false,
+                'input'    => 'datetime',
             ])
             ->add('baseCapacity', IntegerType::class, [
                 'label'    => 'Základní kapacita',

@@ -50,10 +50,11 @@ final class ManualNoteType extends AbstractType
                 'constraints'  => [new NotNull(message: 'Vyber prosím směr.')],
             ])
             ->add('occurredAt', DateTimeType::class, [
-                'label'    => 'Kdy proběhlo',
-                'required' => true,
-                'widget'   => 'single_text',
-                'input'    => 'datetime',
+                'label'       => 'Kdy proběhlo',
+                'required'    => true,
+                'widget'      => 'single_text',
+                'input'       => 'datetime',
+                'constraints' => [new NotNull(message: 'Vyplň prosím datum a čas.')],
             ])
             ->add('subject', TextType::class, [
                 'label'       => 'Téma (krátký nadpis)',

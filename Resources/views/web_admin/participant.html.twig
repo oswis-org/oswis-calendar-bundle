@@ -31,7 +31,7 @@
                         ✎ Nová zpráva
                     </a>
                 {% endif %}
-                {% if is_granted('ROLE_ADMIN') and not (contact.appUser|default and contact.appUser.activated|default) %}
+                {% if is_granted('ROLE_ADMIN') and contact and contact.email|default and not (contact.appUser|default and contact.appUser.activated|default) %}
                     <form method="post"
                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"
                           style="display: inline-block; margin-left: .5rem;"

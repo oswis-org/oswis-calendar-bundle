@@ -35,7 +35,7 @@
     "oswis-org/oswis-address-book-bundle": "^0.1.0",
     "oswis-org/oswis-core-bundle": "^0.1.0",
     "rikudou/czqrpayment": "^v5.0",
-    "webklex/php-imap": "^6.2"
+    "webklex/php-imap": "~6.2.0"
   },
   "require-dev": {
     "phpstan/extension-installer": "^1.1.0",

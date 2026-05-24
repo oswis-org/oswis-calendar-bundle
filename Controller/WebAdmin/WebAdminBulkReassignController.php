@@ -104,6 +104,13 @@ final class WebAdminBulkReassignController extends AbstractController
                     $failed[] = "#$id (nenalezen)";
                     continue;
                 }
+                // Scope guard: only allow moving participants that actually belong
+                // to the sourceEvent the admin filtered on. Prevents DevTools form
+                // injection of arbitrary participant IDs from unrelated events.
+                if ($sourceEvent && $p->getEvent() !== $sourceEvent) {
+                    $failed[] = sprintf('#%d (není ve zdrojové akci %s)', $id, $sourceEvent->getShortName() ?? $sourceEvent->getName() ?? '?');
+                    continue;
+                }
                 try {
                     $p->setOffer($targetOffer);
                     $this->em->persist($p);
