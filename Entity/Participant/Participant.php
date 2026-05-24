@@ -110,17 +110,25 @@ class Participant implements ParticipantInterface
     }
 
     /** @var Collection<int, ParticipantNote> $notes */
-    #[OneToMany(targetEntity: ParticipantNote::class, mappedBy: 'participant', cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(targetEntity: ParticipantNote::class, mappedBy: 'participant', cascade: ['all'])]
     #[MaxDepth(1)]
     protected Collection $notes;
 
     /** @var Collection<int, ParticipantPayment> */
-    #[OneToMany(targetEntity: ParticipantPayment::class, mappedBy: 'participant', cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(targetEntity: ParticipantPayment::class, mappedBy: 'participant', cascade: ['all'])]
     #[MaxDepth(1)]
     protected Collection $payments;
 
-    /** @var Collection<int, ParticipantMail> $eMails */
-    #[OneToMany(targetEntity: ParticipantMail::class, mappedBy: 'participant', cascade: ['all'], fetch: 'EAGER')]
+    /**
+     * @var Collection<int, ParticipantMail> $eMails
+     *
+     * Intentionally fetch=LAZY (default). ParticipantMail has four EAGER ManyToOne
+     * associations (Participant, Category, AppUser, Token) and averages ~7 mails per
+     * participant; eager-loading $eMails cascaded hydration past 256 MB on event
+     * listings with ~300 participants. Callers that need the mails iterate via
+     * getEMails() in Twig and take a per-row lazy SELECT.
+     */
+    #[OneToMany(targetEntity: ParticipantMail::class, mappedBy: 'participant', cascade: ['all'])]
     #[MaxDepth(1)]
     protected Collection $eMails;
 
@@ -148,18 +156,18 @@ class Participant implements ParticipantInterface
 
     /** @var Collection<int, ParticipantFlagGroup> */
     #[ApiProperty(readableLink: true, writableLink: true)]
-    #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'], fetch: 'EAGER')]
+    #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'])]
     #[JoinTable(name: 'calendar_participant_flag_group_connection')]
     #[JoinColumn(name: "participant_id", referencedColumnName: "id")]
     #[InverseJoinColumn(name: "participant_flag_group_id", referencedColumnName: "id", unique: true)]
     protected Collection $flagGroups;
 
     /** @var Collection<int, ParticipantRegistration> */
-    #[OneToMany(targetEntity: ParticipantRegistration::class, mappedBy: 'participant', cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(targetEntity: ParticipantRegistration::class, mappedBy: 'participant', cascade: ['all'])]
     protected Collection $participantRegistrations;
 
     /** @var Collection<int, ParticipantContact> $participantContacts */
-    #[OneToMany(targetEntity: ParticipantContact::class, mappedBy: 'participant', cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(targetEntity: ParticipantContact::class, mappedBy: 'participant', cascade: ['all'])]
     protected Collection $participantContacts;
 
     #[Column(type: 'boolean', nullable: true)]

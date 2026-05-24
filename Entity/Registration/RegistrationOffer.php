@@ -95,15 +95,15 @@ class RegistrationOffer implements NameableInterface
     use EntityPublicTrait;
     use PriorityTrait;
 
-    #[ManyToOne(targetEntity: RegistrationOffer::class, fetch: 'EAGER')]
+    #[ManyToOne(targetEntity: RegistrationOffer::class)]
     #[JoinColumn(nullable: true)]
     protected ?RegistrationOffer $requiredRegRange;
 
-    #[ManyToOne(targetEntity: Event::class, fetch: 'EAGER')]
+    #[ManyToOne(targetEntity: Event::class)]
     #[JoinColumn(nullable: true)]
     protected ?Event $event = null;
 
-    #[ManyToOne(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
+    #[ManyToOne(targetEntity: ParticipantCategory::class)]
     #[JoinColumn(nullable: true)]
     protected ?ParticipantCategory $participantCategory = null;
 

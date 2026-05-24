@@ -77,17 +77,20 @@ class ParticipantRepository extends ServiceEntityRepository
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
-        $select = 'participant, offer, contact, event, note, payment';
-        $select .= ', participantRegistration, participantContact, participantCategory';
+        // Eager-load only single-valued associations (ManyToOne). Joining the four
+        // collection associations (notes, payments, participantRegistrations,
+        // participantContacts) into the same SELECT multiplied rows by the cartesian
+        // product of their cardinalities and pushed hydration past the 128 MB PHP
+        // default on events with ~300+ participants. The Twig partial walks those
+        // collections via getters, so Doctrine lazy-loads them per row — slower
+        // wall-clock but bounded memory. Re-introduce eager loads behind a paginator
+        // when paging the list view (out of scope for this hotfix).
+        $select = 'participant, offer, contact, event, participantCategory';
         $queryBuilder->select($select);
         $queryBuilder->leftJoin('participant.offer', 'offer');
         $queryBuilder->leftJoin('participant.contact', 'contact');
         $queryBuilder->leftJoin('participant.event', 'event');
         $queryBuilder->leftJoin('participant.participantCategory', 'participantCategory');
-        $queryBuilder->leftJoin('participant.notes', 'note');
-        $queryBuilder->leftJoin('participant.payments', 'payment');
-        $queryBuilder->leftJoin('participant.participantRegistrations', 'participantRegistration');
-        $queryBuilder->leftJoin('participant.participantContacts', 'participantContact');
         $this->setSuperEventQuery($queryBuilder, $opts);
         $this->setIdQuery($queryBuilder, $opts);
         $this->setRangeQuery($queryBuilder, $opts);

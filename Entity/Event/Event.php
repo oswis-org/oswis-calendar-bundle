@@ -96,20 +96,20 @@ class Event implements NameableInterface
     #[JoinColumn(nullable: true)]
     protected ?Place $place = null;
 
-    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
+    #[ManyToOne(targetEntity: Participant::class)]
     #[JoinColumn(nullable: true)]
     protected ?Participant $organizer = null;
 
     /**
      * @var Collection<int, EventFlagConnection> $flagConnections
      */
-    #[OneToMany(targetEntity: EventFlagConnection::class, mappedBy: 'event', cascade: ['all'], fetch: 'EAGER')]
+    #[OneToMany(targetEntity: EventFlagConnection::class, mappedBy: 'event', cascade: ['all'])]
     protected Collection $flagConnections;
 
     /**
      * Parent event (if this is not top level event).
      */
-    #[ManyToOne(targetEntity: self::class, fetch: 'EAGER', inversedBy: 'subEvents')]
+    #[ManyToOne(targetEntity: self::class, inversedBy: 'subEvents')]
     #[JoinColumn(nullable: true)]
     protected ?self $superEvent = null;
 
