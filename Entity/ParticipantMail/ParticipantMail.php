@@ -69,6 +69,9 @@ class ParticipantMail extends AbstractMail
     #[JoinColumn(name: 'participant_token_id', referencedColumnName: 'id')]
     protected ?ParticipantToken $participantToken = null;
 
+    #[\Doctrine\ORM\Mapping\Column(type: 'string', length: 64, nullable: true)]
+    protected ?string $threadKey = null;
+
     public function __construct(
         ?Participant $participant = null,
         ?AppUser $appUser = null,
@@ -134,5 +137,15 @@ class ParticipantMail extends AbstractMail
     public function setParticipantMailCategory(?ParticipantMailCategory $participantMailCategory): void
     {
         $this->participantMailCategory = $participantMailCategory;
+    }
+
+    public function getThreadKey(): ?string
+    {
+        return $this->threadKey;
+    }
+
+    public function setThreadKey(?string $threadKey): void
+    {
+        $this->threadKey = $threadKey;
     }
 }
