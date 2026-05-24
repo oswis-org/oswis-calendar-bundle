@@ -1,0 +1,36 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>{{ pageTitle }}</h2>
+
+        {% if participant.contact|default %}
+            <p>
+                <strong>Příjemce:</strong>
+                {{ participant.contact.name|default('(bez jména)') }}
+                {% if participant.contact.email|default %}
+                    · {{ participant.contact.email }}
+                {% endif %}
+            </p>
+        {% endif %}
+
+        <p>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_communication', { participantId: participant.id }) }}"
+               class="btn btn-sm btn-link">← Zpět na historii komunikace</a>
+        </p>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        {{ form_row(form.subject) }}
+        {{ form_row(form.body) }}
+        <p class="text-muted">
+            <small>
+                E-mail se vytvoří z OSWIS šablony a uloží do historie komunikace (kanál: <strong>ad-hoc</strong>).
+                Tělo HTML se před odesláním sanitizuje (povoleno: bezpečné značky + odkazy http/https/mailto/tel).
+            </small>
+        </p>
+        {{ form_row(form.submit) }}
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

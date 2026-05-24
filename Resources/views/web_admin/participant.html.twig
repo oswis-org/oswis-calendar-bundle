@@ -20,6 +20,12 @@
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_communication', { participantId: participant.id }) }}">
                     Komunikace s účastníkem →
                 </a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a class="btn btn-outline-primary btn-sm" style="margin-left: .5rem;"
+                       href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">
+                        ✎ Nová zpráva
+                    </a>
+                {% endif %}
                 {% if is_granted('ROLE_ADMIN') and not (contact.appUser|default and contact.appUser.activated|default) %}
                     <form method="post"
                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"

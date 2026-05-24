@@ -73,6 +73,11 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAdHocMailController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   oswis_org_oswis_calendar.web_admin.participant_payments_import_controller:
     class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController
     autowire: true

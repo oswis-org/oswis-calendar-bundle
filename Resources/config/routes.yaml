@@ -189,3 +189,10 @@ oswis_org_oswis_calendar_api_participant_communication:
   requirements:
     participantId: '\d+'
   methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_participant_compose_mail:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAdHocMailController::compose
+  path: "/web_admin/ucastnici/{participantId}/zprava-nova"
+  requirements:
+    participantId: '\d+'
+  methods: [GET, POST]

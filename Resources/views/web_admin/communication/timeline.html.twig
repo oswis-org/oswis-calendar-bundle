@@ -22,10 +22,19 @@
         <p class="text-muted">
             <small>
                 Celkem záznamů: {{ entries|length }}.
-                V této fázi se zobrazují jen systémové e-maily.
+                V této fázi se zobrazují jen systémové e-maily a manuální ad-hoc maily odeslané z administrace.
                 Další kanály (příchozí maily, telefonáty, chaty) přibudou v dalších fázích.
             </small>
         </p>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <p>
+                <a class="btn btn-primary btn-sm"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">
+                    ✎ Nová zpráva účastníkovi
+                </a>
+            </p>
+        {% endif %}
 
         {% include '@OswisOrgOswisCalendar/web_admin/communication/_timeline_list.html.twig' with {
             entries: entries,

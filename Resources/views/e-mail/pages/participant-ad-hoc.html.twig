@@ -1,0 +1,26 @@
+{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+
+{# Ad-hoc mail composed manually by admin from the OSWIS web admin.
+   Variables (set in PHP `$data`):
+     - participant: Participant
+     - appUser:     AppUser
+     - contact:     AbstractContact
+     - salutationName / f / a: Czech salutation helpers (from message.html.twig base)
+     - subject:     string — used as e-mail subject (passed via TemplatedEmail->subject())
+     - bodyHtml:    string — rich text body (safe HTML, already sanitized server-side)
+     - adminName:   ?string — name of the admin who composed the mail (footer attribution)
+#}
+
+{% block content_inner %}
+    {{ bodyHtml|default('')|raw }}
+{% endblock %}
+
+{% block content_footer_inner %}
+    {% if adminName|default %}
+        <span style="color: #606060; font-size: .9em;">
+            Zprávu poslal{{ a }} {{ adminName }} (administrátor)
+        </span>
+        <br>
+    {% endif %}
+    V případě nejasností nebo problémů nás neváhej{{ f ? 'te' : '' }} kontaktovat odpovědí na tento e-mail.
+{% endblock %}

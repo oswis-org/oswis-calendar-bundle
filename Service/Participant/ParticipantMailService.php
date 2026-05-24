@@ -269,6 +269,73 @@ class ParticipantMailService
      *
      * @throws OswisException
      */
+    /**
+     * Send an ad-hoc mail composed manually by an admin to a participant.
+     *
+     * Type is prefixed with "ad-hoc-" so CommunicationChannel detection on the
+     * timeline picks it up as AD_HOC_MAIL rather than SYSTEM_MAIL.
+     *
+     * @throws OswisException
+     */
+    public function sendAdHoc(
+        Participant $participant,
+        string $subject,
+        string $bodyHtml,
+        ?string $adminName = null,
+    ): void {
+        $contactPersons = $participant->getContactPersons(true);
+        $sent = 0;
+        $errors = [];
+
+        foreach ($contactPersons as $contactPerson) {
+            if (!$contactPerson instanceof AbstractContact) {
+                continue;
+            }
+            $appUser = $contactPerson->getAppUser();
+            if (null === $appUser) {
+                continue;
+            }
+            try {
+                $type = 'ad-hoc-'.date('YmdHis');
+                $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
+                $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+
+                $contact = $participant->getContact();
+                $data = [
+                    'participant'    => $participant,
+                    'appUser'        => $appUser,
+                    'contact'        => $contact,
+                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+                    'subject'        => $subject,
+                    'bodyHtml'       => $bodyHtml,
+                    'adminName'      => $adminName,
+                    'type'           => $type,
+                ];
+
+                $this->em->persist($participantMail);
+                $this->mailService->sendEMail(
+                    $participantMail,
+                    '@OswisOrgOswisCalendar/e-mail/pages/participant-ad-hoc.html.twig',
+                    $data,
+                );
+                $this->em->flush();
+                $sent++;
+            } catch (\Throwable $e) {
+                $errors[] = ($appUser?->getEmail() ?? '???').': '.$e->getMessage();
+                $this->logger->error(
+                    sprintf('Ad-hoc mail to participant %d failed: %s', $participant->getId() ?? 0, $e->getMessage()),
+                );
+            }
+        }
+
+        if (0 === $sent) {
+            throw new OswisException(
+                'Ad-hoc e-mail nikam neodeslán'
+                .($contactPersons->count() === 0 ? ' (účastník nemá ani jeden kontakt s registrovaným uživatelem).' : '. '.implode(' | ', $errors)),
+            );
+        }
+    }
+
     public function sendMessage(Participant $participant, ParticipantMailGroup $group): void
     {
         $participantId = $participant->getId();
