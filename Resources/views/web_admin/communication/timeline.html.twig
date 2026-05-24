@@ -28,10 +28,14 @@
         </p>
 
         {% if is_granted('ROLE_ADMIN') %}
-            <p>
+            <p style="display: flex; gap: .5rem; flex-wrap: wrap;">
                 <a class="btn btn-primary btn-sm"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">
-                    ✎ Nová zpráva účastníkovi
+                    ✎ Nová zpráva (e-mail)
+                </a>
+                <a class="btn btn-outline-primary btn-sm"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}">
+                    📞 Nový záznam (telefon / chat / atd.)
                 </a>
             </p>
         {% endif %}

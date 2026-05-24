@@ -1,0 +1,48 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>{{ pageTitle }}</h2>
+
+        {% if participant.contact|default %}
+            <p>
+                <strong>Účastník:</strong>
+                {{ participant.contact.name|default('(bez jména)') }}
+                {% if participant.contact.email|default %}
+                    · {{ participant.contact.email }}
+                {% endif %}
+                {% if participant.contact.phone|default %}
+                    · {{ participant.contact.phone }}
+                {% endif %}
+            </p>
+        {% endif %}
+
+        <p>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_communication', { participantId: participant.id }) }}"
+               class="btn btn-sm btn-link">← Zpět na historii komunikace</a>
+        </p>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        <div class="row">
+            <div class="col-12 col-md-4">{{ form_row(form.channel) }}</div>
+            <div class="col-12 col-md-4">{{ form_row(form.direction) }}</div>
+            <div class="col-12 col-md-4">{{ form_row(form.occurredAt) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6">{{ form_row(form.subject) }}</div>
+            <div class="col-12 col-md-3">{{ form_row(form.otherPartyName) }}</div>
+            <div class="col-12 col-md-3">{{ form_row(form.otherPartyContact) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-3">{{ form_row(form.durationSec) }}</div>
+            <div class="col-12 col-md-3 d-flex align-items-end">{{ form_row(form.internal) }}</div>
+        </div>
+        <div class="row">
+            <div class="col-12">{{ form_row(form.body) }}</div>
+        </div>
+        {{ form_row(form.submit) }}
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

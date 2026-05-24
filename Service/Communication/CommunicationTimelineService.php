@@ -7,14 +7,11 @@ namespace OswisOrg\OswisCalendarBundle\Service\Communication;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository;
+use OswisOrg\OswisCalendarBundle\Repository\ParticipantNote\ParticipantManualNoteRepository;
 use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterface;
 
 /**
  * Aggregate timeline entries from all communication-channel repositories.
- *
- * In Phase 2a only ParticipantMailRepository contributes; later phases plug in
- * ParticipantIncomingMailRepository, ParticipantPhoneCallRepository,
- * ParticipantChatMessageRepository.
  *
  * Sort: occurredAt DESC (most recent first). Filters internal entries when
  * caller asks for public-only view (participant portal).
@@ -25,6 +22,7 @@ final readonly class CommunicationTimelineService
 {
     public function __construct(
         private ParticipantMailRepository $mailRepository,
+        private ParticipantManualNoteRepository $manualNoteRepository,
     ) {
     }
 
@@ -33,7 +31,10 @@ final readonly class CommunicationTimelineService
      */
     public function forParticipant(Participant $participant, bool $includeInternal = true): array
     {
-        $entries = $this->fetchMails($participant);
+        $entries = array_merge(
+            $this->fetchMails($participant),
+            $this->manualNoteRepository->findByParticipant($participant),
+        );
 
         if (!$includeInternal) {
             $entries = array_filter(
