@@ -129,7 +129,10 @@ final class WebAdminImapController extends AbstractController
         if (!$this->isCsrfTokenValid('imap_refresh', (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
-        $report = $this->imapFetchService->fetchAll(100);
+        // Lower cap than the cron command (100). In-request IMAP fetch must
+        // stay under the 30s PHP max_execution_time — 30 messages per folder
+        // is the sweet spot for hosting90's IMAP latency.
+        $report = $this->imapFetchService->fetchAll(30);
 
         if (!$report['enabled']) {
             $this->addFlash('warning', 'IMAP fetch vypnutý (OSWIS_IMAP_ENABLED=0).');
