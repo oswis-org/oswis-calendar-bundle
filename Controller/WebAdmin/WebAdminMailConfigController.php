@@ -36,12 +36,15 @@ final class WebAdminMailConfigController extends AbstractController
 
     public function index(): Response
     {
+        // ParticipantMailGroup::$type is derived from category->getType() — not
+        // a column — so `findBy(orderBy: ['type'])` raises UnrecognizedField.
+        // Order by id ASC for stable display; admin can switch to category-sort later.
         $groups = $this->em->getRepository(ParticipantMailGroup::class)
-            ->findBy([], ['type' => 'ASC']);
+            ->findBy([], ['id' => 'ASC']);
         $categories = $this->em->getRepository(ParticipantMailCategory::class)
-            ->findBy([], ['priority' => 'ASC', 'name' => 'ASC']);
+            ->findBy([], ['priority' => 'ASC', 'id' => 'ASC']);
         $templates = $this->em->getRepository(TwigTemplate::class)
-            ->findBy([], ['name' => 'ASC']);
+            ->findBy([], ['id' => 'ASC']);
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/index.html.twig', [
             'groups'     => $groups,

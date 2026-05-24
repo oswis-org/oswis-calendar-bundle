@@ -3,12 +3,13 @@
 {% block html_title %}{{ email.subject|default('Ověření přihlášky') }}{% endblock html_title %}
 
 {% block content_outer %}
-    {# Schema.org microdata — invisible meta/link tags consumed by email
-       clients (Gmail, etc.) to surface event reservation cards in the
-       inbox. Wrapped in mj-raw so MJML doesn't try to wrap them in a
-       <table> — they need to stay flat in the HTML body. #}
-    <mj-raw>
-        <div itemscope itemtype="http://schema.org/EventReservation">
+    {# Schema.org metadata for Gmail inbox event cards. mj-raw INSIDE
+       mj-column gets hoisted out of the table-cell layout (MJML quirk
+       that broke summary + verification mails earlier). Wrap in mj-text
+       + a display:none div instead — microdata crawlers parse itemprop
+       attrs regardless of CSS visibility. #}
+    <mj-text>
+        <div itemscope itemtype="http://schema.org/EventReservation" style="display:none;">
             <link itemprop="reservationStatus" href="http://schema.org/ReservationPending"/>
             <meta itemprop="modifiedTime" content="{{ participant.updatedAt|date('c') }}"/>
             <meta itemprop="bookingTime" content="{{ participant.createdAt|date('c') }}"/>
@@ -19,8 +20,8 @@
             <span itemprop="totalPrice" content="{{ participant.price }}"></span>
             <span itemprop="priceCurrency" content="CZK"></span>
             <span itemprop="underName" itemscope itemtype="http://schema.org/Person">
-                <span itemprop="name" content="{{ participant.contact.name }}"></span>
-                <span itemprop="email" content="{{ participant.contact.email }}"></span>
+                <span itemprop="name" content="{{ participant.contact.name|default }}"></span>
+                <span itemprop="email" content="{{ participant.contact.email|default }}"></span>
             </span>
             <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
             <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
@@ -31,8 +32,10 @@
                 </div>
             {% endif %}
             <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
-                <meta itemprop="name" content="{{ participant.event.name }}"/>
-                <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
+                <meta itemprop="name" content="{{ participant.event.name|default }}"/>
+                {% if participant.event.slug|default %}
+                    <link itemprop="url" href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': participant.event.slug})) }}"/>
+                {% endif %}
                 {% if participant.event.startDateTime|default %}
                     <meta itemprop="startDate" content="{{ participant.event.startDateTime|date('c') }}"/>
                 {% endif %}
@@ -46,7 +49,7 @@
                 {% endif %}
             </div>
         </div>
-    </mj-raw>
+    </mj-text>
 
     <mj-text>
         {% if participant.contact.organization|default %}
