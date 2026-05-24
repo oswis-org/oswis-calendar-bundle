@@ -88,10 +88,47 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Repository\ParticipantNote\ParticipantManualNoteRepository:
     autowire: true
     autoconfigure: true
     tags: ['doctrine.repository_service']
+
+  OswisOrg\OswisCalendarBundle\Repository\Imap\ImapSyncStateRepository:
+    autowire: true
+    autoconfigure: true
+    tags: ['doctrine.repository_service']
+
+  OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantIncomingMailRepository:
+    autowire: true
+    autoconfigure: true
+    tags: ['doctrine.repository_service']
+
+  OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantUnmatchedMailRepository:
+    autowire: true
+    autoconfigure: true
+    tags: ['doctrine.repository_service']
+
+  OswisOrg\OswisCalendarBundle\Service\Imap\ImapFetchService:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      $imapHost: '%env(OSWIS_IMAP_HOST)%'
+      $imapPort: '%env(int:OSWIS_IMAP_PORT)%'
+      $imapEncryption: '%env(OSWIS_IMAP_ENCRYPTION)%'
+      $imapUser: '%env(OSWIS_IMAP_USER)%'
+      $imapPassword: '%env(OSWIS_IMAP_PASSWORD)%'
+      $foldersToSync: '%env(OSWIS_IMAP_FOLDERS_TO_SYNC)%'
+      $enabled: '%env(bool:OSWIS_IMAP_ENABLED)%'
+
+  OswisOrg\OswisCalendarBundle\Command\ImapFetchCommand:
+    autowire: true
+    autoconfigure: true
+    tags: ['console.command']
 
   oswis_org_oswis_calendar.web_admin.participant_payments_import_controller:
     class: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantPaymentsImportController

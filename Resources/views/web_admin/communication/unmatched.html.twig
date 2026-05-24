@@ -1,0 +1,90 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container-fluid" style="padding: 1rem;">
+        <h2>{{ pageTitle }}</h2>
+
+        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display: inline-block; margin-bottom: 1rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
+            <button type="submit" class="btn btn-primary">🔄 Stáhnout nové e-maily z IMAP</button>
+        </form>
+
+        <p class="text-muted">
+            <small>
+                Nezařazené = IMAP fetch nenašel účastníka s odpovídajícím e-mailem.
+                Po přiřazení se e-mail přesune do historie komunikace daného účastníka.
+                IMAP je READ-ONLY (nic se neoznačuje jako přečtené, nic se nemaže ze serveru).
+            </small>
+        </p>
+
+        {% if unmatched is empty %}
+            <p>Žádné nezařazené e-maily.</p>
+        {% else %}
+            <table class="list" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Od</th>
+                        <th>Předmět / Náhled</th>
+                        <th style="width: 28em;">Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in unmatched %}
+                        <tr>
+                            <td style="vertical-align: top;">
+                                <small>
+                                    {{ m.occurredAt|date('j. n. Y') }}<br>
+                                    {{ m.occurredAt|date('H:i') }}<br>
+                                    <span style="color: #6c757d;">{{ m.imapFolder|default }}</span>
+                                </small>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <strong>{{ m.fromName|default('(bez jména)') }}</strong><br>
+                                <small><a href="mailto:{{ m.fromAddress }}">{{ m.fromAddress|default('?') }}</a></small>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <strong>{{ m.subject|default('(bez předmětu)') }}</strong>
+                                {% if m.body %}
+                                    <div class="small text-muted">{{ m.body|slice(0, 200) }}{% if m.body|length > 200 %}…{% endif %}</div>
+                                {% endif %}
+                            </td>
+                            <td style="vertical-align: top;">
+                                <form method="post"
+                                      action="javascript:void(0)"
+                                      style="display: flex; gap: .25rem; align-items: center; flex-wrap: wrap;"
+                                      onsubmit="
+                                        var pid = parseInt(this.querySelector('[name=participantId]').value, 10);
+                                        if (!pid || pid <= 0) { alert('Zadej ID účastníka.'); return false; }
+                                        var realForm = this.nextElementSibling;
+                                        realForm.querySelector('[name=participantId]').value = pid;
+                                        realForm.submit();
+                                        return false;
+                                      ">
+                                    <input type="number" name="participantId" placeholder="participantId" min="1" style="width: 8em;" required>
+                                    <button type="submit" class="btn btn-sm btn-success">Přiřadit</button>
+                                </form>
+                                <form method="post"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_assign', { id: m.id, participantId: 0 }) }}"
+                                      style="display: none;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('unmatched_assign_' ~ m.id) }}">
+                                    <input type="hidden" name="participantId" value="0">
+                                </form>
+
+                                <form method="post"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_delete', { id: m.id }) }}"
+                                      onsubmit="return confirm('Opravdu smazat tento nezařazený e-mail? Smazání je trvalé (na IMAP serveru se NIC nemění).');"
+                                      style="display: inline-block; margin-top: .25rem;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('unmatched_delete_' ~ m.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </main>
+{% endblock %}

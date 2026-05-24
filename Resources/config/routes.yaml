@@ -208,3 +208,28 @@ oswis_org_oswis_calendar_web_admin_bulk_reassign:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkReassignController::wizard
   path: "/web_admin/prihlasky/hromadny-presun"
   methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_imap_unmatched:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::listUnmatched
+  path: "/web_admin/komunikace/nezarazene"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_imap_assign:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::assignUnmatched
+  path: "/web_admin/komunikace/nezarazene/{id}/priradit/{participantId}"
+  requirements:
+    id: '\d+'
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_imap_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::deleteUnmatched
+  path: "/web_admin/komunikace/nezarazene/{id}/smazat"
+  requirements:
+    id: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_imap_refresh:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::refresh
+  path: "/web_admin/komunikace/imap-refresh"
+  methods: [POST]

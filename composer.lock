@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "d90fcb6fb2e2a17f9d5ab20ed191db9c",
+  "content-hash": "d07dd6eef3398553b2d35635daf3b766",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -461,6 +461,75 @@
         "source": "https://gitlab.com/zakjakub/vokativ/-/tree/zakjakub-master"
       },
       "time": "2022-02-04T16:48:03+00:00"
+    },
+    {
+      "name": "carbonphp/carbon-doctrine-types",
+      "version": "3.2.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/CarbonPHP/carbon-doctrine-types.git",
+        "reference": "18ba5ddfec8976260ead6e866180bd5d2f71aa1d"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/CarbonPHP/carbon-doctrine-types/zipball/18ba5ddfec8976260ead6e866180bd5d2f71aa1d",
+        "reference": "18ba5ddfec8976260ead6e866180bd5d2f71aa1d",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^8.1"
+      },
+      "conflict": {
+        "doctrine/dbal": "<4.0.0 || >=5.0.0"
+      },
+      "require-dev": {
+        "doctrine/dbal": "^4.0.0",
+        "nesbot/carbon": "^2.71.0 || ^3.0.0",
+        "phpunit/phpunit": "^10.3"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "Carbon\\Doctrine\\": "src/Carbon/Doctrine/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "KyleKatarn",
+          "email": "kylekatarnls@gmail.com"
+        }
+      ],
+      "description": "Types to use Carbon in Doctrine",
+      "keywords": [
+        "carbon",
+        "date",
+        "datetime",
+        "doctrine",
+        "time"
+      ],
+      "support": {
+        "issues": "https://github.com/CarbonPHP/carbon-doctrine-types/issues",
+        "source": "https://github.com/CarbonPHP/carbon-doctrine-types/tree/3.2.0"
+      },
+      "funding": [
+        {
+          "url": "https://github.com/kylekatarnls",
+          "type": "github"
+        },
+        {
+          "url": "https://opencollective.com/Carbon",
+          "type": "open_collective"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/nesbot/carbon",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2024-02-09T16:56:22+00:00"
     },
     {
       "name": "composer/semver",
@@ -2128,6 +2197,386 @@
       "time": "2025-12-29T23:20:41+00:00"
     },
     {
+      "name": "illuminate/collections",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/collections.git",
+        "reference": "1dbd2611b2cd025d3526e64bd7670033ff883173"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/collections/zipball/1dbd2611b2cd025d3526e64bd7670033ff883173",
+        "reference": "1dbd2611b2cd025d3526e64bd7670033ff883173",
+        "shasum": ""
+      },
+      "require": {
+        "illuminate/conditionable": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "illuminate/macroable": "^13.0",
+        "php": "^8.3",
+        "symfony/polyfill-php84": "^1.36",
+        "symfony/polyfill-php85": "^1.36",
+        "symfony/polyfill-php86": "^1.36"
+      },
+      "suggest": {
+        "illuminate/http": "Required to convert collections to API resources (^13.0).",
+        "symfony/var-dumper": "Required to use the dump method (^7.4 || ^8.0)."
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "files": [
+          "functions.php",
+          "helpers.php"
+        ],
+        "psr-4": {
+          "Illuminate\\Support\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Collections package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-05-19T14:10:53+00:00"
+    },
+    {
+      "name": "illuminate/conditionable",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/conditionable.git",
+        "reference": "7f1ef52d9a346f829421b296adfb7644a951b216"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/conditionable/zipball/7f1ef52d9a346f829421b296adfb7644a951b216",
+        "reference": "7f1ef52d9a346f829421b296adfb7644a951b216",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^8.3"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Illuminate\\Support\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Conditionable package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-02-25T16:07:55+00:00"
+    },
+    {
+      "name": "illuminate/contracts",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/contracts.git",
+        "reference": "b88c1134feb4253a71048e7e2b5c431e9b3ab95b"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/contracts/zipball/b88c1134feb4253a71048e7e2b5c431e9b3ab95b",
+        "reference": "b88c1134feb4253a71048e7e2b5c431e9b3ab95b",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^8.3",
+        "psr/container": "^1.1.1 || ^2.0.1",
+        "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Illuminate\\Contracts\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Contracts package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-05-13T13:44:10+00:00"
+    },
+    {
+      "name": "illuminate/macroable",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/macroable.git",
+        "reference": "59b5b5f3cf290a91db8cf6cd3d35ff56978bc057"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/macroable/zipball/59b5b5f3cf290a91db8cf6cd3d35ff56978bc057",
+        "reference": "59b5b5f3cf290a91db8cf6cd3d35ff56978bc057",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^8.2"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Illuminate\\Support\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Macroable package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-04-29T09:35:06+00:00"
+    },
+    {
+      "name": "illuminate/pagination",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/pagination.git",
+        "reference": "0e788e59a857f4c6fd6f084fc4848714c8cd5bbb"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/pagination/zipball/0e788e59a857f4c6fd6f084fc4848714c8cd5bbb",
+        "reference": "0e788e59a857f4c6fd6f084fc4848714c8cd5bbb",
+        "shasum": ""
+      },
+      "require": {
+        "ext-filter": "*",
+        "illuminate/collections": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "illuminate/support": "^13.0",
+        "php": "^8.3"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Illuminate\\Pagination\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Pagination package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-05-13T14:00:22+00:00"
+    },
+    {
+      "name": "illuminate/reflection",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/reflection.git",
+        "reference": "4fe1659f068ab2b50131cf906c5d8bba4e34df0c"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/reflection/zipball/4fe1659f068ab2b50131cf906c5d8bba4e34df0c",
+        "reference": "4fe1659f068ab2b50131cf906c5d8bba4e34df0c",
+        "shasum": ""
+      },
+      "require": {
+        "illuminate/collections": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "php": "^8.3"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "files": [
+          "helpers.php"
+        ],
+        "psr-4": {
+          "Illuminate\\Support\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Reflection package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-03-10T20:04:12+00:00"
+    },
+    {
+      "name": "illuminate/support",
+      "version": "v13.11.2",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/illuminate/support.git",
+        "reference": "8aaaa17028851d410cd2f1489cecc921663e58d5"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/illuminate/support/zipball/8aaaa17028851d410cd2f1489cecc921663e58d5",
+        "reference": "8aaaa17028851d410cd2f1489cecc921663e58d5",
+        "shasum": ""
+      },
+      "require": {
+        "doctrine/inflector": "^2.0",
+        "ext-ctype": "*",
+        "ext-filter": "*",
+        "ext-mbstring": "*",
+        "illuminate/collections": "^13.0",
+        "illuminate/conditionable": "^13.0",
+        "illuminate/contracts": "^13.0",
+        "illuminate/macroable": "^13.0",
+        "illuminate/reflection": "^13.0",
+        "nesbot/carbon": "^3.8.4",
+        "php": "^8.3",
+        "symfony/polyfill-php85": "^1.36",
+        "voku/portable-ascii": "^2.0.2"
+      },
+      "conflict": {
+        "tightenco/collect": "<5.5.33"
+      },
+      "replace": {
+        "spatie/once": "*"
+      },
+      "suggest": {
+        "illuminate/filesystem": "Required to use the Composer class (^13.0).",
+        "laravel/serializable-closure": "Required to use the once function (^2.0.10).",
+        "league/commonmark": "Required to use Str::markdown() and Stringable::markdown() (^2.7).",
+        "league/uri": "Required to use the Uri class (^7.5.1).",
+        "ramsey/uuid": "Required to use Str::uuid() (^4.7).",
+        "symfony/process": "Required to use the Composer class (^7.4 || ^8.0).",
+        "symfony/uid": "Required to use Str::ulid() (^7.4 || ^8.0).",
+        "symfony/var-dumper": "Required to use the dd function (^7.4 || ^8.0).",
+        "vlucas/phpdotenv": "Required to use the Env class and env helper (^5.6.1)."
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "13.0.x-dev"
+        }
+      },
+      "autoload": {
+        "files": [
+          "functions.php",
+          "helpers.php"
+        ],
+        "psr-4": {
+          "Illuminate\\Support\\": ""
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Taylor Otwell",
+          "email": "taylor@laravel.com"
+        }
+      ],
+      "description": "The Illuminate Support package.",
+      "homepage": "https://laravel.com",
+      "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+      },
+      "time": "2026-05-19T16:59:44+00:00"
+    },
+    {
       "name": "imagine/imagine",
       "version": "1.5.2",
       "source": {
@@ -3322,6 +3771,111 @@
       "time": "2026-01-12T15:59:08+00:00"
     },
     {
+      "name": "nesbot/carbon",
+      "version": "3.11.4",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/CarbonPHP/carbon.git",
+        "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/e890471a3494740f7d9326d72ce6a8c559ffee60",
+        "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60",
+        "shasum": ""
+      },
+      "require": {
+        "carbonphp/carbon-doctrine-types": "<100.0",
+        "ext-json": "*",
+        "php": "^8.1",
+        "psr/clock": "^1.0",
+        "symfony/clock": "^6.3.12 || ^7.0 || ^8.0",
+        "symfony/polyfill-mbstring": "^1.0",
+        "symfony/translation": "^4.4.18 || ^5.2.1 || ^6.0 || ^7.0 || ^8.0"
+      },
+      "provide": {
+        "psr/clock-implementation": "1.0"
+      },
+      "require-dev": {
+        "doctrine/dbal": "^3.6.3 || ^4.0",
+        "doctrine/orm": "^2.15.2 || ^3.0",
+        "friendsofphp/php-cs-fixer": "^v3.87.1",
+        "kylekatarnls/multi-tester": "^2.5.3",
+        "phpmd/phpmd": "^2.15.0",
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan": "^2.1.22",
+        "phpunit/phpunit": "^10.5.53",
+        "squizlabs/php_codesniffer": "^3.13.4 || ^4.0.0"
+      },
+      "bin": [
+        "bin/carbon"
+      ],
+      "type": "library",
+      "extra": {
+        "laravel": {
+          "providers": [
+            "Carbon\\Laravel\\ServiceProvider"
+          ]
+        },
+        "phpstan": {
+          "includes": [
+            "extension.neon"
+          ]
+        },
+        "branch-alias": {
+          "dev-2.x": "2.x-dev",
+          "dev-master": "3.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Carbon\\": "src/Carbon/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Brian Nesbitt",
+          "email": "brian@nesbot.com",
+          "homepage": "https://markido.com"
+        },
+        {
+          "name": "kylekatarnls",
+          "homepage": "https://github.com/kylekatarnls"
+        }
+      ],
+      "description": "An API extension for DateTime that supports 281 different languages.",
+      "homepage": "https://carbonphp.github.io/carbon/",
+      "keywords": [
+        "date",
+        "datetime",
+        "time"
+      ],
+      "support": {
+        "docs": "https://carbonphp.github.io/carbon/guide/getting-started/introduction.html",
+        "issues": "https://github.com/CarbonPHP/carbon/issues",
+        "source": "https://github.com/CarbonPHP/carbon"
+      },
+      "funding": [
+        {
+          "url": "https://github.com/sponsors/kylekatarnls",
+          "type": "github"
+        },
+        {
+          "url": "https://opencollective.com/Carbon#sponsor",
+          "type": "opencollective"
+        },
+        {
+          "url": "https://tidelift.com/subscription/pkg/packagist-nesbot-carbon?utm_source=packagist-nesbot-carbon&utm_medium=referral&utm_campaign=readme",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2026-04-07T09:57:54+00:00"
+    },
+    {
       "name": "nette/schema",
       "version": "v1.3.5",
       "source": {
@@ -4291,6 +4845,57 @@
         "source": "https://github.com/php-fig/log/tree/3.0.2"
       },
       "time": "2024-09-11T13:17:53+00:00"
+    },
+    {
+      "name": "psr/simple-cache",
+      "version": "3.0.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/php-fig/simple-cache.git",
+        "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/764e0b3939f5ca87cb904f570ef9be2d78a07865",
+        "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865",
+        "shasum": ""
+      },
+      "require": {
+        "php": ">=8.0.0"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "3.0.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Psr\\SimpleCache\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "PHP-FIG",
+          "homepage": "https://www.php-fig.org/"
+        }
+      ],
+      "description": "Common interfaces for simple caching",
+      "keywords": [
+        "cache",
+        "caching",
+        "psr",
+        "psr-16",
+        "simple-cache"
+      ],
+      "support": {
+        "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
+      },
+      "time": "2021-10-29T13:26:27+00:00"
     },
     {
       "name": "rikudou/czqrpayment",
@@ -7800,6 +8405,86 @@
       "time": "2026-04-26T13:10:57+00:00"
     },
     {
+      "name": "symfony/polyfill-php86",
+      "version": "v1.37.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/symfony/polyfill-php86.git",
+        "reference": "33d8fc5a705481e21fe3a81212b26f9b1f61749c"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/symfony/polyfill-php86/zipball/33d8fc5a705481e21fe3a81212b26f9b1f61749c",
+        "reference": "33d8fc5a705481e21fe3a81212b26f9b1f61749c",
+        "shasum": ""
+      },
+      "require": {
+        "php": ">=7.2"
+      },
+      "type": "library",
+      "extra": {
+        "thanks": {
+          "url": "https://github.com/symfony/polyfill",
+          "name": "symfony/polyfill"
+        }
+      },
+      "autoload": {
+        "files": [
+          "bootstrap.php"
+        ],
+        "psr-4": {
+          "Symfony\\Polyfill\\Php86\\": ""
+        },
+        "classmap": [
+          "Resources/stubs"
+        ]
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Nicolas Grekas",
+          "email": "p@tchwork.com"
+        },
+        {
+          "name": "Symfony Community",
+          "homepage": "https://symfony.com/contributors"
+        }
+      ],
+      "description": "Symfony polyfill backporting some PHP 8.6+ features to lower PHP versions",
+      "homepage": "https://symfony.com",
+      "keywords": [
+        "compatibility",
+        "polyfill",
+        "portable",
+        "shim"
+      ],
+      "support": {
+        "source": "https://github.com/symfony/polyfill-php86/tree/v1.37.0"
+      },
+      "funding": [
+        {
+          "url": "https://symfony.com/sponsor",
+          "type": "custom"
+        },
+        {
+          "url": "https://github.com/fabpot",
+          "type": "github"
+        },
+        {
+          "url": "https://github.com/nicolas-grekas",
+          "type": "github"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2026-04-26T13:13:48+00:00"
+    },
+    {
       "name": "symfony/process",
       "version": "v8.0.11",
       "source": {
@@ -10389,6 +11074,161 @@
         "source": "https://github.com/dustin10/VichUploaderBundle/tree/v2.9.2"
       },
       "time": "2026-03-12T08:18:50+00:00"
+    },
+    {
+      "name": "voku/portable-ascii",
+      "version": "2.1.1",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/voku/portable-ascii.git",
+        "reference": "8e1051fe39379367aecf014f41744ce7539a856f"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/voku/portable-ascii/zipball/8e1051fe39379367aecf014f41744ce7539a856f",
+        "reference": "8e1051fe39379367aecf014f41744ce7539a856f",
+        "shasum": ""
+      },
+      "require": {
+        "php": ">=7.1.0"
+      },
+      "require-dev": {
+        "phpunit/phpunit": "~8.5 || ~9.6 || ~10.5 || ~11.5"
+      },
+      "suggest": {
+        "ext-intl": "Use Intl for transliterator_transliterate() support"
+      },
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "voku\\": "src/voku/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Lars Moelleken",
+          "homepage": "https://www.moelleken.org/"
+        }
+      ],
+      "description": "Portable ASCII library - performance optimized (ascii) string functions for php.",
+      "homepage": "https://github.com/voku/portable-ascii",
+      "keywords": [
+        "ascii",
+        "clean",
+        "php"
+      ],
+      "support": {
+        "issues": "https://github.com/voku/portable-ascii/issues",
+        "source": "https://github.com/voku/portable-ascii/tree/2.1.1"
+      },
+      "funding": [
+        {
+          "url": "https://www.paypal.me/moelleken",
+          "type": "custom"
+        },
+        {
+          "url": "https://github.com/voku",
+          "type": "github"
+        },
+        {
+          "url": "https://opencollective.com/portable-ascii",
+          "type": "open_collective"
+        },
+        {
+          "url": "https://www.patreon.com/voku",
+          "type": "patreon"
+        },
+        {
+          "url": "https://tidelift.com/funding/github/packagist/voku/portable-ascii",
+          "type": "tidelift"
+        }
+      ],
+      "time": "2026-04-26T05:33:54+00:00"
+    },
+    {
+      "name": "webklex/php-imap",
+      "version": "6.2.0",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/Webklex/php-imap.git",
+        "reference": "6b8ef85d621bbbaf52741b00cca8e9237e2b2e05"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/Webklex/php-imap/zipball/6b8ef85d621bbbaf52741b00cca8e9237e2b2e05",
+        "reference": "6b8ef85d621bbbaf52741b00cca8e9237e2b2e05",
+        "shasum": ""
+      },
+      "require": {
+        "ext-fileinfo": "*",
+        "ext-iconv": "*",
+        "ext-json": "*",
+        "ext-libxml": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-zip": "*",
+        "illuminate/pagination": ">=5.0.0",
+        "nesbot/carbon": "^2.62.1|^3.2.4",
+        "php": "^8.0.2",
+        "symfony/http-foundation": ">=2.8.0"
+      },
+      "require-dev": {
+        "phpunit/phpunit": "^9.5.10"
+      },
+      "suggest": {
+        "symfony/mime": "Recomended for better extension support",
+        "symfony/var-dumper": "Usefull tool for debugging"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-master": "6.0-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Webklex\\PHPIMAP\\": "src"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Malte Goldenbaum",
+          "email": "github@webklex.com",
+          "role": "Developer"
+        }
+      ],
+      "description": "PHP IMAP client",
+      "homepage": "https://github.com/webklex/php-imap",
+      "keywords": [
+        "imap",
+        "mail",
+        "php-imap",
+        "pop3",
+        "webklex"
+      ],
+      "support": {
+        "issues": "https://github.com/Webklex/php-imap/issues",
+        "source": "https://github.com/Webklex/php-imap/tree/6.2.0"
+      },
+      "funding": [
+        {
+          "url": "https://www.buymeacoffee.com/webklex",
+          "type": "custom"
+        },
+        {
+          "url": "https://ko-fi.com/webklex",
+          "type": "ko_fi"
+        }
+      ],
+      "time": "2025-04-25T06:02:37+00:00"
     },
     {
       "name": "webmozart/assert",

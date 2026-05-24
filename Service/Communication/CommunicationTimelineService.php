@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Communication;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
+use OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantIncomingMailRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository;
 use OswisOrg\OswisCalendarBundle\Repository\ParticipantNote\ParticipantManualNoteRepository;
 use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterface;
@@ -23,6 +24,7 @@ final readonly class CommunicationTimelineService
     public function __construct(
         private ParticipantMailRepository $mailRepository,
         private ParticipantManualNoteRepository $manualNoteRepository,
+        private ParticipantIncomingMailRepository $incomingMailRepository,
     ) {
     }
 
@@ -34,6 +36,7 @@ final readonly class CommunicationTimelineService
         $entries = array_merge(
             $this->fetchMails($participant),
             $this->manualNoteRepository->findByParticipant($participant),
+            $this->incomingMailRepository->findByParticipant($participant),
         );
 
         if (!$includeInternal) {
