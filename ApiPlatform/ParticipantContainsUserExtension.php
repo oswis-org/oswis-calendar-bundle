@@ -10,11 +10,13 @@ use Doctrine\ORM\QueryBuilder;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class ParticipantContainsUserExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
 {
     public function __construct(
         private readonly Security $security,
+        private readonly RequestStack $requestStack,
     )
     {
     }
@@ -31,15 +33,25 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if ($resourceClass !== Participant::class
-            || $this->security->isGranted('ROLE_MANAGER')
-            || $this->security->isGranted('ROLE_ADMIN')) {
+        if ($resourceClass !== Participant::class) {
             return;
         }
         $user = $this->security->getUser();
         if (!$user instanceof AppUser) {
             $queryBuilder->andWhere('1 = 0');
 
+            return;
+        }
+        // Portal frontends pass `?onlyMine=1` to force per-user scoping even
+        // for ROLE_MANAGER / ROLE_ADMIN sessions (data-leak prevention when
+        // admin opens /portal/participants). Without it, legacy behaviour
+        // applies: managers see all, non-managers scope to own participants.
+        $request = $this->requestStack->getCurrentRequest();
+        $onlyMine = $request !== null && '' !== (string) $request->query->get('onlyMine', '');
+
+        if (!$onlyMine
+            && ($this->security->isGranted('ROLE_MANAGER')
+                || $this->security->isGranted('ROLE_ADMIN'))) {
             return;
         }
         $rootAlias = $queryBuilder->getRootAliases()[0];
