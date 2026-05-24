@@ -73,6 +73,11 @@
                 <small class="small text-secondary">
                     [<a class="text-secondary"
                         href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default}) }}">csv</a>]
+                    {% if is_granted('ROLE_ADMIN') %}
+                        ·
+                        [<a class="text-secondary"
+                            href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>]
+                    {% endif %}
                 </small>
             </h3>
             <table class="list">
