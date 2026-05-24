@@ -20,6 +20,17 @@
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_communication', { participantId: participant.id }) }}">
                     Komunikace s účastníkem →
                 </a>
+                {% if is_granted('ROLE_ADMIN') and not (contact.appUser|default and contact.appUser.activated|default) %}
+                    <form method="post"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"
+                          style="display: inline-block; margin-left: .5rem;"
+                          onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-info">
+                            ✉ Znovu poslat aktivační e-mail
+                        </button>
+                    </form>
+                {% endif %}
                 {% if participant.deletedAt|default and is_granted('ROLE_ADMIN') %}
                     <form method="post"
                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"

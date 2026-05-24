@@ -59,6 +59,44 @@ final class WebAdminParticipantsController extends AbstractController
     }
 
     /**
+     * Resend the activation e-mail to the participant (admin-initiated).
+     * Creates a fresh token via ParticipantService::requestActivation() and
+     * redirects the admin back to the participant detail with a flash message.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function resendActivation(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_resend_activation_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            true,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        try {
+            $this->participantService->requestActivation($participant);
+            $this->addFlash('success', sprintf(
+                'Aktivační e-mail účastníkovi #%d znovu odeslán.',
+                $participantId,
+            ));
+        } catch (OswisException $e) {
+            $this->addFlash('error', sprintf(
+                'Aktivační e-mail nešel odeslat: %s',
+                $e->getMessage(),
+            ));
+        }
+
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_arrival',
+            ['participantId' => $participantId, 'arrival' => '0'],
+        ));
+    }
+
+    /**
      * Restore a soft-deleted participant (set deletedAt back to null).
      * Cascade-deleted children (flags, registrations) stay deleted — admin
      * can verify and act on them from the participant detail page.
