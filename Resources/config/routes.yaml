@@ -216,10 +216,9 @@ oswis_org_oswis_calendar_web_admin_imap_unmatched:
 
 oswis_org_oswis_calendar_web_admin_imap_assign:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::assignUnmatched
-  path: "/web_admin/komunikace/nezarazene/{id}/priradit/{participantId}"
+  path: "/web_admin/komunikace/nezarazene/{id}/priradit"
   requirements:
     id: '\d+'
-    participantId: '\d+'
   methods: [POST]
 
 oswis_org_oswis_calendar_web_admin_imap_delete:

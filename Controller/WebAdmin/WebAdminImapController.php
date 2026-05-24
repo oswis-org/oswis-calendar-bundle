@@ -46,10 +46,16 @@ final class WebAdminImapController extends AbstractController
         ]);
     }
 
-    public function assignUnmatched(Request $request, int $id, int $participantId): Response
+    public function assignUnmatched(Request $request, int $id): Response
     {
         if (!$this->isCsrfTokenValid('unmatched_assign_'.$id, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participantId = (int) $request->request->get('participantId');
+        if ($participantId <= 0) {
+            $this->addFlash('error', 'Zadej platné ID účastníka.');
+
+            return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_imap_unmatched'));
         }
         $unmatched = $this->em->find(ParticipantUnmatchedMail::class, $id)
             ?? throw $this->createNotFoundException('E-mail nenalezen.');
