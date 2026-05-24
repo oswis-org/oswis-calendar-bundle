@@ -60,7 +60,7 @@ class ParticipantManualNote implements CommunicationEntryInterface
     #[Column(type: 'integer', nullable: true)]
     protected ?int $durationSec = null;
 
-    #[Column(type: 'text', nullable: true)]
+    #[Column(type: 'text', nullable: true, options: ['columnDefinition' => 'LONGTEXT DEFAULT NULL'])]
     protected ?string $body = null;
 
     #[Column(name: 'is_internal', type: 'boolean', options: ['default' => true])]

@@ -41,13 +41,13 @@ class ParticipantUnmatchedMail
     #[Column(type: 'string', length: 255, nullable: true)]
     protected ?string $fromName = null;
 
-    #[Column(type: 'text', nullable: true)]
+    #[Column(type: 'text', nullable: true, options: ['columnDefinition' => 'LONGTEXT DEFAULT NULL'])]
     protected ?string $toAddresses = null;
 
-    #[Column(type: 'text', nullable: true)]
+    #[Column(type: 'text', nullable: true, options: ['columnDefinition' => 'LONGTEXT DEFAULT NULL'])]
     protected ?string $body = null;
 
-    #[Column(type: 'text', nullable: true)]
+    #[Column(type: 'text', nullable: true, options: ['columnDefinition' => 'LONGTEXT DEFAULT NULL'])]
     protected ?string $bodyHtml = null;
 
     #[Column(type: 'string', length: 255, nullable: true)]
