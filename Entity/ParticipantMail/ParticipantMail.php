@@ -20,7 +20,10 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Enum\Communication\CommunicationChannel;
+use OswisOrg\OswisCoreBundle\Enum\Communication\CommunicationDirection;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterface;
 
 #[ApiResource(
     normalizationContext: ['groups' => ['app_user_mails_get'], 'enable_max_depth' => true],
@@ -47,7 +50,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 #[Entity]
 #[Table(name: 'calendar_participant_mail')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
-class ParticipantMail extends AbstractMail
+class ParticipantMail extends AbstractMail implements CommunicationEntryInterface
 {
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
     public const TYPE_SUMMARY = 'summary';
@@ -167,5 +170,59 @@ class ParticipantMail extends AbstractMail
             $this->getSubject(),
             $email,
         );
+    }
+
+    // ---- CommunicationEntryInterface ----
+
+    public function getOccurredAt(): ?\DateTimeInterface
+    {
+        return $this->getSent();
+    }
+
+    public function getDirection(): CommunicationDirection
+    {
+        return CommunicationDirection::OUT;
+    }
+
+    public function getChannel(): CommunicationChannel
+    {
+        return str_starts_with($this->getType() ?? '', 'ad-hoc-')
+            ? CommunicationChannel::AD_HOC_MAIL
+            : CommunicationChannel::SYSTEM_MAIL;
+    }
+
+    public function getSummary(): ?string
+    {
+        return null;
+    }
+
+    public function getBody(): ?string
+    {
+        return null;
+    }
+
+    public function getBodyHtml(): ?string
+    {
+        return null;
+    }
+
+    public function isPublicForParticipant(): bool
+    {
+        return true;
+    }
+
+    public function getMessageId(): ?string
+    {
+        return $this->getMessageID();
+    }
+
+    public function getInReplyTo(): ?string
+    {
+        return null;
+    }
+
+    public function getAuthorAppUser(): ?AppUser
+    {
+        return null;
     }
 }
