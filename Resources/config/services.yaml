@@ -533,3 +533,11 @@ services:
   OswisOrg\OswisCalendarBundle\Service\Aggregations\EventAggregationsService:
     alias: oswis_org_oswis_calendar.aggregations.event_aggregations_service
     public: true
+
+  ## Console commands
+  OswisOrg\OswisCalendarBundle\Command\BackfillThreadingCommand:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      - '@doctrine.orm.entity_manager'
+      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
