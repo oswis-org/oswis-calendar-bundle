@@ -121,11 +121,11 @@ final class WebAdminParticipantsController extends AbstractController
             $participantId,
         ));
 
-        $redirectUrl = (string) $request->request->get('_redirect', $this->generateUrl(
+        // Hard-coded redirect to participant detail — never accept a redirect
+        // URL from the request body (avoids open-redirect on admin actions).
+        return new RedirectResponse($this->generateUrl(
             'oswis_org_oswis_calendar_web_admin_participant_arrival',
             ['participantId' => $participantId, 'arrival' => '0'],
         ));
-
-        return new RedirectResponse($redirectUrl);
     }
 }

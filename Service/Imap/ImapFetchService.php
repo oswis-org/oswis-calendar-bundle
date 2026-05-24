@@ -113,16 +113,24 @@ final class ImapFetchService
         $state = $this->syncStateRepository->getOrCreate($folderName);
         $lastUid = $state->getLastSeenUid();
 
-        // Per-folder UID search — UID > lastSeenUid; webklex's query uses
-        // BODY.PEEK by default → no \Seen state mutation. Cap per iteration.
-        $messages = $folder->messages()
-            ->all()
+        // Per-folder UID-range search — UID > lastSeenUid; webklex's query uses
+        // BODY.PEEK by default (leaveUnread() + setFetchFlags(false)) → no
+        // \Seen state mutation. Cap per iteration.
+        // WITHOUT the UID range, ->all()->limit(100) always returns the lowest
+        // 100 UIDs which get skipped after first fetch — so new mails past
+        // the 100th total message never get pulled.
+        $query = $folder->messages()
             ->setFetchOrderAsc()
             ->setFetchBody(true)
             ->setFetchFlags(false)
             ->leaveUnread()
-            ->limit($cap)
-            ->get();
+            ->limit($cap);
+        if ($lastUid > 0) {
+            $query = $query->whereUid(sprintf('%d:*', $lastUid + 1));
+        } else {
+            $query = $query->all();
+        }
+        $messages = $query->get();
 
         $fetched = 0;
         $matched = 0;

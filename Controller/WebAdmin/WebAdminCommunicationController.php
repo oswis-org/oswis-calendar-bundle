@@ -11,12 +11,19 @@ use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterfac
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Participant communication timeline — Twig admin view + JSON REST endpoint.
  *
  * Spec: docs/superpowers/specs/2026-05-24-communication-history-design.md §5 A.1 + §6.
+ *
+ * SECURITY: Both endpoints return the FULL timeline including admin-internal
+ * notes (isPublicForParticipant=false). Class-level ROLE_ADMIN is REQUIRED —
+ * the bundle JWT firewall on /api/v1 alone is not enough since any logged-in
+ * participant has a valid JWT.
  */
+#[IsGranted('ROLE_ADMIN')]
 final class WebAdminCommunicationController extends AbstractController
 {
     public function __construct(

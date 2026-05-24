@@ -275,14 +275,15 @@ class ParticipantMailService
      * Type is prefixed with "ad-hoc-" so CommunicationChannel detection on the
      * timeline picks it up as AD_HOC_MAIL rather than SYSTEM_MAIL.
      *
-     * @throws OswisException
+     * @return array{sent: int, errors: list<string>}
+     * @throws OswisException when zero mails went out at all.
      */
     public function sendAdHoc(
         Participant $participant,
         string $subject,
         string $bodyHtml,
         ?string $adminName = null,
-    ): void {
+    ): array {
         $contactPersons = $participant->getContactPersons(true);
         $sent = 0;
         $errors = [];
@@ -334,6 +335,8 @@ class ParticipantMailService
                 .($contactPersons->count() === 0 ? ' (účastník nemá ani jeden kontakt s registrovaným uživatelem).' : '. '.implode(' | ', $errors)),
             );
         }
+
+        return ['sent' => $sent, 'errors' => $errors];
     }
 
     public function sendMessage(Participant $participant, ParticipantMailGroup $group): void

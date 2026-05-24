@@ -55,11 +55,19 @@ final class WebAdminAdHocMailController extends AbstractController
             $adminName = $adminUser instanceof UserInterface ? $adminUser->getUserIdentifier() : null;
 
             try {
-                $this->participantMailService->sendAdHoc($participant, $subject, $cleanBody, $adminName);
+                $result = $this->participantMailService->sendAdHoc($participant, $subject, $cleanBody, $adminName);
                 $this->addFlash('success', sprintf(
-                    'Ad-hoc e-mail účastníkovi #%d odeslán.',
+                    'Ad-hoc e-mail účastníkovi #%d odeslán na %d adres.',
                     $participantId,
+                    $result['sent'],
                 ));
+                if (count($result['errors']) > 0) {
+                    $this->addFlash('warning', sprintf(
+                        'Některá doručení selhala (%d): %s',
+                        count($result['errors']),
+                        implode(' | ', $result['errors']),
+                    ));
+                }
 
                 return new RedirectResponse($this->generateUrl(
                     'oswis_org_oswis_calendar_web_admin_participant_communication',
