@@ -269,16 +269,18 @@ final class YearCloneService
         $sourcePrice = $source->getPrice();
         $sourceDeposit = $source->getDepositValue();
         $overridePrice = $override === null ? null : $override->price;
+        $overrideDeposit = $override === null ? null : $override->depositValue;
         $overrideBaseCapacity = $override === null ? null : $override->baseCapacity;
         $overrideFullCapacity = $override === null ? null : $override->fullCapacity;
         $finalPrice = $overridePrice ?? $sourcePrice;
+        $finalDeposit = $overrideDeposit ?? $sourceDeposit;
         $finalBaseCapacity = $overrideBaseCapacity ?? $source->getBaseCapacity();
         $finalFullCapacity = $overrideFullCapacity ?? $source->getFullCapacity();
 
         $clone = new RegistrationFlagOffer(
             $source->getFlag(),
             new Capacity($finalBaseCapacity, $finalFullCapacity),
-            new Price($finalPrice, $sourceDeposit),
+            new Price($finalPrice, $finalDeposit),
             $source->getFlagAmountRange(),
             null,
         );

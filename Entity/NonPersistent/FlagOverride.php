@@ -13,6 +13,7 @@ final readonly class FlagOverride
 {
     public function __construct(
         public ?int $price = null,
+        public ?int $depositValue = null,
         public ?int $baseCapacity = null,
         public ?int $fullCapacity = null,
     ) {
