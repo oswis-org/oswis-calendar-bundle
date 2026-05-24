@@ -30,6 +30,8 @@ class ParticipantMailRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('mail');
         $queryBuilder->andWhere("mail.appUser = :app_user_id")->setParameter('app_user_id', $appUser->getId());
+        $queryBuilder->andWhere('mail.sent IS NOT NULL');
+        $queryBuilder->addOrderBy('mail.sent', 'DESC');
         $queryBuilder->addOrderBy('mail.id', 'DESC');
         $result = $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT);
 
