@@ -39,6 +39,12 @@ final class ImapFetchCommand extends Command
             InputOption::VALUE_NONE,
             'First-time init: set lastSeenUid to current MAX UID per folder without fetching bodies. Use once before enabling cron on a folder with years of historical mail.',
         );
+        $this->addOption(
+            'since',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'YYYY-MM-DD — on a fresh sync_state row, only sweep mails received after this date (IMAP SEARCH SINCE). Useful for first-run: e.g. --since=2025-08-01 pulls last season + this season without older archive.',
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -46,9 +52,23 @@ final class ImapFetchCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $cap = max(1, (int) $input->getOption('cap'));
         $initFromNow = (bool) $input->getOption('init-from-now');
+        $sinceOpt = $input->getOption('since');
+        $since = null;
+        if (is_string($sinceOpt) && '' !== $sinceOpt) {
+            try {
+                $since = new \DateTimeImmutable($sinceOpt);
+            } catch (\Exception $e) {
+                $io->error(sprintf('Invalid --since value "%s": %s', $sinceOpt, $e->getMessage()));
 
-        $io->section('IMAP fetch (READ-ONLY)'.($initFromNow ? ' — INIT-FROM-NOW' : ''));
-        $report = $this->imapFetchService->fetchAll($cap, $initFromNow);
+                return Command::INVALID;
+            }
+        }
+
+        $tag = $initFromNow
+            ? ' — INIT-FROM-NOW'
+            : (null !== $since ? sprintf(' — SINCE %s', $since->format('Y-m-d')) : '');
+        $io->section('IMAP fetch (READ-ONLY)'.$tag);
+        $report = $this->imapFetchService->fetchAll($cap, $initFromNow, $since);
 
         if (!$report['enabled']) {
             $io->warning('IMAP fetch disabled (OSWIS_IMAP_ENABLED=0). Set =1 in .env.local and retry.');

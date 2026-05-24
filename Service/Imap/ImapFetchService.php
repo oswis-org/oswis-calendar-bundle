@@ -57,9 +57,15 @@ final class ImapFetchService
     }
 
     /**
+     * @param  \DateTimeInterface|null  $since  Restricts the sweep on a
+     *   fresh sync_state row to mails received after this date via IMAP
+     *   `SEARCH SINCE`. Useful for first-run on a mailbox where we want
+     *   last season's history but not the entire archive. Has no effect
+     *   after the UID watermark is set on subsequent runs.
+     *
      * @return array{enabled: bool, folders: array<string, array{fetched: int, matched: int, unmatched: int, lastUid: int}>}
      */
-    public function fetchAll(int $perFolderCap = 100, bool $initFromNow = false): array
+    public function fetchAll(int $perFolderCap = 100, bool $initFromNow = false, ?\DateTimeInterface $since = null): array
     {
         if (!$this->enabled) {
             $this->logger->info('IMAP fetch disabled (OSWIS_IMAP_ENABLED=0); skipping.');
@@ -89,7 +95,7 @@ final class ImapFetchService
                     $this->logger->warning(sprintf('IMAP folder "%s" not found, skipping.', $folderName));
                     continue;
                 }
-                $report['folders'][$folderName] = $this->fetchFolder($folder, $folderName, $perFolderCap, $initFromNow);
+                $report['folders'][$folderName] = $this->fetchFolder($folder, $folderName, $perFolderCap, $initFromNow, $since);
             } catch (\Throwable $e) {
                 $this->logger->error(sprintf('IMAP fetch on folder "%s" failed: %s', $folderName, $e->getMessage()));
                 $report['folders'][$folderName] = ['fetched' => 0, 'matched' => 0, 'unmatched' => 0, 'lastUid' => 0, 'error' => $e->getMessage()];
@@ -108,7 +114,7 @@ final class ImapFetchService
     /**
      * @return array{fetched: int, matched: int, unmatched: int, lastUid: int}
      */
-    private function fetchFolder(Folder $folder, string $folderName, int $cap, bool $initFromNow = false): array
+    private function fetchFolder(Folder $folder, string $folderName, int $cap, bool $initFromNow = false, ?\DateTimeInterface $since = null): array
     {
         $state = $this->syncStateRepository->getOrCreate($folderName);
         $lastUid = $state->getLastSeenUid();
@@ -151,6 +157,9 @@ final class ImapFetchService
             ->limit($cap);
         if ($lastUid > 0) {
             $query = $query->whereUid(sprintf('%d:*', $lastUid + 1));
+        } elseif ($since instanceof \DateTimeInterface) {
+            // First-run pulling at most last-season's history.
+            $query = $query->whereSince($since);
         } else {
             $query = $query->all();
         }
