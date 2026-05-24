@@ -124,6 +124,7 @@ class ParticipantMailService
             'type' => $type,
             'participantToken' => $participantToken,
             'isIS' => $isIS,
+            'registrations' => $participant->getParticipantRegistrations(true),
         ];
         $templatedEmail = $participantMail->getTemplatedEmail();
         if (ParticipantMail::TYPE_SUMMARY === $type) {
