@@ -77,9 +77,8 @@ class ParticipantRepository extends ServiceEntityRepository
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
-        $select  = 'participant, offer, contact, event, note, payment';
+        $select = 'participant, offer, contact, event, note, payment';
         $select .= ', participantRegistration, participantContact, participantCategory';
-        $select .= ', flagGroup, flagGroupOffer, regContactAppUser, regEvent, regOffer';
         $queryBuilder->select($select);
         $queryBuilder->leftJoin('participant.offer', 'offer');
         $queryBuilder->leftJoin('participant.contact', 'contact');
@@ -89,12 +88,6 @@ class ParticipantRepository extends ServiceEntityRepository
         $queryBuilder->leftJoin('participant.payments', 'payment');
         $queryBuilder->leftJoin('participant.participantRegistrations', 'participantRegistration');
         $queryBuilder->leftJoin('participant.participantContacts', 'participantContact');
-        $queryBuilder->leftJoin('participant.flagGroups', 'flagGroup');
-        $queryBuilder->leftJoin('flagGroup.flagGroupOffer', 'flagGroupOffer');
-        $queryBuilder->leftJoin('participantContact.contact', 'regContact');
-        $queryBuilder->leftJoin('regContact.appUser', 'regContactAppUser');
-        $queryBuilder->leftJoin('participantRegistration.event', 'regEvent');
-        $queryBuilder->leftJoin('participantRegistration.offer', 'regOffer');
         $this->setSuperEventQuery($queryBuilder, $opts);
         $this->setIdQuery($queryBuilder, $opts);
         $this->setRangeQuery($queryBuilder, $opts);
