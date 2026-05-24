@@ -90,10 +90,11 @@ final class WebAdminImapController extends AbstractController
                 $id, $participantId,
             ));
         } catch (UniqueConstraintViolationException) {
-            // Same Message-ID already exists in calendar_participant_incoming_mail
-            // (typical cause: IMAP sync re-import raced with this assign action,
-            // or the admin clicked "Přiřadit" twice). Just drop the unmatched row
-            // — the mail is already linked to a participant somewhere.
+            // Same (message_id, participant_id) already exists in
+            // calendar_participant_incoming_mail (typical cause: IMAP sync
+            // re-import raced with this assign action, or the admin double
+            // -clicked). Just drop the unmatched row — the mail is already
+            // linked to THIS participant.
             $this->em->clear();
             $unmatchedFresh = $this->em->find(ParticipantUnmatchedMail::class, $id);
             if ($unmatchedFresh instanceof ParticipantUnmatchedMail) {

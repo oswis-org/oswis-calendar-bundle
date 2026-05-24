@@ -19,9 +19,20 @@ class ParticipantIncomingMailRepository extends ServiceEntityRepository
         parent::__construct($registry, ParticipantIncomingMail::class);
     }
 
+    /**
+     * Returns ANY ParticipantIncomingMail with the given Message-ID,
+     * regardless of which participant it links to. Used as a quick
+     * existence probe — for participant-specific dedup use
+     * `findOneByMessageIdAndParticipant`.
+     */
     public function findOneByMessageId(string $messageId): ?ParticipantIncomingMail
     {
         return $this->findOneBy(['messageId' => $messageId]);
+    }
+
+    public function findOneByMessageIdAndParticipant(string $messageId, Participant $participant): ?ParticipantIncomingMail
+    {
+        return $this->findOneBy(['messageId' => $messageId, 'participant' => $participant]);
     }
 
     /**

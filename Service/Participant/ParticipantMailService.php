@@ -297,7 +297,10 @@ class ParticipantMailService
                 continue;
             }
             try {
-                $type = 'ad-hoc-'.date('YmdHis');
+                // Per-iteration unique type: date('YmdHis') has 1-second
+                // granularity, two contacts processed in the same second
+                // would collide on this string. Append the current count.
+                $type = sprintf('ad-hoc-%s-%d', date('YmdHis'), $sent + count($errors) + 1);
                 $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
                 $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
 

@@ -178,8 +178,9 @@ final class ImapFetchService
             }
             $messageId = trim($messageId, "<> \t\n\r\0\x0B");
 
-            if ($this->incomingRepository->findOneByMessageId($messageId)
-                || $this->unmatchedRepository->findOneByMessageId($messageId)) {
+            // Dedup: unmatched already imported with this Message-ID → skip.
+            // (Incoming is per-participant, so its dedup happens per recipient below.)
+            if ($this->unmatchedRepository->findOneByMessageId($messageId)) {
                 continue;
             }
 
@@ -201,26 +202,34 @@ final class ImapFetchService
             $direction = $this->detectDirection($fromAddress, $folderName);
             $threadKey = AbstractMail::computeThreadKey($subject, $fromAddress);
 
-            $participant = $this->matchParticipant($fromAddress, $direction, $message);
+            $participants = $this->matchParticipants($fromAddress, $direction, $message);
 
-            if ($participant instanceof Participant) {
-                $entry = new ParticipantIncomingMail(
-                    participant: $participant,
-                    messageId:   $messageId,
-                    direction:   $direction,
-                    occurredAt:  $occurredAt,
-                );
-                $entry->setSubject(mb_substr($subject, 0, 255));
-                $entry->setBody($bodyPlain);
-                $entry->setBodyHtml($bodyHtml);
-                $entry->setFromAddress(null !== $fromAddress ? mb_substr($fromAddress, 0, 255) : null);
-                $entry->setFromName(null !== $fromName ? mb_substr($fromName, 0, 255) : null);
-                $entry->setInReplyTo(null !== $inReplyTo ? mb_substr($inReplyTo, 0, 255) : null);
-                $entry->setThreadKey($threadKey);
-                $entry->setImapFolder($folderName);
-                $entry->setImapUid($uid);
-                $this->em->persist($entry);
-                $matched++;
+            if (count($participants) > 0) {
+                // One row per matched participant — for OUT mails to multiple
+                // recipients, each participant gets the entry in their timeline.
+                foreach ($participants as $participant) {
+                    // Per-participant dedup using composite (message_id, participant_id).
+                    if ($this->incomingRepository->findOneByMessageIdAndParticipant($messageId, $participant)) {
+                        continue;
+                    }
+                    $entry = new ParticipantIncomingMail(
+                        participant: $participant,
+                        messageId:   $messageId,
+                        direction:   $direction,
+                        occurredAt:  $occurredAt,
+                    );
+                    $entry->setSubject(mb_substr($subject, 0, 255));
+                    $entry->setBody($bodyPlain);
+                    $entry->setBodyHtml($bodyHtml);
+                    $entry->setFromAddress(null !== $fromAddress ? mb_substr($fromAddress, 0, 255) : null);
+                    $entry->setFromName(null !== $fromName ? mb_substr($fromName, 0, 255) : null);
+                    $entry->setInReplyTo(null !== $inReplyTo ? mb_substr($inReplyTo, 0, 255) : null);
+                    $entry->setThreadKey($threadKey);
+                    $entry->setImapFolder($folderName);
+                    $entry->setImapUid($uid);
+                    $this->em->persist($entry);
+                    $matched++;
+                }
             } else {
                 $entry = new ParticipantUnmatchedMail(
                     messageId:  $messageId,
@@ -268,8 +277,15 @@ final class ImapFetchService
 
     /**
      * Match by sender e-mail (incoming) or recipient (outgoing).
+     *
+     * Returns ALL matched participants, not just the first. For OUT mails
+     * to N recipients, each matching participant gets the entry in their
+     * timeline. Phase D dedup uses (message_id + participant_id) so the
+     * same Message-ID can legitimately link to multiple participants.
+     *
+     * @return list<Participant>
      */
-    private function matchParticipant(?string $fromAddress, CommunicationDirection $direction, Message $message): ?Participant
+    private function matchParticipants(?string $fromAddress, CommunicationDirection $direction, Message $message): array
     {
         $candidates = [];
         if ($direction === CommunicationDirection::IN && null !== $fromAddress) {
@@ -284,9 +300,11 @@ final class ImapFetchService
             }
         }
         if (count($candidates) === 0) {
-            return null;
+            return [];
         }
 
+        $matched = [];
+        $seenIds = [];
         foreach ($candidates as $email) {
             $contact = $this->findContactByEmail($email);
             if (!$contact instanceof AbstractContact) {
@@ -295,11 +313,15 @@ final class ImapFetchService
             $participants = $this->em->getRepository(Participant::class)
                 ->findBy(['contact' => $contact], ['createdAt' => 'DESC'], 1);
             if (count($participants) > 0 && $participants[0] instanceof Participant) {
-                return $participants[0];
+                $id = $participants[0]->getId();
+                if (null !== $id && !isset($seenIds[$id])) {
+                    $matched[] = $participants[0];
+                    $seenIds[$id] = true;
+                }
             }
         }
 
-        return null;
+        return $matched;
     }
 
     /**
