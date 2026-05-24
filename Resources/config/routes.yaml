@@ -146,3 +146,17 @@ oswis_org_oswis_calendar_web_admin_participant_arrival:
 oswis_org_oswis_calendar_web_admin_aggregations:
     controller: oswis_org_oswis_calendar.web_admin.aggregations_controller::showAggregations
     path: "/web_admin/prihlasky/agregace"
+
+oswis_org_oswis_calendar_web_admin_participant_communication:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCommunicationController::timelinePage
+  path: "/web_admin/ucastnici/{participantId}/komunikace"
+  requirements:
+    participantId: '\d+'
+  methods: [GET]
+
+oswis_org_oswis_calendar_api_participant_communication:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCommunicationController::timelineJson
+  path: "/api/v1/participants/{participantId}/communication"
+  requirements:
+    participantId: '\d+'
+  methods: [GET]

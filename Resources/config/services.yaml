@@ -534,6 +534,23 @@ services:
     alias: oswis_org_oswis_calendar.aggregations.event_aggregations_service
     public: true
 
+  ## Communication timeline aggregator
+  OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService:
+    autowire: true
+    autoconfigure: true
+    public: false
+    arguments:
+      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
+
+  ## Web admin communication controller (Twig + JSON)
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCommunicationController:
+    autowire: true
+    public: true
+    tags: [ 'controller.service_arguments' ]
+    arguments:
+      - '@doctrine.orm.entity_manager'
+      - '@OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService'
+
   ## Console commands
   OswisOrg\OswisCalendarBundle\Command\BackfillThreadingCommand:
     autowire: true
