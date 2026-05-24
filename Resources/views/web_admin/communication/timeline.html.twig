@@ -1,0 +1,40 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" id="main-content-container">
+        <h2>{{ pageTitle }}</h2>
+
+        {% if participant.contact|default %}
+            <p>
+                <strong>Účastník:</strong>
+                {{ participant.contact.name|default('(bez jména)') }}
+                {% if participant.contact.email|default %}
+                    · <a href="mailto:{{ participant.contact.email }}">{{ participant.contact.email }}</a>
+                {% endif %}
+                {% if participant.contact.phone|default %}
+                    · <a href="tel:{{ participant.contact.phone }}">{{ participant.contact.phone }}</a>
+                {% endif %}
+            </p>
+        {% endif %}
+
+        <p class="text-muted">
+            <small>
+                Celkem záznamů: {{ entries|length }}.
+                V této fázi se zobrazují jen systémové e-maily.
+                Další kanály (příchozí maily, telefonáty, chaty) přibudou v dalších fázích.
+            </small>
+        </p>
+
+        {% include '@OswisOrgOswisCalendar/web_admin/communication/_timeline_list.html.twig' with {
+            entries: entries,
+            isAdmin: isAdmin|default(false),
+        } only %}
+
+        <p class="mt-4">
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_arrival', { participantId: participant.id, arrival: '0' }) }}"
+               class="btn btn-link">← Zpět na detail účastníka</a>
+        </p>
+    </main>
+{% endblock %}

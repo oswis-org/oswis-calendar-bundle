@@ -1,0 +1,44 @@
+{# entries: list<CommunicationEntryInterface>, isAdmin: bool #}
+{% if entries is empty %}
+    <p>Žádné záznamy komunikace.</p>
+{% else %}
+    <ul class="list-unstyled timeline" style="margin-top: 1.5rem;">
+        {% for entry in entries %}
+            {% set isInternal = not entry.isPublicForParticipant() %}
+            <li class="timeline-entry" style="padding: .75rem 0; border-bottom: 1px solid #e9ecef;">
+                <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                    <div style="min-width: 6rem; color: #6c757d; font-size: .85rem;">
+                        {% if entry.occurredAt %}
+                            {{ entry.occurredAt|date('j. n. Y') }}<br>
+                            <small>{{ entry.occurredAt|date('H:i') }}</small>
+                        {% else %}
+                            <small>—</small>
+                        {% endif %}
+                    </div>
+                    <div style="min-width: 8rem;">
+                        <strong>{{ entry.channel.label() }}</strong><br>
+                        <small style="color: #6c757d;">{{ entry.direction.label() }}</small>
+                    </div>
+                    <div style="flex: 1;">
+                        <div>
+                            <strong>{{ entry.subject|default('(bez předmětu)') }}</strong>
+                            {% if isInternal and isAdmin %}
+                                <span style="font-size: .75rem; background: #fff3cd; padding: 1px 6px; border-radius: 4px; margin-left: .5rem;">interní</span>
+                            {% endif %}
+                        </div>
+                        {% if entry.summary|default %}
+                            <small style="color: #6c757d;">{{ entry.summary|slice(0, 200) }}{% if entry.summary|length > 200 %}…{% endif %}</small>
+                        {% endif %}
+                        {% if entry.threadKey|default and isAdmin %}
+                            <div style="margin-top: .25rem;">
+                                <small style="color: #adb5bd; font-family: monospace; font-size: .7rem;">
+                                    thread: {{ entry.threadKey|slice(0, 12) }}…
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
