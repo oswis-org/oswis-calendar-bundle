@@ -86,6 +86,7 @@ class ParticipantMail extends AbstractMail
         $this->participantToken = $token;
         $this->participant = $participant;
         $this->appUser = $appUser;
+        $this->ensureThreadKey();
     }
 
     public function isParticipant(?Participant $participant): bool
@@ -147,5 +148,24 @@ class ParticipantMail extends AbstractMail
     public function setThreadKey(?string $threadKey): void
     {
         $this->threadKey = $threadKey;
+    }
+
+    /**
+     * Populate threadKey from subject + recipient email if currently null.
+     * Idempotent: called from constructor + backfill command.
+     */
+    public function ensureThreadKey(): void
+    {
+        if (null !== $this->threadKey) {
+            return;
+        }
+        $email = $this->getAddress();
+        if ((null === $email || '' === trim($email)) && null !== $this->participant?->getContact()) {
+            $email = $this->participant->getContact()->getEmail();
+        }
+        $this->threadKey = \OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail::computeThreadKey(
+            $this->getSubject(),
+            $email,
+        );
     }
 }
