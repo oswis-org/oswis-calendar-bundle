@@ -104,7 +104,10 @@
         </mj-text>
     {% endif %}
 
-    <mj-raw>
+    {# mj-text wraps the rich HTML includes so MJML keeps them inside mj-column in
+       order. mj-raw inside mj-column gets hoisted out of the table-cell layout,
+       which is why the summary partial used to render before the intro text. #}
+    <mj-text>
         {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
         {% if not participant.deletedAt %}
             {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
@@ -112,7 +115,7 @@
         <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
             {% include '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig' with {'event': participant.event(false)} %}
         </div>
-    </mj-raw>
+    </mj-text>
 
     {% block message_footer %}
         {% if participant.deletedAt %}
