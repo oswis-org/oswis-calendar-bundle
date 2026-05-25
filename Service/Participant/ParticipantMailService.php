@@ -326,6 +326,9 @@ class ParticipantMailService
                 $type = sprintf('ad-hoc-%s-%d', date('YmdHis'), $sent + count($errors) + 1);
                 $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
                 $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
+                // Ad-hoc compose = admin píše ručně, ne systémový automat —
+                // mark before send aby MailerSubscriber nastavil Auto-Submitted: no.
+                $participantMail->markAsManual();
 
                 $contact = $participant->getContact();
                 $data = [
