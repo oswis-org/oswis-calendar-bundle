@@ -38,6 +38,28 @@ class ParticipantMailRepository extends ServiceEntityRepository
         return new ArrayCollection(is_array($result) ? $result : []);
     }
 
+    /**
+     * Past mails scoped to a single Participant — used for RFC 5322
+     * In-Reply-To / References threading. Threading musí být scoped per
+     * Participant (= per registrace / per akce / per rok), ne per AppUser,
+     * jinak by se Shrnutí přihlášky 2026 slepilo s loňským Shrnutím 2025
+     * pod jeden mail thread.
+     *
+     * @return Collection<int, ParticipantMail>
+     */
+    final public function findByParticipant(Participant $participant): Collection
+    {
+        $queryBuilder = $this->createQueryBuilder('mail');
+        $queryBuilder->andWhere('mail.participant = :participant_id')
+            ->setParameter('participant_id', $participant->getId());
+        $queryBuilder->andWhere('mail.sent IS NOT NULL');
+        $queryBuilder->addOrderBy('mail.sent', 'DESC');
+        $queryBuilder->addOrderBy('mail.id', 'DESC');
+        $result = $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT);
+
+        return new ArrayCollection(is_array($result) ? $result : []);
+    }
+
     final public function findSent(Participant $participant, string $type): Collection
     {
         $queryBuilder = $this->createQueryBuilder('mail');

@@ -113,7 +113,7 @@ class ParticipantMailService
         }
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
         $participantMail->setParticipantMailCategory($mailCategory);
-        $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+        $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $contact = $participant->getContact();
         $data = [
             'participant' => $participant,
@@ -264,7 +264,7 @@ class ParticipantMailService
         $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
         $participantMail->setParticipantMailCategory($mailCategory);
-        $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+        $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $contact = $participant->getContact();
         $data = [
             'payment' => $payment,
@@ -325,7 +325,7 @@ class ParticipantMailService
                 // would collide on this string. Append the current count.
                 $type = sprintf('ad-hoc-%s-%d', date('YmdHis'), $sent + count($errors) + 1);
                 $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
-                $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
 
                 $contact = $participant->getContact();
                 $data = [
@@ -417,7 +417,7 @@ class ParticipantMailService
         $title = $twigTemplate->getName() ?? $defaultTitle;
         $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
         $participantMail->setParticipantMailCategory($mailCategory);
-        $participantMail->setPastMails($this->participantMailRepository->findByAppUser($appUser));
+        $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $contact = $participant->getContact();
         $data = [
             'participant' => $participant,
