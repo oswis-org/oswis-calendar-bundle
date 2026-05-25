@@ -129,6 +129,7 @@ class ParticipantMailService
         $templatedEmail = $participantMail->getTemplatedEmail();
         if (ParticipantMail::TYPE_SUMMARY === $type) {
             $data = $this->embedQrPayments($templatedEmail, $participant, $data);
+            $this->attachIcsCalendar($templatedEmail, $participant);
         }
         $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName();
@@ -169,6 +170,137 @@ class ParticipantMailService
         MailCategoryInterface $category
     ): ?ParticipantMailGroup {
         return $this->groupRepository->findByUser($participant, $category);
+    }
+
+    /**
+     * Attach iCalendar (RFC 5545) .ics se základní VEVENT pro akci.
+     *
+     * Gmail / Outlook / Apple Mail / Thunderbird umí .ics nabídnout
+     * jednoklikem „Přidat do kalendáře". Bez závislosti na schema.org
+     * microdata, které dnes prakticky parsuje jen Apple Mail.
+     */
+    public function attachIcsCalendar(TemplatedEmail $templatedEmail, Participant $participant): void
+    {
+        $event = $participant->getEvent();
+        if (null === $event) {
+            return;
+        }
+        $startDate = $event->getStartDateTime();
+        $endDate = $event->getEndDateTime();
+        if (null === $startDate || null === $endDate) {
+            return;
+        }
+        $icsContent = $this->buildIcsContent($participant, $event, $startDate, $endDate);
+        $templatedEmail->attach($icsContent, 'akce.ics', 'text/calendar; charset=utf-8; method=PUBLISH');
+    }
+
+    private function buildIcsContent(
+        Participant $participant,
+        Event $event,
+        \DateTimeInterface $startDate,
+        \DateTimeInterface $endDate,
+    ): string {
+        $utc = new \DateTimeZone('UTC');
+        $fmt = static fn(\DateTimeInterface $dt): string => (clone \DateTimeImmutable::createFromInterface($dt))
+            ->setTimezone($utc)
+            ->format('Ymd\THis\Z');
+        $now = $fmt(new \DateTimeImmutable());
+        $uid = sprintf(
+            'oswis-participant-%d-event-%d@%s',
+            $participant->getId() ?? 0,
+            $event->getId() ?? 0,
+            $this->getMessageIdDomain(),
+        );
+        $summary = $this->escapeIcsText($event->getShortName() ?? $event->getName() ?? 'Akce');
+        $place = $event->getPlace();
+        $locationParts = [];
+        if ($place !== null) {
+            if ($place->getName()) {
+                $locationParts[] = $place->getName();
+            }
+            if ($place->getStreetAddress()) {
+                $locationParts[] = $place->getStreetAddress();
+            }
+            if ($place->getCity()) {
+                $locationParts[] = $place->getCity();
+            }
+        }
+        $location = $this->escapeIcsText(implode(', ', $locationParts));
+        $description = $this->escapeIcsText(sprintf(
+            'Vaše přihláška na akci %s (ID %d).',
+            $event->getName() ?? 'OSWIS',
+            $participant->getId() ?? 0,
+        ));
+
+        $lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//OSWIS//OSWIS//CS',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            'BEGIN:VEVENT',
+            'UID:'.$uid,
+            'DTSTAMP:'.$now,
+            'DTSTART:'.$fmt($startDate),
+            'DTEND:'.$fmt($endDate),
+            'SUMMARY:'.$summary,
+        ];
+        if ('' !== $location) {
+            $lines[] = 'LOCATION:'.$location;
+        }
+        if ('' !== $description) {
+            $lines[] = 'DESCRIPTION:'.$description;
+        }
+        $lines[] = 'STATUS:CONFIRMED';
+        $lines[] = 'TRANSP:OPAQUE';
+        $lines[] = 'END:VEVENT';
+        $lines[] = 'END:VCALENDAR';
+
+        // RFC 5545: lines longer than 75 octets MUST be folded. Simple impl:
+        // pokud > 75 bytes, fold s leading TAB (jak doporučuje RFC).
+        $folded = [];
+        foreach ($lines as $line) {
+            $folded[] = $this->foldIcsLine($line);
+        }
+
+        return implode("\r\n", $folded)."\r\n";
+    }
+
+    /**
+     * RFC 5545 §3.3.11 — text escape: backslash, semicolon, comma, newline.
+     */
+    private function escapeIcsText(string $text): string
+    {
+        $text = str_replace(['\\', "\r\n", "\n", "\r"], ['\\\\', '\\n', '\\n', '\\n'], $text);
+
+        return str_replace([';', ','], ['\\;', '\\,'], $text);
+    }
+
+    /**
+     * RFC 5545 §3.1 — fold lines longer than 75 octets.
+     */
+    private function foldIcsLine(string $line): string
+    {
+        if (strlen($line) <= 75) {
+            return $line;
+        }
+        $out = '';
+        $remaining = $line;
+        while (strlen($remaining) > 75) {
+            $out .= substr($remaining, 0, 75)."\r\n\t";
+            $remaining = substr($remaining, 75);
+        }
+
+        return $out.$remaining;
+    }
+
+    /**
+     * Doména pro UID iCal — používáme stejnou jako pro Message-ID
+     * (oswis.<domain>), aby UID byly globálně unikátní a vázané k naší doméně.
+     */
+    private function getMessageIdDomain(): string
+    {
+        return 'oswis.seznamovakup.cz';
     }
 
     public function embedQrPayments(TemplatedEmail $templatedEmail, Participant $participant, array $mailData): array

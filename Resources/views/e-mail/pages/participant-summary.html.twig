@@ -5,11 +5,20 @@
 {% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
 
 {% block content_outer %}
-    {# Schema.org metadata for Gmail inbox event cards. mj-raw INSIDE
-       mj-column would be hoisted out of the table-cell layout (MJML
-       quirk that broke earlier templates), wrap in mj-text + a
-       visually-hidden div instead. Microdata crawlers parse itemprop
-       attrs regardless of CSS visibility. #}
+    {# JSON-LD strukturovaná data (modernější forma microdata níže). Apple
+       Mail i Outlook v některých konfiguracích JSON-LD parsují stejně jako
+       microdata; pro spolehlivé „Add to Calendar" je hlavní cestou .ics
+       attachment, který přidává ParticipantMailService::attachIcsCalendar. #}
+    <mj-raw>
+        {% include '@OswisOrgOswisCalendar/other/summary/event-reservation-jsonld.html.twig' %}
+    </mj-raw>
+
+    {# Schema.org HTML5 microdata pro klienty, kteří JSON-LD neparsují
+       (typicky Apple Mail starší verze). mj-raw INSIDE mj-column would
+       be hoisted out of the table-cell layout (MJML quirk that broke
+       earlier templates), wrap in mj-text + a visually-hidden div
+       instead. Microdata crawlers parse itemprop attrs regardless of
+       CSS visibility. #}
     <mj-text>
         <div itemscope itemtype="http://schema.org/EventReservation" style="display:none;">
             {% if participant.deletedAt|default %}

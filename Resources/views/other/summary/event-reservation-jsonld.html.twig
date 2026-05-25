@@ -1,0 +1,55 @@
+{# JSON-LD strukturovaná data EventReservation (schema.org) — alternativa
+   k HTML5 microdata. Gmail Schema-tagged Email feature byl deprekován,
+   ale Apple Mail i Outlook v některých konfiguracích JSON-LD parsují
+   stejně jako microdata. Pro „Add to Calendar" akce v moderních mail
+   klientech to je standardní cesta vedle .ics attachment. #}
+{% set event = participant.event(false)|default %}
+{% set place = event.place|default %}
+{% set organizerContact = event.organizer.contact|default %}
+{% if event %}
+{% spaceless %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "EventReservation",
+    "reservationNumber": "{{ participant.id }}",
+    "reservationStatus": "https://schema.org/{{ participant.deletedAt|default ? 'ReservationCancelled' : 'ReservationConfirmed' }}",
+    "modifiedTime": "{{ participant.updatedAt|date('c') }}",
+    "underName": {
+        "@type": "Person",
+        "name": "{{ participant.contact.name|default('')|e('js') }}"
+    },
+    "reservationFor": {
+        "@type": "Event",
+        "name": "{{ event.name|default('')|e('js') }}",
+        "url": "{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug|default})) }}",
+        "startDate": "{{ event.startDateTime|date('c')|default('') }}",
+        "endDate": "{{ event.endDateTime|date('c')|default('') }}"
+        {% if place %}
+        ,"location": {
+            "@type": "Place",
+            "name": "{{ place.name|default('')|e('js') }}"
+            {% if place.streetAddress|default or place.city|default or place.postalCode|default %}
+            ,"address": {
+                "@type": "PostalAddress",
+                {% if place.streetAddress|default %}"streetAddress": "{{ place.streetAddress|e('js') }}",{% endif %}
+                {% if place.city|default %}"addressLocality": "{{ place.city|e('js') }}",{% endif %}
+                {% if place.postalCode|default %}"postalCode": "{{ place.postalCode|e('js') }}",{% endif %}
+                "addressCountry": "CZ"
+            }
+            {% endif %}
+        }
+        {% endif %}
+        {% if organizerContact %}
+        ,"organizer": {
+            "@type": "Organization",
+            "name": "{{ organizerContact.name|default('')|e('js') }}"
+        }
+        {% endif %}
+    },
+    "totalPrice": "{{ participant.price|default(0) }}",
+    "priceCurrency": "CZK"
+}
+</script>
+{% endspaceless %}
+{% endif %}
