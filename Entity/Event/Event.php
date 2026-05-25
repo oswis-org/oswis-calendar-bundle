@@ -96,7 +96,13 @@ class Event implements NameableInterface
     #[JoinColumn(nullable: true)]
     protected ?Place $place = null;
 
-    #[ManyToOne(targetEntity: Participant::class)]
+    // fetch=EAGER: Doctrine ORM 3's strict identity-map check
+    // (EntityIdentityCollisionException) throws when a Participant lazy ghost
+    // is initialised mid-request after the same participant was already
+    // hydrated elsewhere (e.g. summary-mail render → registration thank-you
+    // render). Eager-loading the FK avoids the second proxy resolution. Costs
+    // one JOIN per Event query in exchange for working registrations.
+    #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER')]
     #[JoinColumn(nullable: true)]
     protected ?Participant $organizer = null;
 
