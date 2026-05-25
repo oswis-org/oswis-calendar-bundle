@@ -1,42 +1,37 @@
-<!--suppress ALL -->
+{# Plain HTML table — rendered inside <mj-text> in participant-summary.html.twig.
+   Used to be Inky (<container>/<row>/<columns>) which the MJML pipeline does NOT
+   convert, so tags leaked through as unknown elements and the QR block visually
+   collapsed. Each <img> references a CID attachment embedded by
+   ParticipantMailService::embedQrPayments. #}
 {% if depositQr|default or restQr|default %}
-    <container style="border: 3px solid #006FAD;">
-        <row class="no-gutter">
-            <columns small="12">
-                <h3 class="black text-center no-gutter">QR&nbsp;PLATBA</h3>
-            </columns>
-        </row>
-        <row class="no-gutter">
-            <columns small="1" large="1"></columns>
-            <columns small="10" large="4">
-                <h4 class="text-center no-gutter">Záloha</h4>
-                <center>
-                    <img src='{{ depositQr|default }}' alt='Záloha - QR Platba' title='Záloha - QR Platba'>
-                </center>
-                {% if participant.depositValue|default %}
-                    <h5 class="text-center small dark-gray no-gutter">{{ participant.depositValue }},-&nbsp;Kč</h5>
+    <div style="border: 3px solid #006FAD; padding: 12px; margin-top: 18px;">
+        <h3 style="color: #006FAD; text-align: center; margin: 0 0 8px;">QR&nbsp;PLATBA</h3>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse: collapse;">
+            <tr>
+                {% if depositQr|default %}
+                    <td align="center" style="vertical-align: top; padding: 0 8px; width: 50%;">
+                        <h4 style="color: #006FAD; margin: 0 0 6px;">Záloha</h4>
+                        <img src="{{ depositQr }}" alt="Záloha - QR Platba" title="Záloha - QR Platba" style="max-width: 100%; height: auto;">
+                        {% if participant.depositValue|default %}
+                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ participant.depositValue }},-&nbsp;Kč</div>
+                        {% endif %}
+                    </td>
                 {% endif %}
-            </columns>
-            <columns small="0" large="2"></columns>
-            <columns small="12" large="4">
-                <h4 class="text-center no-gutter">Doplatek</h4>
-                <center>
-                    <img src='{{ restQr|default }}' alt='Doplatek - QR Platba' title='Doplatek - QR Platba'>
-                </center>
-                {% if participant.priceRest|default %}
-                    <h5 class="text-center small dark-gray no-gutter">{{ participant.priceRest }},-&nbsp;Kč</h5>
+                {% if restQr|default %}
+                    <td align="center" style="vertical-align: top; padding: 0 8px; width: 50%;">
+                        <h4 style="color: #006FAD; margin: 0 0 6px;">Doplatek</h4>
+                        <img src="{{ restQr }}" alt="Doplatek - QR Platba" title="Doplatek - QR Platba" style="max-width: 100%; height: auto;">
+                        {% if participant.priceRest|default %}
+                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ participant.priceRest }},-&nbsp;Kč</div>
+                        {% endif %}
+                    </td>
                 {% endif %}
-            </columns>
-            <columns small="1" large="1"></columns>
-        </row>
-        <row class="no-gutter">
-            <columns small="12">
-                <p class="text-center small dark-gray no-gutter">
-                    Pro zaslání zálohy i&nbsp;doplatku můžeš použít
-                    <b><a href='http://qr-platba.cz/pro-uzivatele/' title='Co je QR platba?' target='_blank'>QR&nbsp;platbu</a></b>.
-                    <br>Naskenuj kód do&nbsp;aplikace tvé&nbsp;banky a&nbsp;všechny údaje se ti předvyplní.
-                </p>
-            </columns>
-        </row>
-    </container>
+            </tr>
+        </table>
+        <p style="text-align: center; color: #606060; font-size: 0.85em; margin: 10px 0 0;">
+            Pro zaslání zálohy i&nbsp;doplatku můžeš použít
+            <b><a href="http://qr-platba.cz/pro-uzivatele/" title="Co je QR platba?" target="_blank">QR&nbsp;platbu</a></b>.
+            <br>Naskenuj kód do&nbsp;aplikace tvé&nbsp;banky a&nbsp;všechny údaje se ti předvyplní.
+        </p>
+    </div>
 {% endif %}

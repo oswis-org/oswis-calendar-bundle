@@ -84,13 +84,17 @@
 
 <h3>Událost</h3>
 <ul>
-    {% for registration in registrations %}
-        <li style="{{ registration.deletedAt ? 'text-decoration: line-through; color: grey;' : '' }}">
+    {% for registration in registrations|default(participant.participantRegistrations|default([])) %}
+        <li style="{{ registration.deletedAt|default ? 'text-decoration: line-through; color: grey;' : '' }}">
             <b>
-                <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': registration.event.slug|default})) }}"
-                   target="_blank">
+                {% if registration.event.slug|default %}
+                    <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': registration.event.slug})) }}"
+                       target="_blank">
+                        {{ registration.event.name|default }}
+                    </a>
+                {% else %}
                     {{ registration.event.name|default }}
-                </a>
+                {% endif %}
             </b>
         </li>
     {% endfor %}

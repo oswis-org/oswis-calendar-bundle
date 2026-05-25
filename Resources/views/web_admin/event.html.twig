@@ -3,8 +3,8 @@
 {% block body_content %}
     <div class="container">
         <div class="row">
-            <div class="col">
-                <h2>
+            <div class="col" style="display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;">
+                <h2 style="margin: 0;">
                     Přehled události
                     {% if event.deletedAt|default %}
                         <span class="badge bg-danger" style="font-size: .55em; vertical-align: middle;">
@@ -12,35 +12,33 @@
                         </span>
                     {% endif %}
                 </h2>
+                {% if is_granted('ROLE_ADMIN') and event.slug|default %}
+                    <div style="display: inline-flex; gap: .5rem; flex-wrap: wrap; align-items: center;">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{{ path('oswis_org_oswis_calendar_web_admin_event_edit', { eventSlug: event.slug }) }}">
+                            ✎ Upravit
+                        </a>
+                        {% if event.deletedAt|default %}
+                            <form method="post"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_event_restore', { eventSlug: event.slug }) }}"
+                                  style="display: inline-block; margin: 0;"
+                                  onsubmit="return confirm('Opravdu obnovit událost?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('event_restore_' ~ event.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
+                            </form>
+                        {% else %}
+                            <form method="post"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_event_delete', { eventSlug: event.slug }) }}"
+                                  style="display: inline-block; margin: 0;"
+                                  onsubmit="return confirm('Opravdu smazat? Smazání lze obnovit.');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('event_delete_' ~ event.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
         </div>
-        {% if is_granted('ROLE_ADMIN') and event.slug|default %}
-            <div class="row" style="margin: .5rem 0 1rem;">
-                <div class="col-12" style="display: flex; gap: .5rem; flex-wrap: wrap;">
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_event_edit', { eventSlug: event.slug }) }}">
-                        ✎ Upravit
-                    </a>
-                    {% if event.deletedAt|default %}
-                        <form method="post"
-                              action="{{ path('oswis_org_oswis_calendar_web_admin_event_restore', { eventSlug: event.slug }) }}"
-                              style="display: inline-block;"
-                              onsubmit="return confirm('Opravdu obnovit událost?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('event_restore_' ~ event.id) }}">
-                            <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
-                        </form>
-                    {% else %}
-                        <form method="post"
-                              action="{{ path('oswis_org_oswis_calendar_web_admin_event_delete', { eventSlug: event.slug }) }}"
-                              style="display: inline-block;"
-                              onsubmit="return confirm('Opravdu smazat? Smazání lze obnovit.');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('event_delete_' ~ event.id) }}">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
-                        </form>
-                    {% endif %}
-                </div>
-            </div>
-        {% endif %}
         <div class="row">
             <div class="col-12 col-xl-6">
                 <div class="container">
@@ -108,7 +106,11 @@
                                 <thead>
                                 <tr>
                                     <th>Rozsah</th>
-                                    <th>Využití</th>
+                                    <th class="text-center">Cena</th>
+                                    <th class="text-center">Záloha</th>
+                                    <th class="text-center">Reg. od</th>
+                                    <th class="text-center">Reg. do</th>
+                                    <th class="text-center">Využití</th>
                                 </tr>
                                 </thead>
                                 {% for regRange in offers %}
@@ -119,6 +121,23 @@
                                             {% if regRange.shortName != regRange.name %}
                                                 <span class="block small">{{ regRange.name|default }}</span>
                                             {% endif %}
+                                            {% if regRange.requiredRegRange|default %}
+                                                <span class="block small text-muted">vyžaduje: {{ regRange.requiredRegRange.shortName|default(regRange.requiredRegRange.slug) }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% set rangePrice = regRange.getPrice(null, true)|default(0) %}
+                                            {% if rangePrice > 0 %}{{ rangePrice }}&nbsp;Kč{% else %}—{% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% set rangeDeposit = regRange.getDepositValue(null, true)|default(0) %}
+                                            {% if rangeDeposit > 0 %}{{ rangeDeposit }}&nbsp;Kč{% else %}—{% endif %}
+                                        </td>
+                                        <td class="text-center small text-muted">
+                                            {{ regRange.startDateTime|date('j. n. Y H:i')|default('—') }}
+                                        </td>
+                                        <td class="text-center small text-muted">
+                                            {{ regRange.endDate|date('j. n. Y H:i')|default('—') }}
                                         </td>
                                         <td class="text-center">
                                             {% if regRange.usageInt|default > 0 %}
@@ -135,6 +154,50 @@
                                     </tr>
                                     </tbody>
                                 {% endfor %}
+                            </table>
+                        </div>
+
+                        <div class="col-12">
+                            <h3>Příznaky <small class="text-muted">(modifikátory ceny i zálohy ke spáření nabídce)</small></h3>
+                            <table class="list">
+                                <thead>
+                                <tr>
+                                    <th>Skupina příznaků / příznak</th>
+                                    <th class="text-center">Cena Δ</th>
+                                    <th class="text-center">Záloha Δ</th>
+                                    <th class="text-center">Kapacita</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for regRange in offers %}
+                                    {% for flagGroupOffer in regRange.flagGroupRanges|default([]) %}
+                                        <tr style="background-color: #f4f4f4;">
+                                            <td colspan="4">
+                                                <strong>{{ flagGroupOffer.name|default(flagGroupOffer.flagCategory.name|default('—')) }}</strong>
+                                                <span class="small text-muted"> &middot; rozsah: {{ regRange.shortName|default(regRange.slug) }}</span>
+                                            </td>
+                                        </tr>
+                                        {% for flagOffer in flagGroupOffer.flagOffers|default([]) %}
+                                            <tr>
+                                                <td style="padding-left: 2em;">
+                                                    {{ flagOffer.name|default(flagOffer.flag.name|default('—')) }}
+                                                </td>
+                                                <td class="text-center {% if flagOffer.price|default(0) > 0 %}text-success{% elseif flagOffer.price|default(0) < 0 %}text-danger{% endif %}">
+                                                    {% set p = flagOffer.price|default(0) %}
+                                                    {% if p > 0 %}+{{ p }}{% elseif p < 0 %}{{ p }}{% else %}0{% endif %}&nbsp;Kč
+                                                </td>
+                                                <td class="text-center {% if flagOffer.depositValue|default(0) > 0 %}text-success{% elseif flagOffer.depositValue|default(0) < 0 %}text-danger{% endif %}">
+                                                    {% set d = flagOffer.depositValue|default(0) %}
+                                                    {% if d > 0 %}+{{ d }}{% elseif d < 0 %}{{ d }}{% else %}0{% endif %}&nbsp;Kč
+                                                </td>
+                                                <td class="text-center small">
+                                                    {% if flagOffer.baseCapacity|default(null) %}{{ flagOffer.baseCapacity }}{% else %}—{% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endfor %}
+                                </tbody>
                             </table>
                         </div>
 

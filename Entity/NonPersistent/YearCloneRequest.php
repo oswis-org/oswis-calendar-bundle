@@ -15,8 +15,9 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 final readonly class YearCloneRequest
 {
     /**
-     * @param array<int, OfferOverride> $offerOverrides keyed by source RegistrationOffer.id
-     * @param array<int, FlagOverride>  $flagOverrides  keyed by source RegistrationFlagOffer.id
+     * @param array<int, OfferOverride>     $offerOverrides keyed by source RegistrationOffer.id
+     * @param array<int, FlagOverride>      $flagOverrides  keyed by source RegistrationFlagOffer.id
+     * @param array<int, SubEventOverride>  $subEventOverrides keyed by source sub-event.id — explicit per-turnus dates so the operator picks the real start/end (Sat–Tue) instead of inheriting a uniform offset from the super event start
      */
     public function __construct(
         public Event $sourceYearEvent,
@@ -27,6 +28,7 @@ final readonly class YearCloneRequest
         public bool $cloneSubActivities = true,
         public array $offerOverrides = [],
         public array $flagOverrides = [],
+        public array $subEventOverrides = [],
         public bool $dryRun = false,
     ) {
     }

@@ -14,6 +14,9 @@ use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\OfferOverride;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\YearCloneRequest;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagOverride;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\SubEventOverride;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
@@ -52,6 +55,28 @@ final class YearCloneService
         return $repo;
     }
 
+    /**
+     * Look up an Event by slug while bypassing the Gedmo soft-delete filter.
+     * Soft-deleted rows still occupy their slug logically (no UNIQUE constraint
+     * exists), so re-cloning a year after the previous clone was soft-deleted
+     * would otherwise produce two rows with the same slug.
+     */
+    private function findEventBySlugIncludingDeleted(string $slug): ?Event
+    {
+        $filters = $this->em->getFilters();
+        $wasEnabled = $filters->isEnabled('softdeleteable');
+        if ($wasEnabled) {
+            $filters->disable('softdeleteable');
+        }
+        try {
+            return $this->eventRepository->findOneBy(['slug' => $slug]);
+        } finally {
+            if ($wasEnabled) {
+                $filters->enable('softdeleteable');
+            }
+        }
+    }
+
     public function cloneYear(YearCloneRequest $request): Event
     {
         $this->validate($request);
@@ -75,10 +100,13 @@ final class YearCloneService
     }
 
     /**
-     * Substitute the four-digit source year token in a slug with the target year.
-     * Lookbehind/lookahead on non-digit so `kemp-2025-2` → `kemp-2026-2` and
-     * standalone `2025` strings substitute, but `12025` or `20254` do not.
-     * Falls back to appending `-{targetYear}` if no source-year token is found.
+     * Substitute the four-digit source year token with the target year inside
+     * any string (slug, name, short name, description). Lookbehind/lookahead
+     * on non-digit so `kemp-2025-2` → `kemp-2026-2` and standalone `2025`
+     * strings substitute, but `12025` or `20254` do not. For *slugs* (caller's
+     * context), falls back to appending `-{targetYear}` if no source-year
+     * token is found. For *names*, the caller passes the source string back
+     * if substitution didn't fire (handled by substituteYearInName).
      */
     public function substituteYearInSlug(string $sourceSlug, int $sourceYear, int $targetYear): string
     {
@@ -89,6 +117,22 @@ final class YearCloneService
         }
 
         return $sourceSlug.'-'.$targetYear;
+    }
+
+    /**
+     * Replace the source year inside a human-readable name / short name /
+     * description. Unlike slugs, names don't get a `-{year}` suffix if the
+     * year token isn't present — the source string is returned unchanged.
+     */
+    public function substituteYearInName(?string $source, int $sourceYear, int $targetYear): ?string
+    {
+        if (null === $source || '' === $source) {
+            return $source;
+        }
+        $pattern = sprintf('/(?<!\d)(%d)(?!\d)/', $sourceYear);
+        $replaced = preg_replace($pattern, (string) $targetYear, $source);
+
+        return is_string($replaced) ? $replaced : $source;
     }
 
     /**
@@ -105,11 +149,23 @@ final class YearCloneService
         if ($request->targetYearStartDate >= $request->targetYearEndDate) {
             throw new \InvalidArgumentException('targetYearStartDate must be before targetYearEndDate.');
         }
-        if ($request->sourceYearEvent->getStartYear() === (int) $request->targetYearStartDate->format('Y')) {
+        if ('' === trim($request->targetYearSlug)) {
+            throw new \InvalidArgumentException('targetYearSlug must not be empty.');
+        }
+        // Source-event year must be known up-front: substituteYearInSlug expects
+        // a non-null int and the duplicate-slug check below depends on it.
+        $sourceYear = $request->sourceYearEvent->getStartYear();
+        if (null === $sourceYear) {
+            throw new \InvalidArgumentException('Source event missing startDateTime — cannot determine source year.');
+        }
+        $targetYear = (int) $request->targetYearStartDate->format('Y');
+        if ($sourceYear === $targetYear) {
             throw new \InvalidArgumentException('Cannot clone a year onto itself.');
         }
-        $existing = $this->eventRepository->findOneBy(['slug' => $request->targetYearSlug]);
-        if (null !== $existing) {
+        // Slug uniqueness must ignore soft-deleted rows but the lookup must still
+        // catch them — otherwise a second wizard run on a soft-deleted clone
+        // would silently overwrite the slug.
+        if (null !== $this->findEventBySlugIncludingDeleted($request->targetYearSlug)) {
             throw new DuplicateSlugException($request->targetYearSlug);
         }
         // Sub-event slug pre-check: if any sub-event of the source year has
@@ -117,8 +173,6 @@ final class YearCloneService
         // runs. Without this, a second wizard run with the same source year
         // would silently write duplicate sub-event slugs (Doctrine has no
         // UNIQUE constraint on Event.slug) and break slug-based lookups.
-        $sourceYear = $request->sourceYearEvent->getStartYear();
-        $targetYear = (int) $request->targetYearStartDate->format('Y');
         foreach ($request->sourceYearEvent->getSubEvents() as $subEvent) {
             $sourceSlug = $subEvent->getSlug();
             if (null === $sourceSlug || '' === $sourceSlug) {
@@ -128,7 +182,7 @@ final class YearCloneService
             if ($targetSlug === $sourceSlug) {
                 continue;
             }
-            if (null !== $this->eventRepository->findOneBy(['slug' => $targetSlug])) {
+            if (null !== $this->findEventBySlugIncludingDeleted($targetSlug)) {
                 throw new DuplicateSlugException($targetSlug);
             }
         }
@@ -171,6 +225,7 @@ final class YearCloneService
             $request->cloneSubActivities,
             $eventCloneMap,
             $summary,
+            $request->subEventOverrides,
         );
 
         $offerCloneMap = $this->cloneRegistrationOffersPass1(
@@ -184,8 +239,86 @@ final class YearCloneService
         );
         $this->remapRequiredRegRanges($source, $eventCloneMap, $offerCloneMap);
         $this->cloneFlagTree($source, $offerCloneMap, $sourceYear, $targetYear, $request->flagOverrides, $summary);
+        $this->cloneOrganizerParticipants($source, $newYear, $offerCloneMap, $summary);
 
         return $newYear;
+    }
+
+    /**
+     * Clone every Participant of category=organizer attached to the source
+     * super-event into the new year. Without this step the event detail
+     * page renders an empty „organizátor" card — the right-hand box next
+     * to the place map — because ParticipantService::getOrganizer relies
+     * on a Participant row with category type ORGANIZER.
+     *
+     * Organizers (typically the operating organization like STUDENTLIFE z.s.)
+     * are carried over verbatim — same contact, same priority, formal /
+     * informal flag preserved. The new Participant is wired to the cloned
+     * RegistrationOffer matched by source ID; if the matching clone is
+     * missing for some reason, the source participant is skipped with a
+     * warning so the overall clone still succeeds.
+     *
+     * @param array<int, RegistrationOffer> $offerCloneMap keyed by source offer.id
+     * @param array{event_count:int, event_slugs:list<string>, offer_count:int, offer_slugs:list<string>, flag_group_offer_count:int, flag_offer_count:int} $summary mutated in place
+     */
+    private function cloneOrganizerParticipants(
+        Event $source,
+        Event $newYear,
+        array $offerCloneMap,
+        array &$summary,
+    ): void {
+        if (!array_key_exists('organizer_count', $summary)) {
+            $summary['organizer_count'] = 0;
+            $summary['organizer_slugs'] = [];
+        }
+        $sourceOrganizers = $this->em->getRepository(Participant::class)->findBy(['event' => $source]);
+        foreach ($sourceOrganizers as $sourceParticipant) {
+            if (!$sourceParticipant instanceof Participant) {
+                continue;
+            }
+            $category = $sourceParticipant->getParticipantCategory(true);
+            if (null === $category || ParticipantCategory::TYPE_ORGANIZER !== $category->getType()) {
+                continue;
+            }
+            $contact = $sourceParticipant->getContact();
+            $sourceOffer = $sourceParticipant->getOffer(true);
+            if (null === $contact || null === $sourceOffer) {
+                $this->logger->warning(
+                    'YearCloneService: organizer participant #{id} skipped — missing contact or offer.',
+                    ['id' => $sourceParticipant->getId()],
+                );
+                continue;
+            }
+            $clonedOffer = $offerCloneMap[$sourceOffer->getId()] ?? null;
+            if (!$clonedOffer instanceof RegistrationOffer) {
+                $this->logger->warning(
+                    'YearCloneService: organizer participant #{id} skipped — offer #{offerId} not in clone map.',
+                    ['id' => $sourceParticipant->getId(), 'offerId' => $sourceOffer->getId()],
+                );
+                continue;
+            }
+            try {
+                $clone = new Participant($clonedOffer, $contact);
+                $clone->setFormal($sourceParticipant->isFormal(false));
+                $clone->setPriority($sourceParticipant->getPriority());
+                // No variableSymbol carry-over — organization participants
+                // don't pay; if a clone ever needs a VS it should be set
+                // by the operator. activatedAt + userConfirmedAt start NULL
+                // so the row mirrors a fresh registration; admin can confirm.
+                $this->em->persist($clone);
+                $summary['organizer_count']++;
+                $summary['organizer_slugs'][] = $contact->getSlug() ?? ('#'.$sourceParticipant->getId());
+                $this->logger->info(
+                    'YearCloneService: cloned organizer participant for {slug} into "{event}".',
+                    ['slug' => $contact->getSlug(), 'event' => $newYear->getSlug()],
+                );
+            } catch (\Throwable $e) {
+                $this->logger->warning(
+                    'YearCloneService: organizer clone failed for participant #{id}: {msg}.',
+                    ['id' => $sourceParticipant->getId(), 'msg' => $e->getMessage()],
+                );
+            }
+        }
     }
 
     /**
@@ -255,14 +388,14 @@ final class YearCloneService
             null,
             $source->getEmptyPlaceholder(),
         );
-        $clone->setName($source->getName() ?? '');
-        $clone->setShortName($source->getShortName());
-        $clone->setDescription($source->getDescription());
-        $clone->setNote($source->getNote());
-        $clone->setInternalNote($source->getInternalNote());
+        $clone->setName($this->substituteYearInName($source->getName(), $sourceYear, $targetYear) ?? '');
+        $clone->setShortName($this->substituteYearInName($source->getShortName(), $sourceYear, $targetYear));
+        $clone->setDescription($this->substituteYearInName($source->getDescription(), $sourceYear, $targetYear));
+        $clone->setNote($this->substituteYearInName($source->getNote(), $sourceYear, $targetYear));
+        $clone->setInternalNote($this->substituteYearInName($source->getInternalNote(), $sourceYear, $targetYear));
         $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug(), $sourceYear, $targetYear));
-        $clone->setPublicOnWeb(false);
-        $clone->setPublicInApp(false);
+        $clone->setPublicOnWeb($source->isPublicOnWeb());
+        $clone->setPublicInApp($source->isPublicInApp());
 
         foreach ($source->getFlagOffers() as $sourceFlagOffer) {
             $sourceFlagOfferId = $sourceFlagOffer->getId();
@@ -304,14 +437,14 @@ final class YearCloneService
             $source->getFlagAmountRange(),
             null,
         );
-        $clone->setName($source->getName() ?? '');
-        $clone->setShortName($source->getShortName());
-        $clone->setDescription($source->getDescription());
-        $clone->setNote($source->getNote());
-        $clone->setInternalNote($source->getInternalNote());
+        $clone->setName($this->substituteYearInName($source->getName(), $sourceYear, $targetYear) ?? '');
+        $clone->setShortName($this->substituteYearInName($source->getShortName(), $sourceYear, $targetYear));
+        $clone->setDescription($this->substituteYearInName($source->getDescription(), $sourceYear, $targetYear));
+        $clone->setNote($this->substituteYearInName($source->getNote(), $sourceYear, $targetYear));
+        $clone->setInternalNote($this->substituteYearInName($source->getInternalNote(), $sourceYear, $targetYear));
         $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug(), $sourceYear, $targetYear));
-        $clone->setPublicOnWeb(false);
-        $clone->setPublicInApp(false);
+        $clone->setPublicOnWeb($source->isPublicOnWeb());
+        $clone->setPublicInApp($source->isPublicInApp());
         $clone->setBaseUsage(0);
         $clone->setFullUsage(0);
 
@@ -319,7 +452,8 @@ final class YearCloneService
     }
 
     /**
-     * @param array<string, Event> $eventCloneMap keyed by source slug; mutated in-place
+     * @param array<string, Event>                $eventCloneMap  keyed by source slug; mutated in-place
+     * @param array<int, SubEventOverride>        $subEventOverrides keyed by source sub-event id
      * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
      */
     private function cloneSubtreeRecursively(
@@ -331,6 +465,7 @@ final class YearCloneService
         bool $cloneSubActivities,
         array &$eventCloneMap,
         array &$summary,
+        array $subEventOverrides = [],
     ): void {
         foreach ($source->getSubEvents() as $sourceChild) {
             $categoryType = $sourceChild->getCategory()?->getType();
@@ -353,13 +488,28 @@ final class YearCloneService
                 $this->logger->warning('Skipping child with missing dates: {slug}', ['slug' => $sourceChild->getSlug()]);
                 continue;
             }
-            $newChildStart = (new \DateTimeImmutable())->setTimestamp($childStart->getTimestamp() + $timeOffsetSeconds);
-            $newChildEnd = (new \DateTimeImmutable())->setTimestamp($childEnd->getTimestamp() + $timeOffsetSeconds);
+            // Default: uniform timeOffset from super event start. Override:
+            // if the operator entered explicit per-turnus dates in Step 2 of
+            // the wizard (subEventOverrides keyed by source.id), use those.
+            // Operator overrides cover the realistic case where day-of-week
+            // and weekend gap don't line up between source and target years.
+            $childOverride = ($childId = $sourceChild->getId()) !== null
+                ? ($subEventOverrides[$childId] ?? null) : null;
+            if ($childOverride?->startDateTime !== null) {
+                $newChildStart = $childOverride->startDateTime;
+            } else {
+                $newChildStart = (new \DateTimeImmutable())->setTimestamp($childStart->getTimestamp() + $timeOffsetSeconds);
+            }
+            if ($childOverride?->endDateTime !== null) {
+                $newChildEnd = $childOverride->endDateTime;
+            } else {
+                $newChildEnd = (new \DateTimeImmutable())->setTimestamp($childEnd->getTimestamp() + $timeOffsetSeconds);
+            }
 
             $newChild = $this->cloneEventShallow(
                 $sourceChild,
                 $this->substituteYearInSlug($sourceChild->getSlug(), $sourceYear, $targetYear),
-                $sourceChild->getName() ?? '',
+                $this->substituteYearInName($sourceChild->getName(), $sourceYear, $targetYear) ?? '',
                 $newChildStart,
                 $newChildEnd,
                 $newParent,
@@ -379,6 +529,7 @@ final class YearCloneService
                 $cloneSubActivities,
                 $eventCloneMap,
                 $summary,
+                $subEventOverrides,
             );
         }
     }
@@ -510,12 +661,12 @@ final class YearCloneService
         ?OfferOverride $override,
     ): RegistrationOffer {
         $clone = new RegistrationOffer();
-        $clone->setName($source->getName() ?? '');
+        $clone->setName($this->substituteYearInName($source->getName(), $sourceYear, $targetYear) ?? '');
         $clone->setForcedSlug($this->substituteYearInSlug($source->getSlug(), $sourceYear, $targetYear));
-        $clone->setShortName($source->getShortName());
-        $clone->setDescription($source->getDescription());
-        $clone->setNote($source->getNote());
-        $clone->setInternalNote($source->getInternalNote());
+        $clone->setShortName($this->substituteYearInName($source->getShortName(), $sourceYear, $targetYear));
+        $clone->setDescription($this->substituteYearInName($source->getDescription(), $sourceYear, $targetYear));
+        $clone->setNote($this->substituteYearInName($source->getNote(), $sourceYear, $targetYear));
+        $clone->setInternalNote($this->substituteYearInName($source->getInternalNote(), $sourceYear, $targetYear));
         $clone->setEvent($newEvent);
         $clone->setParticipantCategory($source->getParticipantCategory());
         $clone->setPriority($source->getPriority());
@@ -523,8 +674,8 @@ final class YearCloneService
         $clone->setSurrogate($source->isSurrogate());
         $clone->setSuperEventRequired($source->isSuperEventRequired());
         $clone->setRequiredRegRange(null); // remap in Pass 7b
-        $clone->setPublicOnWeb(false);
-        $clone->setPublicInApp(false);
+        $clone->setPublicOnWeb($source->isPublicOnWeb());
+        $clone->setPublicInApp($source->isPublicInApp());
         // Reset per-year usage counters; capacity comes from source/override below.
         $clone->setBaseUsage(0);
         $clone->setFullUsage(0);
@@ -540,8 +691,14 @@ final class YearCloneService
         }
 
         // Price + capacity: source values; override wins if provided.
-        $sourcePrice = $source->getPrice();
-        $sourceDeposit = $source->getDepositValue();
+        // recursive=false → keep the price LAYERED across the offer tree
+        // (super offer holds the price, sub-turnus offers are 0/NULL).
+        // Passing recursive=true here previously caused a doubling bug:
+        // 1. turnus 2026 inherited 5390 from required super, the wizard
+        // saved 5390 onto its own row, and runtime then summed 5390 + 5390
+        // = 10780 Kč when rendering the participant's price.
+        $sourcePrice = $source->getPrice(null, false);
+        $sourceDeposit = $source->getDepositValue(null, false);
         $overridePrice = $override === null ? null : $override->price;
         $overrideDeposit = $override === null ? null : $override->depositValue;
         $overrideBaseCapacity = $override === null ? null : $override->baseCapacity;
@@ -578,23 +735,42 @@ final class YearCloneService
         \DateTimeInterface $newEnd,
         ?Event $newSuperEvent,
     ): Event {
+        // Derive years from the source and target start dates so all
+        // year-bearing text (shortName, description, note, internal note)
+        // gets the same substitution as the slug/name.
+        $sourceYear = $source->getStartYear() ?? (int) $newStart->format('Y');
+        $targetYear = (int) $newStart->format('Y');
+
         $clone = new Event();
         $clone->setName($newName);
         $clone->setForcedSlug($newSlug);
-        $clone->setShortName($source->getShortName());
-        $clone->setDescription($source->getDescription());
-        $clone->setNote($source->getNote());
-        $clone->setInternalNote($source->getInternalNote());
+        $clone->setShortName($this->substituteYearInName($source->getShortName(), $sourceYear, $targetYear));
+        $clone->setDescription($this->substituteYearInName($source->getDescription(), $sourceYear, $targetYear));
+        $clone->setNote($this->substituteYearInName($source->getNote(), $sourceYear, $targetYear));
+        $clone->setInternalNote($this->substituteYearInName($source->getInternalNote(), $sourceYear, $targetYear));
         $clone->setStartDateTime(\DateTime::createFromInterface($newStart));
         $clone->setEndDateTime(\DateTime::createFromInterface($newEnd));
         $clone->setColor($source->getColor());
         $clone->setPlace($source->getPlace(false));
         $clone->setOrganizer($source->getOrganizer(false));
+        // Bank account is what summary mails and QR payments read from. The
+        // 2026 launch found the cloned ročník with no account → e-mails fell
+        // back to „dle webových stránek" and QR generation skipped entirely.
+        $sourceBank = $source->getBankAccount(false);
+        if (null !== $sourceBank && !empty($sourceBank->getFull())) {
+            $clone->setBankAccountPrefix($sourceBank->getPrefix());
+            $clone->setBankAccountNumber($sourceBank->getAccountNumber());
+            $clone->setBankAccountBank($sourceBank->getBankCode());
+        }
         $clone->setCategory($source->getCategory());
         $clone->setGroup($source->getGroup());
         $clone->setSuperEvent($newSuperEvent);
-        $clone->setPublicOnWeb(false);
-        $clone->setPublicInApp(false);
+        // Inherit visibility flags from source — admin who runs the wizard
+        // explicitly chose to clone a year, so the new ročník should be
+        // visible on the same surfaces as the source. Admin can flip flags
+        // later via the event edit screen.
+        $clone->setPublicOnWeb($source->isPublicOnWeb());
+        $clone->setPublicInApp($source->isPublicInApp());
 
         // EventContent: text values copied verbatim. Admin reviews + edits later.
         // EventImage / EventFile intentionally skipped — orphanRemoval on the source
