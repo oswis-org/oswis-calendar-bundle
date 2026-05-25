@@ -306,6 +306,16 @@ final class YearCloneService
                 // by the operator. activatedAt + userConfirmedAt start NULL
                 // so the row mirrors a fresh registration; admin can confirm.
                 $this->em->persist($clone);
+                // Re-point Event.organizer FK to the new participant. Without
+                // this the cloned super event's organizer_id still points to
+                // the source year's participant — registration form rendering
+                // then triggers EntityIdentityCollisionException on the
+                // re-loaded source participant (Doctrine 3 strict identity
+                // map). Real-world miss at 2026 launch: prod 500 on POST
+                // /akce/prihlaska/seznamovak-up-2026-1-turnus-prihlasky.
+                if ($sourceParticipant === $source->getOrganizer(false)) {
+                    $newYear->setOrganizer($clone);
+                }
                 $summary['organizer_count']++;
                 $summary['organizer_slugs'][] = $contact->getSlug() ?? ('#'.$sourceParticipant->getId());
                 $this->logger->info(

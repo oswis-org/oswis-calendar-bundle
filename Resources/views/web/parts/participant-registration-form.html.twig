@@ -2,7 +2,15 @@
 <header>
     <h2 class="text-uppercase mb-2">Nový účastník</h2>
 </header>
-{{ form_start(form) }}
+{# Long-standing iOS Safari issue: form gets submitted multiple times on
+   slow connections (user re-taps, browser auto-retries) → duplicate
+   participants. data-oswis-submitting flag + button disable short-circuits
+   the second tap; server-side dedup in ParticipantService::create catches
+   genuine races. #}
+{{ form_start(form, {'attr': {
+    'data-oswis-once': 'true',
+    'onsubmit': 'if (this.dataset.oswisSubmitting === "true") { return false; } this.dataset.oswisSubmitting = "true"; this.querySelectorAll("button[type=submit]").forEach(function(b) { b.disabled = true; b.dataset.origLabel = b.textContent; b.textContent = "Odesílám…"; });'
+}}) }}
 {{ form_widget(form) }}
 {{ form_end(form) }}
 <footer class="mt-5 pt-5 mb-4">

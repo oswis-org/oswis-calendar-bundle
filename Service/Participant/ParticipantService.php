@@ -92,6 +92,39 @@ class ParticipantService
         }
         $participantMailAddress = $contact->getEmail();
         $participantName = $contact->getName();
+
+        // Double-submit dedup: iOS Safari (and slow connections in general)
+        // sometimes POST the form twice. If a Participant with the same
+        // e-mail + offer was just persisted in the last 60 seconds, return
+        // it instead of creating a duplicate. The client-side onsubmit
+        // handler catches most of these, but a server-side guard is needed
+        // for genuine races where both POSTs reach PHP-FPM in parallel.
+        $offer = $participant->getOffer();
+        if (null !== $participantMailAddress && '' !== $participantMailAddress && null !== $offer) {
+            $recent = $this->participantRepository->createQueryBuilder('p')
+                ->innerJoin('p.participantContacts', 'pc')
+                ->innerJoin('pc.contact', 'c')
+                ->innerJoin('c.details', 'd')
+                ->andWhere('LOWER(d.content) = LOWER(:mail)')
+                ->andWhere('p.offer = :offer')
+                ->andWhere('p.createdAt > :since')
+                ->andWhere('p.deletedAt IS NULL')
+                ->setParameter('mail', $participantMailAddress)
+                ->setParameter('offer', $offer)
+                ->setParameter('since', new \DateTime('-60 seconds'))
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+            if ($recent instanceof Participant) {
+                $this->logger->warning(
+                    "Duplicate registration detected for '$participantMailAddress' on offer "
+                    .'#'.($offer->getId() ?? '?')." — returning existing participant #".($recent->getId() ?? '?').'.',
+                );
+
+                return $recent;
+            }
+        }
+
         if (null === ($appUser = $participant->getAppUser())
             && $this->appUserService->alreadyExists($eMail = ''.$contact->getEmail())) {
             // Returning participant — they already have an AppUser from a previous year.

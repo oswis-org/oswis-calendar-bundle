@@ -28,11 +28,16 @@
             <div class="col-12 col-md-4">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Zařazené příchozí</h5>
+                        <h5 class="card-title">Zařazené e-maily</h5>
                         <p class="card-text">
-                            <span class="badge bg-success" style="font-size: 1rem;">{{ matchedIn }}</span>
-                            e-mailů spárovaných s účastníky.
+                            <span class="badge bg-success" style="font-size: 1rem;">{{ matchedImapIn + matchedImapOut + matchedSystem }}</span>
+                            celkem v historii komunikace.
                         </p>
+                        <ul class="list-unstyled" style="margin-bottom: .5rem;">
+                            <li><small>↓ <strong>{{ matchedImapIn }}</strong> příchozích z IMAP</small></li>
+                            <li><small>↑ <strong>{{ matchedImapOut }}</strong> odchozích z IMAP (Sent)</small></li>
+                            <li><small>⚙ <strong>{{ matchedSystem }}</strong> systémových (poslaných OSWISem)</small></li>
+                        </ul>
                         <small class="text-muted">
                             Otevři účastníka pro celou jeho komunikační historii.
                         </small>

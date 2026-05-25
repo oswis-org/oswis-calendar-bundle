@@ -9,6 +9,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Imap\ImapSyncState;
 use OswisOrg\OswisCalendarBundle\Entity\Imap\ParticipantIncomingMail;
 use OswisOrg\OswisCalendarBundle\Entity\Imap\ParticipantUnmatchedMail;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
 use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -60,10 +61,31 @@ final class WebAdminCommunicationController extends AbstractController
 
         $unmatchedOut = $unmatchedCount - $unmatchedIn;
 
-        $matchedIn = (int) $this->em
+        // ParticipantIncomingMail stores BOTH directions (IMAP-fetched mails).
+        // Split by direction for an honest "Zařazené příchozí / odchozí" card.
+        $matchedImapIn = (int) $this->em
             ->createQueryBuilder()
             ->select('COUNT(m.id)')
             ->from(ParticipantIncomingMail::class, 'm')
+            ->where('m.direction = :dir')
+            ->setParameter('dir', 'in')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $matchedImapOut = (int) $this->em
+            ->createQueryBuilder()
+            ->select('COUNT(m.id)')
+            ->from(ParticipantIncomingMail::class, 'm')
+            ->where('m.direction = :dir')
+            ->setParameter('dir', 'out')
+            ->getQuery()
+            ->getSingleScalarResult();
+        // OSWIS-sent system mails (activation, summary, payment confirmation,
+        // ad-hoc). Always outgoing, always matched (have participant_id FK).
+        $matchedSystem = (int) $this->em
+            ->createQueryBuilder()
+            ->select('COUNT(m.id)')
+            ->from(ParticipantMail::class, 'm')
+            ->where('m.deletedAt IS NULL')
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -72,13 +94,15 @@ final class WebAdminCommunicationController extends AbstractController
             ->findBy([], ['folder' => 'ASC']);
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/communication/index.html.twig', [
-            'page_title'     => 'Komunikace :: ADMIN',
-            'pageTitle'      => 'Komunikace',
-            'unmatchedTotal' => $unmatchedCount,
-            'unmatchedIn'    => $unmatchedIn,
+            'page_title'      => 'Komunikace :: ADMIN',
+            'pageTitle'       => 'Komunikace',
+            'unmatchedTotal'  => $unmatchedCount,
+            'unmatchedIn'     => $unmatchedIn,
             'unmatchedOut'   => $unmatchedOut,
-            'matchedIn'      => $matchedIn,
-            'syncStates'     => $syncStates,
+            'matchedImapIn'   => $matchedImapIn,
+            'matchedImapOut'  => $matchedImapOut,
+            'matchedSystem'   => $matchedSystem,
+            'syncStates'      => $syncStates,
         ]);
     }
 

@@ -63,13 +63,15 @@
                                        title="Vybrat / zrušit výběr všech">
                             </th>
                             <th style="width: 9rem;">Datum</th>
-                            <th style="width: 18rem;">Od</th>
+                            <th style="width: 3.5rem;">Směr</th>
+                            <th style="width: 18rem;">Od / Komu</th>
                             <th>Předmět / Náhled</th>
                             <th style="width: 22rem;">Akce</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for m in unmatched %}
+                            {% set isOut = m.direction.value|default('in') == 'out' %}
                             <tr>
                                 <td style="vertical-align: top;">
                                     <input type="checkbox" name="mail_ids[]" value="{{ m.id }}">
@@ -78,16 +80,23 @@
                                     <small>
                                         {{ m.occurredAt|date('j. n. Y', 'Europe/Prague') }}<br>
                                         {{ m.occurredAt|date('H:i', 'Europe/Prague') }}<br>
-                                        <span style="color: #6c757d;">{{ m.imapFolder|default }}</span>
+                                        <span class="text-secondary">{{ m.imapFolder|default }}</span>
                                     </small>
+                                </td>
+                                <td style="vertical-align: top; text-align: center;">
+                                    {% if isOut %}
+                                        <span class="badge bg-primary" title="Odchozí (Sent)" style="font-size: .8rem;">↑ OUT</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark" title="Příchozí (INBOX)" style="font-size: .8rem;">↓ IN</span>
+                                    {% endif %}
                                 </td>
                                 <td style="vertical-align: top;">
                                     <strong>{{ m.fromName|default('(bez jména)') }}</strong><br>
                                     <small><a href="mailto:{{ m.fromAddress }}">{{ m.fromAddress|default('?') }}</a></small>
                                     {% if m.status != 'unprocessed' %}
                                         <br>
-                                        <span class="badge {{ m.status == 'spam' ? 'bg-danger' : 'bg-info text-dark' }}" style="font-size: .7rem;">
-                                            {{ m.status }}
+                                        <span class="badge {{ m.status == 'spam' ? 'bg-danger' : 'bg-secondary' }}" style="font-size: .7rem;">
+                                            {{ m.status == 'spam' ? 'spam' : (m.status == 'general' ? 'obecný' : m.status) }}
                                         </span>
                                     {% endif %}
                                 </td>
