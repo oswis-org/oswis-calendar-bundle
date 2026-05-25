@@ -81,11 +81,11 @@ final class WebAdminCommunicationController extends AbstractController
             ->getSingleScalarResult();
         // OSWIS-sent system mails (activation, summary, payment confirmation,
         // ad-hoc). Always outgoing, always matched (have participant_id FK).
+        // ParticipantMail has no soft-delete column — count raw.
         $matchedSystem = (int) $this->em
             ->createQueryBuilder()
             ->select('COUNT(m.id)')
             ->from(ParticipantMail::class, 'm')
-            ->where('m.deletedAt IS NULL')
             ->getQuery()
             ->getSingleScalarResult();
 
