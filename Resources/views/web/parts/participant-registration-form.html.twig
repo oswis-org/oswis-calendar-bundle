@@ -9,7 +9,7 @@
    genuine races. #}
 {{ form_start(form, {'attr': {
     'data-oswis-once': 'true',
-    'onsubmit': 'if (this.dataset.oswisSubmitting === "true") { return false; } this.dataset.oswisSubmitting = "true"; this.querySelectorAll("button[type=submit]").forEach(function(b) { b.disabled = true; b.dataset.origLabel = b.textContent; b.textContent = "Odesílám…"; });'
+    'onsubmit': 'if (this.dataset.oswisSubmitting === "true") { event.preventDefault(); return false; } this.dataset.oswisSubmitting = "true"; this.querySelectorAll("button[type=submit]").forEach(function(b) { b.disabled = true; b.dataset.origLabel = b.textContent; b.textContent = "Odesílám…"; });'
 }}) }}
 {{ form_widget(form) }}
 {{ form_end(form) }}
