@@ -105,6 +105,17 @@ oswis_org_oswis_calendar_web_admin_event_restore:
   path: "/web_admin/udalost/{eventSlug}/obnovit"
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_reg_offer_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminRegistrationOfferController::edit
+  path: "/web_admin/rozsah/{slug}/upravit"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_flag_offer_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminRegistrationFlagOfferController::edit
+  path: "/web_admin/priznak/{id}/upravit"
+  methods: [GET, POST]
+  requirements: { id: '\d+' }
+
 oswis_org_oswis_calendar_web_admin_compare_years:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showYearsCompare
   path: "/web_admin/srovnani-rocniku/{eventSeriesSlug?}"

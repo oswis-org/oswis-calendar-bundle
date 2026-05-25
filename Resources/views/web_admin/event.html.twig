@@ -111,6 +111,7 @@
                                     <th class="text-center">Reg. od</th>
                                     <th class="text-center">Reg. do</th>
                                     <th class="text-center">Využití</th>
+                                    <th class="text-center">Akce</th>
                                 </tr>
                                 </thead>
                                 {% for regRange in offers %}
@@ -151,6 +152,10 @@
                                                 {% endif %}
                                             {% endif %}
                                         </td>
+                                        <td class="text-center">
+                                            <a class="btn btn-sm btn-outline-primary"
+                                               href="{{ path('oswis_org_oswis_calendar_web_admin_reg_offer_edit', {slug: regRange.slug}) }}">Upravit</a>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 {% endfor %}
@@ -166,15 +171,16 @@
                                     <th class="text-center">Cena Δ</th>
                                     <th class="text-center">Záloha Δ</th>
                                     <th class="text-center">Kapacita</th>
+                                    <th class="text-center">Akce</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {% for regRange in offers %}
                                     {% for flagGroupOffer in regRange.flagGroupRanges|default([]) %}
-                                        <tr style="background-color: #f4f4f4;">
-                                            <td colspan="4">
+                                        <tr class="table-active">
+                                            <td colspan="5">
                                                 <strong>{{ flagGroupOffer.name|default(flagGroupOffer.flagCategory.name|default('—')) }}</strong>
-                                                <span class="small text-muted"> &middot; rozsah: {{ regRange.shortName|default(regRange.slug) }}</span>
+                                                <span class="small text-secondary"> &middot; rozsah: {{ regRange.shortName|default(regRange.slug) }}</span>
                                             </td>
                                         </tr>
                                         {% for flagOffer in flagGroupOffer.flagOffers|default([]) %}
@@ -192,6 +198,10 @@
                                                 </td>
                                                 <td class="text-center small">
                                                     {% if flagOffer.baseCapacity|default(null) %}{{ flagOffer.baseCapacity }}{% else %}—{% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    <a class="btn btn-sm btn-outline-primary"
+                                                       href="{{ path('oswis_org_oswis_calendar_web_admin_flag_offer_edit', {id: flagOffer.id}) }}">Upravit</a>
                                                 </td>
                                             </tr>
                                         {% endfor %}

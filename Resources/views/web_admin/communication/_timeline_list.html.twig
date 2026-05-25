@@ -38,25 +38,25 @@
                     <td style="white-space: nowrap; vertical-align: top;">
                         {% if entry.occurredAt %}
                             {{ entry.occurredAt|date('j. n. Y', 'Europe/Prague') }}<br>
-                            <small style="color: #6c757d;">{{ entry.occurredAt|date('H:i', 'Europe/Prague') }}</small>
+                            <small class="text-secondary">{{ entry.occurredAt|date('H:i', 'Europe/Prague') }}</small>
                         {% else %}
                             <small>—</small>
                         {% endif %}
                     </td>
                     <td style="vertical-align: top; word-break: keep-all;">
                         <strong>{{ entry.channel.label() }}</strong><br>
-                        <small style="color: #6c757d;">{{ entry.direction.label() }}</small>
+                        <small class="text-secondary">{{ entry.direction.label() }}</small>
                     </td>
                     <td style="vertical-align: top; text-align: left;">
                         {% if isThreadReply %}
-                            <span style="color: #6c757d; margin-right: .5rem;">↳</span>
+                            <span class="text-secondary" style="margin-right: .5rem;">↳</span>
                         {% endif %}
                         <strong>{{ entry.subject|default('(bez předmětu)') }}</strong>
                         {% if isInternal and isAdmin %}
-                            <span style="font-size: .75rem; background: #fff3cd; padding: 1px 6px; border-radius: 4px; margin-left: .5rem;">interní</span>
+                            <span class="badge bg-light text-dark" title="Interní záznam, účastník nevidí">interní</span>
                         {% endif %}
                         {% if entry.summary|default %}
-                            <br><small style="color: #6c757d;">{{ entry.summary|slice(0, 200) }}{% if entry.summary|length > 200 %}…{% endif %}</small>
+                            <br><small class="text-secondary">{{ entry.summary|slice(0, 200) }}{% if entry.summary|length > 200 %}…{% endif %}</small>
                         {% endif %}
                     </td>
                     <td style="vertical-align: top; text-align: center;">

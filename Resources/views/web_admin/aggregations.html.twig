@@ -184,12 +184,12 @@
                             {% for day in aggregation.days %}
                                 <tr>
                                     <td><strong>{{ day.date_human }}</strong></td>
-                                    <td style="color: rgb(40, 220, 40);">{{ day.created_attendees }}</td>
-                                    <td style="color: rgb(40, 220, 40);"><strong>{{ day.created_attendees_sum }}</strong></td>
-                                    <td style="color: red;">{{ day.deleted_attendees }}</td>
-                                    <td style="color: red;"><strong>{{ day.deleted_attendees_sum }}</strong></td>
-                                    <td style="color: blue;">{{ day.active_attendees }}</td>
-                                    <td style="color: blue;"><strong>{{ day.active_attendees_sum }}</strong></td>
+                                    <td class="text-success">{{ day.created_attendees }}</td>
+                                    <td class="text-success"><strong>{{ day.created_attendees_sum }}</strong></td>
+                                    <td class="text-danger">{{ day.deleted_attendees }}</td>
+                                    <td class="text-danger"><strong>{{ day.deleted_attendees_sum }}</strong></td>
+                                    <td class="text-primary">{{ day.active_attendees }}</td>
+                                    <td class="text-primary"><strong>{{ day.active_attendees_sum }}</strong></td>
                                 </tr>
                             {% endfor %}
                             </tbody>

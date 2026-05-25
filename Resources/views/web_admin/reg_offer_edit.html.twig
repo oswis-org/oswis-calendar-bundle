@@ -1,0 +1,43 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 0 3rem;">
+        <h2 style="margin-top: 1rem;">{{ pageTitle }}</h2>
+        <p class="text-secondary">
+            Slug: <code>{{ offer.slug }}</code>
+            {% if offer.event %}
+                &middot; akce: <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {eventSlug: offer.event.slug}) }}">{{ offer.event.name }}</a>
+            {% endif %}
+            {% if offer.requiredRegRange %}
+                &middot; vyžaduje rozsah: <code>{{ offer.requiredRegRange.slug }}</code>
+            {% endif %}
+        </p>
+
+        {{ form_start(form, {attr: {class: 'mt-3'}}) }}
+        <div class="row g-3">
+            <div class="col-md-8">{{ form_row(form.name) }}</div>
+            <div class="col-md-4">{{ form_row(form.shortName) }}</div>
+            <div class="col-12">{{ form_row(form.slug) }}</div>
+            <div class="col-md-6">{{ form_row(form.startDateTime) }}</div>
+            <div class="col-md-6">{{ form_row(form.endDateTime) }}</div>
+            <div class="col-md-3">{{ form_row(form.price) }}</div>
+            <div class="col-md-3">{{ form_row(form.depositValue) }}</div>
+            <div class="col-md-3">{{ form_row(form.baseCapacity) }}</div>
+            <div class="col-md-3">{{ form_row(form.fullCapacity) }}</div>
+            <div class="col-12">{{ form_row(form.description) }}</div>
+            <div class="col-12">{{ form_row(form.note) }}</div>
+            <div class="col-md-6 form-check">{{ form_widget(form.publicOnWeb) }} {{ form_label(form.publicOnWeb) }}</div>
+            <div class="col-md-6 form-check">{{ form_widget(form.publicInApp) }} {{ form_label(form.publicInApp) }}</div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+            {{ form_widget(form.submit) }}
+            {% if offer.event %}
+                <a class="btn btn-outline-secondary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_event', {eventSlug: offer.event.slug}) }}">Zrušit</a>
+            {% endif %}
+        </div>
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

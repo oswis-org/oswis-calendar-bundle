@@ -218,7 +218,7 @@
                                         <td style="word-break: break-all; overflow-wrap: anywhere; font-size: .85em;">
                                             {{ payment.note|default }}
                                             {% if payment.internalNote|default %}
-                                                <div style="color: #6c757d; margin-top: .15rem;">{{ payment.internalNote }}</div>
+                                                <div class="text-secondary" style="margin-top: .15rem;">{{ payment.internalNote }}</div>
                                             {% endif %}
                                         </td>
                                         <td>
@@ -238,7 +238,7 @@
                         <strong>Zaplaceno:</strong> {{ participant.paidPrice|default(0) }}&nbsp;Kč z {{ participant.price|default(0) }}&nbsp;Kč
                         &nbsp;|&nbsp;
                         <strong>Zbývá:</strong>
-                        <span style="color: {{ (participant.remainingPrice|default(0)) == 0 ? '#006FAD' : '#B62846' }};">
+                        <span class="{{ (participant.remainingPrice|default(0)) == 0 ? 'text-success' : 'text-danger' }}">
                             {{ participant.remainingPrice|default(0) }}&nbsp;Kč
                         </span>
                     </p>
@@ -267,7 +267,7 @@
                                                     </span>
                                                 {% endif %}
                                             {% else %}
-                                                <em style="color: #6c757d;">—</em>
+                                                <em class="text-secondary">—</em>
                                             {% endfor %}
                                         </td>
                                     </tr>
@@ -309,7 +309,7 @@
                         {% for note in notes %}
                             <div style="padding: .5rem .75rem; border-left: 3px solid {{ note.publicNote|default(false) ? '#006FAD' : '#d97706' }}; background: #f8f9fa; margin-bottom: .5rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; margin-bottom: .25rem;">
-                                    <small style="color: #6c757d;">
+                                    <small class="text-secondary">
                                         {% set author = note.createdBy|default %}
                                         {% if author %}
                                             <strong>{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</strong>
