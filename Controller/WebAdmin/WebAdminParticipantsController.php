@@ -2,9 +2,13 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +19,90 @@ final class WebAdminParticipantsController extends AbstractController
 {
     public function __construct(
         private readonly ParticipantService $participantService,
+        private readonly CommunicationTimelineService $timelineService,
+        private readonly ParticipantMailService $participantMailService,
+        private readonly EntityManagerInterface $em,
     ) {
+    }
+
+    /**
+     * Re-send a system mail (summary, payment, activation) — fresh delivery,
+     * fresh ParticipantMail row, recipient = original recipient. Useful when
+     * the participant says they didn't get the mail or deleted it by mistake.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function resendMail(Request $request, int $participantId, int $mailId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_resend_mail_'.$mailId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $mail = $this->em->find(ParticipantMail::class, $mailId)
+            ?? throw $this->createNotFoundException('E-mail nenalezen.');
+        $belongsToParticipant = $mail->getParticipant()?->getId() === $participantId;
+        if (!$belongsToParticipant) {
+            throw $this->createAccessDeniedException('E-mail nepatří tomuto účastníkovi.');
+        }
+        try {
+            $this->participantMailService->resend($mail);
+            $this->addFlash('success', sprintf(
+                'E-mail "%s" znovu odeslán účastníkovi #%d.',
+                $mail->getSubject() ?? $mail->getType() ?? 'systémový',
+                $participantId,
+            ));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', sprintf('Re-send selhal: %s', $e->getMessage()));
+        }
+
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_detail',
+            ['participantId' => $participantId, '_fragment' => 'komunikace'],
+        ));
+    }
+
+    /**
+     * Full admin detail page for one participant: contact, registration,
+     * payments, flags, notes and the embedded communication timeline.
+     *
+     * The legacy `arrival()` route still renders the same template without
+     * timeline entries (kept for the lightweight check-in screen).
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function detail(int $participantId): Response
+    {
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            true,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        $entries = [];
+        try {
+            $entries = $this->timelineService->forParticipant($participant, includeInternal: true);
+        } catch (\Throwable) {
+            // Timeline failures must not prevent the detail page from rendering.
+        }
+
+        // Only ParticipantMail (system + ad-hoc) rows are resend-able.
+        // IMAP-imported and manual-note rows have no underlying mailer.
+        $resendableMailIds = [];
+        foreach ($entries as $entry) {
+            if ($entry instanceof ParticipantMail && $entry->getId() !== null) {
+                $resendableMailIds[$entry->getId()] = true;
+            }
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
+            'participant'        => $participant,
+            'entries'            => $entries,
+            'isAdmin'            => true,
+            'showFullDetail'     => true,
+            'participantId'      => $participantId,
+            'resendableMailIds'  => $resendableMailIds,
+            'page_title'         => sprintf('Přihláška #%d', $participantId),
+            'pageTitle'          => sprintf('Přihláška #%d', $participantId),
+        ]);
     }
 
     /**

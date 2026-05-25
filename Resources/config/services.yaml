@@ -98,6 +98,16 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCatalogController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantNoteController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Repository\ParticipantNote\ParticipantManualNoteRepository:
     autowire: true
     autoconfigure: true

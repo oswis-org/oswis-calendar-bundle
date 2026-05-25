@@ -2,43 +2,77 @@
 {% if entries is empty %}
     <p>Žádné záznamy komunikace.</p>
 {% else %}
-    <ul class="list-unstyled timeline" style="margin-top: 1.5rem;">
-        {% for entry in entries %}
-            {% set isInternal = not entry.isPublicForParticipant() %}
-            <li class="timeline-entry" style="padding: .75rem 0; border-bottom: 1px solid #e9ecef;">
-                <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                    <div style="min-width: 6rem; color: #6c757d; font-size: .85rem;">
+    {# Group by threadKey so a Re:/Fw: chain renders together. Entries with
+       no threadKey (manual phone/chat note) stand alone — pseudo-key on id. #}
+    {% set grouped = {} %}
+    {% for entry in entries %}
+        {% set key = entry.threadKey|default ? entry.threadKey : 'solo:' ~ entry.id %}
+        {% if grouped[key] is not defined %}
+            {% set grouped = grouped|merge({ (key): [] }) %}
+        {% endif %}
+        {% set grouped = grouped|merge({ (key): grouped[key]|merge([entry]) }) %}
+    {% endfor %}
+
+    <table class="list" style="width: 100%; margin-top: 1rem;">
+        <colgroup>
+            <col style="width: 9rem;">
+            <col style="width: 12rem;">
+            <col>
+            <col style="width: 8rem;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Kdy</th>
+                <th>Kanál</th>
+                <th style="text-align: left;">Předmět / shrnutí</th>
+                <th>Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for threadKey, thread in grouped %}
+            {% for entry in thread %}
+                {% set isInternal = not entry.isPublicForParticipant() %}
+                {% set isThreadStart = loop.first and thread|length > 1 %}
+                {% set isThreadReply = not loop.first %}
+                <tr {% if isThreadStart or isThreadReply %}style="background: {{ isThreadReply ? 'rgba(0,111,173,.04)' : 'transparent' }};"{% endif %}>
+                    <td style="white-space: nowrap; vertical-align: top;">
                         {% if entry.occurredAt %}
-                            {{ entry.occurredAt|date('j. n. Y') }}<br>
-                            <small>{{ entry.occurredAt|date('H:i') }}</small>
+                            {{ entry.occurredAt|date('j. n. Y', 'Europe/Prague') }}<br>
+                            <small style="color: #6c757d;">{{ entry.occurredAt|date('H:i', 'Europe/Prague') }}</small>
                         {% else %}
                             <small>—</small>
                         {% endif %}
-                    </div>
-                    <div style="min-width: 8rem;">
+                    </td>
+                    <td style="vertical-align: top; word-break: keep-all;">
                         <strong>{{ entry.channel.label() }}</strong><br>
                         <small style="color: #6c757d;">{{ entry.direction.label() }}</small>
-                    </div>
-                    <div style="flex: 1;">
-                        <div>
-                            <strong>{{ entry.subject|default('(bez předmětu)') }}</strong>
-                            {% if isInternal and isAdmin %}
-                                <span style="font-size: .75rem; background: #fff3cd; padding: 1px 6px; border-radius: 4px; margin-left: .5rem;">interní</span>
-                            {% endif %}
-                        </div>
+                    </td>
+                    <td style="vertical-align: top; text-align: left;">
+                        {% if isThreadReply %}
+                            <span style="color: #6c757d; margin-right: .5rem;">↳</span>
+                        {% endif %}
+                        <strong>{{ entry.subject|default('(bez předmětu)') }}</strong>
+                        {% if isInternal and isAdmin %}
+                            <span style="font-size: .75rem; background: #fff3cd; padding: 1px 6px; border-radius: 4px; margin-left: .5rem;">interní</span>
+                        {% endif %}
                         {% if entry.summary|default %}
-                            <small style="color: #6c757d;">{{ entry.summary|slice(0, 200) }}{% if entry.summary|length > 200 %}…{% endif %}</small>
+                            <br><small style="color: #6c757d;">{{ entry.summary|slice(0, 200) }}{% if entry.summary|length > 200 %}…{% endif %}</small>
                         {% endif %}
-                        {% if entry.threadKey|default and isAdmin %}
-                            <div style="margin-top: .25rem;">
-                                <small style="color: #adb5bd; font-family: monospace; font-size: .7rem;">
-                                    thread: {{ entry.threadKey|slice(0, 12) }}…
-                                </small>
-                            </div>
+                    </td>
+                    <td style="vertical-align: top; text-align: center;">
+                        {% if isAdmin and resendableMailIds is defined and resendableMailIds[entry.id]|default and participantId is defined %}
+                            <form method="post"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_mail', { participantId: participantId, mailId: entry.id }) }}"
+                                  style="margin: 0;"
+                                  onsubmit="return confirm('Znovu odeslat tento e-mail účastníkovi?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_mail_' ~ entry.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-info" title="Znovu odeslat tento e-mail">↻ Resend</button>
+                            </form>
                         {% endif %}
-                    </div>
-                </div>
-            </li>
+                    </td>
+                </tr>
+            {% endfor %}
         {% endfor %}
-    </ul>
+        </tbody>
+    </table>
 {% endif %}

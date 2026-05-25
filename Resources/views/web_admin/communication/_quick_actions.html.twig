@@ -35,10 +35,10 @@
            href="mailto:{{ email }}?subject={{ subject|url_encode }}"
            title="Odeslat e-mail">✉ E-mail</a>
         <button type="button" class="btn btn-sm btn-outline-secondary"
-                title="Zkopírovat e-mail"
+                title="Zkopírovat e-mail do schránky"
                 data-clipboard="{{ email }}"
-                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓';">
-            📋
+                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓ Zkopírováno';">
+            Kopírovat e-mail
         </button>
     {% else %}
         <button type="button" class="btn btn-sm btn-outline-secondary" disabled
@@ -59,10 +59,10 @@
            rel="noopener"
            title="WhatsApp">🟢 WhatsApp</a>
         <button type="button" class="btn btn-sm btn-outline-secondary"
-                title="Zkopírovat telefon"
+                title="Zkopírovat telefon do schránky"
                 data-clipboard="{{ rawPhone }}"
-                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓';">
-            📋
+                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓ Zkopírováno';">
+            Kopírovat telefon
         </button>
     {% else %}
         <button type="button" class="btn btn-sm btn-outline-secondary" disabled

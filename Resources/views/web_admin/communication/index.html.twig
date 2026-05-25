@@ -1,0 +1,101 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title|default('Komunikace') }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding-bottom: 3rem;">
+        <h2 style="margin-top: 1rem;">{{ pageTitle|default('Komunikace') }}</h2>
+        <p class="text-muted" style="margin-bottom: 1.5rem;">
+            Rozcestník komunikace s účastníky. Per-účastníkovou historii zpráv otevři přes detail
+            přihlášky (klikni na ID v seznamu účastníků).
+        </p>
+
+        <div class="row g-3" style="margin-bottom: 1.5rem;">
+            <div class="col-12 col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Nezařazené e-maily</h5>
+                        <p class="card-text">
+                            <span class="badge bg-warning text-dark" style="font-size: 1rem;">{{ unmatchedTotal }}</span>
+                            celkem, z toho <strong>{{ unmatchedIn }}</strong> příchozích,
+                            <strong>{{ unmatchedOut }}</strong> odchozích.
+                        </p>
+                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}"
+                           class="btn btn-sm btn-primary">Otevřít →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Zařazené příchozí</h5>
+                        <p class="card-text">
+                            <span class="badge bg-success" style="font-size: 1rem;">{{ matchedIn }}</span>
+                            e-mailů spárovaných s účastníky.
+                        </p>
+                        <small class="text-muted">
+                            Otevři účastníka pro celou jeho komunikační historii.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">IMAP sync</h5>
+                        <p class="card-text">
+                            {% for state in syncStates %}
+                                <small>
+                                    <strong>{{ state.folder }}</strong>:
+                                    UID {{ state.lastSeenUid }},
+                                    {% if state.lastFetchAt %}
+                                        naposledy {{ state.lastFetchAt|date('j. n. Y H:i', 'Europe/Prague') }}
+                                    {% else %}
+                                        zatím neproběhl
+                                    {% endif %}
+                                </small><br>
+                            {% else %}
+                                <small class="text-muted">Žádný stav.</small><br>
+                            {% endfor %}
+                        </p>
+                        <form method="post"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}"
+                              style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">↻ Stáhnout nové</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Ad-hoc zpráva účastníkovi</h5>
+                        <p class="card-text text-muted">
+                            Pošli individuální e-mail z admina. Vytvoříš jej z detailu přihlášky tlačítkem
+                            <em>Nová zpráva</em>.
+                        </p>
+                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}"
+                           class="btn btn-sm btn-outline-secondary">→ Seznam účastníků</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Konfigurace e-mailů</h5>
+                        <p class="card-text text-muted">
+                            Šablony, kategorie a skupiny systémových e-mailů (potvrzení přihlášky,
+                            shrnutí, after-party…).
+                        </p>
+                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_mail_config') }}"
+                           class="btn btn-sm btn-outline-secondary">→ Otevřít konfiguraci</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

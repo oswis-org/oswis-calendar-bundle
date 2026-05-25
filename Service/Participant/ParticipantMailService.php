@@ -136,6 +136,29 @@ class ParticipantMailService
         $this->em->flush();
     }
 
+    /**
+     * Re-send an existing system mail entry (summary / payment / activation).
+     * Generates a fresh ParticipantMail row + delivery — no DB row is mutated
+     * in place; the admin sees both the original send and the resend in the
+     * timeline. The originating Participant/AppUser pair drives the resend so
+     * the message goes to whoever the original recipient was.
+     *
+     * @throws OswisException
+     * @throws NotImplementedException
+     * @throws NotFoundException
+     * @throws InvalidTypeException
+     */
+    public function resend(ParticipantMail $existingMail): void
+    {
+        $participant = $existingMail->getParticipant();
+        $appUser = $existingMail->getAppUser();
+        $type = $existingMail->getType();
+        if (null === $participant || null === $appUser || null === $type) {
+            throw new OswisException('Nelze znovu odeslat: chybí účastník, uživatel nebo typ.');
+        }
+        $this->sendSummaryToUser($participant, $appUser, $type);
+    }
+
     public function getMailCategoryByType(?string $type): ?ParticipantMailCategory
     {
         return $this->categoryRepository->findByType(''.$type);

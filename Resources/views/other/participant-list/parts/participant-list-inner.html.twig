@@ -23,7 +23,11 @@
             {% endif %}
         {% endif %}
         <div class="block small">
-            <strong class="badge bg-primary font-1em">{{ participant.id }}</strong> {{ participant.createdAt|date("j. n. Y, H:i") }}
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}"
+               title="Otevřít detail přihlášky #{{ participant.id }}">
+                <strong class="badge bg-primary font-1em">{{ participant.id }}</strong>
+            </a>
+            {{ participant.createdAt|date("j. n. Y, H:i") }}
         </div>
         {% if appUser and appUser.activated %}
             <div class="block small" style="color:green;">

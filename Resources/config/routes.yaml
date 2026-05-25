@@ -156,6 +156,13 @@ oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
   path: "/web_admin/prijezd/{participantId}/{arrival?}"
 
+oswis_org_oswis_calendar_web_admin_participant_detail:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::detail
+  path: "/web_admin/ucastnici/{participantId}"
+  requirements:
+    participantId: '\d+'
+  methods: [GET]
+
 oswis_org_oswis_calendar_web_admin_participant_restore:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::restore
   path: "/web_admin/ucastnici/{participantId}/obnovit"
@@ -168,6 +175,37 @@ oswis_org_oswis_calendar_web_admin_participant_resend_activation:
   path: "/web_admin/ucastnici/{participantId}/znovu-poslat-aktivaci"
   requirements:
     participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_resend_mail:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::resendMail
+  path: "/web_admin/ucastnici/{participantId}/znovu-poslat-mail/{mailId}"
+  requirements:
+    participantId: '\d+'
+    mailId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_note_create:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantNoteController::create
+  path: "/web_admin/ucastnici/{participantId}/poznamka-nova"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_note_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantNoteController::edit
+  path: "/web_admin/ucastnici/{participantId}/poznamka/{noteId}/upravit"
+  requirements:
+    participantId: '\d+'
+    noteId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_note_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantNoteController::delete
+  path: "/web_admin/ucastnici/{participantId}/poznamka/{noteId}/smazat"
+  requirements:
+    participantId: '\d+'
+    noteId: '\d+'
   methods: [POST]
 
 
@@ -209,10 +247,20 @@ oswis_org_oswis_calendar_web_admin_bulk_reassign:
   path: "/web_admin/prihlasky/hromadny-presun"
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_communication_index:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCommunicationController::index
+  path: "/web_admin/komunikace"
+  methods: [GET]
+
 oswis_org_oswis_calendar_web_admin_imap_unmatched:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::listUnmatched
   path: "/web_admin/komunikace/nezarazene"
   methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_imap_bulk:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::bulkMark
+  path: "/web_admin/komunikace/nezarazene/hromadne"
+  methods: [POST]
 
 oswis_org_oswis_calendar_web_admin_imap_assign:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminImapController::assignUnmatched
@@ -236,6 +284,15 @@ oswis_org_oswis_calendar_web_admin_imap_refresh:
 oswis_org_oswis_calendar_web_admin_mail_config:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::index
   path: "/web_admin/e-maily"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_catalog:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCatalogController::index
+  path: "/web_admin/katalog/{tab}"
+  defaults:
+    tab: 'flags'
+  requirements:
+    tab: 'flags|categories|offers|flag-offers'
   methods: [GET]
 
 oswis_org_oswis_calendar_web_admin_mail_group_edit:

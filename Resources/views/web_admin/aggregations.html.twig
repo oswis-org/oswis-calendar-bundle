@@ -1,5 +1,7 @@
 {% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
 
+{% block html_title %}{{ page_title|default(pageTitle|default('Agregace')) }} :: ADMIN{% endblock %}
+
 {% set page = "message" %}
 
 {#

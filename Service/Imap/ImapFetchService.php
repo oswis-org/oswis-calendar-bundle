@@ -63,7 +63,7 @@ final class ImapFetchService
      *   last season's history but not the entire archive. Has no effect
      *   after the UID watermark is set on subsequent runs.
      *
-     * @return array{enabled: bool, folders: array<string, array{fetched: int, matched: int, unmatched: int, lastUid: int}>}
+     * @return array{enabled: bool, folders: array<string, array{fetched: int, matched: int, unmatched: int, lastUid: int, error?: string}>}
      */
     public function fetchAll(int $perFolderCap = 100, bool $initFromNow = false, ?\DateTimeInterface $since = null): array
     {
@@ -170,6 +170,13 @@ final class ImapFetchService
         $unmatched = 0;
         $maxUid = $lastUid;
 
+        // Per-fetch dedup set: (message_id, participant_id) pairs already
+        // persisted in THIS run. The IMAP server can return the same
+        // Message-ID across multiple UIDs (re-sent drafts, manual archive
+        // copies in Sent, …) which would otherwise hit the DB unique key
+        // and abort the whole folder fetch.
+        $persistedThisFetch = [];
+
         foreach ($messages as $message) {
             if (!$message instanceof Message) {
                 continue;
@@ -217,8 +224,19 @@ final class ImapFetchService
                 // One row per matched participant — for OUT mails to multiple
                 // recipients, each participant gets the entry in their timeline.
                 foreach ($participants as $participant) {
-                    // Per-participant dedup using composite (message_id, participant_id).
+                    $pid = $participant->getId();
+                    if (null === $pid) {
+                        continue;
+                    }
+                    // Per-fetch dedup: messageId can repeat across UIDs in
+                    // Sent (re-sent drafts, archive copies). Cross-batch
+                    // dedup against stored rows handles previous runs.
+                    $batchKey = $messageId.'|'.$pid;
+                    if (isset($persistedThisFetch[$batchKey])) {
+                        continue;
+                    }
                     if ($this->incomingRepository->findOneByMessageIdAndParticipant($messageId, $participant)) {
+                        $persistedThisFetch[$batchKey] = true;
                         continue;
                     }
                     $entry = new ParticipantIncomingMail(
@@ -237,6 +255,7 @@ final class ImapFetchService
                     $entry->setImapFolder($folderName);
                     $entry->setImapUid($uid);
                     $this->em->persist($entry);
+                    $persistedThisFetch[$batchKey] = true;
                     $matched++;
                 }
             } else {
@@ -253,11 +272,7 @@ final class ImapFetchService
                 $entry->setInReplyTo(null !== $inReplyTo ? mb_substr($inReplyTo, 0, 255) : null);
                 $entry->setImapFolder($folderName);
                 $entry->setImapUid($uid);
-                $toAddrs = [];
-                foreach ($message->getTo() as $t) {
-                    $toAddrs[] = (string) $t->mail;
-                }
-                $entry->setToAddresses(implode(', ', array_filter($toAddrs)));
+                $entry->setToAddresses(implode(', ', $this->extractRecipientEmails($message)));
                 $this->em->persist($entry);
                 $unmatched++;
             }
@@ -301,12 +316,7 @@ final class ImapFetchService
             $candidates[] = strtolower($fromAddress);
         }
         if ($direction === CommunicationDirection::OUT) {
-            foreach ($message->getTo() as $to) {
-                $mail = strtolower((string) $to->mail);
-                if ('' !== $mail) {
-                    $candidates[] = $mail;
-                }
-            }
+            $candidates = array_merge($candidates, $this->extractRecipientEmails($message));
         }
         if (count($candidates) === 0) {
             return [];
@@ -331,6 +341,78 @@ final class ImapFetchService
         }
 
         return $matched;
+    }
+
+    /**
+     * Extract recipient e-mails from an IMAP Message.
+     *
+     * Defensive: webklex's `getTo()` may return an empty Collection on
+     * Sent-folder mails where the To-header is in alternate form (rare
+     * but observed) or only the raw `toaddress` string is populated.
+     * Try `getTo()` first, fall back to parsing the comma-separated
+     * `toaddress` attribute, fall back to Cc/Bcc as a last resort.
+     *
+     * @return list<string>
+     */
+    private function extractRecipientEmails(Message $message): array
+    {
+        $emails = [];
+
+        foreach (['getTo', 'getCc', 'getBcc'] as $accessor) {
+            try {
+                $collection = $message->{$accessor}();
+            } catch (\Throwable) {
+                continue;
+            }
+            if (!is_iterable($collection)) {
+                continue;
+            }
+            foreach ($collection as $addr) {
+                if (!is_object($addr)) {
+                    continue;
+                }
+                $rawMail = '';
+                if (property_exists($addr, 'mail') && is_string($addr->mail)) {
+                    $rawMail = $addr->mail;
+                }
+                if ('' === $rawMail) {
+                    $mailbox = property_exists($addr, 'mailbox') && is_string($addr->mailbox) ? $addr->mailbox : '';
+                    $host = property_exists($addr, 'host') && is_string($addr->host) ? $addr->host : '';
+                    if ('' !== $mailbox && '' !== $host) {
+                        $rawMail = $mailbox.'@'.$host;
+                    }
+                }
+                $mail = strtolower(trim($rawMail));
+                if ('' !== $mail && false !== strpos($mail, '@')) {
+                    $emails[] = $mail;
+                }
+            }
+            if (count($emails) > 0) {
+                break;
+            }
+        }
+
+        if (count($emails) === 0) {
+            // Last-resort: parse the comma-separated raw toaddress attribute.
+            $raw = '';
+            try {
+                $rawAttr = $message->get('toaddress');
+                if (is_string($rawAttr)) {
+                    $raw = $rawAttr;
+                } elseif (is_object($rawAttr) && method_exists($rawAttr, '__toString')) {
+                    $raw = (string) $rawAttr;
+                }
+            } catch (\Throwable) {
+                // ignore
+            }
+            if ('' !== $raw && preg_match_all('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', $raw, $m)) {
+                foreach ($m[0] as $addr) {
+                    $emails[] = strtolower($addr);
+                }
+            }
+        }
+
+        return array_values(array_unique($emails));
     }
 
     /**

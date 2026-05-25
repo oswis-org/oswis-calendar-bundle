@@ -59,6 +59,22 @@ class ParticipantUnmatchedMail
     #[Column(type: 'integer', nullable: true)]
     protected ?int $imapUid = null;
 
+    /**
+     * Triage status set by the admin from the unmatched inbox.
+     *  - 'unprocessed' (default) — waiting for admin decision
+     *  - 'general'                — valid mail but not tied to any participant
+     *  - 'spam'                   — spam / irrelevant, hidden from the inbox
+     * Stored as plain string so a future status doesn't require an enum
+     * migration; values are guarded server-side.
+     */
+    #[Column(type: 'string', length: 32, options: ['default' => 'unprocessed'])]
+    protected string $status = 'unprocessed';
+
+    public const STATUS_UNPROCESSED = 'unprocessed';
+    public const STATUS_GENERAL = 'general';
+    public const STATUS_SPAM = 'spam';
+    public const STATUSES = [self::STATUS_UNPROCESSED, self::STATUS_GENERAL, self::STATUS_SPAM];
+
     public function __construct(
         string $messageId,
         CommunicationDirection $direction,
@@ -90,4 +106,18 @@ class ParticipantUnmatchedMail
     public function setImapFolder(?string $v): void { $this->imapFolder = $v; }
     public function getImapUid(): ?int { return $this->imapUid; }
     public function setImapUid(?int $v): void { $this->imapUid = $v; }
+
+    public function getStatus(): string { return $this->status; }
+
+    public function setStatus(string $status): void
+    {
+        if (!in_array($status, self::STATUSES, true)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Invalid unmatched-mail status "%s". Allowed: %s.',
+                $status,
+                implode(', ', self::STATUSES),
+            ));
+        }
+        $this->status = $status;
+    }
 }

@@ -35,15 +35,69 @@ final class WebAdminImapController extends AbstractController
     ) {
     }
 
-    public function listUnmatched(): Response
+    public function listUnmatched(Request $request): Response
     {
-        $unmatched = $this->unmatchedRepository->findBy([], ['occurredAt' => 'DESC'], 200);
+        $statusFilter = $request->query->get('status', ParticipantUnmatchedMail::STATUS_UNPROCESSED);
+        if (!in_array($statusFilter, ParticipantUnmatchedMail::STATUSES, true) && $statusFilter !== 'all') {
+            $statusFilter = ParticipantUnmatchedMail::STATUS_UNPROCESSED;
+        }
+        $criteria = $statusFilter === 'all' ? [] : ['status' => $statusFilter];
+        $unmatched = $this->unmatchedRepository->findBy($criteria, ['occurredAt' => 'DESC'], 200);
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/communication/unmatched.html.twig', [
-            'unmatched' => $unmatched,
-            'pageTitle' => 'Nezařazené e-maily (IMAP)',
-            'page_title' => 'Nezařazené e-maily (IMAP) :: ADMIN',
+            'unmatched'    => $unmatched,
+            'statusFilter' => $statusFilter,
+            'pageTitle'    => 'Nezařazené e-maily (IMAP)',
+            'page_title'   => 'Nezařazené e-maily (IMAP) :: ADMIN',
         ]);
+    }
+
+    /**
+     * Bulk-mark several unmatched mails as `general` (valid but no participant
+     * link) or `spam`. Soft state — no DB delete — so the admin can revisit
+     * the filter and reclassify.
+     */
+    public function bulkMark(Request $request): Response
+    {
+        $action = (string) $request->request->get('action');
+        if (!$this->isCsrfTokenValid('unmatched_bulk', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $allowed = [
+            ParticipantUnmatchedMail::STATUS_GENERAL,
+            ParticipantUnmatchedMail::STATUS_SPAM,
+            ParticipantUnmatchedMail::STATUS_UNPROCESSED,
+        ];
+        if (!in_array($action, $allowed, true)) {
+            $this->addFlash('error', 'Neplatná hromadná akce.');
+
+            return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_imap_unmatched'));
+        }
+        $ids = $request->request->all('mail_ids');
+        if ($ids === []) {
+            $this->addFlash('warning', 'Nebyly vybrány žádné e-maily.');
+
+            return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_imap_unmatched'));
+        }
+        $intIds = array_values(array_unique(array_map(
+            static fn ($id): int => is_scalar($id) ? (int) $id : 0,
+            $ids,
+        )));
+        $intIds = array_filter($intIds, static fn (int $id): bool => $id > 0);
+        $count = 0;
+        foreach ($intIds as $mailId) {
+            $mail = $this->em->find(ParticipantUnmatchedMail::class, $mailId);
+            if (!$mail instanceof ParticipantUnmatchedMail) {
+                continue;
+            }
+            $mail->setStatus($action);
+            $count++;
+        }
+        $this->em->flush();
+        $this->addFlash('success', sprintf('Hromadně označeno %d e-mailů jako %s.', $count, $action));
+
+        return new RedirectResponse($request->headers->get('referer')
+            ?? $this->generateUrl('oswis_org_oswis_calendar_web_admin_imap_unmatched'));
     }
 
     public function assignUnmatched(Request $request, int $id): Response

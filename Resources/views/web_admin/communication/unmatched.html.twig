@@ -3,75 +3,123 @@
 {% block html_title %}{{ page_title }}{% endblock %}
 
 {% block body_content %}
-    <main class="container-fluid" style="padding: 1rem;">
+    <main class="container-fluid" style="padding: 1rem 1.25rem 3rem;">
         <h2>{{ pageTitle }}</h2>
 
-        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display: inline-block; margin-bottom: 1rem;">
-            <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
-            <button type="submit" class="btn btn-primary">🔄 Stáhnout nové e-maily z IMAP</button>
-        </form>
-
-        <p class="text-muted">
-            <small>
-                Nezařazené = IMAP fetch nenašel účastníka s odpovídajícím e-mailem.
-                Po přiřazení se e-mail přesune do historie komunikace daného účastníka.
-                IMAP je READ-ONLY (nic se neoznačuje jako přečtené, nic se nemaže ze serveru).
-            </small>
+        <p class="text-muted" style="margin-bottom: 1rem;">
+            Nezařazené = IMAP fetch nenašel účastníka s odpovídajícím e-mailem.
+            Po přiřazení se e-mail přesune do historie komunikace daného účastníka.
+            IMAP je <strong>READ-ONLY</strong> — na serveru se nic neoznačuje jako přečtené ani nic nemaže.
         </p>
 
-        {% if unmatched is empty %}
-            <p>Žádné nezařazené e-maily.</p>
-        {% else %}
-            <table class="list" style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Od</th>
-                        <th>Předmět / Náhled</th>
-                        <th style="width: 28em;">Akce</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for m in unmatched %}
-                        <tr>
-                            <td style="vertical-align: top;">
-                                <small>
-                                    {{ m.occurredAt|date('j. n. Y') }}<br>
-                                    {{ m.occurredAt|date('H:i') }}<br>
-                                    <span style="color: #6c757d;">{{ m.imapFolder|default }}</span>
-                                </small>
-                            </td>
-                            <td style="vertical-align: top;">
-                                <strong>{{ m.fromName|default('(bez jména)') }}</strong><br>
-                                <small><a href="mailto:{{ m.fromAddress }}">{{ m.fromAddress|default('?') }}</a></small>
-                            </td>
-                            <td style="vertical-align: top;">
-                                <strong>{{ m.subject|default('(bez předmětu)') }}</strong>
-                                {% if m.body %}
-                                    <div class="small text-muted">{{ m.body|slice(0, 200) }}{% if m.body|length > 200 %}…{% endif %}</div>
-                                {% endif %}
-                            </td>
-                            <td style="vertical-align: top;">
-                                <form method="post"
-                                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_assign', { id: m.id }) }}"
-                                      style="display: flex; gap: .25rem; align-items: center; flex-wrap: wrap; margin-bottom: .25rem;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('unmatched_assign_' ~ m.id) }}">
-                                    <input type="number" name="participantId" placeholder="participantId" min="1" style="width: 8em;" required>
-                                    <button type="submit" class="btn btn-sm btn-success">Přiřadit</button>
-                                </form>
+        <div style="display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1rem;">
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display: inline-block;">
+                <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
+                <button type="submit" class="btn btn-sm btn-primary">↻ Stáhnout nové z IMAP</button>
+            </form>
 
-                                <form method="post"
-                                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_delete', { id: m.id }) }}"
-                                      onsubmit="return confirm('Opravdu smazat tento nezařazený e-mail? Smazání je trvalé (na IMAP serveru se NIC nemění).');"
-                                      style="display: inline-block;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('unmatched_delete_' ~ m.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
-                                </form>
-                            </td>
+            {# Status filter tabs #}
+            {% set filters = [
+                { value: 'unprocessed', label: 'Ke zpracování' },
+                { value: 'general',     label: 'Obecné' },
+                { value: 'spam',        label: 'Spam' },
+                { value: 'all',         label: 'Vše' },
+            ] %}
+            <div class="btn-group" role="group" style="margin-left: auto;">
+                {% for f in filters %}
+                    <a href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched', { status: f.value }) }}"
+                       class="btn btn-sm {{ (statusFilter|default('unprocessed')) == f.value ? 'btn-secondary' : 'btn-outline-secondary' }}">
+                        {{ f.label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if unmatched is empty %}
+            <p>Žádné e-maily v tomto filtru.</p>
+        {% else %}
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_bulk') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('unmatched_bulk') }}">
+
+                <div style="display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .75rem; padding: .5rem .75rem; background: #f8f9fa; border-radius: .375rem;">
+                    <strong>Hromadná akce s vybranými:</strong>
+                    <button type="submit" name="action" value="general" class="btn btn-sm btn-outline-info">
+                        Označit jako obecné
+                    </button>
+                    <button type="submit" name="action" value="spam" class="btn btn-sm btn-outline-danger">
+                        Označit jako spam
+                    </button>
+                    <button type="submit" name="action" value="unprocessed" class="btn btn-sm btn-outline-secondary">
+                        Vrátit k zpracování
+                    </button>
+                </div>
+
+                <table class="list" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 2.5rem;">
+                                <input type="checkbox"
+                                       onclick="document.querySelectorAll('input[name=\'mail_ids[]\']').forEach(c => c.checked = this.checked);"
+                                       title="Vybrat / zrušit výběr všech">
+                            </th>
+                            <th style="width: 9rem;">Datum</th>
+                            <th style="width: 18rem;">Od</th>
+                            <th>Předmět / Náhled</th>
+                            <th style="width: 22rem;">Akce</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for m in unmatched %}
+                            <tr>
+                                <td style="vertical-align: top;">
+                                    <input type="checkbox" name="mail_ids[]" value="{{ m.id }}">
+                                </td>
+                                <td style="vertical-align: top;">
+                                    <small>
+                                        {{ m.occurredAt|date('j. n. Y', 'Europe/Prague') }}<br>
+                                        {{ m.occurredAt|date('H:i', 'Europe/Prague') }}<br>
+                                        <span style="color: #6c757d;">{{ m.imapFolder|default }}</span>
+                                    </small>
+                                </td>
+                                <td style="vertical-align: top;">
+                                    <strong>{{ m.fromName|default('(bez jména)') }}</strong><br>
+                                    <small><a href="mailto:{{ m.fromAddress }}">{{ m.fromAddress|default('?') }}</a></small>
+                                    {% if m.status != 'unprocessed' %}
+                                        <br>
+                                        <span class="badge {{ m.status == 'spam' ? 'bg-danger' : 'bg-info text-dark' }}" style="font-size: .7rem;">
+                                            {{ m.status }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td style="vertical-align: top;">
+                                    <strong>{{ m.subject|default('(bez předmětu)') }}</strong>
+                                    {% if m.body %}
+                                        <div class="small text-muted">{{ m.body|slice(0, 200) }}{% if m.body|length > 200 %}…{% endif %}</div>
+                                    {% endif %}
+                                </td>
+                                <td style="vertical-align: top;">
+                                    {# Per-row assign form — kept separate from the bulk form. #}
+                                    <div style="display: flex; gap: .25rem; align-items: center; flex-wrap: wrap; margin-bottom: .25rem;">
+                                        <input type="number" form="assign-{{ m.id }}" name="participantId" placeholder="ID účastníka" min="1" style="width: 9em;">
+                                        <button type="submit" form="assign-{{ m.id }}" class="btn btn-sm btn-success">Přiřadit</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+
+            {# Per-row assign forms placed outside the bulk form to keep the
+               POST body of each assign clean (no mail_ids[] bleed-through). #}
+            {% for m in unmatched %}
+                <form id="assign-{{ m.id }}"
+                      method="post"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_assign', { id: m.id }) }}"
+                      style="display: none;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('unmatched_assign_' ~ m.id) }}">
+                </form>
+            {% endfor %}
         {% endif %}
     </main>
 {% endblock %}

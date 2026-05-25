@@ -1,0 +1,175 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container-fluid" style="padding: 1rem 1.25rem 3rem;">
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Stavební bloky registračního systému: <strong>příznaky</strong> (KEMP, Dámské S, GDPR…),
+            <strong>kategorie</strong> (Typ ubytování, Velikost trička…), <strong>nabídky</strong>
+            (přihlášky / rozsahy účastnických kategorií) a <strong>nabídky příznaků</strong>
+            (cena a kapacita konkrétního příznaku v dané nabídce).
+        </p>
+
+        {% set tabs = [
+            { value: 'flags',       label: 'Příznaky' },
+            { value: 'categories',  label: 'Kategorie' },
+            { value: 'offers',      label: 'Nabídky / rozsahy' },
+            { value: 'flag-offers', label: 'Nabídky příznaků' },
+        ] %}
+        <div style="margin: 1.5rem 0 1rem; display: flex; gap: .25rem; border-bottom: 2px solid #006FAD; flex-wrap: wrap;">
+            {% for tab in tabs %}
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_catalog', { tab: tab.value }) }}"
+                   class="btn btn-sm"
+                   style="border-radius: .375rem .375rem 0 0; {{ activeTab == tab.value ? 'background: #006FAD; color: white;' : 'background: #f8f9fa; color: #006FAD;' }}">
+                    {{ tab.label }}
+                    <span class="badge" style="background: rgba(255,255,255,.3); margin-left: .25rem;">{{ counts[tab.value] }}</span>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if activeTab == 'flags' %}
+            <table class="list" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 3rem;">ID</th>
+                        <th>Název</th>
+                        <th style="width: 8rem;">Zkratka</th>
+                        <th style="width: 14rem;">Slug</th>
+                        <th style="width: 14rem;">Kategorie</th>
+                        <th style="width: 4rem; text-align: center;">Barva</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in flags|default([]) %}
+                        <tr>
+                            <td>{{ f.id }}</td>
+                            <td><strong>{{ f.name|default('—') }}</strong>{% if f.description|default %}<br><small class="text-muted">{{ f.description }}</small>{% endif %}</td>
+                            <td>{{ f.shortName|default('—') }}</td>
+                            <td><code style="font-size: .85em;">{{ f.slug|default('—') }}</code></td>
+                            <td>{{ f.category(false).name|default('—') }}</td>
+                            <td style="text-align: center;">
+                                {% if f.color|default %}
+                                    <span style="display: inline-block; width: 1.5rem; height: 1.5rem; border-radius: 3px; background: {{ f.color }}; border: 1px solid #999;" title="{{ f.color }}"></span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" style="text-align: center; color: #6c757d;">Žádné příznaky.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elseif activeTab == 'categories' %}
+            <table class="list" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 3rem;">ID</th>
+                        <th>Název</th>
+                        <th style="width: 12rem;">Slug</th>
+                        <th style="width: 8rem; text-align: center;">Min</th>
+                        <th style="width: 8rem; text-align: center;">Max</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in categories|default([]) %}
+                        <tr>
+                            <td>{{ c.id }}</td>
+                            <td><strong>{{ c.name|default('—') }}</strong>{% if c.description|default %}<br><small class="text-muted">{{ c.description }}</small>{% endif %}</td>
+                            <td><code style="font-size: .85em;">{{ c.slug|default('—') }}</code></td>
+                            <td style="text-align: center;">{{ c.min|default('—') }}</td>
+                            <td style="text-align: center;">{{ c.max|default('—') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" style="text-align: center; color: #6c757d;">Žádné kategorie.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elseif activeTab == 'offers' %}
+            <p class="text-muted" style="margin-bottom: .5rem;">
+                <small>Zobrazeno posledních {{ counts['offers'] < 200 ? counts['offers'] : 200 }} nabídek (z {{ counts['offers'] }}).</small>
+            </p>
+            <table class="list" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 3rem;">ID</th>
+                        <th>Název</th>
+                        <th>Akce / kategorie</th>
+                        <th style="width: 6rem; text-align: right;">Cena</th>
+                        <th style="width: 7rem; text-align: right;">Záloha</th>
+                        <th style="width: 6rem; text-align: center;">Kapacita</th>
+                        <th style="width: 6rem; text-align: center;">Plná</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in offers|default([]) %}
+                        <tr>
+                            <td>{{ o.id }}</td>
+                            <td>
+                                <strong>{{ o.name|default('—') }}</strong>
+                                {% if o.slug|default %}<br><code style="font-size: .8em;">{{ o.slug }}</code>{% endif %}
+                            </td>
+                            <td>
+                                {{ o.event(false).shortName|default(o.event(false).name|default('—')) }}
+                                {% if o.participantCategory(false).name|default %}
+                                    <br><small class="text-muted">{{ o.participantCategory(false).name }}</small>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">{{ o.price|default(0) }}&nbsp;Kč</td>
+                            <td style="text-align: right;">{{ o.depositValue|default(0) }}&nbsp;Kč</td>
+                            <td style="text-align: center;">{{ o.baseCapacity|default('—') }}</td>
+                            <td style="text-align: center;">{{ o.fullCapacity|default('—') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" style="text-align: center; color: #6c757d;">Žádné nabídky.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elseif activeTab == 'flag-offers' %}
+            <p class="text-muted" style="margin-bottom: .5rem;">
+                <small>Zobrazeno posledních {{ counts['flag-offers'] < 200 ? counts['flag-offers'] : 200 }} (z {{ counts['flag-offers'] }}).</small>
+            </p>
+            <table class="list" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 3rem;">ID</th>
+                        <th>Příznak</th>
+                        <th>Kategorie</th>
+                        <th style="width: 6rem; text-align: right;">Cena</th>
+                        <th style="width: 7rem; text-align: right;">Záloha</th>
+                        <th style="width: 6rem; text-align: center;">Kapacita</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fo in flagOffers|default([]) %}
+                        <tr>
+                            <td>{{ fo.id }}</td>
+                            <td>
+                                <strong>{{ fo.flag(false).name|default(fo.name|default('—')) }}</strong>
+                                {% if fo.flag(false).shortName|default %}
+                                    <small class="text-muted"> · {{ fo.flag(false).shortName }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ fo.flag(false).category(false).name|default('—') }}</td>
+                            <td style="text-align: right;">{{ fo.price|default(0) }}&nbsp;Kč</td>
+                            <td style="text-align: right;">{{ fo.depositValue|default(0) }}&nbsp;Kč</td>
+                            <td style="text-align: center;">{{ fo.baseCapacity|default('—') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" style="text-align: center; color: #6c757d;">Žádné nabídky příznaků.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <p class="text-muted" style="margin-top: 1.5rem; max-width: 60rem;">
+            <small>
+                Plná správa (přidávání, editace) probíhá přes <a href="/api/v1/docs">API Platform</a>.
+                Vytváření nových nabídek pro nový ročník je nejjednodušší skrz
+                <a href="{{ path('app_web_admin_clone_year') }}">klonování ročníku</a>.
+            </small>
+        </p>
+    </main>
+{% endblock %}
