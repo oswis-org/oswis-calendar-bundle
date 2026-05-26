@@ -146,7 +146,7 @@
                                                 {% if regRange.baseCapacity|default(null) != 0 and regRange.baseCapacity|default(null) != null %}
                                                     <span class="small">z {{ regRange.baseCapacity }}</span>
                                                     <div class="block small">
-                                                        {{ regRange.usageInt|default(0) / regRange.baseCapacity * 100 -}}
+                                                        {{ (regRange.usageInt|default(0) / regRange.baseCapacity * 100)|round(1) -}}
                                                         &nbsp;%
                                                     </div>
                                                 {% endif %}
