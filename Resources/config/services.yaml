@@ -7,6 +7,15 @@ services:
     autowire: true      # Automatically injects dependencies in your services.
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+  _instanceof:
+    OswisOrg\OswisCoreBundle\Export\ExportDefinitionInterface:
+      tags: [ 'oswis.export_definition' ]
+
+  ## Export definitions
+  OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
+    autowire: true
+    public: false
+
   ###
   ### CONTROLLERS
   ###
