@@ -9,6 +9,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use Closure;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -21,11 +22,13 @@ use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractPerson;
+use OswisOrg\OswisCoreBundle\Enum\CsvFormat;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
+use OswisOrg\OswisCoreBundle\Service\CsvExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Twig\Environment;
 
 class WebAdminParticipantsListController extends AbstractController
 {
@@ -43,6 +46,7 @@ class WebAdminParticipantsListController extends AbstractController
         public EntityManagerInterface $em,
         public EventSeriesService $eventSeriesService,
         public EventAggregationsService $eventAggregationsService,
+        public CsvExportService $csvExportService,
     ) {
     }
 
@@ -174,13 +178,17 @@ class WebAdminParticipantsListController extends AbstractController
 
     /**
      * @throws InvalidArgumentException
+     * @throws \League\Csv\CannotInsertRecord
+     * @throws \League\Csv\Exception
      */
     public function showParticipantsCsv(
-        Environment $twig,
+        Request $request,
         ?string $eventSlug = null,
         ?string $participantCategorySlug = null,
         bool $includeDeleted = false,
     ): Response {
+        $format = CsvFormat::fromRequest($request->query->getString('format'));
+
         $fileName = "participants";
         $fileName .= $eventSlug ? ('_'.$eventSlug) : '';
         $fileName .= $participantCategorySlug ? ('_'.$participantCategorySlug) : '';
@@ -188,11 +196,48 @@ class WebAdminParticipantsListController extends AbstractController
         $fileName .= '.csv';
 
         $data = $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted);
+        $participants = $data['participants'] ?? null;
+        if (!$participants instanceof Collection) {
+            $participants = new ArrayCollection();
+        }
 
-        $response = new StreamedResponse(static function () use ($twig, $data): void {
-            $twig->display('@OswisOrgOswisCalendar/web_admin/participants.csv.twig', $data);
-            flush();
-        });
+        $header = [
+            'ID', 'Příjmení', 'Křestní jméno', 'Celé jméno', 'Variabilní symbol', 'Akce', 'Kategorie',
+            'E-mail', 'Telefon', 'Velikost trička', 'Datum přihlášky', 'Aktivováno', 'Celková cena',
+            'Zaplaceno [Kč]', 'Zbývá [Kč]', 'Zaplaceno [%]', 'Smazáno',
+        ];
+        $rows = [];
+        foreach ($participants as $participant) {
+            if (!$participant instanceof Participant) {
+                continue;
+            }
+            $contact = $participant->getContact();
+            $person = $contact instanceof AbstractPerson ? $contact : null;
+            $event = $participant->getEvent();
+            $activated = $participant->getActivated();
+            $deletedAt = $participant->getDeletedAt();
+            $rows[] = [
+                $participant->getId(),
+                $person?->getFamilyName(),
+                $person?->getGivenName(),
+                $person?->getFullName(),
+                $participant->getVariableSymbol(),
+                $event?->getShortName() ?? $event?->getName(),
+                $participant->getParticipantCategory()?->getName(),
+                $contact?->getEmail(),
+                $contact?->getPhone(),
+                $participant->getTShirt(),
+                $participant->getCreatedAt()?->format('Y-m-d H:i'),
+                $activated?->format('Y-m-d') ?? 'Ne',
+                $participant->getPrice(),
+                $participant->getPaidPrice(),
+                $participant->getRemainingPrice(),
+                str_replace('.', ',', (string) ($participant->getPaidPricePercentage() * 100)),
+                $deletedAt?->format('Y-m-d') ?? '',
+            ];
+        }
+
+        $response = new Response($this->csvExportService->build($header, $rows, $format));
         $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
         $response->headers->set('Content-Disposition', "attachment; filename=\"{$fileName}\"");
 

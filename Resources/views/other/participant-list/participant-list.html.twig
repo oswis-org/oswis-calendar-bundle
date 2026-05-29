@@ -72,7 +72,12 @@
                 Přehled nezrušených přihlášek
                 <small class="small text-secondary">
                     [<a class="text-secondary"
-                        href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default}) }}">csv</a>]
+                        href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default}) }}"
+                        title="CSV pro český Excel (oddělovač ;, s BOM)">csv (Excel)</a>]
+                    ·
+                    [<a class="text-secondary"
+                        href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default, 'format': 'rfc'}) }}"
+                        title="CSV dle RFC 4180 (oddělovač ,, bez BOM) pro import do jiných systémů">csv (RFC)</a>]
                     {% if is_granted('ROLE_ADMIN') %}
                         ·
                         [<a class="text-secondary"
