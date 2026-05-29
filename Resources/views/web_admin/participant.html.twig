@@ -23,7 +23,7 @@
             {% if contact.appUser|default and contact.appUser.activated|default %}
                 <span class="badge bg-success">účet aktivován</span>
             {% elseif contact.email|default %}
-                <span class="badge bg-warning text-dark">účet neaktivován</span>
+                <span class="badge bg-warning text-black">účet neaktivován</span>
             {% endif %}
         </div>
         <p class="text-muted" style="margin: 0 0 .75rem;">
@@ -132,7 +132,7 @@
                                                 {% if contact.appUser.activated|default %}
                                                     <span class="badge bg-success" style="margin-left: .5rem;">aktivován</span>
                                                 {% else %}
-                                                    <span class="badge bg-warning text-dark" style="margin-left: .5rem;">neaktivován</span>
+                                                    <span class="badge bg-warning text-black" style="margin-left: .5rem;">neaktivován</span>
                                                 {% endif %}
                                             {% else %}
                                                 —
