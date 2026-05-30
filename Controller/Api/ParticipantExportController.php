@@ -27,8 +27,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * bounded and consistent with what admins see. Rendering goes through the
  * shared ExportManager + ParticipantExportDefinition.
  *
- * Query params: `event` (slug), `participantCategory` (slug), `includeDeleted`
- * (bool), `format` (csv|csv-rfc|pdf), `columns[]` (selected column keys).
+ * Query params: `eventId` (int, preferred) nebo `event` (slug),
+ * `participantCategory` (slug), `includeDeleted` (bool), `format`
+ * (csv|csv-rfc|pdf), `columns[]` (selected column keys).
  */
 #[IsGranted('ROLE_MANAGER')]
 final class ParticipantExportController
@@ -49,10 +50,18 @@ final class ParticipantExportController
         // give this single request headroom over the default pool limit.
         @ini_set('memory_limit', '512M');
 
+        // Prefer the numeric `eventId` (what the Ionic admin has from its route)
+        // and fall back to the `event` slug for slug-based API clients.
+        $eventId = $request->query->getInt('eventId');
         $eventSlug = $request->query->getString('event');
+        $eventCriteria = match (true) {
+            $eventId > 0 => [EventRepository::CRITERIA_ID => $eventId],
+            '' !== $eventSlug => [EventRepository::CRITERIA_SLUG => $eventSlug],
+            default => null,
+        };
         $categorySlug = $request->query->getString('participantCategory');
-        $event = '' !== $eventSlug
-            ? $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug])
+        $event = null !== $eventCriteria
+            ? $this->eventService->getRepository()->getEvent($eventCriteria)
             : null;
         $category = '' !== $categorySlug
             ? $this->participantCategoryService->getParticipantTypeBySlug($categorySlug)
