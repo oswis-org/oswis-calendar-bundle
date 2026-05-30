@@ -36,8 +36,8 @@ final class ParticipantExportDefinition implements ExportDefinitionInterface
             new ExportColumn('variableSymbol', 'Variabilní symbol', static fn (object $p): mixed => $p instanceof Participant ? $p->getVariableSymbol() : null),
             new ExportColumn('event', 'Akce', static fn (object $p): mixed => $p instanceof Participant ? ($p->getEvent()?->getShortName() ?? $p->getEvent()?->getName()) : null),
             new ExportColumn('category', 'Kategorie', static fn (object $p): mixed => $p instanceof Participant ? $p->getParticipantCategory()?->getName() : null),
-            new ExportColumn('email', 'E-mail', static fn (object $p): mixed => $p instanceof Participant ? $p->getContact()?->getEmail() : null),
-            new ExportColumn('phone', 'Telefon', static fn (object $p): mixed => $p instanceof Participant ? $p->getContact()?->getPhone() : null),
+            new ExportColumn('email', 'E-mail', static fn (object $p): mixed => $p instanceof Participant ? $p->getContactForRead()?->getEmail() : null),
+            new ExportColumn('phone', 'Telefon', static fn (object $p): mixed => $p instanceof Participant ? $p->getContactForRead()?->getPhone() : null),
             new ExportColumn('tShirt', 'Velikost trička', static fn (object $p): mixed => $p instanceof Participant ? $p->getTShirt() : null),
             new ExportColumn('createdAt', 'Datum přihlášky', static fn (object $p): mixed => $p instanceof Participant ? $p->getCreatedAt() : null, true, ExportColumn::TYPE_DATETIME),
             new ExportColumn('activated', 'Aktivováno', static fn (object $p): mixed => $p instanceof Participant ? ($p->getActivated()?->format('Y-m-d') ?? 'Ne') : null),
@@ -54,7 +54,7 @@ final class ParticipantExportDefinition implements ExportDefinitionInterface
         if (!$participant instanceof Participant) {
             return null;
         }
-        $contact = $participant->getContact();
+        $contact = $participant->getContactForRead();
 
         return $contact instanceof AbstractPerson ? $contact : null;
     }

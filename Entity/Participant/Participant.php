@@ -292,6 +292,25 @@ class Participant implements ParticipantInterface
     }
 
     /**
+     * Denormalizovaný (cached) kontakt z FK sloupce `contact_id`, plněný přes
+     * updateCachedColumns(). Na rozdíl od getContact() nezávisí na aktivní
+     * ParticipantContact vazbě, takže slouží jako spolehlivý fallback pro
+     * čtení (exporty, výpisy) i u záznamů s chybějící/neaktivní vazbou.
+     */
+    public function getCachedContact(): ?AbstractContact
+    {
+        return $this->contact;
+    }
+
+    /**
+     * Kontakt pro čtení: aktivní vazba, jinak fallback na cached FK kontakt.
+     */
+    public function getContactForRead(): ?AbstractContact
+    {
+        return $this->getContact() ?? $this->getCachedContact();
+    }
+
+    /**
      * @param AbstractContact $contact
      *
      * @throws OswisException
