@@ -7,7 +7,6 @@
 {% set place = event.place|default %}
 {% set organizerContact = event.organizer.contact|default %}
 {% if event %}
-{% apply spaceless %}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -51,5 +50,4 @@
     "priceCurrency": "CZK"
 }
 </script>
-{% endapply %}
 {% endif %}
