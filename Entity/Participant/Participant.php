@@ -22,6 +22,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
@@ -75,6 +76,10 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 ])]
 #[Entity(repositoryClass: ParticipantRepository::class)]
 #[Table(name: 'calendar_participant')]
+// Perf: párování plateb (lookup dle variable_symbol) + scoped/soft-delete výpisy
+// (event_id už má FK index samostatně; composite přidává deleted_at predikát).
+#[Index(name: 'idx_participant_variable_symbol', columns: ['variable_symbol'])]
+#[Index(name: 'idx_participant_event_deleted', columns: ['event_id', 'deleted_at'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 #[ApiResource(
     operations: [

@@ -15,6 +15,7 @@ use DateTime;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
@@ -62,6 +63,8 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 )]
 #[Entity(repositoryClass: ParticipantPaymentRepository::class)]
 #[Table(name: 'calendar_participant_payment')]
+// Perf: výpis plateb ORDER BY date_time DESC LIMIT 500 (participant_id už má FK index).
+#[Index(name: 'idx_payment_date_time', columns: ['date_time'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 #[ApiFilter(DateFilter::class, properties: [
     "createdDateTime",
