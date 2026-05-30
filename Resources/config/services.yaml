@@ -16,6 +16,12 @@ services:
     autowire: true
     public: false
 
+  ## API export controller (JWT, per-event scoped)
+  OswisOrg\OswisCalendarBundle\Controller\Api\ParticipantExportController:
+    autowire: true
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
   ###
   ### CONTROLLERS
   ###
