@@ -56,7 +56,7 @@ final readonly class CommunicationTimelineService
             },
         );
 
-        return array_values($entries);
+        return $entries;
     }
 
     /**

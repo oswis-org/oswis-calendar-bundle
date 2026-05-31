@@ -67,9 +67,6 @@ final class BackfillThreadingCommand extends Command
         $updated = 0;
         $skipped = 0;
         foreach ($iterator as $mail) {
-            if (!$mail instanceof ParticipantMail) {
-                continue;
-            }
             $mail->ensureThreadKey();
             if (null === $mail->getThreadKey()) {
                 $skipped++;

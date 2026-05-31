@@ -196,8 +196,8 @@ final class WebAdminImapController extends AbstractController
             $totalUnmatched = 0;
             $errors = [];
             foreach ($report['folders'] as $folder => $stats) {
-                $totalMatched += (int) ($stats['matched'] ?? 0);
-                $totalUnmatched += (int) ($stats['unmatched'] ?? 0);
+                $totalMatched += $stats['matched'];
+                $totalUnmatched += $stats['unmatched'];
                 if (!empty($stats['error'])) {
                     $errors[] = "$folder: ".$stats['error'];
                 }

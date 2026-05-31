@@ -40,6 +40,16 @@ final class ImapFetchService
 {
     public const FROM_DOMAIN_OWN = 'seznamovakup.cz';
 
+    /**
+     * Flush + clear the UnitOfWork every N processed messages. Without this the
+     * whole per-folder sweep accumulates N mails (full HTML+plain bodies) plus
+     * their EAGER-loaded matched Participant graphs in memory at once, which
+     * exhausts the 512 MB FPM limit on the in-request /imap-refresh button
+     * (observed: HTTP 500). Flushing also advances the UID watermark per batch,
+     * so a timeout mid-sweep is resumable instead of re-pulling from scratch.
+     */
+    private const FLUSH_BATCH = 5;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
@@ -201,17 +211,27 @@ final class ImapFetchService
             }
 
             $subject = $this->decodeMimeHeader((string) $message->getSubject());
-            $occurredAt = $message->getDate()->first()?->toDate() ?? new DateTime();
-            if (!$occurredAt instanceof DateTime) {
-                $occurredAt = new DateTime((string) $occurredAt->format('c'));
+            try {
+                $occurredAt = DateTime::createFromInterface($message->getDate()->toDate());
+            } catch (\Throwable) {
+                $occurredAt = new DateTime();
             }
             $bodyPlain = (string) $message->getTextBody();
             $bodyHtml = (string) $message->getHtmlBody();
             $fromObj = $message->getFrom()->first();
-            $fromAddress = $fromObj ? (string) $fromObj->mail : null;
-            $rawFromName = $fromObj && method_exists($fromObj, 'getPersonal')
-                ? (string) $fromObj->getPersonal()
-                : ($fromObj && property_exists($fromObj, 'personal') ? (string) $fromObj->personal : '');
+            $fromAddress = null;
+            $rawFromName = '';
+            if (is_object($fromObj)) {
+                if (property_exists($fromObj, 'mail') && is_string($fromObj->mail)) {
+                    $fromAddress = $fromObj->mail;
+                }
+                if (method_exists($fromObj, 'getPersonal')) {
+                    $personal = $fromObj->getPersonal();
+                    $rawFromName = is_string($personal) ? $personal : '';
+                } elseif (property_exists($fromObj, 'personal') && is_string($fromObj->personal)) {
+                    $rawFromName = $fromObj->personal;
+                }
+            }
             $fromName = '' !== $rawFromName ? $this->decodeMimeHeader($rawFromName) : null;
             $inReplyTo = trim((string) $message->getInReplyTo(), "<> \t\n\r\0\x0B") ?: null;
 
@@ -276,6 +296,18 @@ final class ImapFetchService
                 $this->em->persist($entry);
                 $unmatched++;
             }
+
+            // Keep the UnitOfWork small (see FLUSH_BATCH docblock). Re-load the
+            // sync-state row after clear() so the final flush below still has a
+            // managed entity to update.
+            if (0 === $fetched % self::FLUSH_BATCH) {
+                $state->setLastSeenUid($maxUid);
+                $state->setLastFetchAt(new DateTime());
+                $this->em->persist($state);
+                $this->em->flush();
+                $this->em->clear();
+                $state = $this->syncStateRepository->getOrCreate($folderName);
+            }
         }
 
         $state->setLastSeenUid($maxUid);
@@ -331,7 +363,7 @@ final class ImapFetchService
             }
             $participants = $this->em->getRepository(Participant::class)
                 ->findBy(['contact' => $contact], ['createdAt' => 'DESC'], 1);
-            if (count($participants) > 0 && $participants[0] instanceof Participant) {
+            if (count($participants) > 0) {
                 $id = $participants[0]->getId();
                 if (null !== $id && !isset($seenIds[$id])) {
                     $matched[] = $participants[0];
@@ -360,11 +392,8 @@ final class ImapFetchService
 
         foreach (['getTo', 'getCc', 'getBcc'] as $accessor) {
             try {
-                $collection = $message->{$accessor}();
+                $collection = $message->{$accessor}()->all();
             } catch (\Throwable) {
-                continue;
-            }
-            if (!is_iterable($collection)) {
                 continue;
             }
             foreach ($collection as $addr) {

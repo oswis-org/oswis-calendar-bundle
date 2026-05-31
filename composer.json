@@ -28,13 +28,14 @@
     }
   ],
   "require": {
-    "php": ">=8.4",
+    "php": ">=8.5",
     "ext-iconv": "*",
     "bigit/vokativ": "dev-zakjakub-master",
     "endroid/qr-code": "^6.1",
     "oswis-org/oswis-address-book-bundle": "^0.1.0 || ^0.1.1",
     "oswis-org/oswis-core-bundle": "^0.1.0 || ^0.2",
     "rikudou/czqrpayment": "^v5.0",
+    "symfony/html-sanitizer": "^8.1",
     "webklex/php-imap": "~6.2.0"
   },
   "require-dev": {

@@ -21,6 +21,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
@@ -79,6 +80,10 @@ use function assert;
  */
 #[Entity(repositoryClass: EventRepository::class)]
 #[Table(name: 'calendar_event')]
+// Perf: event-tree + soft-delete scoping (super_event_id má FK index samostatně;
+// composite přidává deleted_at) + veřejné route lookupy podle slug.
+#[Index(name: 'idx_event_super_deleted', columns: ['super_event_id', 'deleted_at'])]
+#[Index(name: 'idx_event_slug', columns: ['slug'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class Event implements NameableInterface
 {

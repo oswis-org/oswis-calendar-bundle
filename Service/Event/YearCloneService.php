@@ -89,6 +89,8 @@ final class YearCloneService
                 'offer_slugs'            => [],
                 'flag_group_offer_count' => 0,
                 'flag_offer_count'       => 0,
+                'organizer_count'        => 0,
+                'organizer_slugs'        => [],
             ];
             $cloned = $this->doClone($request, $summary);
             if ($request->dryRun) {
@@ -175,7 +177,7 @@ final class YearCloneService
         // UNIQUE constraint on Event.slug) and break slug-based lookups.
         foreach ($request->sourceYearEvent->getSubEvents() as $subEvent) {
             $sourceSlug = $subEvent->getSlug();
-            if (null === $sourceSlug || '' === $sourceSlug) {
+            if ('' === $sourceSlug) {
                 continue;
             }
             $targetSlug = $this->substituteYearInSlug($sourceSlug, $sourceYear, $targetYear);
@@ -191,7 +193,7 @@ final class YearCloneService
     /**
      * Walk the source year and clone everything per spec.
      *
-     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int, organizer_count: int, organizer_slugs: list<string>} $summary mutated in place
      */
     private function doClone(YearCloneRequest $request, array &$summary): Event
     {
@@ -259,7 +261,7 @@ final class YearCloneService
      * warning so the overall clone still succeeds.
      *
      * @param array<int, RegistrationOffer> $offerCloneMap keyed by source offer.id
-     * @param array{event_count:int, event_slugs:list<string>, offer_count:int, offer_slugs:list<string>, flag_group_offer_count:int, flag_offer_count:int} $summary mutated in place
+     * @param array{event_count:int, event_slugs:list<string>, offer_count:int, offer_slugs:list<string>, flag_group_offer_count:int, flag_offer_count:int, organizer_count:int, organizer_slugs:list<string>} $summary mutated in place
      */
     private function cloneOrganizerParticipants(
         Event $source,
@@ -267,15 +269,8 @@ final class YearCloneService
         array $offerCloneMap,
         array &$summary,
     ): void {
-        if (!array_key_exists('organizer_count', $summary)) {
-            $summary['organizer_count'] = 0;
-            $summary['organizer_slugs'] = [];
-        }
         $sourceOrganizers = $this->em->getRepository(Participant::class)->findBy(['event' => $source]);
         foreach ($sourceOrganizers as $sourceParticipant) {
-            if (!$sourceParticipant instanceof Participant) {
-                continue;
-            }
             $category = $sourceParticipant->getParticipantCategory(true);
             if (null === $category || ParticipantCategory::TYPE_ORGANIZER !== $category->getType()) {
                 continue;
@@ -289,7 +284,8 @@ final class YearCloneService
                 );
                 continue;
             }
-            $clonedOffer = $offerCloneMap[$sourceOffer->getId()] ?? null;
+            $sourceOfferId = $sourceOffer->getId();
+            $clonedOffer = null !== $sourceOfferId ? ($offerCloneMap[$sourceOfferId] ?? null) : null;
             if (!$clonedOffer instanceof RegistrationOffer) {
                 $this->logger->warning(
                     'YearCloneService: organizer participant #{id} skipped — offer #{offerId} not in clone map.',
@@ -317,7 +313,7 @@ final class YearCloneService
                     $newYear->setOrganizer($clone);
                 }
                 $summary['organizer_count']++;
-                $summary['organizer_slugs'][] = $contact->getSlug() ?? ('#'.$sourceParticipant->getId());
+                $summary['organizer_slugs'][] = $contact->getSlug();
                 $this->logger->info(
                     'YearCloneService: cloned organizer participant for {slug} into "{event}".',
                     ['slug' => $contact->getSlug(), 'event' => $newYear->getSlug()],
@@ -338,7 +334,7 @@ final class YearCloneService
      *
      * @param array<int, RegistrationOffer> $offerCloneMap keyed by source RegistrationOffer.id
      * @param array<int, FlagOverride>      $flagOverrides keyed by source RegistrationFlagOffer.id
-     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int, organizer_count: int, organizer_slugs: list<string>} $summary mutated in place
      */
     private function cloneFlagTree(
         Event $sourceRoot,
@@ -383,7 +379,7 @@ final class YearCloneService
 
     /**
      * @param array<int, FlagOverride> $flagOverrides keyed by source RegistrationFlagOffer.id
-     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int, organizer_count: int, organizer_slugs: list<string>} $summary mutated in place
      */
     private function cloneRegistrationFlagGroupOffer(
         RegistrationFlagGroupOffer $source,
@@ -464,7 +460,7 @@ final class YearCloneService
     /**
      * @param array<string, Event>                $eventCloneMap  keyed by source slug; mutated in-place
      * @param array<int, SubEventOverride>        $subEventOverrides keyed by source sub-event id
-     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int, organizer_count: int, organizer_slugs: list<string>} $summary mutated in place
      */
     private function cloneSubtreeRecursively(
         Event $source,
@@ -551,7 +547,7 @@ final class YearCloneService
      *
      * @param array<string, Event>          $eventCloneMap  keyed by source slug
      * @param array<int, OfferOverride>     $offerOverrides keyed by source RegistrationOffer.id
-     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int} $summary mutated in place
+     * @param array{event_count: int, event_slugs: list<string>, offer_count: int, offer_slugs: list<string>, flag_group_offer_count: int, flag_offer_count: int, organizer_count: int, organizer_slugs: list<string>} $summary mutated in place
      * @return array<int, RegistrationOffer>                keyed by source RegistrationOffer.id
      */
     private function cloneRegistrationOffersPass1(

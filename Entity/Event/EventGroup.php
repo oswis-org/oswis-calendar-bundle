@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -52,6 +53,8 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 )]
 #[Entity]
 #[Table(name: 'calendar_event_group')]
+// Perf: lookup série podle slug (EventRepository series_for_slug).
+#[Index(name: 'idx_event_group_slug', columns: ['slug'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
 class EventGroup implements NameableInterface
 {

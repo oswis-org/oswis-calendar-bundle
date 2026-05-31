@@ -56,8 +56,12 @@ class ParticipantMailRepository extends ServiceEntityRepository
         $queryBuilder->addOrderBy('mail.sent', 'DESC');
         $queryBuilder->addOrderBy('mail.id', 'DESC');
         $result = $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_OBJECT);
+        $mails = array_values(array_filter(
+            is_array($result) ? $result : [],
+            static fn (mixed $mail): bool => $mail instanceof ParticipantMail,
+        ));
 
-        return new ArrayCollection(is_array($result) ? $result : []);
+        return new ArrayCollection($mails);
     }
 
     final public function findSent(Participant $participant, string $type): Collection
