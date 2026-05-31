@@ -71,8 +71,36 @@
             <h3>
                 Přehled nezrušených přihlášek
                 <small class="small text-secondary">
-                    [<a class="text-secondary"
-                        href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default}) }}">csv</a>]
+                    <details class="d-inline-block" style="position: relative;">
+                        <summary class="btn btn-sm btn-outline-secondary" style="cursor: pointer;">Export ▾</summary>
+                        <form method="get"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default}) }}"
+                              class="card card-body shadow"
+                              style="position: absolute; z-index: 1000; min-width: 16rem; text-align: left;">
+                            <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
+                                {% set exportColumns = {
+                                    'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
+                                    'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
+                                    'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
+                                    'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
+                                    'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
+                                } %}
+                                {% for key, label in exportColumns %}
+                                    <label class="d-block small" style="font-weight: normal;">
+                                        <input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <label class="small d-block mb-2">Formát:
+                                <select name="format" class="form-select form-select-sm">
+                                    <option value="csv">CSV (Excel)</option>
+                                    <option value="csv-rfc">CSV (RFC 4180)</option>
+                                    <option value="pdf">PDF</option>
+                                </select>
+                            </label>
+                            <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
+                        </form>
+                    </details>
                     {% if is_granted('ROLE_ADMIN') %}
                         ·
                         [<a class="text-secondary"
