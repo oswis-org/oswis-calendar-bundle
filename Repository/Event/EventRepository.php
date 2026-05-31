@@ -16,6 +16,9 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 
+/**
+ * @extends ServiceEntityRepository<Event>
+ */
 class EventRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';

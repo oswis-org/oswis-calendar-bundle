@@ -50,7 +50,8 @@ final class ImapFetchCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $cap = max(1, (int) $input->getOption('cap'));
+        $capOpt = $input->getOption('cap');
+        $cap = max(1, is_numeric($capOpt) ? (int) $capOpt : 1);
         $initFromNow = (bool) $input->getOption('init-from-now');
         $sinceOpt = $input->getOption('since');
         $since = null;
@@ -80,10 +81,10 @@ final class ImapFetchCommand extends Command
         foreach ($report['folders'] as $folder => $stats) {
             $rows[] = [
                 $folder,
-                $stats['fetched'] ?? 0,
-                $stats['matched'] ?? 0,
-                $stats['unmatched'] ?? 0,
-                $stats['lastUid'] ?? 0,
+                $stats['fetched'],
+                $stats['matched'],
+                $stats['unmatched'],
+                $stats['lastUid'],
                 $stats['error'] ?? '',
             ];
         }

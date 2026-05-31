@@ -13,6 +13,9 @@ use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 
+/**
+ * @extends ServiceEntityRepository<ParticipantCategory>
+ */
 class ParticipantCategoryRepository extends ServiceEntityRepository
 {
     public const CRITERIA_ID = 'id';

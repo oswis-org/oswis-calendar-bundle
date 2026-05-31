@@ -39,8 +39,10 @@ final class WebAdminAdHocMailController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $subject = is_array($data) ? (string) ($data['subject'] ?? '') : '';
-            $rawBody = is_array($data) ? (string) ($data['body'] ?? '') : '';
+            $subjectVal = is_array($data) ? ($data['subject'] ?? '') : '';
+            $bodyVal = is_array($data) ? ($data['body'] ?? '') : '';
+            $subject = is_string($subjectVal) ? $subjectVal : '';
+            $rawBody = is_string($bodyVal) ? $bodyVal : '';
 
             $sanitizer = new HtmlSanitizer(
                 (new HtmlSanitizerConfig())

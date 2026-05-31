@@ -483,7 +483,7 @@ class ParticipantMailService
                 $this->em->flush();
                 $sent++;
             } catch (\Throwable $e) {
-                $errors[] = ($appUser?->getEmail() ?? '???').': '.$e->getMessage();
+                $errors[] = $appUser->getEmail().': '.$e->getMessage();
                 $this->logger->error(
                     sprintf('Ad-hoc mail to participant %d failed: %s', $participant->getId() ?? 0, $e->getMessage()),
                 );

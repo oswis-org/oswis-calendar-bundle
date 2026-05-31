@@ -67,7 +67,7 @@ final class WebAdminRegistrationOfferController extends AbstractController
             ));
             $this->em->persist($offer);
             $this->em->flush();
-            $this->addFlash('success', sprintf('Rozsah „%s" uložen.', $offer->getName() ?? $offer->getSlug() ?? ''));
+            $this->addFlash('success', sprintf('Rozsah „%s" uložen.', $offer->getName() ?? $offer->getSlug()));
 
             $event = $offer->getEvent();
 

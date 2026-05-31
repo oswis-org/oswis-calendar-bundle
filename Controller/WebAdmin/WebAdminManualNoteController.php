@@ -56,18 +56,30 @@ final class WebAdminManualNoteController extends AbstractController
                 $this->addFlash('error', 'Neúplná data formuláře.');
             } else {
                 $author = $this->getUser() instanceof AppUser ? $this->getUser() : null;
+                $channel = ($data['channel'] ?? null) instanceof CommunicationChannel
+                    ? $data['channel'] : CommunicationChannel::PHONE;
+                $direction = ($data['direction'] ?? null) instanceof CommunicationDirection
+                    ? $data['direction'] : CommunicationDirection::IN;
+                $subject = isset($data['subject']) && is_string($data['subject']) ? $data['subject'] : null;
+                $body = isset($data['body']) && is_string($data['body']) ? $data['body'] : null;
+                $otherPartyName = isset($data['otherPartyName']) && is_string($data['otherPartyName'])
+                    ? $data['otherPartyName'] : null;
+                $otherPartyContact = isset($data['otherPartyContact']) && is_string($data['otherPartyContact'])
+                    ? $data['otherPartyContact'] : null;
+                $durationSec = isset($data['durationSec']) && is_numeric($data['durationSec'])
+                    ? (int) $data['durationSec'] : null;
                 $note = new ParticipantManualNote(
                     participant:        $participant,
-                    channel:            $data['channel'] ?? CommunicationChannel::PHONE,
-                    direction:          $data['direction'] ?? CommunicationDirection::IN,
+                    channel:            $channel,
+                    direction:          $direction,
                     occurredAt:         $data['occurredAt'] instanceof DateTime ? $data['occurredAt'] : new DateTime(),
-                    subject:            isset($data['subject']) ? (string) $data['subject'] : null,
-                    body:               isset($data['body']) ? (string) $data['body'] : null,
+                    subject:            $subject,
+                    body:               $body,
                     internal:           (bool) ($data['internal'] ?? true),
                     authorAppUser:      $author,
-                    otherPartyName:     isset($data['otherPartyName']) ? (string) $data['otherPartyName'] : null,
-                    otherPartyContact:  isset($data['otherPartyContact']) ? (string) $data['otherPartyContact'] : null,
-                    durationSec:        isset($data['durationSec']) ? (int) $data['durationSec'] : null,
+                    otherPartyName:     $otherPartyName,
+                    otherPartyContact:  $otherPartyContact,
+                    durationSec:        $durationSec,
                 );
                 $this->em->persist($note);
                 $this->em->flush();

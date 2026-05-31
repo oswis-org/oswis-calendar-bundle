@@ -42,7 +42,7 @@ final class ParticipantMailGroupEditType extends AbstractType
             ->add('event', EntityType::class, [
                 'label'        => 'Událost',
                 'class'        => Event::class,
-                'choice_label' => static fn (Event $e): string => sprintf('%s (%s)', $e->getShortName() ?? $e->getName() ?? '?', $e->getSlug() ?? '—'),
+                'choice_label' => static fn (Event $e): string => sprintf('%s (%s)', $e->getShortName() ?? $e->getName() ?? '?', $e->getSlug()),
                 'required'     => false,
                 'placeholder'  => '(žádná — globální)',
             ])

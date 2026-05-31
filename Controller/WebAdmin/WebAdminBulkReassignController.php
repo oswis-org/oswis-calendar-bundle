@@ -11,7 +11,6 @@ use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantCategoryRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
-use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,7 +65,7 @@ final class WebAdminBulkReassignController extends AbstractController
                 ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $sourceCategory,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
-            ]))
+            ]), false)
             : [];
 
         if ($request->isMethod('POST') && 'execute' === $request->request->get('_action')) {
@@ -81,7 +80,10 @@ final class WebAdminBulkReassignController extends AbstractController
 
                 return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory);
             }
-            $ids = array_filter(array_map('intval', is_array($participantIds) ? $participantIds : []));
+            $ids = array_values(array_filter(array_map(
+                static fn (mixed $v): int => is_numeric($v) ? (int) $v : 0,
+                $participantIds,
+            )));
             if (count($ids) === 0) {
                 $this->addFlash('error', 'Nebyl označen žádný účastník.');
 
@@ -115,7 +117,7 @@ final class WebAdminBulkReassignController extends AbstractController
                     $p->setOffer($targetOffer);
                     $this->em->persist($p);
                     $moved[] = sprintf('#%d %s', $id, $p->getContact()?->getName() ?? '?');
-                } catch (OswisException|\Throwable $e) {
+                } catch (\Throwable $e) {
                     $failed[] = sprintf('#%d (%s)', $id, $e->getMessage());
                 }
             }
