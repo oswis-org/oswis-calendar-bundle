@@ -51,6 +51,18 @@ final readonly class EventAggregationsService
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 1,
         ]);
 
+        // Prime the LAZY collections the per-participant walk below would otherwise lazy-load
+        // one participant at a time (flagGroups + payments + notes) — turns an N+1 into a
+        // constant number of queries without changing any aggregated value. See repository.
+        $ids = [];
+        foreach ($participants as $participant) {
+            $id = $participant->getId();
+            if (null !== $id) {
+                $ids[] = $id;
+            }
+        }
+        $this->participantService->getRepository()->primeAggregationCollections($ids);
+
         [$flagsUsageByRange, $flagsUsageByFlag, $otherAggregations, $paymentsAggregation]
             = $this->aggregateParticipants($participants);
 
