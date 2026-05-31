@@ -74,6 +74,63 @@ class ParticipantRepository extends ServiceEntityRepository
         );
     }
 
+    /**
+     * Eager-primes the three LAZY to-many collections that the event aggregation dashboard
+     * walks per attendee — flagGroups (which drags its already-EAGER flag/offer/category
+     * subtree), payments and notes — in a constant number of queries instead of N lazy
+     * SELECTs per participant (the N+1 the dashboard otherwise fires). The rows hydrate onto
+     * the same managed Participant instances via the identity map, so this is purely a fetch
+     * optimisation: it changes no data and produces identical aggregation numbers.
+     *
+     * Each collection is primed by its own query on purpose — fetch-joining two sibling
+     * to-many relations in a single query would cartesian-explode the row count.
+     *
+     * @param list<int> $ids attendee ids already loaded via {@see getParticipants()}
+     */
+    public function primeAggregationCollections(array $ids): void
+    {
+        if ([] === $ids) {
+            return;
+        }
+        foreach (array_chunk($ids, 200) as $chunk) {
+            $this->createQueryBuilder('p')
+                ->addSelect('pfg', 'pf')
+                ->leftJoin('p.flagGroups', 'pfg')
+                ->leftJoin('pfg.participantFlags', 'pf')
+                ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
+                ->getQuery()->getResult();
+            $this->createQueryBuilder('p')
+                ->addSelect('pay')
+                ->leftJoin('p.payments', 'pay')
+                ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
+                ->getQuery()->getResult();
+            $this->createQueryBuilder('p')
+                ->addSelect('n')
+                ->leftJoin('p.notes', 'n')
+                ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
+                ->getQuery()->getResult();
+            // participantContacts → contact (EAGER) → appUser (EAGER): the graph getContact()
+            // walks per participant for gender + activated-user checks. The two to-one hops are
+            // fetch-joined so the whole contact subtree comes with the collection in one query.
+            $this->createQueryBuilder('p')
+                ->addSelect('pc', 'c', 'cau')
+                ->leftJoin('p.participantContacts', 'pc')
+                ->leftJoin('pc.contact', 'c')
+                ->leftJoin('c.appUser', 'cau')
+                ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
+                ->getQuery()->getResult();
+            // participantRegistrations → offer: getParticipantRegistration()/getOffer() reach
+            // into this collection per participant for price/offer resolution. offer is fetch-
+            // joined (it would EAGER-load anyway) so the registration subtree comes in one query.
+            $this->createQueryBuilder('p')
+                ->addSelect('pr', 'pro')
+                ->leftJoin('p.participantRegistrations', 'pr')
+                ->leftJoin('pr.offer', 'pro')
+                ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
+                ->getQuery()->getResult();
+        }
+    }
+
     public function getParticipantsQueryBuilder(array $opts = [], ?int $limit = null, ?int $offset = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('participant');
@@ -85,10 +142,15 @@ class ParticipantRepository extends ServiceEntityRepository
         // collections via getters, so Doctrine lazy-loads them per row — slower
         // wall-clock but bounded memory. Re-introduce eager loads behind a paginator
         // when paging the list view (out of scope for this hotfix).
-        $select = 'participant, offer, contact, event, participantCategory';
+        // contactAppUser: AbstractContact::$appUser is a fetch=EAGER OneToOne, so Doctrine
+        // loads it for every hydrated contact regardless — fetch-joining it here folds those
+        // N single-row eager SELECTs into this one query (a behaviour-preserving, pagination-
+        // safe to-one join: it changes no rows and no results, only the query count).
+        $select = 'participant, offer, contact, event, participantCategory, contactAppUser';
         $queryBuilder->select($select);
         $queryBuilder->leftJoin('participant.offer', 'offer');
         $queryBuilder->leftJoin('participant.contact', 'contact');
+        $queryBuilder->leftJoin('contact.appUser', 'contactAppUser');
         $queryBuilder->leftJoin('participant.event', 'event');
         $queryBuilder->leftJoin('participant.participantCategory', 'participantCategory');
         $this->setSuperEventQuery($queryBuilder, $opts);
