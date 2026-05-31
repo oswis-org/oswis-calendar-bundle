@@ -153,117 +153,150 @@ final class ImapFetchService
             return ['fetched' => 0, 'matched' => 0, 'unmatched' => 0, 'lastUid' => $maxUid];
         }
 
-        // Per-folder UID-range search — UID > lastSeenUid; webklex's query uses
-        // BODY.PEEK by default (leaveUnread() + setFetchFlags(false)) → no
-        // \Seen state mutation. Cap per iteration.
-        // WITHOUT the UID range, ->all()->limit(100) always returns the lowest
-        // 100 UIDs which get skipped after first fetch — so new mails past
-        // the 100th total message never get pulled.
-        $query = $folder->messages()
-            ->setFetchOrderAsc()
-            ->setFetchBody(true)
-            ->setFetchFlags(false)
-            ->leaveUnread()
-            ->limit($cap);
-        if ($lastUid > 0) {
-            $query = $query->whereUid(sprintf('%d:*', $lastUid + 1));
-        } elseif ($since instanceof \DateTimeInterface) {
-            // First-run pulling at most last-season's history.
-            $query = $query->whereSince($since);
-        } else {
-            $query = $query->all();
-        }
-        $messages = $query->get();
-
+        // Chunked UID-range sweep — CRITICAL for memory. webklex loads the FULL
+        // body (incl. attachments) of every message in a ->get() batch into RAM
+        // at once and keeps the parsed Message objects for the batch's lifetime.
+        // Pulling the whole per-folder cap (e.g. 30) in one batch ballooned a
+        // single FPM worker to ~1.7 GB and got it cgroup-OOM-killed mid-request
+        // (signal 9) — the /imap-refresh "405" was a stale-cache symptom of that
+        // crash, NOT a routing problem. So we pull only FLUSH_BATCH messages per
+        // IMAP round, persist + flush + clear + free them, then advance the UID
+        // cursor and pull the next round. Peak memory is bounded to one chunk
+        // regardless of $cap; FLUSH_BATCH alone (UnitOfWork clear) did NOT bound
+        // the webklex message collection, hence the OOM persisted.
+        // webklex query uses BODY.PEEK (leaveUnread() + setFetchFlags(false)) →
+        // no \Seen mutation. WITHOUT the UID range, ->all()->limit(N) always
+        // returns the lowest N UIDs which get skipped after the first round.
         $fetched = 0;
         $matched = 0;
         $unmatched = 0;
         $maxUid = $lastUid;
+        $cursor = $lastUid;
+        $firstRoundSince = (0 === $lastUid && $since instanceof \DateTimeInterface);
 
         // Per-fetch dedup set: (message_id, participant_id) pairs already
         // persisted in THIS run. The IMAP server can return the same
         // Message-ID across multiple UIDs (re-sent drafts, manual archive
         // copies in Sent, …) which would otherwise hit the DB unique key
-        // and abort the whole folder fetch.
+        // and abort the whole folder fetch. Kept across rounds (small: strings).
         $persistedThisFetch = [];
 
-        foreach ($messages as $message) {
-            if (!$message instanceof Message) {
-                continue;
+        while ($fetched < $cap) {
+            $chunkLimit = min(self::FLUSH_BATCH, $cap - $fetched);
+            $query = $folder->messages()
+                ->setFetchOrderAsc()
+                ->setFetchBody(true)
+                ->setFetchFlags(false)
+                ->leaveUnread()
+                ->limit($chunkLimit);
+            if ($cursor > 0) {
+                $query = $query->whereUid(sprintf('%d:*', $cursor + 1));
+            } elseif ($firstRoundSince) {
+                // First-run pulling at most last-season's history.
+                $query = $query->whereSince($since);
+            } else {
+                $query = $query->all();
             }
-            $uid = (int) $message->getUid();
-            if ($uid <= $lastUid) {
-                continue;
-            }
-            $fetched++;
-            $maxUid = max($maxUid, $uid);
+            $messages = $query->get();
 
-            $messageId = (string) $message->getMessageId();
-            if ('' === $messageId) {
-                $messageId = sprintf('uid-%s-%d@oswis.local', $folderName, $uid);
-            }
-            $messageId = trim($messageId, "<> \t\n\r\0\x0B");
-
-            // Dedup: unmatched already imported with this Message-ID → skip.
-            // (Incoming is per-participant, so its dedup happens per recipient below.)
-            if ($this->unmatchedRepository->findOneByMessageId($messageId)) {
-                continue;
-            }
-
-            $subject = $this->decodeMimeHeader((string) $message->getSubject());
-            try {
-                $occurredAt = DateTime::createFromInterface($message->getDate()->toDate());
-            } catch (\Throwable) {
-                $occurredAt = new DateTime();
-            }
-            $bodyPlain = (string) $message->getTextBody();
-            $bodyHtml = (string) $message->getHtmlBody();
-            $fromObj = $message->getFrom()->first();
-            $fromAddress = null;
-            $rawFromName = '';
-            if (is_object($fromObj)) {
-                if (property_exists($fromObj, 'mail') && is_string($fromObj->mail)) {
-                    $fromAddress = $fromObj->mail;
+            $processedInRound = 0;
+            foreach ($messages as $message) {
+                if (!$message instanceof Message) {
+                    continue;
                 }
-                if (method_exists($fromObj, 'getPersonal')) {
-                    $personal = $fromObj->getPersonal();
-                    $rawFromName = is_string($personal) ? $personal : '';
-                } elseif (property_exists($fromObj, 'personal') && is_string($fromObj->personal)) {
-                    $rawFromName = $fromObj->personal;
+                $uid = (int) $message->getUid();
+                if ($cursor > 0 && $uid <= $cursor) {
+                    continue;
                 }
-            }
-            $fromName = '' !== $rawFromName ? $this->decodeMimeHeader($rawFromName) : null;
-            $inReplyTo = trim((string) $message->getInReplyTo(), "<> \t\n\r\0\x0B") ?: null;
+                $processedInRound++;
+                $fetched++;
+                $maxUid = max($maxUid, $uid);
 
-            $direction = $this->detectDirection($fromAddress, $folderName);
-            $threadKey = AbstractMail::computeThreadKey($subject, $fromAddress);
+                $messageId = (string) $message->getMessageId();
+                if ('' === $messageId) {
+                    $messageId = sprintf('uid-%s-%d@oswis.local', $folderName, $uid);
+                }
+                $messageId = trim($messageId, "<> \t\n\r\0\x0B");
 
-            $participants = $this->matchParticipants($fromAddress, $direction, $message);
+                // Dedup: unmatched already imported with this Message-ID → skip.
+                // (Incoming is per-participant, so its dedup happens per recipient below.)
+                if ($this->unmatchedRepository->findOneByMessageId($messageId)) {
+                    continue;
+                }
 
-            if (count($participants) > 0) {
-                // One row per matched participant — for OUT mails to multiple
-                // recipients, each participant gets the entry in their timeline.
-                foreach ($participants as $participant) {
-                    $pid = $participant->getId();
-                    if (null === $pid) {
-                        continue;
+                $subject = $this->decodeMimeHeader((string) $message->getSubject());
+                try {
+                    $occurredAt = DateTime::createFromInterface($message->getDate()->toDate());
+                } catch (\Throwable) {
+                    $occurredAt = new DateTime();
+                }
+                $bodyPlain = (string) $message->getTextBody();
+                $bodyHtml = (string) $message->getHtmlBody();
+                $fromObj = $message->getFrom()->first();
+                $fromAddress = null;
+                $rawFromName = '';
+                if (is_object($fromObj)) {
+                    if (property_exists($fromObj, 'mail') && is_string($fromObj->mail)) {
+                        $fromAddress = $fromObj->mail;
                     }
-                    // Per-fetch dedup: messageId can repeat across UIDs in
-                    // Sent (re-sent drafts, archive copies). Cross-batch
-                    // dedup against stored rows handles previous runs.
-                    $batchKey = $messageId.'|'.$pid;
-                    if (isset($persistedThisFetch[$batchKey])) {
-                        continue;
+                    if (method_exists($fromObj, 'getPersonal')) {
+                        $personal = $fromObj->getPersonal();
+                        $rawFromName = is_string($personal) ? $personal : '';
+                    } elseif (property_exists($fromObj, 'personal') && is_string($fromObj->personal)) {
+                        $rawFromName = $fromObj->personal;
                     }
-                    if ($this->incomingRepository->findOneByMessageIdAndParticipant($messageId, $participant)) {
+                }
+                $fromName = '' !== $rawFromName ? $this->decodeMimeHeader($rawFromName) : null;
+                $inReplyTo = trim((string) $message->getInReplyTo(), "<> \t\n\r\0\x0B") ?: null;
+
+                $direction = $this->detectDirection($fromAddress, $folderName);
+                $threadKey = AbstractMail::computeThreadKey($subject, $fromAddress);
+
+                $participants = $this->matchParticipants($fromAddress, $direction, $message);
+
+                if (count($participants) > 0) {
+                    // One row per matched participant — for OUT mails to multiple
+                    // recipients, each participant gets the entry in their timeline.
+                    foreach ($participants as $participant) {
+                        $pid = $participant->getId();
+                        if (null === $pid) {
+                            continue;
+                        }
+                        // Per-fetch dedup: messageId can repeat across UIDs in
+                        // Sent (re-sent drafts, archive copies). Cross-batch
+                        // dedup against stored rows handles previous runs.
+                        $batchKey = $messageId.'|'.$pid;
+                        if (isset($persistedThisFetch[$batchKey])) {
+                            continue;
+                        }
+                        if ($this->incomingRepository->findOneByMessageIdAndParticipant($messageId, $participant)) {
+                            $persistedThisFetch[$batchKey] = true;
+                            continue;
+                        }
+                        $entry = new ParticipantIncomingMail(
+                            participant: $participant,
+                            messageId:   $messageId,
+                            direction:   $direction,
+                            occurredAt:  $occurredAt,
+                        );
+                        $entry->setSubject(mb_substr($subject, 0, 255));
+                        $entry->setBody($bodyPlain);
+                        $entry->setBodyHtml($bodyHtml);
+                        $entry->setFromAddress(null !== $fromAddress ? mb_substr($fromAddress, 0, 255) : null);
+                        $entry->setFromName(null !== $fromName ? mb_substr($fromName, 0, 255) : null);
+                        $entry->setInReplyTo(null !== $inReplyTo ? mb_substr($inReplyTo, 0, 255) : null);
+                        $entry->setThreadKey($threadKey);
+                        $entry->setImapFolder($folderName);
+                        $entry->setImapUid($uid);
+                        $this->em->persist($entry);
                         $persistedThisFetch[$batchKey] = true;
-                        continue;
+                        $matched++;
                     }
-                    $entry = new ParticipantIncomingMail(
-                        participant: $participant,
-                        messageId:   $messageId,
-                        direction:   $direction,
-                        occurredAt:  $occurredAt,
+                } else {
+                    $entry = new ParticipantUnmatchedMail(
+                        messageId:  $messageId,
+                        direction:  $direction,
+                        occurredAt: $occurredAt,
                     );
                     $entry->setSubject(mb_substr($subject, 0, 255));
                     $entry->setBody($bodyPlain);
@@ -271,50 +304,43 @@ final class ImapFetchService
                     $entry->setFromAddress(null !== $fromAddress ? mb_substr($fromAddress, 0, 255) : null);
                     $entry->setFromName(null !== $fromName ? mb_substr($fromName, 0, 255) : null);
                     $entry->setInReplyTo(null !== $inReplyTo ? mb_substr($inReplyTo, 0, 255) : null);
-                    $entry->setThreadKey($threadKey);
                     $entry->setImapFolder($folderName);
                     $entry->setImapUid($uid);
+                    $entry->setToAddresses(implode(', ', $this->extractRecipientEmails($message)));
                     $this->em->persist($entry);
-                    $persistedThisFetch[$batchKey] = true;
-                    $matched++;
+                    $unmatched++;
                 }
-            } else {
-                $entry = new ParticipantUnmatchedMail(
-                    messageId:  $messageId,
-                    direction:  $direction,
-                    occurredAt: $occurredAt,
-                );
-                $entry->setSubject(mb_substr($subject, 0, 255));
-                $entry->setBody($bodyPlain);
-                $entry->setBodyHtml($bodyHtml);
-                $entry->setFromAddress(null !== $fromAddress ? mb_substr($fromAddress, 0, 255) : null);
-                $entry->setFromName(null !== $fromName ? mb_substr($fromName, 0, 255) : null);
-                $entry->setInReplyTo(null !== $inReplyTo ? mb_substr($inReplyTo, 0, 255) : null);
-                $entry->setImapFolder($folderName);
-                $entry->setImapUid($uid);
-                $entry->setToAddresses(implode(', ', $this->extractRecipientEmails($message)));
-                $this->em->persist($entry);
-                $unmatched++;
-            }
 
-            // Keep the UnitOfWork small (see FLUSH_BATCH docblock). Re-load the
-            // sync-state row after clear() so the final flush below still has a
-            // managed entity to update.
-            if (0 === $fetched % self::FLUSH_BATCH) {
-                $state->setLastSeenUid($maxUid);
-                $state->setLastFetchAt(new DateTime());
-                $this->em->persist($state);
-                $this->em->flush();
-                $this->em->clear();
-                $state = $this->syncStateRepository->getOrCreate($folderName);
+            }
+            // Round complete: persist + advance the UID watermark, flush, clear,
+            // and free the chunk (webklex messages + their EAGER participant
+            // graphs) before the next IMAP pull. Watermark advances per round →
+            // a crash/timeout mid-sweep is resumable, not re-pulled from scratch.
+            $state->setLastSeenUid($maxUid);
+            $state->setLastFetchAt(new DateTime());
+            $this->em->persist($state);
+            $this->em->flush();
+            // DO NOT em->clear() here. clear() detaches the security actor
+            // (the authenticated AppUser from the token). The next Blameable
+            // prePersist then sees an UNMANAGED actor, and Gedmo re-persist()s it
+            // (AbstractTrackingListener::updateField, "if field value is reference,
+            // persist object"). Because AppUser is itself Blameable and references
+            // the same actor, that persist re-enters prePersist → persist → …
+            // infinitely → the worker balloons and is cgroup-OOM-killed (~12s,
+            // SIGKILL). THAT recursion — not message accumulation — was the real
+            // /imap-refresh failure (the "405" was a stale-cache symptom of the
+            // crash). Chunked fetch + unset($messages) already bounds the heavy
+            // webklex body/attachment memory; the Doctrine UoW holds only the
+            // lightweight mail rows for this cap, so keeping the actor managed
+            // (no clear) is both correct and memory-safe. CLI never hit this
+            // because there is no security token there (getActor() === null).
+            unset($messages);
+
+            // Fewer messages than requested → no more mail in the UID range, stop.
+            if ($processedInRound < $chunkLimit) {
+                break;
             }
         }
-
-        $state->setLastSeenUid($maxUid);
-        $state->setLastFetchAt(new DateTime());
-        $this->em->persist($state);
-        $this->em->flush();
-        $this->em->clear();
 
         return ['fetched' => $fetched, 'matched' => $matched, 'unmatched' => $unmatched, 'lastUid' => $maxUid];
     }

@@ -7,8 +7,8 @@
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Closure;
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -21,11 +21,15 @@ use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationOfferService;
+use OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition;
+use OswisOrg\OswisCoreBundle\Enum\ExportFormat;
 use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
+use OswisOrg\OswisCoreBundle\Export\ExportManager;
+use OswisOrg\OswisCoreBundle\Export\ExportRequest;
+use OswisOrg\OswisCoreBundle\Export\ExportResponseFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Twig\Environment;
 
 class WebAdminParticipantsListController extends AbstractController
 {
@@ -43,6 +47,9 @@ class WebAdminParticipantsListController extends AbstractController
         public EntityManagerInterface $em,
         public EventSeriesService $eventSeriesService,
         public EventAggregationsService $eventAggregationsService,
+        public ExportManager $exportManager,
+        public ExportResponseFactory $exportResponseFactory,
+        public ParticipantExportDefinition $participantExportDefinition,
     ) {
     }
 
@@ -174,29 +181,33 @@ class WebAdminParticipantsListController extends AbstractController
 
     /**
      * @throws InvalidArgumentException
+     * @throws \League\Csv\CannotInsertRecord
+     * @throws \League\Csv\Exception
+     * @throws \Mpdf\MpdfException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
      */
     public function showParticipantsCsv(
-        Environment $twig,
+        Request $request,
         ?string $eventSlug = null,
         ?string $participantCategorySlug = null,
         bool $includeDeleted = false,
     ): Response {
-        $fileName = "participants";
-        $fileName .= $eventSlug ? ('_'.$eventSlug) : '';
-        $fileName .= $participantCategorySlug ? ('_'.$participantCategorySlug) : '';
-        $fileName .= '_'.str_replace('T', '_', (new DateTime())->format('c'));
-        $fileName .= '.csv';
-
         $data = $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted);
+        $participants = $data['participants'] ?? null;
+        if (!$participants instanceof Collection) {
+            $participants = new ArrayCollection();
+        }
+        $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
+        $exportRequest = new ExportRequest(
+            ExportFormat::fromRequest($request->query->getString('format')),
+            [] === $columnKeys ? null : $columnKeys,
+        );
 
-        $response = new StreamedResponse(static function () use ($twig, $data): void {
-            $twig->display('@OswisOrgOswisCalendar/web_admin/participants.csv.twig', $data);
-            flush();
-        });
-        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
-        $response->headers->set('Content-Disposition', "attachment; filename=\"{$fileName}\"");
-
-        return $response;
+        return $this->exportResponseFactory->toResponse(
+            $this->exportManager->render($this->participantExportDefinition, $participants, $exportRequest),
+        );
     }
 
     public function showYearsCompare(?string $eventSeriesSlug = null): Response
