@@ -320,8 +320,20 @@ final class ImapFetchService
             $state->setLastFetchAt(new DateTime());
             $this->em->persist($state);
             $this->em->flush();
-            $this->em->clear();
-            $state = $this->syncStateRepository->getOrCreate($folderName);
+            // DO NOT em->clear() here. clear() detaches the security actor
+            // (the authenticated AppUser from the token). The next Blameable
+            // prePersist then sees an UNMANAGED actor, and Gedmo re-persist()s it
+            // (AbstractTrackingListener::updateField, "if field value is reference,
+            // persist object"). Because AppUser is itself Blameable and references
+            // the same actor, that persist re-enters prePersist → persist → …
+            // infinitely → the worker balloons and is cgroup-OOM-killed (~12s,
+            // SIGKILL). THAT recursion — not message accumulation — was the real
+            // /imap-refresh failure (the "405" was a stale-cache symptom of the
+            // crash). Chunked fetch + unset($messages) already bounds the heavy
+            // webklex body/attachment memory; the Doctrine UoW holds only the
+            // lightweight mail rows for this cap, so keeping the actor managed
+            // (no clear) is both correct and memory-safe. CLI never hit this
+            // because there is no security token there (getActor() === null).
             unset($messages);
 
             // Fewer messages than requested → no more mail in the UID range, stop.
