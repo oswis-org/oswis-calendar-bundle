@@ -1,75 +1,136 @@
-<div class="container">
-    {% if filterTabs is defined %}
-        <ul class="nav nav-tabs mb-3">
-            {% for tab in filterTabs %}
-                <li class="nav-item">
-                    <a class="nav-link{{ tab.active ? ' active' : '' }}" href="{{ tab.url }}">{{ tab.label }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <div class="row">
+{# Unified participant list. Scope (event/category) in the path, filter/flags/expr/page in
+   the query — the whole view is driven by the controller's registry. All controls are GET
+   so every state is shareable/bookmarkable. #}
+{% set listPath = path('oswis_org_oswis_calendar_web_admin_participants_list', {eventSlug: eventSlug, participantCategorySlug: participantCategorySlug}) %}
+<div class="container-fluid">
+
+    {# ---- SCOPE BAR ------------------------------------------------------- #}
+    <div class="row mb-3">
         <div class="col">
-            <h2>Přehled přihlášek</h2>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <h3>Omezení</h3>
-            <table class="list">
-                <thead>
-                <tr>
-                    <th>Typ omezení</th>
-                    <th>Hodnota</th>
-                </tr>
-                </thead>
-                {% if participantCategory|default %}
-                    <tbody>
-                    <tr>
-                        <td>Kategorie účastníka:</td>
-                        <td>
-                            <strong>{{ participantCategory.name|default(participantCategory.slug|default('bez názvu')) }}</strong>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endif %}
+            <h2 class="d-inline-block me-3">Přehled přihlášek</h2>
+            {% if scoped %}
+                <a class="btn btn-sm btn-outline-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× Zrušit omezení (všichni)</a>
+            {% else %}
+                <span class="badge bg-warning text-dark">Bez omezení — všichni účastníci napříč akcemi</span>
+            {% endif %}
+            <div class="mt-2 d-flex flex-wrap gap-3 align-items-center">
                 {% if event|default %}
-                    <tbody>
-                    <tr>
-                        <td>Událost:</td>
-                        <td>
-                            <strong>{{ event.name|default(event.slug|default('bez názvu')) }}</strong>
-                            <ul>
-                                {% for subEvent in event.subEvents %}
-                                    <li>
-                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list',
-                                            {'eventSlug': subEvent.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">
-                                            {{ subEvent.name }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                                {% if event.superEvent %}
-                                    <li>
-                                        součást akce:
-                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list',
-                                            {'eventSlug': event.superEvent.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">
-                                            {{ event.superEvent.name }}
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </td>
-                    </tr>
-                    </tbody>
+                    <div class="small">
+                        <strong>Akce:</strong> {{ event.name|default(event.slug|default('—')) }}
+                        {% if event.superEvent %}
+                            · <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {eventSlug: event.superEvent.slug, participantCategorySlug: participantCategorySlug}) }}">↑ {{ event.superEvent.name }}</a>
+                        {% endif %}
+                        {% for subEvent in event.subEvents %}
+                            · <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {eventSlug: subEvent.slug, participantCategorySlug: participantCategorySlug}) }}">↳ {{ subEvent.name }}</a>
+                        {% endfor %}
+                    </div>
                 {% endif %}
-            </table>
+                {% if participantCategories|default %}
+                    <div class="small">
+                        <strong>Typ účastníka:</strong>
+                        <select class="form-select form-select-sm d-inline-block" style="width:auto;"
+                                onchange="if(this.value){location.href=this.value;}">
+                            <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {eventSlug: eventSlug}) }}"
+                                {{ participantCategory|default ? '' : 'selected' }}>(všechny typy)</option>
+                            {% for category in participantCategories %}
+                                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {eventSlug: eventSlug, participantCategorySlug: category.slug}) }}"
+                                    {{ participantCategory|default and participantCategory.slug == category.slug ? 'selected' : '' }}>
+                                    {{ category.name|default(category.slug) }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
+    {# ---- SUMMARY STATS (scoped only) ------------------------------------- #}
+    {% if stats|default %}
+        <div class="row mb-3">
+            <div class="col d-flex flex-wrap gap-2">
+                <span class="badge bg-primary">Přihlášek: {{ stats.total }}</span>
+                <span class="badge bg-success">Zaplaceno: {{ stats.paid }}</span>
+                <span class="badge bg-danger">Nezaplaceno: {{ stats.unpaid }}</span>
+                <span class="badge bg-info text-dark">Vybráno: {{ stats.sumPaid }} Kč</span>
+                <span class="badge bg-warning text-dark">Zbývá: {{ stats.sumRemaining }} Kč</span>
+                <span class="badge bg-secondary">Celková cena: {{ stats.sumPrice }} Kč</span>
+                <span class="badge bg-dark">Smazaných: {{ stats.deleted }}</span>
+            </div>
+        </div>
+    {% endif %}
+
+    {# ---- FILTER FORM (one GET form → all state in URL) ------------------- #}
+    <form method="get" action="{{ listPath }}" class="card card-body mb-3">
+        <div class="mb-2 d-flex flex-wrap align-items-center gap-1">
+            {% for tab in filterTabs %}
+                {% if not loop.first and tab.group != filterTabs[loop.index0 - 1].group %}
+                    <span class="vr mx-1"></span>
+                {% endif %}
+                <label class="btn btn-sm {{ tab.active ? 'btn-primary' : 'btn-outline-primary' }} mb-1"
+                       title="{{ tab.group }}">
+                    <input type="radio" name="filter" value="{{ tab.key }}" class="d-none"
+                           onchange="this.form.submit()" {{ tab.active ? 'checked' : '' }}> {{ tab.label }}
+                </label>
+            {% endfor %}
+        </div>
+
+        {% if flagFacets|default %}
+            <details class="mb-2" {{ selectedFlags|default([])|length > 0 ? 'open' : '' }}>
+                <summary class="small text-secondary" style="cursor:pointer;">Filtr dle příznaků (NEBO uvnitř kategorie, A napříč) — vybráno: {{ selectedFlags|default([])|length }}</summary>
+                <div class="row mt-2">
+                    {% for facet in flagFacets %}
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <strong class="small d-block">{{ facet.categoryName }}</strong>
+                            {% for flag in facet.flags %}
+                                <label class="d-block small" style="font-weight:normal;">
+                                    <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>
+                                    {{ flag.label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </details>
+        {% endif %}
+
+        <details class="mb-2" {{ advancedExpr|default ? 'open' : '' }}>
+            <summary class="small text-secondary" style="cursor:pointer;">Pokročilý filtr (výraz)</summary>
+            <div class="mt-2">
+                <input type="text" name="expr" class="form-control form-control-sm" value="{{ advancedExpr|default }}"
+                       placeholder="např. hasFlag('panske-m') or hasFlag('damske-m')">
+                <small class="text-secondary">Funkce: {{ availableFunctions|default([])|join('(), ') }}()</small>
+            </div>
+        </details>
+
+        <div>
+            <button type="submit" class="btn btn-sm btn-primary">Použít filtr</button>
+            {% if hasActiveFilter|default %}
+                <a class="btn btn-sm btn-outline-secondary" href="{{ listPath }}">Zrušit filtry</a>
+            {% endif %}
+            {% if expression|default %}
+                <small class="text-secondary ms-2">výraz: <code>{{ expression }}</code></small>
+            {% endif %}
+        </div>
+    </form>
+
+    {# ---- WARNINGS -------------------------------------------------------- #}
+    {% if filterScopeWarning|default %}
+        <div class="alert alert-warning py-2 small">
+            Filtruješ bez omezení akce — filtr se aplikuje jen na <strong>aktuálně načtenou stránku</strong>.
+            Pro filtr přes všechny přihlášky zvol akci/typ, nebo
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', app.request.query.all|merge({all: 1, page: null})) }}">zobraz vše</a>
+            (může být hodně dat), případně použij CSV export.
+        </div>
+    {% elseif showAll|default and not scoped %}
+        <div class="alert alert-warning py-2 small">Zobrazeno <strong>vše</strong> bez omezení — může jít o velké množství dat.</div>
+    {% endif %}
+
+    {# ---- LIST + EXPORT -------------------------------------------------- #}
     <div class="row">
         <div class="col">
             <h3>
-                Přehled nezrušených přihlášek
+                Přihlášky <small class="text-secondary">({{ participants|length }})</small>
                 <small class="small text-secondary">
                     <details class="d-inline-block" style="position: relative;">
                         <summary class="btn btn-sm btn-outline-secondary" style="cursor: pointer;">Export ▾</summary>
@@ -102,54 +163,36 @@
                         </form>
                     </details>
                     {% if is_granted('ROLE_ADMIN') %}
-                        ·
-                        [<a class="text-secondary"
-                            href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>]
+                        · [<a class="text-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>]
                     {% endif %}
                 </small>
             </h3>
-            <table class="list">
-                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
-                {% for participant in participants|filter(participant => not participant.deleted) %}
-                    {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
-                {% else %}
-                    <tbody>
-                    <tr>
-                        <td colspan="4" class="text-center bold">Žádné nezrušené přihlášky.</td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
-            <p>
-                <small>
-                    {{ participants|filter(participant => not participant.deleted)|map(p => p.contact.email)|join(', ') }}
-                </small>
-            </p>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col">
-            <h3>Přehled zrušených přihlášek</h3>
             <table class="list">
                 {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
-                {% for participant in participants|filter(participant => participant.deleted) %}
+                {% for participant in participants %}
                     {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
                 {% else %}
                     <tbody>
-                    <tr>
-                        <td colspan="4" class="text-center bold">Žádné zrušené přihlášky.</td>
-                    </tr>
+                    <tr><td colspan="4" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr>
                     </tbody>
                 {% endfor %}
             </table>
-            <p>
-                <span class="block small">
-                    <small>
-                        {{ participants|filter(participant => participant.deleted and participant.contact|default)|map(p => p.contact.email|default(''))|filter(e => e != '')|join(', ') }}
-                    </small>
-                </span>
-            </p>
+
+            {% if pagination|default %}
+                <nav class="mt-3 d-flex gap-2 align-items-center">
+                    {% if pagination.hasPrev %}
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', app.request.query.all|merge({page: pagination.page - 1})) }}">← Předchozí</a>
+                    {% endif %}
+                    <span class="small">strana {{ pagination.page }}</span>
+                    {% if pagination.hasNext %}
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', app.request.query.all|merge({page: pagination.page + 1})) }}">Další →</a>
+                    {% endif %}
+                    <a class="btn btn-sm btn-outline-secondary ms-2" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', app.request.query.all|merge({all: 1, page: null})) }}">Zobrazit vše</a>
+                </nav>
+            {% endif %}
+
+            <p class="mt-2"><small>{{ participants|map(p => p.contact.email|default(''))|filter(e => e != '')|join(', ') }}</small></p>
         </div>
     </div>
 

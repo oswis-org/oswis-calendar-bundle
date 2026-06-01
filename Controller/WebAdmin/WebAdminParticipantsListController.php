@@ -82,14 +82,18 @@ class WebAdminParticipantsListController extends AbstractController
     }
 
     /**
-     * Unified participant list. Scope comes from the path ($eventSlug / $participantCategorySlug),
-     * everything else from the query string: ?filter=, ?flags[]=, ?expr=, ?page=, ?all=1.
+     * Unified participant list. The whole view is driven by the query string:
+     * scope (?eventSlug=, ?participantCategorySlug=) + ?filter=, ?flags[]=, ?expr=, ?page=, ?all=1.
+     *
+     * Scope lives in the query (not the path) so any combination is expressible — notably a
+     * category-only scope, which a positional `/{eventSlug?}/{categorySlug?}` path cannot
+     * represent (you can't fill the 2nd optional segment while leaving the 1st empty). Legacy
+     * path-form bookmarks 301-redirect here via {@see legacyScopeRedirect()}.
      */
-    public function list(
-        Request $request,
-        ?string $eventSlug = null,
-        ?string $participantCategorySlug = null,
-    ): Response {
+    public function list(Request $request): Response
+    {
+        $eventSlug = $request->query->get('eventSlug') ?: null;
+        $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
         $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $event = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
         $scoped = (null !== $event) || (null !== $participantCategory);
@@ -169,6 +173,7 @@ class WebAdminParticipantsListController extends AbstractController
             'availableFunctions'  => $this->filterEvaluator->getFunctionNames(),
             'eventSlug'           => $eventSlug,
             'participantCategorySlug' => $participantCategorySlug,
+            'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
         ]);
     }
 
@@ -188,6 +193,25 @@ class WebAdminParticipantsListController extends AbstractController
             'participantCategorySlug' => $participantCategorySlug,
             'filter'                  => self::FILTER_ALL === $filter ? null : $filter,
         ], static fn (?string $value): bool => null !== $value);
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list', $query, Response::HTTP_MOVED_PERMANENTLY);
+    }
+
+    /**
+     * Backward-compatible alias for the old path-form list URL
+     * (/web_admin/seznam-prihlasek/{eventSlug}/{participantCategorySlug?}). 301-redirects to the
+     * canonical query-form list, preserving any extra query params (filter/flags/expr/page).
+     */
+    public function legacyScopeRedirect(
+        Request $request,
+        string $eventSlug,
+        ?string $participantCategorySlug = null,
+    ): RedirectResponse {
+        $query = $request->query->all();
+        $query['eventSlug'] = $eventSlug;
+        if (null !== $participantCategorySlug && '' !== $participantCategorySlug) {
+            $query['participantCategorySlug'] = $participantCategorySlug;
+        }
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list', $query, Response::HTTP_MOVED_PERMANENTLY);
     }
@@ -346,7 +370,7 @@ class WebAdminParticipantsListController extends AbstractController
     }
 
     /**
-     * @return list<array{url: string, label: string, group: string, active: bool}>
+     * @return list<array{key: string, url: string, label: string, group: string, active: bool}>
      */
     private function buildFilterTabs(?string $eventSlug, ?string $participantCategorySlug, string $active): array
     {
@@ -357,6 +381,7 @@ class WebAdminParticipantsListController extends AbstractController
                 $query['filter'] = $filter['key'];
             }
             $tabs[] = [
+                'key'    => $filter['key'],
                 'url'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_list', $query),
                 'label'  => $filter['label'],
                 'group'  => $filter['group'],
@@ -431,12 +456,11 @@ class WebAdminParticipantsListController extends AbstractController
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-    public function showParticipantsCsv(
-        Request $request,
-        ?string $eventSlug = null,
-        ?string $participantCategorySlug = null,
-        bool $includeDeleted = false,
-    ): Response {
+    public function showParticipantsCsv(Request $request): Response
+    {
+        $eventSlug = $request->query->get('eventSlug') ?: null;
+        $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
+        $includeDeleted = $request->query->getBoolean('includeDeleted');
         $data = $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted);
         $participants = $data['participants'] ?? null;
         if (!$participants instanceof Collection) {

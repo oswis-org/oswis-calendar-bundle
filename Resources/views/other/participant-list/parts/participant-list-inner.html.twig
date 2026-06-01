@@ -44,6 +44,24 @@
         <div class="block small">
             ✉ <a href="mailto:{{ contact.email|default }}" target="_blank">{{ contact.email|default }}</a>
         </div>
+        {# Quick actions: detail / compose mail / soft-delete (restore lives above, shown when deleted). #}
+        <div class="block small mt-1" style="white-space: nowrap;">
+            <a class="btn btn-sm btn-outline-primary" style="padding:1px 8px; font-size:.75rem;"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">Detail</a>
+            {% if is_granted('ROLE_ADMIN') %}
+                <a class="btn btn-sm btn-outline-secondary" style="padding:1px 8px; font-size:.75rem;"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">✉ Mail</a>
+                {% if not participant.deletedAt|default %}
+                    <form method="post" style="display:inline-block;"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
+                          onsubmit="return confirm('Opravdu smazat účastníka #{{ participant.id }}? (lze obnovit)');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
+                        <input type="hidden" name="return" value="{{ app.request.requestUri }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:1px 8px; font-size:.75rem;">🗑 Smazat</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
         <ul>

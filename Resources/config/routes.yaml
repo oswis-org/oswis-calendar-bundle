@@ -67,12 +67,20 @@ oswis_org_oswis_calendar_web_event:
   controller: oswis_org_oswis_calendar.event.event_controller::showEvent
   path: "/akce/{eventSlug?}"
 
-# Canonical unified participant list. Scope (event/category) in the path; filter, flag
-# facets, advanced expression, pagination all in the query string (?filter=, ?flags[]=,
-# ?expr=, ?page=, ?all=1) so the whole view is shareable/bookmarkable.
+# Canonical unified participant list. EVERYTHING is in the query string — scope
+# (?eventSlug=, ?participantCategorySlug=) + ?filter=, ?flags[]=, ?expr=, ?page=, ?all=1 —
+# so the whole view is shareable/bookmarkable AND any scope combination is expressible
+# (a positional /{eventSlug?}/{categorySlug?} path can't represent category-only scope).
 oswis_org_oswis_calendar_web_admin_participants_list:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::list
-  path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
+  path: "/web_admin/seznam-prihlasek"
+  methods: [GET]
+
+# BC: old path-form list URL → 301 to the canonical query-form list. eventSlug required
+# so this never clashes with the bare canonical path above.
+oswis_org_oswis_calendar_web_admin_participants_list_legacy_path:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::legacyScopeRedirect
+  path: "/web_admin/seznam-prihlasek/{eventSlug}/{participantCategorySlug?}"
   methods: [GET]
 
 # Legacy filter URLs — 301-redirect to the canonical list with the matching ?filter=
@@ -99,7 +107,8 @@ oswis_org_oswis_calendar_web_admin_participants_food:
 
 oswis_org_oswis_calendar_web_admin_participants_list_csv:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsCsv
-  path: "/web_admin/seznam-prihlasek-csv/{eventSlug?}/{participantCategorySlug?}"
+  path: "/web_admin/seznam-prihlasek-csv"
+  methods: [GET]
 
 oswis_org_oswis_calendar_web_admin_event:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showEvent
