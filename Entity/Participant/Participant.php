@@ -46,6 +46,7 @@ use OswisOrg\OswisCalendarBundle\Interfaces\Participant\ParticipantInterface;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Filter\SearchFilter;
 use OswisOrg\OswisCoreBundle\Traits\Common\ActivatedTrait;
@@ -705,7 +706,7 @@ class Participant implements ParticipantInterface
     {
         $cmpResult = (!$participant1->getContact() || !$participant2->getContact())
             ? 0
-            : strcmp(
+            : StringUtils::compareCzech(
                 $participant1->getContact()->getSortableName(),
                 $participant2->getContact()->getSortableName(),
             );
