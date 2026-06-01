@@ -354,6 +354,23 @@ class ParticipantService
     }
 
     /**
+     * Soft-delete a participant (set deletedAt to now). Reversible via {@see restore()}.
+     *
+     * Child collections (flag groups, registrations) are left untouched — they keep their
+     * own deletedAt state, mirroring the asymmetric restore() behaviour.
+     */
+    public function delete(Participant $participant): void
+    {
+        if ($participant->isDeleted()) {
+            return;
+        }
+        $participant->delete();
+        $this->em->persist($participant);
+        $this->em->flush();
+        $this->logger->info("Participant ({$participant->getId()}) soft-deleted.");
+    }
+
+    /**
      * @param Participant|null $participant
      * @param ParticipantToken $participantToken
      * @param bool $sendConfirmation

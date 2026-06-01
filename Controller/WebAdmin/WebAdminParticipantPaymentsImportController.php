@@ -49,10 +49,12 @@ final class WebAdminParticipantPaymentsImportController extends AbstractControll
 
     private function renderMessage(string $title, string $message): Response
     {
-        return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
+        // Admin message skeleton (keeps the admin menu) — not the public message page.
+        return $this->render('@OswisOrgOswisCore/web_admin/message.html.twig', [
             'title'     => $title,
             'pageTitle' => $title,
             'message'   => $message,
+            'backUrl'   => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participant_payments_list'),
         ]);
     }
 

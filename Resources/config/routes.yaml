@@ -196,6 +196,13 @@ oswis_org_oswis_calendar_web_admin_participant_restore:
     participantId: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_participant_delete:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::delete
+  path: "/web_admin/ucastnici/{participantId}/smazat"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_resend_activation:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::resendActivation
   path: "/web_admin/ucastnici/{participantId}/znovu-poslat-aktivaci"

@@ -113,10 +113,12 @@ final class WebAdminParticipantsController extends AbstractController
     {
         $this->participantService->sendAutoMails(null, $type, $limit);
 
-        return $this->render('@OswisOrgOswisCore/web/pages/message.html.twig', [
+        // Admin message skeleton (keeps the admin menu) — not the public message page.
+        return $this->render('@OswisOrgOswisCore/web_admin/message.html.twig', [
             'title'     => 'Akce provedena.',
             'pageTitle' => 'Akce provedena.',
             'message'   => 'E-maily rozeslány.',
+            'backUrl'   => $this->generateUrl('oswis_org_oswis_core_web_admin_homepage'),
         ]);
     }
 
@@ -214,5 +216,48 @@ final class WebAdminParticipantsController extends AbstractController
             'oswis_org_oswis_calendar_web_admin_participant_arrival',
             ['participantId' => $participantId, 'arrival' => '0'],
         ));
+    }
+
+    /**
+     * Soft-delete a participant (reversible via the restore action). Used by the quick
+     * action on the unified participant list. Redirects back to the referring list view
+     * when safe (same-host admin URL only), otherwise to the participant detail.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_delete_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            true,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        $this->participantService->delete($participant);
+        $this->addFlash('success', sprintf('Účastník #%d smazán (lze obnovit).', $participantId));
+
+        return new RedirectResponse($this->safeListRedirect($request, $participantId));
+    }
+
+    /**
+     * Resolve a safe post-action redirect target: the `return` form field if it is a
+     * same-host admin (/web_admin/...) path, otherwise the participant detail page.
+     * Never trusts an absolute/off-site URL (open-redirect guard).
+     */
+    private function safeListRedirect(Request $request, int $participantId): string
+    {
+        $return = (string) $request->request->get('return', '');
+        if (str_starts_with($return, '/web_admin/') && !str_contains($return, "\n") && !str_contains($return, "\r")) {
+            return $return;
+        }
+
+        return $this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_arrival',
+            ['participantId' => $participantId, 'arrival' => '0'],
+        );
     }
 }
