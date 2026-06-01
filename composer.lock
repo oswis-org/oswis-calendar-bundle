@@ -4276,16 +4276,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.2.7",
+      "version": "v0.2.11",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "75c7e2136114f511aa6c74c429c511ac1cd45dce"
+        "reference": "8da30f64ac4bc6129a17bed2a574193b859a1298"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/75c7e2136114f511aa6c74c429c511ac1cd45dce",
-        "reference": "75c7e2136114f511aa6c74c429c511ac1cd45dce",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/8da30f64ac4bc6129a17bed2a574193b859a1298",
+        "reference": "8da30f64ac4bc6129a17bed2a574193b859a1298",
         "shasum": ""
       },
       "require": {
@@ -4309,40 +4309,40 @@
         "gedmo/doctrine-extensions": "^3.19",
         "gesdinet/jwt-refresh-token-bundle": "^2.0",
         "league/commonmark": "^2.6",
-        "league/csv": "^9.23",
+        "league/csv": "^9.27",
         "league/html-to-markdown": "^5.1",
         "lexik/jwt-authentication-bundle": "^3.1",
         "liip/imagine-bundle": "^2.13",
         "mpdf/mpdf": "^8.2",
         "nelmio/cors-bundle": "^2.5",
-        "php": ">=8.4",
+        "php": ">=8.5",
         "psr/event-dispatcher": "^1.0",
         "rikudou/czqrpayment": "^5.3",
         "stof/doctrine-extensions-bundle": "^1.13",
         "symfony/apache-pack": "^1.0",
-        "symfony/asset": "^7.3 || ^8.0",
-        "symfony/browser-kit": "^7.3 || ^8.0",
-        "symfony/cache": "^7.3 || ^8.0",
-        "symfony/debug-bundle": "^7.3 || ^8.0",
-        "symfony/dependency-injection": "^7.3 || ^8.0",
-        "symfony/expression-language": "^7.3 || ^8.0",
-        "symfony/form": "^7.3 || ^8.0",
-        "symfony/mailer": "^7.3 || ^8.0",
-        "symfony/mime": "^7.3 || ^8.0",
+        "symfony/asset": "^8.1",
+        "symfony/browser-kit": "^8.1",
+        "symfony/cache": "^8.1",
+        "symfony/debug-bundle": "^8.1",
+        "symfony/dependency-injection": "^8.1",
+        "symfony/expression-language": "^8.1",
+        "symfony/form": "^8.1",
+        "symfony/mailer": "^8.1",
+        "symfony/mime": "^8.1",
         "symfony/monolog-bundle": "^3.10 || ^4.0",
         "symfony/orm-pack": "^2.4",
-        "symfony/process": "^7.3 || ^8.0",
-        "symfony/rate-limiter": "^7.3 || ^8.0",
+        "symfony/process": "^8.1",
+        "symfony/rate-limiter": "^8.1",
         "symfony/requirements-checker": "^2.0",
-        "symfony/security-bundle": "^7.3 || ^8.0",
+        "symfony/security-bundle": "^8.1",
         "symfony/serializer-pack": "^1.3",
         "symfony/stimulus-bundle": "^2.23 || ^3.0",
-        "symfony/string": "^7.3 || ^8.0",
-        "symfony/translation": "^7.3 || ^8.0",
-        "symfony/twig-bundle": "^7.3 || ^8.0",
-        "symfony/web-link": "^7.3 || ^8.0",
-        "symfony/web-profiler-bundle": "^7.3 || ^8.0",
-        "symfony/yaml": "^7.3 || ^8.0",
+        "symfony/string": "^8.1",
+        "symfony/translation": "^8.1",
+        "symfony/twig-bundle": "^8.1",
+        "symfony/web-link": "^8.1",
+        "symfony/web-profiler-bundle": "^8.1",
+        "symfony/yaml": "^8.1",
         "twbs/bootstrap": "^5.3",
         "twig/extra-bundle": "^3.20",
         "twig/markdown-extra": "^3.20",
@@ -4353,12 +4353,12 @@
         "friendsofphp/php-cs-fixer": "^3.74",
         "phpstan/phpstan": "^2.1",
         "roave/security-advisories": "dev-latest",
-        "symfony/error-handler": "^7.3 || ^8.0"
+        "symfony/error-handler": "^8.1"
       },
       "type": "symfony-bundle",
       "extra": {
         "symfony": {
-          "require": "^7.3 || ^8.0",
+          "require": "^8.1",
           "allow-contrib": true
         }
       },
@@ -4393,9 +4393,9 @@
       ],
       "support": {
         "issues": "https://github.com/oswis-org/oswis-core-bundle/issues",
-        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.7"
+        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.11"
       },
-      "time": "2026-05-30T10:43:05+00:00"
+      "time": "2026-06-01T14:17:11+00:00"
     },
     {
       "name": "paragonie/random_compat",

@@ -7,6 +7,7 @@
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Closure;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -124,7 +125,7 @@ class WebAdminParticipantsListController extends AbstractController
         ])->filter($filterPredicate);
 
         $participantsArray = $participants->toArray();
-        usort($participantsArray, static fn (Participant $a, Participant $b) => strcoll($a->getSortableName(), $b->getSortableName()));
+        usort($participantsArray, static fn (Participant $a, Participant $b) => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()));
 
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", [
             'participantCategory' => $participantCategory,
@@ -172,7 +173,7 @@ class WebAdminParticipantsListController extends AbstractController
         $data['title'] = "Přehled účastníků :: ADMIN";
         $participantsArray = $data['participants']->toArray();
         usort($participantsArray, static function (Participant $a, Participant $b) {
-            return strcoll($a->getSortableName(), $b->getSortableName());
+            return StringUtils::compareCzech($a->getSortableName(), $b->getSortableName());
         });
         $data['participants'] = new ArrayCollection($participantsArray);
 
