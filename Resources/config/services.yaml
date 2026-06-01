@@ -250,6 +250,9 @@ services:
     alias: oswis_org_oswis_calendar.registration.registration_flag_service
     public: true
 
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFilterEvaluator:
+    autowire: true
+
   oswis_org_oswis_calendar.registration.registration_flag_category_service:
     class: OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagCategoryService
     autowire: true

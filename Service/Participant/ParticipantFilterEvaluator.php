@@ -105,7 +105,7 @@ final class ParticipantFilterEvaluator
     public function getFunctionNames(): array
     {
         return [
-            'hasFlag', 'hasFlagInCategory', 'flagCount',
+            'hasFlag', 'hasFlagInCategory', 'hasFlagOfType', 'flagCount',
             'isPaid', 'isOverpaid', 'remainingPrice', 'remainingDeposit',
             'isDeleted', 'isActivated', 'hasNote', 'hasRegistration',
             'gender', 'eventSlug',
@@ -120,6 +120,7 @@ final class ParticipantFilterEvaluator
         return [
             $this->fn('hasFlag', static fn (Participant $p, string $slug): bool => self::activeFlagSlugs($p)[$slug] ?? false),
             $this->fn('hasFlagInCategory', static fn (Participant $p, string $catSlug): bool => self::flagCountInCategory($p, $catSlug) > 0),
+            $this->fn('hasFlagOfType', static fn (Participant $p, string $type): bool => self::hasFlagOfType($p, $type)),
             $this->fn('flagCount', static fn (Participant $p, string $catSlug): int => self::flagCountInCategory($p, $catSlug)),
             $this->fn('isPaid', static fn (Participant $p): bool => $p->getRemainingPrice() <= 0),
             $this->fn('isOverpaid', static fn (Participant $p): bool => $p->getRemainingPrice() < 0),
@@ -183,6 +184,18 @@ final class ParticipantFilterEvaluator
         }
 
         return $count;
+    }
+
+    private static function hasFlagOfType(Participant $participant, string $type): bool
+    {
+        /** @var ParticipantFlag $participantFlag */
+        foreach ($participant->getParticipantFlags(null, null, true) as $participantFlag) {
+            if ($participantFlag->getFlag()?->getType() === $type) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function hasNote(Participant $participant): bool

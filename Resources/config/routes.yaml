@@ -67,25 +67,35 @@ oswis_org_oswis_calendar_web_event:
   controller: oswis_org_oswis_calendar.event.event_controller::showEvent
   path: "/akce/{eventSlug?}"
 
+# Canonical unified participant list. Scope (event/category) in the path; filter, flag
+# facets, advanced expression, pagination all in the query string (?filter=, ?flags[]=,
+# ?expr=, ?page=, ?all=1) so the whole view is shareable/bookmarkable.
 oswis_org_oswis_calendar_web_admin_participants_list:
-  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipants
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::list
   path: "/web_admin/seznam-prihlasek/{eventSlug?}/{participantCategorySlug?}"
+  methods: [GET]
 
+# Legacy filter URLs — 301-redirect to the canonical list with the matching ?filter=
+# (kept so old bookmarks/links don't break).
 oswis_org_oswis_calendar_web_admin_participants_unpaid:
-  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showUnpaidParticipants
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::legacyFilterRedirect
   path: "/web_admin/prihlasky/nezaplacene/{eventSlug?}/{participantCategorySlug?}"
+  defaults: { filter: unpaid }
 
 oswis_org_oswis_calendar_web_admin_participants_unpaid_deposit:
-  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showUnpaidDepositParticipants
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::legacyFilterRedirect
   path: "/web_admin/prihlasky/nezaplacene-zalohy/{eventSlug?}/{participantCategorySlug?}"
+  defaults: { filter: unpaid-deposit }
 
 oswis_org_oswis_calendar_web_admin_participants_overpaid:
-  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showOverpaidParticipants
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::legacyFilterRedirect
   path: "/web_admin/prihlasky/preplacene/{eventSlug?}/{participantCategorySlug?}"
+  defaults: { filter: overpaid }
 
 oswis_org_oswis_calendar_web_admin_participants_food:
-  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showFoodParticipants
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::legacyFilterRedirect
   path: "/web_admin/prihlasky/stravovaci-omezeni/{eventSlug?}/{participantCategorySlug?}"
+  defaults: { filter: food }
 
 oswis_org_oswis_calendar_web_admin_participants_list_csv:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsCsv
