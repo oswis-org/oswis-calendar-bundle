@@ -104,6 +104,18 @@ class WebAdminParticipantsListController extends AbstractController
         $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $depthRaw = $request->query->get('depth');
         $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
+        $allEvents = $request->query->getBoolean('allEvents');
+
+        // Default scope = the current default event. Showing every participant across all
+        // events at once is opt-in (?allEvents=1), not the landing view.
+        $isDefaultScope = false;
+        if ([] === $events && null === $participantCategory && !$allEvents) {
+            $defaultEvent = $this->eventService->getDefaultEvent();
+            if (null !== $defaultEvent) {
+                $events = [$defaultEvent];
+                $isDefaultScope = true;
+            }
+        }
         $scoped = ([] !== $events) || (null !== $participantCategory);
 
         $filterKey = $request->query->getString('filter', self::FILTER_ALL);
@@ -154,7 +166,7 @@ class WebAdminParticipantsListController extends AbstractController
 
         // The scope/sort params that every in-page control must carry forward (as hidden
         // fields in the GET filter form and as query merges in links) so nothing is lost.
-        $scopeParams = $this->buildScopeParams($eventSlugs, $participantCategorySlug, $depthOverride, $sort, $dir);
+        $scopeParams = $this->buildScopeParams($eventSlugs, $participantCategorySlug, $depthOverride, $sort, $dir, $allEvents);
 
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", [
             'title'               => 'Přehled přihlášek :: ADMIN',
@@ -176,6 +188,8 @@ class WebAdminParticipantsListController extends AbstractController
             'filterScopeWarning'  => !$loadAll && $hasActiveFilter,
             'availableFunctions'  => $this->filterEvaluator->getFunctionNames(),
             'scopeParams'         => $scopeParams,
+            'isDefaultScope'      => $isDefaultScope,
+            'allEvents'           => $allEvents,
             'sort'                => $sort,
             'dir'                 => $dir,
             'depthOverride'       => $depthOverride,
@@ -316,13 +330,16 @@ class WebAdminParticipantsListController extends AbstractController
      *
      * @return array<string, string|int|list<string>>
      */
-    private function buildScopeParams(array $eventSlugs, ?string $participantCategorySlug, ?int $depthOverride, string $sort, string $dir): array
+    private function buildScopeParams(array $eventSlugs, ?string $participantCategorySlug, ?int $depthOverride, string $sort, string $dir, bool $allEvents = false): array
     {
         $params = [];
         if (1 === count($eventSlugs)) {
             $params['eventSlug'] = $eventSlugs[0];
         } elseif (count($eventSlugs) > 1) {
             $params['events'] = $eventSlugs;
+        }
+        if ($allEvents) {
+            $params['allEvents'] = 1;
         }
         if (null !== $participantCategorySlug) {
             $params['participantCategorySlug'] = $participantCategorySlug;

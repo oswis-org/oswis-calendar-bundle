@@ -4,7 +4,7 @@
    expression, sub-event depth) live in a collapsed "Pokročilé" panel so ordinary users aren't
    overwhelmed and the page stays compact. #}
 {% set qbase = app.request.query.all %}
-<div class="container-fluid">
+<div class="container">
 
     {# ---- HEADER + SCOPE (compact, one row) ------------------------------ #}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
@@ -14,15 +14,19 @@
             {% for ev in events %}
                 <span class="badge bg-secondary">{{ ev.name|default(ev.slug) }}</span>
             {% endfor %}
+            {% if isDefaultScope|default %}<span class="badge bg-light text-secondary border">výchozí akce</span>{% endif %}
         {% endif %}
         {% if participantCategory|default %}
             <span class="badge bg-info text-dark">{{ participantCategory.name|default(participantCategory.slug) }}</span>
         {% endif %}
 
-        {% if scoped %}
-            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zrušit omezení</a>
-        {% else %}
-            <span class="badge bg-warning text-dark">bez omezení — všichni napříč akcemi</span>
+        {% if allEvents|default %}
+            <span class="badge bg-warning text-dark">všichni napříč akcemi</span>
+            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zpět na výchozí akci</a>
+        {% elseif isDefaultScope|default %}
+            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {allEvents: 1}) }}">› všechny akce</a>
+        {% elseif scoped %}
+            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zpět na výchozí akci</a>
         {% endif %}
 
         {# Category switcher — preserves the rest of the query. #}
@@ -119,20 +123,22 @@
                         <select name="depth" class="form-select form-select-sm">
                             <option value="" {{ depthOverride is null ? 'selected' : '' }}>auto</option>
                             {% for d in 0..3 %}
-                                <option value="{{ d }}" {{ depthOverride == d ? 'selected' : '' }}>{{ d }}</option>
+                                <option value="{{ d }}" {{ (depthOverride is not null and depthOverride == d) ? 'selected' : '' }}>{{ d }}</option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-sm btn-primary">Použít filtry</button>
+                    {% if hasActiveFilter|default or depthOverride is not null %}
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams) }}">Zrušit filtry</a>
+                    {% endif %}
+                </div>
             </div>
         </details>
 
-        <div class="mt-2">
-            <button type="submit" class="btn btn-sm btn-primary">Použít</button>
-            {% if hasActiveFilter|default or depthOverride is not null %}
-                <a class="btn btn-sm btn-outline-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams) }}">Zrušit filtry</a>
-            {% endif %}
-        </div>
+        {# Pills auto-submit; a Submit fallback for when JS is off. #}
+        <noscript><button type="submit" class="btn btn-sm btn-primary mt-2">Použít</button></noscript>
     </form>
 
     {# ---- WARNINGS ------------------------------------------------------- #}
@@ -202,7 +208,7 @@
     </div>
 
     {# ---- TABLE ---------------------------------------------------------- #}
-    <table class="list">
+    <table class="list" style="table-layout: fixed; word-break: break-word;">
         {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for participant in participants %}
             {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
