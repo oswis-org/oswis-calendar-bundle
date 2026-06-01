@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition;
@@ -62,6 +63,11 @@ class WebAdminParticipantsListController extends AbstractController
     public const string FILTER_WITH_NOTE         = 'with-note';
     public const string FILTER_DELETED           = 'deleted';
 
+    public const string SORT_NAME    = 'name';
+    public const string SORT_PAYMENT = 'payment';
+    public const string SORT_CREATED = 'created';
+    public const string SORT_ID      = 'id';
+
     /** Page size for the unscoped (all-participants) paginated view. */
     private const int PER_PAGE = 100;
 
@@ -92,11 +98,13 @@ class WebAdminParticipantsListController extends AbstractController
      */
     public function list(Request $request): Response
     {
-        $eventSlug = $request->query->get('eventSlug') ?: null;
+        // Scope: one or more events (?eventSlug= single + ?events[] multi) and/or a category.
+        [$events, $eventSlugs] = $this->resolveEventsFromRequest($request);
         $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
         $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
-        $event = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
-        $scoped = (null !== $event) || (null !== $participantCategory);
+        $depthRaw = $request->query->get('depth');
+        $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
+        $scoped = ([] !== $events) || (null !== $participantCategory);
 
         $filterKey = $request->query->getString('filter', self::FILTER_ALL);
         if (!$this->isKnownFilter($filterKey)) {
@@ -105,6 +113,8 @@ class WebAdminParticipantsListController extends AbstractController
         $selectedFlags = array_values(array_filter($request->query->all('flags'), 'is_string'));
         $advancedExpr = trim($request->query->getString('expr'));
         $advancedExpr = '' === $advancedExpr ? null : $advancedExpr;
+        $sort = $this->normalizeSort($request->query->getString('sort', self::SORT_NAME));
+        $dir = 'desc' === $request->query->getString('dir') ? 'desc' : 'asc';
         $showAll = $request->query->getBoolean('all');
         $page = max(1, $request->query->getInt('page', 1));
 
@@ -113,22 +123,15 @@ class WebAdminParticipantsListController extends AbstractController
         [$flagFacets, $slugToCategory] = $this->buildFlagOffering($selectedFlags);
         $expression = $this->compileFilterExpression($filterKey, $selectedFlags, $advancedExpr, $slugToCategory);
 
-        $criteria = [
-            // We always load deleted rows and let the compiled expression decide
-            // (active filters add `not isDeleted()`, the "deleted" filter adds `isDeleted()`).
-            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => true,
-            ParticipantRepository::CRITERIA_EVENT                 => $event,
-            ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $participantCategory,
-            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
-        ];
-
         $loadAll = $scoped || $showAll;
         $pagination = null;
-        if ($loadAll) {
-            $loaded = $this->participantService->getParticipants($criteria);
+        if ($scoped) {
+            $loaded = $this->loadScopedParticipants($events, $participantCategory, $depthOverride);
+        } elseif ($showAll) {
+            $loaded = $this->participantService->getParticipants($this->unscopedCriteria());
         } else {
             $offset = ($page - 1) * self::PER_PAGE;
-            $loaded = $this->participantService->getParticipants($criteria, true, self::PER_PAGE, $offset);
+            $loaded = $this->participantService->getParticipants($this->unscopedCriteria(), true, self::PER_PAGE, $offset);
             $pagination = [
                 'page'    => $page,
                 'perPage' => self::PER_PAGE,
@@ -143,23 +146,24 @@ class WebAdminParticipantsListController extends AbstractController
         $this->participantService->getRepository()->primeAggregationCollections($ids);
 
         $matched = $loaded->filter(fn (Participant $p): bool => $this->filterEvaluator->matches($p, $expression));
-        $participantsArray = $matched->toArray();
-        usort(
-            $participantsArray,
-            static fn (Participant $a, Participant $b): int => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
-        );
+        $participantsArray = $this->sortParticipants(array_values($matched->toArray()), $sort, $dir);
 
         // Summary stats are computed from the full scoped set (pre-filter) — meaningless
         // and expensive for an unscoped paginated page, so skipped there.
         $stats = $loadAll ? $this->computeStats($loaded) : null;
 
+        // The scope/sort params that every in-page control must carry forward (as hidden
+        // fields in the GET filter form and as query merges in links) so nothing is lost.
+        $scopeParams = $this->buildScopeParams($eventSlugs, $participantCategorySlug, $depthOverride, $sort, $dir);
+
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", [
             'title'               => 'Přehled přihlášek :: ADMIN',
-            'event'               => $event,
+            'event'               => 1 === count($events) ? $events[0] : null,
+            'events'              => $events,
             'participantCategory' => $participantCategory,
             'participants'        => new ArrayCollection($participantsArray),
             'scoped'              => $scoped,
-            'filterTabs'          => $this->buildFilterTabs($eventSlug, $participantCategorySlug, $filterKey),
+            'filterTabs'          => $this->buildFilterTabs($filterKey),
             'flagFacets'          => $flagFacets,
             'activeFilter'        => $filterKey,
             'selectedFlags'       => $selectedFlags,
@@ -171,10 +175,169 @@ class WebAdminParticipantsListController extends AbstractController
             'hasActiveFilter'     => $hasActiveFilter,
             'filterScopeWarning'  => !$loadAll && $hasActiveFilter,
             'availableFunctions'  => $this->filterEvaluator->getFunctionNames(),
-            'eventSlug'           => $eventSlug,
+            'scopeParams'         => $scopeParams,
+            'sort'                => $sort,
+            'dir'                 => $dir,
+            'depthOverride'       => $depthOverride,
             'participantCategorySlug' => $participantCategorySlug,
             'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
         ]);
+    }
+
+    /**
+     * Resolve the scope events from the request: ?eventSlug= (single) merged with ?events[]
+     * (multi), de-duplicated, each resolved to an Event (unknown slugs dropped).
+     *
+     * @return array{0: list<\OswisOrg\OswisCalendarBundle\Entity\Event\Event>, 1: list<string>}
+     */
+    private function resolveEventsFromRequest(Request $request): array
+    {
+        $slugs = array_filter($request->query->all('events'), 'is_string');
+        $single = $request->query->get('eventSlug');
+        if (is_string($single) && '' !== $single) {
+            $slugs[] = $single;
+        }
+        $slugs = array_values(array_unique(array_filter($slugs, static fn (string $s): bool => '' !== $s)));
+
+        $events = [];
+        $resolvedSlugs = [];
+        foreach ($slugs as $slug) {
+            $event = $this->eventService->getRepository()->getEvent([EventRepository::CRITERIA_SLUG => $slug]);
+            if (null !== $event) {
+                $events[] = $event;
+                $resolvedSlugs[] = $slug;
+            }
+        }
+
+        return [$events, $resolvedSlugs];
+    }
+
+    /**
+     * Load the scoped participant set: union of each event's participants (recursing into
+     * sub-events to the per-event default depth, or an explicit override) de-duplicated by id,
+     * optionally narrowed to a participant category. Empty $events = category-only scope.
+     *
+     * @param list<\OswisOrg\OswisCalendarBundle\Entity\Event\Event> $events
+     *
+     * @return ArrayCollection<int, Participant>
+     */
+    private function loadScopedParticipants(array $events, ?ParticipantCategory $category, ?int $depthOverride, bool $includeDeleted = true): ArrayCollection
+    {
+        if ([] === $events) {
+            $collection = $this->participantService->getParticipants([
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED      => $includeDeleted,
+                ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $category,
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
+            ]);
+
+            return new ArrayCollection($collection->toArray());
+        }
+        /** @var array<int, Participant> $byId */
+        $byId = [];
+        foreach ($events as $event) {
+            $depth = $depthOverride ?? $this->defaultDepth($event);
+            $collection = $this->participantService->getParticipants([
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
+                ParticipantRepository::CRITERIA_EVENT                 => $event,
+                ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $category,
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
+            ]);
+            foreach ($collection as $participant) {
+                $id = $participant->getId();
+                if (null !== $id) {
+                    $byId[$id] = $participant;
+                }
+            }
+        }
+
+        return new ArrayCollection(array_values($byId));
+    }
+
+    /**
+     * Sensible default sub-event recursion depth for an event.
+     *
+     * A year (ročník) aggregates its turnusy, which are the registration units, so it recurses
+     * one level (depth 1) to gather their participants. Any other event (a turnus or a plain
+     * event) shows only its own direct registrations (depth 0) — by design we do NOT drill into
+     * a turnus's sub-events (e.g. skupiny) by default; use the sub-event links or an explicit
+     * ?depth= override for that.
+     */
+    private function defaultDepth(\OswisOrg\OswisCalendarBundle\Entity\Event\Event $event): int
+    {
+        return $event->isYear() ? 1 : 0;
+    }
+
+    /**
+     * @param list<Participant> $participants
+     *
+     * @return list<Participant>
+     */
+    private function sortParticipants(array $participants, string $sort, string $dir): array
+    {
+        $factor = 'desc' === $dir ? -1 : 1;
+        usort($participants, static function (Participant $a, Participant $b) use ($sort, $factor): int {
+            $comparison = match ($sort) {
+                self::SORT_PAYMENT => $a->getRemainingPrice() <=> $b->getRemainingPrice(),
+                self::SORT_CREATED => ($a->getCreatedAt()?->getTimestamp() ?? 0) <=> ($b->getCreatedAt()?->getTimestamp() ?? 0),
+                self::SORT_ID      => ($a->getId() ?? 0) <=> ($b->getId() ?? 0),
+                default            => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
+            };
+
+            return $factor * $comparison;
+        });
+
+        return $participants;
+    }
+
+    private function normalizeSort(string $sort): string
+    {
+        return in_array($sort, [self::SORT_NAME, self::SORT_PAYMENT, self::SORT_CREATED, self::SORT_ID], true)
+            ? $sort : self::SORT_NAME;
+    }
+
+    /**
+     * Criteria for the unscoped (all events) view.
+     *
+     * @return array<string, mixed>
+     */
+    private function unscopedCriteria(): array
+    {
+        return [
+            ParticipantRepository::CRITERIA_INCLUDE_DELETED       => true,
+            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
+        ];
+    }
+
+    /**
+     * The scope+sort query params to carry across every in-page control. Single event →
+     * eventSlug; multiple → events[]. Defaults (sort=name, dir=asc, auto depth) are omitted.
+     *
+     * @param list<string> $eventSlugs
+     *
+     * @return array<string, string|int|list<string>>
+     */
+    private function buildScopeParams(array $eventSlugs, ?string $participantCategorySlug, ?int $depthOverride, string $sort, string $dir): array
+    {
+        $params = [];
+        if (1 === count($eventSlugs)) {
+            $params['eventSlug'] = $eventSlugs[0];
+        } elseif (count($eventSlugs) > 1) {
+            $params['events'] = $eventSlugs;
+        }
+        if (null !== $participantCategorySlug) {
+            $params['participantCategorySlug'] = $participantCategorySlug;
+        }
+        if (null !== $depthOverride) {
+            $params['depth'] = $depthOverride;
+        }
+        if (self::SORT_NAME !== $sort) {
+            $params['sort'] = $sort;
+        }
+        if ('asc' !== $dir) {
+            $params['dir'] = $dir;
+        }
+
+        return $params;
     }
 
     /**
@@ -370,19 +533,17 @@ class WebAdminParticipantsListController extends AbstractController
     }
 
     /**
-     * @return list<array{key: string, url: string, label: string, group: string, active: bool}>
+     * Filter pills for the GET form (the selected scope/sort ride along as hidden fields, so
+     * these only need the radio value/label/group/active flag — no per-tab URL).
+     *
+     * @return list<array{key: string, label: string, group: string, active: bool}>
      */
-    private function buildFilterTabs(?string $eventSlug, ?string $participantCategorySlug, string $active): array
+    private function buildFilterTabs(string $active): array
     {
         $tabs = [];
         foreach ($this->getFilterRegistry() as $filter) {
-            $query = ['eventSlug' => $eventSlug, 'participantCategorySlug' => $participantCategorySlug];
-            if (self::FILTER_ALL !== $filter['key']) {
-                $query['filter'] = $filter['key'];
-            }
             $tabs[] = [
                 'key'    => $filter['key'],
-                'url'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_list', $query),
                 'label'  => $filter['label'],
                 'group'  => $filter['group'],
                 'active' => $filter['key'] === $active,
@@ -458,14 +619,29 @@ class WebAdminParticipantsListController extends AbstractController
      */
     public function showParticipantsCsv(Request $request): Response
     {
-        $eventSlug = $request->query->get('eventSlug') ?: null;
+        // Export the same scoped set the list shows (multi-event + depth aware). Unscoped
+        // (no event, no category) exports everything.
+        [$events, ] = $this->resolveEventsFromRequest($request);
         $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
+        $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
+        $depthRaw = $request->query->get('depth');
+        $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
         $includeDeleted = $request->query->getBoolean('includeDeleted');
-        $data = $this->getParticipantsData($eventSlug, $participantCategorySlug, $includeDeleted);
-        $participants = $data['participants'] ?? null;
-        if (!$participants instanceof Collection) {
-            $participants = new ArrayCollection();
+
+        if ([] !== $events || null !== $participantCategory) {
+            $participants = $this->loadScopedParticipants($events, $participantCategory, $depthOverride, $includeDeleted);
+        } else {
+            $participants = $this->participantService->getParticipants([
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
+            ]);
         }
+        $participantsArray = $participants->toArray();
+        usort(
+            $participantsArray,
+            static fn (Participant $a, Participant $b): int => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
+        );
+        $participants = new ArrayCollection($participantsArray);
         $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
         $exportRequest = new ExportRequest(
             ExportFormat::fromRequest($request->query->getString('format')),
