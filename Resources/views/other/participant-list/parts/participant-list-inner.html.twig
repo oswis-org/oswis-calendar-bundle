@@ -32,7 +32,7 @@
         {% if appUser and appUser.activated %}
             <div class="block small">
                 <span class="badge bg-success">✓ ověřeno</span>
-                <span class="d-block" style="color:#5b6b7b;">{{ appUser.activated|date("j. n. Y, H:i") }}</span>
+                <span style="color:#5b6b7b;">{{ appUser.activated|date("j. n. Y") }}</span>
             </div>
         {% else %}
             <div class="block small">
@@ -74,7 +74,7 @@
                     {% set listGenderIcon = "👩" %}
                 {% endif %}
                 <li style="list-style-type: '{{ listGenderIcon }}' {{ participantContact.active|default ? '' : 'text-decoration:line-through;' }}">
-                    <strong>{{ participantContact.contact.name|default }}</strong>
+                    <strong style="font-size: 1.08em; color: #1a2533;">{{ participantContact.contact.name|default }}</strong>
                 </li>
             {% endfor %}
             {% for participantRange in participant.participantRegistrations(false, false) %}
@@ -146,10 +146,8 @@
     {# Same data as before, just clearer: an explicit status label up top (instead of the
        cryptic ★/⚠/✔), paid-of-total on one line, "zbývá" emphasised, progress + VS kept. #}
     <td style="border:1px solid grey; padding:.3em .6em; text-align:right; white-space: nowrap;">
-        <div class="block">
+        <div class="block text-{{ paidColor }}" style="{{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
             <span class="badge bg-{{ paidColor }} {{ paidColor == 'warning' ? 'text-dark' : '' }}">{{ paymentLabel }}</span>
-        </div>
-        <div class="block text-{{ paidColor }}" style="margin-top: .3em; {{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
             zbývá&nbsp;{{ participant.remainingPrice|default(0) }},-&nbsp;Kč
         </div>
         <div class="block small">
