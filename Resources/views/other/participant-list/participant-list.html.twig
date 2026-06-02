@@ -1,156 +1,259 @@
+{# Unified participant list. Everything is in the query string (scope + filter + flags + expr
+   + sort + page), so the view is shareable/bookmarkable. UI is progressive: the common path
+   (pick scope, pick a filter pill) is always visible; power features (flag facets, boolean
+   expression, sub-event depth) live in a collapsed "Pokročilé" panel so ordinary users aren't
+   overwhelmed and the page stays compact. #}
+{% set qbase = app.request.query.all %}
 <div class="container">
-    {% if filterTabs is defined %}
-        <ul class="nav nav-tabs mb-3">
-            {% for tab in filterTabs %}
-                <li class="nav-item">
-                    <a class="nav-link{{ tab.active ? ' active' : '' }}" href="{{ tab.url }}">{{ tab.label }}</a>
-                </li>
+
+    {# ---- HEADER + SCOPE (compact, one row) ------------------------------ #}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <h2 class="h4 mb-0 me-2">Přehled přihlášek</h2>
+
+        {% if events|default %}
+            <span class="small text-secondary">Akce:</span>
+            {% for ev in events %}
+                <span class="badge bg-secondary">{{ ev.name|default(ev.slug) }}</span>
             {% endfor %}
-        </ul>
+            {% if isDefaultScope|default %}<span class="badge bg-light text-secondary border">výchozí akce</span>{% endif %}
+        {% endif %}
+        {% if participantCategory|default %}
+            <span class="badge bg-info text-dark">{{ participantCategory.name|default(participantCategory.slug) }}</span>
+        {% endif %}
+
+        {% if allEvents|default %}
+            <span class="badge bg-warning text-dark">všichni napříč akcemi</span>
+            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zpět na výchozí akci</a>
+        {% elseif isDefaultScope|default %}
+            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {allEvents: 1}) }}">› všechny akce</a>
+        {% elseif scoped %}
+            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zpět na výchozí akci</a>
+        {% endif %}
+
+        {# Category switcher — preserves the rest of the query. #}
+        {% if participantCategories|default %}
+            <span class="small text-secondary ms-1">Typ:</span>
+            <select class="form-select form-select-sm w-auto py-0" title="Typ účastníka"
+                    onchange="if(this.value){location.href=this.value;}">
+                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: null, page: null})) }}"
+                    {{ participantCategory|default ? '' : 'selected' }}>— typ účastníka —</option>
+                {% for category in participantCategories %}
+                    <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: category.slug, page: null})) }}"
+                        {{ participantCategory|default and participantCategory.slug == category.slug ? 'selected' : '' }}>{{ category.name|default(category.slug) }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+    </div>
+
+    {# Sub-event / super-event quick links (only for a single-event scope). #}
+    {% if event|default and (event.subEvents|length > 0 or event.superEvent) %}
+        <div class="small text-secondary mb-2">
+            {% if event.superEvent %}
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({eventSlug: event.superEvent.slug, events: null, page: null})) }}">↑ {{ event.superEvent.name }}</a>
+            {% endif %}
+            {% for subEvent in event.subEvents %}
+                <a class="ms-2" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({eventSlug: subEvent.slug, events: null, page: null})) }}">↳ {{ subEvent.name }}</a>
+            {% endfor %}
+        </div>
     {% endif %}
-    <div class="row">
-        <div class="col">
-            <h2>Přehled přihlášek</h2>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <h3>Omezení</h3>
-            <table class="list">
-                <thead>
-                <tr>
-                    <th>Typ omezení</th>
-                    <th>Hodnota</th>
-                </tr>
-                </thead>
-                {% if participantCategory|default %}
-                    <tbody>
-                    <tr>
-                        <td>Kategorie účastníka:</td>
-                        <td>
-                            <strong>{{ participantCategory.name|default(participantCategory.slug|default('bez názvu')) }}</strong>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endif %}
-                {% if event|default %}
-                    <tbody>
-                    <tr>
-                        <td>Událost:</td>
-                        <td>
-                            <strong>{{ event.name|default(event.slug|default('bez názvu')) }}</strong>
-                            <ul>
-                                {% for subEvent in event.subEvents %}
-                                    <li>
-                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list',
-                                            {'eventSlug': subEvent.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">
-                                            {{ subEvent.name }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                                {% if event.superEvent %}
-                                    <li>
-                                        součást akce:
-                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list',
-                                            {'eventSlug': event.superEvent.slug, 'participantCategorySlug': participantCategory.slug|default}) }}">
-                                            {{ event.superEvent.name }}
-                                        </a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </td>
-                    </tr>
-                    </tbody>
-                {% endif %}
-            </table>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col">
-            <h3>
-                Přehled nezrušených přihlášek
-                <small class="small text-secondary">
-                    <details class="d-inline-block" style="position: relative;">
-                        <summary class="btn btn-sm btn-outline-secondary" style="cursor: pointer;">Export ▾</summary>
-                        <form method="get"
-                              action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', {'eventSlug': event.slug|default, 'participantCategorySlug': participantCategory.slug|default}) }}"
-                              class="card card-body shadow"
-                              style="position: absolute; z-index: 1000; min-width: 16rem; text-align: left;">
-                            <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
-                                {% set exportColumns = {
-                                    'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
-                                    'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
-                                    'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
-                                    'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
-                                    'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
-                                } %}
-                                {% for key, label in exportColumns %}
-                                    <label class="d-block small" style="font-weight: normal;">
-                                        <input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}
-                                    </label>
-                                {% endfor %}
-                            </div>
-                            <label class="small d-block mb-2">Formát:
-                                <select name="format" class="form-select form-select-sm">
-                                    <option value="csv">CSV (Excel)</option>
-                                    <option value="csv-rfc">CSV (RFC 4180)</option>
-                                    <option value="pdf">PDF</option>
-                                </select>
-                            </label>
-                            <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
-                        </form>
-                    </details>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        ·
-                        [<a class="text-secondary"
-                            href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>]
+    {# ---- STATS (scoped, compact one-liner) ------------------------------ #}
+    {% if stats|default %}
+        <div class="d-flex flex-wrap gap-2 mb-2 small">
+            <span class="badge bg-primary">přihlášek {{ stats.total }}</span>
+            <span class="badge bg-success">zaplaceno {{ stats.paid }}</span>
+            <span class="badge bg-danger">nezaplaceno {{ stats.unpaid }}</span>
+            <span class="badge bg-info text-dark">vybráno {{ stats.sumPaid }} Kč</span>
+            <span class="badge bg-warning text-dark">zbývá {{ stats.sumRemaining }} Kč</span>
+            {% if stats.deleted > 0 %}<span class="badge bg-dark">smazaných {{ stats.deleted }}</span>{% endif %}
+        </div>
+    {% endif %}
+
+    {# ---- FILTER FORM (GET; hidden fields carry scope+sort so nothing is lost) #}
+    {# Empty advanced fields are dropped before submit (disabled inputs aren't sent) so shared
+       URLs stay clean — no trailing &expr=&depth=. Works for both the Submit button (onsubmit)
+       and the auto-submitting pills (which call form.submit(), bypassing onsubmit). #}
+    <script>
+        function oswisStripEmptyFilter(form) {
+            for (var i = 0; i < form.elements.length; i++) {
+                var el = form.elements[i];
+                if ((el.name === 'expr' || el.name === 'depth') && el.value === '') {
+                    el.disabled = true;
+                }
+            }
+        }
+        function oswisSubmitFilter(input) {
+            var form = input.form;
+            oswisStripEmptyFilter(form);
+            form.submit();
+        }
+    </script>
+    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2"
+          onsubmit="oswisStripEmptyFilter(this);">
+        {% for key, value in scopeParams %}
+            {% if key != 'depth' %}
+                {% if value is iterable %}
+                    {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
+                {% else %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {# Primary filter pills (always visible, the common case). #}
+        <div class="btn-group btn-group-sm flex-wrap" role="group">
+            {% for tab in filterTabs %}
+                <input type="radio" class="btn-check" name="filter" id="flt-{{ tab.key }}" value="{{ tab.key }}"
+                       autocomplete="off" onchange="oswisSubmitFilter(this)" {{ tab.active ? 'checked' : '' }}>
+                <label class="btn btn-outline-primary" for="flt-{{ tab.key }}"
+                       title="{{ tab.group }}">{{ tab.label }}</label>
+            {% endfor %}
+        </div>
+
+        {# Power features, collapsed by default to keep the page simple/compact. #}
+        <details class="mt-2" {{ (selectedFlags|default([])|length > 0 or advancedExpr|default or depthOverride is not null) ? 'open' : '' }}>
+            <summary class="small text-secondary" style="cursor:pointer;">Pokročilé filtry (příznaky, výraz, hloubka podakcí)</summary>
+            <div class="card card-body py-2 mt-1">
+                {% if flagFacets|default %}
+                    <div class="mb-2">
+                        <div class="small fw-bold">Příznaky <span class="text-secondary fw-normal">(NEBO uvnitř kategorie, A napříč)</span></div>
+                        {# CSS multicolumn: categories pack tightly top-to-bottom then wrap to the next
+                           column, filling space instead of leaving row-height gaps like a grid. #}
+                        <div style="column-width: 12rem; column-gap: 1rem;">
+                            {% for facet in flagFacets %}
+                                <div style="break-inside: avoid; -webkit-column-break-inside: avoid; display: inline-block; width: 100%; margin-bottom: .4rem;">
+                                    <div class="small text-secondary">{{ facet.categoryName }}</div>
+                                    {% for flag in facet.flags %}
+                                        <label class="d-block small" style="font-weight:normal; line-height: 1.3;">
+                                            <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}> {{ flag.label }}
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-8">
+                        <label class="small text-secondary d-block">Výraz (pokročilé)</label>
+                        <input type="text" name="expr" class="form-control form-control-sm" value="{{ advancedExpr|default }}"
+                               placeholder="hasFlag('panske-m') or hasFlag('damske-m')">
+                        <small class="text-secondary">{{ availableFunctions|default([])|join('(), ') }}()</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-secondary d-block">Hloubka podakcí</label>
+                        <select name="depth" class="form-select form-select-sm">
+                            <option value="" {{ depthOverride is null ? 'selected' : '' }}>auto</option>
+                            {% for d in 0..3 %}
+                                <option value="{{ d }}" {{ (depthOverride is not null and depthOverride == d) ? 'selected' : '' }}>{{ d }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button type="submit" class="btn btn-sm btn-primary">Použít filtry</button>
+                    {% if hasActiveFilter|default or depthOverride is not null %}
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams) }}">Zrušit filtry</a>
                     {% endif %}
-                </small>
-            </h3>
-            <table class="list">
-                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
-                {% for participant in participants|filter(participant => not participant.deleted) %}
-                    {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
-                {% else %}
-                    <tbody>
-                    <tr>
-                        <td colspan="4" class="text-center bold">Žádné nezrušené přihlášky.</td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
-            <p>
-                <small>
-                    {{ participants|filter(participant => not participant.deleted)|map(p => p.contact.email)|join(', ') }}
-                </small>
-            </p>
+                </div>
+            </div>
+        </details>
+
+        {# Pills auto-submit; a Submit fallback for when JS is off. #}
+        <noscript><button type="submit" class="btn btn-sm btn-primary mt-2">Použít</button></noscript>
+    </form>
+
+    {# ---- WARNINGS ------------------------------------------------------- #}
+    {% if filterScopeWarning|default %}
+        <div class="alert alert-warning py-1 px-2 small mb-2">
+            Bez omezení akce se filtr aplikuje jen na <strong>načtenou stránku</strong>. Pro filtr přes vše zvol akci/typ nebo
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({all: 1, page: null})) }}">zobraz vše</a>, příp. CSV.
         </div>
+    {% elseif showAll|default and not scoped %}
+        <div class="alert alert-warning py-1 px-2 small mb-2">Zobrazeno <strong>vše</strong> bez omezení — může být hodně dat.</div>
+    {% endif %}
+
+    {# ---- LIST TOOLBAR (count + sort + export) --------------------------- #}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+        <strong>{{ participants|length }}</strong> <span class="small text-secondary">přihlášek</span>
+        <select class="form-select form-select-sm w-auto py-0 ms-2" title="Řazení"
+                onchange="if(this.value){location.href=this.value;}">
+            {% set sortOpts = {'name': 'jméno', 'payment': 'zbývá zaplatit', 'created': 'datum přihlášky', 'id': 'ID'} %}
+            {% for key, label in sortOpts %}
+                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({sort: key, dir: null, page: null})) }}"
+                    {{ sort == key ? 'selected' : '' }}>řadit: {{ label }}</option>
+            {% endfor %}
+        </select>
+        <a class="btn btn-sm btn-outline-secondary py-0" title="Obrátit pořadí"
+           href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({dir: (dir == 'asc' ? 'desc' : 'asc'), page: null})) }}">{{ dir == 'asc' ? '↑' : '↓' }}</a>
+
+        <details class="d-inline-block ms-auto" style="position: relative;">
+            <summary class="btn btn-sm btn-outline-secondary py-0" style="cursor: pointer;">Export ▾</summary>
+            <form method="get"
+                  action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv') }}"
+                  class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 16rem; text-align: left;">
+                {# Scope as hidden fields — a GET form discards its action's query string. #}
+                {% for key, value in scopeParams %}
+                    {% if key not in ['sort', 'dir'] %}
+                        {% if value is iterable %}
+                            {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
+                        {% else %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
+                    {% set exportColumns = {
+                        'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
+                        'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
+                        'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
+                        'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
+                        'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
+                    } %}
+                    {% for key, label in exportColumns %}
+                        <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}</label>
+                    {% endfor %}
+                </div>
+                <label class="small d-block mb-2">Formát:
+                    <select name="format" class="form-select form-select-sm">
+                        <option value="csv">CSV (Excel)</option>
+                        <option value="csv-rfc">CSV (RFC 4180)</option>
+                        <option value="pdf">PDF</option>
+                    </select>
+                </label>
+                <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
+            </form>
+        </details>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="small text-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>
+        {% endif %}
     </div>
 
-    <div class="row">
-        <div class="col">
-            <h3>Přehled zrušených přihlášek</h3>
-            <table class="list">
-                {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
-                {% for participant in participants|filter(participant => participant.deleted) %}
-                    {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
-                {% else %}
-                    <tbody>
-                    <tr>
-                        <td colspan="4" class="text-center bold">Žádné zrušené přihlášky.</td>
-                    </tr>
-                    </tbody>
-                {% endfor %}
-            </table>
-            <p>
-                <span class="block small">
-                    <small>
-                        {{ participants|filter(participant => participant.deleted and participant.contact|default)|map(p => p.contact.email|default(''))|filter(e => e != '')|join(', ') }}
-                    </small>
-                </span>
-            </p>
-        </div>
-    </div>
+    {# ---- TABLE ---------------------------------------------------------- #}
+    <table class="list" style="table-layout: fixed; word-break: break-word;">
+        {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
+        {% for participant in participants %}
+            {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
+        {% else %}
+            <tbody><tr><td colspan="4" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
+        {% endfor %}
+    </table>
+
+    {# ---- PAGINATION (unscoped paginated view) --------------------------- #}
+    {% if pagination|default %}
+        <nav class="mt-2 d-flex gap-2 align-items-center">
+            {% if pagination.hasPrev %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({page: pagination.page - 1})) }}">← Předchozí</a>
+            {% endif %}
+            <span class="small">strana {{ pagination.page }}</span>
+            {% if pagination.hasNext %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({page: pagination.page + 1})) }}">Další →</a>
+            {% endif %}
+            <a class="btn btn-sm btn-outline-secondary ms-2" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({all: 1, page: null})) }}">Zobrazit vše</a>
+        </nav>
+    {% endif %}
+
+    <p class="mt-2"><small class="text-secondary">{{ participants|map(p => p.contact.email|default(''))|filter(e => e != '')|join(', ') }}</small></p>
 
 </div>

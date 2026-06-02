@@ -28,9 +28,19 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
      */
     public function findFiltered(string $filter, int $limit = 500): array
     {
+        // Participant has fetch=EAGER on offer/event/participantCategory and AbstractContact
+        // has fetch=EAGER on appUser — without join-fetching them here, hydrating each row's
+        // participant fires 4 extra queries per distinct participant (the payments overview
+        // measured ~1646 queries for 500 rows). These are all to-one joins, so they collapse
+        // into the single result query with no row multiplication. EAGER stays intentional;
+        // we just load it up-front instead of lazily (per the page-scoped optimisation rule).
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.participant', 'participant')->addSelect('participant')
             ->leftJoin('participant.contact', 'contact')->addSelect('contact')
+            ->leftJoin('contact.appUser', 'appUser')->addSelect('appUser')
+            ->leftJoin('participant.offer', 'offer')->addSelect('offer')
+            ->leftJoin('participant.event', 'pEvent')->addSelect('pEvent')
+            ->leftJoin('participant.participantCategory', 'pCategory')->addSelect('pCategory')
             ->leftJoin('p.import', 'import')->addSelect('import')
             ->orderBy('p.dateTime', 'DESC')
             ->setMaxResults($limit);

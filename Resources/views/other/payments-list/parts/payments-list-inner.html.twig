@@ -23,7 +23,10 @@
     <td style="background-color: {{ assignedBackgroundColor }};">
         <strong style="color: {{ assignedColor }};">
             {% if payment.participant.id|default %}
-                {{ payment.participant.id|default(0) }} | {{ payment.participant.name|default('<nepojmenovaný>') }}
+                {# cachedContact = denormalised contact FK (EAGER-fetched in the list query);
+                   participant.name would call getContact() → load the participantContacts
+                   collection per row (was 391 N+1 queries on this overview). #}
+                {{ payment.participant.id|default(0) }} | {{ payment.participant.cachedContact.name|default('<nepojmenovaný>') }}
             {% else %}
                 ⚠️ NEPŘIŘAZENO ⚠️
             {% endif %}
