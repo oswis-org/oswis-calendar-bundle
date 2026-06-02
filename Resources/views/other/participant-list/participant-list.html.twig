@@ -11,6 +11,7 @@
         <h2 class="h4 mb-0 me-2">Přehled přihlášek</h2>
 
         {% if events|default %}
+            <span class="small text-secondary">Akce:</span>
             {% for ev in events %}
                 <span class="badge bg-secondary">{{ ev.name|default(ev.slug) }}</span>
             {% endfor %}
@@ -31,6 +32,7 @@
 
         {# Category switcher — preserves the rest of the query. #}
         {% if participantCategories|default %}
+            <span class="small text-secondary ms-1">Typ:</span>
             <select class="form-select form-select-sm w-auto py-0" title="Typ účastníka"
                     onchange="if(this.value){location.href=this.value;}">
                 <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: null, page: null})) }}"
@@ -68,7 +70,26 @@
     {% endif %}
 
     {# ---- FILTER FORM (GET; hidden fields carry scope+sort so nothing is lost) #}
-    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2">
+    {# Empty advanced fields are dropped before submit (disabled inputs aren't sent) so shared
+       URLs stay clean — no trailing &expr=&depth=. Works for both the Submit button (onsubmit)
+       and the auto-submitting pills (which call form.submit(), bypassing onsubmit). #}
+    <script>
+        function oswisStripEmptyFilter(form) {
+            for (var i = 0; i < form.elements.length; i++) {
+                var el = form.elements[i];
+                if ((el.name === 'expr' || el.name === 'depth') && el.value === '') {
+                    el.disabled = true;
+                }
+            }
+        }
+        function oswisSubmitFilter(input) {
+            var form = input.form;
+            oswisStripEmptyFilter(form);
+            form.submit();
+        }
+    </script>
+    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2"
+          onsubmit="oswisStripEmptyFilter(this);">
         {% for key, value in scopeParams %}
             {% if key != 'depth' %}
                 {% if value is iterable %}
@@ -83,7 +104,7 @@
         <div class="btn-group btn-group-sm flex-wrap" role="group">
             {% for tab in filterTabs %}
                 <input type="radio" class="btn-check" name="filter" id="flt-{{ tab.key }}" value="{{ tab.key }}"
-                       autocomplete="off" onchange="this.form.submit()" {{ tab.active ? 'checked' : '' }}>
+                       autocomplete="off" onchange="oswisSubmitFilter(this)" {{ tab.active ? 'checked' : '' }}>
                 <label class="btn btn-outline-primary" for="flt-{{ tab.key }}"
                        title="{{ tab.group }}">{{ tab.label }}</label>
             {% endfor %}
@@ -96,12 +117,14 @@
                 {% if flagFacets|default %}
                     <div class="mb-2">
                         <div class="small fw-bold">Příznaky <span class="text-secondary fw-normal">(NEBO uvnitř kategorie, A napříč)</span></div>
-                        <div class="row">
+                        {# CSS multicolumn: categories pack tightly top-to-bottom then wrap to the next
+                           column, filling space instead of leaving row-height gaps like a grid. #}
+                        <div style="column-width: 12rem; column-gap: 1rem;">
                             {% for facet in flagFacets %}
-                                <div class="col-md-3 col-sm-6">
+                                <div style="break-inside: avoid; -webkit-column-break-inside: avoid; display: inline-block; width: 100%; margin-bottom: .4rem;">
                                     <div class="small text-secondary">{{ facet.categoryName }}</div>
                                     {% for flag in facet.flags %}
-                                        <label class="d-block small" style="font-weight:normal;">
+                                        <label class="d-block small" style="font-weight:normal; line-height: 1.3;">
                                             <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}> {{ flag.label }}
                                         </label>
                                     {% endfor %}
