@@ -9,33 +9,29 @@
     {# ---- PAGE TITLE ----------------------------------------------------- #}
     <h2 class="h4 mb-2 mt-1">Přehled přihlášek</h2>
 
-    {# ---- SCOPE BAR (event / category / all-events) — grouped in a subtle
-           toolbar so the scope controls read as one intentional zone. ------ #}
+    {# ---- SCOPE BAR — one event picker (year → turnus → all events) + the
+           category switcher, grouped into a subtle toolbar so the whole scope
+           reads as one clear zone instead of scattered chips + links. ------- #}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-2 py-2"
          style="background:#f4f7fa; border:1px solid #e3e9f0; border-radius:6px;">
-        {% if events|default %}
-            <span class="small text-secondary fw-bold">Akce:</span>
-            {% for ev in events %}
-                <span class="badge bg-secondary">{{ ev.name|default(ev.slug) }}</span>
+        <span class="small text-secondary fw-bold">Akce:</span>
+        <select class="form-select form-select-sm w-auto" title="Výběr akce"
+                onchange="if(this.value){location.href=this.value;}">
+            <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({allEvents: 1, eventSlug: null, events: null, page: null})) }}"
+                {{ allEvents|default ? 'selected' : '' }}>— všechny akce —</option>
+            {% for yearEvent in yearEvents|default([]) %}
+                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({eventSlug: yearEvent.slug, events: null, allEvents: null, page: null})) }}"
+                    {{ (event|default and event.slug == yearEvent.slug) ? 'selected' : '' }}>{{ yearEvent.name|default(yearEvent.slug) }}{{ (defaultEvent|default and defaultEvent.id == yearEvent.id) ? ' (výchozí)' : '' }}</option>
+                {% for subEvent in yearEvent.subEvents %}
+                    <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({eventSlug: subEvent.slug, events: null, allEvents: null, page: null})) }}"
+                        {{ (event|default and event.slug == subEvent.slug) ? 'selected' : '' }}>&nbsp;&nbsp;&nbsp;↳ {{ subEvent.name|default(subEvent.slug) }}</option>
+                {% endfor %}
             {% endfor %}
-            {% if isDefaultScope|default %}<span class="badge bg-light text-secondary border">výchozí akce</span>{% endif %}
-        {% endif %}
-        {% if participantCategory|default %}
-            <span class="badge bg-info text-dark">{{ participantCategory.name|default(participantCategory.slug) }}</span>
-        {% endif %}
-
-        {% if allEvents|default %}
-            <span class="badge bg-warning text-dark">všichni napříč akcemi</span>
-            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zpět na výchozí akci</a>
-        {% elseif isDefaultScope|default %}
-            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {allEvents: 1}) }}">› všechny akce</a>
-        {% elseif scoped %}
-            <a class="btn btn-sm btn-outline-secondary py-0" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">× zpět na výchozí akci</a>
-        {% endif %}
+        </select>
 
         {# Category switcher — preserves the rest of the query. #}
         {% if participantCategories|default %}
-            <span class="small text-secondary ms-1">Typ:</span>
+            <span class="small text-secondary ms-1 fw-bold">Typ:</span>
             <select class="form-select form-select-sm w-auto py-0" title="Typ účastníka"
                     onchange="if(this.value){location.href=this.value;}">
                 <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: null, page: null})) }}"
@@ -47,18 +43,6 @@
             </select>
         {% endif %}
     </div>
-
-    {# Sub-event / super-event quick links (only for a single-event scope). #}
-    {% if event|default and (event.subEvents|length > 0 or event.superEvent) %}
-        <div class="small text-secondary mb-2">
-            {% if event.superEvent %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({eventSlug: event.superEvent.slug, events: null, page: null})) }}">↑ {{ event.superEvent.name }}</a>
-            {% endif %}
-            {% for subEvent in event.subEvents %}
-                <a class="ms-2" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({eventSlug: subEvent.slug, events: null, page: null})) }}">↳ {{ subEvent.name }}</a>
-            {% endfor %}
-        </div>
-    {% endif %}
 
     {# ---- STATS (scoped, compact one-liner) ------------------------------ #}
     {% if stats|default %}

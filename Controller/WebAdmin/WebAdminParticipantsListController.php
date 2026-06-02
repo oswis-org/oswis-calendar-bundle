@@ -15,6 +15,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository;
@@ -168,6 +169,15 @@ class WebAdminParticipantsListController extends AbstractController
         // fields in the GET filter form and as query merges in links) so nothing is lost.
         $scopeParams = $this->buildScopeParams($eventSlugs, $participantCategorySlug, $depthOverride, $sort, $dir, $allEvents);
 
+        // Year events (+ their turnusy via subEvents in the template) feed the event
+        // picker dropdown — a single control to jump to any year/turnus/all events,
+        // replacing the ad-hoc chip + scope links. Sorted newest-first.
+        /** @var list<Event> $yearEvents */
+        $yearEvents = array_values($this->eventService->getRepository()->getEvents([
+            EventRepository::CRITERIA_TYPE_STRING => 'year-of-event',
+        ])->toArray());
+        usort($yearEvents, static fn (Event $a, Event $b): int => ($b->getStartDateTimeRecursive()?->getTimestamp() ?? 0) <=> ($a->getStartDateTimeRecursive()?->getTimestamp() ?? 0));
+
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", [
             'title'               => 'Přehled přihlášek :: ADMIN',
             'event'               => 1 === count($events) ? $events[0] : null,
@@ -195,6 +205,8 @@ class WebAdminParticipantsListController extends AbstractController
             'depthOverride'       => $depthOverride,
             'participantCategorySlug' => $participantCategorySlug,
             'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
+            'yearEvents'              => $yearEvents,
+            'defaultEvent'            => $this->eventService->getDefaultEvent(),
         ]);
     }
 
