@@ -30,12 +30,13 @@
             {{ participant.createdAt|date("j. n. Y, H:i") }}
         </div>
         {% if appUser and appUser.activated %}
-            <div class="block small" style="color:green;">
-                <strong>✓</strong>&nbsp;{{ appUser.activated|date("j. n. Y, H:i") }}
+            <div class="block small">
+                <span class="badge bg-success">✓ ověřeno</span>
+                <span class="d-block" style="color:#5b6b7b;">{{ appUser.activated|date("j. n. Y, H:i") }}</span>
             </div>
         {% else %}
-            <div class="block small" style="color:red;">
-                <strong>❌</strong>&nbsp;neověřeno
+            <div class="block small">
+                <span class="badge bg-danger">✗ neověřeno</span>
             </div>
         {% endif %}
         <div class="block small">
@@ -47,7 +48,7 @@
         {# Quick actions: detail / compose mail / soft-delete (restore lives above, shown when deleted). #}
         <div class="block small mt-1" style="white-space: nowrap;">
             <a class="btn btn-sm btn-outline-primary" style="padding:1px 8px; font-size:.75rem;"
-               href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">Detail</a>
+               href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">🔍 Detail</a>
             {% if is_granted('ROLE_ADMIN') %}
                 <a class="btn btn-sm btn-outline-secondary" style="padding:1px 8px; font-size:.75rem;"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">✉ Mail</a>
@@ -141,26 +142,21 @@
     {% set paidColor = participant.remainingDeposit <= 0 ? 'warning' : paidColor %}
     {% set paidColor = participant.remainingPrice < 0 ? 'info' : paidColor %}
     {% set paidColor = participant.remainingPrice == 0 ? 'success' : paidColor %}
-    <td style="border:1px solid grey; padding:.3em .6em; text-align:right; white-space: nowrap;"
-        class="text-{{ paidColor }}">
+    {% set paymentLabel = {'success': 'Zaplaceno', 'danger': 'Nezaplaceno', 'warning': 'Záloha uhrazena', 'info': 'Přeplaceno'}[paidColor]|default('—') %}
+    {# Same data as before, just clearer: an explicit status label up top (instead of the
+       cryptic ★/⚠/✔), paid-of-total on one line, "zbývá" emphasised, progress + VS kept. #}
+    <td style="border:1px solid grey; padding:.3em .6em; text-align:right; white-space: nowrap;">
         <div class="block">
-            <strong>💰 {{ participant.paidPrice|default(0) }},-&nbsp;Kč</strong>
+            <span class="badge bg-{{ paidColor }} {{ paidColor == 'warning' ? 'text-dark' : '' }}">{{ paymentLabel }}</span>
+        </div>
+        <div class="block text-{{ paidColor }}" style="margin-top: .3em; {{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
+            zbývá&nbsp;{{ participant.remainingPrice|default(0) }},-&nbsp;Kč
         </div>
         <div class="block small">
-            z&nbsp;{{ participant.price|default(0) }},-&nbsp;Kč
-        </div>
-        <div class="block small" style="{{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
-            zbývá&nbsp;{{ participant.remainingPrice|default(0) }},-&nbsp;Kč&nbsp;
-            {%- if participant.remainingPrice|default(0) > 0 -%}
-                <strong style="color: orange;">★</strong>
-            {%- elseif participant.remainingPrice|default(0) < 0 -%}
-                <strong style="color: red;">⚠</strong>
-            {%- else -%}
-                <strong style="color: green;">✔</strong>
-            {%- endif -%}
+            💰 zaplaceno&nbsp;{{ participant.paidPrice|default(0) }} z&nbsp;{{ participant.price|default(0) }},-&nbsp;Kč
         </div>
         {% if participant.price != 0 %}
-            <div class="progress position-relative">
+            <div class="progress position-relative" style="height: 1.1em; margin-top: .15em;">
                 <div class="progress-bar progress-bar-striped bg-{{ paidColor }}"
                      style="width: {{ paidPercentage }}%"
                      aria-valuenow="{{ paidPercentage }}" aria-valuemin="0" aria-valuemax="100">

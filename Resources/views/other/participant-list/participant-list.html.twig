@@ -6,12 +6,15 @@
 {% set qbase = app.request.query.all %}
 <div class="container">
 
-    {# ---- HEADER + SCOPE (compact, one row) ------------------------------ #}
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <h2 class="h4 mb-0 me-2">Přehled přihlášek</h2>
+    {# ---- PAGE TITLE ----------------------------------------------------- #}
+    <h2 class="h4 mb-2 mt-1">Přehled přihlášek</h2>
 
+    {# ---- SCOPE BAR (event / category / all-events) — grouped in a subtle
+           toolbar so the scope controls read as one intentional zone. ------ #}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-2 py-2"
+         style="background:#f4f7fa; border:1px solid #e3e9f0; border-radius:6px;">
         {% if events|default %}
-            <span class="small text-secondary">Akce:</span>
+            <span class="small text-secondary fw-bold">Akce:</span>
             {% for ev in events %}
                 <span class="badge bg-secondary">{{ ev.name|default(ev.slug) }}</span>
             {% endfor %}
