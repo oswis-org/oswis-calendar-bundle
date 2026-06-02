@@ -678,8 +678,9 @@ class WebAdminParticipantsListController extends AbstractController
         ]);
 
         return $this->render("@OswisOrgOswisCalendar/web_admin/years-compare.html.twig", [
-            'title' => "Srovnání ročníků :: ADMIN",
-            'events' => $events,
+            'title'        => "Srovnání ročníků :: ADMIN",
+            'events'       => $events,
+            'defaultEvent' => $this->eventService->getDefaultEvent(),
         ]);
     }
 
@@ -699,7 +700,7 @@ class WebAdminParticipantsListController extends AbstractController
         return $this->render('@OswisOrgOswisCalendar/web_admin/event.html.twig', [
             'title'          => 'Přehled události :: ADMIN',
             'event'          => $event,
-            'isDefaultEvent' => $event === $defaultEvent,
+            'defaultEvent'   => $defaultEvent,
             ...$this->eventAggregationsService->getEventAggregations($event),
         ]);
     }

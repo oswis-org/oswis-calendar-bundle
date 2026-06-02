@@ -131,7 +131,7 @@
             <div class="block small">Událost nejvyššího řádu?</div>
         </td>
         <td>
-            {{ isDefaultEvent ? 'ANO' : 'NE' }}
+            {{ (defaultEvent is defined and defaultEvent and defaultEvent.id == event.id) ? 'ANO' : 'NE' }}
             <div class="block small">{{ event.root|default ? 'ANO' : 'NE' }}</div>
         </td>
     </tr>
