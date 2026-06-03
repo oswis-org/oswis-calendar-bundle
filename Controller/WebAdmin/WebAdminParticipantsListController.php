@@ -68,6 +68,7 @@ class WebAdminParticipantsListController extends AbstractController
 
     public const string SORT_NAME    = 'name';
     public const string SORT_PAYMENT = 'payment';
+    public const string SORT_PRICE   = 'price';
     public const string SORT_CREATED = 'created';
     public const string SORT_ID      = 'id';
 
@@ -335,6 +336,7 @@ class WebAdminParticipantsListController extends AbstractController
         usort($participants, static function (Participant $a, Participant $b) use ($sort, $factor): int {
             $comparison = match ($sort) {
                 self::SORT_PAYMENT => $a->getRemainingPrice() <=> $b->getRemainingPrice(),
+                self::SORT_PRICE   => $a->getPrice() <=> $b->getPrice(),
                 self::SORT_CREATED => ($a->getCreatedAt()?->getTimestamp() ?? 0) <=> ($b->getCreatedAt()?->getTimestamp() ?? 0),
                 self::SORT_ID      => ($a->getId() ?? 0) <=> ($b->getId() ?? 0),
                 default            => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
@@ -348,7 +350,7 @@ class WebAdminParticipantsListController extends AbstractController
 
     private function normalizeSort(string $sort): string
     {
-        return in_array($sort, [self::SORT_NAME, self::SORT_PAYMENT, self::SORT_CREATED, self::SORT_ID], true)
+        return in_array($sort, [self::SORT_NAME, self::SORT_PAYMENT, self::SORT_PRICE, self::SORT_CREATED, self::SORT_ID], true)
             ? $sort : self::SORT_NAME;
     }
 

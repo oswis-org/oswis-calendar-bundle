@@ -24,7 +24,7 @@
     </th>
     <th style="width: 16%;">
         {{ _self.sortHeader('Zaplaceno', 'payment', sort|default('name'), dir|default('asc'), qbase) }}
-        <span class="block small">Cena</span>
+        <span class="block small">{{ _self.sortHeader('Cena', 'price', sort|default('name'), dir|default('asc'), qbase) }}</span>
     </th>
     <th style="width: 9%;">
         Akce
