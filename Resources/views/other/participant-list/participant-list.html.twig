@@ -388,7 +388,15 @@
         .participants-page .oswis-typeahead a.active,
         .participants-page .oswis-typeahead a:hover { background: #eaf3fb; }
         .participants-page .oswis-typeahead .ta-event { color: #5f6b7a; font-size: .78rem; white-space: nowrap; }
+        /* Responsive: dense table scrolls horizontally on small screens instead of crushing. */
+        .participants-page .participants-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 820px) {
+            .participants-page .participants-table-wrap > table.participant-list { min-width: 760px; }
+        }
     </style>
+    {# Scroll wrapper: on narrow screens (tablet/mobile) the dense 5-column table scrolls
+       horizontally instead of crushing the columns. No effect on wide screens. #}
+    <div class="participants-table-wrap">
     <table class="list participant-list" style="table-layout: fixed; word-break: break-word;">
         {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for participant in participants %}
@@ -397,6 +405,7 @@
             <tbody><tr><td colspan="5" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
         {% endfor %}
     </table>
+    </div>
 
     {# ---- PAGINATION (unscoped paginated view) --------------------------- #}
     {% if pagination|default %}
