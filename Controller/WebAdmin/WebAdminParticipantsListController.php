@@ -150,7 +150,9 @@ class WebAdminParticipantsListController extends AbstractController
         $hasActiveFilter = self::FILTER_ALL !== $filterKey || [] !== $selectedFlags || null !== $advancedExpr || null !== $q;
 
         [$flagFacets, $slugToCategory] = $this->buildFlagOffering($selectedFlags);
-        $expression = $this->compileFilterExpression($filterKey, $selectedFlags, $advancedExpr, $slugToCategory);
+        // When a text search is active, span active + deleted (so a deleted person is findable
+        // by name); otherwise keep the normal deleted exclusion.
+        $expression = $this->compileFilterExpression($filterKey, $selectedFlags, $advancedExpr, $slugToCategory, null === $q);
 
         $loadAll = $scoped || $showAll;
         $pagination = null;
@@ -539,11 +541,19 @@ class WebAdminParticipantsListController extends AbstractController
         array $selectedFlags,
         ?string $advancedExpr,
         array $slugToCategory,
+        bool $excludeDeleted = true,
     ): string {
         $parts = [];
-        // Deleted handling: the dedicated "deleted" filter shows only soft-deleted rows,
-        // every other filter excludes them (fixes the legacy "deleted shown among active").
-        $parts[] = self::FILTER_DELETED === $filterKey ? 'isDeleted()' : 'not isDeleted()';
+        // Deleted handling: the dedicated "deleted" filter shows only soft-deleted rows;
+        // every other filter excludes them (fixes the legacy "deleted shown among active") —
+        // UNLESS a text search is active ($excludeDeleted=false), where we deliberately span
+        // active + deleted so an admin can find a deleted person by name. Deleted rows are
+        // visually flagged (red row + "❌ smazáno") so mixed results stay unambiguous.
+        if (self::FILTER_DELETED === $filterKey) {
+            $parts[] = 'isDeleted()';
+        } elseif ($excludeDeleted) {
+            $parts[] = 'not isDeleted()';
+        }
 
         $registryExpr = $this->registryExpr($filterKey);
         if (null !== $registryExpr) {
