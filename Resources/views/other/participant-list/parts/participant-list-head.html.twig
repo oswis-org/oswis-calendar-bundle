@@ -1,18 +1,29 @@
+{# Clickable column headers sort the list (toggle asc/desc); the active column shows ▲/▼.
+   Macros are isolated, so sort/dir/qbase are passed in. qbase carries the rest of the query
+   (scope, filter, flags, search) so sorting never drops the current view. #}
+{% macro sortHeader(label, key, sort, dir, qbase) %}
+    {% set isActive = (sort|default('name')) == key %}
+    {% set nextDir = (isActive and (dir|default('asc')) == 'asc') ? 'desc' : 'asc' %}
+    <a class="oswis-sort {{ isActive ? 'active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({sort: key, dir: nextDir, page: null})) }}"
+       title="Seřadit podle: {{ label }}">{{ label }}{% if isActive %} <span class="oswis-sort-arrow">{{ (dir|default('asc')) == 'asc' ? '▲' : '▼' }}</span>{% endif %}</a>
+{% endmacro %}
+
 <thead>
 <tr>
     <th style="width: 18%;">
-        ID
-        <span class="block small">Vytvořeno</span>
+        {{ _self.sortHeader('ID', 'id', sort|default('name'), dir|default('asc'), qbase) }}
+        <span class="block small">{{ _self.sortHeader('Vytvořeno', 'created', sort|default('name'), dir|default('asc'), qbase) }}</span>
     </th>
     <th style="width: 44%;">
-        Účastník, Událost
+        {{ _self.sortHeader('Účastník, Událost', 'name', sort|default('name'), dir|default('asc'), qbase) }}
         <span class="block small">Poznámky</span>
     </th>
     <th style="width: 13%;">
         Příznaky
     </th>
     <th style="width: 16%;">
-        Zaplaceno
+        {{ _self.sortHeader('Zaplaceno', 'payment', sort|default('name'), dir|default('asc'), qbase) }}
         <span class="block small">Cena</span>
     </th>
     <th style="width: 9%;">

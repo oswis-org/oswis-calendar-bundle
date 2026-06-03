@@ -323,6 +323,11 @@
             font-weight: 600; font-size: .8rem; color: #2a3a4a;
             border-bottom: 1px solid #eef2f6; margin-bottom: .25rem; padding-bottom: .2rem;
         }
+        /* Sortable column headers (white links in the blue header; active shows ▲/▼). */
+        table.participant-list thead a.oswis-sort { color: #fff; text-decoration: none; cursor: pointer; }
+        table.participant-list thead a.oswis-sort:hover,
+        table.participant-list thead a.oswis-sort.active { text-decoration: underline; }
+        table.participant-list thead a.oswis-sort .oswis-sort-arrow { font-size: .8em; }
         /* Brand-coloured, slightly larger native checkboxes across the filters. */
         .participants-page input[type="checkbox"] {
             accent-color: #006FAD; width: .95rem; height: .95rem; vertical-align: -2px; cursor: pointer;
