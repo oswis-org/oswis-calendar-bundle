@@ -79,6 +79,7 @@
         <div class="d-flex flex-wrap gap-2 mb-2 small">
             <span class="badge bg-primary">přihlášek {{ stats.total }}</span>
             <span class="badge bg-success">zaplaceno {{ stats.paid }}</span>
+            {% if stats.depositPaid|default(0) > 0 %}<span class="badge bg-warning text-dark">záloha uhrazena {{ stats.depositPaid }}</span>{% endif %}
             <span class="badge bg-danger">nezaplaceno {{ stats.unpaid }}</span>
             <span class="badge bg-info text-dark">vybráno {{ stats.sumPaid }} Kč</span>
             <span class="badge bg-warning text-dark">zbývá {{ stats.sumRemaining }} Kč</span>

@@ -665,7 +665,7 @@ class WebAdminParticipantsListController extends AbstractController
      */
     private function computeStats(Collection $participants): array
     {
-        $stats = ['total' => 0, 'deleted' => 0, 'paid' => 0, 'unpaid' => 0, 'sumPaid' => 0, 'sumPrice' => 0, 'sumRemaining' => 0];
+        $stats = ['total' => 0, 'deleted' => 0, 'paid' => 0, 'depositPaid' => 0, 'unpaid' => 0, 'sumPaid' => 0, 'sumPrice' => 0, 'sumRemaining' => 0];
         foreach ($participants as $participant) {
             if ($participant->isDeleted()) {
                 ++$stats['deleted'];
@@ -675,11 +675,16 @@ class WebAdminParticipantsListController extends AbstractController
             $stats['sumPaid'] += $participant->getPaidPrice();
             $stats['sumPrice'] += $participant->getPrice();
             $remaining = $participant->getRemainingPrice();
-            if ($remaining > 0) {
-                ++$stats['unpaid'];
-                $stats['sumRemaining'] += $remaining;
+            if ($remaining <= 0) {
+                ++$stats['paid']; // fully paid (or overpaid)
+                continue;
+            }
+            $stats['sumRemaining'] += $remaining;
+            // Still owing something: deposit covered vs nothing paid yet (matches the row badges).
+            if ($participant->getRemainingDeposit() <= 0) {
+                ++$stats['depositPaid'];
             } else {
-                ++$stats['paid'];
+                ++$stats['unpaid'];
             }
         }
 
