@@ -7,7 +7,10 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Interfaces\AddressBook\ContactInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -241,6 +244,73 @@ final class WebAdminParticipantsController extends AbstractController
         $this->addFlash('success', sprintf('Účastník #%d smazán (lze obnovit).', $participantId));
 
         return new RedirectResponse($this->safeListRedirect($request, $participantId));
+    }
+
+    /**
+     * Manually override the participant contact's gender, or clear it back to automatic
+     * name-based detection. Needed when the vokativ auto-detection is wrong (ambiguous or
+     * foreign names — unknowns default to male) or doesn't match the person (e.g. trans
+     * participants). Affects gender classification, the Czech salutation and byl/byla
+     * everywhere the contact is used.
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function setGender(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_set_gender_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        // Lightweight load (NOT the full detail graph): the full graph hydration mutates
+        // getName()/sortableName on L2-cached entities, and a subsequent em->flush() would then
+        // compute a changeset over the whole graph and exhaust memory. We persist this single
+        // scalar with a targeted DQL UPDATE + L2 eviction instead — no flush of the UoW.
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            false,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        $contact = $participant->getContactForRead();
+        if (!$contact instanceof Person || null === $contact->getId()) {
+            $this->addFlash('error', 'Kontakt účastníka není osoba — pohlaví nelze nastavit.');
+
+            return new RedirectResponse($this->generateUrl(
+                'oswis_org_oswis_calendar_web_admin_participant_detail',
+                ['participantId' => $participantId],
+            ));
+        }
+
+        // Whitelist to male/female; anything else (incl. '') → null = auto-detect from name.
+        $requested = (string) $request->request->get('gender', '');
+        $value = in_array($requested, [ContactInterface::GENDER_MALE, ContactInterface::GENDER_FEMALE], true) ? $requested : null;
+        $personId = $contact->getId();
+
+        $this->em->createQuery(
+            'UPDATE '.Person::class.' p SET p.genderOverride = :g WHERE p.id = :id'
+        )->setParameter('g', $value)->setParameter('id', $personId)->execute();
+        // DQL UPDATE bypasses the L2 cache — evict so the detail re-read shows the new value.
+        // JOINED inheritance caches under the root entity (AbstractContact), so evict both;
+        // also evict the Participant (its cached contact association would otherwise still
+        // resolve the stale Person on the post-redirect detail view).
+        $cache = $this->em->getCache();
+        if (null !== $cache) {
+            $cache->evictEntity(AbstractContact::class, $personId);
+            $cache->evictEntity(Person::class, $personId);
+            $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $participantId);
+        }
+
+        $label = match ($value) {
+            ContactInterface::GENDER_MALE   => 'muž (ručně)',
+            ContactInterface::GENDER_FEMALE => 'žena (ručně)',
+            default                         => 'automaticky dle jména',
+        };
+        $this->addFlash('success', sprintf('Pohlaví účastníka #%d: %s.', $participantId, $label));
+
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_detail',
+            ['participantId' => $participantId],
+        ));
     }
 
     /**

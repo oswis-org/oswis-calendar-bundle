@@ -104,6 +104,27 @@
                                         <th style="width: 9rem; white-space: nowrap;">Jméno</th>
                                         <td>{{ contact.name|default('—') }}</td>
                                     </tr>
+                                    {# Pohlaví: zobrazené je výsledné (override, jinak auto dle jména přes vokativ).
+                                       Override řeší špatnou auto-detekci (nejednoznačná/cizí jména → default muž) i trans. #}
+                                    <tr>
+                                        <th>Pohlaví</th>
+                                        <td>
+                                            {% set g = contact.gender|default('unisex') %}
+                                            {% set override = contact.genderOverride|default %}
+                                            <strong>{{ g == 'male' ? 'Muž' : (g == 'female' ? 'Žena' : 'neurčeno') }}</strong>
+                                            <span class="text-secondary small">({{ override ? 'ručně' : 'automaticky dle jména' }})</span>
+                                            <form method="post" style="display:inline-flex; gap:.25rem; margin-left:.5rem; vertical-align:middle;"
+                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_set_gender', {participantId: participantId}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('participant_set_gender_' ~ participantId) }}">
+                                                <select name="gender" class="form-select form-select-sm" style="width:auto;" title="Ruční override pohlaví">
+                                                    <option value="" {{ override ? '' : 'selected' }}>automaticky</option>
+                                                    <option value="male" {{ override == 'male' ? 'selected' : '' }}>Muž</option>
+                                                    <option value="female" {{ override == 'female' ? 'selected' : '' }}>Žena</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                                            </form>
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <th>E-mail</th>
                                         <td>
