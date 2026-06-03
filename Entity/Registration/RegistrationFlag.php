@@ -92,6 +92,45 @@ class RegistrationFlag implements NameableInterface
         return $this->getCategory()?->getType();
     }
 
+    /**
+     * Sub-group name for presenting flags within their category — the same grouping the
+     * registration form uses (see RegistrationFlagOffer::getFlagGroupName()), but flag-level
+     * and price-free: an explicit form group if set (e.g. faculties → "Univerzita …"), else
+     * the gender split for t-shirt sizes, else none (the category stays a single flat list).
+     */
+    public function getFlagGroupName(): ?string
+    {
+        if (null !== $this->getFlagFormGroup() && '' !== $this->getFlagFormGroup()) {
+            return $this->getFlagFormGroup();
+        }
+        if (RegistrationFlagCategory::TYPE_T_SHIRT_SIZE === $this->getType()) {
+            return $this->getTShirtGroup();
+        }
+
+        return null;
+    }
+
+    /**
+     * Gender group for a t-shirt-size flag, derived from its slug (a plain field). Deliberately
+     * NOT from getName(): NameTrait::getName() mutates the entity (updateName → setSortableName),
+     * and on an L2-cached flag referenced by the whole participant graph that blows memory up.
+     */
+    public function getTShirtGroup(): string
+    {
+        $slug = $this->getSlug();
+        if (str_contains($slug, 'female')) {
+            return '♀ Dámské';
+        }
+        if (str_contains($slug, 'male')) {
+            return '♂ Pánské';
+        }
+        if (str_contains($slug, 'unisex')) {
+            return '⚲ Unisex';
+        }
+
+        return '⚪ Ostatní';
+    }
+
     public function getCategory(): ?RegistrationFlagCategory
     {
         return $this->category;

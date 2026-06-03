@@ -607,18 +607,11 @@ class WebAdminParticipantsListController extends AbstractController
             $categoryName = $category?->getName() ?? 'Ostatní';
             $slugToCategory[$slug] = $categorySlug;
 
-            // Derive the sub-section (only t-shirt sizes split, by gender encoded in the slug).
-            $sectionKey = '';
-            $sectionName = null;
-            if (RegistrationFlagCategory::TYPE_T_SHIRT_SIZE === $category?->getType()) {
-                if (str_contains($slug, 'female')) {
-                    $sectionKey = 'female';
-                    $sectionName = 'Dámská';
-                } elseif (str_contains($slug, 'male')) {
-                    $sectionKey = 'male';
-                    $sectionName = 'Pánská';
-                }
-            }
+            // Sub-section comes from the flag's own grouping logic (same as the registration
+            // form: explicit form group, else t-shirt gender, else none) — systematic, works
+            // for every flag including admin-only ones, and needs no per-event offer.
+            $sectionName = $flag->getFlagGroupName();
+            $sectionKey = $sectionName ?? '';
 
             $grouped[$categorySlug]['categoryName'] ??= $categoryName;
             $grouped[$categorySlug]['sections'][$sectionKey]['name'] = $sectionName;
