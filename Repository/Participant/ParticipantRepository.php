@@ -86,8 +86,11 @@ class ParticipantRepository extends ServiceEntityRepository
      * to-many relations in a single query would cartesian-explode the row count.
      *
      * @param list<int> $ids attendee ids already loaded via {@see getParticipants()}
+     * @param bool $primeContactDetails also fetch-join contact phones/e-mails (their own query)
+     *                                  — only needed by the free-text search to avoid an N+1 on
+     *                                  phone/VS; skipped otherwise so the common path stays lean.
      */
-    public function primeAggregationCollections(array $ids): void
+    public function primeAggregationCollections(array $ids, bool $primeContactDetails = false): void
     {
         if ([] === $ids) {
             return;
@@ -128,6 +131,17 @@ class ParticipantRepository extends ServiceEntityRepository
                 ->leftJoin('pr.offer', 'pro')
                 ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
                 ->getQuery()->getResult();
+            if ($primeContactDetails) {
+                // Contact phones/e-mails (lazy to-many) for the free-text search — its own
+                // query (joining details alongside another to-many would cartesian-explode).
+                $this->createQueryBuilder('p')
+                    ->addSelect('scpc', 'scc', 'scd')
+                    ->leftJoin('p.participantContacts', 'scpc')
+                    ->leftJoin('scpc.contact', 'scc')
+                    ->leftJoin('scc.details', 'scd')
+                    ->where('p.id IN (:ids)')->setParameter('ids', $chunk)
+                    ->getQuery()->getResult();
+            }
         }
     }
 

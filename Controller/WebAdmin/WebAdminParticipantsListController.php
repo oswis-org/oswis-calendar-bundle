@@ -130,8 +130,12 @@ class WebAdminParticipantsListController extends AbstractController
         $dir = 'desc' === $request->query->getString('dir') ? 'desc' : 'asc';
         $showAll = $request->query->getBoolean('all');
         $page = max(1, $request->query->getInt('page', 1));
+        // Free-text search (name / e-mail / phone / variable symbol). Diacritic-insensitive,
+        // matched in PHP over the loaded set (see participantMatchesQuery()).
+        $q = trim($request->query->getString('q'));
+        $q = '' === $q ? null : $q;
 
-        $hasActiveFilter = self::FILTER_ALL !== $filterKey || [] !== $selectedFlags || null !== $advancedExpr;
+        $hasActiveFilter = self::FILTER_ALL !== $filterKey || [] !== $selectedFlags || null !== $advancedExpr || null !== $q;
 
         [$flagFacets, $slugToCategory] = $this->buildFlagOffering($selectedFlags);
         $expression = $this->compileFilterExpression($filterKey, $selectedFlags, $advancedExpr, $slugToCategory);
@@ -156,9 +160,14 @@ class WebAdminParticipantsListController extends AbstractController
         // Prime the LAZY collections the filter + row template walk, in a constant number
         // of queries (avoids the per-participant N+1).
         $ids = array_values(array_filter($loaded->map(static fn (Participant $p): ?int => $p->getId())->toArray()));
-        $this->participantService->getRepository()->primeAggregationCollections($ids);
+        // When searching, also prime the contact details (phones/e-mails) so the text match
+        // doesn't fire one lazy query per participant for phone/VS.
+        $this->participantService->getRepository()->primeAggregationCollections($ids, null !== $q);
 
         $matched = $loaded->filter(fn (Participant $p): bool => $this->filterEvaluator->matches($p, $expression));
+        if (null !== $q) {
+            $matched = $matched->filter(fn (Participant $p): bool => $this->participantMatchesQuery($p, $q));
+        }
         $participantsArray = $this->sortParticipants(array_values($matched->toArray()), $sort, $dir);
 
         // Summary stats are computed from the full scoped set (pre-filter) — meaningless
@@ -167,7 +176,7 @@ class WebAdminParticipantsListController extends AbstractController
 
         // The scope/sort params that every in-page control must carry forward (as hidden
         // fields in the GET filter form and as query merges in links) so nothing is lost.
-        $scopeParams = $this->buildScopeParams($eventSlugs, $participantCategorySlug, $depthOverride, $sort, $dir, $allEvents);
+        $scopeParams = $this->buildScopeParams($eventSlugs, $participantCategorySlug, $depthOverride, $sort, $dir, $allEvents, $q);
 
         // Year events (+ their turnusy via subEvents in the template) feed the event
         // picker dropdown — a single control to jump to any year/turnus/all events,
@@ -202,6 +211,7 @@ class WebAdminParticipantsListController extends AbstractController
             'allEvents'           => $allEvents,
             'sort'                => $sort,
             'dir'                 => $dir,
+            'q'                   => $q,
             'depthOverride'       => $depthOverride,
             'participantCategorySlug' => $participantCategorySlug,
             'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
@@ -342,9 +352,51 @@ class WebAdminParticipantsListController extends AbstractController
      *
      * @return array<string, string|int|list<string>>
      */
-    private function buildScopeParams(array $eventSlugs, ?string $participantCategorySlug, ?int $depthOverride, string $sort, string $dir, bool $allEvents = false): array
+    /**
+     * Free-text match of one participant against a search query. Diacritic-insensitive
+     * (folds accents via {@see StringUtils::removeAccents()}, so "reznicek" finds "Řezníček")
+     * across name, e-mail, phone and variable symbol. Phone/VS are additionally compared
+     * digits-only so "608 192 514" and "608192514" both match.
+     */
+    private function participantMatchesQuery(Participant $participant, string $query): bool
+    {
+        $needle = mb_strtolower(StringUtils::removeAccents($query));
+        if ('' === $needle) {
+            return true;
+        }
+        $contact = $participant->getContactForRead();
+        $textHaystacks = [
+            $participant->getName(),
+            $participant->getSortableName(),
+            $contact?->getEmail(),
+            $contact?->getPhone(),
+            $participant->getVariableSymbol(),
+        ];
+        foreach ($textHaystacks as $value) {
+            if (null !== $value && '' !== $value
+                && str_contains(mb_strtolower(StringUtils::removeAccents($value)), $needle)) {
+                return true;
+            }
+        }
+        // Numeric match for phone / VS regardless of spacing/formatting.
+        $digitsNeedle = preg_replace('/\D+/', '', $query) ?? '';
+        if ('' !== $digitsNeedle) {
+            foreach ([$contact?->getPhone(), $participant->getVariableSymbol()] as $number) {
+                if (null !== $number && str_contains((string) preg_replace('/\D+/', '', $number), $digitsNeedle)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function buildScopeParams(array $eventSlugs, ?string $participantCategorySlug, ?int $depthOverride, string $sort, string $dir, bool $allEvents = false, ?string $q = null): array
     {
         $params = [];
+        if (null !== $q) {
+            $params['q'] = $q;
+        }
         if (1 === count($eventSlugs)) {
             $params['eventSlug'] = $eventSlugs[0];
         } elseif (count($eventSlugs) > 1) {

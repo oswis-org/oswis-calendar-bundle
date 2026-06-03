@@ -10,17 +10,6 @@
             <div class="block small" style="color:red;">
                 <strong>❌</strong>&nbsp;smazáno {{ participant.deletedAt|date("j. n. Y, H:i") }}
             </div>
-            {% if is_granted('ROLE_ADMIN') %}
-                <form method="post"
-                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
-                      style="display: inline-block; margin-top: .25rem;"
-                      onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
-                    <button type="submit" class="btn btn-sm btn-outline-success" style="padding: 1px 8px; font-size: .75rem;">
-                        ↻ Obnovit
-                    </button>
-                </form>
-            {% endif %}
         {% endif %}
         <div class="block small">
             <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}"
@@ -44,24 +33,6 @@
         </div>
         <div class="block small">
             ✉ <a href="mailto:{{ contact.email|default }}" target="_blank">{{ contact.email|default }}</a>
-        </div>
-        {# Quick actions: detail / compose mail / soft-delete (restore lives above, shown when deleted). #}
-        <div class="block small mt-1" style="white-space: nowrap;">
-            <a class="btn btn-sm btn-outline-primary" style="padding:1px 8px; font-size:.75rem;"
-               href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">🔍 Detail</a>
-            {% if is_granted('ROLE_ADMIN') %}
-                <a class="btn btn-sm btn-outline-secondary" style="padding:1px 8px; font-size:.75rem;"
-                   href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">✉ Mail</a>
-                {% if not participant.deletedAt|default %}
-                    <form method="post" style="display:inline-block;"
-                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
-                          onsubmit="return confirm('Opravdu smazat účastníka #{{ participant.id }}? (lze obnovit)');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
-                        <input type="hidden" name="return" value="{{ app.request.requestUri }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger" style="padding:1px 8px; font-size:.75rem;">🗑 Smazat</button>
-                    </form>
-                {% endif %}
-            {% endif %}
         </div>
     </td>
     <td style="border: 1px solid grey; padding: .3em .6em;">
@@ -145,7 +116,7 @@
     {% set paymentLabel = {'success': 'Zaplaceno', 'danger': 'Nezaplaceno', 'warning': 'Záloha uhrazena', 'info': 'Přeplaceno'}[paidColor]|default('—') %}
     {# Same data as before, just clearer: an explicit status label up top (instead of the
        cryptic ★/⚠/✔), paid-of-total on one line, "zbývá" emphasised, progress + VS kept. #}
-    <td style="border:1px solid grey; padding:.3em .6em; text-align:right; white-space: nowrap;">
+    <td style="border:1px solid grey; padding:.3em .6em; text-align:right;">
         <div class="block text-{{ paidColor }}" style="{{ participant.remainingPrice|default(0) != 0 ? 'font-weight: bold;' : '' }}">
             <span class="badge bg-{{ paidColor }} {{ paidColor == 'warning' ? 'text-dark' : '' }}">{{ paymentLabel }}</span>
             zbývá&nbsp;{{ participant.remainingPrice|default(0) }},-&nbsp;Kč
@@ -168,6 +139,33 @@
         <div class="block small">
             VS: {{ participant.variableSymbol|default('nenastaven') }}
         </div>
+    </td>
+    {# ---- ACTIONS — own column at the row's end (detail / mail / delete-or-restore) ---- #}
+    <td class="actions" style="border:1px solid grey; text-align:center; white-space:nowrap; vertical-align:middle;">
+        <a class="btn btn-sm btn-outline-primary d-block mb-1" style="padding:2px 6px; font-size:.75rem;"
+           title="Otevřít detail přihlášky"
+           href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">🔍 Detail</a>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-sm btn-outline-primary d-block mb-1" style="padding:2px 6px; font-size:.75rem;"
+               title="Napsat účastníkovi nový e-mail"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">✉ Napsat</a>
+            {% if participant.deletedAt|default %}
+                <form method="post"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
+                      onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-success d-block w-100" style="padding:2px 6px; font-size:.75rem;">↻ Obnovit</button>
+                </form>
+            {% else %}
+                <form method="post"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
+                      onsubmit="return confirm('Opravdu smazat účastníka #{{ participant.id }}? (lze obnovit)');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
+                    <input type="hidden" name="return" value="{{ app.request.requestUri }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger d-block w-100" style="padding:2px 6px; font-size:.75rem;">🗑 Smazat</button>
+                </form>
+            {% endif %}
+        {% endif %}
     </td>
 </tr>
 </tbody>

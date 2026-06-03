@@ -4,7 +4,7 @@
    expression, sub-event depth) live in a collapsed "Pokročilé" panel so ordinary users aren't
    overwhelmed and the page stays compact. #}
 {% set qbase = app.request.query.all %}
-<div class="container">
+<div class="container participants-page">
 
     {# ---- PAGE TITLE ----------------------------------------------------- #}
     <h2 class="h4 mb-2 mt-1">Přehled přihlášek</h2>
@@ -42,6 +42,32 @@
                 {% endfor %}
             </select>
         {% endif %}
+
+        {# Free-text search (server-side ?q=): name / e-mail / phone / variable symbol, diacritic-
+           insensitive. Carries the current scope + filter + flags as hidden fields so the search
+           narrows *within* what's already shown. #}
+        <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}"
+              class="d-flex align-items-center gap-1 ms-auto" role="search">
+            {% for key, value in scopeParams %}
+                {% if key != 'q' %}
+                    {% if value is iterable %}
+                        {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
+                    {% else %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            {% if activeFilter|default and activeFilter != 'all' %}<input type="hidden" name="filter" value="{{ activeFilter }}">{% endif %}
+            {% for f in selectedFlags|default([]) %}<input type="hidden" name="flags[]" value="{{ f }}">{% endfor %}
+            {% if advancedExpr|default %}<input type="hidden" name="expr" value="{{ advancedExpr }}">{% endif %}
+            <input type="search" name="q" value="{{ q|default }}" class="form-control form-control-sm"
+                   style="min-width: 15rem;" placeholder="🔎 Hledat: jméno · e-mail · telefon · VS">
+            <button type="submit" class="btn btn-sm btn-primary">Hledat</button>
+            {% if q|default %}
+                <a class="btn btn-sm btn-outline-primary" title="Zrušit hledání"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams|merge({q: null})) }}">✕</a>
+            {% endif %}
+        </form>
     </div>
 
     {# ---- STATS (scoped, compact one-liner) ------------------------------ #}
@@ -103,16 +129,20 @@
             <div class="card card-body py-2 mt-1">
                 {% if flagFacets|default %}
                     <div class="mb-2">
-                        <div class="small fw-bold">Příznaky <span class="text-secondary fw-normal">(NEBO uvnitř kategorie, A napříč)</span></div>
-                        {# CSS multicolumn: categories pack tightly top-to-bottom then wrap to the next
-                           column, filling space instead of leaving row-height gaps like a grid. #}
-                        <div style="column-width: 12rem; column-gap: 1rem;">
+                        <div class="small fw-bold mb-2">Příznaky <span class="text-secondary fw-normal">(NEBO uvnitř kategorie, A napříč kategoriemi)</span></div>
+                        {# Even card grid: one card per category, each self-contained. A count badge
+                           in the header + highlighted selected options make active filters obvious. #}
+                        <div class="facet-grid">
                             {% for facet in flagFacets %}
-                                <div style="break-inside: avoid; -webkit-column-break-inside: avoid; display: inline-block; width: 100%; margin-bottom: .4rem;">
-                                    <div class="small text-secondary">{{ facet.categoryName }}</div>
+                                {% set selCount = facet.flags|filter(f => f.selected|default)|length %}
+                                <div class="facet-card">
+                                    <div class="facet-head">
+                                        <span>{{ facet.categoryName }}</span>
+                                        {% if selCount > 0 %}<span class="facet-count" title="vybráno v této kategorii">{{ selCount }}</span>{% endif %}
+                                    </div>
                                     {% for flag in facet.flags %}
-                                        <label class="d-block small" style="font-weight:normal; line-height: 1.3;">
-                                            <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}> {{ flag.label }}
+                                        <label class="{{ flag.selected|default ? 'sel' : '' }}">
+                                            <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
                                         </label>
                                     {% endfor %}
                                 </div>
@@ -121,9 +151,9 @@
                     </div>
                 {% endif %}
 
-                <div class="row g-2 align-items-end">
+                <div class="row g-2 align-items-end adv-expr">
                     <div class="col-md-8">
-                        <label class="small text-secondary d-block">Výraz (pokročilé)</label>
+                        <label class="small text-secondary d-block">Výraz (pokročilé, volitelné)</label>
                         <input type="text" name="expr" class="form-control form-control-sm" value="{{ advancedExpr|default }}"
                                placeholder="hasFlag('panske-m') or hasFlag('damske-m')">
                         <small class="text-secondary">{{ availableFunctions|default([])|join('(), ') }}()</small>
@@ -141,7 +171,7 @@
                 <div class="mt-2">
                     <button type="submit" class="btn btn-sm btn-primary">Použít filtry</button>
                     {% if hasActiveFilter|default or depthOverride is not null %}
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams) }}">Zrušit filtry</a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams) }}">Zrušit filtry</a>
                     {% endif %}
                 </div>
             </div>
@@ -172,11 +202,11 @@
                     {{ sort == key ? 'selected' : '' }}>řadit: {{ label }}</option>
             {% endfor %}
         </select>
-        <a class="btn btn-sm btn-outline-secondary py-0" title="Obrátit pořadí"
+        <a class="btn btn-sm btn-outline-primary py-0" title="Obrátit pořadí"
            href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({dir: (dir == 'asc' ? 'desc' : 'asc'), page: null})) }}">{{ dir == 'asc' ? '↑' : '↓' }}</a>
 
         <details class="d-inline-block ms-auto" style="position: relative;">
-            <summary class="btn btn-sm btn-outline-secondary py-0" style="cursor: pointer;">Export ▾</summary>
+            <summary class="btn btn-sm btn-outline-primary py-0" style="cursor: pointer;">Export ▾</summary>
             <form method="get"
                   action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv') }}"
                   class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 16rem; text-align: left;">
@@ -218,12 +248,64 @@
     </div>
 
     {# ---- TABLE ---------------------------------------------------------- #}
-    <table class="list" style="table-layout: fixed; word-break: break-word;">
+    {# Scoped compaction: trim only the vertical air between the stacked info lines
+       in each cell (line-height + the tiny top-padding on .small). Nothing is hidden
+       or removed — every field stays visible, the rows just breathe a little less.
+       Scoped to .participant-list so the shared global .list CSS is untouched. #}
+    <style>
+        /* Comfortable (not cramped) vertical rhythm in the data cells. */
+        table.participant-list td .block { line-height: 1.4; }
+        table.participant-list td .block.small { padding-top: .12em; }
+        table.participant-list ul { margin-top: .1em; margin-bottom: .1em; }
+        table.participant-list li { line-height: 1.4; margin-bottom: .12em; }
+        /* Actions column: snug, evenly-sized buttons. */
+        table.participant-list td.actions { padding: .3em .35em; }
+        table.participant-list td.actions .btn { font-size: .72rem; padding: 2px 4px; }
+        /* The app theme maps Bootstrap "secondary" to the orange PřF colour (#EB6D25), so every
+           text-secondary label/hint here renders orange — far too much orange noise. Calm the
+           secondary *text* on this page to a neutral slate grey (controls are recoloured to the
+           blue primary in the markup; notes keep their intentional orange highlight). */
+        .participants-page .text-secondary { color: #5f6b7a !important; }
+        /* Flag facets as an even card grid (replaces the ragged CSS-multicolumn). Each category
+           is a self-contained card; selected options + a per-category count make the active
+           filters obvious at a glance. */
+        /* Masonry-style packing: cards flow top-to-bottom then wrap to the next column, filling
+           vertical gaps (a tall category like "Velikost trička" no longer leaves blank space
+           under its neighbours). break-inside keeps each card whole. */
+        .participants-page .facet-grid {
+            column-width: 12.5rem;
+            column-gap: .55rem;
+        }
+        .participants-page .facet-card {
+            border: 1px solid #e3e9f0; border-radius: 6px; background: #fbfdff;
+            padding: .35rem .55rem .45rem;
+            break-inside: avoid; -webkit-column-break-inside: avoid;
+            display: inline-block; width: 100%; margin-bottom: .55rem;
+        }
+        .participants-page .facet-card .facet-head {
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: 600; font-size: .8rem; color: #2a3a4a;
+            border-bottom: 1px solid #eef2f6; margin-bottom: .25rem; padding-bottom: .2rem;
+        }
+        .participants-page .facet-card label {
+            display: block; font-weight: normal; font-size: .82rem; line-height: 1.55; cursor: pointer; margin: 0;
+        }
+        .participants-page .facet-card label.sel { font-weight: 600; color: #006FAD; }
+        .participants-page .facet-card input { margin-right: .35rem; }
+        .participants-page .facet-count {
+            background: #006FAD; color: #fff; border-radius: 10px; font-size: .68rem;
+            font-weight: 700; padding: 0 .42rem; line-height: 1.5;
+        }
+        .participants-page .adv-expr {
+            border-top: 1px dashed #d8e0e8; margin-top: .7rem; padding-top: .6rem;
+        }
+    </style>
+    <table class="list participant-list" style="table-layout: fixed; word-break: break-word;">
         {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for participant in participants %}
             {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
         {% else %}
-            <tbody><tr><td colspan="4" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
+            <tbody><tr><td colspan="5" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
         {% endfor %}
     </table>
 
@@ -237,10 +319,21 @@
             {% if pagination.hasNext %}
                 <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({page: pagination.page + 1})) }}">Další →</a>
             {% endif %}
-            <a class="btn btn-sm btn-outline-secondary ms-2" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({all: 1, page: null})) }}">Zobrazit vše</a>
+            <a class="btn btn-sm btn-outline-primary ms-2" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({all: 1, page: null})) }}">Zobrazit vše</a>
         </nav>
     {% endif %}
 
-    <p class="mt-2"><small class="text-secondary">{{ participants|map(p => p.contact.email|default(''))|filter(e => e != '')|join(', ') }}</small></p>
+    {# Bulk-mail helper: all e-mail addresses on this view, comma-separated and ready to paste into
+       an e-mail client's recipient field. Collapsed by default (was a permanent orange wall of text);
+       the textarea makes select-all + copy easy. #}
+    {% set emails = participants|map(p => p.contact.email|default(''))|filter(e => e != '') %}
+    {% if emails|length %}
+        <details class="mt-3">
+            <summary style="cursor:pointer;">📋 E-mailové adresy pro hromadné rozeslání ({{ emails|length }})</summary>
+            <textarea readonly rows="3" class="form-control form-control-sm mt-1" style="font-size:.8rem;"
+                      onclick="this.select();">{{ emails|join(', ') }}</textarea>
+            <div class="small text-secondary mt-1">Klikni do pole (vše se označí) a zkopíruj (Ctrl+C) do pole příjemců v e-mailovém klientovi.</div>
+        </details>
+    {% endif %}
 
 </div>
