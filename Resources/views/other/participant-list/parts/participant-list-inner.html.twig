@@ -4,7 +4,10 @@
 {% set appUser = contact.appUser|default %}
 
 <tbody>
-<tr {{ participant.deletedAt ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}>
+<tr {{ participant.deletedAt ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}
+    data-ta-name="{{ participant.name|default(participant.cachedContact.name|default('#' ~ participant.id)) }}"
+    data-ta-event="{{ event.shortName|default }}"
+    data-ta-href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">
     <td style="border: 1px solid grey; padding: .3em .6em; text-align: right;">
         {% if participant.deletedAt|default %}
             <div class="block small" style="color:red;">

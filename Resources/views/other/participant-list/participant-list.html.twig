@@ -32,7 +32,7 @@
         {# Category switcher — preserves the rest of the query. #}
         {% if participantCategories|default %}
             <span class="small text-secondary ms-1 fw-bold">Typ:</span>
-            <select class="form-select form-select-sm w-auto py-0" title="Typ účastníka"
+            <select class="form-select form-select-sm w-auto" title="Typ účastníka"
                     onchange="if(this.value){location.href=this.value;}">
                 <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: null, page: null})) }}"
                     {{ participantCategory|default ? '' : 'selected' }}>— typ účastníka —</option>
@@ -60,8 +60,12 @@
             {% if activeFilter|default and activeFilter != 'all' %}<input type="hidden" name="filter" value="{{ activeFilter }}">{% endif %}
             {% for f in selectedFlags|default([]) %}<input type="hidden" name="flags[]" value="{{ f }}">{% endfor %}
             {% if advancedExpr|default %}<input type="hidden" name="expr" value="{{ advancedExpr }}">{% endif %}
-            <input type="search" name="q" value="{{ q|default }}" class="form-control form-control-sm"
-                   style="min-width: 15rem;" placeholder="🔎 Hledat: jméno · e-mail · telefon · VS">
+            <div class="position-relative" style="min-width: 15rem;">
+                <input type="search" name="q" id="oswisSearchInput" autocomplete="off" value="{{ q|default }}"
+                       class="form-control form-control-sm w-100"
+                       placeholder="🔎 Hledat: jméno · e-mail · telefon · VS">
+                <div id="oswisSuggest" class="oswis-typeahead" role="listbox"></div>
+            </div>
             <button type="submit" class="btn btn-sm btn-primary">Hledat</button>
             {% if q|default %}
                 <a class="btn btn-sm btn-outline-primary" title="Zrušit hledání"
@@ -296,14 +300,14 @@
            vertical gaps (a tall category like "Velikost trička" no longer leaves blank space
            under its neighbours). break-inside keeps each card whole. */
         .participants-page .facet-grid {
-            column-width: 12.5rem;
-            column-gap: .55rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+            gap: .55rem;
+            align-items: start; /* neat aligned columns; cards hug content (options wrap inline). */
         }
         .participants-page .facet-card {
             border: 1px solid #e3e9f0; border-radius: 6px; background: #fbfdff;
-            padding: .35rem .55rem .45rem;
-            break-inside: avoid; -webkit-column-break-inside: avoid;
-            display: inline-block; width: 100%; margin-bottom: .55rem;
+            padding: .35rem .6rem .5rem;
         }
         .participants-page .facet-card .facet-head {
             display: flex; justify-content: space-between; align-items: center;
@@ -311,10 +315,11 @@
             border-bottom: 1px solid #eef2f6; margin-bottom: .25rem; padding-bottom: .2rem;
         }
         .participants-page .facet-card label {
-            display: block; font-weight: normal; font-size: .82rem; line-height: 1.55; cursor: pointer; margin: 0;
+            display: inline-block; font-weight: normal; font-size: .82rem; line-height: 1.5;
+            cursor: pointer; margin: 0 .7rem .12rem 0; white-space: nowrap;
         }
         .participants-page .facet-card label.sel { font-weight: 600; color: #006FAD; }
-        .participants-page .facet-card input { margin-right: .35rem; }
+        .participants-page .facet-card input { margin-right: .3rem; }
         .participants-page .facet-count {
             background: #006FAD; color: #fff; border-radius: 10px; font-size: .68rem;
             font-weight: 700; padding: 0 .42rem; line-height: 1.5;
@@ -322,6 +327,22 @@
         .participants-page .adv-expr {
             border-top: 1px dashed #d8e0e8; margin-top: .7rem; padding-top: .6rem;
         }
+        /* Instant typeahead: suggestions from the rows already on the page. It only previews /
+           jumps to a participant; the actual table filtering stays server-side (the form submit). */
+        .participants-page .oswis-typeahead {
+            position: absolute; z-index: 1050; left: 0; right: 0; top: 100%;
+            background: #fff; border: 1px solid #c9d6e2; border-top: 0; border-radius: 0 0 6px 6px;
+            max-height: 18rem; overflow: auto; box-shadow: 0 6px 18px rgba(0,0,0,.12); display: none;
+        }
+        .participants-page .oswis-typeahead.show { display: block; }
+        .participants-page .oswis-typeahead a {
+            display: flex; justify-content: space-between; gap: .5rem; padding: .3rem .55rem;
+            text-decoration: none; color: #1a2533; font-size: .85rem; border-bottom: 1px solid #eef2f6;
+        }
+        .participants-page .oswis-typeahead a:last-child { border-bottom: 0; }
+        .participants-page .oswis-typeahead a.active,
+        .participants-page .oswis-typeahead a:hover { background: #eaf3fb; }
+        .participants-page .oswis-typeahead .ta-event { color: #5f6b7a; font-size: .78rem; white-space: nowrap; }
     </style>
     <table class="list participant-list" style="table-layout: fixed; word-break: break-word;">
         {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
@@ -358,5 +379,56 @@
             <div class="small text-secondary mt-1">Klikni do pole (vše se označí) a zkopíruj (Ctrl+C) do pole příjemců v e-mailovém klientovi.</div>
         </details>
     {% endif %}
+
+    {# Instant typeahead over the rows already on the page: previews/jumps to a participant.
+       Real filtering stays server-side (Enter without a highlighted suggestion submits ?q=).
+       Progressive: with JS off, the search input + button still work. #}
+    <script>
+        (function () {
+            var input = document.getElementById('oswisSearchInput');
+            var box = document.getElementById('oswisSuggest');
+            if (!input || !box) { return; }
+            function fold(s) { return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+            function esc(s) { return (s || '').replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+            var index = [].slice.call(document.querySelectorAll('table.participant-list tr[data-ta-name]')).map(function (r) {
+                return {
+                    name: r.getAttribute('data-ta-name') || '',
+                    event: r.getAttribute('data-ta-event') || '',
+                    href: r.getAttribute('data-ta-href') || '',
+                    hay: fold(r.getAttribute('data-ta-name'))
+                };
+            });
+            var active = -1;
+            function links() { return box.querySelectorAll('a'); }
+            function setActive(ls) { for (var i = 0; i < ls.length; i++) { ls[i].classList.toggle('active', i === active); } }
+            function update() {
+                var q = fold(input.value.trim());
+                box.innerHTML = '';
+                active = -1;
+                if (q.length < 2) { box.classList.remove('show'); return; }
+                var shown = 0;
+                for (var i = 0; i < index.length && shown < 8; i++) {
+                    if (index[i].hay.indexOf(q) === -1) { continue; }
+                    var a = document.createElement('a');
+                    a.href = index[i].href;
+                    a.innerHTML = '<span>' + esc(index[i].name) + '</span><span class="ta-event">' + esc(index[i].event) + '</span>';
+                    a.addEventListener('mousedown', function (e) { e.preventDefault(); window.location = this.href; });
+                    box.appendChild(a);
+                    shown++;
+                }
+                box.classList.toggle('show', shown > 0);
+            }
+            input.addEventListener('input', update);
+            input.addEventListener('focus', update);
+            input.addEventListener('blur', function () { setTimeout(function () { box.classList.remove('show'); }, 150); });
+            input.addEventListener('keydown', function (e) {
+                var ls = links();
+                if (e.key === 'ArrowDown') { e.preventDefault(); if (ls.length) { active = (active + 1) % ls.length; setActive(ls); } }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); if (ls.length) { active = (active - 1 + ls.length) % ls.length; setActive(ls); } }
+                else if (e.key === 'Enter') { if (active >= 0 && ls[active]) { e.preventDefault(); window.location = ls[active].href; } }
+                else if (e.key === 'Escape') { box.classList.remove('show'); }
+            });
+        })();
+    </script>
 
 </div>
