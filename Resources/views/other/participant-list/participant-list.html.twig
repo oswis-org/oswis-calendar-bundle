@@ -34,8 +34,8 @@
             <span class="small text-secondary ms-1 fw-bold">Typ:</span>
             <select class="form-select form-select-sm w-auto" title="Typ účastníka"
                     onchange="if(this.value){location.href=this.value;}">
-                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: null, page: null})) }}"
-                    {{ participantCategory|default ? '' : 'selected' }}>— typ účastníka —</option>
+                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: '', page: null})) }}"
+                    {{ participantCategory|default ? '' : 'selected' }}>— všechny typy —</option>
                 {% for category in participantCategories %}
                     <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({participantCategorySlug: category.slug, page: null})) }}"
                         {{ participantCategory|default and participantCategory.slug == category.slug ? 'selected' : '' }}>{{ category.name|default(category.slug) }}</option>

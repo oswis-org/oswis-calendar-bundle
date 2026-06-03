@@ -72,6 +72,9 @@ class WebAdminParticipantsListController extends AbstractController
     /** Page size for the unscoped (all-participants) paginated view. */
     private const int PER_PAGE = 100;
 
+    /** Default participant type when none is requested — the everyday "Účastník" view. */
+    private const string DEFAULT_PARTICIPANT_CATEGORY = 'ucastnik';
+
     public function __construct(
         public EventService $eventService,
         public ParticipantService $participantService,
@@ -101,7 +104,13 @@ class WebAdminParticipantsListController extends AbstractController
     {
         // Scope: one or more events (?eventSlug= single + ?events[] multi) and/or a category.
         [$events, $eventSlugs] = $this->resolveEventsFromRequest($request);
-        $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
+        // Default the participant type to "Účastník" (the everyday view) when none is given;
+        // an explicit empty value (the "— typ účastníka —" option) means *all types*.
+        if ($request->query->has('participantCategorySlug')) {
+            $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
+        } else {
+            $participantCategorySlug = self::DEFAULT_PARTICIPANT_CATEGORY;
+        }
         $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $depthRaw = $request->query->get('depth');
         $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
@@ -704,7 +713,13 @@ class WebAdminParticipantsListController extends AbstractController
         // Export the same scoped set the list shows (multi-event + depth aware). Unscoped
         // (no event, no category) exports everything.
         [$events, ] = $this->resolveEventsFromRequest($request);
-        $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
+        // Default the participant type to "Účastník" (the everyday view) when none is given;
+        // an explicit empty value (the "— typ účastníka —" option) means *all types*.
+        if ($request->query->has('participantCategorySlug')) {
+            $participantCategorySlug = $request->query->get('participantCategorySlug') ?: null;
+        } else {
+            $participantCategorySlug = self::DEFAULT_PARTICIPANT_CATEGORY;
+        }
         $participantCategory = $this->participantCategoryService->getParticipantTypeBySlug($participantCategorySlug);
         $depthRaw = $request->query->get('depth');
         $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
