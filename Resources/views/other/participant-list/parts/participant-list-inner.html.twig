@@ -80,25 +80,20 @@
                         {% set badgeColorString = participantFlag.deletedAt
                             ? 'background-color:lightgrey!important;color:darkgrey!important;'
                             : badgeColorString %}
-                        <div class="badge bg-info small mt-1" data-bs-toggle="tooltip" data-bs-html="true"
-                             style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
-                             title="Příznak: {{ participantFlag.flag.name|default }}{{ participantFlag.deletedAt ? ' — SMAZÁN '~participantFlag.deletedAt|date("j. n. Y") : '' }}<br>Skupina: {{ flagGroup.flagGroupOffer.name }}{{ flagGroup.deletedAt ? ' — SMAZÁNA '~flagGroup.deletedAt|date("j. n. Y") : '' }}">
-                            {{ participantFlag.flag.shortName|default }}
+                        {# Split badge: flag name on the left (flag colour), price/value on a
+                           darkened right half — legible on any flag colour, no tiny nested label. #}
+                        <span class="oswis-flag-badge mt-1{{ participantFlag.deletedAt ? ' is-deleted' : '' }}"
+                              data-bs-toggle="tooltip" data-bs-html="true"
+                              style="{{ badgeColorString }}"
+                              title="Příznak: {{ participantFlag.flag.name|default }}{{ participantFlag.deletedAt ? ' — SMAZÁN '~participantFlag.deletedAt|date("j. n. Y") : '' }}<br>Skupina: {{ flagGroup.flagGroupOffer.name }}{{ flagGroup.deletedAt ? ' — SMAZÁNA '~flagGroup.deletedAt|date("j. n. Y") : '' }}">
+                            <span class="ofb-name">{{ participantFlag.flag.shortName|default }}</span>
                             {% if participantFlag.flagOffer.price|default(0) != 0 %}
-                                <div class="badge bg-danger"
-                                     style="{{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}">
-                                    <strong>
-                                        {{ participantFlag.flagOffer.price > 0 ? '+' : '' }}{{ participantFlag.flagOffer.price }}
-                                        ,- Kč
-                                    </strong>
-                                </div>
+                                <span class="ofb-price {{ participantFlag.flagOffer.price > 0 ? 'is-pos' : 'is-neg' }}">{{ participantFlag.flagOffer.price > 0 ? '+' : '−' }}{{ participantFlag.flagOffer.price|abs }} Kč</span>
                             {% endif %}
                             {% if participantFlag.textValue|default|length > 0 %}
-                                <div class="badge bg-warning small">
-                                    {{ participantFlag.textValue }}
-                                </div>
+                                <span class="ofb-text">{{ participantFlag.textValue }}</span>
                             {% endif %}
-                        </div>
+                        </span>
                     {% endfor %}
                 </div>
             {% endfor %}

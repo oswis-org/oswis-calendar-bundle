@@ -277,6 +277,20 @@
        or removed — every field stays visible, the rows just breathe a little less.
        Scoped to .participant-list so the shared global .list CSS is untouched. #}
     <style>
+        /* Split flag badge: name half (flag colour, via inline style) + price/value half on a
+           darkened overlay so the amount is readable on any flag colour. */
+        .participants-page .oswis-flag-badge { display: inline-flex; align-items: stretch; overflow: hidden;
+            border-radius: .3rem; font-size: .68rem; font-weight: 600; line-height: 1.4; vertical-align: middle;
+            background-color: #17a2b8; color: #fff; }
+        .participants-page .oswis-flag-badge .ofb-name { padding: .12em .45em; display: inline-flex; align-items: center; }
+        .participants-page .oswis-flag-badge .ofb-price,
+        .participants-page .oswis-flag-badge .ofb-text { padding: .12em .45em; display: inline-flex; align-items: center;
+            white-space: nowrap; }
+        /* Price half colours the cost direction: surcharge (+) red, discount (−) green. */
+        .participants-page .oswis-flag-badge .ofb-price.is-pos { background: #c0392b; color: #fff; }
+        .participants-page .oswis-flag-badge .ofb-price.is-neg { background: #1a7a3c; color: #fff; }
+        .participants-page .oswis-flag-badge .ofb-text { background: rgba(255,255,255,.28); }
+        .participants-page .oswis-flag-badge.is-deleted { text-decoration: line-through; opacity: .6; }
         /* Comfortable (not cramped) vertical rhythm in the data cells. */
         table.participant-list td .block { line-height: 1.4; }
         table.participant-list td .block.small { padding-top: .12em; }
