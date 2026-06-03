@@ -74,14 +74,6 @@
         </form>
     </div>
 
-    {# ---- MONEY SUMMARY (counts live on the filter pills below) ----------- #}
-    {% if stats|default %}
-        <div class="d-flex flex-wrap gap-2 mb-2 small">
-            <span class="badge bg-info text-dark">vybráno {{ stats.sumPaid }} Kč</span>
-            <span class="badge bg-warning text-dark">zbývá {{ stats.sumRemaining }} Kč</span>
-        </div>
-    {% endif %}
-
     {# ---- FILTER FORM (GET; hidden fields carry scope+sort so nothing is lost) #}
     {# Empty advanced fields are dropped before submit (disabled inputs aren't sent) so shared
        URLs stay clean — no trailing &expr=&depth=. Works for both the Submit button (onsubmit)
@@ -113,13 +105,23 @@
             {% endif %}
         {% endfor %}
 
-        {# Primary filter pills (always visible, the common case). #}
+        {# Primary filter pills (always visible, the common case).
+           Count colour encodes the state's meaning (paid=green, owing=red/orange…) so the
+           bar reads at a glance; the pill button itself stays the standard blue. #}
+        {% set pillCntColor = {
+            'paid': 'cnt-ok',
+            'unpaid': 'cnt-bad',
+            'unpaid-deposit': 'cnt-bad',
+            'unpaid-balance': 'cnt-warn',
+            'overpaid': 'cnt-info',
+            'not-activated': 'cnt-warn',
+            'deleted': 'cnt-muted',
+        } %}
         <div class="btn-group btn-group-sm flex-wrap" role="group">
             {% for tab in filterTabs %}
                 <input type="radio" class="btn-check" name="filter" id="flt-{{ tab.key }}" value="{{ tab.key }}"
                        autocomplete="off" onchange="oswisSubmitFilter(this)" {{ tab.active ? 'checked' : '' }}>
-                <label class="btn btn-outline-primary" for="flt-{{ tab.key }}"
-                       title="{{ tab.group }}">{{ tab.label }}{% if pillCounts[tab.key] is defined %} <span class="pill-cnt">{{ pillCounts[tab.key] }}</span>{% endif %}</label>
+                <label class="btn btn-outline-primary pill-tile" for="flt-{{ tab.key }}" title="{{ tab.group }}"><span class="pill-lbl">{{ tab.label }}</span>{% if pillCounts[tab.key] is defined %}<span class="pill-cnt {{ pillCntColor[tab.key]|default('') }}">{{ pillCounts[tab.key] }}</span>{% endif %}</label>
             {% endfor %}
         </div>
 
@@ -319,7 +321,20 @@
             border-bottom: 1px solid #eef2f6; margin-bottom: .25rem; padding-bottom: .2rem;
         }
         /* Count inside each status filter pill (merged stats + filter). */
-        .participants-page .btn-group .pill-cnt { font-weight: 700; font-size: .78em; opacity: .7; }
+        /* Pill bar spans the full width; each tile takes an equal share. */
+        .participants-page .btn-group:has(.pill-tile) { display: flex; width: 100%; }
+        /* Count pinned to a shared bottom baseline (aligns across tiles whether the label is
+           one line or two); label centred in the remaining space above it. */
+        .participants-page .pill-tile { flex: 1 1 0; display: inline-flex; flex-direction: column; align-items: center; gap: .15rem; min-width: 5.25rem; padding: .35rem .5rem; line-height: 1.1; }
+        .participants-page .pill-tile .pill-lbl { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; font-size: .85rem; text-align: center; line-height: 1.15; }
+        .participants-page .pill-tile .pill-cnt { font-weight: 700; font-size: .9rem; font-variant-numeric: tabular-nums; }
+        .participants-page .pill-cnt.cnt-ok    { color: #1a7a3c; }
+        .participants-page .pill-cnt.cnt-bad   { color: #c0392b; }
+        .participants-page .pill-cnt.cnt-warn  { color: #c87f0a; }
+        .participants-page .pill-cnt.cnt-info  { color: #006FAD; }
+        .participants-page .pill-cnt.cnt-muted { color: #8a929c; }
+        /* Active (filled) tile: keep the count legible on the blue background. */
+        .participants-page .btn-check:checked + .pill-tile .pill-cnt { color: #fff; }
         /* Sortable column headers (white links in the blue header; active shows ▲/▼). */
         table.participant-list thead a.oswis-sort { color: #fff; text-decoration: none; cursor: pointer; }
         table.participant-list thead a.oswis-sort:hover,
