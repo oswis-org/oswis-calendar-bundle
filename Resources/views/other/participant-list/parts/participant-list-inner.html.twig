@@ -79,14 +79,7 @@
                             : badgeColorString %}
                         <div class="badge bg-info small mt-1" data-bs-toggle="tooltip" data-bs-html="true"
                              style="{{ badgeColorString }} {{ participantFlag.deletedAt ? 'text-decoration:line-through;' : '' }}"
-                             title="Příznak: {{ participantFlag.flag.name|default }}<br>
-                             ID přiřazení {{ participantFlag.id }}<br>
-                             ID rozsahu {{ participantFlag.flagOffer.id }}<br>
-                             {{ participantFlag.deletedAt ? 'SMAZÁN: '~participantFlag.deletedAt|date("j. n. Y H:i") : '' }}<br>
-                             Skupina: {{ flagGroup.flagGroupOffer.name }}<br>
-                             ID přiřazení skupiny {{ flagGroup.id }}<br>
-                             ID rozsahu skupiny {{ flagGroup.flagGroupOffer.id }}<br>
-                             {{ flagGroup.deletedAt ? 'SMAZÁNA: '~flagGroup.deletedAt|date("j. n. Y H:i") : '' }}">
+                             title="Příznak: {{ participantFlag.flag.name|default }}{{ participantFlag.deletedAt ? ' — SMAZÁN '~participantFlag.deletedAt|date("j. n. Y") : '' }}<br>Skupina: {{ flagGroup.flagGroupOffer.name }}{{ flagGroup.deletedAt ? ' — SMAZÁNA '~flagGroup.deletedAt|date("j. n. Y") : '' }}">
                             {{ participantFlag.flag.shortName|default }}
                             {% if participantFlag.flagOffer.price|default(0) != 0 %}
                                 <div class="badge bg-danger"

@@ -123,37 +123,59 @@
             {% endfor %}
         </div>
 
-        {# Power features, collapsed by default to keep the page simple/compact. #}
-        <details class="mt-2" {{ (selectedFlags|default([])|length > 0 or advancedExpr|default or depthOverride is not null) ? 'open' : '' }}>
-            <summary class="small text-secondary" style="cursor:pointer;">Pokročilé filtry (příznaky, výraz, hloubka podakcí)</summary>
-            <div class="card card-body py-2 mt-1">
-                {% if flagFacets|default %}
-                    <div class="mb-2">
-                        <div class="small fw-bold mb-2">Příznaky <span class="text-secondary fw-normal">(NEBO uvnitř kategorie, A napříč kategoriemi)</span></div>
-                        {# Even card grid: one card per category, each self-contained. A count badge
-                           in the header + highlighted selected options make active filters obvious. #}
-                        <div class="facet-grid">
-                            {% for facet in flagFacets %}
-                                {% set selCount = facet.flags|filter(f => f.selected|default)|length %}
-                                <div class="facet-card">
-                                    <div class="facet-head">
-                                        <span>{{ facet.categoryName }}</span>
-                                        {% if selCount > 0 %}<span class="facet-count" title="vybráno v této kategorii">{{ selCount }}</span>{% endif %}
-                                    </div>
-                                    {% for flag in facet.flags %}
-                                        <label class="{{ flag.selected|default ? 'sel' : '' }}">
-                                            <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
-                                        </label>
-                                    {% endfor %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
+        {# Active flag filters as removable chips — what's selected is visible without opening
+           the panel; each ✕ links to the same view minus that one flag. #}
+        {% set anyFlagSelected = selectedFlags|default([])|length > 0 %}
+        {% if anyFlagSelected %}
+            <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
+                <span class="small text-secondary">Aktivní příznaky:</span>
+                {% for facet in flagFacets|default([]) %}
+                    {% for flag in facet.flags|filter(f => f.selected|default) %}
+                        <a class="badge bg-primary text-decoration-none" title="Odebrat tento příznak"
+                           href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams|merge({
+                               filter: (activeFilter|default('all') != 'all' ? activeFilter : null),
+                               expr: advancedExpr|default,
+                               flags: selectedFlags|filter(s => s != flag.slug),
+                               page: null,
+                           })) }}">{{ flag.label }}&nbsp;✕</a>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
 
-                <div class="row g-2 align-items-end adv-expr">
+        {# Flag facets — own collapsible "Příznaky"; open when something is selected. #}
+        {% if flagFacets|default %}
+            <details class="mt-2" {{ anyFlagSelected ? 'open' : '' }}>
+                <summary class="small fw-bold" style="cursor:pointer;">Příznaky <span class="text-secondary fw-normal">(NEBO uvnitř kategorie, A napříč)</span></summary>
+                <div class="card card-body py-2 mt-1">
+                    <div class="facet-grid">
+                        {% for facet in flagFacets %}
+                            {% set selCount = facet.flags|filter(f => f.selected|default)|length %}
+                            <div class="facet-card">
+                                <div class="facet-head">
+                                    <span>{{ facet.categoryName }}</span>
+                                    {% if selCount > 0 %}<span class="facet-count" title="vybráno v této kategorii">{{ selCount }}</span>{% endif %}
+                                </div>
+                                {% for flag in facet.flags %}
+                                    <label class="{{ flag.selected|default ? 'sel' : '' }}">
+                                        <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2"><button type="submit" class="btn btn-sm btn-primary">Použít příznaky</button></div>
+                </div>
+            </details>
+        {% endif %}
+
+        {# Developer/power expression + sub-event depth — deeper, separate disclosure. #}
+        <details class="mt-1" {{ (advancedExpr|default or depthOverride is not null) ? 'open' : '' }}>
+            <summary class="small text-secondary" style="cursor:pointer;">Pokročilé <span class="fw-normal">(výraz, hloubka podakcí)</span></summary>
+            <div class="card card-body py-2 mt-1">
+                <div class="row g-2 align-items-end">
                     <div class="col-md-8">
-                        <label class="small text-secondary d-block">Výraz (pokročilé, volitelné)</label>
+                        <label class="small text-secondary d-block">Výraz (pro pokročilé, volitelné)</label>
                         <input type="text" name="expr" class="form-control form-control-sm" value="{{ advancedExpr|default }}"
                                placeholder="hasFlag('panske-m') or hasFlag('damske-m')">
                         <small class="text-secondary">{{ availableFunctions|default([])|join('(), ') }}()</small>
@@ -168,14 +190,15 @@
                         </select>
                     </div>
                 </div>
-                <div class="mt-2">
-                    <button type="submit" class="btn btn-sm btn-primary">Použít filtry</button>
-                    {% if hasActiveFilter|default or depthOverride is not null %}
-                        <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams) }}">Zrušit filtry</a>
-                    {% endif %}
-                </div>
+                <div class="mt-2"><button type="submit" class="btn btn-sm btn-primary">Použít</button></div>
             </div>
         </details>
+
+        {% if hasActiveFilter|default or depthOverride is not null %}
+            <div class="mt-2">
+                <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams|merge({q: null})) }}">Zrušit všechny filtry</a>
+            </div>
+        {% endif %}
 
         {# Pills auto-submit; a Submit fallback for when JS is off. #}
         <noscript><button type="submit" class="btn btn-sm btn-primary mt-2">Použít</button></noscript>

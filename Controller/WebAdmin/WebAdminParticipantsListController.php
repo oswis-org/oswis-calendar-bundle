@@ -170,9 +170,10 @@ class WebAdminParticipantsListController extends AbstractController
         }
         $participantsArray = $this->sortParticipants(array_values($matched->toArray()), $sort, $dir);
 
-        // Summary stats are computed from the full scoped set (pre-filter) — meaningless
-        // and expensive for an unscoped paginated page, so skipped there.
-        $stats = $loadAll ? $this->computeStats($loaded) : null;
+        // Summary stats reflect the *filtered* set (so picking "Nezaplacení" or searching
+        // recomputes the totals to match what's shown). Skipped on the unscoped paginated
+        // page — meaningless/expensive for a single page of an unbounded set.
+        $stats = $loadAll ? $this->computeStats($matched) : null;
 
         // The scope/sort params that every in-page control must carry forward (as hidden
         // fields in the GET filter form and as query merges in links) so nothing is lost.
