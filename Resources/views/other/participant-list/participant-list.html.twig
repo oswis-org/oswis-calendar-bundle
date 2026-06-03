@@ -227,16 +227,7 @@
     {# ---- LIST TOOLBAR (count + sort + export) --------------------------- #}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
         <strong>{{ participants|length }}</strong> <span class="small text-secondary">přihlášek</span>
-        <select class="form-select form-select-sm w-auto py-0 ms-2" title="Řazení"
-                onchange="if(this.value){location.href=this.value;}">
-            {% set sortOpts = {'name': 'jméno', 'payment': 'zbývá zaplatit', 'created': 'datum přihlášky', 'id': 'ID'} %}
-            {% for key, label in sortOpts %}
-                <option value="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({sort: key, dir: null, page: null})) }}"
-                    {{ sort == key ? 'selected' : '' }}>řadit: {{ label }}</option>
-            {% endfor %}
-        </select>
-        <a class="btn btn-sm btn-outline-primary py-0" title="Obrátit pořadí"
-           href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({dir: (dir == 'asc' ? 'desc' : 'asc'), page: null})) }}">{{ dir == 'asc' ? '↑' : '↓' }}</a>
+        {# Řazení je v klikacím záhlaví tabulky (▲/▼), proto tu dropdown „řadit" už není. #}
 
         <details class="d-inline-block ms-auto" style="position: relative;">
             <summary class="btn btn-sm btn-outline-primary py-0" style="cursor: pointer;">Export ▾</summary>
@@ -336,10 +327,12 @@
         /* Active (filled) tile: keep the count legible on the blue background. */
         .participants-page .btn-check:checked + .pill-tile .pill-cnt { color: #fff; }
         /* Sortable column headers (white links in the blue header; active shows ▲/▼). */
+        /* No underline (the ▲/▼ already marks the active column); active = slightly bolder.
+           A faint dotted underline appears only on hover as an affordance hint. */
         table.participant-list thead a.oswis-sort { color: #fff; text-decoration: none; cursor: pointer; }
-        table.participant-list thead a.oswis-sort:hover,
-        table.participant-list thead a.oswis-sort.active { text-decoration: underline; }
-        table.participant-list thead a.oswis-sort .oswis-sort-arrow { font-size: .8em; }
+        table.participant-list thead a.oswis-sort:hover { text-decoration: underline dotted; text-underline-offset: 2px; }
+        table.participant-list thead a.oswis-sort.active { font-weight: 700; }
+        table.participant-list thead a.oswis-sort .oswis-sort-arrow { font-size: .72em; vertical-align: middle; margin-left: .15em; opacity: .9; }
         /* Brand-coloured, slightly larger native checkboxes across the filters. */
         .participants-page input[type="checkbox"] {
             accent-color: #006FAD; width: .95rem; height: .95rem; vertical-align: -2px; cursor: pointer;
