@@ -74,16 +74,11 @@
         </form>
     </div>
 
-    {# ---- STATS (scoped, compact one-liner) ------------------------------ #}
+    {# ---- MONEY SUMMARY (counts live on the filter pills below) ----------- #}
     {% if stats|default %}
         <div class="d-flex flex-wrap gap-2 mb-2 small">
-            <span class="badge bg-primary">přihlášek {{ stats.total }}</span>
-            <span class="badge bg-success">zaplaceno {{ stats.paid }}</span>
-            {% if stats.depositPaid|default(0) > 0 %}<span class="badge bg-warning text-dark">záloha uhrazena {{ stats.depositPaid }}</span>{% endif %}
-            <span class="badge bg-danger">nezaplaceno {{ stats.unpaid }}</span>
             <span class="badge bg-info text-dark">vybráno {{ stats.sumPaid }} Kč</span>
             <span class="badge bg-warning text-dark">zbývá {{ stats.sumRemaining }} Kč</span>
-            {% if stats.deleted > 0 %}<span class="badge bg-dark">smazaných {{ stats.deleted }}</span>{% endif %}
         </div>
     {% endif %}
 
@@ -124,7 +119,7 @@
                 <input type="radio" class="btn-check" name="filter" id="flt-{{ tab.key }}" value="{{ tab.key }}"
                        autocomplete="off" onchange="oswisSubmitFilter(this)" {{ tab.active ? 'checked' : '' }}>
                 <label class="btn btn-outline-primary" for="flt-{{ tab.key }}"
-                       title="{{ tab.group }}">{{ tab.label }}</label>
+                       title="{{ tab.group }}">{{ tab.label }}{% if pillCounts[tab.key] is defined %} <span class="pill-cnt">{{ pillCounts[tab.key] }}</span>{% endif %}</label>
             {% endfor %}
         </div>
 
@@ -323,6 +318,8 @@
             font-weight: 600; font-size: .8rem; color: #2a3a4a;
             border-bottom: 1px solid #eef2f6; margin-bottom: .25rem; padding-bottom: .2rem;
         }
+        /* Count inside each status filter pill (merged stats + filter). */
+        .participants-page .btn-group .pill-cnt { font-weight: 700; font-size: .78em; opacity: .7; }
         /* Sortable column headers (white links in the blue header; active shows ▲/▼). */
         table.participant-list thead a.oswis-sort { color: #fff; text-decoration: none; cursor: pointer; }
         table.participant-list thead a.oswis-sort:hover,

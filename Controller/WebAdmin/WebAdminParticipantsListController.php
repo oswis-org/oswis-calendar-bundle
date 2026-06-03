@@ -55,8 +55,10 @@ use Symfony\Component\HttpFoundation\Response;
 class WebAdminParticipantsListController extends AbstractController
 {
     public const string FILTER_ALL               = 'all';
+    public const string FILTER_PAID              = 'paid';
     public const string FILTER_UNPAID            = 'unpaid';
     public const string FILTER_UNPAID_DEPOSIT    = 'unpaid-deposit';
+    public const string FILTER_UNPAID_BALANCE    = 'unpaid-balance';
     public const string FILTER_OVERPAID          = 'overpaid';
     public const string FILTER_FOOD              = 'food';
     public const string FILTER_WITH_REGISTRATION = 'with-registration';
@@ -187,6 +189,9 @@ class WebAdminParticipantsListController extends AbstractController
         // recomputes the totals to match what's shown). Skipped on the unscoped paginated
         // page — meaningless/expensive for a single page of an unbounded set.
         $stats = $loadAll ? $this->computeStats($matched) : null;
+        // Per-pill counts over the scoped set (pre-filter), so each status pill shows how many
+        // in this scope match it (e-shop-style) — stable regardless of which pill is active.
+        $pillCounts = $loadAll ? $this->computePillCounts($loaded) : [];
 
         // The scope/sort params that every in-page control must carry forward (as hidden
         // fields in the GET filter form and as query merges in links) so nothing is lost.
@@ -221,6 +226,7 @@ class WebAdminParticipantsListController extends AbstractController
             'filterScopeWarning'  => !$loadAll && $hasActiveFilter,
             'availableFunctions'  => $this->filterEvaluator->getFunctionNames(),
             'flagCounts'          => $flagCounts,
+            'pillCounts'          => $pillCounts,
             'scopeParams'         => $scopeParams,
             'isDefaultScope'      => $isDefaultScope,
             'allEvents'           => $allEvents,
@@ -484,16 +490,16 @@ class WebAdminParticipantsListController extends AbstractController
     private function getFilterRegistry(): array
     {
         return [
-            ['key' => self::FILTER_ALL,               'label' => 'Vše',                 'group' => '',         'expr' => null],
-            ['key' => self::FILTER_UNPAID,            'label' => 'Nezaplacení',         'group' => 'Platby',   'expr' => 'remainingPrice() > 0'],
-            ['key' => self::FILTER_UNPAID_DEPOSIT,    'label' => 'Nezaplacená záloha',  'group' => 'Platby',   'expr' => 'remainingDeposit() > 0'],
-            ['key' => self::FILTER_OVERPAID,          'label' => 'Přeplacení',          'group' => 'Platby',   'expr' => 'remainingPrice() < 0'],
-            ['key' => self::FILTER_FOOD,              'label' => 'Stravovací omezení',  'group' => 'Příznaky', 'expr' => sprintf("hasFlagOfType('%s')", RegistrationFlagCategory::TYPE_FOOD)],
-            // 'with-registration' (hasRegistration()) intentionally dropped: verified dead —
-            // 2710/2711 participants have a registration, so the pill never narrowed anything.
-            ['key' => self::FILTER_NOT_ACTIVATED,     'label' => 'Neaktivovaný účet',   'group' => 'Stav',     'expr' => 'not isActivated()'],
-            ['key' => self::FILTER_WITH_NOTE,         'label' => 'S poznámkou',         'group' => 'Stav',     'expr' => 'hasNote()'],
-            ['key' => self::FILTER_DELETED,           'label' => 'Smazané',             'group' => 'Stav',     'expr' => null],
+            ['key' => self::FILTER_ALL,            'label' => 'Vše',                 'group' => '',         'expr' => null],
+            ['key' => self::FILTER_PAID,           'label' => 'Zaplaceno',           'group' => 'Platby',   'expr' => 'remainingPrice() == 0'],
+            ['key' => self::FILTER_UNPAID,         'label' => 'Nedoplaceno',         'group' => 'Platby',   'expr' => 'remainingPrice() > 0'],
+            ['key' => self::FILTER_UNPAID_DEPOSIT, 'label' => 'Nezaplacená záloha',  'group' => 'Platby',   'expr' => 'remainingDeposit() > 0'],
+            ['key' => self::FILTER_UNPAID_BALANCE, 'label' => 'Nezaplacený doplatek','group' => 'Platby',   'expr' => 'remainingDeposit() <= 0 and remainingPrice() > 0'],
+            ['key' => self::FILTER_OVERPAID,       'label' => 'Přeplaceno',          'group' => 'Platby',   'expr' => 'remainingPrice() < 0'],
+            ['key' => self::FILTER_NOT_ACTIVATED,  'label' => 'Neaktivované',        'group' => 'Stav',     'expr' => 'not isActivated()'],
+            ['key' => self::FILTER_WITH_NOTE,      'label' => 'S poznámkou',         'group' => 'Stav',     'expr' => 'hasNote()'],
+            ['key' => self::FILTER_FOOD,           'label' => 'Stravovací omezení',  'group' => 'Příznaky', 'expr' => sprintf("hasFlagOfType('%s')", RegistrationFlagCategory::TYPE_FOOD)],
+            ['key' => self::FILTER_DELETED,        'label' => 'Smazané',             'group' => 'Stav',     'expr' => null],
         ];
     }
 
@@ -700,6 +706,51 @@ class WebAdminParticipantsListController extends AbstractController
                     }
                 }
             }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Count, over the scoped set, how many participants match each status pill — so the merged
+     * pill+count bar can show "Nedoplaceno (12)" etc. Reuses the registry expressions (single
+     * source of truth) so the counts can never diverge from what clicking the pill returns.
+     * 'all' = non-deleted total, 'deleted' = deleted count, the rest = non-deleted matching expr.
+     *
+     * @param Collection<int, Participant> $participants
+     *
+     * @return array<string, int>
+     */
+    private function computePillCounts(Collection $participants): array
+    {
+        $nonDeleted = [];
+        $deleted = 0;
+        foreach ($participants as $participant) {
+            if ($participant->isDeleted()) {
+                ++$deleted;
+            } else {
+                $nonDeleted[] = $participant;
+            }
+        }
+        $counts = [];
+        foreach ($this->getFilterRegistry() as $filter) {
+            $key = $filter['key'];
+            if (self::FILTER_DELETED === $key) {
+                $counts[$key] = $deleted;
+                continue;
+            }
+            $expr = $filter['expr'];
+            if (null === $expr) { // 'all'
+                $counts[$key] = count($nonDeleted);
+                continue;
+            }
+            $n = 0;
+            foreach ($nonDeleted as $participant) {
+                if ($this->filterEvaluator->matches($participant, $expr)) {
+                    ++$n;
+                }
+            }
+            $counts[$key] = $n;
         }
 
         return $counts;
