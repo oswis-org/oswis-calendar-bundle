@@ -173,6 +173,10 @@ class WebAdminParticipantsListController extends AbstractController
         // doesn't fire one lazy query per participant for phone/VS.
         $this->participantService->getRepository()->primeAggregationCollections($ids, null !== $q);
 
+        // Per-flag participant counts over the loaded (scoped) set — shown next to each facet
+        // option (how many in the current scope carry that flag), like an e-shop facet count.
+        $flagCounts = $this->computeFlagCounts($loaded);
+
         $matched = $loaded->filter(fn (Participant $p): bool => $this->filterEvaluator->matches($p, $expression));
         if (null !== $q) {
             $matched = $matched->filter(fn (Participant $p): bool => $this->participantMatchesQuery($p, $q));
@@ -216,6 +220,7 @@ class WebAdminParticipantsListController extends AbstractController
             'hasActiveFilter'     => $hasActiveFilter,
             'filterScopeWarning'  => !$loadAll && $hasActiveFilter,
             'availableFunctions'  => $this->filterEvaluator->getFunctionNames(),
+            'flagCounts'          => $flagCounts,
             'scopeParams'         => $scopeParams,
             'isDefaultScope'      => $isDefaultScope,
             'allEvents'           => $allEvents,
@@ -662,6 +667,48 @@ class WebAdminParticipantsListController extends AbstractController
      * @param Collection<int, Participant> $participants
      *
      * @return array{total: int, deleted: int, paid: int, unpaid: int, sumPaid: int, sumPrice: int, sumRemaining: int}
+     */
+    /**
+     * Count, over the given (scoped) set, how many non-deleted participants carry each flag,
+     * keyed by flag slug — shown next to each facet option. Uses only primed collections (no
+     * queries) and getSlug() (never the mutating getName(); see the OOM note in getTShirtGroup).
+     *
+     * @param Collection<int, Participant> $participants
+     *
+     * @return array<string, int>
+     */
+    private function computeFlagCounts(Collection $participants): array
+    {
+        $counts = [];
+        foreach ($participants as $participant) {
+            if ($participant->isDeleted()) {
+                continue;
+            }
+            $seen = [];
+            foreach ($participant->getFlagGroups() as $flagGroup) {
+                if (null !== $flagGroup->getDeletedAt()) {
+                    continue;
+                }
+                foreach ($flagGroup->getParticipantFlags() as $participantFlag) {
+                    if (null !== $participantFlag->getDeletedAt()) {
+                        continue;
+                    }
+                    $slug = $participantFlag->getFlag()?->getSlug();
+                    if (null !== $slug && '' !== $slug && !isset($seen[$slug])) {
+                        $seen[$slug] = true;
+                        $counts[$slug] = ($counts[$slug] ?? 0) + 1;
+                    }
+                }
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @param Collection<int, Participant> $participants
+     *
+     * @return array<string, int>
      */
     private function computeStats(Collection $participants): array
     {

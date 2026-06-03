@@ -168,8 +168,8 @@
                                     {% if section.name %}<div class="facet-subhead">{{ section.name }}</div>{% endif %}
                                     <div class="facet-options">
                                         {% for flag in section.flags %}
-                                            <label class="{{ flag.selected|default ? 'sel' : '' }}" title="{{ flag.label }}">
-                                                <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
+                                            <label class="{{ flag.selected|default ? 'sel' : '' }}" title="{{ flag.label }} — {{ flagCounts[flag.slug]|default(0) }} účastníků">
+                                                <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }} <span class="facet-cnt">{{ flagCounts[flag.slug]|default(0) }}</span>
                                             </label>
                                         {% endfor %}
                                     </div>
@@ -335,6 +335,7 @@
             cursor: pointer; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .participants-page .facet-card label.sel { font-weight: 600; color: #006FAD; }
+        .participants-page .facet-card .facet-cnt { color: #8a97a5; font-size: .72rem; }
         .participants-page .facet-card input { margin-right: .3rem; }
         .participants-page .facet-count {
             background: #006FAD; color: #fff; border-radius: 10px; font-size: .68rem;
