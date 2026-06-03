@@ -60,10 +60,10 @@
             {% if activeFilter|default and activeFilter != 'all' %}<input type="hidden" name="filter" value="{{ activeFilter }}">{% endif %}
             {% for f in selectedFlags|default([]) %}<input type="hidden" name="flags[]" value="{{ f }}">{% endfor %}
             {% if advancedExpr|default %}<input type="hidden" name="expr" value="{{ advancedExpr }}">{% endif %}
-            <div class="position-relative" style="min-width: 15rem;">
+            <div class="position-relative" style="min-width: 21rem;">
                 <input type="search" name="q" id="oswisSearchInput" autocomplete="off" value="{{ q|default }}"
                        class="form-control form-control-sm w-100"
-                       placeholder="🔎 Hledat: jméno · e-mail · telefon · VS">
+                       placeholder="🔎 Hledat: jméno, e-mail, telefon, VS…">
                 <div id="oswisSuggest" class="oswis-typeahead" role="listbox"></div>
             </div>
             <button type="submit" class="btn btn-sm btn-primary">Hledat</button>
@@ -165,11 +165,13 @@
                                 </div>
                                 {% for section in facet.sections %}
                                     {% if section.name %}<div class="facet-subhead">{{ section.name }}</div>{% endif %}
-                                    {% for flag in section.flags %}
-                                        <label class="{{ flag.selected|default ? 'sel' : '' }}">
-                                            <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
-                                        </label>
-                                    {% endfor %}
+                                    <div class="facet-options">
+                                        {% for flag in section.flags %}
+                                            <label class="{{ flag.selected|default ? 'sel' : '' }}" title="{{ flag.label }}">
+                                                <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% endfor %}
@@ -320,9 +322,12 @@
             font-weight: 600; font-size: .8rem; color: #2a3a4a;
             border-bottom: 1px solid #eef2f6; margin-bottom: .25rem; padding-bottom: .2rem;
         }
+        .participants-page .facet-card .facet-options {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); column-gap: .5rem;
+        }
         .participants-page .facet-card label {
-            display: inline-block; font-weight: normal; font-size: .82rem; line-height: 1.5;
-            cursor: pointer; margin: 0 .7rem .12rem 0; white-space: nowrap;
+            display: block; font-weight: normal; font-size: .82rem; line-height: 1.6;
+            cursor: pointer; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .participants-page .facet-card label.sel { font-weight: 600; color: #006FAD; }
         .participants-page .facet-card input { margin-right: .3rem; }
