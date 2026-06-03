@@ -134,14 +134,16 @@
             <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
                 <span class="small text-secondary">Aktivní příznaky:</span>
                 {% for facet in flagFacets|default([]) %}
-                    {% for flag in facet.flags|filter(f => f.selected|default) %}
-                        <a class="badge bg-primary text-decoration-none" title="Odebrat tento příznak"
-                           href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams|merge({
-                               filter: (activeFilter|default('all') != 'all' ? activeFilter : null),
-                               expr: advancedExpr|default,
-                               flags: selectedFlags|filter(s => s != flag.slug),
-                               page: null,
-                           })) }}">{{ flag.label }}&nbsp;✕</a>
+                    {% for section in facet.sections %}
+                        {% for flag in section.flags|filter(f => f.selected|default) %}
+                            <a class="badge bg-primary text-decoration-none" title="Odebrat tento příznak"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams|merge({
+                                   filter: (activeFilter|default('all') != 'all' ? activeFilter : null),
+                                   expr: advancedExpr|default,
+                                   flags: selectedFlags|filter(s => s != flag.slug),
+                                   page: null,
+                               })) }}">{{ flag.label }}&nbsp;✕</a>
+                        {% endfor %}
                     {% endfor %}
                 {% endfor %}
             </div>
@@ -154,16 +156,20 @@
                 <div class="card card-body py-2 mt-1">
                     <div class="facet-grid">
                         {% for facet in flagFacets %}
-                            {% set selCount = facet.flags|filter(f => f.selected|default)|length %}
+                            {% set selCount = 0 %}
+                            {% for section in facet.sections %}{% set selCount = selCount + (section.flags|filter(f => f.selected|default)|length) %}{% endfor %}
                             <div class="facet-card">
                                 <div class="facet-head">
                                     <span>{{ facet.categoryName }}</span>
                                     {% if selCount > 0 %}<span class="facet-count" title="vybráno v této kategorii">{{ selCount }}</span>{% endif %}
                                 </div>
-                                {% for flag in facet.flags %}
-                                    <label class="{{ flag.selected|default ? 'sel' : '' }}">
-                                        <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
-                                    </label>
+                                {% for section in facet.sections %}
+                                    {% if section.name %}<div class="facet-subhead">{{ section.name }}</div>{% endif %}
+                                    {% for flag in section.flags %}
+                                        <label class="{{ flag.selected|default ? 'sel' : '' }}">
+                                            <input type="checkbox" name="flags[]" value="{{ flag.slug }}" {{ flag.selected ? 'checked' : '' }}>{{ flag.label }}
+                                        </label>
+                                    {% endfor %}
                                 {% endfor %}
                             </div>
                         {% endfor %}
@@ -323,6 +329,10 @@
         .participants-page .facet-count {
             background: #006FAD; color: #fff; border-radius: 10px; font-size: .68rem;
             font-weight: 700; padding: 0 .42rem; line-height: 1.5;
+        }
+        .participants-page .facet-card .facet-subhead {
+            display: block; font-size: .72rem; font-weight: 600; color: #5f6b7a;
+            margin: .3rem 0 .05rem;
         }
         .participants-page .adv-expr {
             border-top: 1px dashed #d8e0e8; margin-top: .7rem; padding-top: .6rem;

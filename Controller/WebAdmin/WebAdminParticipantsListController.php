@@ -580,16 +580,19 @@ class WebAdminParticipantsListController extends AbstractController
 
     /**
      * Build the flag facet offering for the UI and the slug→category map for compilation.
-     * Flags are grouped by their category; flags with no category fall under "Ostatní".
+     * Flags are grouped by their category (flags with no category fall under "Ostatní"), and
+     * within a category into named sections — e.g. t-shirt sizes split into Pánská / Dámská the
+     * way the registration form presents them. That split lives only in the flag slug/name
+     * (there is no sub-category entity), so it's derived, not stored.
      *
      * @param list<string> $selectedFlags
      *
-     * @return array{0: list<array{categorySlug: string, categoryName: string, flags: list<array{slug: string, label: string, selected: bool}>}>, 1: array<string, string>}
+     * @return array{0: list<array{categorySlug: string, categoryName: string, sections: list<array{name: ?string, flags: list<array{slug: string, label: string, selected: bool}>}>}>, 1: array<string, string>}
      */
     private function buildFlagOffering(array $selectedFlags): array
     {
         $selectedLookup = array_fill_keys($selectedFlags, true);
-        /** @var array<string, array{categoryName: string, flags: list<array{slug: string, label: string, selected: bool}>}> $grouped */
+        /** @var array<string, array{categoryName: string, sections: array<string, array{name: ?string, flags: list<array{slug: string, label: string, selected: bool}>}>}> $grouped */
         $grouped = [];
         $slugToCategory = [];
 
@@ -603,8 +606,23 @@ class WebAdminParticipantsListController extends AbstractController
             $categorySlug = $category?->getSlug() ?? '';
             $categoryName = $category?->getName() ?? 'Ostatní';
             $slugToCategory[$slug] = $categorySlug;
+
+            // Derive the sub-section (only t-shirt sizes split, by gender encoded in the slug).
+            $sectionKey = '';
+            $sectionName = null;
+            if (RegistrationFlagCategory::TYPE_T_SHIRT_SIZE === $category?->getType()) {
+                if (str_contains($slug, 'female')) {
+                    $sectionKey = 'female';
+                    $sectionName = 'Dámská';
+                } elseif (str_contains($slug, 'male')) {
+                    $sectionKey = 'male';
+                    $sectionName = 'Pánská';
+                }
+            }
+
             $grouped[$categorySlug]['categoryName'] ??= $categoryName;
-            $grouped[$categorySlug]['flags'][] = [
+            $grouped[$categorySlug]['sections'][$sectionKey]['name'] = $sectionName;
+            $grouped[$categorySlug]['sections'][$sectionKey]['flags'][] = [
                 'slug'     => $slug,
                 'label'    => $flag->getShortName() ?? $flag->getName() ?? $slug,
                 'selected' => isset($selectedLookup[$slug]),
@@ -616,7 +634,7 @@ class WebAdminParticipantsListController extends AbstractController
             $facets[] = [
                 'categorySlug' => $categorySlug,
                 'categoryName' => $data['categoryName'],
-                'flags'        => $data['flags'],
+                'sections'     => array_values($data['sections']),
             ];
         }
 
