@@ -484,7 +484,8 @@ class WebAdminParticipantsListController extends AbstractController
             ['key' => self::FILTER_UNPAID_DEPOSIT,    'label' => 'Nezaplacená záloha',  'group' => 'Platby',   'expr' => 'remainingDeposit() > 0'],
             ['key' => self::FILTER_OVERPAID,          'label' => 'Přeplacení',          'group' => 'Platby',   'expr' => 'remainingPrice() < 0'],
             ['key' => self::FILTER_FOOD,              'label' => 'Stravovací omezení',  'group' => 'Příznaky', 'expr' => sprintf("hasFlagOfType('%s')", RegistrationFlagCategory::TYPE_FOOD)],
-            ['key' => self::FILTER_WITH_REGISTRATION, 'label' => 'S přihláškou',        'group' => 'Stav',     'expr' => 'hasRegistration()'],
+            // 'with-registration' (hasRegistration()) intentionally dropped: verified dead —
+            // 2710/2711 participants have a registration, so the pill never narrowed anything.
             ['key' => self::FILTER_NOT_ACTIVATED,     'label' => 'Neaktivovaný účet',   'group' => 'Stav',     'expr' => 'not isActivated()'],
             ['key' => self::FILTER_WITH_NOTE,         'label' => 'S poznámkou',         'group' => 'Stav',     'expr' => 'hasNote()'],
             ['key' => self::FILTER_DELETED,           'label' => 'Smazané',             'group' => 'Stav',     'expr' => null],
