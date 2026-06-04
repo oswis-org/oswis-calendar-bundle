@@ -7,9 +7,11 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Imap;
 use DateTime;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantIncomingMailRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
@@ -27,6 +29,13 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
  */
 #[Entity(repositoryClass: ParticipantIncomingMailRepository::class)]
 #[Table(name: 'calendar_participant_incoming_mail')]
+// Indexy/constrainty deklarované s názvy odpovídajícími DB (vytvořené ruční migrací) — aby
+// schema:validate seděl. POZOR: uniqueness je KOMPOZIT (message_id, participant_id) — stejný mail
+// může být navázán na více účastníků; single-column unique by to chybně odmítl.
+#[UniqueConstraint(name: 'UNIQ_INCOMING_MAIL_MSGID_PART', columns: ['message_id', 'participant_id'])]
+#[Index(name: 'IDX_INCOMING_MAIL_MESSAGE_ID', columns: ['message_id'])]
+#[Index(name: 'IDX_INCOMING_MAIL_OCCURRED', columns: ['occurred_at'])]
+#[Index(name: 'IDX_INCOMING_MAIL_THREAD_KEY', columns: ['thread_key'])]
 class ParticipantIncomingMail implements CommunicationEntryInterface
 {
     use BasicTrait;
@@ -35,7 +44,8 @@ class ParticipantIncomingMail implements CommunicationEntryInterface
     #[JoinColumn(name: 'participant_id', referencedColumnName: 'id', nullable: false)]
     protected Participant $participant;
 
-    #[Column(type: 'string', length: 255, unique: true)]
+    // NE column-level unique:true — uniqueness je kompozit (viz UniqueConstraint výše).
+    #[Column(type: 'string', length: 255)]
     protected string $messageId;
 
     #[Column(type: 'string', length: 32, enumType: CommunicationDirection::class)]

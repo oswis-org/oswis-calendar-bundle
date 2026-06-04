@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
@@ -49,6 +50,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterfac
 )]
 #[Entity]
 #[Table(name: 'calendar_participant_mail')]
+#[Index(name: 'IDX_PARTICIPANT_MAIL_THREAD_KEY', columns: ['thread_key'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
 class ParticipantMail extends AbstractMail implements CommunicationEntryInterface
 {

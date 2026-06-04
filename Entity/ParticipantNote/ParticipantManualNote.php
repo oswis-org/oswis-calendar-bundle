@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\ParticipantNote;
 use DateTime;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
@@ -31,6 +32,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
  */
 #[Entity(repositoryClass: ParticipantManualNoteRepository::class)]
 #[Table(name: 'calendar_participant_manual_note')]
+// Indexy s názvy dle DB (ruční migrace) — aby schema:validate seděl.
+#[Index(name: 'IDX_MANUAL_NOTE_OCCURRED', columns: ['occurred_at'])]
+#[Index(name: 'IDX_MANUAL_NOTE_THREAD_KEY', columns: ['thread_key'])]
 class ParticipantManualNote implements CommunicationEntryInterface
 {
     use BasicTrait;

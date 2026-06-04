@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Imap;
 use DateTime;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantUnmatchedMailRepository;
 use OswisOrg\OswisCoreBundle\Enum\Communication\CommunicationDirection;
@@ -19,6 +20,9 @@ use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
  */
 #[Entity(repositoryClass: ParticipantUnmatchedMailRepository::class)]
 #[Table(name: 'calendar_participant_unmatched_mail')]
+// Indexy s názvy dle DB (ruční migrace) — aby schema:validate seděl.
+#[Index(name: 'IDX_UNMATCHED_MAIL_OCCURRED', columns: ['occurred_at'])]
+#[Index(name: 'IDX_UNMATCHED_MAIL_FROM', columns: ['from_address'])]
 class ParticipantUnmatchedMail
 {
     use BasicTrait;
