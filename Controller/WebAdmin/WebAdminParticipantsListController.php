@@ -209,8 +209,23 @@ class WebAdminParticipantsListController extends AbstractController
         ])->toArray());
         usort($yearEvents, static fn (Event $a, Event $b): int => ($b->getStartDateTimeRecursive()?->getTimestamp() ?? 0) <=> ($a->getStartDateTimeRecursive()?->getTimestamp() ?? 0));
 
+        // Bohatší browser <title>: "Přehled přihlášek · <akce> · <typ> :: ADMIN".
+        // (Breadcrumb z `title` bere jen základ před " · ", takže žádná redundantní proměnná.)
+        // getShortName je prostý sloupec — NE mutující getName (viz OOM note).
+        $titleParts = ['Přehled přihlášek'];
+        if ($allEvents) {
+            $titleParts[] = 'všechny akce';
+        } elseif (1 === count($events)) {
+            $titleParts[] = (string) ($events[0]->getShortName() ?: $events[0]->getName());
+        } elseif (count($events) > 1) {
+            $titleParts[] = count($events).' akcí';
+        }
+        if (null !== $participantCategory) {
+            $titleParts[] = (string) $participantCategory->getName();
+        }
+
         return $this->render("@OswisOrgOswisCalendar/web_admin/participants.html.twig", [
-            'title'               => 'Přehled přihlášek :: ADMIN',
+            'title'               => implode(' · ', $titleParts).' :: ADMIN',
             'event'               => 1 === count($events) ? $events[0] : null,
             'events'              => $events,
             'participantCategory' => $participantCategory,
