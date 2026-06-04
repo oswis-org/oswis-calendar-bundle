@@ -882,9 +882,23 @@ class WebAdminParticipantsListController extends AbstractController
         );
         $participants = new ArrayCollection($participantsArray);
         $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
+        // Podtitulek PDF: scope (akce/typ) + počet — ať je export jednoznačně identifikovatelný.
+        $scopeBits = [];
+        if (1 === count($events)) {
+            $scopeBits[] = (string) ($events[0]->getShortName() ?: $events[0]->getName());
+        } elseif (count($events) > 1) {
+            $scopeBits[] = count($events).' akcí';
+        } else {
+            $scopeBits[] = 'všechny akce';
+        }
+        if (null !== $participantCategory) {
+            $scopeBits[] = (string) $participantCategory->getName();
+        }
+        $scopeBits[] = count($participantsArray).' záznamů';
         $exportRequest = new ExportRequest(
             ExportFormat::fromRequest($request->query->getString('format')),
             [] === $columnKeys ? null : $columnKeys,
+            implode(' · ', $scopeBits),
         );
 
         return $this->exportResponseFactory->toResponse(
