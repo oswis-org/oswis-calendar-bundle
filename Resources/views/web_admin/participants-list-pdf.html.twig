@@ -24,15 +24,17 @@
     .bad { color: #c0392b; font-weight: bold; }
     .note { color: #c8730a; }
     .strike { text-decoration: line-through; }
-    /* Flag badges: každý příznak na vlastním řádku (pod sebou) = čistě, jako na obrazovce.
-       Pilulka = název (barva příznaku) + volitelně cena (+ červená / − zelená). */
-    .fb-row { margin-bottom: 2.5px; }
-    .fb { display: inline-block; border-radius: 3px; font-size: 7pt; font-weight: bold;
-        background: #17a2b8; color: #fff; padding: 1px 6px; }
-    .fb-price { display: inline-block; border-radius: 3px; font-size: 7pt; font-weight: bold;
-        padding: 1px 6px; margin-left: 2px; }
+    /* Flag badges: každý příznak na vlastním řádku (pod sebou), soudržná zaoblená pilulka =
+       název (barva příznaku) + volitelná cena na navazující polovině (+ červená / − zelená). */
+    .fb-row { margin-bottom: 3px; line-height: 1.5; }
+    .fb { display: inline-block; border-radius: 8px; font-size: 7pt; font-weight: bold;
+        background: #17a2b8; color: #fff; padding: 1.5px 8px; }
+    .fb.has-price { border-radius: 8px 0 0 8px; padding-right: 6px; }
+    .fb-price { display: inline-block; border-radius: 0 8px 8px 0; font-size: 7pt; font-weight: bold;
+        padding: 1.5px 8px; }
     .fb-pos { background: #c0392b; color: #fff; }
     .fb-neg { background: #1a7a3c; color: #fff; }
+    .gi { font-size: 8pt; } .gi-f { color: #c0398a; } .gi-m { color: #2b6cb0; }
     .pay-badge { color: #fff; font-weight: bold; padding: 0 4px; border-radius: 3px; font-size: 7pt; }
     .c-success { background: #1a7a3c; } .c-danger { background: #c0392b; }
     .c-warning { background: #c87f0a; } .c-info { background: #006FAD; }
@@ -97,7 +99,8 @@
             </td>
             <td>
                 {% for participantContact in participant.participantContacts(false, false) %}
-                    <div class="nm {{ participantContact.active|default ? '' : 'strike' }}">{{ participantContact.contact.name|default }}</div>
+                    {% set g = participantContact.contact.gender|default %}
+                    <div class="nm {{ participantContact.active|default ? '' : 'strike' }}"><span class="gi {{ 'female' == g ? 'gi-f' : ('male' == g ? 'gi-m' : '') }}">{{ 'female' == g ? '♀' : ('male' == g ? '♂' : '•') }}</span> {{ participantContact.contact.name|default }}</div>
                 {% endfor %}
                 {% for participantRange in participant.participantRegistrations(false, false) %}
                     <div class="{{ participantRange.active|default ? '' : 'strike' }}">{{ participantRange.event.shortName|default }}{% if participantRange.offer.shortName|default %} · {{ participantRange.offer.shortName }}{% endif %}</div>
@@ -111,8 +114,9 @@
                     {% for participantFlag in flagGroup.participantFlags %}
                         {% set fc = participantFlag.deletedAt ? '#9aa3ad' : (participantFlag.flag.color|default ?: '#17a2b8') %}
                         {% set ff = participantFlag.deletedAt ? '#5f6b7a' : (participantFlag.flag.foregroundColor|default ?: '#ffffff') %}
+                        {% set hasPrice = participantFlag.flagOffer.price|default(0) != 0 %}
                         <div class="fb-row">
-                            <span class="fb {{ participantFlag.deletedAt ? 'strike' : '' }}" style="background-color:{{ fc }}; color:{{ ff }};">{{ participantFlag.flag.shortName|default }}</span>{% if participantFlag.flagOffer.price|default(0) != 0 %}<span class="fb-price {{ participantFlag.flagOffer.price > 0 ? 'fb-pos' : 'fb-neg' }}">{{ participantFlag.flagOffer.price > 0 ? '+' : '−' }}{{ participantFlag.flagOffer.price|abs }},- Kč</span>{% endif %}{% if participantFlag.textValue|default|length > 0 %} <span class="muted">{{ participantFlag.textValue }}</span>{% endif %}
+                            <span class="fb{{ hasPrice ? ' has-price' : '' }}{{ participantFlag.deletedAt ? ' strike' : '' }}" style="background-color:{{ fc }}; color:{{ ff }};">{{ participantFlag.flag.shortName|default }}</span>{% if hasPrice %}<span class="fb-price {{ participantFlag.flagOffer.price > 0 ? 'fb-pos' : 'fb-neg' }}">{{ participantFlag.flagOffer.price > 0 ? '+' : '−' }}{{ participantFlag.flagOffer.price|abs }},- Kč</span>{% endif %}{% if participantFlag.textValue|default|length > 0 %} <span class="muted">{{ participantFlag.textValue }}</span>{% endif %}
                         </div>
                     {% endfor %}
                 {% endfor %}
