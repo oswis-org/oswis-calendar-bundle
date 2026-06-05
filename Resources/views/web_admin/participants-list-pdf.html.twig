@@ -24,11 +24,15 @@
     .bad { color: #c0392b; font-weight: bold; }
     .note { color: #c8730a; }
     .strike { text-decoration: line-through; }
-    /* Flag badge: name half (flag colour via inline style) + price half (+ red / − green). */
-    .fb { border-radius: 3px; font-size: 6.8pt; font-weight: bold; background: #17a2b8; color: #fff;
-        padding: 1px 4px; margin-right: 2px; line-height: 1.9; white-space: nowrap; }
-    .fb-pos { background: #c0392b; color: #fff; border-radius: 3px; font-size: 6.8pt; font-weight: bold; padding: 1px 4px; }
-    .fb-neg { background: #1a7a3c; color: #fff; border-radius: 3px; font-size: 6.8pt; font-weight: bold; padding: 1px 4px; }
+    /* Flag badges: každý příznak na vlastním řádku (pod sebou) = čistě, jako na obrazovce.
+       Pilulka = název (barva příznaku) + volitelně cena (+ červená / − zelená). */
+    .fb-row { margin-bottom: 2.5px; }
+    .fb { display: inline-block; border-radius: 3px; font-size: 7pt; font-weight: bold;
+        background: #17a2b8; color: #fff; padding: 1px 6px; }
+    .fb-price { display: inline-block; border-radius: 3px; font-size: 7pt; font-weight: bold;
+        padding: 1px 6px; margin-left: 2px; }
+    .fb-pos { background: #c0392b; color: #fff; }
+    .fb-neg { background: #1a7a3c; color: #fff; }
     .pay-badge { color: #fff; font-weight: bold; padding: 0 4px; border-radius: 3px; font-size: 7pt; }
     .c-success { background: #1a7a3c; } .c-danger { background: #c0392b; }
     .c-warning { background: #c87f0a; } .c-info { background: #006FAD; }
@@ -107,14 +111,16 @@
                     {% for participantFlag in flagGroup.participantFlags %}
                         {% set fc = participantFlag.deletedAt ? '#9aa3ad' : (participantFlag.flag.color|default ?: '#17a2b8') %}
                         {% set ff = participantFlag.deletedAt ? '#5f6b7a' : (participantFlag.flag.foregroundColor|default ?: '#ffffff') %}
-                        <span class="fb {{ participantFlag.deletedAt ? 'strike' : '' }}" style="background-color:{{ fc }}; color:{{ ff }};">{{ participantFlag.flag.shortName|default }}</span>{% if participantFlag.flagOffer.price|default(0) != 0 %}<span class="{{ participantFlag.flagOffer.price > 0 ? 'fb-pos' : 'fb-neg' }}">{{ participantFlag.flagOffer.price > 0 ? '+' : '−' }}{{ participantFlag.flagOffer.price|abs }} Kč</span>{% endif %}{% if participantFlag.textValue|default|length > 0 %} <span class="muted">{{ participantFlag.textValue }}</span>{% endif %}
+                        <div class="fb-row">
+                            <span class="fb {{ participantFlag.deletedAt ? 'strike' : '' }}" style="background-color:{{ fc }}; color:{{ ff }};">{{ participantFlag.flag.shortName|default }}</span>{% if participantFlag.flagOffer.price|default(0) != 0 %}<span class="fb-price {{ participantFlag.flagOffer.price > 0 ? 'fb-pos' : 'fb-neg' }}">{{ participantFlag.flagOffer.price > 0 ? '+' : '−' }}{{ participantFlag.flagOffer.price|abs }},- Kč</span>{% endif %}{% if participantFlag.textValue|default|length > 0 %} <span class="muted">{{ participantFlag.textValue }}</span>{% endif %}
+                        </div>
                     {% endfor %}
                 {% endfor %}
             </td>
             <td>
-                <span class="pay-badge c-{{ paidColor }}">{{ paymentLabel }}</span><br>
-                <span class="t-{{ paidColor }}"><strong>zbývá {{ participant.remainingPrice|default(0) }} Kč</strong></span><br>
-                zaplaceno {{ participant.paidPrice|default(0) }} z {{ participant.price|default(0) }} Kč{% if participant.price != 0 %} · {{ paidPercentage }} %{% endif %}<br>
+                <span class="pay-badge c-{{ paidColor }}">{{ paymentLabel }}</span>{% if participant.price != 0 %} <strong class="t-{{ paidColor }}">{{ paidPercentage }} %</strong>{% endif %}<br>
+                <span class="t-{{ paidColor }}"><strong>zbývá {{ participant.remainingPrice|default(0) }},- Kč</strong></span><br>
+                <span class="muted">zaplaceno {{ participant.paidPrice|default(0) }} z {{ participant.price|default(0) }},- Kč</span><br>
                 <span class="muted">VS: {{ participant.variableSymbol|default('—') }}</span>
             </td>
         </tr>
