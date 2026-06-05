@@ -915,6 +915,9 @@ class WebAdminParticipantsListController extends AbstractController
         $html = $this->renderView('@OswisOrgOswisCalendar/web_admin/participants-list-pdf.html.twig', [
             'participants' => $scope['participants'],
             'subtitle'     => $scope['subtitle'],
+            'categoryName' => $scope['categoryName'],
+            'eventNames'   => $scope['eventNames'],
+            'count'        => $scope['count'],
         ]);
         $pdf = $this->exportService->getPdfFromHtml($html, false, 'Přehled přihlášek', $scope['subtitle'], ['přehled', 'přihlášky']);
         $filename = 'prehled-prihlasek_'.date('Y-m-d_His').'.pdf';
@@ -930,7 +933,7 @@ class WebAdminParticipantsListController extends AbstractController
      * {@see EXPORT_MAX_ROWS} cap. Returns the sorted participants + a human scope subtitle, or a
      * RedirectResponse (with a flash) when the scope exceeds the cap — never a silent truncation.
      *
-     * @return array{participants: list<Participant>, subtitle: string}|RedirectResponse
+     * @return array{participants: list<Participant>, subtitle: string, categoryName: string|null, eventNames: list<string>, count: int}|RedirectResponse
      */
     private function loadExportScope(Request $request): array|RedirectResponse
     {
@@ -990,7 +993,18 @@ class WebAdminParticipantsListController extends AbstractController
         }
         $scopeBits[] = count($participantsArray).' záznamů';
 
-        return ['participants' => $participantsArray, 'subtitle' => implode(' · ', $scopeBits)];
+        $eventNames = array_map(
+            static fn (Event $e): string => (string) ($e->getShortName() ?: $e->getName()),
+            $events,
+        );
+
+        return [
+            'participants' => $participantsArray,
+            'subtitle'     => implode(' · ', $scopeBits),
+            'categoryName' => $participantCategory?->getName(),
+            'eventNames'   => $eventNames,
+            'count'        => count($participantsArray),
+        ];
     }
 
     public function showYearsCompare(?string $eventSeriesSlug = null): Response

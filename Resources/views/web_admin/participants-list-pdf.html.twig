@@ -34,11 +34,30 @@
     .c-warning { background: #c87f0a; } .c-info { background: #006FAD; }
     .t-success { color: #1a7a3c; } .t-danger { color: #c0392b; }
     .t-warning { color: #c87f0a; } .t-info { color: #006FAD; }
+    /* Omezení (scope) — tabulka shrnující rozsah výběru, jako na obrazovce. */
+    table.scope { width: 100%; border-collapse: collapse; margin: 4px 0 8px; }
+    table.scope th { background: #eaf3fb; color: #1a2533; font-size: 7.5pt; text-align: left;
+        padding: 2px 6px; border: 0.5px solid #b8cfe0; }
+    table.scope td { font-size: 7.5pt; padding: 2px 6px; border: 0.5px solid #cdd6df; }
+    table.scope td.lbl { width: 28%; color: #5f6b7a; }
 </style>
 <div class="doc-head">
     <h1>Přehled přihlášek</h1>
     <div class="sub">{{ subtitle }}</div>
 </div>
+{% if categoryName is defined and (categoryName or eventNames|default([]) is not empty) %}
+    <table class="scope">
+        <tr><th colspan="2">Omezení výběru</th></tr>
+        {% if categoryName %}
+            <tr><td class="lbl">Kategorie účastníka</td><td><strong>{{ categoryName }}</strong></td></tr>
+        {% endif %}
+        <tr>
+            <td class="lbl">Událost</td>
+            <td><strong>{% if eventNames|default([]) is empty %}všechny akce{% else %}{{ eventNames|join(', ') }}{% endif %}</strong></td>
+        </tr>
+        <tr><td class="lbl">Počet záznamů</td><td><strong>{{ count|default(participants|length) }}</strong></td></tr>
+    </table>
+{% endif %}
 <table class="plist">
     <thead>
     <tr>
