@@ -75,6 +75,16 @@ class WebAdminParticipantsListController extends AbstractController
     /** Page size for the unscoped (all-participants) paginated view. */
     private const int PER_PAGE = 100;
 
+    /**
+     * Hard ceiling on rows in a single export (CSV/PDF). A full export hydrates the whole heavy
+     * Participant graph per row; an unscoped all-years dump (thousands of rows) exhausts memory.
+     * We load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT → never hydrate beyond the cap) and, when
+     * the scope exceeds the cap, REFUSE the export with a clear error rather than silently
+     * truncating — the user is told to narrow the scope (pick an event/year). Scoped exports
+     * (per turnus/ročník) sit well under this, so the everyday path is unaffected.
+     */
+    private const int EXPORT_MAX_ROWS = 1000;
+
     /** Default participant type when none is requested — the everyday "Účastník" view. */
     private const string DEFAULT_PARTICIPANT_CATEGORY = 'ucastnik';
 
@@ -296,14 +306,14 @@ class WebAdminParticipantsListController extends AbstractController
      *
      * @return ArrayCollection<int, Participant>
      */
-    private function loadScopedParticipants(array $events, ?ParticipantCategory $category, ?int $depthOverride, bool $includeDeleted = true): ArrayCollection
+    private function loadScopedParticipants(array $events, ?ParticipantCategory $category, ?int $depthOverride, bool $includeDeleted = true, ?int $limit = null): ArrayCollection
     {
         if ([] === $events) {
             $collection = $this->participantService->getParticipants([
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED      => $includeDeleted,
                 ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $category,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
-            ]);
+            ], true, $limit);
 
             return new ArrayCollection($collection->toArray());
         }
@@ -316,12 +326,17 @@ class WebAdminParticipantsListController extends AbstractController
                 ParticipantRepository::CRITERIA_EVENT                 => $event,
                 ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $category,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
-            ]);
+            ], true, $limit);
             foreach ($collection as $participant) {
                 $id = $participant->getId();
                 if (null !== $id) {
                     $byId[$id] = $participant;
                 }
+            }
+            // Stop merging once the cap is exceeded — we already know the export must be refused,
+            // and this bounds memory across a many-event multi-select.
+            if (null !== $limit && count($byId) >= $limit) {
+                break;
             }
         }
 
@@ -867,13 +882,28 @@ class WebAdminParticipantsListController extends AbstractController
         $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
         $includeDeleted = $request->query->getBoolean('includeDeleted');
 
+        // Load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT → memory never blows up on a huge scope).
+        // The +1 is the overflow sentinel: if it comes back, the real set is over the cap.
+        $loadLimit = self::EXPORT_MAX_ROWS + 1;
         if ([] !== $events || null !== $participantCategory) {
-            $participants = $this->loadScopedParticipants($events, $participantCategory, $depthOverride, $includeDeleted);
+            $participants = $this->loadScopedParticipants($events, $participantCategory, $depthOverride, $includeDeleted, $loadLimit);
         } else {
             $participants = $this->participantService->getParticipants([
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
-            ]);
+            ], true, $loadLimit);
+        }
+        // Over the cap → refuse with a clear error (never silently truncate). Bounce back to the
+        // list (which paginates, so it renders fine) with the same scope so the user can narrow it.
+        if ($participants->count() > self::EXPORT_MAX_ROWS) {
+            $this->addFlash('danger', sprintf(
+                'Export je omezen na %d záznamů a tento výběr je překračuje. Zužte rozsah – vyberte konkrétní akci nebo ročník (případně typ účastníka) – a export opakujte.',
+                self::EXPORT_MAX_ROWS,
+            ));
+            $redirectParams = $request->query->all();
+            unset($redirectParams['format'], $redirectParams['columns']);
+
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list', $redirectParams);
         }
         $participantsArray = $participants->toArray();
         usort(
