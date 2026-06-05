@@ -334,9 +334,13 @@ class WebAdminParticipantsListController extends AbstractController
                     $byId[$id] = $participant;
                 }
             }
-            // Stop merging once the cap is exceeded — we already know the export must be refused,
-            // and this bounds memory across a many-event multi-select.
-            if (null !== $limit && count($byId) >= $limit) {
+            // Stop loading further events once the cap is reached — the export will be refused
+            // anyway. Break on EITHER the merged unique count OR this single event already hitting
+            // the sentinel (a lone event over the cap → the whole export is over it). This bounds
+            // hydration at ~2× the cap regardless of how many events are multi-selected, without
+            // any silent truncation: every break path leaves count($byId) ≥ limit, so the caller's
+            // over-cap check fires.
+            if (null !== $limit && (count($byId) >= $limit || $collection->count() >= $limit)) {
                 break;
             }
         }
