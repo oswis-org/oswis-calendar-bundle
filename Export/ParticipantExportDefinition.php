@@ -11,6 +11,16 @@ use OswisOrg\OswisCoreBundle\Export\ExportDefinitionInterface;
 
 final class ParticipantExportDefinition implements ExportDefinitionInterface
 {
+    /**
+     * Hard ceiling on rows in a single participant export. A full export hydrates the whole heavy
+     * Participant graph (eager associations) per row; an unscoped dump of thousands of rows
+     * exhausts memory (OOM in Doctrine's deep clone during hydration). Both export entry points
+     * (web admin list export, API export for the Ionic admin) load at most MAX_EXPORT_ROWS+1 via a
+     * true SQL LIMIT and refuse — with a clear error, never a silent truncation — when the scope
+     * exceeds it, telling the caller to narrow the scope (pick an event/year).
+     */
+    public const int MAX_EXPORT_ROWS = 1000;
+
     public function getKey(): string
     {
         return 'participants';

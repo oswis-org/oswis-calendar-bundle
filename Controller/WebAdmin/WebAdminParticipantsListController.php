@@ -76,14 +76,15 @@ class WebAdminParticipantsListController extends AbstractController
     private const int PER_PAGE = 100;
 
     /**
-     * Hard ceiling on rows in a single export (CSV/PDF). A full export hydrates the whole heavy
-     * Participant graph per row; an unscoped all-years dump (thousands of rows) exhausts memory.
-     * We load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT → never hydrate beyond the cap) and, when
-     * the scope exceeds the cap, REFUSE the export with a clear error rather than silently
-     * truncating — the user is told to narrow the scope (pick an event/year). Scoped exports
-     * (per turnus/ročník) sit well under this, so the everyday path is unaffected.
+     * Hard ceiling on rows in a single export (CSV/PDF) — shared with the API export controller.
+     * A full export hydrates the whole heavy Participant graph per row; an unscoped all-years dump
+     * (thousands of rows) exhausts memory. We load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT →
+     * never hydrate beyond the cap) and, when the scope exceeds the cap, REFUSE the export with a
+     * clear error rather than silently truncating — the user is told to narrow the scope (pick an
+     * event/year). Scoped exports (per turnus/ročník) sit well under this, so the everyday path is
+     * unaffected. {@see ParticipantExportDefinition::MAX_EXPORT_ROWS}.
      */
-    private const int EXPORT_MAX_ROWS = 1000;
+    private const int EXPORT_MAX_ROWS = ParticipantExportDefinition::MAX_EXPORT_ROWS;
 
     /** Default participant type when none is requested — the everyday "Účastník" view. */
     private const string DEFAULT_PARTICIPANT_CATEGORY = 'ucastnik';
