@@ -7,12 +7,26 @@
 <div class="container participants-page">
 
     {# ---- PAGE TITLE ----------------------------------------------------- #}
-    <h1 class="h3 mb-2 mt-1">Přehled přihlášek</h1>
+    <div class="d-flex align-items-center gap-2 mb-2 mt-1">
+        <h1 class="h3 m-0">Přehled přihlášek</h1>
+        <button type="button" class="btn btn-sm btn-outline-primary py-0 ms-auto d-print-none"
+                onclick="window.print();" title="Vytisknout / uložit do PDF přes prohlížeč">🖨 Tisk</button>
+    </div>
+
+    {# Tisk-only shrnutí rozsahu (Omezení) — na obrazovce skryté, v tisku nahrazuje scope bar. #}
+    <div class="print-only mb-2">
+        <table class="table table-sm table-bordered" style="width:auto;">
+            <tr><th colspan="2" class="bg-light">Omezení výběru</th></tr>
+            <tr><td class="text-secondary">Kategorie účastníka</td><td><strong>{{ participantCategory.name|default('— všechny typy —') }}</strong></td></tr>
+            <tr><td class="text-secondary">Událost</td><td><strong>{% if events|default([]) is empty %}všechny akce{% else %}{{ events|map(e => e.shortName|default(e.name))|join(', ') }}{% endif %}</strong></td></tr>
+            <tr><td class="text-secondary">Počet záznamů</td><td><strong>{{ participants|length }}</strong></td></tr>
+        </table>
+    </div>
 
     {# ---- SCOPE BAR — one event picker (year → turnus → all events) + the
            category switcher, grouped into a subtle toolbar so the whole scope
            reads as one clear zone instead of scattered chips + links. ------- #}
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-2 py-2"
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-2 py-2 d-print-none"
          style="background:#f4f7fa; border:1px solid #e3e9f0; border-radius:6px;">
         <span class="small text-secondary fw-bold">Akce:</span>
         <select class="form-select form-select-sm w-auto" title="Výběr akce"
@@ -47,7 +61,7 @@
            insensitive. Carries the current scope + filter + flags as hidden fields so the search
            narrows *within* what's already shown. #}
         <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}"
-              class="d-flex align-items-center gap-1 ms-auto" role="search">
+              class="d-flex align-items-center gap-1 ms-auto d-print-none" role="search">
             {% for key, value in scopeParams %}
                 {% if key != 'q' %}
                     {% if value is iterable %}
@@ -93,7 +107,7 @@
             form.submit();
         }
     </script>
-    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2"
+    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2 d-print-none"
           onsubmit="oswisStripEmptyFilter(this);">
         {% for key, value in scopeParams %}
             {% if key != 'depth' %}
@@ -225,7 +239,7 @@
     {% endif %}
 
     {# ---- LIST TOOLBAR (count + sort + export) --------------------------- #}
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-1 d-print-none">
         <strong>{{ participants|length }}</strong> <span class="small text-secondary">přihlášek</span>
         {# Řazení je v klikacím záhlaví tabulky (▲/▼), proto tu dropdown „řadit" už není. #}
 
@@ -413,6 +427,20 @@
         @media (max-width: 820px) {
             .participants-page .participants-table-wrap > table.participant-list { min-width: 760px; }
         }
+        /* Tisk z prohlížeče: čistá stránka jako přehledové PDF — skrýt ovládací prvky a sloupec
+           akcí, celé řádky na jedné stránce, bez vodorovného scrollu. (Nav menu skryto skeletonem.) */
+        .print-only { display: none; }
+        @media print {
+            .print-only { display: block !important; }
+            .participants-page .actions { display: none !important; }
+            .participants-page .oswis-typeahead { display: none !important; }
+            .participants-page .participants-table-wrap { overflow: visible !important; }
+            .participants-page table.participant-list { min-width: 0 !important; font-size: 8pt; }
+            .participants-page table.participant-list tbody tr { page-break-inside: avoid; }
+            .participants-page table.participant-list thead th { background: #006FAD !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* zajistit tisk barev příznaků/badge */
+            .participants-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
     </style>
     {# Scroll wrapper: on narrow screens (tablet/mobile) the dense 5-column table scrolls
        horizontally instead of crushing the columns. No effect on wide screens. #}
@@ -429,7 +457,7 @@
 
     {# ---- PAGINATION (unscoped paginated view) --------------------------- #}
     {% if pagination|default %}
-        <nav class="mt-2 d-flex gap-2 align-items-center">
+        <nav class="mt-2 d-flex gap-2 align-items-center d-print-none">
             {% if pagination.hasPrev %}
                 <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({page: pagination.page - 1})) }}">← Předchozí</a>
             {% endif %}
@@ -446,7 +474,7 @@
        the textarea makes select-all + copy easy. #}
     {% set emails = participants|map(p => p.contact.email|default(''))|filter(e => e != '') %}
     {% if emails|length %}
-        <details class="mt-3">
+        <details class="mt-3 d-print-none">
             <summary style="cursor:pointer;">📋 E-mailové adresy pro hromadné rozeslání ({{ emails|length }})</summary>
             <textarea readonly rows="3" class="form-control form-control-sm mt-1" style="font-size:.8rem;"
                       onclick="this.select();">{{ emails|join(', ') }}</textarea>
