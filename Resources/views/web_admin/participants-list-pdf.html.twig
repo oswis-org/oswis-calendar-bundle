@@ -13,6 +13,8 @@
     table.plist thead th { background: #006FAD; color: #fff; font-size: 7pt; font-weight: bold;
         text-align: left; padding: 3px 5px; border: 0.5px solid #2b6f96; }
     table.plist td { border: 0.5px solid #c2cad3; padding: 3px 5px; vertical-align: top; }
+    /* Celá položka (řádek) vždy na jedné stránce — mPDF nesmí řádek rozdělit přes zlom. */
+    table.plist tbody tr { page-break-inside: avoid; }
     table.plist tr.zebra td { background: #f4f8fb; }
     table.plist tr.deleted td { background: #fbe3e3; }
     .muted { color: #5f6b7a; }
