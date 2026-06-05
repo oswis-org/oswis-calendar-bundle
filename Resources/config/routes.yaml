@@ -110,6 +110,11 @@ oswis_org_oswis_calendar_web_admin_participants_list_csv:
   path: "/web_admin/seznam-prihlasek-csv"
   methods: [GET]
 
+oswis_org_oswis_calendar_web_admin_participants_list_pdf:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsListPdf
+  path: "/web_admin/seznam-prihlasek-pdf"
+  methods: [GET]
+
 oswis_org_oswis_calendar_web_admin_event:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showEvent
   path: "/web_admin/udalost/{eventSlug?}"

@@ -232,6 +232,9 @@
         <details class="d-inline-block ms-auto" style="position: relative;">
             <summary class="btn btn-sm btn-outline-primary py-0" style="cursor: pointer;">Export ▾</summary>
             <div class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 18rem; text-align: left;">
+                {# Přehledový PDF: bohatý „prohlížecí" seznam jako na obrazovce (příznaky, platba, poznámky). #}
+                <a class="btn btn-sm btn-primary mb-2"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_pdf', scopeParams) }}">📄 Přehledový PDF (jako na obrazovce)</a>
                 {# Rychlé provozní listy: jeden klik = předvolené sloupce + formát, ve stávajícím scope. #}
                 {% if exportPresets|default([]) is not empty %}
                     <div class="small text-secondary mb-1">Rychlé provozní listy (PDF):</div>

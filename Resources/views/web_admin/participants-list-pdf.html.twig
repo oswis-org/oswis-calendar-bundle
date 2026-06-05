@@ -1,0 +1,104 @@
+{#
+  Rich "browse-style" participant list for PDF (mPDF). Mirrors the web-admin list screen content
+  — coloured flag badges with prices, payment status, notes, contact — but in mPDF-safe markup
+  (table layout, inline-coloured spans, no flexbox/emoji). Branded chrome (logo header + footer)
+  is added by ExportService::getPdfFromHtml. Rendered by WebAdminParticipantsListController::showParticipantsListPdf.
+#}
+<style>
+    body { font-family: DejaVu Sans, sans-serif; font-size: 7.5pt; color: #1a2533; }
+    .doc-head { border-bottom: 1.5px solid #006FAD; padding-bottom: 3px; margin-bottom: 6px; }
+    .doc-head h1 { font-size: 13pt; margin: 0; color: #006FAD; }
+    .doc-head .sub { font-size: 8.5pt; color: #555; margin-top: 1px; }
+    table.plist { width: 100%; border-collapse: collapse; }
+    table.plist thead th { background: #006FAD; color: #fff; font-size: 7pt; font-weight: bold;
+        text-align: left; padding: 3px 5px; border: 0.5px solid #2b6f96; }
+    table.plist td { border: 0.5px solid #c2cad3; padding: 3px 5px; vertical-align: top; }
+    table.plist tr.zebra td { background: #f4f8fb; }
+    table.plist tr.deleted td { background: #fbe3e3; }
+    .muted { color: #5f6b7a; }
+    .nm { font-size: 8.5pt; font-weight: bold; color: #1a2533; }
+    .id-badge { background: #006FAD; color: #fff; font-weight: bold; padding: 0 4px; border-radius: 3px; }
+    .ok { color: #1a7a3c; font-weight: bold; }
+    .bad { color: #c0392b; font-weight: bold; }
+    .note { color: #c8730a; }
+    .strike { text-decoration: line-through; }
+    /* Flag badge: name half (flag colour via inline style) + price half (+ red / − green). */
+    .fb { border-radius: 3px; font-size: 6.8pt; font-weight: bold; background: #17a2b8; color: #fff;
+        padding: 1px 4px; margin-right: 2px; line-height: 1.9; white-space: nowrap; }
+    .fb-pos { background: #c0392b; color: #fff; border-radius: 3px; font-size: 6.8pt; font-weight: bold; padding: 1px 4px; }
+    .fb-neg { background: #1a7a3c; color: #fff; border-radius: 3px; font-size: 6.8pt; font-weight: bold; padding: 1px 4px; }
+    .pay-badge { color: #fff; font-weight: bold; padding: 0 4px; border-radius: 3px; font-size: 7pt; }
+    .c-success { background: #1a7a3c; } .c-danger { background: #c0392b; }
+    .c-warning { background: #c87f0a; } .c-info { background: #006FAD; }
+    .t-success { color: #1a7a3c; } .t-danger { color: #c0392b; }
+    .t-warning { color: #c87f0a; } .t-info { color: #006FAD; }
+</style>
+<div class="doc-head">
+    <h1>Přehled přihlášek</h1>
+    <div class="sub">{{ subtitle }}</div>
+</div>
+<table class="plist">
+    <thead>
+    <tr>
+        <th width="22%">ID / kontakt</th>
+        <th width="30%">Účastník · akce · poznámky</th>
+        <th width="27%">Příznaky</th>
+        <th width="21%">Zaplaceno</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for participant in participants %}
+        {% set contact = participant.contact(false)|default %}
+        {% set appUser = contact.appUser|default %}
+        {% set isDeleted = participant.deletedAt|default %}
+        {% set paidPercentage = (participant.paidPricePercentage * 100)|round %}
+        {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
+        {% set paidColor = participant.remainingDeposit <= 0 ? 'warning' : paidColor %}
+        {% set paidColor = participant.remainingPrice < 0 ? 'info' : paidColor %}
+        {% set paidColor = participant.remainingPrice == 0 ? 'success' : paidColor %}
+        {% set paymentLabel = {'success': 'Zaplaceno', 'danger': 'Nezaplaceno', 'warning': 'Záloha uhrazena', 'info': 'Přeplaceno'}[paidColor]|default('—') %}
+        <tr class="{{ isDeleted ? 'deleted' : (loop.index is odd ? '' : 'zebra') }}">
+            <td>
+                <span class="id-badge">{{ participant.id }}</span>
+                <span class="muted">{{ participant.createdAt|date("j. n. Y, H:i") }}</span><br>
+                {% if isDeleted %}<span class="bad">smazáno {{ participant.deletedAt|date("j. n. Y") }}</span><br>{% endif %}
+                {% if appUser and appUser.activated %}
+                    <span class="ok">✓ ověřeno</span> <span class="muted">{{ appUser.activated|date("j. n. Y") }}</span><br>
+                {% else %}
+                    <span class="bad">✗ neověřeno</span><br>
+                {% endif %}
+                {% if contact.phone|default %}tel. {{ contact.phone }}<br>{% endif %}
+                {% if contact.email|default %}<span class="muted">{{ contact.email }}</span>{% endif %}
+            </td>
+            <td>
+                {% for participantContact in participant.participantContacts(false, false) %}
+                    <div class="nm {{ participantContact.active|default ? '' : 'strike' }}">{{ participantContact.contact.name|default }}</div>
+                {% endfor %}
+                {% for participantRange in participant.participantRegistrations(false, false) %}
+                    <div class="{{ participantRange.active|default ? '' : 'strike' }}">{{ participantRange.event.shortName|default }}{% if participantRange.offer.shortName|default %} · {{ participantRange.offer.shortName }}{% endif %}</div>
+                {% endfor %}
+                {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
+                    <div class="note {{ note.deletedAt|default ? 'strike' : '' }}">{{ note.textValue }}{% if note.createdBy.shortName|default or note.createdBy.name|default %} <span class="muted">({{ note.createdBy.shortName|default(note.createdBy.name|default) }})</span>{% endif %}</div>
+                {% endfor %}
+            </td>
+            <td>
+                {% for flagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
+                    {% for participantFlag in flagGroup.participantFlags %}
+                        {% set fc = participantFlag.deletedAt ? '#9aa3ad' : (participantFlag.flag.color|default ?: '#17a2b8') %}
+                        {% set ff = participantFlag.deletedAt ? '#5f6b7a' : (participantFlag.flag.foregroundColor|default ?: '#ffffff') %}
+                        <span class="fb {{ participantFlag.deletedAt ? 'strike' : '' }}" style="background-color:{{ fc }}; color:{{ ff }};">{{ participantFlag.flag.shortName|default }}</span>{% if participantFlag.flagOffer.price|default(0) != 0 %}<span class="{{ participantFlag.flagOffer.price > 0 ? 'fb-pos' : 'fb-neg' }}">{{ participantFlag.flagOffer.price > 0 ? '+' : '−' }}{{ participantFlag.flagOffer.price|abs }} Kč</span>{% endif %}{% if participantFlag.textValue|default|length > 0 %} <span class="muted">{{ participantFlag.textValue }}</span>{% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </td>
+            <td>
+                <span class="pay-badge c-{{ paidColor }}">{{ paymentLabel }}</span><br>
+                <span class="t-{{ paidColor }}"><strong>zbývá {{ participant.remainingPrice|default(0) }} Kč</strong></span><br>
+                zaplaceno {{ participant.paidPrice|default(0) }} z {{ participant.price|default(0) }} Kč{% if participant.price != 0 %} · {{ paidPercentage }} %{% endif %}<br>
+                <span class="muted">VS: {{ participant.variableSymbol|default('—') }}</span>
+            </td>
+        </tr>
+    {% else %}
+        <tr><td colspan="4">Žádné přihlášky odpovídající filtru.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>

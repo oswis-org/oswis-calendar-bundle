@@ -31,8 +31,10 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Export\ExportManager;
 use OswisOrg\OswisCoreBundle\Export\ExportRequest;
 use OswisOrg\OswisCoreBundle\Export\ExportResponseFactory;
+use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -102,6 +104,7 @@ class WebAdminParticipantsListController extends AbstractController
         public ParticipantExportDefinition $participantExportDefinition,
         public ParticipantFilterEvaluator $filterEvaluator,
         public RegistrationFlagRepository $registrationFlagRepository,
+        public ExportService $exportService,
     ) {
     }
 
@@ -873,8 +876,65 @@ class WebAdminParticipantsListController extends AbstractController
      */
     public function showParticipantsCsv(Request $request): Response
     {
-        // Export the same scoped set the list shows (multi-event + depth aware). Unscoped
-        // (no event, no category) exports everything.
+        $scope = $this->loadExportScope($request);
+        if ($scope instanceof Response) {
+            return $scope; // over-cap redirect
+        }
+        $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
+        $exportRequest = new ExportRequest(
+            ExportFormat::fromRequest($request->query->getString('format')),
+            [] === $columnKeys ? null : $columnKeys,
+            $scope['subtitle'],
+        );
+
+        return $this->exportResponseFactory->toResponse(
+            $this->exportManager->render(
+                $this->participantExportDefinition,
+                new ArrayCollection($scope['participants']),
+                $exportRequest,
+            ),
+        );
+    }
+
+    /**
+     * Rich "browse-style" PDF of the participant list — the same visual content as the web admin
+     * screen (coloured flag badges with prices, payment status, notes, contact), rendered
+     * server-side through the branded PDF chrome. Distinct from the tabular CSV/PDF export.
+     *
+     * @throws \Mpdf\MpdfException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
+    public function showParticipantsListPdf(Request $request): Response
+    {
+        $scope = $this->loadExportScope($request);
+        if ($scope instanceof Response) {
+            return $scope; // over-cap redirect
+        }
+        $html = $this->renderView('@OswisOrgOswisCalendar/web_admin/participants-list-pdf.html.twig', [
+            'participants' => $scope['participants'],
+            'subtitle'     => $scope['subtitle'],
+        ]);
+        $pdf = $this->exportService->getPdfFromHtml($html, false, 'Přehled přihlášek', $scope['subtitle'], ['přehled', 'přihlášky']);
+        $filename = 'prehled-prihlasek_'.date('Y-m-d_His').'.pdf';
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $filename),
+        ]);
+    }
+
+    /**
+     * Resolve + load + sort the scoped participant set for any export, applying the shared
+     * {@see EXPORT_MAX_ROWS} cap. Returns the sorted participants + a human scope subtitle, or a
+     * RedirectResponse (with a flash) when the scope exceeds the cap — never a silent truncation.
+     *
+     * @return array{participants: list<Participant>, subtitle: string}|RedirectResponse
+     */
+    private function loadExportScope(Request $request): array|RedirectResponse
+    {
+        // Same scoped set the list shows (multi-event + depth aware). Unscoped = everything.
         [$events, ] = $this->resolveEventsFromRequest($request);
         // Default the participant type to "Účastník" (the everyday view) when none is given;
         // an explicit empty value (the "— typ účastníka —" option) means *all types*.
@@ -916,9 +976,7 @@ class WebAdminParticipantsListController extends AbstractController
             $participantsArray,
             static fn (Participant $a, Participant $b): int => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
         );
-        $participants = new ArrayCollection($participantsArray);
-        $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
-        // Podtitulek PDF: scope (akce/typ) + počet — ať je export jednoznačně identifikovatelný.
+        // Human scope subtitle: akce/typ + počet — ať je výstup jednoznačně identifikovatelný.
         $scopeBits = [];
         if (1 === count($events)) {
             $scopeBits[] = (string) ($events[0]->getShortName() ?: $events[0]->getName());
@@ -931,15 +989,8 @@ class WebAdminParticipantsListController extends AbstractController
             $scopeBits[] = (string) $participantCategory->getName();
         }
         $scopeBits[] = count($participantsArray).' záznamů';
-        $exportRequest = new ExportRequest(
-            ExportFormat::fromRequest($request->query->getString('format')),
-            [] === $columnKeys ? null : $columnKeys,
-            implode(' · ', $scopeBits),
-        );
 
-        return $this->exportResponseFactory->toResponse(
-            $this->exportManager->render($this->participantExportDefinition, $participants, $exportRequest),
-        );
+        return ['participants' => $participantsArray, 'subtitle' => implode(' · ', $scopeBits)];
     }
 
     public function showYearsCompare(?string $eventSeriesSlug = null): Response
