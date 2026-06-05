@@ -5,41 +5,44 @@
   is added by ExportService::getPdfFromHtml. Rendered by WebAdminParticipantsListController::showParticipantsListPdf.
 #}
 <style>
-    body { font-family: DejaVu Sans, sans-serif; font-size: 7.5pt; color: #1a2533; }
+    body { font-family: DejaVu Sans, sans-serif; font-size: 8pt; color: #1a2533; line-height: 1.4; }
     .doc-head { border-bottom: 1.5px solid #006FAD; padding-bottom: 3px; margin-bottom: 6px; }
-    .doc-head h1 { font-size: 13pt; margin: 0; color: #006FAD; }
-    .doc-head .sub { font-size: 8.5pt; color: #555; margin-top: 1px; }
+    .doc-head h1 { font-size: 14pt; margin: 0; color: #006FAD; }
+    .doc-head .sub { font-size: 9pt; color: #555; margin-top: 1px; }
     table.plist { width: 100%; border-collapse: collapse; }
-    table.plist thead th { background: #006FAD; color: #fff; font-size: 7pt; font-weight: bold;
-        text-align: left; padding: 3px 5px; border: 0.5px solid #2b6f96; }
-    table.plist td { border: 0.5px solid #c2cad3; padding: 3px 5px; vertical-align: top; }
+    table.plist thead th { background: #006FAD; color: #fff; font-size: 7.5pt; font-weight: bold;
+        text-align: left; padding: 4px 7px; border: 0.5px solid #2b6f96; }
+    table.plist td { border: 0.5px solid #d4dbe3; padding: 5px 7px; vertical-align: top; }
     /* Celá položka (řádek) vždy na jedné stránce — mPDF nesmí řádek rozdělit přes zlom. */
     table.plist tbody tr { page-break-inside: avoid; }
-    table.plist tr.zebra td { background: #f4f8fb; }
+    table.plist tr.zebra td { background: #f6f9fc; }
     table.plist tr.deleted td { background: #fbe3e3; }
     .muted { color: #5f6b7a; }
-    .nm { font-size: 8.5pt; font-weight: bold; color: #1a2533; }
-    .id-badge { background: #006FAD; color: #fff; font-weight: bold; padding: 0 4px; border-radius: 3px; }
+    .nm { font-size: 9pt; font-weight: bold; color: #1a2533; }
+    .id-badge { background: #006FAD; color: #fff; font-weight: bold; padding: 1px 6px; border-radius: 9px; font-size: 7.5pt; }
     .ok { color: #1a7a3c; font-weight: bold; }
     .bad { color: #c0392b; font-weight: bold; }
     .note { color: #c8730a; }
     .strike { text-decoration: line-through; }
     /* Flag badges: každý příznak na vlastním řádku (pod sebou), soudržná zaoblená pilulka =
        název (barva příznaku) + volitelná cena na navazující polovině (+ červená / − zelená). */
-    .fb-row { margin-bottom: 3px; line-height: 1.5; }
-    .fb { display: inline-block; border-radius: 8px; font-size: 7pt; font-weight: bold;
-        background: #17a2b8; color: #fff; padding: 1.5px 8px; }
-    .fb.has-price { border-radius: 8px 0 0 8px; padding-right: 6px; }
-    .fb-price { display: inline-block; border-radius: 0 8px 8px 0; font-size: 7pt; font-weight: bold;
-        padding: 1.5px 8px; }
+    .fb-row { margin-bottom: 4px; line-height: 1.6; }
+    .fb { display: inline-block; border-radius: 9px; font-size: 7.5pt; font-weight: bold;
+        background: #17a2b8; color: #fff; padding: 2px 9px; }
+    .fb.has-price { border-radius: 9px 0 0 9px; padding-right: 7px; }
+    .fb-price { display: inline-block; border-radius: 0 9px 9px 0; font-size: 7.5pt; font-weight: bold;
+        padding: 2px 9px; }
     .fb-pos { background: #c0392b; color: #fff; }
     .fb-neg { background: #1a7a3c; color: #fff; }
-    .gi { font-size: 8pt; } .gi-f { color: #c0398a; } .gi-m { color: #2b6cb0; }
-    .pay-badge { color: #fff; font-weight: bold; padding: 0 4px; border-radius: 3px; font-size: 7pt; }
+    .gi { font-size: 9pt; } .gi-f { color: #c0398a; } .gi-m { color: #2b6cb0; }
+    /* Platba: částka + ukazatel postupu (jako na obrazovce / v referenci). */
+    .pay-price { font-size: 9.5pt; font-weight: bold; }
+    .bar { height: 8px; background: #e6ebf1; border-radius: 5px; margin: 3px 0 2px; }
+    .bar-fill { height: 8px; border-radius: 5px; }
     .c-success { background: #1a7a3c; } .c-danger { background: #c0392b; }
-    .c-warning { background: #c87f0a; } .c-info { background: #006FAD; }
+    .c-warning { background: #c87f0a; } .c-info { background: #2b6cb0; }
     .t-success { color: #1a7a3c; } .t-danger { color: #c0392b; }
-    .t-warning { color: #c87f0a; } .t-info { color: #006FAD; }
+    .t-warning { color: #c87f0a; } .t-info { color: #2b6cb0; }
     /* Omezení (scope) — tabulka shrnující rozsah výběru, jako na obrazovce. */
     table.scope { width: 100%; border-collapse: collapse; margin: 4px 0 8px; }
     table.scope th { background: #eaf3fb; color: #1a2533; font-size: 7.5pt; text-align: left;
@@ -122,9 +125,9 @@
                 {% endfor %}
             </td>
             <td>
-                <span class="pay-badge c-{{ paidColor }}">{{ paymentLabel }}</span>{% if participant.price != 0 %} <strong class="t-{{ paidColor }}">{{ paidPercentage }} %</strong>{% endif %}<br>
-                <span class="t-{{ paidColor }}"><strong>zbývá {{ participant.remainingPrice|default(0) }},- Kč</strong></span><br>
-                <span class="muted">zaplaceno {{ participant.paidPrice|default(0) }} z {{ participant.price|default(0) }},- Kč</span><br>
+                <span class="pay-price t-{{ paidColor }}">{{ participant.paidPrice|default(0) }},- Kč</span>
+                <span class="muted">z {{ participant.price|default(0) }},- Kč</span><br>
+                <span class="t-{{ paidColor }}"><strong>{{ paymentLabel }}{% if participant.price != 0 %} ({{ paidPercentage }} %){% endif %}</strong>{% if participant.remainingPrice|default(0) != 0 %} · zbývá {{ participant.remainingPrice }},- Kč{% endif %}</span><br>
                 <span class="muted">VS: {{ participant.variableSymbol|default('—') }}</span>
             </td>
         </tr>
