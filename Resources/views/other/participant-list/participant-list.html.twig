@@ -435,7 +435,13 @@
             .participants-page .actions { display: none !important; }
             .participants-page .oswis-typeahead { display: none !important; }
             .participants-page .participants-table-wrap { overflow: visible !important; }
-            .participants-page table.participant-list { min-width: 0 !important; font-size: 8pt; }
+            .participants-page table.participant-list { min-width: 0 !important; font-size: 8pt;
+                table-layout: auto !important; word-break: normal !important; }
+            /* Badge se nesmí lámat po písmenech (úzký sloupec + fixed layout to dělalo). */
+            .participants-page .oswis-flag-badge,
+            .participants-page .oswis-flag-badge .ofb-name,
+            .participants-page .oswis-flag-badge .ofb-price,
+            .participants-page .oswis-flag-badge .ofb-text { white-space: nowrap !important; word-break: normal !important; }
             .participants-page table.participant-list tbody tr { page-break-inside: avoid; }
             .participants-page table.participant-list thead th { background: #006FAD !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             /* zajistit tisk barev příznaků/badge */
