@@ -231,40 +231,57 @@
 
         <details class="d-inline-block ms-auto" style="position: relative;">
             <summary class="btn btn-sm btn-outline-primary py-0" style="cursor: pointer;">Export ▾</summary>
-            <form method="get"
-                  action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv') }}"
-                  class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 16rem; text-align: left;">
-                {# Scope as hidden fields — a GET form discards its action's query string. #}
-                {% for key, value in scopeParams %}
-                    {% if key not in ['sort', 'dir'] %}
-                        {% if value is iterable %}
-                            {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
-                        {% else %}
-                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+            <div class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 18rem; text-align: left;">
+                {# Rychlé provozní listy: jeden klik = předvolené sloupce + formát, ve stávajícím scope. #}
+                {% if exportPresets|default([]) is not empty %}
+                    <div class="small text-secondary mb-1">Rychlé provozní listy (PDF):</div>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for preset in exportPresets %}
+                            <a class="btn btn-sm btn-outline-secondary py-0"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', scopeParams|merge({columns: preset.columns, format: preset.format})) }}">{{ preset.label }}</a>
+                        {% endfor %}
+                    </div>
+                    <hr style="margin: .4rem 0;">
+                {% endif %}
+                {# Vlastní výběr sloupců. #}
+                <div class="small text-secondary mb-1">Vlastní výběr sloupců:</div>
+                <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv') }}">
+                    {# Scope as hidden fields — a GET form discards its action's query string. #}
+                    {% for key, value in scopeParams %}
+                        {% if key not in ['sort', 'dir'] %}
+                            {% if value is iterable %}
+                                {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
+                            {% else %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                {% endfor %}
-                <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
-                    {% set exportColumns = {
-                        'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
-                        'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
-                        'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
-                        'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
-                        'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
-                    } %}
-                    {% for key, label in exportColumns %}
-                        <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}</label>
                     {% endfor %}
-                </div>
-                <label class="small d-block mb-2">Formát:
-                    <select name="format" class="form-select form-select-sm">
-                        <option value="csv">CSV (Excel)</option>
-                        <option value="csv-rfc">CSV (RFC 4180)</option>
-                        <option value="pdf">PDF</option>
-                    </select>
-                </label>
-                <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
-            </form>
+                    <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
+                        {% set exportColumns = {
+                            'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
+                            'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
+                            'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
+                            'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
+                            'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
+                        } %}
+                        {% for key, label in exportColumns %}
+                            <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}</label>
+                        {% endfor %}
+                        {# Flag-derived provozní sloupce — výchozí nezaškrtnuté. #}
+                        {% for key, label in {'accommodation': 'Ubytování', 'food': 'Strava'} %}
+                            <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}"> {{ label }}</label>
+                        {% endfor %}
+                    </div>
+                    <label class="small d-block mb-2">Formát:
+                        <select name="format" class="form-select form-select-sm">
+                            <option value="csv">CSV (Excel)</option>
+                            <option value="csv-rfc">CSV (RFC 4180)</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
+                </form>
+            </div>
         </details>
         {% if is_granted('ROLE_ADMIN') %}
             <a class="small text-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>

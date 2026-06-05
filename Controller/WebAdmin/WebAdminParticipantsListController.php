@@ -267,6 +267,7 @@ class WebAdminParticipantsListController extends AbstractController
             'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
             'yearEvents'              => $yearEvents,
             'defaultEvent'            => $this->eventService->getDefaultEvent(),
+            'exportPresets'           => $this->participantExportDefinition->getPresets(),
         ]);
     }
 
