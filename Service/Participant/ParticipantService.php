@@ -560,22 +560,49 @@ class ParticipantService
     }
 
     /**
-     * @throws OswisException
+     * Drain auto-mail groups: for each active group, send its mail to participants of the group's
+     * event (+ sub-events) who have NOT received it yet. Recipients come from an id-only query with
+     * SQL-side dedup + a true LIMIT ({@see ParticipantRepository::findUnmailedParticipantIds}) — no
+     * whole-cohort hydration and no lazy-collection N+1 (the old load-all → filter → slice path).
+     * Per-participant isolation: one failing recipient never aborts the batch. Returns a summary so
+     * the cron command / admin trigger can report + surface failures (no longer silently swallowed).
+     *
+     * @return array{sent: int, failed: int, errors: list<string>}
      */
-    public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): void
+    public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): array
     {
+        $sent = 0;
+        $failed = 0;
+        $errors = [];
         foreach ($this->participantMailService->getAutoMailGroups($event, $type) ?? new ArrayCollection() as $group) {
-            $participants = $this->getParticipants([
-                ParticipantRepository::CRITERIA_INCLUDE_DELETED => !$group->isOnlyActive(),
-                ParticipantRepository::CRITERIA_EVENT => $group->getEvent(),
-                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 4,
-            ])->filter(static fn (Participant $p) => !$p->hasEMailOfType($group->getType()))->slice(0, $limit);
-            foreach ($participants as $participant) {
-                if ($group->isApplicable($participant)) {
+            $groupEvent = $group->getEvent();
+            $groupType = $group->getType();
+            if (!$groupEvent instanceof Event || null === $groupType) {
+                continue;
+            }
+            $ids = $this->participantRepository->findUnmailedParticipantIds(
+                $groupEvent,
+                $groupType,
+                $limit,
+                4,
+                !$group->isOnlyActive(),
+            );
+            foreach ($ids as $id) {
+                $participant = $this->em->find(Participant::class, $id);
+                if (!$participant instanceof Participant || !$group->isApplicable($participant)) {
+                    continue;
+                }
+                try {
                     $this->participantMailService->sendMessage($participant, $group);
+                    ++$sent;
+                } catch (\Throwable $e) {
+                    ++$failed;
+                    $errors[] = sprintf('#%d: %s', $id, $e->getMessage());
                 }
             }
         }
+
+        return ['sent' => $sent, 'failed' => $failed, 'errors' => $errors];
     }
 
 }

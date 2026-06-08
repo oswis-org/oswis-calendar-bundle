@@ -515,8 +515,9 @@ class ParticipantMailService
         foreach ($contactPersons = $participant->getContactPersons(true) as $contactPerson) {
             if ($contactPerson instanceof AbstractContact && null !== ($appUser = $contactPerson->getAppUser())) {
                 try {
-                    $this->sendMessageToUser($participant, $appUser, $group);
-                    $sent++;
+                    if ($this->sendMessageToUser($participant, $appUser, $group)) {
+                        $sent++;
+                    }
                 } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                     $userId = $appUser->getId();
                     $message = $exception->getMessage();
@@ -540,7 +541,7 @@ class ParticipantMailService
      * @throws NotFoundException
      * @throws NotImplementedException
      */
-    public function sendMessageToUser(Participant $participant, AppUser $appUser, ParticipantMailGroup $group): void
+    public function sendMessageToUser(Participant $participant, AppUser $appUser, ParticipantMailGroup $group): bool
     {
         if (null === ($mailCategory = $group->getCategory())) {
             throw new NotImplementedException($group->getType(), 'u e-mailů k přihláškám');
@@ -566,6 +567,10 @@ class ParticipantMailService
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();
+
+        // True success signal — MailService::sendEMail swallows transport errors (sets statusMessage,
+        // leaves sent = NULL). Callers must not count a failed delivery as sent.
+        return $participantMail->isSent();
     }
 
 }

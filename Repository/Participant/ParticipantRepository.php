@@ -18,6 +18,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
@@ -214,6 +215,50 @@ class ParticipantRepository extends ServiceEntityRepository
         }
 
         return $out;
+    }
+
+    /**
+     * IDs of participants of $event (+ recursive sub-events to $recursiveDepth) that have NOT yet
+     * been sent a mail of $type, capped at $limit. SQL-side dedup (correlated NOT EXISTS) + a true
+     * LIMIT on an id-only query (no fetch-joins) → no whole-cohort hydration and no lazy-collection
+     * N+1 (the bug in the old load-all → PHP filter(hasEMailOfType) → slice path). {@see ParticipantService::sendAutoMails}.
+     *
+     * @return list<int>
+     */
+    public function findUnmailedParticipantIds(
+        Event $event,
+        string $type,
+        int $limit,
+        int $recursiveDepth = 4,
+        bool $includeDeleted = false,
+    ): array {
+        $qb = $this->createQueryBuilder('p')->select('p.id');
+        // Recursive event scope (to-one superEvent joins → no row multiplication; not selected).
+        $qb->leftJoin('p.event', 'e0');
+        $eventOr = 'p.event = :ev';
+        for ($i = 0; $i < max(0, $recursiveDepth); $i++) {
+            $j = $i + 1;
+            $qb->leftJoin("e$i.superEvent", "e$j");
+            $eventOr .= " OR e$j = :ev";
+        }
+        $qb->andWhere($eventOr)->setParameter('ev', $event->getId());
+        if (!$includeDeleted) {
+            $qb->andWhere('p.deletedAt IS NULL');
+        }
+        // Already-sent dedup, SQL-side (failed rows with sent IS NULL are NOT excluded → retried).
+        $qb->andWhere(
+            'NOT EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pm WHERE pm.participant = p AND pm.type = :mailType AND pm.sent IS NOT NULL)',
+        )->setParameter('mailType', $type);
+        $qb->orderBy('p.id', 'ASC')->setMaxResults(max(1, $limit));
+
+        $ids = [];
+        foreach ($qb->getQuery()->getScalarResult() as $row) {
+            if (is_array($row) && isset($row['id']) && is_numeric($row['id'])) {
+                $ids[] = (int) $row['id'];
+            }
+        }
+
+        return $ids;
     }
 
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
