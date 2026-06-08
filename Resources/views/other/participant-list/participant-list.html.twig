@@ -448,17 +448,46 @@
             .participants-page table.participant-list thead th { background: #006FAD !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             /* zajistit tisk barev příznaků/badge */
             .participants-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* bulk bar nemá smysl v tisku */
+            .participants-page .bulk-bar, .participants-page .bulk-col { display: none !important; }
         }
+        /* Bulk-action bar (Fáze G): vždy přítomný; zašedlý + disabled, dokud není ≥1 řádek vybrán. */
+        .participants-page .bulk-bar { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+            margin: .4rem 0 .5rem; padding: .4rem .65rem; border: 1px solid #cdd9e5; border-radius: 6px;
+            background: #f4f8fc; transition: opacity .12s ease; }
+        .participants-page .bulk-bar.is-empty { opacity: .5; }
+        .participants-page .bulk-bar .bulk-count { font-size: .85rem; }
+        .participants-page .bulk-bar .bulk-hint { margin-left: auto; }
+        .participants-page .bulk-bar button[disabled] { cursor: not-allowed; }
     </style>
     {# Scroll wrapper: on narrow screens (tablet/mobile) the dense 5-column table scrolls
        horizontally instead of crushing the columns. No effect on wide screens. #}
+    {# ---- BULK ACTION BAR (Fáze G) — persistentní; zašedlý/disabled, dokud není ≥1 řádek vybrán.
+         JS posbírá zaškrtnutá ID a sestaví skrytý POST formulář (vyhne se vnořeným formulářům v řádcích). #}
+    {% if is_granted('ROLE_ADMIN') %}
+        <div id="bulkBar" class="bulk-bar is-empty d-print-none"
+             data-export-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_export') }}"
+             data-delete-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_delete') }}"
+             data-csrf-export="{{ csrf_token('bulk_export') }}"
+             data-csrf-delete="{{ csrf_token('bulk_delete') }}"
+             data-return="{{ app.request.requestUri }}">
+            <span class="bulk-count">Vybráno: <strong id="bulkCount">0</strong></span>
+            <span class="bulk-actions">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="csv" disabled>⬇ Export (CSV)</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="pdf" disabled>⬇ Export (PDF)</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bulk-action="delete" disabled>🗑 Smazat vybrané</button>
+            </span>
+            <span class="bulk-hint small text-secondary">Zaškrtni řádky vlevo — operace platí jen pro vybrané přihlášky.</span>
+        </div>
+    {% endif %}
+
     <div class="participants-table-wrap">
     <table class="list participant-list" style="table-layout: fixed; word-break: break-word;">
         {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for participant in participants %}
             {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
         {% else %}
-            <tbody><tr><td colspan="5" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
+            <tbody><tr><td colspan="{{ is_granted('ROLE_ADMIN') ? 6 : 5 }}" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
         {% endfor %}
     </table>
     </div>
@@ -489,6 +518,70 @@
             <div class="small text-secondary mt-1">Klikni do pole (vše se označí) a zkopíruj (Ctrl+C) do pole příjemců v e-mailovém klientovi.</div>
         </details>
     {% endif %}
+
+    {# Bulk-action bar wiring (Fáze G): track checked rows, toggle the persistent bar's enabled
+       state, and on a bulk button build+submit a hidden POST form with the checked IDs (avoids
+       nesting a form around the per-row delete/restore forms). Cap mirrors the reassign wizard. #}
+    <script>
+        (function () {
+            var bar = document.getElementById('bulkBar');
+            if (!bar) { return; }
+            var all = document.getElementById('bulkSelectAll');
+            var count = document.getElementById('bulkCount');
+            var actionBtns = [].slice.call(bar.querySelectorAll('[data-bulk-action]'));
+            var HARD_CAP_DELETE = 100;
+            function checks() { return [].slice.call(document.querySelectorAll('.bulk-row-check')); }
+            function checkedIds() { return checks().filter(function (c) { return c.checked; }).map(function (c) { return c.value; }); }
+            function refresh() {
+                var ids = checkedIds();
+                if (count) { count.textContent = String(ids.length); }
+                var empty = ids.length === 0;
+                bar.classList.toggle('is-empty', empty);
+                actionBtns.forEach(function (b) { b.disabled = empty; });
+                if (all) {
+                    var cs = checks();
+                    all.checked = cs.length > 0 && ids.length === cs.length;
+                    all.indeterminate = ids.length > 0 && ids.length < cs.length;
+                }
+            }
+            if (all) {
+                all.addEventListener('change', function () {
+                    checks().forEach(function (c) { c.checked = all.checked; });
+                    refresh();
+                });
+            }
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.classList && e.target.classList.contains('bulk-row-check')) { refresh(); }
+            });
+            function submitBulk(url, csrf, ids, extra) {
+                var f = document.createElement('form');
+                f.method = 'post';
+                f.action = url;
+                function hidden(name, value) { var i = document.createElement('input'); i.type = 'hidden'; i.name = name; i.value = value; f.appendChild(i); }
+                hidden('_token', csrf);
+                hidden('return', bar.getAttribute('data-return') || '');
+                ids.forEach(function (id) { hidden('ids[]', id); });
+                if (extra) { Object.keys(extra).forEach(function (k) { hidden(k, extra[k]); }); }
+                document.body.appendChild(f);
+                f.submit();
+            }
+            actionBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var ids = checkedIds();
+                    if (ids.length === 0) { return; }
+                    var action = btn.getAttribute('data-bulk-action');
+                    if (action === 'export') {
+                        submitBulk(bar.getAttribute('data-export-url'), bar.getAttribute('data-csrf-export'), ids, { format: btn.getAttribute('data-format') || 'csv' });
+                    } else if (action === 'delete') {
+                        if (ids.length > HARD_CAP_DELETE) { window.alert('Najednou lze smazat nejvýše ' + HARD_CAP_DELETE + ' přihlášek (vybráno ' + ids.length + ').'); return; }
+                        if (!window.confirm('Smazat ' + ids.length + ' vybraných přihlášek? (lze obnovit)')) { return; }
+                        submitBulk(bar.getAttribute('data-delete-url'), bar.getAttribute('data-csrf-delete'), ids, null);
+                    }
+                });
+            });
+            refresh();
+        })();
+    </script>
 
     {# Instant typeahead over the rows already on the page: previews/jumps to a participant.
        Real filtering stays server-side (Enter without a highlighted suggestion submits ?q=).

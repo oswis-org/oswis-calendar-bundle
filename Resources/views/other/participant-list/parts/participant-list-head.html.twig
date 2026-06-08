@@ -11,7 +11,13 @@
 
 <thead>
 <tr>
-    <th style="width: 18%;">
+    {% if is_granted('ROLE_ADMIN') %}
+        {# Bulk-select column (Fáze G). Header checkbox = select/deselect all rendered rows. #}
+        <th class="bulk-col" style="width: 3%; text-align: center; vertical-align: middle;">
+            <input type="checkbox" id="bulkSelectAll" title="Vybrat / odznačit vše na stránce" aria-label="Vybrat vše">
+        </th>
+    {% endif %}
+    <th style="width: 15%;">
         {{ _self.sortHeader('ID', 'id', sort|default('name'), dir|default('asc'), qbase) }}
         <span class="block small">{{ _self.sortHeader('Vytvořeno', 'created', sort|default('name'), dir|default('asc'), qbase) }}</span>
     </th>
