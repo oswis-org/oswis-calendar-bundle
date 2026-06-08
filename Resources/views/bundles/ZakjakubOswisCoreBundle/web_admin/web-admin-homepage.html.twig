@@ -9,7 +9,13 @@
             <a href="{{ path('oswis_org_oswis_calendar_update_participants') }}">Aktualizace DB přihlášek</a>
         </li>
         <li>
-            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_send_automails') }}">Odeslat e-maily</a>
+            {# POST + CSRF + potvrzení — rozesílá reálné e-maily, dřív to byl CSRF-able GET. #}
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_send_automails') }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('Rozeslat automatické e-maily (dávka 100) reálným příjemcům?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('send_automails') }}">
+                <button type="submit" class="btn btn-link p-0 align-baseline" style="text-decoration:underline;">Odeslat e-maily</button>
+            </form>
         </li>
     </ul>
 

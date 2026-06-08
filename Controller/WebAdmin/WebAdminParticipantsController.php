@@ -112,8 +112,12 @@ final class WebAdminParticipantsController extends AbstractController
      * @throws OswisException
      */
     #[IsGranted('ROLE_ADMIN')]
-    public function sendAutoMails(int $limit = 100, ?string $type = null): Response
+    public function sendAutoMails(Request $request, int $limit = 100, ?string $type = null): Response
     {
+        // State-changing real-mail send: POST + CSRF only (was a CSRF-able GET).
+        if (!$this->isCsrfTokenValid('send_automails', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
         $this->participantService->sendAutoMails(null, $type, $limit);
 
         // Admin message skeleton (keeps the admin menu) — not the public message page.
