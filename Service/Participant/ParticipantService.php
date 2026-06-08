@@ -186,6 +186,12 @@ class ParticipantService
             $this->em->persist($participant);
             $participant->updateCachedColumns();
             $this->requestActivation($participant);
+            // Flush the new participant (and, by cascade, its ParticipantRegistration + flags)
+            // BEFORE recomputing the cached usage counters. Doctrine ORM 3 does NOT auto-flush
+            // before a DQL query, so updateUsage()/updateUsages() COUNT the DB directly: counting
+            // before this flush silently omits the row we just added, writing base_usage one too
+            // low — which lets the *next* registration overbook by one. Verified empirically.
+            $this->em->flush();
             $this->flagRangeService->updateUsages($participant);
             if (null !== $regRange) {
                 $this->registrationOfferService->updateUsage($regRange);
