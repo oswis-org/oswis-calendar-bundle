@@ -12,6 +12,7 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 
 /**
  * @extends ServiceEntityRepository<ParticipantCategory>
@@ -103,7 +104,19 @@ class ParticipantCategoryRepository extends ServiceEntityRepository
     public function getParticipantTypes(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $result = $this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult();
+        $rows = is_array($result)
+            ? array_values(array_filter($result, static fn (mixed $r): bool => $r instanceof ParticipantCategory))
+            : [];
+        // The DB ORDER BY uses utf8mb4_unicode_ci, which sorts Czech diacritics (Č/Š/Ř…) after Z.
+        // Re-sort by name with the Czech-aware collator so categories read alphabetically.
+        usort(
+            $rows,
+            static fn (ParticipantCategory $a, ParticipantCategory $b): int => StringUtils::compareCzech(
+                $a->getName(),
+                $b->getName(),
+            ),
+        );
 
-        return new ArrayCollection(is_array($result) ? $result : []);
+        return new ArrayCollection($rows);
     }
 }

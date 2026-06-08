@@ -267,11 +267,31 @@ class WebAdminParticipantsListController extends AbstractController
             'q'                   => $q,
             'depthOverride'       => $depthOverride,
             'participantCategorySlug' => $participantCategorySlug,
-            'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
+            'participantCategories'   => $this->sortedParticipantCategories(),
             'yearEvents'              => $yearEvents,
             'defaultEvent'            => $this->eventService->getDefaultEvent(),
             'exportPresets'           => $this->participantExportDefinition->getPresets(),
         ]);
+    }
+
+    /**
+     * Participant categories for the filter dropdown, sorted Czech-alphabetically in PHP.
+     * (findBy()'s DB ORDER BY uses utf8mb4_unicode_ci, which sorts Č/Š/Ř… after Z.)
+     *
+     * @return list<ParticipantCategory>
+     */
+    private function sortedParticipantCategories(): array
+    {
+        $categories = $this->participantCategoryService->getRepository()->findBy([]);
+        usort(
+            $categories,
+            static fn (ParticipantCategory $a, ParticipantCategory $b): int => StringUtils::compareCzech(
+                $a->getName(),
+                $b->getName(),
+            ),
+        );
+
+        return $categories;
     }
 
     /**
