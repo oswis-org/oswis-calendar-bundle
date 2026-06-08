@@ -51,6 +51,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterfac
 #[Entity]
 #[Table(name: 'calendar_participant_mail')]
 #[Index(name: 'IDX_PARTICIPANT_MAIL_THREAD_KEY', columns: ['thread_key'])]
+#[Index(name: 'IDX_PARTICIPANT_MAIL_BULK', columns: ['bulk_id'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
 class ParticipantMail extends AbstractMail implements CommunicationEntryInterface
 {
@@ -73,6 +74,11 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
     #[ManyToOne(targetEntity: ParticipantToken::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'participant_token_id', referencedColumnName: 'id')]
     protected ?ParticipantToken $participantToken = null;
+
+    /** Bulk this mail was sent as part of (ad-hoc bulk outbox), null for system/individual mails. */
+    #[ManyToOne(targetEntity: ParticipantMailBulk::class)]
+    #[JoinColumn(name: 'bulk_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    protected ?ParticipantMailBulk $bulk = null;
 
     #[\Doctrine\ORM\Mapping\Column(type: 'string', length: 64, nullable: true)]
     protected ?string $threadKey = null;
@@ -143,6 +149,16 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
     public function setParticipantMailCategory(?ParticipantMailCategory $participantMailCategory): void
     {
         $this->participantMailCategory = $participantMailCategory;
+    }
+
+    public function getBulk(): ?ParticipantMailBulk
+    {
+        return $this->bulk;
+    }
+
+    public function setBulk(?ParticipantMailBulk $bulk): void
+    {
+        $this->bulk = $bulk;
     }
 
     public function getThreadKey(): ?string
