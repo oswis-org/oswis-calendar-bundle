@@ -468,6 +468,7 @@
         <div id="bulkBar" class="bulk-bar is-empty d-print-none"
              data-export-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_export') }}"
              data-delete-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_delete') }}"
+             data-reassign-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}"
              data-csrf-export="{{ csrf_token('bulk_export') }}"
              data-csrf-delete="{{ csrf_token('bulk_delete') }}"
              data-return="{{ app.request.requestUri }}">
@@ -475,6 +476,7 @@
             <span class="bulk-actions">
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="csv" disabled>⬇ Export (CSV)</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="pdf" disabled>⬇ Export (PDF)</button>
+                <button type="button" class="btn btn-sm btn-outline-warning" data-bulk-action="reassign" disabled>↪ Přesunout</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bulk-action="delete" disabled>🗑 Smazat vybrané</button>
             </span>
             <span class="bulk-hint small text-secondary">Zaškrtni řádky vlevo — operace platí jen pro vybrané přihlášky.</span>
@@ -553,14 +555,15 @@
             document.addEventListener('change', function (e) {
                 if (e.target && e.target.classList && e.target.classList.contains('bulk-row-check')) { refresh(); }
             });
-            function submitBulk(url, csrf, ids, extra) {
+            function submitBulk(url, csrf, ids, extra, idField) {
                 var f = document.createElement('form');
                 f.method = 'post';
                 f.action = url;
                 function hidden(name, value) { var i = document.createElement('input'); i.type = 'hidden'; i.name = name; i.value = value; f.appendChild(i); }
-                hidden('_token', csrf);
+                if (csrf) { hidden('_token', csrf); }
                 hidden('return', bar.getAttribute('data-return') || '');
-                ids.forEach(function (id) { hidden('ids[]', id); });
+                var field = (idField || 'ids') + '[]';
+                ids.forEach(function (id) { hidden(field, id); });
                 if (extra) { Object.keys(extra).forEach(function (k) { hidden(k, extra[k]); }); }
                 document.body.appendChild(f);
                 f.submit();
@@ -572,6 +575,8 @@
                     var action = btn.getAttribute('data-bulk-action');
                     if (action === 'export') {
                         submitBulk(bar.getAttribute('data-export-url'), bar.getAttribute('data-csrf-export'), ids, { format: btn.getAttribute('data-format') || 'csv' });
+                    } else if (action === 'reassign') {
+                        submitBulk(bar.getAttribute('data-reassign-url'), '', ids, null, 'preselectIds');
                     } else if (action === 'delete') {
                         if (ids.length > HARD_CAP_DELETE) { window.alert('Najednou lze smazat nejvýše ' + HARD_CAP_DELETE + ' přihlášek (vybráno ' + ids.length + ').'); return; }
                         if (!window.confirm('Smazat ' + ids.length + ' vybraných přihlášek? (lze obnovit)')) { return; }

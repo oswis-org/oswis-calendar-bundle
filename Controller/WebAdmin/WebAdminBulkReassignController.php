@@ -59,14 +59,28 @@ final class WebAdminBulkReassignController extends AbstractController
         $categories = $this->categoryRepository->findAll();
         $offers = $this->em->getRepository(RegistrationOffer::class)->findBy([], ['createdAt' => 'DESC'], 100);
 
-        $participants = $sourceEvent
-            ? iterator_to_array($this->participantService->getParticipants([
+        // "Přesunout" ze sjednoceného seznamu pošle vybraná ID jako preselectIds[] (bez zdrojového
+        // rozsahu) → načteme přesně je a předzaškrtneme. Na re-render po neúspěšném execute použijeme
+        // odeslané participantIds[], ať se výběr neztratí.
+        $preselectIds = $this->intIds($request->request->all('preselectIds'));
+        $displayIds = $preselectIds;
+        if ([] === $displayIds && $request->isMethod('POST') && 'execute' === $request->request->get('_action')) {
+            $displayIds = $this->intIds($participantIds);
+        }
+        $preselectMode = [] !== $displayIds && null === $sourceEvent;
+        if ($preselectMode) {
+            $participants = $this->participantService->getRepository()->findBy(['id' => $displayIds]);
+        } elseif (null !== $sourceEvent) {
+            $participants = iterator_to_array($this->participantService->getParticipants([
                 ParticipantRepository::CRITERIA_EVENT                 => $sourceEvent,
                 ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $sourceCategory,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED       => false,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
-            ]), false)
-            : [];
+            ]), false);
+        } else {
+            $participants = [];
+        }
+        $preselectedIds = $preselectMode ? $displayIds : [];
 
         if ($request->isMethod('POST') && 'execute' === $request->request->get('_action')) {
             if (!$this->isCsrfTokenValid('bulk_reassign', (string) $token)) {
@@ -78,16 +92,13 @@ final class WebAdminBulkReassignController extends AbstractController
             if (!$targetOffer instanceof RegistrationOffer) {
                 $this->addFlash('error', 'Nebyla vybrána cílová přihláška.');
 
-                return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory);
+                return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory, $preselectMode, $preselectedIds);
             }
-            $ids = array_values(array_filter(array_map(
-                static fn (mixed $v): int => is_numeric($v) ? (int) $v : 0,
-                $participantIds,
-            )));
+            $ids = $this->intIds($participantIds);
             if (count($ids) === 0) {
                 $this->addFlash('error', 'Nebyl označen žádný účastník.');
 
-                return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory);
+                return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory, $preselectMode, $preselectedIds);
             }
             if (count($ids) > self::HARD_CAP) {
                 $this->addFlash('error', sprintf(
@@ -95,7 +106,7 @@ final class WebAdminBulkReassignController extends AbstractController
                     count($ids), self::HARD_CAP,
                 ));
 
-                return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory);
+                return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory, $preselectMode, $preselectedIds);
             }
 
             $moved = [];
@@ -145,7 +156,7 @@ final class WebAdminBulkReassignController extends AbstractController
             ));
         }
 
-        return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory);
+        return $this->renderWizard($events, $categories, $offers, $participants, $sourceEvent, $sourceCategory, $preselectMode, $preselectedIds);
     }
 
     /**
@@ -153,6 +164,7 @@ final class WebAdminBulkReassignController extends AbstractController
      * @param list<\OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory> $categories
      * @param list<RegistrationOffer> $offers
      * @param list<Participant> $participants
+     * @param list<int> $preselectedIds
      */
     private function renderWizard(
         array $events,
@@ -161,6 +173,8 @@ final class WebAdminBulkReassignController extends AbstractController
         array $participants,
         ?\OswisOrg\OswisCalendarBundle\Entity\Event\Event $sourceEvent,
         ?\OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory $sourceCategory,
+        bool $preselectMode = false,
+        array $preselectedIds = [],
     ): Response {
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_reassign.html.twig', [
             'events'          => $events,
@@ -169,9 +183,26 @@ final class WebAdminBulkReassignController extends AbstractController
             'participants'    => $participants,
             'sourceEvent'     => $sourceEvent,
             'sourceCategory'  => $sourceCategory,
+            'preselectMode'   => $preselectMode,
+            'preselectedIds'  => $preselectedIds,
             'hardCap'         => self::HARD_CAP,
             'pageTitle'       => 'Hromadný přesun přihlášek',
             'page_title'      => 'Hromadný přesun přihlášek :: ADMIN',
         ]);
+    }
+
+    /**
+     * POST id pole → deduplikovaný seznam kladných intů.
+     *
+     * @param array<mixed> $raw
+     *
+     * @return list<int>
+     */
+    private function intIds(array $raw): array
+    {
+        return array_values(array_unique(array_filter(array_map(
+            static fn (mixed $v): int => is_numeric($v) ? (int) $v : 0,
+            $raw,
+        ))));
     }
 }

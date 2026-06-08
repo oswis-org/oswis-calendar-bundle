@@ -43,9 +43,17 @@
             </div>
         </form>
 
-        {% if sourceEvent %}
+        {% if preselectMode|default(false) %}
+            <div class="alert alert-info py-2">
+                Předvybráno <strong>{{ preselectedIds|default([])|length }}</strong> přihlášek ze seznamu.
+                Vyber cílovou přihlášku a potvrď přesun.
+            </div>
+        {% endif %}
+        {% if sourceEvent or preselectMode|default(false) %}
             <form method="post"
-                  action="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign', {sourceEventSlug: sourceEvent.slug, sourceCategorySlug: sourceCategory ? sourceCategory.slug : null}) }}"
+                  action="{{ preselectMode|default(false)
+                      ? path('oswis_org_oswis_calendar_web_admin_bulk_reassign')
+                      : path('oswis_org_oswis_calendar_web_admin_bulk_reassign', {sourceEventSlug: sourceEvent.slug, sourceCategorySlug: sourceCategory ? sourceCategory.slug : null}) }}"
                   onsubmit="return confirm('Opravdu přesunout označené účastníky? Tato akce změní jejich přihlášku.');">
                 <input type="hidden" name="_token" value="{{ csrf_token('bulk_reassign') }}">
                 <input type="hidden" name="_action" value="execute">
@@ -92,7 +100,7 @@
                             {% set contact = participant.contact(false)|default %}
                             <tr>
                                 <td>
-                                    <input type="checkbox" name="participantIds[]" value="{{ participant.id }}" class="bulk-row-check">
+                                    <input type="checkbox" name="participantIds[]" value="{{ participant.id }}" class="bulk-row-check" {{ participant.id in preselectedIds|default([]) ? 'checked' : '' }}>
                                 </td>
                                 <td><strong>{{ participant.id }}</strong></td>
                                 <td>{{ contact.name|default('(bez jména)') }}</td>
