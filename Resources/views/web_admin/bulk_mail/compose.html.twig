@@ -1,0 +1,75 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ pageTitle }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>✉ {{ pageTitle }}</h2>
+        <p>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="btn btn-sm btn-link">← Zpět na seznam přihlášek</a>
+            · <a href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_status') }}" class="btn btn-sm btn-link">Stav hromadných e-mailů</a>
+        </p>
+
+        <div class="alert alert-info">
+            <strong>Příjemců: {{ recipientCount }}</strong> {{ recipientCount == 1 ? 'přihláška' : 'přihlášek' }}.
+            Každá přihláška = nejméně 1 e-mailová adresa (organizace může mít více).
+            Jde o <strong>reálné odeslání</strong> živým lidem — zkontrolujte text a náhled.
+        </div>
+
+        <form method="post" id="bulkMailForm"
+              action="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_queue') }}"
+              onsubmit="return confirm('Zařadit hromadný e-mail pro {{ recipientCount }} příjemců a spustit odesílání?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('bulk_mail') }}">
+            <input type="hidden" name="idsCsv" value="{{ idsCsv }}">
+
+            <div class="mb-3">
+                <label for="bm_subject" class="form-label">Předmět</label>
+                <input type="text" class="form-control" id="bm_subject" name="subject" maxlength="255" required>
+            </div>
+            <div class="mb-3">
+                <label for="bm_body" class="form-label">Text (HTML)</label>
+                <textarea class="form-control" id="bm_body" name="body" rows="12" required placeholder="&lt;p&gt;Ahoj…&lt;/p&gt;"></textarea>
+                <small class="text-muted">
+                    Tělo se sanitizuje (bezpečné značky + odkazy http/https/mailto/tel) a vloží do OSWIS šablony.
+                    Oslovení personalizuje šablona automaticky.
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-secondary" id="bmPreviewBtn">👁 Náhled (1. příjemce)</button>
+                <button type="submit" class="btn btn-primary">✉ Zařadit a odeslat ({{ recipientCount }})</button>
+            </div>
+        </form>
+
+        <div id="bmPreviewWrap" style="display:none;">
+            <h3>Náhled</h3>
+            <iframe id="bmPreviewFrame" title="Náhled e-mailu" style="width:100%;height:600px;border:1px solid #ccc;background:#fff;"></iframe>
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('bmPreviewBtn');
+            if (!btn) { return; }
+            var PREVIEW_URL = {{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_preview')|json_encode|raw }};
+            var TOKEN = {{ csrf_token('bulk_mail_preview')|json_encode|raw }};
+            btn.addEventListener('click', function () {
+                var fd = new FormData();
+                fd.append('_token', TOKEN);
+                fd.append('idsCsv', document.querySelector('#bulkMailForm [name=idsCsv]').value);
+                fd.append('subject', document.getElementById('bm_subject').value);
+                fd.append('body', document.getElementById('bm_body').value);
+                btn.disabled = true;
+                btn.textContent = 'Generuji náhled…';
+                fetch(PREVIEW_URL, { method: 'POST', body: fd, credentials: 'same-origin' })
+                    .then(function (r) { return r.text(); })
+                    .then(function (html) {
+                        document.getElementById('bmPreviewWrap').style.display = 'block';
+                        document.getElementById('bmPreviewFrame').srcdoc = html;
+                    })
+                    .catch(function () { alert('Náhled se nepodařilo vytvořit.'); })
+                    .finally(function () { btn.disabled = false; btn.textContent = '👁 Náhled (1. příjemce)'; });
+            });
+        })();
+    </script>
+{% endblock %}

@@ -471,11 +471,14 @@
              data-reassign-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}"
              data-csrf-export="{{ csrf_token('bulk_export') }}"
              data-csrf-delete="{{ csrf_token('bulk_delete') }}"
+             data-mail-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_compose') }}"
+             data-csrf-mail="{{ csrf_token('bulk_mail') }}"
              data-return="{{ app.request.requestUri }}">
             <span class="bulk-count">Vybráno: <strong id="bulkCount">0</strong></span>
             <span class="bulk-actions">
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="csv" disabled>⬇ Export (CSV)</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="pdf" disabled>⬇ Export (PDF)</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-bulk-action="mail" disabled>✉ Hromadný e-mail</button>
                 <button type="button" class="btn btn-sm btn-outline-warning" data-bulk-action="reassign" disabled>↪ Přesunout</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bulk-action="delete" disabled>🗑 Smazat vybrané</button>
             </span>
@@ -575,6 +578,8 @@
                     var action = btn.getAttribute('data-bulk-action');
                     if (action === 'export') {
                         submitBulk(bar.getAttribute('data-export-url'), bar.getAttribute('data-csrf-export'), ids, { format: btn.getAttribute('data-format') || 'csv' });
+                    } else if (action === 'mail') {
+                        submitBulk(bar.getAttribute('data-mail-url'), bar.getAttribute('data-csrf-mail'), ids, null);
                     } else if (action === 'reassign') {
                         submitBulk(bar.getAttribute('data-reassign-url'), '', ids, null, 'preselectIds');
                     } else if (action === 'delete') {

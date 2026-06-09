@@ -193,6 +193,32 @@ oswis_org_oswis_calendar_web_admin_participant_send_automails:
   path: "/web_admin/prihlasky/send-automails/{limit?}/{type?}"
   methods: [POST]
 
+# Ad-hoc bulk e-mail (Fáze G Ink.2a): compose → preview → queue → status (JS auto-drain).
+oswis_org_oswis_calendar_web_admin_bulk_mail_compose:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::compose
+  path: "/web_admin/prihlasky/hromadny-email"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_preview:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::preview
+  path: "/web_admin/prihlasky/hromadny-email/nahled"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_queue:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::queue
+  path: "/web_admin/prihlasky/hromadny-email/zaradit"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_status:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::status
+  path: "/web_admin/prihlasky/hromadne-emaily"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_drain:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::drain
+  path: "/web_admin/prihlasky/hromadny-email/odeslat-davku"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
   path: "/web_admin/prijezd/{participantId}/{arrival?}"

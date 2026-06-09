@@ -1,0 +1,109 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ pageTitle }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>{{ pageTitle }}</h2>
+        <p>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="btn btn-sm btn-link">← Zpět na seznam přihlášek</a>
+        </p>
+
+        {% if bulks is empty %}
+            <p class="text-muted">Žádné hromadné e-maily.</p>
+        {% else %}
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Předmět</th>
+                        <th>Vytvořeno</th>
+                        <th>Stav</th>
+                        <th>Postup</th>
+                        <th>Odesláno / chyby</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bulk in bulks %}
+                        <tr data-bulk-id="{{ bulk.id }}" data-sent="{{ bulk.sentCount }}" data-failed="{{ bulk.failedCount }}"
+                            {% if bulk.id == highlight %}style="background:#fffbe6"{% endif %}>
+                            <td>{{ bulk.id }}</td>
+                            <td>
+                                {{ bulk.subject }}
+                                {% if bulk.adminName %}<br><small class="text-muted">{{ bulk.adminName }}</small>{% endif %}
+                            </td>
+                            <td><small>{{ bulk.createdAt|date('Y-m-d H:i') }}</small></td>
+                            <td class="bm-status">{{ bulk.status }}</td>
+                            <td class="bm-progress">{{ bulk.processedCount }}/{{ bulk.totalCount }}</td>
+                            <td class="bm-tally">{{ bulk.sentCount }} / {{ bulk.failedCount }}</td>
+                            <td>
+                                {% if not bulk.done %}
+                                    <button type="button" class="btn btn-sm btn-primary bm-drain-btn" data-bulk-id="{{ bulk.id }}">Odeslat teď</button>
+                                {% else %}
+                                    ✓
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="text-muted"><small>Čekající dávky se odesílají automaticky po malých dávkách, dokud nejsou hotové (i bez cronu). Stránku můžete nechat otevřenou.</small></p>
+        {% endif %}
+    </main>
+
+    <script>
+        (function () {
+            var DRAIN_URL = {{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_drain')|json_encode|raw }};
+            var TOKEN = {{ csrf_token('bulk_mail_drain')|json_encode|raw }};
+
+            function rowFor(id) { return document.querySelector('tr[data-bulk-id="' + id + '"]'); }
+
+            function drainOnce(id) {
+                var fd = new FormData();
+                fd.append('_token', TOKEN);
+                fd.append('bulkId', id);
+                return fetch(DRAIN_URL, { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); });
+            }
+
+            function update(row, p) {
+                if (!row) { return; }
+                row.querySelector('.bm-status').textContent = p.done ? 'done' : 'sending';
+                row.querySelector('.bm-progress').textContent = p.processed + '/' + p.total;
+                var sent = parseInt(row.getAttribute('data-sent') || '0', 10) + (p.sent || 0);
+                var failed = parseInt(row.getAttribute('data-failed') || '0', 10) + (p.failed || 0);
+                row.setAttribute('data-sent', sent);
+                row.setAttribute('data-failed', failed);
+                row.querySelector('.bm-tally').textContent = sent + ' / ' + failed;
+                if (p.done) {
+                    var cell = row.lastElementChild;
+                    if (cell) { cell.textContent = '✓'; }
+                }
+            }
+
+            function drainLoop(id) {
+                return drainOnce(id).then(function (p) {
+                    if (p.error) { return; }
+                    update(rowFor(id), p);
+                    if (!p.done) { return drainLoop(id); }
+                });
+            }
+
+            document.querySelectorAll('.bm-drain-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    btn.disabled = true;
+                    btn.textContent = 'Odesílám…';
+                    drainLoop(btn.getAttribute('data-bulk-id'));
+                });
+            });
+
+            // Auto-drain pending bulks on load (immediate path + fallback when no cron runs).
+            document.querySelectorAll('tr[data-bulk-id]').forEach(function (row) {
+                var status = row.querySelector('.bm-status');
+                if (status && status.textContent.trim() !== 'done') {
+                    drainLoop(row.getAttribute('data-bulk-id'));
+                }
+            });
+        })();
+    </script>
+{% endblock %}

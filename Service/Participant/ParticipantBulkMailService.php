@@ -90,6 +90,35 @@ class ParticipantBulkMailService
     }
 
     /**
+     * Twig context for rendering {@see AD_HOC_TEMPLATE} as a PREVIEW for one participant (the first
+     * contact person, if any). Same shape the drain uses, so the preview is faithful. No send.
+     *
+     * @return array<string, mixed>
+     */
+    public function previewContext(Participant $participant, string $subject, string $bodyHtml, ?string $adminName): array
+    {
+        $contact = $participant->getContact();
+        $appUser = null;
+        foreach ($participant->getContactPersons(true) as $contactPerson) {
+            if ($contactPerson instanceof AbstractContact && null !== $contactPerson->getAppUser()) {
+                $appUser = $contactPerson->getAppUser();
+                break;
+            }
+        }
+
+        return [
+            'participant'    => $participant,
+            'appUser'        => $appUser,
+            'contact'        => $contact,
+            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+            'subject'        => $subject,
+            'bodyHtml'       => $bodyHtml,
+            'adminName'      => $adminName,
+            'type'           => 'ad-hoc-bulk-preview',
+        ];
+    }
+
+    /**
      * Send the bulk's message to one participant's contact persons (Person = 1 address, Org = N).
      * Returns true if at least one address was actually delivered (isSent).
      */

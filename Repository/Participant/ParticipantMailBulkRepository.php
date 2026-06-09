@@ -37,6 +37,27 @@ class ParticipantMailBulkRepository extends ServiceEntityRepository
         );
     }
 
+    /**
+     * Most recent bulks (any status), newest first — for the status page.
+     *
+     * @return list<ParticipantMailBulk>
+     */
+    public function findRecent(int $limit = 30): array
+    {
+        $rows = $this->createQueryBuilder('b')
+            ->orderBy('b.createdAt', 'DESC')
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()
+            ->getResult();
+
+        return array_values(
+            array_filter(
+                is_array($rows) ? $rows : [],
+                static fn (mixed $row): bool => $row instanceof ParticipantMailBulk,
+            ),
+        );
+    }
+
     final public function findOneBy(array $criteria, ?array $orderBy = null): ?ParticipantMailBulk
     {
         $result = parent::findOneBy($criteria, $orderBy);
