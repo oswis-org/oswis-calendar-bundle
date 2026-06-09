@@ -12,9 +12,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
-use Excparticipanttion;
 use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
@@ -259,6 +259,39 @@ class ParticipantRepository extends ServiceEntityRepository
         }
 
         return $ids;
+    }
+
+    /**
+     * The $limit most recently created active, event-bound participants, with their to-one
+     * associations (contact / event / contactAppUser) fetch-joined so the preview sample-recipient
+     * picker can show a name + event without lazy N+1. To-one joins + LIMIT is pagination-safe (no row
+     * multiplication), unlike fetch-joining the to-many collections. Filters keep the picker on real
+     * recipients: a Person (recipient-facing mail goes to people, not the organizer Organization)
+     * registered to an event. {@see MailPreviewService::pickSampleParticipant}.
+     *
+     * @return list<Participant>
+     */
+    public function findSampleParticipants(int $limit = 30): array
+    {
+        $queryBuilder = $this->createQueryBuilder('participant')
+            ->select('participant, contact, event, contactAppUser')
+            ->leftJoin('participant.contact', 'contact')
+            ->leftJoin('contact.appUser', 'contactAppUser')
+            ->leftJoin('participant.event', 'event')
+            ->andWhere('participant.deletedAt IS NULL')
+            ->andWhere('participant.event IS NOT NULL')
+            ->andWhere('contact INSTANCE OF '.Person::class)
+            ->orderBy('participant.id', 'DESC')
+            ->setMaxResults(max(1, $limit));
+        $result = $queryBuilder->getQuery()->getResult();
+        $participants = [];
+        foreach (is_array($result) ? $result : [] as $participant) {
+            if ($participant instanceof Participant) {
+                $participants[] = $participant;
+            }
+        }
+
+        return $participants;
     }
 
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void

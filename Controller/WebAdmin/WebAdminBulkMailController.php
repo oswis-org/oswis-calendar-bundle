@@ -8,6 +8,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -35,6 +36,7 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantBulkMailService $bulkMailService,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantMailBulkRepository $bulkRepository,
+        private readonly MailPreviewService $mailPreview,
     ) {
     }
 
@@ -83,12 +85,14 @@ final class WebAdminBulkMailController extends AbstractController
         }
         [$subject, $body] = $this->readMessage($request);
 
-        $html = $this->renderView(
+        $result = $this->mailPreview->renderTemplate(
             ParticipantBulkMailService::AD_HOC_TEMPLATE,
-            $this->bulkMailService->previewContext($participant, $subject, $body, $this->adminName()),
+            $participant,
+            ['bodyHtml' => $body, 'adminName' => $this->adminName(), 'type' => 'ad-hoc-bulk-preview'],
+            $subject,
         );
 
-        return new Response($html);
+        return new Response($result['html']);
     }
 
     /** Step 2: queue the bulk (snapshot of recipients). Sends nothing; the drain does. */

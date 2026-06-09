@@ -12,5 +12,89 @@
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
         {{ form_widget(form) }}
         {{ form_end(form, { render_rest: false }) }}
+
+        {% if kind == 'template' %}
+            {# Live preview through the real MJML pipeline — #139 used to edit blind. Renders the
+               current (unsaved) textarea content against a sample participant; iframe isolates CSS. #}
+            <hr style="margin: 1.5rem 0;">
+            <div id="mtPreview" style="margin-top: 1rem;"
+                 data-url="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_preview', { id: entity.id }) }}"
+                 data-token="{{ csrf_token('mail_template_preview') }}">
+                <h3>👁 Náhled e-mailu</h3>
+                <p class="text-muted" style="max-width: 60rem;">
+                    Vykreslí <strong>aktuální (i neuložený) obsah</strong> šablony přes stejnou MJML cestu,
+                    kterou používá reálné odeslání. Vyber vzorového příjemce (např. z 1. vs 2. turnusu)
+                    pro ověření podmínkových bloků. QR platby a přílohy se v náhledu nezobrazují.
+                </p>
+
+                <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: .75rem;">
+                    <div>
+                        <label for="mtSampleSelect" class="form-label" style="margin-bottom: .15rem;">Vzorový příjemce</label>
+                        <select id="mtSampleSelect" class="form-select form-select-sm" style="min-width: 22rem;">
+                            <option value="">— nejnovější aktivní přihláška —</option>
+                            {% for p in sampleParticipants|default([]) %}
+                                <option value="{{ p.id }}">
+                                    #{{ p.id }} ·
+                                    {{ p.contact ? (p.contact.name|default('(bez jména)')) : '(bez kontaktu)' }}
+                                    {%- if p.event %} · {{ p.event.shortName|default(p.event.name)|default('') }}{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="btn-group" role="group" aria-label="Šířka náhledu">
+                        <button type="button" class="btn btn-sm btn-outline-secondary active" id="mtWidthDesktop">🖥 Desktop</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="mtWidthMobile">📱 Mobil</button>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" id="mtPreviewBtn">Vykreslit náhled</button>
+                </div>
+
+                <div id="mtPreviewWrap" style="display: none;">
+                    <div style="background:#e9ecef; padding:.5rem; border:1px solid #ccc; border-bottom:0; max-width:640px;">
+                        <iframe id="mtPreviewFrame" title="Náhled e-mailu"
+                                style="display:block; width:100%; height:640px; border:1px solid #ccc; background:#fff;"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                (function () {
+                    var root = document.getElementById('mtPreview');
+                    var btn = document.getElementById('mtPreviewBtn');
+                    if (!root || !btn) { return; }
+                    var URL = root.getAttribute('data-url');
+                    var TOKEN = root.getAttribute('data-token');
+                    var frame = document.getElementById('mtPreviewFrame');
+                    var wrap = document.getElementById('mtPreviewWrap');
+                    var shell = wrap.firstElementChild;
+                    // Symfony form block prefix "twig_template_edit" → textarea id below.
+                    var sourceEl = document.getElementById('twig_template_edit_textValue');
+
+                    function setWidth(px, desktopActive) {
+                        shell.style.maxWidth = px;
+                        document.getElementById('mtWidthDesktop').classList.toggle('active', desktopActive);
+                        document.getElementById('mtWidthMobile').classList.toggle('active', !desktopActive);
+                    }
+                    document.getElementById('mtWidthDesktop').addEventListener('click', function () { setWidth('640px', true); });
+                    document.getElementById('mtWidthMobile').addEventListener('click', function () { setWidth('360px', false); });
+
+                    btn.addEventListener('click', function () {
+                        var fd = new FormData();
+                        fd.append('_token', TOKEN);
+                        fd.append('source', sourceEl ? sourceEl.value : '');
+                        fd.append('participantId', document.getElementById('mtSampleSelect').value);
+                        btn.disabled = true;
+                        btn.textContent = 'Generuji náhled…';
+                        fetch(URL, { method: 'POST', body: fd, credentials: 'same-origin' })
+                            .then(function (r) { return r.text(); })
+                            .then(function (html) {
+                                wrap.style.display = 'block';
+                                frame.srcdoc = html;
+                            })
+                            .catch(function () { alert('Náhled se nepodařilo vytvořit.'); })
+                            .finally(function () { btn.disabled = false; btn.textContent = 'Vykreslit náhled'; });
+                    });
+                })();
+            </script>
+        {% endif %}
     </main>
 {% endblock %}

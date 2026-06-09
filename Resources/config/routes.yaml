@@ -406,3 +406,10 @@ oswis_org_oswis_calendar_web_admin_mail_template_edit:
   requirements:
     id: '\d+'
   methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_mail_template_preview:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::previewTemplate
+  path: "/web_admin/e-maily/sablony/{id}/nahled"
+  requirements:
+    id: '\d+'
+  methods: [POST]

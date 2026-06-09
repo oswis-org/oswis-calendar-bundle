@@ -669,6 +669,14 @@ services:
       - '@doctrine.orm.entity_manager'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
 
+  ## Unified e-mail preview (bulk composer + #139 template editor)
+  OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService:
+    autowire: true
+    public: true
+    arguments:
+      - '@twig'
+      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository'
+
   ## Bulk e-mail outbox: drain service + cron command
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService:
     autowire: true
