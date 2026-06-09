@@ -342,9 +342,14 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService'
       - '@monolog.logger'
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService:
     alias: oswis_org_oswis_calendar.participant.participant_mail_service
+    public: true
+
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService:
+    autowire: true
     public: true
 
   oswis_org_oswis_calendar.participant.participant_category_service:

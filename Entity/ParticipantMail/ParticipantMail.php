@@ -58,6 +58,8 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
     public const TYPE_ACTIVATION_REQUEST = 'activation-request';
     public const TYPE_SUMMARY = 'summary';
     public const TYPE_PAYMENT = 'payment';
+    /** Sent on an UPDATE to an existing registration (not the initial confirmation) — lists what changed. */
+    public const TYPE_REGISTRATION_CHANGED = 'registration-changed';
 
     #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER', inversedBy: 'eMails')]
     #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]

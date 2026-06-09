@@ -31,14 +31,111 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class ParticipantMailService
 {
+    /** Standalone file template for the on-update change notice (no DB category/group config needed). */
+    public const REGISTRATION_CHANGED_TEMPLATE = '@OswisOrgOswisCalendar/e-mail/pages/participant-registration-changed.html.twig';
+
     public function __construct(
         protected EntityManagerInterface $em,
         protected MailService $mailService,
         protected ParticipantMailGroupRepository $groupRepository,
         protected ParticipantMailCategoryRepository $categoryRepository,
         protected ParticipantMailRepository $participantMailRepository,
+        protected ParticipantChangeService $changeService,
         protected LoggerInterface $logger
     ) {
+    }
+
+    /**
+     * Decide what an UPDATE to an existing registration should e-mail. Never confirmed yet (no prior
+     * summary / change mail) → send the confirmation (summary). Otherwise diff the versioned junction
+     * entities since that last mail: a real change → a "registration changed" notice listing it;
+     * nothing changed → no mail (kills the old behaviour of re-sending the full "you are registered"
+     * summary on every PUT). Notification failures are logged, never thrown — a change notice must not
+     * break the update response. {@see ParticipantSubscriber::postWrite}.
+     */
+    public function notifyParticipantChanged(Participant $participant): void
+    {
+        $since = $this->lastRegistrationMailSentAt($participant);
+        if (null === $since) {
+            try {
+                $this->sendSummary($participant);
+            } catch (\Throwable $exception) {
+                $this->logger->error(sprintf(
+                    'Participant #%d update: fallback summary failed: %s',
+                    $participant->getId() ?? 0,
+                    $exception->getMessage(),
+                ));
+            }
+
+            return;
+        }
+        $changes = $this->changeService->computeChanges($participant, $since);
+        if (false === $changes['hasChanges']) {
+            $this->logger->info(sprintf(
+                'Participant #%d updated but nothing notifiable changed since %s — no mail sent.',
+                $participant->getId() ?? 0,
+                $since->format('c'),
+            ));
+
+            return;
+        }
+        $this->sendRegistrationChanged($participant, $changes);
+    }
+
+    /**
+     * `sent` of the most recent summary / registration-changed mail for the participant — the diff
+     * baseline. Null if neither was ever sent (→ treat an update like a first confirmation).
+     */
+    private function lastRegistrationMailSentAt(Participant $participant): ?\DateTimeInterface
+    {
+        foreach ($this->participantMailRepository->findByParticipant($participant) as $mail) {
+            if (in_array($mail->getType(), [ParticipantMail::TYPE_SUMMARY, ParticipantMail::TYPE_REGISTRATION_CHANGED], true)) {
+                return $mail->getSent();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Send the "registration changed" notice (the computed diff) to each of the participant's contact
+     * persons via a standalone file template. No dedup — every real change should notify. Per-recipient
+     * failures are logged, not thrown.
+     *
+     * @param array{hasChanges: bool, flags: array<string, array{added: list<string>, removed: list<string>}>, registrationsAdded: list<string>, registrationsRemoved: list<string>, contactUpdated: bool} $changes
+     */
+    public function sendRegistrationChanged(Participant $participant, array $changes): void
+    {
+        $contact = $participant->getContact();
+        $event = $participant->getEvent();
+        $title = 'Změna v přihlášce'.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : '');
+        foreach ($participant->getContactPersons(true) as $contactPerson) {
+            if (!$contactPerson instanceof AbstractContact || null === ($appUser = $contactPerson->getAppUser())) {
+                continue;
+            }
+            try {
+                $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CHANGED);
+                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
+                $data = [
+                    'participant'    => $participant,
+                    'appUser'        => $appUser,
+                    'contact'        => $contact,
+                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+                    'changes'        => $changes,
+                    'type'           => ParticipantMail::TYPE_REGISTRATION_CHANGED,
+                ];
+                $this->em->persist($participantMail);
+                $this->mailService->sendEMail($participantMail, self::REGISTRATION_CHANGED_TEMPLATE, $data);
+                $this->em->flush();
+            } catch (\Throwable $exception) {
+                $this->logger->error(sprintf(
+                    'Registration-changed mail for participant #%d to user #%d failed: %s',
+                    $participant->getId() ?? 0,
+                    $appUser->getId() ?? 0,
+                    $exception->getMessage(),
+                ));
+            }
+        }
     }
 
     /**
