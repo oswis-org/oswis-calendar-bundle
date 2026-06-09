@@ -8,6 +8,8 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Twig\Environment;
 
 /**
@@ -25,6 +27,15 @@ use Twig\Environment;
  */
 final class MailPreviewService
 {
+    /**
+     * Mirrors the f / a / salName seeding at the top of message.html.twig so a free body FRAGMENT
+     * (which does not extend that base) still has the Czech salutation helpers in scope.
+     */
+    private const string SALUTATION_PRELUDE =
+        "{% set f = f is defined ? f : (contact.formal|default(appUser.formal|default(true))) %}"
+        ."{% set a = a is defined ? a : (contact.czechSuffixA|default(appUser.czechSuffixA|default(''))) %}"
+        ."{% set salName = salutationName|default(contact.salutationName|default(appUser.salutationName|default)) %}";
+
     public function __construct(
         private readonly Environment $twig,
         private readonly ParticipantRepository $participantRepository,
@@ -128,6 +139,40 @@ final class MailPreviewService
         } catch (\Throwable $exception) {
             return ['html' => $this->errorHtml($exception), 'subject' => $subject, 'error' => $exception->getMessage()];
         }
+    }
+
+    /**
+     * Render a TRUSTED body FRAGMENT (not a full template — it does not extend message.html.twig) as
+     * Twig against the recipient context, then sanitize the rendered HTML. The fragment may use
+     * entity-API variables and conditional blocks — e.g. {{ contact.salutationName }} or
+     * {% if participant.event(false).slug == 'seznamovak-up-2026-1' %}…{% endif %} — and the Czech
+     * salutation helpers (f / a / salName) thanks to the prepended prelude. Throws on a Twig error so
+     * the caller can decide (queue-validation rejects; the drain falls back to the raw body). The
+     * sanitized output is then wrapped by the ad-hoc template's content_inner via {{ bodyHtml|raw }}.
+     *
+     * @param array<string, mixed> $extra overrides (e.g. the specific recipient appUser of an org)
+     */
+    public function renderBodyFragment(string $bodyTwig, Participant $participant, array $extra = []): string
+    {
+        $context = $this->buildContext($participant, $extra);
+
+        return $this->sanitizeHtml($this->twig->createTemplate(self::SALUTATION_PRELUDE.$bodyTwig)->render($context));
+    }
+
+    /**
+     * Sanitize rendered body HTML — safe elements + http/https/mailto/tel links only. Applied to the
+     * Twig OUTPUT (not the trusted source), so admins keep full Twig power while the delivered markup
+     * stays safe. Same config the bulk composer used on input before bodies became trusted Twig.
+     */
+    public function sanitizeHtml(string $html): string
+    {
+        return (new HtmlSanitizer(
+            (new HtmlSanitizerConfig())
+                ->allowSafeElements()
+                ->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])
+                ->allowRelativeLinks(false)
+                ->allowRelativeMedias(false),
+        ))->sanitize($html);
     }
 
     /**

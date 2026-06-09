@@ -4,11 +4,11 @@ namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Service\MailService;
 use Psr\Log\LoggerInterface;
 
@@ -27,22 +27,66 @@ class ParticipantBulkMailService
         protected EntityManagerInterface $em,
         protected MailService $mailService,
         protected ParticipantMailRepository $participantMailRepository,
+        protected MailPreviewService $mailPreview,
         protected LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Create a queued bulk (snapshot of recipient IDs). Sends nothing.
+     * Create a queued bulk (snapshot of recipient IDs). Sends nothing. The optional $templateSlug
+     * selects a stored campaign/snippet to send instead of the free body. Queue-validation renders the
+     * message against the first recipient and throws {@see OswisException} if the Twig won't compile —
+     * a typo is caught here, never delivered to real recipients via the drain.
      *
      * @param array<int> $participantIds
+     *
+     * @throws OswisException when the message fails to render against the first recipient
      */
-    public function queue(string $subject, string $bodyHtml, array $participantIds, ?string $adminName = null): ParticipantMailBulk
-    {
-        $bulk = new ParticipantMailBulk($subject, $bodyHtml, $participantIds, $adminName);
+    public function queue(
+        string $subject,
+        string $bodyHtml,
+        array $participantIds,
+        ?string $adminName = null,
+        ?string $templateSlug = null,
+    ): ParticipantMailBulk {
+        $this->validateRender($bodyHtml, $templateSlug, $participantIds);
+        $bulk = new ParticipantMailBulk($subject, $bodyHtml, $participantIds, $adminName, $templateSlug);
         $this->em->persist($bulk);
         $this->em->flush();
 
         return $bulk;
+    }
+
+    /**
+     * Render the message (stored template, or free body fragment) against the FIRST recipient and throw
+     * on a Twig error. With no resolvable recipient there is nothing to validate (the empty-recipient
+     * guard lives in the controller). {@see queue}.
+     *
+     * @param array<int> $participantIds
+     *
+     * @throws OswisException
+     */
+    private function validateRender(string $bodyHtml, ?string $templateSlug, array $participantIds): void
+    {
+        $firstId = array_values($participantIds)[0] ?? null;
+        $participant = null !== $firstId ? $this->em->find(Participant::class, (int) $firstId) : null;
+        if (!$participant instanceof Participant) {
+            return;
+        }
+        try {
+            if (null !== $templateSlug && '' !== trim($templateSlug)) {
+                $result = $this->mailPreview->renderTemplate(trim($templateSlug), $participant);
+                if (null !== $result['error']) {
+                    throw new OswisException($result['error']);
+                }
+            } else {
+                $this->mailPreview->renderBodyFragment($bodyHtml, $participant);
+            }
+        } catch (OswisException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            throw new OswisException($exception->getMessage());
+        }
     }
 
     /**
@@ -91,12 +135,16 @@ class ParticipantBulkMailService
 
     /**
      * Send the bulk's message to one participant's contact persons (Person = 1 address, Org = N).
-     * Returns true if at least one address was actually delivered (isSent).
+     * Renders per recipient: a stored campaign/snippet template (template_slug) as a full mail, OR the
+     * free body as a trusted Twig fragment (entity-API variables + conditional blocks) into the ad-hoc
+     * wrapper. A body render error for one recipient falls back to the raw (sanitized) body + a log
+     * line, so one recipient missing a field never blocks the rest of the bulk. Returns true if at
+     * least one address was actually delivered (isSent).
      */
     private function sendToParticipant(ParticipantMailBulk $bulk, Participant $participant): bool
     {
-        $contact = $participant->getContact();
         $type = sprintf('ad-hoc-bulk-%d', $bulk->getId() ?? 0);
+        $usesTemplate = $bulk->hasTemplate();
         $anyDelivered = false;
 
         foreach ($participant->getContactPersons(true) as $contactPerson) {
@@ -112,18 +160,41 @@ class ParticipantBulkMailService
                 $participantMail->setBulk($bulk);
                 $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
                 $participantMail->markAsManual();
-                $data = [
-                    'participant'    => $participant,
-                    'appUser'        => $appUser,
-                    'contact'        => $contact,
-                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-                    'subject'        => $bulk->getSubject(),
-                    'bodyHtml'       => $bulk->getBodyHtml(),
-                    'adminName'      => $bulk->getAdminName(),
-                    'type'           => $type,
-                ];
+
+                if ($usesTemplate) {
+                    $templateName = (string) $bulk->getTemplateSlug();
+                    $data = $this->mailPreview->buildContext($participant, [
+                        'appUser'   => $appUser,
+                        'adminName' => $bulk->getAdminName(),
+                        'type'      => $type,
+                    ]);
+                } else {
+                    try {
+                        $renderedBody = $this->mailPreview->renderBodyFragment(
+                            $bulk->getBodyHtml(),
+                            $participant,
+                            ['appUser' => $appUser],
+                        );
+                    } catch (\Throwable $bodyError) {
+                        $renderedBody = $this->mailPreview->sanitizeHtml($bulk->getBodyHtml());
+                        $this->logger->warning(sprintf(
+                            'Bulk #%d → participant #%d: body Twig render failed, raw fallback used: %s',
+                            $bulk->getId() ?? 0,
+                            $participant->getId() ?? 0,
+                            $bodyError->getMessage(),
+                        ));
+                    }
+                    $templateName = self::AD_HOC_TEMPLATE;
+                    $data = $this->mailPreview->buildContext($participant, [
+                        'appUser'   => $appUser,
+                        'adminName' => $bulk->getAdminName(),
+                        'type'      => $type,
+                        'bodyHtml'  => $renderedBody,
+                    ]);
+                }
+
                 $this->em->persist($participantMail);
-                $this->mailService->sendEMail($participantMail, self::AD_HOC_TEMPLATE, $data);
+                $this->mailService->sendEMail($participantMail, $templateName, $data);
                 if ($participantMail->isSent()) {
                     $anyDelivered = true;
                 }

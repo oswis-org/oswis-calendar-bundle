@@ -27,11 +27,17 @@
                 <input type="text" class="form-control" id="bm_subject" name="subject" maxlength="255" required>
             </div>
             <div class="mb-3">
-                <label for="bm_body" class="form-label">Text (HTML)</label>
-                <textarea class="form-control" id="bm_body" name="body" rows="12" required placeholder="&lt;p&gt;Ahoj…&lt;/p&gt;"></textarea>
+                <label for="bm_body" class="form-label">Text (HTML + proměnné)</label>
+                <textarea class="form-control" id="bm_body" name="body" rows="12" required
+                          style="font-family: monospace;"
+                          placeholder="&lt;p&gt;Ahoj…&lt;/p&gt;"></textarea>
                 <small class="text-muted">
-                    Tělo se sanitizuje (bezpečné značky + odkazy http/https/mailto/tel) a vloží do OSWIS šablony.
-                    Oslovení personalizuje šablona automaticky.
+                    {% verbatim %}Tělo je <strong>šablona</strong>: smíš použít proměnné <code>{{ contact.salutationName }}</code>,
+                    <code>{{ participant.event(false).name }}</code> a podmínkové bloky
+                    <code>{% if participant.event(false).slug == 'seznamovak-up-2026-1' %}…{% endif %}</code>
+                    (např. blok jen pro 1. turnus). Oslovení (<code>{{ salName }}</code>, <code>f</code>/<code>a</code>) je k dispozici.{% endverbatim %}
+                    Výsledek se vykreslí pro každého příjemce zvlášť a sanitizuje (bezpečné značky +
+                    odkazy http/https/mailto/tel). Zkontroluj náhledem.
                 </small>
             </div>
 

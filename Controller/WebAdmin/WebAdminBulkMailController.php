@@ -10,9 +10,8 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepos
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
+use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -85,10 +84,23 @@ final class WebAdminBulkMailController extends AbstractController
         }
         [$subject, $body] = $this->readMessage($request);
 
+        // Body is trusted Twig (entity-API variables + conditional blocks) → render + sanitize first,
+        // then drop the result into the ad-hoc wrapper. A body Twig error shows inline, not a blank.
+        try {
+            $renderedBody = $this->mailPreview->renderBodyFragment($body, $participant);
+        } catch (\Throwable $exception) {
+            $renderedBody = sprintf(
+                '<div style="color:#842029;background:#f8d7da;border:1px solid #f5c2c7;padding:.75rem;'
+                .'border-radius:.375rem;font-family:monospace;white-space:pre-wrap;">'
+                .'<strong>Chyba v těle (Twig):</strong><br>%s</div>',
+                htmlspecialchars($exception->getMessage(), ENT_QUOTES),
+            );
+        }
+
         $result = $this->mailPreview->renderTemplate(
             ParticipantBulkMailService::AD_HOC_TEMPLATE,
             $participant,
-            ['bodyHtml' => $body, 'adminName' => $this->adminName(), 'type' => 'ad-hoc-bulk-preview'],
+            ['bodyHtml' => $renderedBody, 'adminName' => $this->adminName(), 'type' => 'ad-hoc-bulk-preview'],
             $subject,
         );
 
@@ -114,7 +126,15 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
 
-        $bulk = $this->bulkMailService->queue($subject, $body, $ids, $this->adminName());
+        // Queue-validation: the service renders the body against the first recipient and rejects a
+        // bulk whose Twig won't compile — so a typo never reaches real recipients via the drain.
+        try {
+            $bulk = $this->bulkMailService->queue($subject, $body, $ids, $this->adminName());
+        } catch (OswisException $exception) {
+            $this->addFlash('danger', 'E-mail nelze zařadit – chyba v těle (Twig): '.$exception->getMessage());
+
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
+        }
         $this->addFlash('success', sprintf('Hromadný e-mail zařazen: %d příjemců. Spustí se odesílání.', count($ids)));
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status', ['highlight' => $bulk->getId()]);
@@ -171,21 +191,16 @@ final class WebAdminBulkMailController extends AbstractController
     }
 
     /**
-     * @return array{0: string, 1: string} sanitized [subject, bodyHtml]
+     * @return array{0: string, 1: string} [subject, raw body] — the body is stored verbatim as trusted
+     *                                      Twig; it is rendered and HTML-sanitized at send/preview time
+     *                                      (see {@see MailPreviewService::renderBodyFragment}), not here.
      */
     private function readMessage(Request $request): array
     {
-        $subject = trim((string) $request->request->get('subject', ''));
-        $rawBody = (string) $request->request->get('body', '');
-        $sanitizer = new HtmlSanitizer(
-            (new HtmlSanitizerConfig())
-                ->allowSafeElements()
-                ->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])
-                ->allowRelativeLinks(false)
-                ->allowRelativeMedias(false),
-        );
-
-        return [$subject, $sanitizer->sanitize($rawBody)];
+        return [
+            trim((string) $request->request->get('subject', '')),
+            (string) $request->request->get('body', ''),
+        ];
     }
 
     private function adminName(): ?string

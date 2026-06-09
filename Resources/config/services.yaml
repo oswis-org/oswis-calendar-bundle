@@ -685,6 +685,7 @@ services:
       - '@doctrine.orm.entity_manager'
       - '@oswis_org_oswis_core.mail_service'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService'
       - '@monolog.logger'
   oswis_org_oswis_calendar.participant.bulk_mail_service:
     alias: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService

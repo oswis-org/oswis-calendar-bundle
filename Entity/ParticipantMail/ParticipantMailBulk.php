@@ -49,6 +49,13 @@ class ParticipantMailBulk
     #[Column(type: 'text')]
     protected string $bodyHtml;
 
+    /**
+     * Optional renderable template name (a `core_twig_template` slug resolved by the DatabaseLoader, or
+     * a file path) of a stored campaign/snippet to send instead of the free body. NULL = free body.
+     */
+    #[Column(type: 'string', length: 255, nullable: true)]
+    protected ?string $templateSlug = null;
+
     #[Column(type: 'string', length: 255, nullable: true)]
     protected ?string $adminName = null;
 
@@ -78,12 +85,18 @@ class ParticipantMailBulk
     /**
      * @param array<int> $participantIds normalized to a 0-indexed list (callers may pass filtered/keyed arrays)
      */
-    public function __construct(string $subject, string $bodyHtml, array $participantIds, ?string $adminName = null)
-    {
+    public function __construct(
+        string $subject,
+        string $bodyHtml,
+        array $participantIds,
+        ?string $adminName = null,
+        ?string $templateSlug = null,
+    ) {
         $this->subject = $subject;
         $this->bodyHtml = $bodyHtml;
         $this->participantIds = array_values($participantIds);
         $this->adminName = $adminName;
+        $this->templateSlug = (null !== $templateSlug && '' !== trim($templateSlug)) ? trim($templateSlug) : null;
         $this->createdAt = new DateTime();
     }
 
@@ -100,6 +113,16 @@ class ParticipantMailBulk
     public function getBodyHtml(): string
     {
         return $this->bodyHtml;
+    }
+
+    public function getTemplateSlug(): ?string
+    {
+        return $this->templateSlug;
+    }
+
+    public function hasTemplate(): bool
+    {
+        return null !== $this->templateSlug && '' !== $this->templateSlug;
     }
 
     public function getAdminName(): ?string
