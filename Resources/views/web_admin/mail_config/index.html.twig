@@ -105,6 +105,7 @@
                     <tr>
                         <th style="width: 3rem;">ID</th>
                         <th>Název</th>
+                        <th style="width: 8rem;">Druh</th>
                         <th style="width: 18rem;">Slug</th>
                         <th>Cesta</th>
                         <th style="width: 11rem; text-align: center;">Inline obsah?</th>
@@ -116,6 +117,12 @@
                         <tr>
                             <td>{{ t.id }}</td>
                             <td><strong>{{ t.name|default('—') }}</strong></td>
+                            <td>
+                                {% set kindLabels = {'system': 'Systémový', 'campaign': 'Kampaň', 'snippet': 'Blok', 'page': 'Stránka', 'pdf': 'PDF'} %}
+                                {% if t.kind %}
+                                    <span class="badge" style="background:#e7f1ff;color:#0a58ca;border:1px solid #b6d4fe;border-radius:.4em;padding:.1em .5em;font-size:.8em;">{{ kindLabels[t.kind]|default(t.kind) }}</span>
+                                {% else %}—{% endif %}
+                            </td>
                             <td><code style="font-size: .85em;">{{ t.slug|default('—') }}</code></td>
                             <td><code style="font-size: .85em;">{{ t.regularTemplateName|default('—') }}</code></td>
                             <td style="text-align: center;">
@@ -131,7 +138,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="6" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
+                        <tr><td colspan="7" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
