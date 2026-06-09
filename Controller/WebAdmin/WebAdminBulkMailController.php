@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
+use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -36,7 +38,24 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantMailBulkRepository $bulkRepository,
         private readonly MailPreviewService $mailPreview,
+        private readonly EntityManagerInterface $em,
     ) {
+    }
+
+    /**
+     * Stored campaign/snippet templates offered in the composer — campaigns for the "send a whole
+     * stored mail" mode, snippets for click-to-insert {% include %} into the free body.
+     *
+     * @return array<string, list<TwigTemplate>>
+     */
+    private function offerableTemplates(): array
+    {
+        $repo = $this->em->getRepository(TwigTemplate::class);
+
+        return [
+            'campaigns' => $repo->findBy(['kind' => TwigTemplate::KIND_CAMPAIGN], ['name' => 'ASC']),
+            'snippets'  => $repo->findBy(['kind' => TwigTemplate::KIND_SNIPPET], ['name' => 'ASC']),
+        ];
     }
 
     /** Step 1: open the compose form for the selected recipients (POSTed from the list bulk bar). */
@@ -61,12 +80,17 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
 
+        $templates = $this->offerableTemplates();
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_mail/compose.html.twig', [
-            'title'        => 'Hromadný e-mail :: ADMIN',
-            'pageTitle'    => 'Hromadný e-mail',
-            'ids'          => $ids,
-            'idsCsv'       => implode(',', $ids),
+            'title'          => 'Hromadný e-mail :: ADMIN',
+            'pageTitle'      => 'Hromadný e-mail',
+            'ids'            => $ids,
+            'idsCsv'         => implode(',', $ids),
             'recipientCount' => count($ids),
+            'campaigns'      => $templates['campaigns'],
+            'snippets'       => $templates['snippets'],
+            'variableCatalog' => MailPreviewService::variableCatalog(),
         ]);
     }
 
@@ -83,9 +107,17 @@ final class WebAdminBulkMailController extends AbstractController
             return new Response('<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – příjemce nenalezen.</p>');
         }
         [$subject, $body] = $this->readMessage($request);
+        $templateSlug = trim((string) $request->request->get('templateSlug', ''));
 
-        // Body is trusted Twig (entity-API variables + conditional blocks) → render + sanitize first,
-        // then drop the result into the ad-hoc wrapper. A body Twig error shows inline, not a blank.
+        // "Stored template" mode → render the whole campaign/snippet (DatabaseLoader resolves a slug).
+        if ('' !== $templateSlug) {
+            $result = $this->mailPreview->renderTemplate($templateSlug, $participant, [], $subject);
+
+            return new Response($result['html']);
+        }
+
+        // Free-body mode: body is trusted Twig (entity-API variables + conditional blocks) → render +
+        // sanitize first, then drop into the ad-hoc wrapper. A body Twig error shows inline, not blank.
         try {
             $renderedBody = $this->mailPreview->renderBodyFragment($body, $participant);
         } catch (\Throwable $exception) {
@@ -115,8 +147,10 @@ final class WebAdminBulkMailController extends AbstractController
         }
         $ids = $this->readIds($request);
         [$subject, $body] = $this->readMessage($request);
-        if ([] === $ids || '' === trim($subject) || '' === trim($body)) {
-            $this->addFlash('warning', 'Vyplňte předmět i text a vyberte příjemce.');
+        $templateSlug = trim((string) $request->request->get('templateSlug', ''));
+        // A bulk needs a subject + recipients + either a free body OR a stored template.
+        if ([] === $ids || '' === trim($subject) || ('' === trim($body) && '' === $templateSlug)) {
+            $this->addFlash('warning', 'Vyplňte předmět, vyberte příjemce a zadejte text nebo uloženou šablonu.');
 
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
@@ -126,10 +160,10 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
 
-        // Queue-validation: the service renders the body against the first recipient and rejects a
+        // Queue-validation: the service renders the message against the first recipient and rejects a
         // bulk whose Twig won't compile — so a typo never reaches real recipients via the drain.
         try {
-            $bulk = $this->bulkMailService->queue($subject, $body, $ids, $this->adminName());
+            $bulk = $this->bulkMailService->queue($subject, $body, $ids, $this->adminName(), '' !== $templateSlug ? $templateSlug : null);
         } catch (OswisException $exception) {
             $this->addFlash('danger', 'E-mail nelze zařadit – chyba v těle (Twig): '.$exception->getMessage());
 

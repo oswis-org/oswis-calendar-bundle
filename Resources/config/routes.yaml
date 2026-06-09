@@ -400,6 +400,11 @@ oswis_org_oswis_calendar_web_admin_mail_category_edit:
     id: '\d+'
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_mail_template_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::newTemplate
+  path: "/web_admin/e-maily/sablony/nova"
+  methods: [GET, POST]
+
 oswis_org_oswis_calendar_web_admin_mail_template_edit:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::editTemplate
   path: "/web_admin/e-maily/sablony/{id}/upravit"

@@ -43,6 +43,37 @@ final class MailPreviewService
     }
 
     /**
+     * Curated catalog of insertable Twig tokens for the composer's "click to insert" panel — grouped,
+     * each entry a [label, snippet] pair. Tokens are the entity-API accessors actually used across the
+     * mail templates (verified), kept English. Block snippets use a literal turnus slug as a hint the
+     * admin edits. Static so both the bulk composer and (later) the #139 editor can render the same set.
+     *
+     * @return array<string, list<array{label: string, token: string}>>
+     */
+    public static function variableCatalog(): array
+    {
+        return [
+            'Příjemce' => [
+                ['label' => 'Oslovení (5. pád)', 'token' => '{{ contact.salutationName }}'],
+                ['label' => 'Jméno', 'token' => '{{ contact.name }}'],
+            ],
+            'Akce / turnus' => [
+                ['label' => 'Název akce', 'token' => '{{ participant.event(false).name }}'],
+                ['label' => 'Slug akce (turnus)', 'token' => '{{ participant.event(false).slug }}'],
+            ],
+            'Platba' => [
+                ['label' => 'Variabilní symbol', 'token' => '{{ participant.variableSymbol }}'],
+                ['label' => 'Cena', 'token' => '{{ participant.price }}'],
+                ['label' => 'Zbývá zaplatit', 'token' => '{{ participant.remainingPrice }}'],
+            ],
+            'Podmínkové bloky' => [
+                ['label' => 'Jen 1. turnus', 'token' => "{% if participant.event(false).slug == 'seznamovak-up-2026-1-turnus' %}\n  …\n{% endif %}"],
+                ['label' => 'Jen nezaplacení', 'token' => "{% if participant.remainingPrice > 0 %}\n  …\n{% endif %}"],
+            ],
+        ];
+    }
+
+    /**
      * Pick a sample recipient for a preview: an explicit participant id wins; otherwise the most
      * recently created active participant. Returns null when the id is unknown or there are no
      * participants at all (callers render a friendly "no sample" message).

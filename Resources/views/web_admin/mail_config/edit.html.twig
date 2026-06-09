@@ -13,9 +13,10 @@
         {{ form_widget(form) }}
         {{ form_end(form, { render_rest: false }) }}
 
-        {% if kind == 'template' %}
+        {% if kind == 'template' and entity.id %}
             {# Live preview through the real MJML pipeline — #139 used to edit blind. Renders the
-               current (unsaved) textarea content against a sample participant; iframe isolates CSS. #}
+               current (unsaved) textarea content against a sample participant; iframe isolates CSS.
+               Only for a persisted template (a brand-new one has no id → no preview route yet). #}
             <hr style="margin: 1.5rem 0;">
             <div id="mtPreview" style="margin-top: 1rem;"
                  data-url="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_preview', { id: entity.id }) }}"

@@ -106,6 +106,37 @@ final class WebAdminMailConfigController extends AbstractController
         ]);
     }
 
+    /**
+     * Create a new TwigTemplate (e.g. a kind=snippet block or a new campaign). Reuses the edit form;
+     * on save it redirects to the editor so the admin immediately gets the live preview. Closes the
+     * loop for snippets (the bulk composer inserts them by slug) without needing direct DB access.
+     */
+    public function newTemplate(Request $request): Response
+    {
+        $template = new TwigTemplate();
+        $form = $this->createForm(TwigTemplateEditType::class, $template);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->em->persist($template);
+            $this->em->flush();
+            $this->addFlash('success', sprintf('Twig šablona „%s" vytvořena.', $template->getName() ?? '#'.$template->getId()));
+
+            return new RedirectResponse($this->generateUrl(
+                'oswis_org_oswis_calendar_web_admin_mail_template_edit',
+                ['id' => $template->getId()],
+            ));
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
+            'form'               => $form,
+            'entity'             => $template,
+            'kind'               => 'template',
+            'sampleParticipants' => [],
+            'pageTitle'          => 'Nová Twig šablona',
+            'page_title'         => 'Nová Twig šablona :: ADMIN',
+        ]);
+    }
+
     public function editTemplate(Request $request, int $id): Response
     {
         $template = $this->em->find(TwigTemplate::class, $id)

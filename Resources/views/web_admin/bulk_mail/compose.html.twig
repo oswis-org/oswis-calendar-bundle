@@ -26,19 +26,66 @@
                 <label for="bm_subject" class="form-label">Předmět</label>
                 <input type="text" class="form-control" id="bm_subject" name="subject" maxlength="255" required>
             </div>
+
+            {# Mode: free body (Twig) vs. send a stored campaign/snippet as the whole mail. #}
             <div class="mb-3">
-                <label for="bm_body" class="form-label">Text (HTML + proměnné)</label>
-                <textarea class="form-control" id="bm_body" name="body" rows="12" required
-                          style="font-family: monospace;"
-                          placeholder="&lt;p&gt;Ahoj…&lt;/p&gt;"></textarea>
-                <small class="text-muted">
-                    {% verbatim %}Tělo je <strong>šablona</strong>: smíš použít proměnné <code>{{ contact.salutationName }}</code>,
-                    <code>{{ participant.event(false).name }}</code> a podmínkové bloky
-                    <code>{% if participant.event(false).slug == 'seznamovak-up-2026-1' %}…{% endif %}</code>
-                    (např. blok jen pro 1. turnus). Oslovení (<code>{{ salName }}</code>, <code>f</code>/<code>a</code>) je k dispozici.{% endverbatim %}
-                    Výsledek se vykreslí pro každého příjemce zvlášť a sanitizuje (bezpečné značky +
-                    odkazy http/https/mailto/tel). Zkontroluj náhledem.
-                </small>
+                <div class="btn-group" role="group" aria-label="Režim">
+                    <input type="radio" class="btn-check" name="mailMode" id="bmModeBody" value="body" checked>
+                    <label class="btn btn-outline-primary btn-sm" for="bmModeBody">✍ Vlastní text</label>
+                    <input type="radio" class="btn-check" name="mailMode" id="bmModeTemplate" value="template"{{ campaigns|length == 0 ? ' disabled' : '' }}>
+                    <label class="btn btn-outline-primary btn-sm" for="bmModeTemplate">📄 Uložená kampaň</label>
+                </div>
+            </div>
+
+            {# Stored-template mode #}
+            <div class="mb-3" id="bmTemplateSection" style="display:none;">
+                <label for="bm_template" class="form-label">Uložená šablona (kampaň)</label>
+                <select class="form-select" id="bm_template" name="templateSlug">
+                    <option value="">— vyber kampaň —</option>
+                    {% for t in campaigns|default([]) %}
+                        <option value="{{ t.slug }}">{{ t.name|default(t.slug) }}{{ t.slug ? ' ('~t.slug~')' : '' }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Odešle se celá uložená kampaň (vykreslená pro každého příjemce). Vlastní text se ignoruje.</small>
+            </div>
+
+            {# Free-body mode #}
+            <div id="bmBodySection">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="bm_body" class="form-label">Text (HTML + proměnné)</label>
+                        <textarea class="form-control" id="bm_body" name="body" rows="14" required
+                                  style="font-family: monospace;"
+                                  placeholder="&lt;p&gt;Ahoj…&lt;/p&gt;"></textarea>
+                        <small class="text-muted">
+                            {% verbatim %}Tělo je <strong>šablona</strong>: proměnné <code>{{ contact.salutationName }}</code>,
+                            <code>{{ participant.event(false).name }}</code> a podmínkové bloky
+                            <code>{% if participant.event(false).slug == '…' %}…{% endif %}</code>.{% endverbatim %}
+                            Vykreslí se pro každého příjemce zvlášť a sanitizuje. Zkontroluj náhledem.
+                        </small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Vložit (klikni)</label>
+                        <div id="bmInsertPanel" style="border:1px solid #dee2e6;border-radius:.375rem;padding:.5rem;max-height:420px;overflow:auto;">
+                            {% for group, items in variableCatalog|default({}) %}
+                                <div style="font-size:.8em;color:#6c757d;text-transform:uppercase;margin:.3rem 0 .15rem;">{{ group }}</div>
+                                {% for item in items %}
+                                    <button type="button" class="btn btn-sm btn-outline-secondary bm-insert"
+                                            style="margin:.1rem;font-size:.85em;"
+                                            data-token="{{ item.token|e('html_attr') }}">{{ item.label }}</button>
+                                {% endfor %}
+                            {% endfor %}
+                            {% if snippets|default([])|length > 0 %}
+                                <div style="font-size:.8em;color:#6c757d;text-transform:uppercase;margin:.5rem 0 .15rem;">Bloky (snippety)</div>
+                                {% for s in snippets %}
+                                    <button type="button" class="btn btn-sm btn-outline-info bm-insert"
+                                            style="margin:.1rem;font-size:.85em;"
+                                            data-token="{{ ("{% include '" ~ s.slug ~ "' %}")|e('html_attr') }}">{{ s.name|default(s.slug) }}</button>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -61,8 +108,43 @@
 
     <script>
         (function () {
+            var body = document.getElementById('bm_body');
+            var tplSelect = document.getElementById('bm_template');
+            var bodySection = document.getElementById('bmBodySection');
+            var tplSection = document.getElementById('bmTemplateSection');
+
+            // Mode toggle: show body+panel OR the stored-template picker. Keep `required` correct so
+            // the browser doesn't block a valid submit in the inactive mode.
+            function applyMode(mode) {
+                var isTemplate = mode === 'template';
+                tplSection.style.display = isTemplate ? '' : 'none';
+                bodySection.style.display = isTemplate ? 'none' : '';
+                body.required = !isTemplate;
+                tplSelect.required = isTemplate;
+                if (!isTemplate) { tplSelect.value = ''; }
+            }
+            Array.prototype.forEach.call(document.querySelectorAll('input[name=mailMode]'), function (r) {
+                r.addEventListener('change', function () { if (r.checked) { applyMode(r.value); } });
+            });
+
+            // Insert-at-cursor for the variable/block/snippet chips.
+            function insertAtCursor(el, text) {
+                var s = el.selectionStart, e = el.selectionEnd;
+                el.value = el.value.slice(0, s) + text + el.value.slice(e);
+                el.selectionStart = el.selectionEnd = s + text.length;
+                el.focus();
+            }
+            Array.prototype.forEach.call(document.querySelectorAll('.bm-insert'), function (b) {
+                b.addEventListener('click', function () { insertAtCursor(body, b.getAttribute('data-token')); });
+            });
+
+            // Code-editor feel without a dependency: Tab inserts two spaces instead of leaving the field.
+            body.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Tab') { ev.preventDefault(); insertAtCursor(body, '  '); }
+            });
+
+            // Live preview (body OR stored template) for the first recipient.
             var btn = document.getElementById('bmPreviewBtn');
-            if (!btn) { return; }
             var PREVIEW_URL = {{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_preview')|json_encode|raw }};
             var TOKEN = {{ csrf_token('bulk_mail_preview')|json_encode|raw }};
             var shell = document.getElementById('bmPreviewShell');
@@ -78,7 +160,8 @@
                 fd.append('_token', TOKEN);
                 fd.append('idsCsv', document.querySelector('#bulkMailForm [name=idsCsv]').value);
                 fd.append('subject', document.getElementById('bm_subject').value);
-                fd.append('body', document.getElementById('bm_body').value);
+                fd.append('body', body.value);
+                fd.append('templateSlug', tplSelect.value);
                 btn.disabled = true;
                 btn.textContent = 'Generuji náhled…';
                 fetch(PREVIEW_URL, { method: 'POST', body: fd, credentials: 'same-origin' })
