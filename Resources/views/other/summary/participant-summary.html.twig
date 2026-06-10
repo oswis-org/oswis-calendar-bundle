@@ -1,4 +1,9 @@
 {% set isInternal = isInternal|default(false) %}
+{# Self-contained default for the formal-address flag: e-mail layouts seed `f` in their prelude,
+   but the web check-in/arrival page includes this partial bare — without this it 500s ("Variable
+   f does not exist"), which also broke the restore/resend-activation redirects that land there.
+   `is defined` (NOT |default) so a legitimate f=false (informal) from e-mail context survives. #}
+{% set f = f is defined ? f : (participant.formal is defined ? participant.formal : true) %}
 
 {% set participantRegistrations = participant.participantRegistrations(false, false) %}
 {% set activeEvent = participant.event(false)|default %}
