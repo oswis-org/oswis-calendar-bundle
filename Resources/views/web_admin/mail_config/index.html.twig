@@ -45,6 +45,7 @@
                         <th>Událost</th>
                         <th style="width: 4rem; text-align: center;" title="Automatické odeslání">Auto</th>
                         <th style="width: 6rem; text-align: center;" title="Posílat jen aktivním účastníkům">Jen aktivní</th>
+                        <th style="width: 10rem;" title="Volitelný filtr příjemců (výrazový jazyk seznamu přihlášek)">Filtr</th>
                         <th style="width: 6rem;"></th>
                     </tr>
                 </thead>
@@ -60,12 +61,19 @@
                             <td style="text-align: center;">{{ g.automaticMailing ? '✓' : '—' }}</td>
                             <td style="text-align: center;">{{ g.onlyActive ? '✓' : '—' }}</td>
                             <td>
+                                {% if g.filterExpression %}
+                                    <code style="font-size: .8em;" title="{{ g.filterExpression }}">{{ g.filterExpression|u.truncate(28, '…') }}</code>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
                                 <a class="btn btn-sm btn-outline-primary"
                                    href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}">✎ Upravit</a>
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="9" style="text-align: center; color: #6c757d;">Žádné mail-skupiny.</td></tr>
+                        <tr><td colspan="10" style="text-align: center; color: #6c757d;">Žádné mail-skupiny.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -13,6 +13,20 @@
         {{ form_widget(form) }}
         {{ form_end(form, { render_rest: false }) }}
 
+        {% if kind == 'group' and entity.filterExpression %}
+            {# Filter sanity-check: the unified participant list evaluates the SAME expression language,
+               so one click shows exactly who the group currently applies to (before enabling automail). #}
+            <p style="margin-top: .75rem;">
+                {% set listParams = entity.event
+                    ? { expr: entity.filterExpression, eventSlug: entity.event.slug }
+                    : { expr: entity.filterExpression } %}
+                <a class="btn btn-sm btn-outline-secondary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', listParams) }}">
+                    👥 Zobrazit účastníky odpovídající filtru v seznamu přihlášek
+                </a>
+            </p>
+        {% endif %}
+
         {% if kind == 'template' and entity.id %}
             {# Live preview through the real MJML pipeline — #139 used to edit blind. Renders the
                current (unsaved) textarea content against a sample participant; iframe isolates CSS.

@@ -223,6 +223,11 @@ class ParticipantRepository extends ServiceEntityRepository
      * LIMIT on an id-only query (no fetch-joins) → no whole-cohort hydration and no lazy-collection
      * N+1 (the bug in the old load-all → PHP filter(hasEMailOfType) → slice path). {@see ParticipantService::sendAutoMails}.
      *
+     * $afterId is a pagination cursor (only ids > $afterId, they are returned ASC): callers whose
+     * PHP-side checks (group filter expression, isActive) reject candidates MUST page with it —
+     * permanently-rejected ids never become "mailed", so without the cursor they would clog the
+     * LIMIT window forever and recipients beyond it would never be reached.
+     *
      * @return list<int>
      */
     public function findUnmailedParticipantIds(
@@ -231,8 +236,12 @@ class ParticipantRepository extends ServiceEntityRepository
         int $limit,
         int $recursiveDepth = 4,
         bool $includeDeleted = false,
+        int $afterId = 0,
     ): array {
         $qb = $this->createQueryBuilder('p')->select('p.id');
+        if ($afterId > 0) {
+            $qb->andWhere('p.id > :afterId')->setParameter('afterId', $afterId);
+        }
         // Recursive event scope (to-one superEvent joins → no row multiplication; not selected).
         $qb->leftJoin('p.event', 'e0');
         $eventOr = 'p.event = :ev';

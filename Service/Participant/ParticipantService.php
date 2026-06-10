@@ -55,6 +55,7 @@ class ParticipantService
         protected readonly RegistrationFlagOfferService $flagRangeService,
         protected readonly RegistrationOfferService $registrationOfferService,
         protected readonly AppUserTypeService $appUserTypeService,
+        protected readonly ParticipantFilterEvaluator $filterEvaluator,
     ) {
     }
 
@@ -567,6 +568,16 @@ class ParticipantService
      * Per-participant isolation: one failing recipient never aborts the batch. Returns a summary so
      * the cron command / admin trigger can report + surface failures (no longer silently swallowed).
      *
+     * $limit caps send ATTEMPTS (successful or failed) per group per call — bounded SMTP work for
+     * the cron; failed recipients stay unmailed and are retried next run. Candidate ids are paged
+     * with an id cursor:
+     * participants the group never applies to (filter expression, inactive) stay "unmailed" forever,
+     * so a single LIMIT window would fill up with them and stall the campaign — the cursor walks past
+     * them to recipients further in the cohort.
+     *
+     * A group with a syntactically broken filter expression is skipped whole and reported (the
+     * entity's fail-closed evaluation would otherwise silently scan the cohort and send nothing).
+     *
      * @return array{sent: int, failed: int, errors: list<string>}
      */
     public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): array
@@ -580,24 +591,45 @@ class ParticipantService
             if (!$groupEvent instanceof Event || null === $groupType) {
                 continue;
             }
-            $ids = $this->participantRepository->findUnmailedParticipantIds(
-                $groupEvent,
-                $groupType,
-                $limit,
-                4,
-                !$group->isOnlyActive(),
-            );
-            foreach ($ids as $id) {
-                $participant = $this->em->find(Participant::class, $id);
-                if (!$participant instanceof Participant || !$group->isApplicable($participant)) {
-                    continue;
+            if (null !== ($filterError = $this->filterEvaluator->validate($group->getFilterExpression()))) {
+                $errors[] = sprintf(
+                    'Skupina „%s" (%s) přeskočena — neplatný filtr: %s',
+                    $group->getName() ?? '?',
+                    $groupType,
+                    $filterError,
+                );
+                continue;
+            }
+            $remaining = max(1, $limit);
+            $afterId = 0;
+            while ($remaining > 0) {
+                $ids = $this->participantRepository->findUnmailedParticipantIds(
+                    $groupEvent,
+                    $groupType,
+                    max(1, $limit),
+                    4,
+                    !$group->isOnlyActive(),
+                    $afterId,
+                );
+                if ([] === $ids) {
+                    break;
                 }
-                try {
-                    $this->participantMailService->sendMessage($participant, $group);
-                    ++$sent;
-                } catch (\Throwable $e) {
-                    ++$failed;
-                    $errors[] = sprintf('#%d: %s', $id, $e->getMessage());
+                foreach ($ids as $id) {
+                    $afterId = $id;
+                    $participant = $this->em->find(Participant::class, $id);
+                    if (!$participant instanceof Participant || !$group->isApplicable($participant)) {
+                        continue;
+                    }
+                    try {
+                        $this->participantMailService->sendMessage($participant, $group);
+                        ++$sent;
+                    } catch (\Throwable $e) {
+                        ++$failed;
+                        $errors[] = sprintf('#%d: %s', $id, $e->getMessage());
+                    }
+                    if (--$remaining <= 0) {
+                        break;
+                    }
                 }
             }
         }
