@@ -13,9 +13,11 @@
         {{ form_widget(form) }}
         {{ form_end(form, { render_rest: false }) }}
 
-        {% if kind == 'group' and entity.filterExpression %}
+        {% if kind == 'group' and entity.filterExpression and (not form.vars.submitted or form.vars.valid) %}
             {# Filter sanity-check: the unified participant list evaluates the SAME expression language,
-               so one click shows exactly who the group currently applies to (before enabling automail). #}
+               so one click shows exactly who the group currently applies to (before enabling automail).
+               Hidden after an invalid submit — the bound entity then holds the rejected expression and
+               the link would just 400 on the list. #}
             <p style="margin-top: .75rem;">
                 {% set listParams = entity.event
                     ? { expr: entity.filterExpression, eventSlug: entity.event.slug }
