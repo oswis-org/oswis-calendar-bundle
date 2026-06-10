@@ -33,7 +33,7 @@
     "bigit/vokativ": "dev-zakjakub-master",
     "endroid/qr-code": "^6.1",
     "oswis-org/oswis-address-book-bundle": "^0.1.0 || ^0.1.1",
-    "oswis-org/oswis-core-bundle": "^0.1.0 || ^0.2",
+    "oswis-org/oswis-core-bundle": "^0.2.16",
     "rikudou/czqrpayment": "^v5.0",
     "symfony/expression-language": "^8.1",
     "symfony/html-sanitizer": "^8.1",
