@@ -88,21 +88,25 @@ final class WebAdminBulkMailController extends AbstractController
             'ids'            => $ids,
             'idsCsv'         => implode(',', $ids),
             'recipientCount' => count($ids),
+            'recipients'     => $this->participantRepository->findByIds($ids),
             'campaigns'      => $templates['campaigns'],
             'snippets'       => $templates['snippets'],
             'variableCatalog' => MailPreviewService::variableCatalog(),
         ]);
     }
 
-    /** Live preview: render the ad-hoc template (through MJML) for the first recipient. No send. */
+    /** Live preview through MJML for a chosen recipient (default: the first). No send. */
     public function preview(Request $request): Response
     {
         if (!$this->isCsrfTokenValid('bulk_mail_preview', (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
         $ids = $this->readIds($request);
-        $first = $ids[0] ?? null;
-        $participant = null !== $first ? $this->participantRepository->find($first) : null;
+        // Preview for a specific recipient if asked (and it really is in the snapshot), else the first.
+        $chosenRaw = (string) $request->request->get('previewParticipantId', '');
+        $chosen = ctype_digit($chosenRaw) ? (int) $chosenRaw : 0;
+        $previewId = ($chosen > 0 && in_array($chosen, $ids, true)) ? $chosen : ($ids[0] ?? null);
+        $participant = null !== $previewId ? $this->participantRepository->find($previewId) : null;
         if (!$participant instanceof Participant) {
             return new Response('<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – příjemce nenalezen.</p>');
         }

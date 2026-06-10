@@ -294,6 +294,40 @@ class ParticipantRepository extends ServiceEntityRepository
         return $participants;
     }
 
+    /**
+     * Load the given participants (by id) with their to-one associations (contact / event / appUser)
+     * fetch-joined — for the bulk-mail composer's recipient list + per-recipient preview. To-one joins
+     * + IN(:ids) is bounded (no row multiplication, no collection walking). Ordered by id for a stable
+     * list. {@see WebAdminBulkMailController::compose}.
+     *
+     * @param list<int> $ids
+     *
+     * @return list<Participant>
+     */
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+        $queryBuilder = $this->createQueryBuilder('participant')
+            ->select('participant, contact, event, contactAppUser')
+            ->leftJoin('participant.contact', 'contact')
+            ->leftJoin('contact.appUser', 'contactAppUser')
+            ->leftJoin('participant.event', 'event')
+            ->andWhere('participant.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('participant.id', 'ASC');
+        $result = $queryBuilder->getQuery()->getResult();
+        $participants = [];
+        foreach (is_array($result) ? $result : [] as $participant) {
+            if ($participant instanceof Participant) {
+                $participants[] = $participant;
+            }
+        }
+
+        return $participants;
+    }
+
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (!empty($opts[self::CRITERIA_EVENT]) && $opts[self::CRITERIA_EVENT] instanceof Event) {
