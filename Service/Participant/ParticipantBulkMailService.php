@@ -94,43 +94,69 @@ class ParticipantBulkMailService
      * (cursor advanced per recipient → a crash re-sends at most one). Marks the bulk done when the
      * cursor reaches the end.
      *
-     * @return array{sent: int, failed: int, processed: int, total: int, done: bool}
+     * Concurrency: the status-page JS auto-drain and the cron command (and two admin tabs) can call
+     * this for the SAME bulk at the same time — two drains reading the same cursor would send the
+     * same slice twice (duplicate mail to real recipients). A per-bulk MariaDB advisory lock
+     * (GET_LOCK, non-blocking, connection-scoped, auto-released on disconnect) serializes drains
+     * without holding a DB transaction across SMTP sends. A caller that does not get the lock
+     * returns immediately with busy=true and NO progress (the JS backs off and re-polls; the cron
+     * breaks on zero progress and resumes next tick). The entity is refresh()ed AFTER acquiring the
+     * lock — the caller may hold a cursor that another drain has meanwhile advanced.
+     *
+     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool}
      */
     public function drainBatch(ParticipantMailBulk $bulk, int $batchSize = 15): array
     {
         if ($bulk->isDone()) {
             return $this->progress($bulk, 0, 0);
         }
-        if (ParticipantMailBulk::STATUS_SENDING !== $bulk->getStatus()) {
-            $bulk->setStatus(ParticipantMailBulk::STATUS_SENDING);
-            $this->em->flush();
-        }
-        $ids = $bulk->getParticipantIds();
-        $start = $bulk->getProcessedCount();
-        $slice = array_slice($ids, $start, max(1, $batchSize));
-        $sent = 0;
-        $failed = 0;
+        $lockName = sprintf('oswis_bulk_drain_%d', $bulk->getId() ?? 0);
+        $connection = $this->em->getConnection();
+        $acquired = $connection->fetchOne('SELECT GET_LOCK(?, 0)', [$lockName]);
+        if (!is_numeric($acquired) || 1 !== (int) $acquired) {
+            $this->logger->info(sprintf('Bulk #%d: drain already running elsewhere, skipping.', $bulk->getId() ?? 0));
 
-        foreach ($slice as $position => $participantId) {
-            $participant = $this->em->find(Participant::class, $participantId);
-            $delivered = $participant instanceof Participant && $this->sendToParticipant($bulk, $participant);
-            if ($delivered) {
-                $bulk->recordSent();
-                ++$sent;
-            } else {
-                $bulk->recordFailed(sprintf('#%d: nedoručeno', (int) $participantId));
-                ++$failed;
+            return $this->progress($bulk, 0, 0, busy: true);
+        }
+        try {
+            // Fresh cursor: our entity may predate a drain that just finished on another connection.
+            $this->em->refresh($bulk);
+            if ($bulk->isDone()) {
+                return $this->progress($bulk, 0, 0);
             }
-            $bulk->setProcessedCount($start + (int) $position + 1);
-            $this->em->flush();
-        }
+            if (ParticipantMailBulk::STATUS_SENDING !== $bulk->getStatus()) {
+                $bulk->setStatus(ParticipantMailBulk::STATUS_SENDING);
+                $this->em->flush();
+            }
+            $ids = $bulk->getParticipantIds();
+            $start = $bulk->getProcessedCount();
+            $slice = array_slice($ids, $start, max(1, $batchSize));
+            $sent = 0;
+            $failed = 0;
 
-        if ($bulk->getProcessedCount() >= $bulk->getTotalCount()) {
-            $bulk->setStatus(ParticipantMailBulk::STATUS_DONE);
-            $this->em->flush();
-        }
+            foreach ($slice as $position => $participantId) {
+                $participant = $this->em->find(Participant::class, $participantId);
+                $delivered = $participant instanceof Participant && $this->sendToParticipant($bulk, $participant);
+                if ($delivered) {
+                    $bulk->recordSent();
+                    ++$sent;
+                } else {
+                    $bulk->recordFailed(sprintf('#%d: nedoručeno', (int) $participantId));
+                    ++$failed;
+                }
+                $bulk->setProcessedCount($start + (int) $position + 1);
+                $this->em->flush();
+            }
 
-        return $this->progress($bulk, $sent, $failed);
+            if ($bulk->getProcessedCount() >= $bulk->getTotalCount()) {
+                $bulk->setStatus(ParticipantMailBulk::STATUS_DONE);
+                $this->em->flush();
+            }
+
+            return $this->progress($bulk, $sent, $failed);
+        } finally {
+            $connection->executeQuery('SELECT RELEASE_LOCK(?)', [$lockName]);
+        }
     }
 
     /**
@@ -213,9 +239,9 @@ class ParticipantBulkMailService
     }
 
     /**
-     * @return array{sent: int, failed: int, processed: int, total: int, done: bool}
+     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool}
      */
-    private function progress(ParticipantMailBulk $bulk, int $sent, int $failed): array
+    private function progress(ParticipantMailBulk $bulk, int $sent, int $failed, bool $busy = false): array
     {
         return [
             'sent'      => $sent,
@@ -223,6 +249,7 @@ class ParticipantBulkMailService
             'processed' => $bulk->getProcessedCount(),
             'total'     => $bulk->getTotalCount(),
             'done'      => $bulk->isDone(),
+            'busy'      => $busy,
         ];
     }
 }

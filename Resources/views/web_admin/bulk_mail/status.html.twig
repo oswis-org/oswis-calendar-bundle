@@ -85,7 +85,15 @@
                 return drainOnce(id).then(function (p) {
                     if (p.error) { return; }
                     update(rowFor(id), p);
-                    if (!p.done) { return drainLoop(id); }
+                    if (p.done) { return; }
+                    // busy = another drain (cron / second tab) holds the per-bulk lock —
+                    // back off instead of hammering; the re-poll picks up its progress.
+                    if (p.busy) {
+                        return new Promise(function (resolve) {
+                            setTimeout(function () { resolve(drainLoop(id)); }, 3000);
+                        });
+                    }
+                    return drainLoop(id);
                 });
             }
 
