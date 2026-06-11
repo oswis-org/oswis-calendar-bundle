@@ -184,6 +184,13 @@ oswis_org_oswis_calendar_web_admin_payment_unmatch:
     id: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_payment_send_confirmation:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminPaymentController::sendConfirmation
+  path: "/web_admin/platby/{id}/poslat-potvrzeni"
+  requirements:
+    id: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_payments_import:
   controller: oswis_org_oswis_calendar.web_admin.participant_payments_import_controller::import
   path: "/web_admin/prihlasky/import-plateb"

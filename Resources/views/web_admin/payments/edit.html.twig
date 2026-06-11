@@ -25,6 +25,22 @@
             {% endif %}
         </p>
 
+        <p>
+            <strong>Potvrzení e-mailem:</strong>
+            {% if payment.confirmedByMail %}
+                ✅ odesláno {{ payment.confirmedByMailAt|date('j. n. Y H:i') }}
+            {% elseif payment.participant %}
+                ⚠️ neodesláno
+                <form method="post" style="display:inline;"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_payment_send_confirmation', { id: payment.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('payment_send_confirmation_' ~ payment.id) }}">
+                    <button type="submit" class="btn btn-sm btn-warning">✉ Poslat potvrzení účastníkovi</button>
+                </form>
+            {% else %}
+                — (nejdřív spáruj platbu)
+            {% endif %}
+        </p>
+
         {{ form_start(form) }}
         {{ form_widget(form) }}
         <button type="submit" class="btn btn-primary">Uložit změny</button>

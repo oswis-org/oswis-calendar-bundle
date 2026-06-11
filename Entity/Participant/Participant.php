@@ -1092,14 +1092,16 @@ class Participant implements ParticipantInterface
     }
 
     /**
-     * @param ParticipantPayment|null $participantPayment
-     *
-     * @throws NotImplementedException
+     * Removes the payment from the inverse-side collection. Historically an unimplemented
+     * stub that always threw — which silently broke the whole admin re-matching flow
+     * (unmatch/odpojit i přímé přepárování A→B přes setParticipant jdou tudy). FK žije na
+     * owning straně (ParticipantPayment::$participant) a mapping nemá orphanRemoval,
+     * takže tohle platbu jen odpojí — řádek nikdy nesmaže.
      */
     public function removePayment(?ParticipantPayment $participantPayment): void
     {
         if (null !== $participantPayment) {
-            throw new NotImplementedException('odebrání platby', 'u přihlášek');
+            $this->getPayments()->removeElement($participantPayment);
         }
     }
 

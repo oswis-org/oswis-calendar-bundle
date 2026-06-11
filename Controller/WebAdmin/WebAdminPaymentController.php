@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantPaymentEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\PaymentMatchingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -21,6 +23,7 @@ class WebAdminPaymentController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly ParticipantPaymentRepository $paymentRepo,
         private readonly PaymentMatchingService $matchingService,
+        private readonly ParticipantMailService $participantMailService,
     ) {
     }
 
@@ -81,6 +84,9 @@ class WebAdminPaymentController extends AbstractController
             $participantId,
             $participant->getName() ?? '(bez jména)',
         ));
+        // Ruční spárování musí potvrdit platbu e-mailem stejně jako automatické při importu
+        // (sendPaymentConfirmation razítkuje confirmedByMailAt, takže se nikdy nepošle 2×).
+        $this->sendConfirmationGuarded($payment);
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_payment_edit', ['id' => $id]);
     }
@@ -88,11 +94,52 @@ class WebAdminPaymentController extends AbstractController
     public function unmatch(int $id): RedirectResponse
     {
         $payment = $this->em->find(ParticipantPayment::class, $id) ?? throw $this->createNotFoundException();
-        $payment->setParticipant(null);
+        // setParticipant(null) na persistované platbě záměrně hází NotImplementedException
+        // (ochrana API zápisů) — admin odpojení jde přes sankcionovanou detachParticipant().
+        $payment->detachParticipant();
+        // Razítko potvrzení patří ke spárování s konkrétním účastníkem — po odpojení se musí
+        // resetovat, jinak by správný účastník po přepárování (A→B) potvrzení nikdy nedostal.
+        $payment->setConfirmedByMailAt(null);
         $this->em->flush();
         $this->addFlash('success', "Účastník odpojen od platby #$id.");
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_payment_match', ['id' => $id]);
+    }
+
+    /** Ruční (do)odeslání potvrzení platby — pro platby přiřazené dříve, než assign() posílal mail. */
+    public function sendConfirmation(int $id, Request $request): RedirectResponse
+    {
+        $payment = $this->em->find(ParticipantPayment::class, $id) ?? throw $this->createNotFoundException();
+        if (!$this->isCsrfTokenValid('payment_send_confirmation_'.$id, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        if (null === $payment->getParticipant()) {
+            $this->addFlash('warning', "Platba #$id nemá přiřazeného účastníka — potvrzení nelze odeslat.");
+        } elseif ($payment->isConfirmedByMail()) {
+            $this->addFlash('warning', "Potvrzení platby #$id už bylo odesláno ".$payment->getConfirmedByMailAt()?->format('j. n. Y H:i').'.');
+        } else {
+            $this->sendConfirmationGuarded($payment);
+        }
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_payment_edit', ['id' => $id]);
+    }
+
+    /** Pošle potvrzení platby (pokud ještě nebylo) a převede výsledek na flash zprávu. */
+    private function sendConfirmationGuarded(ParticipantPayment $payment): void
+    {
+        if ($payment->isConfirmedByMail()) {
+            return;
+        }
+        try {
+            $this->participantMailService->sendPaymentConfirmation($payment);
+            $this->addFlash('success', sprintf('Potvrzení platby #%d odesláno e-mailem.', (int) $payment->getId()));
+        } catch (Exception $exception) {
+            $this->addFlash('danger', sprintf(
+                'Potvrzení platby #%d se NEPODAŘILO odeslat: %s',
+                (int) $payment->getId(),
+                $exception->getMessage(),
+            ));
+        }
     }
 
     /**
