@@ -187,7 +187,10 @@ class ParticipantPaymentsImport
     private function getDateFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?DateTime
     {
         try {
-            $dateKey = self::toString((preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: [])[0]);
+            // preg_grep PRESERVES keys ('Datum' is rarely at index 0) — [0] on the raw result
+            // raised an undefined-key warning, which Symfony's ErrorHandler turns into an
+            // ErrorException inside a web request → catch → date silently null on every import.
+            $dateKey = self::toString(array_values(preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: [])[0] ?? '');
             $dateColumnName = $csvSettings->getDateColumnName();
             if (array_key_exists(''.$dateColumnName, $csvPaymentRow)) {
                 $dateColumnValue = self::toString($csvPaymentRow[(string) $dateColumnName]);
