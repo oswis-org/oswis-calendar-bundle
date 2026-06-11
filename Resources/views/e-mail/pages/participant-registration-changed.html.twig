@@ -1,0 +1,42 @@
+{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+
+{# On-update change notice. Variables (set in PHP `$data`, see ParticipantMailService::sendRegistrationChanged):
+     - participant / appUser / contact / salutationName: as in every participant mail
+     - changes: {
+         flags: { '<category>': { added: [...], removed: [...] } },
+         registrationsAdded: [...], registrationsRemoved: [...], contactUpdated: bool
+       } — the diff since the last confirmation (ParticipantChangeService::computeChanges)
+   f / a / salName come from the base message.html.twig.
+#}
+
+{% block content_inner %}
+    <p>
+        V tvé přihlášce{% if participant.event(false) %} na akci <strong>{{ participant.event(false).name }}</strong>{% endif %}
+        došlo k těmto změnám:
+    </p>
+    <ul>
+        {% for category, change in changes.flags %}
+            {% for item in change.added %}
+                <li>{{ category }}: přidáno <strong>{{ item }}</strong></li>
+            {% endfor %}
+            {% for item in change.removed %}
+                <li>{{ category }}: odebráno <strong>{{ item }}</strong></li>
+            {% endfor %}
+        {% endfor %}
+        {% for item in changes.registrationsAdded %}
+            <li>Nová registrace: <strong>{{ item }}</strong></li>
+        {% endfor %}
+        {% for item in changes.registrationsRemoved %}
+            <li>Zrušená registrace: <strong>{{ item }}</strong></li>
+        {% endfor %}
+        {% if changes.contactUpdated %}
+            <li>Byly aktualizovány tvé kontaktní údaje.</li>
+        {% endif %}
+    </ul>
+    <p>Pokud tyto změny neprovedl{{ a }} {{ f ? 'Vy' : 'ty' }}, dej{{ f ? 'te' : '' }} nám prosím vědět odpovědí na tento e-mail.</p>
+{% endblock %}
+
+{% block content_footer_inner %}
+    Aktuální stav celé přihlášky najdeš{{ f ? 'te' : '' }} ve svém účtu.
+    V případě nejasností nás neváhej{{ f ? 'te' : '' }} kontaktovat odpovědí na tento e-mail.
+{% endblock %}

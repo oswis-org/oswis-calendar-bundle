@@ -375,6 +375,53 @@
                 </div>
             </div>
 
+            {# Historie přihlášky — read-only chronologie změn z verzovaných junction entit (#142). #}
+            <div class="card" style="margin-bottom: 1rem;" id="historie">
+                <div class="card-body">
+                    <details>
+                        <summary style="cursor: pointer; list-style: none;">
+                            <h5 class="card-title" style="display: inline; border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">
+                                Historie přihlášky
+                                <span class="text-secondary" style="font-weight: normal; font-size: .85rem;">
+                                    ({{ history|default([])|length }} {{ (history|default([])|length == 1) ? 'záznam' : 'záznamů' }}) ▾
+                                </span>
+                            </h5>
+                        </summary>
+                        {% set historyRows = history|default([]) %}
+                        {% if historyRows|length == 0 %}
+                            <p class="text-muted" style="margin: .75rem 0 0;">Žádná zaznamenaná historie.</p>
+                        {% else %}
+                            <table class="table table-sm" style="margin: .75rem 0 0;">
+                                <tbody>
+                                    {% for event in historyRows %}
+                                        {% set verbColor = {'created': '#006FAD', 'added': '#198754', 'removed': '#b02a37'} %}
+                                        {% set verbIcon  = {'created': '✚', 'added': '＋', 'removed': '✗'} %}
+                                        {% set kindLabel = {'participant': 'Přihláška', 'registration': 'Akce / turnus', 'flag': 'Příznak'} %}
+                                        <tr>
+                                            <td style="width: 11rem; white-space: nowrap; color: #6c757d; font-size: .85rem;">
+                                                {{ event.at|date('j. n. Y H:i', 'Europe/Prague') }}
+                                            </td>
+                                            <td style="width: 1.5rem; text-align: center; color: {{ verbColor[event.verb]|default('#6c757d') }};">
+                                                {{ verbIcon[event.verb]|default('•') }}
+                                            </td>
+                                            <td style="width: 8rem; white-space: nowrap; color: #6c757d; font-size: .85rem;">
+                                                {{ kindLabel[event.kind]|default(event.kind) }}{% if event.category %}<br><small>{{ event.category }}</small>{% endif %}
+                                            </td>
+                                            <td{% if event.verb == 'removed' %} style="text-decoration: line-through; color: #6c757d;"{% endif %}>
+                                                {{ event.label }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <p class="text-muted" style="margin: .25rem 0 0; font-size: .8rem;">
+                                Rekonstruováno z časových značek příznaků a registrací (přidáno = vznik, přeškrtnuto = smazáno). Změny jednotlivých polí kontaktu se zde nezobrazují.
+                            </p>
+                        {% endif %}
+                    </details>
+                </div>
+            </div>
+
             {# Komunikace timeline #}
             <div class="card" style="margin-bottom: 1rem;" id="komunikace">
                 <div class="card-body">

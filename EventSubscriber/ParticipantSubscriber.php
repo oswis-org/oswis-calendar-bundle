@@ -69,7 +69,14 @@ final class ParticipantSubscriber implements EventSubscriberInterface
             return;
         }
         $this->logger->notice("ParticipantSubscriber->postWrite()");
-        $this->participantMailService->sendSummary($participant);
+        // CREATE → confirmation (summary). UPDATE → a change notice listing what actually changed
+        // since the last confirmation (or nothing, if nothing changed) — no more re-sending the full
+        // "you are registered" summary on every PUT. {@see ParticipantMailService::notifyParticipantChanged}.
+        if (Request::METHOD_POST === $method) {
+            $this->participantMailService->sendSummary($participant);
+        } else {
+            $this->participantMailService->notifyParticipantChanged($participant);
+        }
         $this->flagRangeService->updateUsages($participant);
         $regRange = $participant->getOffer();
         if ($regRange) {

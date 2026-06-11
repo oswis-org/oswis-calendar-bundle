@@ -21,6 +21,7 @@ use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFilterEvaluator;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -69,6 +70,20 @@ class ParticipantMailGroup extends AbstractMailGroup
 
     #[Column(type: 'boolean', nullable: false)]
     protected bool $onlyActive = true;
+
+    /**
+     * Optional recipient filter — a {@see ParticipantFilterEvaluator} boolean expression
+     * (same language as the unified participant list: hasFlag('…'), hasFlagInCategory('fakulta'),
+     * isPaid(), eventSlug() …). Null/blank = no extra restriction. Lets a campaign target a segment
+     * beyond the event scope (one faculty, one accommodation type, unpaid only, …) and lets a
+     * transactional type use a segment-specific template variant (higher priority + filter) with a
+     * filterless fallback group catching the rest.
+     */
+    #[Column(type: 'text', nullable: true)]
+    protected ?string $filterExpression = null;
+
+    /** Lazily-built shared evaluator (stateless, no dependencies) for {@see isApplicableByFilter()}. */
+    private static ?ParticipantFilterEvaluator $filterEvaluator = null;
 
     public function __construct(
         ?Nameable $nameable = null,
@@ -127,6 +142,17 @@ class ParticipantMailGroup extends AbstractMailGroup
         $this->onlyActive = $onlyActive;
     }
 
+    public function getFilterExpression(): ?string
+    {
+        return $this->filterExpression;
+    }
+
+    public function setFilterExpression(?string $filterExpression): void
+    {
+        $filterExpression = null === $filterExpression ? null : trim($filterExpression);
+        $this->filterExpression = ('' === $filterExpression) ? null : $filterExpression;
+    }
+
     public function isApplicableByRestrictions(?object $entity): bool
     {
         if (!($entity instanceof Participant)) {
@@ -139,6 +165,25 @@ class ParticipantMailGroup extends AbstractMailGroup
             return false;
         }
 
-        return true;
+        return $this->isApplicableByFilter($entity);
+    }
+
+    /**
+     * Whether the participant matches the optional filter expression. No filter = applicable.
+     * FAIL-CLOSED: a broken stored expression must never widen the recipient set, so any evaluation
+     * error means "not applicable" (the edit form validates expressions on save, and the automail
+     * drain pre-validates and reports per group — this catch is the last line of defense).
+     */
+    public function isApplicableByFilter(Participant $participant): bool
+    {
+        $expression = $this->filterExpression;
+        if (null === $expression || '' === trim($expression)) {
+            return true;
+        }
+        try {
+            return (self::$filterEvaluator ??= new ParticipantFilterEvaluator())->matches($participant, $expression);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

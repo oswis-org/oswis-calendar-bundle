@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -20,6 +21,19 @@ final class TwigTemplateEditType extends AbstractType
             ->add('name', TextType::class, ['label' => 'Název', 'required' => false])
             ->add('shortName', TextType::class, ['label' => 'Krátký název', 'required' => false])
             ->add('slug', TextType::class, ['label' => 'Slug', 'required' => false])
+            ->add('kind', ChoiceType::class, [
+                'label'       => 'Druh',
+                'required'    => false,
+                'placeholder' => '— neurčeno —',
+                'choices'     => [
+                    'Systémový (transakční)' => TwigTemplate::KIND_SYSTEM,
+                    'Kampaň (celý e-mail)'   => TwigTemplate::KIND_CAMPAIGN,
+                    'Blok / snippet'         => TwigTemplate::KIND_SNIPPET,
+                    'Stránka (web)'          => TwigTemplate::KIND_PAGE,
+                    'PDF'                    => TwigTemplate::KIND_PDF,
+                ],
+                'help' => 'Kampaň = celý e-mail (infomail/feedback); Snippet = znovupoužitelný blok k vložení do těla.',
+            ])
             ->add('description', TextareaType::class, [
                 'label'    => 'Popis',
                 'required' => false,

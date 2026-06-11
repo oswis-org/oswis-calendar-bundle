@@ -18,7 +18,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
  *   VS appears in note / internalNote (substring)     : +60
  *   VS = last-9-digits of participant phone (project_vs_is_always_phone) : +40
  *   amount matches remainingPrice or remainingDeposit : +30
- *   payment dateTime is within 30 days of event start : +20
+ *   payment near event start (graduated by proximity) : up to +20
  *   participant not soft-deleted                      : +10
  *
  * Ambiguity rule: if the top two candidates are within AMBIGUITY_WINDOW
@@ -34,6 +34,7 @@ final readonly class PaymentMatchingService
     private const int DATE_PROXIMITY   = 20;
     private const int NOT_SOFT_DELETED = 10;
     private const int AMBIGUITY_WINDOW = 20;
+    private const int DATE_WINDOW_DAYS = 60;
 
     public function __construct(
         private ParticipantService $participantService,
@@ -126,8 +127,20 @@ final readonly class PaymentMatchingService
         $paymentAt = $payment->getDateTime();
         if (null !== $eventStart && null !== $paymentAt) {
             $diffDays = abs($eventStart->getTimestamp() - $paymentAt->getTimestamp()) / 86400;
-            if ($diffDays <= 30) {
-                $result = $result->withAddedReason('Platba ≤ 30 dní od začátku akce', self::DATE_PROXIMITY);
+            if ($diffDays <= self::DATE_WINDOW_DAYS) {
+                // Graduated by proximity: a payment close to the event start scores higher than a
+                // distant one. This is the tie-breaker for participants that share a VS (e.g. the
+                // same phone re-used across two turnus events at the same price) — the event nearest
+                // the payment is surfaced first. Capped at DATE_PROXIMITY, and two candidates both
+                // within the window differ by less than AMBIGUITY_WINDOW, so a genuinely ambiguous
+                // pair still drops to manual matching rather than being auto-applied.
+                $score = (int) round(self::DATE_PROXIMITY * (1.0 - $diffDays / self::DATE_WINDOW_DAYS));
+                if ($score > 0) {
+                    $result = $result->withAddedReason(
+                        sprintf('Platba %d dní od začátku akce', (int) round($diffDays)),
+                        $score,
+                    );
+                }
             }
         }
         if (null === $candidate->participant->getDeletedAt()) {

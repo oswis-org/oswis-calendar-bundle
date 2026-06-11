@@ -93,6 +93,11 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminManualNoteController:
     autowire: true
     autoconfigure: true
@@ -337,9 +342,14 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailCategoryRepository'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService'
       - '@monolog.logger'
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService:
     alias: oswis_org_oswis_calendar.participant.participant_mail_service
+    public: true
+
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService:
+    autowire: true
     public: true
 
   oswis_org_oswis_calendar.participant.participant_category_service:
@@ -467,6 +477,15 @@ services:
 
   OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository
     autowire: true
     public: true
     arguments:
@@ -654,3 +673,34 @@ services:
     arguments:
       - '@doctrine.orm.entity_manager'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
+
+  ## Unified e-mail preview (bulk composer + #139 template editor)
+  OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService:
+    autowire: true
+    public: true
+    arguments:
+      - '@twig'
+      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository'
+
+  ## Bulk e-mail outbox: drain service + cron command
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService:
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine.orm.entity_manager'
+      - '@oswis_org_oswis_core.mail_service'
+      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService'
+      - '@monolog.logger'
+  oswis_org_oswis_calendar.participant.bulk_mail_service:
+    alias: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService
+    public: true
+
+  OswisOrg\OswisCalendarBundle\Command\SendMailCommand:
+    autowire: true
+    autoconfigure: true
+    arguments:
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService'
+      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository'
+      - '@oswis_org_oswis_calendar.participant.participant_service'
+    tags: [ 'console.command' ]

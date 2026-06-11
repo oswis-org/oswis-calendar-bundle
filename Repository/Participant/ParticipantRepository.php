@@ -12,12 +12,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
-use Excparticipanttion;
 use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 
@@ -214,6 +215,126 @@ class ParticipantRepository extends ServiceEntityRepository
         }
 
         return $out;
+    }
+
+    /**
+     * IDs of participants of $event (+ recursive sub-events to $recursiveDepth) that have NOT yet
+     * been sent a mail of $type, capped at $limit. SQL-side dedup (correlated NOT EXISTS) + a true
+     * LIMIT on an id-only query (no fetch-joins) → no whole-cohort hydration and no lazy-collection
+     * N+1 (the bug in the old load-all → PHP filter(hasEMailOfType) → slice path). {@see ParticipantService::sendAutoMails}.
+     *
+     * $afterId is a pagination cursor (only ids > $afterId, they are returned ASC): callers whose
+     * PHP-side checks (group filter expression, isActive) reject candidates MUST page with it —
+     * permanently-rejected ids never become "mailed", so without the cursor they would clog the
+     * LIMIT window forever and recipients beyond it would never be reached.
+     *
+     * @return list<int>
+     */
+    public function findUnmailedParticipantIds(
+        Event $event,
+        string $type,
+        int $limit,
+        int $recursiveDepth = 4,
+        bool $includeDeleted = false,
+        int $afterId = 0,
+    ): array {
+        $qb = $this->createQueryBuilder('p')->select('p.id');
+        if ($afterId > 0) {
+            $qb->andWhere('p.id > :afterId')->setParameter('afterId', $afterId);
+        }
+        // Recursive event scope (to-one superEvent joins → no row multiplication; not selected).
+        $qb->leftJoin('p.event', 'e0');
+        $eventOr = 'p.event = :ev';
+        for ($i = 0; $i < max(0, $recursiveDepth); $i++) {
+            $j = $i + 1;
+            $qb->leftJoin("e$i.superEvent", "e$j");
+            $eventOr .= " OR e$j = :ev";
+        }
+        $qb->andWhere($eventOr)->setParameter('ev', $event->getId());
+        if (!$includeDeleted) {
+            $qb->andWhere('p.deletedAt IS NULL');
+        }
+        // Already-sent dedup, SQL-side (failed rows with sent IS NULL are NOT excluded → retried).
+        $qb->andWhere(
+            'NOT EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pm WHERE pm.participant = p AND pm.type = :mailType AND pm.sent IS NOT NULL)',
+        )->setParameter('mailType', $type);
+        $qb->orderBy('p.id', 'ASC')->setMaxResults(max(1, $limit));
+
+        $ids = [];
+        foreach ($qb->getQuery()->getScalarResult() as $row) {
+            if (is_array($row) && isset($row['id']) && is_numeric($row['id'])) {
+                $ids[] = (int) $row['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * The $limit most recently created active, event-bound participants, with their to-one
+     * associations (contact / event / contactAppUser) fetch-joined so the preview sample-recipient
+     * picker can show a name + event without lazy N+1. To-one joins + LIMIT is pagination-safe (no row
+     * multiplication), unlike fetch-joining the to-many collections. Filters keep the picker on real
+     * recipients: a Person (recipient-facing mail goes to people, not the organizer Organization)
+     * registered to an event. {@see MailPreviewService::pickSampleParticipant}.
+     *
+     * @return list<Participant>
+     */
+    public function findSampleParticipants(int $limit = 30): array
+    {
+        $queryBuilder = $this->createQueryBuilder('participant')
+            ->select('participant, contact, event, contactAppUser')
+            ->leftJoin('participant.contact', 'contact')
+            ->leftJoin('contact.appUser', 'contactAppUser')
+            ->leftJoin('participant.event', 'event')
+            ->andWhere('participant.deletedAt IS NULL')
+            ->andWhere('participant.event IS NOT NULL')
+            ->andWhere('contact INSTANCE OF '.Person::class)
+            ->orderBy('participant.id', 'DESC')
+            ->setMaxResults(max(1, $limit));
+        $result = $queryBuilder->getQuery()->getResult();
+        $participants = [];
+        foreach (is_array($result) ? $result : [] as $participant) {
+            if ($participant instanceof Participant) {
+                $participants[] = $participant;
+            }
+        }
+
+        return $participants;
+    }
+
+    /**
+     * Load the given participants (by id) with their to-one associations (contact / event / appUser)
+     * fetch-joined — for the bulk-mail composer's recipient list + per-recipient preview. To-one joins
+     * + IN(:ids) is bounded (no row multiplication, no collection walking). Ordered by id for a stable
+     * list. {@see WebAdminBulkMailController::compose}.
+     *
+     * @param list<int> $ids
+     *
+     * @return list<Participant>
+     */
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+        $queryBuilder = $this->createQueryBuilder('participant')
+            ->select('participant, contact, event, contactAppUser')
+            ->leftJoin('participant.contact', 'contact')
+            ->leftJoin('contact.appUser', 'contactAppUser')
+            ->leftJoin('participant.event', 'event')
+            ->andWhere('participant.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('participant.id', 'ASC');
+        $result = $queryBuilder->getQuery()->getResult();
+        $participants = [];
+        foreach (is_array($result) ? $result : [] as $participant) {
+            if ($participant instanceof Participant) {
+                $participants[] = $participant;
+            }
+        }
+
+        return $participants;
     }
 
     private function setSuperEventQuery(QueryBuilder $queryBuilder, array $opts = []): void

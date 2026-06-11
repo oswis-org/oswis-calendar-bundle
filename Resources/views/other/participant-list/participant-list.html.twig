@@ -7,12 +7,26 @@
 <div class="container participants-page">
 
     {# ---- PAGE TITLE ----------------------------------------------------- #}
-    <h1 class="h3 mb-2 mt-1">Přehled přihlášek</h1>
+    <div class="d-flex align-items-center gap-2 mb-2 mt-1">
+        <h1 class="h3 m-0">Přehled přihlášek</h1>
+        <button type="button" class="btn btn-sm btn-outline-primary py-0 ms-auto d-print-none"
+                onclick="window.print();" title="Vytisknout / uložit do PDF přes prohlížeč">🖨 Tisk</button>
+    </div>
+
+    {# Tisk-only shrnutí rozsahu (Omezení) — na obrazovce skryté, v tisku nahrazuje scope bar. #}
+    <div class="print-only mb-2">
+        <table class="table table-sm table-bordered" style="width:auto;">
+            <tr><th colspan="2" class="bg-light">Omezení výběru</th></tr>
+            <tr><td class="text-secondary">Kategorie účastníka</td><td><strong>{{ participantCategory.name|default('— všechny typy —') }}</strong></td></tr>
+            <tr><td class="text-secondary">Událost</td><td><strong>{% if events|default([]) is empty %}všechny akce{% else %}{{ events|map(e => e.shortName|default(e.name))|join(', ') }}{% endif %}</strong></td></tr>
+            <tr><td class="text-secondary">Počet záznamů</td><td><strong>{{ participants|length }}</strong></td></tr>
+        </table>
+    </div>
 
     {# ---- SCOPE BAR — one event picker (year → turnus → all events) + the
            category switcher, grouped into a subtle toolbar so the whole scope
            reads as one clear zone instead of scattered chips + links. ------- #}
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-2 py-2"
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 px-2 py-2 d-print-none"
          style="background:#f4f7fa; border:1px solid #e3e9f0; border-radius:6px;">
         <span class="small text-secondary fw-bold">Akce:</span>
         <select class="form-select form-select-sm w-auto" title="Výběr akce"
@@ -47,7 +61,7 @@
            insensitive. Carries the current scope + filter + flags as hidden fields so the search
            narrows *within* what's already shown. #}
         <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}"
-              class="d-flex align-items-center gap-1 ms-auto" role="search">
+              class="d-flex align-items-center gap-1 ms-auto d-print-none" role="search">
             {% for key, value in scopeParams %}
                 {% if key != 'q' %}
                     {% if value is iterable %}
@@ -93,7 +107,7 @@
             form.submit();
         }
     </script>
-    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2"
+    <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="mb-2 d-print-none"
           onsubmit="oswisStripEmptyFilter(this);">
         {% for key, value in scopeParams %}
             {% if key != 'depth' %}
@@ -225,46 +239,66 @@
     {% endif %}
 
     {# ---- LIST TOOLBAR (count + sort + export) --------------------------- #}
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-1 d-print-none">
         <strong>{{ participants|length }}</strong> <span class="small text-secondary">přihlášek</span>
         {# Řazení je v klikacím záhlaví tabulky (▲/▼), proto tu dropdown „řadit" už není. #}
 
         <details class="d-inline-block ms-auto" style="position: relative;">
             <summary class="btn btn-sm btn-outline-primary py-0" style="cursor: pointer;">Export ▾</summary>
-            <form method="get"
-                  action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv') }}"
-                  class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 16rem; text-align: left;">
-                {# Scope as hidden fields — a GET form discards its action's query string. #}
-                {% for key, value in scopeParams %}
-                    {% if key not in ['sort', 'dir'] %}
-                        {% if value is iterable %}
-                            {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
-                        {% else %}
-                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+            <div class="card card-body shadow" style="position: absolute; z-index: 1000; min-width: 18rem; text-align: left;">
+                {# Přehledový PDF: bohatý „prohlížecí" seznam jako na obrazovce (příznaky, platba, poznámky). #}
+                <a class="btn btn-sm btn-primary mb-2"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_pdf', scopeParams) }}">📄 Přehledový PDF (jako na obrazovce)</a>
+                {# Rychlé provozní listy: jeden klik = předvolené sloupce + formát, ve stávajícím scope. #}
+                {% if exportPresets|default([]) is not empty %}
+                    <div class="small text-secondary mb-1">Rychlé provozní listy (PDF):</div>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for preset in exportPresets %}
+                            <a class="btn btn-sm btn-outline-secondary py-0"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv', scopeParams|merge({columns: preset.columns, format: preset.format})) }}">{{ preset.label }}</a>
+                        {% endfor %}
+                    </div>
+                    <hr style="margin: .4rem 0;">
+                {% endif %}
+                {# Vlastní výběr sloupců. #}
+                <div class="small text-secondary mb-1">Vlastní výběr sloupců:</div>
+                <form method="get" action="{{ path('oswis_org_oswis_calendar_web_admin_participants_list_csv') }}">
+                    {# Scope as hidden fields — a GET form discards its action's query string. #}
+                    {% for key, value in scopeParams %}
+                        {% if key not in ['sort', 'dir'] %}
+                            {% if value is iterable %}
+                                {% for item in value %}<input type="hidden" name="{{ key }}[]" value="{{ item }}">{% endfor %}
+                            {% else %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                {% endfor %}
-                <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
-                    {% set exportColumns = {
-                        'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
-                        'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
-                        'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
-                        'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
-                        'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
-                    } %}
-                    {% for key, label in exportColumns %}
-                        <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}</label>
                     {% endfor %}
-                </div>
-                <label class="small d-block mb-2">Formát:
-                    <select name="format" class="form-select form-select-sm">
-                        <option value="csv">CSV (Excel)</option>
-                        <option value="csv-rfc">CSV (RFC 4180)</option>
-                        <option value="pdf">PDF</option>
-                    </select>
-                </label>
-                <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
-            </form>
+                    <div style="max-height: 14rem; overflow: auto; margin-bottom: .5rem;">
+                        {% set exportColumns = {
+                            'id': 'ID', 'familyName': 'Příjmení', 'givenName': 'Křestní jméno', 'fullName': 'Celé jméno',
+                            'variableSymbol': 'Variabilní symbol', 'event': 'Akce', 'category': 'Kategorie',
+                            'email': 'E-mail', 'phone': 'Telefon', 'tShirt': 'Velikost trička', 'createdAt': 'Datum přihlášky',
+                            'activated': 'Aktivováno', 'price': 'Celková cena', 'paidPrice': 'Zaplaceno [Kč]',
+                            'remainingPrice': 'Zbývá [Kč]', 'paidPercentage': 'Zaplaceno [%]', 'deletedAt': 'Smazáno'
+                        } %}
+                        {% for key, label in exportColumns %}
+                            <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}" checked> {{ label }}</label>
+                        {% endfor %}
+                        {# Flag-derived provozní sloupce — výchozí nezaškrtnuté. #}
+                        {% for key, label in {'accommodation': 'Ubytování', 'food': 'Strava'} %}
+                            <label class="d-block small" style="font-weight: normal;"><input type="checkbox" name="columns[]" value="{{ key }}"> {{ label }}</label>
+                        {% endfor %}
+                    </div>
+                    <label class="small d-block mb-2">Formát:
+                        <select name="format" class="form-select form-select-sm">
+                            <option value="csv">CSV (Excel)</option>
+                            <option value="csv-rfc">CSV (RFC 4180)</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn btn-sm btn-primary">Exportovat</button>
+                </form>
+            </div>
         </details>
         {% if is_granted('ROLE_ADMIN') %}
             <a class="small text-secondary" href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">hromadný přesun</a>
@@ -393,23 +427,79 @@
         @media (max-width: 820px) {
             .participants-page .participants-table-wrap > table.participant-list { min-width: 760px; }
         }
+        /* Tisk z prohlížeče: čistá stránka jako přehledové PDF — skrýt ovládací prvky a sloupec
+           akcí, celé řádky na jedné stránce, bez vodorovného scrollu. (Nav menu skryto skeletonem.) */
+        .print-only { display: none; }
+        @media print {
+            .print-only { display: block !important; }
+            .participants-page .actions { display: none !important; }
+            .participants-page .oswis-typeahead { display: none !important; }
+            .participants-page .participants-table-wrap { overflow: visible !important; }
+            .participants-page table.participant-list { min-width: 0 !important; font-size: 8pt;
+                table-layout: auto !important; word-break: normal !important; }
+            /* Badge se nesmí lámat po písmenech (úzký sloupec + fixed layout to dělalo). */
+            .participants-page .oswis-flag-badge .ofb-name,
+            .participants-page .oswis-flag-badge .ofb-price,
+            .participants-page .oswis-flag-badge .ofb-text { white-space: nowrap !important; word-break: normal !important; }
+            /* Každý příznak na vlastním řádku, pilulka hugging obsah (jako referenční PDF). */
+            .participants-page .oswis-flag-badge { display: flex !important; width: -moz-fit-content !important;
+                width: fit-content !important; white-space: nowrap !important; margin: 0 0 2px 0 !important; }
+            .participants-page table.participant-list tbody tr { page-break-inside: avoid; }
+            .participants-page table.participant-list thead th { background: #006FAD !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* zajistit tisk barev příznaků/badge */
+            .participants-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* bulk bar nemá smysl v tisku */
+            .participants-page .bulk-bar, .participants-page .bulk-col { display: none !important; }
+        }
+        /* Bulk-action bar (Fáze G): vždy přítomný; zašedlý + disabled, dokud není ≥1 řádek vybrán. */
+        .participants-page .bulk-bar { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+            margin: .4rem 0 .5rem; padding: .4rem .65rem; border: 1px solid #cdd9e5; border-radius: 6px;
+            background: #f4f8fc; transition: opacity .12s ease; }
+        .participants-page .bulk-bar.is-empty { opacity: .5; }
+        .participants-page .bulk-bar .bulk-count { font-size: .85rem; }
+        .participants-page .bulk-bar .bulk-hint { margin-left: auto; }
+        .participants-page .bulk-bar button[disabled] { cursor: not-allowed; }
     </style>
     {# Scroll wrapper: on narrow screens (tablet/mobile) the dense 5-column table scrolls
        horizontally instead of crushing the columns. No effect on wide screens. #}
+    {# ---- BULK ACTION BAR (Fáze G) — persistentní; zašedlý/disabled, dokud není ≥1 řádek vybrán.
+         JS posbírá zaškrtnutá ID a sestaví skrytý POST formulář (vyhne se vnořeným formulářům v řádcích). #}
+    {% if is_granted('ROLE_ADMIN') %}
+        <div id="bulkBar" class="bulk-bar is-empty d-print-none"
+             data-export-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_export') }}"
+             data-delete-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_delete') }}"
+             data-reassign-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}"
+             data-csrf-export="{{ csrf_token('bulk_export') }}"
+             data-csrf-delete="{{ csrf_token('bulk_delete') }}"
+             data-mail-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_compose') }}"
+             data-csrf-mail="{{ csrf_token('bulk_mail') }}"
+             data-return="{{ app.request.requestUri }}">
+            <span class="bulk-count">Vybráno: <strong id="bulkCount">0</strong></span>
+            <span class="bulk-actions">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="csv" disabled>⬇ Export (CSV)</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="pdf" disabled>⬇ Export (PDF)</button>
+                <button type="button" class="btn btn-sm btn-outline-success" data-bulk-action="mail" disabled>✉ Hromadný e-mail</button>
+                <button type="button" class="btn btn-sm btn-outline-warning" data-bulk-action="reassign" disabled>↪ Přesunout</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bulk-action="delete" disabled>🗑 Smazat vybrané</button>
+            </span>
+            <span class="bulk-hint small text-secondary">Zaškrtni řádky vlevo — operace platí jen pro vybrané přihlášky.</span>
+        </div>
+    {% endif %}
+
     <div class="participants-table-wrap">
     <table class="list participant-list" style="table-layout: fixed; word-break: break-word;">
         {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-head.html.twig' %}
         {% for participant in participants %}
             {% include '@OswisOrgOswisCalendar/other/participant-list/parts/participant-list-inner.html.twig' %}
         {% else %}
-            <tbody><tr><td colspan="5" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
+            <tbody><tr><td colspan="{{ is_granted('ROLE_ADMIN') ? 6 : 5 }}" class="text-center bold">Žádné přihlášky odpovídající filtru.</td></tr></tbody>
         {% endfor %}
     </table>
     </div>
 
     {# ---- PAGINATION (unscoped paginated view) --------------------------- #}
     {% if pagination|default %}
-        <nav class="mt-2 d-flex gap-2 align-items-center">
+        <nav class="mt-2 d-flex gap-2 align-items-center d-print-none">
             {% if pagination.hasPrev %}
                 <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', qbase|merge({page: pagination.page - 1})) }}">← Předchozí</a>
             {% endif %}
@@ -426,13 +516,82 @@
        the textarea makes select-all + copy easy. #}
     {% set emails = participants|map(p => p.contact.email|default(''))|filter(e => e != '') %}
     {% if emails|length %}
-        <details class="mt-3">
+        <details class="mt-3 d-print-none">
             <summary style="cursor:pointer;">📋 E-mailové adresy pro hromadné rozeslání ({{ emails|length }})</summary>
             <textarea readonly rows="3" class="form-control form-control-sm mt-1" style="font-size:.8rem;"
                       onclick="this.select();">{{ emails|join(', ') }}</textarea>
             <div class="small text-secondary mt-1">Klikni do pole (vše se označí) a zkopíruj (Ctrl+C) do pole příjemců v e-mailovém klientovi.</div>
         </details>
     {% endif %}
+
+    {# Bulk-action bar wiring (Fáze G): track checked rows, toggle the persistent bar's enabled
+       state, and on a bulk button build+submit a hidden POST form with the checked IDs (avoids
+       nesting a form around the per-row delete/restore forms). Cap mirrors the reassign wizard. #}
+    <script>
+        (function () {
+            var bar = document.getElementById('bulkBar');
+            if (!bar) { return; }
+            var all = document.getElementById('bulkSelectAll');
+            var count = document.getElementById('bulkCount');
+            var actionBtns = [].slice.call(bar.querySelectorAll('[data-bulk-action]'));
+            var HARD_CAP_DELETE = 100;
+            function checks() { return [].slice.call(document.querySelectorAll('.bulk-row-check')); }
+            function checkedIds() { return checks().filter(function (c) { return c.checked; }).map(function (c) { return c.value; }); }
+            function refresh() {
+                var ids = checkedIds();
+                if (count) { count.textContent = String(ids.length); }
+                var empty = ids.length === 0;
+                bar.classList.toggle('is-empty', empty);
+                actionBtns.forEach(function (b) { b.disabled = empty; });
+                if (all) {
+                    var cs = checks();
+                    all.checked = cs.length > 0 && ids.length === cs.length;
+                    all.indeterminate = ids.length > 0 && ids.length < cs.length;
+                }
+            }
+            if (all) {
+                all.addEventListener('change', function () {
+                    checks().forEach(function (c) { c.checked = all.checked; });
+                    refresh();
+                });
+            }
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.classList && e.target.classList.contains('bulk-row-check')) { refresh(); }
+            });
+            function submitBulk(url, csrf, ids, extra, idField) {
+                var f = document.createElement('form');
+                f.method = 'post';
+                f.action = url;
+                function hidden(name, value) { var i = document.createElement('input'); i.type = 'hidden'; i.name = name; i.value = value; f.appendChild(i); }
+                if (csrf) { hidden('_token', csrf); }
+                hidden('return', bar.getAttribute('data-return') || '');
+                var field = (idField || 'ids') + '[]';
+                ids.forEach(function (id) { hidden(field, id); });
+                if (extra) { Object.keys(extra).forEach(function (k) { hidden(k, extra[k]); }); }
+                document.body.appendChild(f);
+                f.submit();
+            }
+            actionBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var ids = checkedIds();
+                    if (ids.length === 0) { return; }
+                    var action = btn.getAttribute('data-bulk-action');
+                    if (action === 'export') {
+                        submitBulk(bar.getAttribute('data-export-url'), bar.getAttribute('data-csrf-export'), ids, { format: btn.getAttribute('data-format') || 'csv' });
+                    } else if (action === 'mail') {
+                        submitBulk(bar.getAttribute('data-mail-url'), bar.getAttribute('data-csrf-mail'), ids, null);
+                    } else if (action === 'reassign') {
+                        submitBulk(bar.getAttribute('data-reassign-url'), '', ids, null, 'preselectIds');
+                    } else if (action === 'delete') {
+                        if (ids.length > HARD_CAP_DELETE) { window.alert('Najednou lze smazat nejvýše ' + HARD_CAP_DELETE + ' přihlášek (vybráno ' + ids.length + ').'); return; }
+                        if (!window.confirm('Smazat ' + ids.length + ' vybraných přihlášek? (lze obnovit)')) { return; }
+                        submitBulk(bar.getAttribute('data-delete-url'), bar.getAttribute('data-csrf-delete'), ids, null);
+                    }
+                });
+            });
+            refresh();
+        })();
+    </script>
 
     {# Instant typeahead over the rows already on the page: previews/jumps to a participant.
        Real filtering stays server-side (Enter without a highlighted suggestion submits ?q=).

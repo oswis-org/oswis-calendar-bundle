@@ -8,6 +8,13 @@
     data-ta-name="{{ participant.name|default(participant.cachedContact.name|default('#' ~ participant.id)) }}"
     data-ta-event="{{ event.shortName|default }}"
     data-ta-href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id }) }}">
+    {% if is_granted('ROLE_ADMIN') %}
+        {# Bulk-select checkbox (Fáze G). JS collects checked values into the bulk-action bar. #}
+        <td class="bulk-col" style="border: 1px solid grey; text-align: center; vertical-align: middle;">
+            <input type="checkbox" class="bulk-row-check" value="{{ participant.id }}"
+                   aria-label="Vybrat přihlášku #{{ participant.id }}">
+        </td>
+    {% endif %}
     <td style="border: 1px solid grey; padding: .3em .6em; text-align: right;">
         {% if participant.deletedAt|default %}
             <div class="block small" style="color:red;">

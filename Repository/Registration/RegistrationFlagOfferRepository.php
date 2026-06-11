@@ -13,6 +13,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use LogicException;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 
 class RegistrationFlagOfferRepository extends ServiceEntityRepository
 {
@@ -104,7 +105,19 @@ class RegistrationFlagOfferRepository extends ServiceEntityRepository
     public function getFlagRanges(?array $opts = [], ?int $limit = null, ?int $offset = null): Collection
     {
         $result = $this->getQueryBuilder($opts ?? [], $limit, $offset)->getQuery()->getResult();
+        $rows = is_array($result)
+            ? array_values(array_filter($result, static fn (mixed $r): bool => $r instanceof RegistrationFlagOffer))
+            : [];
+        // The DB ORDER BY uses utf8mb4_unicode_ci, which sorts Czech diacritics (Č/Š/Ř…) after Z.
+        // Re-sort by name with the Czech-aware collator so the flag catalog reads alphabetically.
+        usort(
+            $rows,
+            static fn (RegistrationFlagOffer $a, RegistrationFlagOffer $b): int => StringUtils::compareCzech(
+                $a->getName(),
+                $b->getName(),
+            ),
+        );
 
-        return new ArrayCollection(is_array($result) ? $result : []);
+        return new ArrayCollection($rows);
     }
 }

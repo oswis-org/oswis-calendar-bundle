@@ -110,6 +110,11 @@ oswis_org_oswis_calendar_web_admin_participants_list_csv:
   path: "/web_admin/seznam-prihlasek-csv"
   methods: [GET]
 
+oswis_org_oswis_calendar_web_admin_participants_list_pdf:
+  controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsListPdf
+  path: "/web_admin/seznam-prihlasek-pdf"
+  methods: [GET]
+
 oswis_org_oswis_calendar_web_admin_event:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showEvent
   path: "/web_admin/udalost/{eventSlug?}"
@@ -186,6 +191,33 @@ oswis_org_oswis_calendar_web_admin_participant_payments_import:
 oswis_org_oswis_calendar_web_admin_participant_send_automails:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::sendAutoMails
   path: "/web_admin/prihlasky/send-automails/{limit?}/{type?}"
+  methods: [POST]
+
+# Ad-hoc bulk e-mail (Fáze G Ink.2a): compose → preview → queue → status (JS auto-drain).
+oswis_org_oswis_calendar_web_admin_bulk_mail_compose:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::compose
+  path: "/web_admin/prihlasky/hromadny-email"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_preview:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::preview
+  path: "/web_admin/prihlasky/hromadny-email/nahled"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_queue:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::queue
+  path: "/web_admin/prihlasky/hromadny-email/zaradit"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_status:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::status
+  path: "/web_admin/prihlasky/hromadne-emaily"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_drain:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::drain
+  path: "/web_admin/prihlasky/hromadny-email/odeslat-davku"
+  methods: [POST]
 
 oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
@@ -296,6 +328,16 @@ oswis_org_oswis_calendar_web_admin_bulk_reassign:
   path: "/web_admin/prihlasky/hromadny-presun"
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_bulk_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkParticipantsController::delete
+  path: "/web_admin/prihlasky/hromadne-smazat"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_bulk_export:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkParticipantsController::export
+  path: "/web_admin/prihlasky/hromadny-export"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_communication_index:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCommunicationController::index
   path: "/web_admin/komunikace"
@@ -358,9 +400,21 @@ oswis_org_oswis_calendar_web_admin_mail_category_edit:
     id: '\d+'
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_mail_template_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::newTemplate
+  path: "/web_admin/e-maily/sablony/nova"
+  methods: [GET, POST]
+
 oswis_org_oswis_calendar_web_admin_mail_template_edit:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::editTemplate
   path: "/web_admin/e-maily/sablony/{id}/upravit"
   requirements:
     id: '\d+'
   methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_mail_template_preview:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::previewTemplate
+  path: "/web_admin/e-maily/sablony/{id}/nahled"
+  requirements:
+    id: '\d+'
+  methods: [POST]

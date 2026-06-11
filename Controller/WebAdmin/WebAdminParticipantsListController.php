@@ -31,8 +31,10 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Export\ExportManager;
 use OswisOrg\OswisCoreBundle\Export\ExportRequest;
 use OswisOrg\OswisCoreBundle\Export\ExportResponseFactory;
+use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -75,6 +77,17 @@ class WebAdminParticipantsListController extends AbstractController
     /** Page size for the unscoped (all-participants) paginated view. */
     private const int PER_PAGE = 100;
 
+    /**
+     * Hard ceiling on rows in a single export (CSV/PDF) — shared with the API export controller.
+     * A full export hydrates the whole heavy Participant graph per row; an unscoped all-years dump
+     * (thousands of rows) exhausts memory. We load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT →
+     * never hydrate beyond the cap) and, when the scope exceeds the cap, REFUSE the export with a
+     * clear error rather than silently truncating — the user is told to narrow the scope (pick an
+     * event/year). Scoped exports (per turnus/ročník) sit well under this, so the everyday path is
+     * unaffected. {@see ParticipantExportDefinition::MAX_EXPORT_ROWS}.
+     */
+    private const int EXPORT_MAX_ROWS = ParticipantExportDefinition::MAX_EXPORT_ROWS;
+
     /** Default participant type when none is requested — the everyday "Účastník" view. */
     private const string DEFAULT_PARTICIPANT_CATEGORY = 'ucastnik';
 
@@ -91,6 +104,7 @@ class WebAdminParticipantsListController extends AbstractController
         public ParticipantExportDefinition $participantExportDefinition,
         public ParticipantFilterEvaluator $filterEvaluator,
         public RegistrationFlagRepository $registrationFlagRepository,
+        public ExportService $exportService,
     ) {
     }
 
@@ -253,10 +267,31 @@ class WebAdminParticipantsListController extends AbstractController
             'q'                   => $q,
             'depthOverride'       => $depthOverride,
             'participantCategorySlug' => $participantCategorySlug,
-            'participantCategories'   => $this->participantCategoryService->getRepository()->findBy([], ['name' => 'ASC']),
+            'participantCategories'   => $this->sortedParticipantCategories(),
             'yearEvents'              => $yearEvents,
             'defaultEvent'            => $this->eventService->getDefaultEvent(),
+            'exportPresets'           => $this->participantExportDefinition->getPresets(),
         ]);
+    }
+
+    /**
+     * Participant categories for the filter dropdown, sorted Czech-alphabetically in PHP.
+     * (findBy()'s DB ORDER BY uses utf8mb4_unicode_ci, which sorts Č/Š/Ř… after Z.)
+     *
+     * @return list<ParticipantCategory>
+     */
+    private function sortedParticipantCategories(): array
+    {
+        $categories = $this->participantCategoryService->getRepository()->findBy([]);
+        usort(
+            $categories,
+            static fn (ParticipantCategory $a, ParticipantCategory $b): int => StringUtils::compareCzech(
+                $a->getName(),
+                $b->getName(),
+            ),
+        );
+
+        return $categories;
     }
 
     /**
@@ -296,14 +331,14 @@ class WebAdminParticipantsListController extends AbstractController
      *
      * @return ArrayCollection<int, Participant>
      */
-    private function loadScopedParticipants(array $events, ?ParticipantCategory $category, ?int $depthOverride, bool $includeDeleted = true): ArrayCollection
+    private function loadScopedParticipants(array $events, ?ParticipantCategory $category, ?int $depthOverride, bool $includeDeleted = true, ?int $limit = null): ArrayCollection
     {
         if ([] === $events) {
             $collection = $this->participantService->getParticipants([
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED      => $includeDeleted,
                 ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $category,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
-            ]);
+            ], true, $limit);
 
             return new ArrayCollection($collection->toArray());
         }
@@ -316,12 +351,21 @@ class WebAdminParticipantsListController extends AbstractController
                 ParticipantRepository::CRITERIA_EVENT                 => $event,
                 ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY  => $category,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => $depth,
-            ]);
+            ], true, $limit);
             foreach ($collection as $participant) {
                 $id = $participant->getId();
                 if (null !== $id) {
                     $byId[$id] = $participant;
                 }
+            }
+            // Stop loading further events once the cap is reached — the export will be refused
+            // anyway. Break on EITHER the merged unique count OR this single event already hitting
+            // the sentinel (a lone event over the cap → the whole export is over it). This bounds
+            // hydration at ~2× the cap regardless of how many events are multi-selected, without
+            // any silent truncation: every break path leaves count($byId) ≥ limit, so the caller's
+            // over-cap check fires.
+            if (null !== $limit && (count($byId) >= $limit || $collection->count() >= $limit)) {
+                break;
             }
         }
 
@@ -852,8 +896,68 @@ class WebAdminParticipantsListController extends AbstractController
      */
     public function showParticipantsCsv(Request $request): Response
     {
-        // Export the same scoped set the list shows (multi-event + depth aware). Unscoped
-        // (no event, no category) exports everything.
+        $scope = $this->loadExportScope($request);
+        if ($scope instanceof Response) {
+            return $scope; // over-cap redirect
+        }
+        $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
+        $exportRequest = new ExportRequest(
+            ExportFormat::fromRequest($request->query->getString('format')),
+            [] === $columnKeys ? null : $columnKeys,
+            $scope['subtitle'],
+        );
+
+        return $this->exportResponseFactory->toResponse(
+            $this->exportManager->render(
+                $this->participantExportDefinition,
+                new ArrayCollection($scope['participants']),
+                $exportRequest,
+            ),
+        );
+    }
+
+    /**
+     * Rich "browse-style" PDF of the participant list — the same visual content as the web admin
+     * screen (coloured flag badges with prices, payment status, notes, contact), rendered
+     * server-side through the branded PDF chrome. Distinct from the tabular CSV/PDF export.
+     *
+     * @throws \Mpdf\MpdfException
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
+    public function showParticipantsListPdf(Request $request): Response
+    {
+        $scope = $this->loadExportScope($request);
+        if ($scope instanceof Response) {
+            return $scope; // over-cap redirect
+        }
+        $html = $this->renderView('@OswisOrgOswisCalendar/web_admin/participants-list-pdf.html.twig', [
+            'participants' => $scope['participants'],
+            'subtitle'     => $scope['subtitle'],
+            'categoryName' => $scope['categoryName'],
+            'eventNames'   => $scope['eventNames'],
+            'count'        => $scope['count'],
+        ]);
+        $pdf = $this->exportService->getPdfFromHtml($html, false, 'Přehled přihlášek', $scope['subtitle'], ['přehled', 'přihlášky']);
+        $filename = 'prehled-prihlasek_'.date('Y-m-d_His').'.pdf';
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $filename),
+        ]);
+    }
+
+    /**
+     * Resolve + load + sort the scoped participant set for any export, applying the shared
+     * {@see EXPORT_MAX_ROWS} cap. Returns the sorted participants + a human scope subtitle, or a
+     * RedirectResponse (with a flash) when the scope exceeds the cap — never a silent truncation.
+     *
+     * @return array{participants: list<Participant>, subtitle: string, categoryName: string|null, eventNames: list<string>, count: int}|RedirectResponse
+     */
+    private function loadExportScope(Request $request): array|RedirectResponse
+    {
+        // Same scoped set the list shows (multi-event + depth aware). Unscoped = everything.
         [$events, ] = $this->resolveEventsFromRequest($request);
         // Default the participant type to "Účastník" (the everyday view) when none is given;
         // an explicit empty value (the "— typ účastníka —" option) means *all types*.
@@ -867,29 +971,60 @@ class WebAdminParticipantsListController extends AbstractController
         $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
         $includeDeleted = $request->query->getBoolean('includeDeleted');
 
+        // Load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT → memory never blows up on a huge scope).
+        // The +1 is the overflow sentinel: if it comes back, the real set is over the cap.
+        $loadLimit = self::EXPORT_MAX_ROWS + 1;
         if ([] !== $events || null !== $participantCategory) {
-            $participants = $this->loadScopedParticipants($events, $participantCategory, $depthOverride, $includeDeleted);
+            $participants = $this->loadScopedParticipants($events, $participantCategory, $depthOverride, $includeDeleted, $loadLimit);
         } else {
             $participants = $this->participantService->getParticipants([
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED       => $includeDeleted,
                 ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
-            ]);
+            ], true, $loadLimit);
+        }
+        // Over the cap → refuse with a clear error (never silently truncate). Bounce back to the
+        // list (which paginates, so it renders fine) with the same scope so the user can narrow it.
+        if ($participants->count() > self::EXPORT_MAX_ROWS) {
+            $this->addFlash('danger', sprintf(
+                'Export je omezen na %d záznamů a tento výběr je překračuje. Zužte rozsah – vyberte konkrétní akci nebo ročník (případně typ účastníka) – a export opakujte.',
+                self::EXPORT_MAX_ROWS,
+            ));
+            $redirectParams = $request->query->all();
+            unset($redirectParams['format'], $redirectParams['columns']);
+
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list', $redirectParams);
         }
         $participantsArray = $participants->toArray();
         usort(
             $participantsArray,
             static fn (Participant $a, Participant $b): int => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
         );
-        $participants = new ArrayCollection($participantsArray);
-        $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
-        $exportRequest = new ExportRequest(
-            ExportFormat::fromRequest($request->query->getString('format')),
-            [] === $columnKeys ? null : $columnKeys,
+        // Human scope subtitle: akce/typ + počet — ať je výstup jednoznačně identifikovatelný.
+        $scopeBits = [];
+        if (1 === count($events)) {
+            $scopeBits[] = (string) ($events[0]->getShortName() ?: $events[0]->getName());
+        } elseif (count($events) > 1) {
+            $scopeBits[] = count($events).' akcí';
+        } else {
+            $scopeBits[] = 'všechny akce';
+        }
+        if (null !== $participantCategory) {
+            $scopeBits[] = (string) $participantCategory->getName();
+        }
+        $scopeBits[] = count($participantsArray).' záznamů';
+
+        $eventNames = array_map(
+            static fn (Event $e): string => (string) ($e->getShortName() ?: $e->getName()),
+            $events,
         );
 
-        return $this->exportResponseFactory->toResponse(
-            $this->exportManager->render($this->participantExportDefinition, $participants, $exportRequest),
-        );
+        return [
+            'participants' => $participantsArray,
+            'subtitle'     => implode(' · ', $scopeBits),
+            'categoryName' => $participantCategory?->getName(),
+            'eventNames'   => $eventNames,
+            'count'        => count($participantsArray),
+        ];
     }
 
     public function showYearsCompare(?string $eventSeriesSlug = null): Response

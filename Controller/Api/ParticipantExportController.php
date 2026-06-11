@@ -14,6 +14,7 @@ use OswisOrg\OswisCoreBundle\Enum\ExportFormat;
 use OswisOrg\OswisCoreBundle\Export\ExportManager;
 use OswisOrg\OswisCoreBundle\Export\ExportRequest;
 use OswisOrg\OswisCoreBundle\Export\ExportResponseFactory;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -67,12 +68,28 @@ final class ParticipantExportController
             ? $this->participantCategoryService->getParticipantTypeBySlug($categorySlug)
             : null;
 
+        // Load at most MAX_EXPORT_ROWS+1 (true SQL LIMIT → memory never blows up on a huge scope).
+        // The +1 is the overflow sentinel: if it comes back, the real set is over the cap.
+        $loadLimit = ParticipantExportDefinition::MAX_EXPORT_ROWS + 1;
         $participants = $this->participantService->getParticipants([
             ParticipantRepository::CRITERIA_INCLUDE_DELETED => $request->query->getBoolean('includeDeleted'),
             ParticipantRepository::CRITERIA_EVENT => $event,
             ParticipantRepository::CRITERIA_PARTICIPANT_CATEGORY => $category,
             ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 2,
-        ]);
+        ], true, $loadLimit);
+
+        // Over the cap → refuse with a clear 413 (never silently truncate). Tell the client to
+        // narrow the scope (an event/category) and retry.
+        if ($participants->count() > ParticipantExportDefinition::MAX_EXPORT_ROWS) {
+            return new JsonResponse([
+                'error'   => 'export_too_large',
+                'message' => sprintf(
+                    'Export je omezen na %d záznamů a tento výběr je překračuje. Zužte rozsah (vyberte akci nebo kategorii) a export opakujte.',
+                    ParticipantExportDefinition::MAX_EXPORT_ROWS,
+                ),
+                'limit'   => ParticipantExportDefinition::MAX_EXPORT_ROWS,
+            ], Response::HTTP_REQUEST_ENTITY_TOO_LARGE);
+        }
 
         $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
         $exportRequest = new ExportRequest(

@@ -5,6 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -24,6 +25,7 @@ final class WebAdminParticipantsController extends AbstractController
         private readonly ParticipantService $participantService,
         private readonly CommunicationTimelineService $timelineService,
         private readonly ParticipantMailService $participantMailService,
+        private readonly ParticipantChangeService $changeService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -87,6 +89,14 @@ final class WebAdminParticipantsController extends AbstractController
             // Timeline failures must not prevent the detail page from rendering.
         }
 
+        // Registration history (read-only) — full chronology reconstructed from the versioned
+        // junction entities. Best-effort: a reconstruction failure must not break the detail page.
+        $history = [];
+        try {
+            $history = $this->changeService->buildHistory($participant);
+        } catch (\Throwable) {
+        }
+
         // Only ParticipantMail (system + ad-hoc) rows are resend-able.
         // IMAP-imported and manual-note rows have no underlying mailer.
         $resendableMailIds = [];
@@ -99,6 +109,7 @@ final class WebAdminParticipantsController extends AbstractController
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
             'participant'        => $participant,
             'entries'            => $entries,
+            'history'            => $history,
             'isAdmin'            => true,
             'showFullDetail'     => true,
             'participantId'      => $participantId,
@@ -112,8 +123,12 @@ final class WebAdminParticipantsController extends AbstractController
      * @throws OswisException
      */
     #[IsGranted('ROLE_ADMIN')]
-    public function sendAutoMails(int $limit = 100, ?string $type = null): Response
+    public function sendAutoMails(Request $request, int $limit = 100, ?string $type = null): Response
     {
+        // State-changing real-mail send: POST + CSRF only (was a CSRF-able GET).
+        if (!$this->isCsrfTokenValid('send_automails', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
         $this->participantService->sendAutoMails(null, $type, $limit);
 
         // Admin message skeleton (keeps the admin menu) — not the public message page.

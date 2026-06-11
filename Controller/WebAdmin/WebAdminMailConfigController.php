@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailCategoryEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailGroupEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\TwigTemplateEditType;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -31,6 +34,8 @@ final class WebAdminMailConfigController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly MailPreviewService $mailPreview,
+        private readonly ParticipantRepository $participantRepository,
     ) {
     }
 
@@ -101,6 +106,37 @@ final class WebAdminMailConfigController extends AbstractController
         ]);
     }
 
+    /**
+     * Create a new TwigTemplate (e.g. a kind=snippet block or a new campaign). Reuses the edit form;
+     * on save it redirects to the editor so the admin immediately gets the live preview. Closes the
+     * loop for snippets (the bulk composer inserts them by slug) without needing direct DB access.
+     */
+    public function newTemplate(Request $request): Response
+    {
+        $template = new TwigTemplate();
+        $form = $this->createForm(TwigTemplateEditType::class, $template);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->em->persist($template);
+            $this->em->flush();
+            $this->addFlash('success', sprintf('Twig šablona „%s" vytvořena.', $template->getName() ?? '#'.$template->getId()));
+
+            return new RedirectResponse($this->generateUrl(
+                'oswis_org_oswis_calendar_web_admin_mail_template_edit',
+                ['id' => $template->getId()],
+            ));
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
+            'form'               => $form,
+            'entity'             => $template,
+            'kind'               => 'template',
+            'sampleParticipants' => [],
+            'pageTitle'          => 'Nová Twig šablona',
+            'page_title'         => 'Nová Twig šablona :: ADMIN',
+        ]);
+    }
+
     public function editTemplate(Request $request, int $id): Response
     {
         $template = $this->em->find(TwigTemplate::class, $id)
@@ -116,11 +152,50 @@ final class WebAdminMailConfigController extends AbstractController
         }
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
-            'form'       => $form,
-            'entity'     => $template,
-            'kind'       => 'template',
-            'pageTitle'  => sprintf('Twig šablona: %s', $template->getName() ?? '#'.$id),
-            'page_title' => sprintf('Twig šablona: %s :: ADMIN', $template->getName() ?? '#'.$id),
+            'form'               => $form,
+            'entity'             => $template,
+            'kind'               => 'template',
+            'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
+            'pageTitle'          => sprintf('Twig šablona: %s', $template->getName() ?? '#'.$id),
+            'page_title'         => sprintf('Twig šablona: %s :: ADMIN', $template->getName() ?? '#'.$id),
         ]);
+    }
+
+    /**
+     * Live preview of a mail template through the real MJML pipeline (#139 used to edit blind). POST,
+     * CSRF. Renders the POSTed (unsaved) source when present — trusted Twig, same trust the editor
+     * already grants — else the persisted template; against a chosen / most-recent sample participant.
+     * Returns an HTML fragment for the editor's preview iframe; render errors come back as a readable
+     * block, never a 500. {@see MailPreviewService}.
+     */
+    public function previewTemplate(Request $request, int $id): Response
+    {
+        if (!$this->isCsrfTokenValid('mail_template_preview', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $template = $this->em->find(TwigTemplate::class, $id);
+        if (!$template instanceof TwigTemplate) {
+            return new Response(
+                '<p style="font-family:sans-serif;color:#666">Šablona nenalezena.</p>',
+                Response::HTTP_NOT_FOUND,
+            );
+        }
+        // Not getInt(): the sample selector's "— nejnovější —" option posts an empty string, which
+        // InputBag::getInt() rejects with a 400. Empty / non-numeric → null → pick the latest sample.
+        $participantIdRaw = (string) $request->request->get('participantId', '');
+        $participantId = ctype_digit($participantIdRaw) ? (int) $participantIdRaw : 0;
+        $participant = $this->mailPreview->pickSampleParticipant($participantId > 0 ? $participantId : null);
+        if (!$participant instanceof Participant) {
+            return new Response(
+                '<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – není k dispozici žádný vzorový účastník (přihláška).</p>',
+            );
+        }
+        $source = trim((string) $request->request->get('source', ''));
+        $subject = $template->getName();
+        $result = '' !== $source
+            ? $this->mailPreview->renderSource($source, $participant, [], $subject)
+            : $this->mailPreview->renderTemplate($template->getTemplateName(), $participant, [], $subject);
+
+        return new Response($result['html']);
     }
 }

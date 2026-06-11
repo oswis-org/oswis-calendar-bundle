@@ -45,6 +45,7 @@
                         <th>Událost</th>
                         <th style="width: 4rem; text-align: center;" title="Automatické odeslání">Auto</th>
                         <th style="width: 6rem; text-align: center;" title="Posílat jen aktivním účastníkům">Jen aktivní</th>
+                        <th style="width: 10rem;" title="Volitelný filtr příjemců (výrazový jazyk seznamu přihlášek)">Filtr</th>
                         <th style="width: 6rem;"></th>
                     </tr>
                 </thead>
@@ -60,12 +61,19 @@
                             <td style="text-align: center;">{{ g.automaticMailing ? '✓' : '—' }}</td>
                             <td style="text-align: center;">{{ g.onlyActive ? '✓' : '—' }}</td>
                             <td>
+                                {% if g.filterExpression %}
+                                    <code style="font-size: .8em;" title="{{ g.filterExpression }}">{{ g.filterExpression|u.truncate(28, '…') }}</code>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>
                                 <a class="btn btn-sm btn-outline-primary"
                                    href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}">✎ Upravit</a>
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="9" style="text-align: center; color: #6c757d;">Žádné mail-skupiny.</td></tr>
+                        <tr><td colspan="10" style="text-align: center; color: #6c757d;">Žádné mail-skupiny.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -100,11 +108,16 @@
                 </tbody>
             </table>
         {% elseif activeTab == 'templates' %}
+            <p style="margin-bottom: .75rem;">
+                <a class="btn btn-sm btn-success"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_new') }}">+ Nová šablona / blok</a>
+            </p>
             <table class="list" style="width: 100%;">
                 <thead>
                     <tr>
                         <th style="width: 3rem;">ID</th>
                         <th>Název</th>
+                        <th style="width: 8rem;">Druh</th>
                         <th style="width: 18rem;">Slug</th>
                         <th>Cesta</th>
                         <th style="width: 11rem; text-align: center;">Inline obsah?</th>
@@ -116,6 +129,12 @@
                         <tr>
                             <td>{{ t.id }}</td>
                             <td><strong>{{ t.name|default('—') }}</strong></td>
+                            <td>
+                                {% set kindLabels = {'system': 'Systémový', 'campaign': 'Kampaň', 'snippet': 'Blok', 'page': 'Stránka', 'pdf': 'PDF'} %}
+                                {% if t.kind %}
+                                    <span class="badge" style="background:#e7f1ff;color:#0a58ca;border:1px solid #b6d4fe;border-radius:.4em;padding:.1em .5em;font-size:.8em;">{{ kindLabels[t.kind]|default(t.kind) }}</span>
+                                {% else %}—{% endif %}
+                            </td>
                             <td><code style="font-size: .85em;">{{ t.slug|default('—') }}</code></td>
                             <td><code style="font-size: .85em;">{{ t.regularTemplateName|default('—') }}</code></td>
                             <td style="text-align: center;">
@@ -131,7 +150,7 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="6" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
+                        <tr><td colspan="7" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

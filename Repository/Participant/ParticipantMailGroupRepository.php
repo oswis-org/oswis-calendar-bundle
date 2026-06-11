@@ -51,8 +51,12 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('mg')->setParameter('now', new DateTime());
         $queryBuilder->where("mg.automaticMailing = 1");
+        // Active-now window: start <= now <= end (inclusive), null = open-ended. The previous
+        // expression had inverted operators (:now < start, :now > end) AND broken precedence
+        // (A OR B AND C OR D), making it a near-no-op; grouped + corrected here. The entity-level
+        // isApplicableByDate re-check stays as defense-in-depth.
         $queryBuilder->andWhere(
-            "(mg.startDateTime IS NULL) OR (:now < mg.startDateTime) AND  (mg.endDateTime IS NULL) OR (:now > mg.endDateTime)"
+            "((mg.startDateTime IS NULL) OR (mg.startDateTime <= :now)) AND ((mg.endDateTime IS NULL) OR (mg.endDateTime >= :now))"
         );
         $queryBuilder->addOrderBy('mg.priority', 'DESC');
         if (null !== $event) {
