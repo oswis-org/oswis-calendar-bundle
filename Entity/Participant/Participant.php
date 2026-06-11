@@ -98,6 +98,10 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
         ),
         new Put(
             denormalizationContext: ['groups' => ['entity_put', 'calendar_participant_put'], 'enable_max_depth' => true],
+            // Bez explicitních groups se odpověď serializovala přes CELÝ negroupovaný graf
+            // entit (vč. write-only atributů z konstruktorů) a padala na 400 — PUT tak byl
+            // od nepaměti nepoužitelný. Odpověď = stejný tvar jako funkční item GET.
+            normalizationContext: ['groups' => ['entity_get', 'calendar_participant_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')"
         ),
     ],

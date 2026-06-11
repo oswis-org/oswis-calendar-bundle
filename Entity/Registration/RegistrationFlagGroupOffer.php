@@ -159,7 +159,13 @@ class RegistrationFlagGroupOffer implements NameableInterface
         }
     }
 
-    public function isCategory(?RegistrationFlagCategory $category = null): bool
+    /**
+     * POZOR na pojmenování: dřívější `isCategory()` udělalo z metody "getter" serializeru —
+     * PropertyInfo odvodí atribut `category` z parametru konstruktoru (to-one relace
+     * RegistrationFlagCategory) a PropertyAccess čte prefixy is/get/has; bool návrat pak shodil
+     * KAŽDOU negroupovanou serializaci grafu (PUT /api/participants → 400). Proto isOfCategory.
+     */
+    public function isOfCategory(?RegistrationFlagCategory $category = null): bool
     {
         return null === $category || ($this->getFlagCategory() && $this->getFlagCategory() === $category);
     }
