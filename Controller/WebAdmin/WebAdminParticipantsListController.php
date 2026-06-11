@@ -134,9 +134,12 @@ class WebAdminParticipantsListController extends AbstractController
         $allEvents = $request->query->getBoolean('allEvents');
 
         // Default scope = the current default event. Showing every participant across all
-        // events at once is opt-in (?allEvents=1), not the landing view.
+        // events at once is opt-in (?allEvents=1), not the landing view. The decision MUST
+        // look at explicit query intent (has 'participantCategorySlug'), not the resolved
+        // category — since 89a16b6 the category defaults to "ucastnik" and is never null,
+        // which silently disabled this block (bare menu click listed ALL events again).
         $isDefaultScope = false;
-        if ([] === $events && null === $participantCategory && !$allEvents) {
+        if ([] === $events && !$request->query->has('participantCategorySlug') && !$allEvents) {
             $defaultEvent = $this->eventService->getDefaultEvent();
             if (null !== $defaultEvent) {
                 $events = [$defaultEvent];
@@ -970,6 +973,16 @@ class WebAdminParticipantsListController extends AbstractController
         $depthRaw = $request->query->get('depth');
         $depthOverride = (null !== $depthRaw && '' !== $depthRaw) ? max(0, (int) $depthRaw) : null;
         $includeDeleted = $request->query->getBoolean('includeDeleted');
+
+        // Mirror list(): a bare query (no explicit scope) means the current default event,
+        // so an export from the default landing view exports exactly what the list shows
+        // (and not every participant ever, which would just trip the row cap).
+        if ([] === $events && !$request->query->has('participantCategorySlug') && !$request->query->getBoolean('allEvents')) {
+            $defaultEvent = $this->eventService->getDefaultEvent();
+            if (null !== $defaultEvent) {
+                $events = [$defaultEvent];
+            }
+        }
 
         // Load at most EXPORT_MAX_ROWS+1 (true SQL LIMIT → memory never blows up on a huge scope).
         // The +1 is the overflow sentinel: if it comes back, the real set is over the cap.
