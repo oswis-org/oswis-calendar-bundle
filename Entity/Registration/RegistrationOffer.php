@@ -325,7 +325,7 @@ class RegistrationOffer implements NameableInterface
             $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isPublicOnWeb());
         }
         if (null !== $flagCategory) {
-            $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isCategory($flagCategory));
+            $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isOfCategory($flagCategory));
         }
         if (null !== $flagType) {
             $flagGroupRanges = $flagGroupRanges->filter(static fn (RegistrationFlagGroupOffer $range) => $range->isType($flagType));
