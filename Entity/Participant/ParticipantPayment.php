@@ -198,6 +198,17 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
         $participant?->addPayment($this);
     }
 
+    /**
+     * Admin-sanctioned detach (manual re-matching in the web admin). The generic
+     * {@see setParticipant()} deliberately forbids null on a persisted payment (protects the
+     * API write path), but the curated admin "Odpojit" flow must be able to undo a wrong match.
+     */
+    public function detachParticipant(): void
+    {
+        $this->participant?->removePayment($this);
+        $this->participant = null;
+    }
+
     public function getImport(): ?ParticipantPaymentsImport
     {
         return $this->import;
