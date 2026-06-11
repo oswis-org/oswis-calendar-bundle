@@ -76,7 +76,7 @@
     <td style="border: 1px solid grey; padding: .3em .6em; font-size: small;">
         <div>
             {% for flagGroup in participant.flagGroups|filter(flagGroup => flagGroup.participantFlags|length > 0) %}
-                <div style="{{ flagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">
+                <div class="p-flag-group" style="{{ flagGroup.deletedAt ? 'text-decoration:line-through;' : '' }}">
                     {% for index, participantFlag in flagGroup.participantFlags %}
                         {% set badgeColorString = participantFlag.flag.color|default
                             ? 'background-color:'~participantFlag.flag.color~'!important;color:'~participantFlag.flag.foregroundColor~'!important;'

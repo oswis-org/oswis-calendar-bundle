@@ -432,19 +432,39 @@
         .print-only { display: none; }
         @media print {
             .print-only { display: block !important; }
+            /* Admin chrome pryč — logo hlavičku, drobečky a patičku skeleton v tisku
+               neskrývá (jen menu má d-print-none), takže to řešíme lokálně odsud.
+               Tiskne se jen titulek + Omezení výběru + tabulka. */
+            #main-header-container, nav[aria-label="breadcrumb"], #main-footer, footer { display: none !important; }
+            /* Květinový watermark (app print branding) je pro hustou datovou tabulku šum. */
+            html { background-image: none !important; }
+            /* Skupiny příznaků inline (jinak každá skupina = vlastní řádek buňky). */
+            .participants-page .p-flag-group { display: inline; }
+            /* Obsah přes celou šířku papíru — Bootstrap .container by jinak držel
+               screen max-width a tabulka se mačkala na části stránky. */
+            .participants-page { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
             .participants-page .actions { display: none !important; }
             .participants-page .oswis-typeahead { display: none !important; }
             .participants-page .participants-table-wrap { overflow: visible !important; }
-            .participants-page table.participant-list { min-width: 0 !important; font-size: 8pt;
+            .participants-page table.participant-list { min-width: 0 !important; width: 100% !important; font-size: 8pt;
                 table-layout: auto !important; word-break: normal !important; }
+            /* Kompaktní řádky — bez toho tisklo 263 přihlášek na 32 stran. */
+            .participants-page table.participant-list td,
+            .participants-page table.participant-list th { padding: 2px 5px !important; }
+            .participants-page .badge { padding: 1px 4px !important; font-size: 7pt !important; }
+            .participants-page .block { line-height: 1.3; }
+            .participants-page .progress { height: .9em !important; }
             /* Badge se nesmí lámat po písmenech (úzký sloupec + fixed layout to dělalo). */
             .participants-page .oswis-flag-badge .ofb-name,
             .participants-page .oswis-flag-badge .ofb-price,
             .participants-page .oswis-flag-badge .ofb-text { white-space: nowrap !important; word-break: normal !important; }
-            /* Každý příznak na vlastním řádku, pilulka hugging obsah (jako referenční PDF). */
-            .participants-page .oswis-flag-badge { display: flex !important; width: -moz-fit-content !important;
-                width: fit-content !important; white-space: nowrap !important; margin: 0 0 2px 0 !important; }
+            /* Příznaky inline s wrapem — jeden na řádek dělal řádky vysoké přes půl
+               stránky; informace zůstává táž, jen hustší. */
+            .participants-page .oswis-flag-badge { display: inline-flex !important; width: -moz-fit-content !important;
+                width: fit-content !important; white-space: nowrap !important; margin: 1px 3px 1px 0 !important; }
             .participants-page table.participant-list tbody tr { page-break-inside: avoid; }
+            /* Hlavička tabulky na každé stránce. */
+            .participants-page table.participant-list thead { display: table-header-group; }
             .participants-page table.participant-list thead th { background: #006FAD !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             /* zajistit tisk barev příznaků/badge */
             .participants-page * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
