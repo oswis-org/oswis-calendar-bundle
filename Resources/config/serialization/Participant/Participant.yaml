@@ -54,13 +54,14 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlagGroup:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+    # flagGroupOffer + availableFlagOffers JEN v item GET (edit formulář v admin
+    # detailu) — v KOLEKCI je nikdo nečte a embeddovaly celý katalog příznaků
+    # u každého účastníka (~60 % z ~104 kB/účastník → 504 na plné akci).
     flagGroupOffer:
       groups:
-        - 'calendar_participants_get'
         - 'calendar_participant_get'
     availableFlagOffers:
       groups:
-        - 'calendar_participants_get'
         - 'calendar_participant_get'
     min:
       groups:
@@ -138,14 +139,11 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer:
         - 'calendar_participants_post'
         - 'calendar_participant_get'
         - 'calendar_participant_put'
-    flagGroupRanges:
-      groups:
-        - 'calendar_participants_get'
-        - 'calendar_participant_get'
-    requiredRegRange:
-      groups:
-        - 'calendar_participants_get'
-        - 'calendar_participant_get'
+    # flagGroupRanges + requiredRegRange v participant odpovědích nečte ŽÁDNÝ
+    # klient (Ionic bere katalog ze /api/registration_offers) — requiredRegRange
+    # embedoval rekurzivně další celý offer (34 kB/účastník). Odebráno z
+    # participant groups úplně; /api/registration_offers se to nedotýká (ten
+    # serializuje jen entities_get z core traitů, tyto groups nikdy nenesl).
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
   attributes:
