@@ -9,6 +9,7 @@ namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter as OrmSearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
@@ -69,11 +70,20 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     'event.startDateTime',
     'event.id',
 ])]
-#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: [
+// Fulltext ?search= — custom filtr zpracovává VÝHRADNĚ parametr `search`
+// (pole viz #[SearchAnnotation] níže), všechny ostatní properties ignoruje.
+#[ApiFilter(SearchFilter::class)]
+// Per-property exact filtry MUSÍ jít přes VESTAVĚNÝ AP SearchFilter — dřívější
+// deklarace přes custom fulltext byly mrtvá konfigurace (?event.id=50 tiše
+// vracelo všechny účastníky; Ionic na event.id/contact.id/offer.id stavěl).
+#[ApiFilter(OrmSearchFilter::class, strategy: 'exact', properties: [
     'event.id',
     'event.superEvent.id',
+    'offer.id',
     'offer.event.id',
     'offer.event.superEvent.id',
+    'contact.id',
+    'contact.appUser.id',
 ])]
 #[Entity(repositoryClass: ParticipantRepository::class)]
 #[Table(name: 'calendar_participant')]
@@ -146,9 +156,8 @@ class Participant implements ParticipantInterface
     #[OneToMany(targetEntity: SubEventAttendance::class, mappedBy: 'participant', cascade: [])]
     protected Collection $subEventAttendances;
 
-    /** Related contact (person or organization). */
+    /** Related contact (person or organization). Exact filtry contact.id / contact.appUser.id viz class-level OrmSearchFilter. */
     #[ManyToOne(targetEntity: AbstractContact::class, cascade: ['all'], fetch: 'EAGER')]
-    #[ApiFilter(SearchFilter::class, properties: ['contact.id' => 'exact', 'contact.appUser.id' => 'exact'])]
     #[JoinColumn(nullable: true)]
     protected ?AbstractContact $contact = null;
 
