@@ -59,11 +59,9 @@
                 </li>
             {% endfor %}
             {% for participantRange in participant.participantRegistrations(false, false) %}
+                {# Turnus + přihláška záměrně v JEDNOM řádku (požadavek 2026-06-12). #}
                 <li style="list-style-type: '📅'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
-                    <span class="block small"><strong>{{ participantRange.event.shortName|default }}</strong></span>
-                </li>
-                <li style="list-style-type: '🎫'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
-                    <span class="block small"><strong>{{ participantRange.offer.shortName|default }}</strong></span>
+                    <span class="block small"><strong>{{ participantRange.event.shortName|default }}</strong>{% if participantRange.offer.shortName|default %} · 🎫 <strong>{{ participantRange.offer.shortName }}</strong>{% endif %}</span>
                 </li>
             {% endfor %}
             {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
