@@ -1,13 +1,12 @@
 {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 
-{# On-update change notice. Variables (set in PHP `$data`, see ParticipantMailService::sendRegistrationChanged):
-     - participant / appUser / contact / salutationName: as in every participant mail
-     - changes: {
-         flags: { '<category>': { added: [...], removed: [...] } },
-         registrationsAdded: [...], registrationsRemoved: [...], contactUpdated: bool
-       } — the diff since the last confirmation (ParticipantChangeService::computeChanges)
-   f / a / salName come from the base message.html.twig.
-#}
+{# On-update change notice + úplné aktuální shrnutí přihlášky + QR na ZBÝVAJÍCÍ částky.
+   Proměnné (set v PHP `$data`, viz ParticipantMailService::sendRegistrationChanged):
+     - participant / appUser / contact / salutationName: jako u každého participant mailu
+     - changes: { flags: { '<cat>': { added, removed } }, registrationsAdded, registrationsRemoved, contactUpdated }
+     - depositQr / restQr: CID embednutých QR na zbývající zálohu / doplatek (nemusí být)
+     - depositAmount / restAmount: zbývající částky pro popisky QR
+   f / a / salName přicházejí z base message.html.twig. #}
 
 {% block content_inner %}
     <p>
@@ -34,9 +33,13 @@
         {% endif %}
     </ul>
     <p>Pokud tyto změny neprovedl{{ a }} {{ f ? 'Vy' : 'ty' }}, dej{{ f ? 'te' : '' }} nám prosím vědět odpovědí na tento e-mail.</p>
+
+    <div style="border-top:1px solid #dddddd; margin:18px 0;"></div>
+    <p>Pro pořádek {{ f ? 'Vám' : 'ti' }} posíláme <strong>aktuální stav celé přihlášky</strong>:</p>
+    {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
+    {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
 {% endblock %}
 
 {% block content_footer_inner %}
-    Aktuální stav celé přihlášky najdeš{{ f ? 'te' : '' }} ve svém účtu.
     V případě nejasností nás neváhej{{ f ? 'te' : '' }} kontaktovat odpovědí na tento e-mail.
 {% endblock %}
