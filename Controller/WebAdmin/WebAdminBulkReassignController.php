@@ -119,14 +119,22 @@ final class WebAdminBulkReassignController extends AbstractController
                     $failed[] = "#$id (nenalezen)";
                     continue;
                 }
-                // Scope guard: only allow moving participants that actually belong
-                // to the sourceEvent the admin filtered on. Prevents DevTools form
-                // injection of arbitrary participant IDs from unrelated events.
+                // Konzistenční kontrola pro režim filtru podle akce: když admin filtroval podle
+                // zdrojové akce, odmítni ID, která do ní nepatří (chytá zastaralý/upravený
+                // formulář). NENÍ to bezpečnostní kontrola — ROLE_ADMIN smí legitimně přesunout
+                // kohokoli; v preselect režimu ($sourceEvent === null) se záměrně přeskakuje,
+                // protože přesun napříč akcemi je smyslem té vstupní cesty (jednotný seznam).
                 if ($sourceEvent && $p->getEvent() !== $sourceEvent) {
                     $failed[] = sprintf('#%d (není ve zdrojové akci %s)', $id, $sourceEvent->getShortName() ?? $sourceEvent->getName() ?? '?');
                     continue;
                 }
                 $oldOffer = $p->getOffer();
+                // Přeskoč no-op přesun (už je na cílové nabídce) — jinak by setOffer zbytečně
+                // přepsal registraci a applyPostMoveSideEffects poslal mail + přepočítal kapacitu.
+                if ($oldOffer === $targetOffer) {
+                    $failed[] = sprintf('#%d (už je na cílové přihlášce)', $id);
+                    continue;
+                }
                 try {
                     $p->setOffer($targetOffer);
                     $this->em->persist($p);
