@@ -13,7 +13,7 @@
                         <h4 style="color: #006FAD; margin: 0 0 6px;">Záloha</h4>
                         <img src="{{ depositQr }}" alt="Záloha - QR Platba" title="Záloha - QR Platba" style="max-width: 100%; height: auto;">
                         {% if participant.depositValue|default %}
-                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ participant.depositValue }},-&nbsp;Kč</div>
+                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ depositAmount is defined ? depositAmount : participant.depositValue }},-&nbsp;Kč</div>
                         {% endif %}
                     </td>
                 {% endif %}
@@ -22,7 +22,7 @@
                         <h4 style="color: #006FAD; margin: 0 0 6px;">Doplatek</h4>
                         <img src="{{ restQr }}" alt="Doplatek - QR Platba" title="Doplatek - QR Platba" style="max-width: 100%; height: auto;">
                         {% if participant.priceRest|default %}
-                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ participant.priceRest }},-&nbsp;Kč</div>
+                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ restAmount is defined ? restAmount : participant.priceRest }},-&nbsp;Kč</div>
                         {% endif %}
                     </td>
                 {% endif %}
