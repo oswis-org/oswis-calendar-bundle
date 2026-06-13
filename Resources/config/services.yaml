@@ -421,6 +421,23 @@ services:
       $decorated: '@.inner'
       $attendanceRepository: '@OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository'
 
+  ## Privacy: strip internal-only fields (payment internalNote, non-public note text) for
+  ## non-managers. Registered on BOTH item normalizers (json-ld + plain json) — the Ionic
+  ## client requests either, so covering one would leak via the other. decoration_priority
+  ## puts it outside EventCapacityNormalizer (order is immaterial — disjoint fields).
+  OswisOrg\OswisCalendarBundle\Serializer\ParticipantPrivacyNormalizer:
+    decorates: 'api_platform.jsonld.normalizer.item'
+    decoration_priority: 10
+    arguments:
+      $decorated: '@.inner'
+
+  oswis_calendar.participant_privacy_normalizer.json:
+    class: OswisOrg\OswisCalendarBundle\Serializer\ParticipantPrivacyNormalizer
+    decorates: 'api_platform.serializer.normalizer.item'
+    decoration_priority: 10
+    arguments:
+      $decorated: '@.inner'
+
   OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagRepository
     autowire: true
