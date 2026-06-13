@@ -195,6 +195,14 @@ final class WebAdminBulkReassignController extends AbstractController
         bool $preselectMode = false,
         array $preselectedIds = [],
     ): Response {
+        $distinctEvents = [];
+        foreach ($participants as $listed) {
+            $listedEvent = $listed->getEvent();
+            if (null !== $listedEvent) {
+                $distinctEvents[(string) $listedEvent->getId()] = true;
+            }
+        }
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_reassign.html.twig', [
             'events'          => $events,
             'categories'      => $categories,
@@ -207,6 +215,7 @@ final class WebAdminBulkReassignController extends AbstractController
             'hardCap'         => self::HARD_CAP,
             'pageTitle'       => 'Hromadný přesun přihlášek',
             'page_title'      => 'Hromadný přesun přihlášek :: ADMIN',
+            'distinctEventCount' => count($distinctEvents),
         ]);
     }
 
