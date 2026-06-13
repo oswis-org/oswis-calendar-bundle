@@ -972,6 +972,36 @@ class Participant implements ParticipantInterface
     }
 
     /**
+     * Jako generateQrPng, ale na ZBÝVAJÍCÍ částky (po odečtení už zaplaceného). Když nezbývá
+     * nic k platbě (nebo je přeplaceno), vrátí null → QR se nevygeneruje. Používá se ve změnovém
+     * mailu, aby účastník, který už zálohu zaplatil, nedostal QR svádějící k duplicitní platbě.
+     */
+    public function generateRemainingQrPng(bool $deposit = true, bool $rest = true, string $qrComment = ''): ?string
+    {
+        if (null === ($event = $this->getEvent()) || null === ($bankAccount = $event->getBankAccount(true))) {
+            return null;
+        }
+        $value = null;
+        if ($deposit && $rest) {
+            $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'zbývá celkem';
+            $value = $this->getRemainingPrice();
+        }
+        if ($deposit && !$rest) {
+            $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'zbývající záloha';
+            $value = $this->getRemainingDeposit();
+        }
+        if (!$deposit && $rest) {
+            $qrComment = (empty($qrComment) ? '' : "$qrComment, ").'zbývající doplatek';
+            $value = $this->getRemainingPriceRest();
+        }
+        if (null === $value || $value <= 0) {
+            return null;
+        }
+
+        return $bankAccount->getQrImage($value, $this->getVariableSymbol(), $qrComment);
+    }
+
+    /**
      * Get variable symbol of this eventParticipant.
      */
     public function getVariableSymbol(): ?string
@@ -1093,6 +1123,19 @@ class Participant implements ParticipantInterface
     public function getRemainingPrice(): int
     {
         return $this->getPrice() - $this->getPaidPrice();
+    }
+
+    /**
+     * Zbývající DOPLATEK = část doplatku (cena nad rámec zálohy), která ještě není pokrytá
+     * platbami: zbývající celková částka mínus zbývající záloha. Nikdy záporné.
+     *
+     * Pozn.: záměrně samostatná, jednoznačně pojmenovaná metoda — starší {@see getRemainingRest()}
+     * vrací zbývající CELEK (price − paid), na který se spoléhá payment mail a infomaily,
+     * takže ho nepřepisujeme.
+     */
+    public function getRemainingPriceRest(): int
+    {
+        return max($this->getRemainingPrice() - $this->getRemainingDeposit(), 0);
     }
 
     /**
