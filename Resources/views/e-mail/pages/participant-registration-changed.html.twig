@@ -37,7 +37,7 @@
     <div style="border-top:1px solid #dddddd; margin:18px 0;"></div>
     <p>Pro pořádek {{ f ? 'Vám' : 'ti' }} posíláme <strong>aktuální stav celé přihlášky</strong>:</p>
     {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
-    {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' %}
+    {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' with {'depositLabel': 'Zbývající záloha', 'restLabel': 'Zbývající doplatek'} %}
 {% endblock %}
 
 {% block content_footer_inner %}

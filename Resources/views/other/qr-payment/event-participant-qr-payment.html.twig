@@ -3,6 +3,9 @@
    convert, so tags leaked through as unknown elements and the QR block visually
    collapsed. Each <img> references a CID attachment embedded by
    ParticipantMailService::embedQrPayments. #}
+{# Self-default `f` jako participant-summary.html.twig — partial vkládají formálně i neformálně
+   adresované maily; `is defined` (ne |default), ať legitimní f=false (tykání) přežije. #}
+{% set f = f is defined ? f : (participant.formal is defined ? participant.formal : true) %}
 {% if depositQr|default or restQr|default %}
     <div style="border: 3px solid #006FAD; padding: 12px; margin-top: 18px;">
         <h3 style="color: #006FAD; text-align: center; margin: 0 0 8px;">QR&nbsp;PLATBA</h3>
@@ -10,18 +13,22 @@
             <tr>
                 {% if depositQr|default %}
                     <td align="center" style="vertical-align: top; padding: 0 8px; width: 50%;">
-                        <h4 style="color: #006FAD; margin: 0 0 6px;">Záloha</h4>
-                        <img src="{{ depositQr }}" alt="Záloha - QR Platba" title="Záloha - QR Platba" style="max-width: 100%; height: auto;">
-                        {% if participant.depositValue|default %}
+                        <h4 style="color: #006FAD; margin: 0 0 6px;">{{ depositLabel|default('Záloha') }}</h4>
+                        <img src="{{ depositQr }}" alt="{{ depositLabel|default('Záloha') }} - QR Platba" title="{{ depositLabel|default('Záloha') }} - QR Platba" style="max-width: 100%; height: auto;">
+                        {% if depositAmount is defined and depositAmount < participant.depositValue|default(depositAmount) %}
+                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ depositAmount }} z {{ participant.depositValue }},-&nbsp;Kč</div>
+                        {% elseif participant.depositValue|default %}
                             <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ depositAmount is defined ? depositAmount : participant.depositValue }},-&nbsp;Kč</div>
                         {% endif %}
                     </td>
                 {% endif %}
                 {% if restQr|default %}
                     <td align="center" style="vertical-align: top; padding: 0 8px; width: 50%;">
-                        <h4 style="color: #006FAD; margin: 0 0 6px;">Doplatek</h4>
-                        <img src="{{ restQr }}" alt="Doplatek - QR Platba" title="Doplatek - QR Platba" style="max-width: 100%; height: auto;">
-                        {% if participant.priceRest|default %}
+                        <h4 style="color: #006FAD; margin: 0 0 6px;">{{ restLabel|default('Doplatek') }}</h4>
+                        <img src="{{ restQr }}" alt="{{ restLabel|default('Doplatek') }} - QR Platba" title="{{ restLabel|default('Doplatek') }} - QR Platba" style="max-width: 100%; height: auto;">
+                        {% if restAmount is defined and restAmount < participant.priceRest|default(restAmount) %}
+                            <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ restAmount }} z {{ participant.priceRest }},-&nbsp;Kč</div>
+                        {% elseif participant.priceRest|default %}
                             <div style="color: #606060; font-size: 0.9em; margin-top: 4px;">{{ restAmount is defined ? restAmount : participant.priceRest }},-&nbsp;Kč</div>
                         {% endif %}
                     </td>
@@ -29,9 +36,9 @@
             </tr>
         </table>
         <p style="text-align: center; color: #606060; font-size: 0.85em; margin: 10px 0 0;">
-            Pro zaslání zálohy i&nbsp;doplatku můžeš použít
+            Pro zaslání zálohy i&nbsp;doplatku {{ f ? 'můžete' : 'můžeš' }} použít
             <b><a href="http://qr-platba.cz/pro-uzivatele/" title="Co je QR platba?" target="_blank">QR&nbsp;platbu</a></b>.
-            <br>Naskenuj kód do&nbsp;aplikace tvé&nbsp;banky a&nbsp;všechny údaje se ti předvyplní.
+            <br>Naskenuj{{ f ? 'te' : '' }} kód do&nbsp;aplikace {{ f ? 'Vaší' : 'tvé' }}&nbsp;banky a&nbsp;všechny údaje se {{ f ? 'Vám' : 'ti' }} předvyplní.
         </p>
     </div>
 {% endif %}
