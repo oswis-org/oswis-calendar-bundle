@@ -111,6 +111,8 @@ final class WebAdminBulkReassignController extends AbstractController
 
             $moved = [];
             $failed = [];
+            /** @var list<array{participant: Participant, oldOffer: ?RegistrationOffer}> $movedSideEffects */
+            $movedSideEffects = [];
             foreach ($ids as $id) {
                 $p = $this->em->find(Participant::class, $id);
                 if (!$p instanceof Participant) {
@@ -124,15 +126,24 @@ final class WebAdminBulkReassignController extends AbstractController
                     $failed[] = sprintf('#%d (není ve zdrojové akci %s)', $id, $sourceEvent->getShortName() ?? $sourceEvent->getName() ?? '?');
                     continue;
                 }
+                $oldOffer = $p->getOffer();
                 try {
                     $p->setOffer($targetOffer);
                     $this->em->persist($p);
                     $moved[] = sprintf('#%d %s', $id, $p->getContact()?->getName() ?? '?');
+                    $movedSideEffects[] = ['participant' => $p, 'oldOffer' => $oldOffer];
                 } catch (\Throwable $e) {
                     $failed[] = sprintf('#%d (%s)', $id, $e->getMessage());
                 }
             }
             $this->em->flush();
+
+            // Po commitu: oznámení o změně přihlášky + přepočet obsazenosti zdrojové i cílové
+            // nabídky. Až po flush — diff změn čte verzované záznamy zapsané teprve flushem.
+            // applyPostMoveSideEffects chyby jen loguje, takže neúspěšný mail neshodí přesun.
+            foreach ($movedSideEffects as $sideEffect) {
+                $this->participantService->applyPostMoveSideEffects($sideEffect['participant'], $sideEffect['oldOffer']);
+            }
 
             if (count($moved) > 0) {
                 $this->addFlash('success', sprintf(
