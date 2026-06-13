@@ -32,7 +32,8 @@
             <li>Byly aktualizovány tvé kontaktní údaje.</li>
         {% endif %}
     </ul>
-    <p>Pokud tyto změny neprovedl{{ a }} {{ f ? 'Vy' : 'ty' }}, dej{{ f ? 'te' : '' }} nám prosím vědět odpovědí na tento e-mail.</p>
+    {# Disclaimer pro špatného příjemce — záměrně VŽDY vykání (může dorazit komukoliv). #}
+    <p>Pokud jste tyto změny neprovedl{{ a }} Vy, dejte nám prosím vědět odpovědí na tento e-mail.</p>
 
     <div style="border-top:1px solid #dddddd; margin:18px 0;"></div>
     <p>Pro pořádek {{ f ? 'Vám' : 'ti' }} posíláme <strong>aktuální stav celé přihlášky</strong>:</p>
