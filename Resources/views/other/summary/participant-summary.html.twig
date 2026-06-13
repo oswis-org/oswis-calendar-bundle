@@ -185,11 +185,14 @@
     </ul>
 {% endif %}
 
-{% if participant.notes|filter(note => note.textValue|default|length > 0)|length > 0 %}
+{# Účastník vidí jen veřejné poznámky; organizátor (isInternal=true, předáno z web_adminu)
+   vidí i interní, zřetelně označené „[INTERNÍ]". `note.publicNote` je default false. #}
+{% set visibleNotes = participant.notes|filter(note => note.textValue|default|length > 0 and (isInternal or note.publicNote)) %}
+{% if visibleNotes|length > 0 %}
     <h3>Poznámky</h3>
     <ul>
-        {% for note in participant.notes|filter(note => note.textValue|default|length > 0) %}
-            <li><p><small>{{ note.textValue }}</small></p></li>
+        {% for note in visibleNotes %}
+            <li><p><small>{% if not note.publicNote %}<strong style="color:#b00000;">[INTERNÍ]</strong> {% endif %}{{ note.textValue }}</small></p></li>
         {% endfor %}
     </ul>
 {% endif %}

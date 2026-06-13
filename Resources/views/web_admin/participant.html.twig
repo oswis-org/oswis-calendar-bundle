@@ -88,7 +88,7 @@
         {% if not isFullDetail %}
             {# Legacy arrival / check-in screen still relies on the full e-mail
                summary include — keep it here for that route only. #}
-            {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
+            {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' with {'isInternal': true} %}
         {% else %}
             {# ----- Admin-friendly full detail layout ----- #}
 
