@@ -111,28 +111,47 @@ final class WebAdminBulkReassignController extends AbstractController
 
             $moved = [];
             $failed = [];
+            /** @var list<array{participant: Participant, oldOffer: ?RegistrationOffer}> $movedSideEffects */
+            $movedSideEffects = [];
             foreach ($ids as $id) {
                 $p = $this->em->find(Participant::class, $id);
                 if (!$p instanceof Participant) {
                     $failed[] = "#$id (nenalezen)";
                     continue;
                 }
-                // Scope guard: only allow moving participants that actually belong
-                // to the sourceEvent the admin filtered on. Prevents DevTools form
-                // injection of arbitrary participant IDs from unrelated events.
+                // Konzistenční kontrola pro režim filtru podle akce: když admin filtroval podle
+                // zdrojové akce, odmítni ID, která do ní nepatří (chytá zastaralý/upravený
+                // formulář). NENÍ to bezpečnostní kontrola — ROLE_ADMIN smí legitimně přesunout
+                // kohokoli; v preselect režimu ($sourceEvent === null) se záměrně přeskakuje,
+                // protože přesun napříč akcemi je smyslem té vstupní cesty (jednotný seznam).
                 if ($sourceEvent && $p->getEvent() !== $sourceEvent) {
                     $failed[] = sprintf('#%d (není ve zdrojové akci %s)', $id, $sourceEvent->getShortName() ?? $sourceEvent->getName() ?? '?');
+                    continue;
+                }
+                $oldOffer = $p->getOffer();
+                // Přeskoč no-op přesun (už je na cílové nabídce) — jinak by setOffer zbytečně
+                // přepsal registraci a applyPostMoveSideEffects poslal mail + přepočítal kapacitu.
+                if ($oldOffer === $targetOffer) {
+                    $failed[] = sprintf('#%d (už je na cílové přihlášce)', $id);
                     continue;
                 }
                 try {
                     $p->setOffer($targetOffer);
                     $this->em->persist($p);
                     $moved[] = sprintf('#%d %s', $id, $p->getContact()?->getName() ?? '?');
+                    $movedSideEffects[] = ['participant' => $p, 'oldOffer' => $oldOffer];
                 } catch (\Throwable $e) {
                     $failed[] = sprintf('#%d (%s)', $id, $e->getMessage());
                 }
             }
             $this->em->flush();
+
+            // Po commitu: oznámení o změně přihlášky + přepočet obsazenosti zdrojové i cílové
+            // nabídky. Až po flush — diff změn čte verzované záznamy zapsané teprve flushem.
+            // applyPostMoveSideEffects chyby jen loguje, takže neúspěšný mail neshodí přesun.
+            foreach ($movedSideEffects as $sideEffect) {
+                $this->participantService->applyPostMoveSideEffects($sideEffect['participant'], $sideEffect['oldOffer']);
+            }
 
             if (count($moved) > 0) {
                 $this->addFlash('success', sprintf(
@@ -176,6 +195,14 @@ final class WebAdminBulkReassignController extends AbstractController
         bool $preselectMode = false,
         array $preselectedIds = [],
     ): Response {
+        $distinctEvents = [];
+        foreach ($participants as $listed) {
+            $listedEvent = $listed->getEvent();
+            if (null !== $listedEvent) {
+                $distinctEvents[(string) $listedEvent->getId()] = true;
+            }
+        }
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_reassign.html.twig', [
             'events'          => $events,
             'categories'      => $categories,
@@ -188,6 +215,7 @@ final class WebAdminBulkReassignController extends AbstractController
             'hardCap'         => self::HARD_CAP,
             'pageTitle'       => 'Hromadný přesun přihlášek',
             'page_title'      => 'Hromadný přesun přihlášek :: ADMIN',
+            'distinctEventCount' => count($distinctEvents),
         ]);
     }
 

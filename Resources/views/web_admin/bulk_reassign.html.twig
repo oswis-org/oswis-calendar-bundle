@@ -48,6 +48,12 @@
                 Předvybráno <strong>{{ preselectedIds|default([])|length }}</strong> přihlášek ze seznamu.
                 Vyber cílovou přihlášku a potvrď přesun.
             </div>
+            {% if distinctEventCount|default(0) > 1 %}
+                <div class="alert alert-warning py-2">
+                    ⚠️ Výběr zahrnuje účastníky z <strong>{{ distinctEventCount }}</strong> různých akcí —
+                    všichni se přesunou na vybranou cílovou přihlášku. Zkontroluj, že je to záměr.
+                </div>
+            {% endif %}
         {% endif %}
         {% if sourceEvent or preselectMode|default(false) %}
             <form method="post"

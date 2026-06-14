@@ -116,6 +116,7 @@ class ParticipantMailService
             try {
                 $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CHANGED);
                 $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
+                $templatedEmail = $participantMail->getTemplatedEmail();
                 $data = [
                     'participant'    => $participant,
                     'appUser'        => $appUser,
@@ -123,7 +124,10 @@ class ParticipantMailService
                     'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
                     'changes'        => $changes,
                     'type'           => ParticipantMail::TYPE_REGISTRATION_CHANGED,
+                    'depositAmount'  => $participant->getRemainingDeposit(),
+                    'restAmount'     => $participant->getRemainingPriceRest(),
                 ];
+                $data = $this->embedQrPayments($templatedEmail, $participant, $data, true);
                 $this->em->persist($participantMail);
                 $this->mailService->sendEMail($participantMail, self::REGISTRATION_CHANGED_TEMPLATE, $data);
                 $this->em->flush();
@@ -400,7 +404,7 @@ class ParticipantMailService
         return 'oswis.seznamovakup.cz';
     }
 
-    public function embedQrPayments(TemplatedEmail $templatedEmail, Participant $participant, array $mailData): array
+    public function embedQrPayments(TemplatedEmail $templatedEmail, Participant $participant, array $mailData, bool $remainingOnly = false): array
     {
         $participantId = $participant->getId();
         $participantContactSlug = $participant->getContact()?->getSlug();
@@ -412,7 +416,10 @@ class ParticipantMailService
                 'restQr' => ['deposit' => false, 'rest' => true],
             ] as $key => $opts
         ) {
-            if ($qrPng = $participant->generateQrPng($opts['deposit'], $opts['rest'], $qrComment)) {
+            $qrPng = $remainingOnly
+                ? $participant->generateRemainingQrPng($opts['deposit'], $opts['rest'], $qrComment)
+                : $participant->generateQrPng($opts['deposit'], $opts['rest'], $qrComment);
+            if ($qrPng) {
                 $templatedEmail->embed($qrPng, $key, 'image/png');
                 $mailData[$key] = "cid:$key";
             }

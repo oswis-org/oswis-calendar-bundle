@@ -65,6 +65,44 @@ class ParticipantService
     }
 
     /**
+     * Po přesunu účastníka na jinou nabídku (`setOffer`) sjednotí "po-zápisovou" logiku,
+     * kterou jinak dělá jen ParticipantSubscriber (ten běží pouze na API requestech): pošle
+     * oznámení o změně přihlášky a přepočítá obsazenost příznaků i obou dotčených nabídek
+     * (zdrojové i cílové), aby kapacita obou ročníků zůstala správná.
+     *
+     * Volat AŽ PO `em->flush()` přesunu — diff změn (ParticipantChangeService) čte verzované
+     * záznamy, které vzniknou teprve zápisem. Chyby jen loguje, nikdy nevyhazuje.
+     */
+    public function applyPostMoveSideEffects(Participant $participant, ?RegistrationOffer $oldOffer = null): void
+    {
+        try {
+            $this->participantMailService->notifyParticipantChanged($participant);
+        } catch (\Throwable $e) {
+            $this->logger->error(sprintf(
+                'applyPostMoveSideEffects: oznámení o změně selhalo pro účastníka #%d: %s',
+                $participant->getId() ?? 0,
+                $e->getMessage(),
+            ));
+        }
+        try {
+            $this->flagRangeService->updateUsages($participant);
+            $newOffer = $participant->getOffer();
+            if (null !== $newOffer) {
+                $this->registrationOfferService->updateUsage($newOffer);
+            }
+            if (null !== $oldOffer && $oldOffer !== $newOffer) {
+                $this->registrationOfferService->updateUsage($oldOffer);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error(sprintf(
+                'applyPostMoveSideEffects: přepočet obsazenosti selhal pro účastníka #%d: %s',
+                $participant->getId() ?? 0,
+                $e->getMessage(),
+            ));
+        }
+    }
+
+    /**
      * @param Participant|null $participant
      *
      * @return Participant
