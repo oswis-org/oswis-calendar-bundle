@@ -20,6 +20,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
@@ -100,6 +101,10 @@ class Event implements NameableInterface
     #[ManyToOne(targetEntity: Place::class, fetch: 'EAGER')]
     #[JoinColumn(nullable: true)]
     protected ?Place $place = null;
+
+    /** Volný textový upřesňovák místa (samostatné místo NEBO doplněk k Place entitě), např. „Aula — sraz před vchodem". */
+    #[Column(type: 'string', nullable: true)]
+    protected ?string $placeText = null;
 
     // fetch=EAGER: Doctrine ORM 3's strict identity-map check
     // (EntityIdentityCollisionException) throws when a Participant lazy ghost
@@ -348,6 +353,16 @@ class Event implements NameableInterface
     public function getPlace(?bool $recursive = false): ?Place
     {
         return $this->place ?? ($recursive ? $this->getSuperEvent()?->getPlace() : null) ?? null;
+    }
+
+    public function getPlaceText(): ?string
+    {
+        return $this->placeText;
+    }
+
+    public function setPlaceText(?string $placeText): void
+    {
+        $this->placeText = $placeText;
     }
 
     public function setPlace(?Place $event): void

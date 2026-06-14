@@ -10,7 +10,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Table;
 use InvalidArgumentException;
@@ -59,6 +61,18 @@ class EventCategory implements NameableInterface
     use ColorTrait;
     use TypeTrait;
 
+    /** Předvyplněný čas začátku aktivity této kategorie (jen čas; přepsatelné per aktivita). */
+    #[Column(type: 'time', nullable: true)]
+    protected ?DateTimeInterface $defaultStartTime = null;
+
+    /** Předvyplněný čas konce aktivity této kategorie (jen čas; když <= start, jde o přes-půlnoční rozsah). */
+    #[Column(type: 'time', nullable: true)]
+    protected ?DateTimeInterface $defaultEndTime = null;
+
+    /** Default veřejnosti aktivit této kategorie (služby neveřejné, běžné aktivity veřejné); přepsatelné per aktivita. */
+    #[Column(type: 'boolean', options: ['default' => false])]
+    protected bool $defaultPublic = false;
+
     public const YEAR_OF_EVENT = 'year-of-event';
     public const BATCH_OF_EVENT = 'batch-of-event';
     public const LECTURE = 'lecture';
@@ -70,6 +84,14 @@ class EventCategory implements NameableInterface
     public const EVIDENCE = 'evidence';
     public const SPORT = 'sport';
     public const FOOD = 'food';
+    /** Nadřazený „blok" programu (nadakce) — sdružuje pod-aktivity (rotace/série); čas se odvozuje z pod-akcí. */
+    public const PROGRAM_BLOCK = 'program-block';
+    /** Služby (rozpis SLUŽEB) — kdo má kdy směnu na daném stanovišti. */
+    public const SERVICE_STEERING = 'service-steering'; // Řízení
+    public const SERVICE_CALLING = 'service-calling';   // Svolávání
+    public const SERVICE_CANTEEN = 'service-canteen';   // Jídelna
+    public const SERVICE_BAR = 'service-bar';           // Stolárna
+    public const SERVICE_KIOSK = 'service-kiosk';       // Kiosek
     public const ALLOWED_TYPES
         = [
             self::YEAR_OF_EVENT,
@@ -83,6 +105,12 @@ class EventCategory implements NameableInterface
             self::EVIDENCE,
             self::SPORT,
             self::FOOD,
+            self::PROGRAM_BLOCK,
+            self::SERVICE_STEERING,
+            self::SERVICE_CALLING,
+            self::SERVICE_CANTEEN,
+            self::SERVICE_BAR,
+            self::SERVICE_KIOSK,
         ];
 
     /**
@@ -107,5 +135,35 @@ class EventCategory implements NameableInterface
     public static function getAllowedTypesCustom(): array
     {
         return [];
+    }
+
+    public function getDefaultStartTime(): ?DateTimeInterface
+    {
+        return $this->defaultStartTime;
+    }
+
+    public function setDefaultStartTime(?DateTimeInterface $defaultStartTime): void
+    {
+        $this->defaultStartTime = $defaultStartTime;
+    }
+
+    public function getDefaultEndTime(): ?DateTimeInterface
+    {
+        return $this->defaultEndTime;
+    }
+
+    public function setDefaultEndTime(?DateTimeInterface $defaultEndTime): void
+    {
+        $this->defaultEndTime = $defaultEndTime;
+    }
+
+    public function isDefaultPublic(): bool
+    {
+        return $this->defaultPublic;
+    }
+
+    public function setDefaultPublic(bool $defaultPublic): void
+    {
+        $this->defaultPublic = $defaultPublic;
     }
 }
