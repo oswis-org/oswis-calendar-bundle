@@ -1055,9 +1055,10 @@ class Participant implements ParticipantInterface
     public function isFormal(bool $recursive = false): ?bool
     {
         if ($recursive && null === $this->formal) {
-            $participantCategory = $this->getParticipantCategory();
-
-            return $participantCategory ? $participantCategory->isFormal() : true;
+            // Default je TYKÁNÍ — vykání je výjimka, vyžaduje explicitní opt-in
+            // (participant.formal === true, nebo kategorie.formal === true).
+            // Když nic neurčuje formálnost (kategorie null/bez kategorie) → false (tykání).
+            return $this->getParticipantCategory()?->isFormal() ?? false;
         }
 
         return $this->formal;

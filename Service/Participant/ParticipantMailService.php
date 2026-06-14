@@ -229,6 +229,9 @@ class ParticipantMailService
             'participantToken' => $participantToken,
             'isIS' => $isIS,
             'registrations' => $participant->getParticipantRegistrations(true),
+            // Tykání/vykání dle kategorie účastníka (override > kategorie), ne dle (neexistujícího)
+            // contact.formal v base šabloně, který by spadl na default vykání.
+            'f' => $participant->isFormal(true) ?? false,
         ];
         $templatedEmail = $participantMail->getTemplatedEmail();
         if (ParticipantMail::TYPE_SUMMARY === $type) {
@@ -514,6 +517,7 @@ class ParticipantMailService
             'category' => $mailCategory,
             'type' => ParticipantMail::TYPE_PAYMENT,
             'isIS' => false,
+            'f' => $participant->isFormal(true) ?? false,
         ];
         $this->em->persist($participantMail);
         $this->em->persist($payment);
@@ -579,6 +583,7 @@ class ParticipantMailService
                     'bodyHtml'       => $bodyHtml,
                     'adminName'      => $adminName,
                     'type'           => $type,
+                    'f'              => $participant->isFormal(true) ?? false,
                 ];
 
                 $this->em->persist($participantMail);
@@ -669,6 +674,7 @@ class ParticipantMailService
             'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
             'category' => $mailCategory,
             'type' => $group->getType(),
+            'f' => $participant->isFormal(true) ?? false,
         ];
         $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName();
