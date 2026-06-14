@@ -121,6 +121,9 @@ class ParticipantMailService
                     'participant'    => $participant,
                     'appUser'        => $appUser,
                     'contact'        => $contact,
+                    // f (vykání) JEN z participant.formal/kategorie — contact/appUser sloupec `formal` NEEXISTUJE,
+                    // takže šablonový default `contact.formal ?? appUser.formal ?? true` vykal i tykací kategorie.
+                    'f'              => $participant->isFormal(true) ?? false,
                     'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
                     'changes'        => $changes,
                     'type'           => ParticipantMail::TYPE_REGISTRATION_CHANGED,

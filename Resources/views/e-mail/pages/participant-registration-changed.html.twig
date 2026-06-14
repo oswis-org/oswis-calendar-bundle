@@ -10,8 +10,8 @@
 
 {% block content_inner %}
     <p>
-        V tvé přihlášce{% if participant.event(false) %} na akci <strong>{{ participant.event(false).name }}</strong>{% endif %}
-        došlo k těmto změnám:
+        {{ f ? 've Vaší' : 've tvé' }} přihlášce{% if participant.event(false) %} na akci <strong>{{ participant.event(false).name }}</strong>{% endif %}
+        jsme provedli tyto změny:
     </p>
     <ul>
         {% for category, change in changes.flags %}
@@ -23,22 +23,24 @@
             {% endfor %}
         {% endfor %}
         {% for item in changes.registrationsAdded %}
-            <li>Nová registrace: <strong>{{ item }}</strong></li>
+            <li>Nová přihláška: <strong>{{ item }}</strong></li>
         {% endfor %}
         {% for item in changes.registrationsRemoved %}
-            <li>Zrušená registrace: <strong>{{ item }}</strong></li>
+            <li>Zrušená přihláška: <strong>{{ item }}</strong></li>
         {% endfor %}
         {% if changes.contactUpdated %}
-            <li>Byly aktualizovány tvé kontaktní údaje.</li>
+            <li>{{ f ? 'Byly aktualizovány Vaše kontaktní údaje.' : 'Byly aktualizovány tvé kontaktní údaje.' }}</li>
         {% endif %}
     </ul>
-    {# Disclaimer pro špatného příjemce — záměrně VŽDY vykání (může dorazit komukoliv). #}
-    <p>Pokud jste tyto změny neprovedl{{ a }} Vy, dejte nám prosím vědět odpovědí na tento e-mail.</p>
 
-    <div style="border-top:1px solid #dddddd; margin:18px 0;"></div>
-    <p>Pro pořádek {{ f ? 'Vám' : 'ti' }} posíláme <strong>aktuální stav celé přihlášky</strong>:</p>
+    <p style="margin-top:18px;"><strong>Aktuální stav {{ f ? 'Vaší' : 'tvé' }} přihlášky:</strong></p>
     {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
     {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' with {'depositLabel': 'Zbývající záloha', 'restLabel': 'Zbývající doplatek'} %}
+
+    <p style="color:#888888; font-size:13px; margin-top:18px;">
+        Pokud {{ f ? 'jste tyto změny neprovedl' ~ a ~ ' Vy' : 'jsi tyto změny neprovedl' ~ a ~ ' ty' }},
+        dej{{ f ? 'te' : '' }} nám prosím vědět odpovědí na tento e-mail.
+    </p>
 {% endblock %}
 
 {% block content_footer_inner %}

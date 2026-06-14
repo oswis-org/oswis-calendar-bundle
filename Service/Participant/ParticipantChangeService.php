@@ -50,6 +50,18 @@ final class ParticipantChangeService
             }
         }
 
+        // When a participant is moved between registrations (e.g. turnus → turnus), every flag is
+        // re-created on the new registration and soft-deleted on the old one within the same window,
+        // so each *unchanged* flag surfaces as BOTH "added" (new) and "removed" (old) with an
+        // identical label — pure noise that made the change e-mail unreadable. Cancel such matching
+        // pairs one-for-one, leaving only genuine flag changes; drop categories left empty.
+        foreach ($flags as $category => $change) {
+            $flags[$category] = $this->cancelNoOpPairs($change['added'], $change['removed']);
+            if ([] === $flags[$category]['added'] && [] === $flags[$category]['removed']) {
+                unset($flags[$category]);
+            }
+        }
+
         $registrationsAdded = [];
         $registrationsRemoved = [];
         foreach ($participant->getParticipantRegistrations(false, false) as $reg) {
@@ -158,10 +170,36 @@ final class ParticipantChangeService
         return ['at' => $at, 'verb' => $verb, 'kind' => $kind, 'category' => $category, 'label' => $label];
     }
 
-    /** Human-readable flag name (the flag's own name, falling back to the offer's). */
+    /**
+     * Human-readable flag name. Prefers the flag *range/offer* name (RegistrationFlagOffer) so the
+     * change e-mail and admin history match the participant summary, which lists `flagOffer.name`.
+     * The offer's own getName() already falls back to the underlying flag name, and we add a final
+     * fallback for the rare orphaned flag with no offer.
+     */
     private function flagLabel(ParticipantFlag $flag): ?string
     {
-        return $flag->getFlag()?->getName() ?? $flag->getFlagOffer()?->getName();
+        return $flag->getFlagOffer()?->getName() ?? $flag->getFlag()?->getName();
+    }
+
+    /**
+     * Cancel labels present in both lists one-for-one, leaving only the net difference. A flag
+     * removed from the old registration and re-added identically to the new one nets to no change.
+     *
+     * @param list<string> $added
+     * @param list<string> $removed
+     *
+     * @return array{added: list<string>, removed: list<string>}
+     */
+    private function cancelNoOpPairs(array $added, array $removed): array
+    {
+        foreach ($added as $i => $label) {
+            $j = array_search($label, $removed, true);
+            if (false !== $j) {
+                unset($added[$i], $removed[$j]);
+            }
+        }
+
+        return ['added' => array_values($added), 'removed' => array_values($removed)];
     }
 
     /**

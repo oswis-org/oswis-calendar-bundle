@@ -346,7 +346,12 @@ class Participant implements ParticipantInterface
 
     public function updateCachedColumns(): void
     {
-        $this->offer = $this->getOffer();
+        // Přednostně AKTIVNÍ registrace (po přesunu = nová), fallback na ne-aktivní (smazaní účastníci).
+        // Důvod: updateCachedColumns se volá i PŘED flushem (uvnitř setParticipantRegistration), kdy nová
+        // registrace nemá created_at (Gedmo ho doplní až flushem) → getOffer(false) řadí null jako nejstarší
+        // a vrátil by STAROU registraci → cached event_id zůstal na starém turnusu (účastník se nepřesunul
+        // v seznamech). getOffer(true) filtruje na aktivní (= jediná nová) → správně i před flushem.
+        $this->offer = $this->getOffer(true) ?? $this->getOffer(false);
         $this->contact = $this->getContact();
         $this->event = $this->offer?->getEvent();
         $this->participantCategory = $this->offer?->getParticipantCategory();
