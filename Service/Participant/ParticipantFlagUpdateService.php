@@ -104,11 +104,19 @@ final class ParticipantFlagUpdateService
             throw new \InvalidArgumentException('Tato kategorie příznaků není pro přihlášku účastníka dostupná.');
         }
 
-        $group = $this->findGroup($participant, $groupOffer);
-        if (!$group instanceof ParticipantFlagGroup) {
+        // Find any group bound to this offer, including a soft-deleted one (a category removed
+        // earlier leaves a soft-deleted group; addFlagGroupOffer would then refuse to create a new
+        // one — its existence check counts soft-deleted groups too — so we must restore that group
+        // rather than fail).
+        $group = $this->findGroup($participant, $groupOffer, includeDeleted: true);
+        if ($group instanceof ParticipantFlagGroup) {
+            if ($group->isDeleted()) {
+                $group->setDeletedAt(null);
+            }
+        } else {
             // Idempotent — creates an empty group bound to this offer (binding is immutable afterwards).
             $participant->addFlagGroupOffer($groupOffer);
-            $group = $this->findGroup($participant, $groupOffer);
+            $group = $this->findGroup($participant, $groupOffer, includeDeleted: true);
         }
         if (!$group instanceof ParticipantFlagGroup) {
             throw new \InvalidArgumentException('Skupinu příznaků se nepodařilo vytvořit.');
@@ -224,9 +232,12 @@ final class ParticipantFlagUpdateService
         return $model;
     }
 
-    private function findGroup(Participant $participant, RegistrationFlagGroupOffer $groupOffer): ?ParticipantFlagGroup
-    {
-        foreach ($participant->getFlagGroups(null, null, true) as $group) {
+    private function findGroup(
+        Participant $participant,
+        RegistrationFlagGroupOffer $groupOffer,
+        bool $includeDeleted = false,
+    ): ?ParticipantFlagGroup {
+        foreach ($participant->getFlagGroups(null, null, !$includeDeleted) as $group) {
             if ($group->getFlagGroupOffer()?->getId() === $groupOffer->getId()) {
                 return $group;
             }
