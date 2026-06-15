@@ -265,6 +265,13 @@ oswis_org_oswis_calendar_web_admin_participant_set_gender:
     participantId: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_participant_edit_flags:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::editFlags
+  path: "/web_admin/ucastnici/{participantId}/priznaky"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_resend_mail:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::resendMail
   path: "/web_admin/ucastnici/{participantId}/znovu-poslat-mail/{mailId}"

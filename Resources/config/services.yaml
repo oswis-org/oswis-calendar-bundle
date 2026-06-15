@@ -352,6 +352,10 @@ services:
     autowire: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFlagUpdateService:
+    autowire: true
+    public: true
+
   oswis_org_oswis_calendar.participant.participant_category_service:
     class: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService
     autowire: true
