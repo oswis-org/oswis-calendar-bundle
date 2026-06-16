@@ -5,6 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
@@ -122,6 +123,8 @@ final class WebAdminParticipantsController extends AbstractController
                 'Kapacita překročena: %s. Zaškrtni „povolit překročení kapacity" pro vynucení.',
                 $e->getMessage(),
             ));
+        } catch (FlagOutOfRangeException $e) {
+            $this->addFlash('error', sprintf('Mimo povolený počet příznaků: %s', $e->getMessage()));
         } catch (\Throwable $e) {
             $this->addFlash('error', sprintf('Příznaky neuloženy: %s', $e->getMessage()));
         }
