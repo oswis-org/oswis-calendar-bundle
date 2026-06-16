@@ -164,9 +164,13 @@ final class ParticipantFlagUpdateService
         $this->em->flush();
 
         // Recompute cached usage AFTER the flush — countParticipantFlags() counts committed rows, so a
-        // pre-flush count would be stale. Mirrors the recompute endpoint (ParticipantController::updateParticipants).
+        // pre-flush count would be stale. Recompute EVERY offer in the edited category (not just the
+        // ones the participant still holds): a REMOVED offer is no longer in the participant's flag set,
+        // so updateUsages($participant) would never touch it and its cached usage would stay inflated.
         $participant->updateCachedColumns();
-        $this->flagOfferService->updateUsages($participant);
+        foreach ($groupOffer->getFlagOffers(false) as $offer) {
+            $this->flagOfferService->updateUsage($offer);
+        }
         $this->em->flush();
 
         $this->logger->info(sprintf(
