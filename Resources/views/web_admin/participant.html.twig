@@ -266,15 +266,64 @@
                 </div>
             </div>
 
-            {# Příznaky (flag groups) #}
-            {% set flagGroupRows = participant.flagGroups|default([]) %}
-            {% if flagGroupRows|length > 0 %}
-                <div class="card" style="margin-bottom: 1rem;">
-                    <div class="card-body">
-                        <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Příznaky</h5>
+            {# Příznaky (flag groups) — editovatelné, vč. kategorií, které účastník zatím nemá #}
+            <div class="card" style="margin-bottom: 1rem;" id="priznaky">
+                <div class="card-body">
+                    <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Příznaky</h5>
+                    {% if isAdmin|default(false) and flagSelectionModel|default([])|length > 0 %}
+                        <p class="text-muted" style="font-size: .85em; margin-bottom: .75rem;">
+                            Každá kategorie se ukládá zvlášť. Lze přidat i kategorii, kterou účastník zatím nemá
+                            (např. Sleva, Zkrácený pobyt). „Povolit překročení kapacity" obejde naplněnou nabídku.
+                        </p>
+                        {% for cat in flagSelectionModel %}
+                            {% set single = cat.max == 1 %}
+                            <form method="post"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_flags', { participantId: participant.id }) }}"
+                                  style="border-top: 1px solid #f0f0f0; padding: .5rem 0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_flags_' ~ participant.id) }}">
+                                <input type="hidden" name="flagGroupOfferId" value="{{ cat.groupOffer.id }}">
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;">
+                                    <strong style="min-width: 11rem;">
+                                        {{ cat.categoryName }}
+                                        {% if not cat.hasGroup %}<span class="badge bg-secondary" style="font-weight: normal;">zatím nepřidáno</span>{% endif %}
+                                        <br><small class="text-muted">
+                                            {% if single %}vyber právě 1{% else %}min {{ cat.min }}{% if cat.max is not null %}, max {{ cat.max }}{% endif %}{% endif %}
+                                        </small>
+                                    </strong>
+                                    <div style="flex: 1; min-width: 16rem;">
+                                        {% if single and cat.min == 0 %}
+                                            <label style="margin-right: .75rem; white-space: nowrap;">
+                                                <input type="radio" name="flagOfferIds[]" value=""
+                                                       {{ cat.flagOffers|filter(fo => fo.selected)|length == 0 ? 'checked' : '' }}>
+                                                <span class="text-muted">— žádný —</span>
+                                            </label>
+                                        {% endif %}
+                                        {% for fo in cat.flagOffers %}
+                                            <label style="margin-right: .75rem; white-space: nowrap; {{ fo.full ? 'opacity:.5;' : '' }}">
+                                                <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]"
+                                                       value="{{ fo.offer.id }}"
+                                                       {{ fo.selected ? 'checked' : '' }}
+                                                       {{ fo.full ? 'disabled' : '' }}>
+                                                {{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}
+                                                {% if fo.offer.price|default(0) != 0 %}<span class="text-muted">({{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }} Kč)</span>{% endif %}
+                                                {% if fo.remaining is not null %}<span class="text-muted" style="font-size: .8em;">[zbývá {{ fo.remaining }}]</span>{% endif %}
+                                            </label>
+                                        {% else %}
+                                            <em class="text-secondary">žádné nabídky</em>
+                                        {% endfor %}
+                                    </div>
+                                    <label style="white-space: nowrap; font-size: .8em;" title="Obejít naplněnou kapacitu">
+                                        <input type="checkbox" name="admin_override" value="1"> překročit kapacitu
+                                    </label>
+                                    <button type="submit" class="btn btn-sm btn-primary">Uložit</button>
+                                </div>
+                            </form>
+                        {% endfor %}
+                    {% else %}
+                        {# Read-only fallback (ne-admin, nebo žádné dostupné kategorie) #}
                         <table class="table table-sm" style="margin-bottom: 0;">
                             <tbody>
-                                {% for flagGroup in flagGroupRows %}
+                                {% for flagGroup in participant.flagGroups|default([]) %}
                                     <tr>
                                         <th style="width: 12rem; white-space: nowrap;">
                                             {{ flagGroup.flagGroupRange.flagCategory.name|default(flagGroup.name|default('Skupina')) }}
@@ -292,12 +341,14 @@
                                             {% endfor %}
                                         </td>
                                     </tr>
+                                {% else %}
+                                    <tr><td><em class="text-secondary">Žádné příznaky.</em></td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                    </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            </div>
 
             {# Poznámky — interní/veřejné poznámky k účastníkovi #}
             <div class="card" style="margin-bottom: 1rem;" id="poznamky">

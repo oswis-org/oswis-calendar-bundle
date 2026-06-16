@@ -22,6 +22,12 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  ## API flag-editing controller (JWT, ROLE_MANAGER) — Ionic admin
+  OswisOrg\OswisCalendarBundle\Controller\Api\ParticipantFlagApiController:
+    autowire: true
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
   ###
   ### CONTROLLERS
   ###
@@ -349,6 +355,10 @@ services:
     public: true
 
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService:
+    autowire: true
+    public: true
+
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFlagUpdateService:
     autowire: true
     public: true
 

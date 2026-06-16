@@ -3,6 +3,20 @@ oswis_org_oswis_calendar_api_participants_export:
   path: "/api/exports/participants"
   methods: [GET]
 
+oswis_org_oswis_calendar_api_participant_available_flags:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\ParticipantFlagApiController::available
+  path: "/api/participants/{participantId}/available-flags"
+  requirements:
+    participantId: '\d+'
+  methods: [GET]
+
+oswis_org_oswis_calendar_api_participant_set_flags:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\ParticipantFlagApiController::set
+  path: "/api/participants/{participantId}/flags"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_participant_resend_activation_email:
   controller: oswis_org_oswis_calendar.participant.participant_controller::resendActivationEmail
   path: "/akce/prihlaska/email-overeni/{participantId}"
@@ -261,6 +275,13 @@ oswis_org_oswis_calendar_web_admin_participant_resend_activation:
 oswis_org_oswis_calendar_web_admin_participant_set_gender:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::setGender
   path: "/web_admin/ucastnici/{participantId}/pohlavi"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_edit_flags:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::editFlags
+  path: "/web_admin/ucastnici/{participantId}/priznaky"
   requirements:
     participantId: '\d+'
   methods: [POST]

@@ -2,10 +2,15 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
+use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
+use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFlagUpdateService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -26,6 +31,7 @@ final class WebAdminParticipantsController extends AbstractController
         private readonly CommunicationTimelineService $timelineService,
         private readonly ParticipantMailService $participantMailService,
         private readonly ParticipantChangeService $changeService,
+        private readonly ParticipantFlagUpdateService $flagUpdateService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -61,6 +67,76 @@ final class WebAdminParticipantsController extends AbstractController
         return new RedirectResponse($this->generateUrl(
             'oswis_org_oswis_calendar_web_admin_participant_detail',
             ['participantId' => $participantId, '_fragment' => 'komunikace'],
+        ));
+    }
+
+    /**
+     * Add/remove a participant's registration flags for ONE category from the admin detail page.
+     *
+     * Works even when the participant has no flag group for that category yet — the group is
+     * materialised on demand (admin-only categories like Sleva / Zkrácený pobyt / Poznámky k platbě
+     * never auto-create at registration because setFlagGroupsByOffer filters onlyPublic=true). The
+     * heavy lifting (validation, capacity, soft-delete, activation, usage recompute) lives in
+     * {@see ParticipantFlagUpdateService::setFlags()}. Silent — sends no e-mail. With the
+     * `admin_override` checkbox the capacity ceiling is bypassed ($admin=true).
+     *
+     * Uses a lightweight em->find() + flush (the proven bulk-reassign persist path), not the full
+     * detail-graph hydration, to avoid the L2-cache/getName() memory blow-up on large graphs.
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function editFlags(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_edit_flags_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->em->find(Participant::class, $participantId);
+        if (!$participant instanceof Participant || $participant->isDeleted()) {
+            throw $this->createNotFoundException('Účastník nenalezen.');
+        }
+
+        $groupOfferId = (int) $request->request->get('flagGroupOfferId');
+        $groupOffer = $groupOfferId > 0 ? $this->em->find(RegistrationFlagGroupOffer::class, $groupOfferId) : null;
+        if (!$groupOffer instanceof RegistrationFlagGroupOffer) {
+            $this->addFlash('error', 'Neznámá kategorie příznaků.');
+
+            return $this->redirectToParticipantFlags($participantId);
+        }
+
+        $flagOfferIds = [];
+        foreach ((array) $request->request->all('flagOfferIds') as $rawId) {
+            if (is_numeric($rawId)) {
+                $flagOfferIds[] = (int) $rawId;
+            }
+        }
+        $admin = (bool) $request->request->get('admin_override', false);
+
+        try {
+            $this->flagUpdateService->setFlags($participant, $groupOffer, $flagOfferIds, $admin);
+            $this->addFlash('success', sprintf(
+                'Příznaky kategorie „%s" u účastníka #%d uloženy%s.',
+                $groupOffer->getFlagCategory()?->getName() ?? '?',
+                $participantId,
+                $admin ? ' (povoleno překročení kapacity)' : '',
+            ));
+        } catch (FlagCapacityExceededException $e) {
+            $this->addFlash('error', sprintf(
+                'Kapacita překročena: %s. Zaškrtni „povolit překročení kapacity" pro vynucení.',
+                $e->getMessage(),
+            ));
+        } catch (FlagOutOfRangeException $e) {
+            $this->addFlash('error', sprintf('Mimo povolený počet příznaků: %s', $e->getMessage()));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', sprintf('Příznaky neuloženy: %s', $e->getMessage()));
+        }
+
+        return $this->redirectToParticipantFlags($participantId);
+    }
+
+    private function redirectToParticipantFlags(int $participantId): RedirectResponse
+    {
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_detail',
+            ['participantId' => $participantId, '_fragment' => 'priznaky'],
         ));
     }
 
@@ -106,10 +182,19 @@ final class WebAdminParticipantsController extends AbstractController
             }
         }
 
+        // Flag editor model: every category reachable for this participant (incl. admin-only ones
+        // the participant has no group for yet). Best-effort — must not break the detail page.
+        $flagSelectionModel = [];
+        try {
+            $flagSelectionModel = $this->flagUpdateService->getFlagSelectionModel($participant);
+        } catch (\Throwable) {
+        }
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
             'participant'        => $participant,
             'entries'            => $entries,
             'history'            => $history,
+            'flagSelectionModel' => $flagSelectionModel,
             'isAdmin'            => true,
             'showFullDetail'     => true,
             'participantId'      => $participantId,
