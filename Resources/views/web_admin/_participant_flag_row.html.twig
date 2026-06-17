@@ -1,20 +1,21 @@
-{# Jedna příznaková kategorie jako rozbalovací prvek (ne tabulka). Vstup: cat, participant.
-   summary = name + odznaky + „upravit"; po rozkliknutí editor. display:flex skryje ▸ marker. #}
+{# Jedna příznaková kategorie jako rozbalovací prvek (ne tabulka). Mřížkové zarovnání
+   summary: název | hodnota | upravit — konzistentní sloupce napříč řádky, bez plovoucího
+   prázdna. Po rozkliknutí editor. Třídy .oa-flag* jsou v app.scss. #}
 {% set single = cat.max == 1 %}
 {% set selectedFlags = cat.flagOffers|filter(fo => fo.selected) %}
-<details style="border-top:1px solid #e3e9f0; padding:.05rem 0;">
-    <summary style="cursor:pointer; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:.45rem .1rem;">
-        <strong style="min-width:10rem;">{{ cat.categoryName }}{% if cat.min > 0 %} <span class="text-danger" title="povinné">*</span>{% endif %}</strong>
-        <span style="flex:1 1 12rem; min-width:0;">
+<details class="oa-flag">
+    <summary class="oa-flag__sum">
+        <span class="oa-flag__name">{{ cat.categoryName }}{% if cat.min > 0 %} <span class="text-danger" title="povinné">*</span>{% endif %}</span>
+        <span class="oa-flag__val">
             {% for fo in selectedFlags %}
                 <span class="badge" style="background: {{ fo.offer.flag.color|default('#006FAD') }}; color:#fff;">{{ fo.offer.flag.shortName|default(fo.offer.flag.name|default(fo.offer.name|default('—'))) }}{% if fo.textValue %}: {{ fo.textValue }}{% endif %}</span>
             {% else %}
-                <em class="text-muted">nenastaveno</em>
+                <em class="oa-flag__empty">nenastaveno</em>
             {% endfor %}
         </span>
-        <span class="text-primary small" style="white-space:nowrap;">✎ upravit</span>
+        <span class="oa-flag__edit"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> upravit</span>
     </summary>
-    <div style="margin:.3rem 0 .7rem .25rem;">
+    <div class="oa-flag__editor">
         <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_flags', { participantId: participant.id }) }}">
             <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_flags_' ~ participant.id) }}">
             <input type="hidden" name="flagGroupOfferId" value="{{ cat.groupOffer.id }}">
