@@ -82,7 +82,8 @@ final class ParticipantFlagUpdateService
      * flushes — the second one recomputes the cached usage counts, which read committed rows and so
      * must run after the first flush.
      *
-     * @param list<int> $selectedFlagOfferIds ids of the RegistrationFlagOffers that should remain/become active
+     * @param list<int>               $selectedFlagOfferIds ids of the RegistrationFlagOffers that should remain/become active
+     * @param array<int, string|null> $textValues           offerId => volný text; aplikuje se JEN na nabídky s povolenou form-value (isFormValueAllowed), ostatní klíče se ignorují
      *
      * @throws FlagCapacityExceededException when adding would exceed a flag offer's capacity (only when $admin=false)
      * @throws FlagOutOfRangeException       when the resulting count breaks a min/max constraint
@@ -94,6 +95,7 @@ final class ParticipantFlagUpdateService
         RegistrationFlagGroupOffer $groupOffer,
         array $selectedFlagOfferIds,
         bool $admin = false,
+        array $textValues = [],
     ): void {
         // Security boundary: the group offer must belong to this participant's (recursive) offer set.
         $availableIds = array_map(
@@ -145,7 +147,9 @@ final class ParticipantFlagUpdateService
         $newFlags = new ArrayCollection();
         foreach ($selectedOffers as $offerId => $flagOffer) {
             if (isset($existingByOfferId[$offerId])) {
-                $newFlags->add($existingByOfferId[$offerId]);
+                $kept = $existingByOfferId[$offerId];
+                $this->applyTextValue($kept, $flagOffer, $textValues); // umožní editaci textu u zachovaného příznaku
+                $newFlags->add($kept);
                 continue;
             }
             // Mirror the registration form (FlagGroupOfParticipantType): a freshly constructed
@@ -154,6 +158,7 @@ final class ParticipantFlagUpdateService
             // Activate explicitly — exactly as the registration path does — so the flag is active.
             $newFlag = new ParticipantFlag($flagOffer, $group);
             $newFlag->activate();
+            $this->applyTextValue($newFlag, $flagOffer, $textValues);
             $newFlags->add($newFlag);
         }
 
@@ -194,7 +199,7 @@ final class ParticipantFlagUpdateService
      *     min: int,
      *     max: int|null,
      *     hasGroup: bool,
-     *     flagOffers: list<array{offer: RegistrationFlagOffer, selected: bool, remaining: int|null, full: bool}>
+     *     flagOffers: list<array{offer: RegistrationFlagOffer, selected: bool, remaining: int|null, full: bool, formValueAllowed: bool, formValueLabel: string|null, textValue: string|null}>
      * }>
      */
     public function getFlagSelectionModel(Participant $participant): array
@@ -202,25 +207,31 @@ final class ParticipantFlagUpdateService
         $model = [];
         foreach ($this->getAvailableGroupOffers($participant, true) as $groupOffer) {
             $group = $this->findGroup($participant, $groupOffer);
-            $activeOfferIds = [];
+            /** @var array<int, ParticipantFlag> $activeFlagByOfferId */
+            $activeFlagByOfferId = [];
             if ($group instanceof ParticipantFlagGroup) {
                 foreach ($group->getParticipantFlags(true) as $participantFlag) {
                     $activeOfferId = $participantFlag->getFlagOffer()?->getId();
                     if (null !== $activeOfferId) {
-                        $activeOfferIds[$activeOfferId] = true;
+                        $activeFlagByOfferId[$activeOfferId] = $participantFlag;
                     }
                 }
             }
             $flagOffers = [];
             foreach ($groupOffer->getFlagOffers(false) as $offer) {
-                $selected = null !== $offer->getId() && isset($activeOfferIds[$offer->getId()]);
+                $offerId = $offer->getId();
+                $activeFlag = null !== $offerId ? ($activeFlagByOfferId[$offerId] ?? null) : null;
+                $selected = $activeFlag instanceof ParticipantFlag;
                 $remaining = $offer->getRemainingCapacity();
                 $flagOffers[] = [
-                    'offer'     => $offer,
-                    'selected'  => $selected,
-                    'remaining' => $remaining,
+                    'offer'            => $offer,
+                    'selected'         => $selected,
+                    'remaining'        => $remaining,
                     // "full" only blocks NEW selections — an already-selected flag is never disabled.
-                    'full'      => !$selected && null !== $remaining && $remaining < 1,
+                    'full'             => !$selected && null !== $remaining && $remaining < 1,
+                    'formValueAllowed' => $offer->isFormValueAllowed(),
+                    'formValueLabel'   => $offer->getFormValueLabel(),
+                    'textValue'        => $activeFlag?->getTextValue(),
                 ];
             }
             $model[] = [
@@ -234,6 +245,27 @@ final class ParticipantFlagUpdateService
         }
 
         return $model;
+    }
+
+    /**
+     * Nastaví volný text příznaku z mapy offerId => text, ale JEN když nabídka form-value povoluje
+     * (isFormValueAllowed). Prázdný/whitespace text → null. Nabídky bez form-value nebo bez klíče
+     * v mapě nechá beze změny.
+     *
+     * @param array<int, string|null> $textValues
+     */
+    private function applyTextValue(ParticipantFlag $flag, RegistrationFlagOffer $flagOffer, array $textValues): void
+    {
+        if (!$flagOffer->isFormValueAllowed()) {
+            return;
+        }
+        $offerId = $flagOffer->getId();
+        if (null === $offerId || !array_key_exists($offerId, $textValues)) {
+            return;
+        }
+        $raw = $textValues[$offerId];
+        $trimmed = null === $raw ? '' : trim($raw);
+        $flag->setTextValue('' === $trimmed ? null : $trimmed);
     }
 
     private function findGroup(

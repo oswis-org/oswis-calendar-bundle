@@ -1,0 +1,53 @@
+{# Jedna příznaková kategorie jako rozbalovací prvek (ne tabulka). Vstup: cat, participant.
+   summary = name + odznaky + „upravit"; po rozkliknutí editor. display:flex skryje ▸ marker. #}
+{% set single = cat.max == 1 %}
+{% set selectedFlags = cat.flagOffers|filter(fo => fo.selected) %}
+<details style="border-top:1px solid #e3e9f0; padding:.05rem 0;">
+    <summary style="cursor:pointer; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:.45rem .1rem;">
+        <strong style="min-width:10rem;">{{ cat.categoryName }}{% if cat.min > 0 %} <span class="text-danger" title="povinné">*</span>{% endif %}</strong>
+        <span style="flex:1 1 12rem; min-width:0;">
+            {% for fo in selectedFlags %}
+                <span class="badge" style="background: {{ fo.offer.flag.color|default('#006FAD') }}; color:#fff;">{{ fo.offer.flag.shortName|default(fo.offer.flag.name|default(fo.offer.name|default('—'))) }}{% if fo.textValue %}: {{ fo.textValue }}{% endif %}</span>
+            {% else %}
+                <em class="text-muted">nenastaveno</em>
+            {% endfor %}
+        </span>
+        <span class="text-primary small" style="white-space:nowrap;">✎ upravit</span>
+    </summary>
+    <div style="margin:.3rem 0 .7rem .25rem;">
+        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_flags', { participantId: participant.id }) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_flags_' ~ participant.id) }}">
+            <input type="hidden" name="flagGroupOfferId" value="{{ cat.groupOffer.id }}">
+            <div class="small text-muted" style="margin-bottom:.4rem;">
+                {% if single %}vyber právě 1{% else %}min {{ cat.min }}{% if cat.max is not null %}, max {{ cat.max }}{% endif %}{% endif %}
+            </div>
+            {% if single and cat.min == 0 %}
+                <label style="display:block; margin-bottom:.25rem;">
+                    <input type="radio" name="flagOfferIds[]" value="" {{ selectedFlags|length == 0 ? 'checked' : '' }}> <span class="text-muted">— žádný —</span>
+                </label>
+            {% endif %}
+            {% for fo in cat.flagOffers %}
+                <label style="display:block; margin-bottom:.2rem; {{ fo.full ? 'opacity:.5;' : '' }}">
+                    <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]" value="{{ fo.offer.id }}" {{ fo.selected ? 'checked' : '' }} {{ fo.full ? 'disabled' : '' }}>
+                    {{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}
+                    {% if fo.offer.price|default(0) != 0 %}<span class="text-muted">({{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }} Kč)</span>{% endif %}
+                    {% if fo.remaining is not null %}<span class="text-muted small">[zbývá {{ fo.remaining }}]</span>{% endif %}
+                </label>
+                {% if fo.formValueAllowed %}
+                    <div style="margin:-.05rem 0 .5rem 1.5rem;">
+                        <input type="text" name="flagTextValues[{{ fo.offer.id }}]" value="{{ fo.textValue|default('') }}"
+                               placeholder="{{ fo.formValueLabel|default('Upřesnění') }}" class="form-control form-control-sm" style="max-width:22rem;">
+                    </div>
+                {% endif %}
+            {% else %}
+                <em class="text-muted">žádné nabídky</em>
+            {% endfor %}
+            <div style="margin-top:.5rem; display:flex; align-items:center; gap:.9rem; flex-wrap:wrap;">
+                <button type="submit" class="btn btn-sm btn-primary">Uložit</button>
+                <label class="small" style="margin:0;" title="Obejít naplněnou kapacitu">
+                    <input type="checkbox" name="admin_override" value="1"> překročit kapacitu
+                </label>
+            </div>
+        </form>
+    </div>
+</details>

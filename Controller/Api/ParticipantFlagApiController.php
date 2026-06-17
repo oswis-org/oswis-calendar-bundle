@@ -76,9 +76,15 @@ final class ParticipantFlagApiController
             }
         }
         $admin = (bool) ($payload['admin'] ?? false);
+        $textValues = [];
+        foreach ((array) ($payload['textValues'] ?? []) as $rawId => $rawText) {
+            if (is_numeric($rawId)) {
+                $textValues[(int) $rawId] = is_string($rawText) ? $rawText : null;
+            }
+        }
 
         try {
-            $this->flagUpdateService->setFlags($participant, $groupOffer, $flagOfferIds, $admin);
+            $this->flagUpdateService->setFlags($participant, $groupOffer, $flagOfferIds, $admin, $textValues);
         } catch (FlagCapacityExceededException $e) {
             return new JsonResponse(['error' => 'capacity', 'message' => $e->getMessage()], Response::HTTP_CONFLICT);
         } catch (FlagOutOfRangeException $e) {
@@ -93,7 +99,7 @@ final class ParticipantFlagApiController
     /**
      * Flatten {@see ParticipantFlagUpdateService::getFlagSelectionModel()} into JSON-safe scalars.
      *
-     * @return list<array{flagGroupOffer: int|null, category: string, min: int, max: int|null, hasGroup: bool, flagOffers: list<array{id: int|null, name: string|null, price: int, selected: bool, remaining: int|null, full: bool}>}>
+     * @return list<array{flagGroupOffer: int|null, category: string, min: int, max: int|null, hasGroup: bool, flagOffers: list<array{id: int|null, name: string|null, price: int, selected: bool, remaining: int|null, full: bool, formValueAllowed: bool, formValueLabel: string|null, textValue: string|null}>}>
      */
     private function serializeModel(Participant $participant): array
     {
@@ -103,12 +109,15 @@ final class ParticipantFlagApiController
             foreach ($cat['flagOffers'] as $flagOffer) {
                 $offer = $flagOffer['offer'];
                 $offers[] = [
-                    'id'        => $offer->getId(),
-                    'name'      => $offer->getFlag()?->getName() ?? $offer->getName(),
-                    'price'     => $offer->getPrice(),
-                    'selected'  => $flagOffer['selected'],
-                    'remaining' => $flagOffer['remaining'],
-                    'full'      => $flagOffer['full'],
+                    'id'               => $offer->getId(),
+                    'name'             => $offer->getFlag()?->getName() ?? $offer->getName(),
+                    'price'            => $offer->getPrice(),
+                    'selected'         => $flagOffer['selected'],
+                    'remaining'        => $flagOffer['remaining'],
+                    'full'             => $flagOffer['full'],
+                    'formValueAllowed' => $flagOffer['formValueAllowed'],
+                    'formValueLabel'   => $flagOffer['formValueLabel'],
+                    'textValue'        => $flagOffer['textValue'],
                 ];
             }
             $out[] = [

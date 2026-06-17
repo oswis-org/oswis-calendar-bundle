@@ -8,483 +8,322 @@
 {% set event = participant.event(false)|default %}
 {% set superEvent = event.superEvent|default %}
 {% set isFullDetail = showFullDetail|default(false) %}
+{% set paid = participant.paidPrice|default(0) %}
+{% set total = participant.price|default(0) %}
+{% set remaining = participant.remainingPrice|default(0) %}
+{% set pct = total > 0 ? (paid / total * 100)|round : (paid > 0 ? 100 : 0) %}
+{% if pct > 100 %}{% set pct = 100 %}{% endif %}
+{% if pct < 0 %}{% set pct = 0 %}{% endif %}
+{% set acctActive = contact.appUser|default and contact.appUser.activated|default %}
 
 {% block body_content %}
-    <main class="container" style="padding-bottom: 4rem;">
-        {# Header — name + ID badge + state + primary actions #}
-        <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem; margin: 1rem 0 .25rem;">
-            <h2 style="margin: 0;">
-                {{ contact.name|default('Účastník #' ~ participant.id) }}
-            </h2>
-            <span class="badge bg-primary" style="font-size: 1rem;">#{{ participant.id }}</span>
-            {% if participant.deletedAt|default %}
-                <span class="badge bg-danger">SMAZÁNO {{ participant.deletedAt|date('j. n. Y H:i') }}</span>
-            {% endif %}
-            {% if contact.appUser|default and contact.appUser.activated|default %}
-                <span class="badge bg-success">účet aktivován</span>
-            {% elseif contact.email|default %}
-                <span class="badge bg-warning text-black">účet neaktivován</span>
-            {% endif %}
+    <div class="container">
+        {# Hlavička — vzor jako web_admin/event.html.twig (h2 + odznaky) #}
+        <div class="row">
+            <div class="col" style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
+                <h2 style="margin:0;">
+                    {{ contact.name|default('Účastník #' ~ participant.id) }}
+                    <span class="badge bg-primary" style="font-size:.5em; vertical-align:middle;">#{{ participant.id }}</span>
+                    {% if participant.deletedAt|default %}
+                        <span class="badge bg-danger" style="font-size:.5em; vertical-align:middle;">SMAZÁNO {{ participant.deletedAt|date('j. n. Y') }}</span>
+                    {% endif %}
+                    {% if acctActive %}
+                        <span class="badge bg-success" style="font-size:.5em; vertical-align:middle;">účet aktivován</span>
+                    {% elseif contact.email|default %}
+                        <span class="badge bg-warning text-black" style="font-size:.5em; vertical-align:middle;">účet neaktivován</span>
+                    {% endif %}
+                </h2>
+            </div>
         </div>
-        <p class="text-muted" style="margin: 0 0 .75rem;">
-            {{ event.name|default('—') }}
-            {% if superEvent %}
-                · {{ superEvent.name }}
-            {% endif %}
+        <p class="text-muted" style="margin:.15rem 0 1rem;">
+            {{ event.name|default('—') }}{% if superEvent %} · {{ superEvent.name }}{% endif %}
             · vytvořeno {{ participant.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('—') }}
+            {% if total > 0 and remaining <= 0 %}
+                · <span class="text-success">zaplaceno</span>
+            {% else %}
+                · <span class="text-danger">zbývá {{ remaining }}&nbsp;Kč</span>
+            {% endif %}
         </p>
 
-        {# Quick contact / call links #}
-        <div style="margin-bottom: 1rem;">
+        {# Akce: kontaktní + admin v jednom zalamovacím řádku #}
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-bottom:1.5rem;">
             {% include '@OswisOrgOswisCalendar/web_admin/communication/_quick_actions.html.twig' with { participant: participant } only %}
-        </div>
-
-        {# Primary admin actions row #}
-        <div style="display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem;">
             {% if is_granted('ROLE_ADMIN') %}
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}"
-                   title="Napsat a odeslat ad-hoc e-mail účastníkovi">
-                    ✎ Nová zpráva (e-mail)
-                </a>
+                   title="Napsat a odeslat ad-hoc e-mail účastníkovi">✎ Nová zpráva</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}"
-                   title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt do komunikační historie">
-                    📞 Záznam komunikace (telefonát / SMS / chat)
-                </a>
-                <a class="btn btn-sm btn-outline-secondary"
+                   title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt">📞 Záznam komunikace</a>
+                <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}"
-                   title="Nezařazené příchozí / odchozí e-maily z IMAP">
-                    📥 Nezařazené e-maily
-                </a>
-                <form method="post"
-                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}"
-                      style="display: inline-block; margin: 0;"
-                      title="Stáhnout nové e-maily z IMAP serveru">
+                   title="Nezařazené příchozí / odchozí e-maily z IMAP">📥 Nezařazené e-maily</a>
+                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display:inline-block; margin:0;" title="Stáhnout nové e-maily z IMAP serveru">
                     <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
-                    <button type="submit" class="btn btn-sm btn-outline-secondary">↻ Stáhnout z IMAP</button>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">↻ Stáhnout z IMAP</button>
                 </form>
-            {% endif %}
-            {% if is_granted('ROLE_ADMIN') and contact and contact.email|default and not (contact.appUser|default and contact.appUser.activated|default) %}
-                <form method="post"
-                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"
-                      style="display: inline-block; margin: 0;"
-                      onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
-                    <button type="submit" class="btn btn-sm btn-outline-info">↻ Znovu poslat aktivační e-mail</button>
-                </form>
-            {% endif %}
-            {% if participant.deletedAt|default and is_granted('ROLE_ADMIN') %}
-                <form method="post"
-                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
-                      style="display: inline-block; margin: 0;"
-                      onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
-                    <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
-                </form>
+                {% if contact and contact.email|default and not acctActive %}
+                    <form method="post"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"
+                          style="display:inline-block; margin:0;"
+                          onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-info">↻ Aktivační e-mail</button>
+                    </form>
+                {% endif %}
+                {% if participant.deletedAt|default %}
+                    <form method="post"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
+                          style="display:inline-block; margin:0;"
+                          onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
+                    </form>
+                {% endif %}
             {% endif %}
         </div>
 
         {% if not isFullDetail %}
-            {# Legacy arrival / check-in screen still relies on the full e-mail
-               summary include — keep it here for that route only. #}
+            {# Legacy arrival / check-in screen still relies on the full e-mail summary include. #}
             {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' with {'isInternal': true} %}
         {% else %}
-            {# ----- Admin-friendly full detail layout ----- #}
-
-            <div class="row g-3" style="margin-bottom: 1rem;">
+            <div class="row">
                 {# Kontakt #}
-                <div class="col-12 col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Kontakt</h5>
-                            <table class="table table-sm" style="margin-bottom: 0;">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 9rem; white-space: nowrap;">Jméno</th>
-                                        <td>{{ contact.name|default('—') }}</td>
-                                    </tr>
-                                    {# Pohlaví: zobrazené je výsledné (override, jinak auto dle jména přes vokativ).
-                                       Override řeší špatnou auto-detekci (nejednoznačná/cizí jména → default muž) i trans. #}
-                                    <tr>
-                                        <th>Pohlaví</th>
-                                        <td>
-                                            {% set g = contact.gender|default('unisex') %}
-                                            {% set override = contact.genderOverride|default %}
-                                            <strong>{{ g == 'male' ? 'Muž' : (g == 'female' ? 'Žena' : 'neurčeno') }}</strong>
-                                            <span class="text-secondary small">({{ override ? 'ručně' : 'automaticky dle jména' }})</span>
-                                            <form method="post" style="display:inline-flex; gap:.25rem; margin-left:.5rem; vertical-align:middle;"
-                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_set_gender', {participantId: participantId}) }}">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('participant_set_gender_' ~ participantId) }}">
-                                                <select name="gender" class="form-select form-select-sm" style="width:auto;" title="Ruční override pohlaví">
-                                                    <option value="" {{ override ? '' : 'selected' }}>automaticky</option>
-                                                    <option value="male" {{ override == 'male' ? 'selected' : '' }}>Muž</option>
-                                                    <option value="female" {{ override == 'female' ? 'selected' : '' }}>Žena</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>E-mail</th>
-                                        <td>
-                                            {% if contact.email|default %}
-                                                <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
-                                            {% else %}
-                                                —
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Telefon</th>
-                                        <td>
-                                            {% if contact.phone|default %}
-                                                <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
-                                            {% else %}
-                                                —
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Uživatelský účet</th>
-                                        <td>
-                                            {% if contact.appUser|default %}
-                                                {{ contact.appUser.username|default(contact.appUser.email|default('—')) }}
-                                                {% if contact.appUser.activated|default %}
-                                                    <span class="badge bg-success" style="margin-left: .5rem;">aktivován</span>
-                                                {% else %}
-                                                    <span class="badge bg-warning text-black" style="margin-left: .5rem;">neaktivován</span>
-                                                {% endif %}
-                                            {% else %}
-                                                —
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="col-12 col-xl-6">
+                    <h3>Kontakt</h3>
+                    <table class="list">
+                        <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>
+                        <tbody><tr>
+                            <td>Jméno</td>
+                            <td><strong>{{ contact.name|default('—') }}</strong></td>
+                        </tr></tbody>
+                        <tbody><tr>
+                            <td>Pohlaví
+                                <div class="block small">automaticky dle jména, lze přepsat</div>
+                            </td>
+                            <td>
+                                {% set g = contact.gender|default('unisex') %}
+                                {% set override = contact.genderOverride|default %}
+                                <strong>{{ g == 'male' ? 'Muž' : (g == 'female' ? 'Žena' : 'neurčeno') }}</strong>
+                                <span class="small text-muted">({{ override ? 'ručně' : 'automaticky' }})</span>
+                                <form method="post" style="display:inline-flex; gap:.25rem; margin-top:.25rem;"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_set_gender', {participantId: participantId}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('participant_set_gender_' ~ participantId) }}">
+                                    <select name="gender" class="form-select form-select-sm" style="width:auto;" title="Ruční override pohlaví">
+                                        <option value="" {{ override ? '' : 'selected' }}>automaticky</option>
+                                        <option value="male" {{ override == 'male' ? 'selected' : '' }}>Muž</option>
+                                        <option value="female" {{ override == 'female' ? 'selected' : '' }}>Žena</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                                </form>
+                            </td>
+                        </tr></tbody>
+                        <tbody><tr>
+                            <td>E-mail</td>
+                            <td>{% if contact.email|default %}<a href="mailto:{{ contact.email }}">{{ contact.email }}</a>{% else %}—{% endif %}</td>
+                        </tr></tbody>
+                        <tbody><tr>
+                            <td>Telefon</td>
+                            <td>{% if contact.phone|default %}<a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>{% else %}—{% endif %}</td>
+                        </tr></tbody>
+                        <tbody><tr>
+                            <td>Uživatelský účet</td>
+                            <td>
+                                {% if contact.appUser|default %}
+                                    {{ contact.appUser.username|default(contact.appUser.email|default('—')) }}
+                                    {% if acctActive %}
+                                        <span class="badge bg-success">aktivován</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-black">neaktivován</span>
+                                    {% endif %}
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr></tbody>
+                    </table>
                 </div>
 
                 {# Přihláška #}
-                <div class="col-12 col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Přihláška</h5>
-                            <table class="table table-sm" style="margin-bottom: 0;">
-                                <tbody>
-                                    <tr>
-                                        <th style="width: 9rem; white-space: nowrap;">ID přihlášky</th>
-                                        <td><strong>#{{ participant.id }}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Vytvořeno</th>
-                                        <td>{{ participant.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('—') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Akce</th>
-                                        <td>{{ event.name|default('—') }}</td>
-                                    </tr>
-                                    {% if superEvent %}
-                                        <tr>
-                                            <th>Nadřazená akce</th>
-                                            <td>{{ superEvent.name }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    <tr>
-                                        <th>Kategorie</th>
-                                        <td>{{ participant.participantCategory(false).name|default('—') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Var. symbol</th>
-                                        <td>{{ participant.variableSymbol|default('—') }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="col-12 col-xl-6">
+                    <h3>Přihláška</h3>
+                    <table class="list">
+                        <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>
+                        <tbody><tr><td>ID přihlášky</td><td><strong>#{{ participant.id }}</strong></td></tr></tbody>
+                        <tbody><tr><td>Vytvořeno</td><td>{{ participant.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('—') }}</td></tr></tbody>
+                        <tbody><tr><td>Akce</td><td>{{ event.name|default('—') }}</td></tr></tbody>
+                        {% if superEvent %}
+                            <tbody><tr><td>Nadřazená akce</td><td>{{ superEvent.name }}</td></tr></tbody>
+                        {% endif %}
+                        <tbody><tr><td>Kategorie</td><td>{{ participant.participantCategory(false).name|default('—') }}</td></tr></tbody>
+                        <tbody><tr><td>Var. symbol</td><td>{{ participant.variableSymbol|default('—') }}</td></tr></tbody>
+                    </table>
                 </div>
             </div>
 
             {# Platby #}
-            <div class="card" style="margin-bottom: 1rem;">
-                <div class="card-body">
-                    <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Platby</h5>
-                    <div style="overflow-x: auto;">
-                        <table class="list" style="width: 100%; margin-top: .5rem; table-layout: fixed;">
-                            <colgroup>
-                                <col style="width: 7rem;">
-                                <col style="width: 8rem;">
-                                <col style="width: 8rem;">
-                                <col>
-                                <col style="width: 6rem;">
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Typ</th>
-                                    <th style="text-align: right;">Částka</th>
-                                    <th>Poznámka</th>
-                                    <th>Akce</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in participant.payments|default([]) %}
-                                    <tr>
-                                        <td style="white-space: nowrap;">{{ payment.dateTime|date('j. n. Y', 'Europe/Prague')|default('—') }}</td>
-                                        <td style="word-break: keep-all;">{{ payment.type|default('—') }}</td>
-                                        <td style="text-align: right; white-space: nowrap; color: {{ payment.numericValue > 0 ? '#006FAD' : '#B62846' }};">
-                                            <strong>{{ payment.numericValue > 0 ? '+' : '' }}{{ payment.numericValue|default(0) }}&nbsp;Kč</strong>
-                                        </td>
-                                        <td style="word-break: break-all; overflow-wrap: anywhere; font-size: .85em;">
-                                            {{ payment.note|default }}
-                                            {% if payment.internalNote|default %}
-                                                <div class="text-secondary" style="margin-top: .15rem;">{{ payment.internalNote }}</div>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if is_granted('ROLE_ADMIN') and payment.id|default %}
-                                                <a class="btn btn-sm btn-outline-secondary"
-                                                   href="{{ path('oswis_org_oswis_calendar_web_admin_payment_edit', { id: payment.id }) }}">Upravit</a>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr><td colspan="5" style="text-align: center; color: #6c757d;">Zatím žádné platby.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <p style="margin-top: .75rem; margin-bottom: 0;">
-                        <strong>Zaplaceno:</strong> {{ participant.paidPrice|default(0) }}&nbsp;Kč z {{ participant.price|default(0) }}&nbsp;Kč
-                        &nbsp;|&nbsp;
-                        <strong>Zbývá:</strong>
-                        <span class="{{ (participant.remainingPrice|default(0)) == 0 ? 'text-success' : 'text-danger' }}">
-                            {{ participant.remainingPrice|default(0) }}&nbsp;Kč
-                        </span>
-                    </p>
+            <h3 id="platby">Platby</h3>
+            <table class="list">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Typ</th>
+                        <th class="text-center">Částka</th>
+                        <th>Poznámka</th>
+                        <th class="text-center">Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in participant.payments|default([]) %}
+                        <tr>
+                            <td style="white-space:nowrap;">{{ payment.dateTime|date('j. n. Y', 'Europe/Prague')|default('—') }}</td>
+                            <td>{{ payment.type|default('—') }}</td>
+                            <td class="text-center {{ payment.numericValue > 0 ? 'text-success' : 'text-danger' }}" style="white-space:nowrap;">
+                                <strong>{{ payment.numericValue > 0 ? '+' : '' }}{{ payment.numericValue|default(0) }}&nbsp;Kč</strong>
+                            </td>
+                            <td>
+                                {{ payment.note|default }}
+                                {% if payment.internalNote|default %}<div class="block small text-muted">{{ payment.internalNote }}</div>{% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if is_granted('ROLE_ADMIN') and payment.id|default %}
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_payment_edit', { id: payment.id }) }}">Upravit</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-center text-muted">Zatím žádné platby.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="box" style="margin-bottom:1.5rem;">
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem; margin-bottom:.4rem;">
+                    <span><strong>Zaplaceno {{ paid }}&nbsp;Kč</strong> <span class="text-muted">z {{ total }}&nbsp;Kč</span></span>
+                    <span class="{{ (total > 0 and remaining <= 0) ? 'text-success' : 'text-danger' }}"><strong>{{ (total > 0 and remaining <= 0) ? 'zaplaceno' : 'zbývá ' ~ remaining ~ ' Kč' }}</strong></span>
+                </div>
+                <div class="progress" style="height:.6rem;">
+                    <div class="progress-bar {{ (total > 0 and remaining <= 0) ? 'bg-success' : '' }}" role="progressbar" style="width: {{ pct }}%;" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
 
-            {# Příznaky (flag groups) — editovatelné, vč. kategorií, které účastník zatím nemá #}
-            <div class="card" style="margin-bottom: 1rem;" id="priznaky">
-                <div class="card-body">
-                    <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Příznaky</h5>
-                    {% if isAdmin|default(false) and flagSelectionModel|default([])|length > 0 %}
-                        <p class="text-muted" style="font-size: .85em; margin-bottom: .75rem;">
-                            Každá kategorie se ukládá zvlášť. Lze přidat i kategorii, kterou účastník zatím nemá
-                            (např. Sleva, Zkrácený pobyt). „Povolit překročení kapacity" obejde naplněnou nabídku.
-                        </p>
-                        {% for cat in flagSelectionModel %}
-                            {% set single = cat.max == 1 %}
-                            <form method="post"
-                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_flags', { participantId: participant.id }) }}"
-                                  style="border-top: 1px solid #f0f0f0; padding: .5rem 0;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_flags_' ~ participant.id) }}">
-                                <input type="hidden" name="flagGroupOfferId" value="{{ cat.groupOffer.id }}">
-                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;">
-                                    <strong style="min-width: 11rem;">
-                                        {{ cat.categoryName }}
-                                        {% if not cat.hasGroup %}<span class="badge bg-secondary" style="font-weight: normal;">zatím nepřidáno</span>{% endif %}
-                                        <br><small class="text-muted">
-                                            {% if single %}vyber právě 1{% else %}min {{ cat.min }}{% if cat.max is not null %}, max {{ cat.max }}{% endif %}{% endif %}
-                                        </small>
-                                    </strong>
-                                    <div style="flex: 1; min-width: 16rem;">
-                                        {% if single and cat.min == 0 %}
-                                            <label style="margin-right: .75rem; white-space: nowrap;">
-                                                <input type="radio" name="flagOfferIds[]" value=""
-                                                       {{ cat.flagOffers|filter(fo => fo.selected)|length == 0 ? 'checked' : '' }}>
-                                                <span class="text-muted">— žádný —</span>
-                                            </label>
-                                        {% endif %}
-                                        {% for fo in cat.flagOffers %}
-                                            <label style="margin-right: .75rem; white-space: nowrap; {{ fo.full ? 'opacity:.5;' : '' }}">
-                                                <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]"
-                                                       value="{{ fo.offer.id }}"
-                                                       {{ fo.selected ? 'checked' : '' }}
-                                                       {{ fo.full ? 'disabled' : '' }}>
-                                                {{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}
-                                                {% if fo.offer.price|default(0) != 0 %}<span class="text-muted">({{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }} Kč)</span>{% endif %}
-                                                {% if fo.remaining is not null %}<span class="text-muted" style="font-size: .8em;">[zbývá {{ fo.remaining }}]</span>{% endif %}
-                                            </label>
-                                        {% else %}
-                                            <em class="text-secondary">žádné nabídky</em>
+            {# Příznaky — vlastní prvek (ne tabulka): seskupené kategorie s odznaky + inline editor.
+               Staví na jazyce aplikace: .box, h4 podnadpisy, nativní .badge, .btn. #}
+            <h3 id="priznaky">Příznaky</h3>
+            {% if isAdmin|default(false) and flagSelectionModel|default([])|length > 0 %}
+                {% set userCats = flagSelectionModel|filter(c => c.groupOffer.isPublicOnWeb) %}
+                {% set teamCats = flagSelectionModel|filter(c => not c.groupOffer.isPublicOnWeb) %}
+                <div class="box" style="margin-bottom:1.5rem; padding:.4rem 1rem 1rem;">
+                    {% for grp in [{ 'title': 'Vyplnil účastník v přihlášce', 'cats': userCats }, { 'title': 'Doplňuje tým', 'cats': teamCats }] %}
+                        {% if grp.cats|length > 0 %}
+                            {# Zobraz jen nastavené nebo povinné; prázdné volitelné kategorie schovej za „+ Přidat". #}
+                            {% set shownCats = grp.cats|filter(c => (c.flagOffers|filter(fo => fo.selected)|length) > 0 or c.min > 0) %}
+                            {% set addCats   = grp.cats|filter(c => (c.flagOffers|filter(fo => fo.selected)|length) == 0 and c.min == 0) %}
+                            <h4 style="font-size:1.05rem; margin:{{ loop.first ? '.5rem' : '1.2rem' }} 0 .1rem;">{{ grp.title }}</h4>
+                            {% for cat in shownCats %}
+                                {% include '@OswisOrgOswisCalendar/web_admin/_participant_flag_row.html.twig' with { 'cat': cat, 'participant': participant } only %}
+                            {% else %}
+                                <div class="text-muted small" style="padding:.4rem 0; border-top:1px solid #e3e9f0;">Zatím nic nenastaveno.</div>
+                            {% endfor %}
+                            {% if addCats|length > 0 %}
+                                <details style="margin-top:.5rem;">
+                                    <summary class="btn btn-sm btn-outline-primary" style="display:inline-flex; cursor:pointer;">+ Přidat příznak ({{ addCats|length }})</summary>
+                                    <div style="margin-top:.5rem; border-top:1px solid #e3e9f0;">
+                                        {% for cat in addCats %}
+                                            {% include '@OswisOrgOswisCalendar/web_admin/_participant_flag_row.html.twig' with { 'cat': cat, 'participant': participant } only %}
                                         {% endfor %}
                                     </div>
-                                    <label style="white-space: nowrap; font-size: .8em;" title="Obejít naplněnou kapacitu">
-                                        <input type="checkbox" name="admin_override" value="1"> překročit kapacitu
-                                    </label>
-                                    <button type="submit" class="btn btn-sm btn-primary">Uložit</button>
-                                </div>
-                            </form>
-                        {% endfor %}
-                    {% else %}
-                        {# Read-only fallback (ne-admin, nebo žádné dostupné kategorie) #}
-                        <table class="table table-sm" style="margin-bottom: 0;">
-                            <tbody>
-                                {% for flagGroup in participant.flagGroups|default([]) %}
-                                    <tr>
-                                        <th style="width: 12rem; white-space: nowrap;">
-                                            {{ flagGroup.flagGroupRange.flagCategory.name|default(flagGroup.name|default('Skupina')) }}
-                                        </th>
-                                        <td>
-                                            {% for participantFlag in flagGroup.participantFlags|default([]) %}
-                                                {% if participantFlag.active|default %}
-                                                    <span class="badge"
-                                                          style="background: {{ participantFlag.flagOffer.flag.color|default('#006FAD') }}; color: white; padding: .2em .55em; margin-right: .25em; font-size: .9em;">
-                                                        {{ participantFlag.flagOffer.flag.shortName|default(participantFlag.flagOffer.flag.name|default('—')) }}
-                                                    </span>
-                                                {% endif %}
-                                            {% else %}
-                                                <em class="text-secondary">—</em>
-                                            {% endfor %}
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr><td><em class="text-secondary">Žádné příznaky.</em></td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-                </div>
-            </div>
-
-            {# Poznámky — interní/veřejné poznámky k účastníkovi #}
-            <div class="card" style="margin-bottom: 1rem;" id="poznamky">
-                <div class="card-body">
-                    <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Poznámky</h5>
-                    {% set notes = participant.notes|default([]) %}
-
-                    {# Add new note form #}
-                    <form method="post"
-                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_create', { participantId: participant.id }) }}"
-                          style="margin-bottom: 1rem;">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participant_note_create_' ~ participant.id) }}">
-                        <div style="display: flex; gap: .5rem; align-items: stretch; flex-wrap: wrap;">
-                            <textarea name="textValue"
-                                      rows="2"
-                                      placeholder="Nová poznámka…"
-                                      required
-                                      style="flex: 1 1 20rem; min-width: 15rem; padding: .375rem .5rem; border: 1px solid #ced4da; border-radius: .375rem;"></textarea>
-                            <label style="display: flex; align-items: center; gap: .25rem; white-space: nowrap;">
-                                <input type="checkbox" name="publicNote" value="1">
-                                <small>veřejná (vidí účastník)</small>
-                            </label>
-                            <button type="submit" class="btn btn-sm btn-primary">+ Přidat poznámku</button>
-                        </div>
-                    </form>
-
-                    {% if notes|length == 0 %}
-                        <p class="text-muted" style="margin: 0;">Žádné poznámky.</p>
-                    {% else %}
-                        {% for note in notes %}
-                            <div style="padding: .5rem .75rem; border-left: 3px solid {{ note.publicNote|default(false) ? '#006FAD' : '#d97706' }}; background: #f8f9fa; margin-bottom: .5rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; margin-bottom: .25rem;">
-                                    <small class="text-secondary">
-                                        {% set author = note.createdBy|default %}
-                                        {% if author %}
-                                            <strong>{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</strong>
-                                            ·
-                                        {% endif %}
-                                        {{ note.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('') }}
-                                        {% if note.updatedAt|default and note.updatedAt != note.createdAt %}
-                                            <em> · upraveno {{ note.updatedAt|date('j. n. Y H:i', 'Europe/Prague') }}</em>
-                                        {% endif %}
-                                        · {{ note.publicNote|default(false) ? 'veřejná' : 'interní' }}
-                                    </small>
-                                    <details style="position: relative;">
-                                        <summary style="cursor: pointer; font-size: .85rem; color: #006FAD; list-style: none;">✎ Akce</summary>
-                                        <div style="position: absolute; right: 0; top: 100%; z-index: 5; background: white; border: 1px solid #ced4da; border-radius: .375rem; padding: .5rem .6rem; box-shadow: 0 2px 8px rgba(0,0,0,.1); min-width: 18rem;">
-                                            <form method="post"
-                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_edit', { participantId: participant.id, noteId: note.id }) }}"
-                                                  style="margin-bottom: .5rem;">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('participant_note_edit_' ~ note.id) }}">
-                                                <textarea name="textValue"
-                                                          rows="3"
-                                                          style="width: 100%; padding: .25rem .375rem; border: 1px solid #ced4da; border-radius: .25rem;">{{ note.textValue|default('') }}</textarea>
-                                                <label style="display: flex; align-items: center; gap: .25rem; margin: .25rem 0;">
-                                                    <input type="checkbox" name="publicNote" value="1" {{ note.publicNote|default(false) ? 'checked' : '' }}>
-                                                    <small>veřejná</small>
-                                                </label>
-                                                <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
-                                            </form>
-                                            <form method="post"
-                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_delete', { participantId: participant.id, noteId: note.id }) }}"
-                                                  onsubmit="return confirm('Opravdu smazat tuto poznámku?');"
-                                                  style="margin: 0; padding-top: .25rem; border-top: 1px solid #e9ecef;">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('participant_note_delete_' ~ note.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat poznámku</button>
-                                            </form>
-                                        </div>
-                                    </details>
-                                </div>
-                                <div style="white-space: pre-line;">{{ note.textValue|default('') }}</div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-
-            {# Historie přihlášky — read-only chronologie změn z verzovaných junction entit (#142). #}
-            <div class="card" style="margin-bottom: 1rem;" id="historie">
-                <div class="card-body">
-                    <details>
-                        <summary style="cursor: pointer; list-style: none;">
-                            <h5 class="card-title" style="display: inline; border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">
-                                Historie přihlášky
-                                <span class="text-secondary" style="font-weight: normal; font-size: .85rem;">
-                                    ({{ history|default([])|length }} {{ (history|default([])|length == 1) ? 'záznam' : 'záznamů' }}) ▾
-                                </span>
-                            </h5>
-                        </summary>
-                        {% set historyRows = history|default([]) %}
-                        {% if historyRows|length == 0 %}
-                            <p class="text-muted" style="margin: .75rem 0 0;">Žádná zaznamenaná historie.</p>
-                        {% else %}
-                            <table class="table table-sm" style="margin: .75rem 0 0;">
-                                <tbody>
-                                    {% for event in historyRows %}
-                                        {% set verbColor = {'created': '#006FAD', 'added': '#198754', 'removed': '#b02a37'} %}
-                                        {% set verbIcon  = {'created': '✚', 'added': '＋', 'removed': '✗'} %}
-                                        {% set kindLabel = {'participant': 'Přihláška', 'registration': 'Akce / turnus', 'flag': 'Příznak'} %}
-                                        <tr>
-                                            <td style="width: 11rem; white-space: nowrap; color: #6c757d; font-size: .85rem;">
-                                                {{ event.at|date('j. n. Y H:i', 'Europe/Prague') }}
-                                            </td>
-                                            <td style="width: 1.5rem; text-align: center; color: {{ verbColor[event.verb]|default('#6c757d') }};">
-                                                {{ verbIcon[event.verb]|default('•') }}
-                                            </td>
-                                            <td style="width: 8rem; white-space: nowrap; color: #6c757d; font-size: .85rem;">
-                                                {{ kindLabel[event.kind]|default(event.kind) }}{% if event.category %}<br><small>{{ event.category }}</small>{% endif %}
-                                            </td>
-                                            <td{% if event.verb == 'removed' %} style="text-decoration: line-through; color: #6c757d;"{% endif %}>
-                                                {{ event.label }}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            <p class="text-muted" style="margin: .25rem 0 0; font-size: .8rem;">
-                                Rekonstruováno z časových značek příznaků a registrací (přidáno = vznik, přeškrtnuto = smazáno). Změny jednotlivých polí kontaktu se zde nezobrazují.
-                            </p>
+                                </details>
+                            {% endif %}
                         {% endif %}
-                    </details>
+                    {% endfor %}
                 </div>
-            </div>
+            {% else %}
+                {# Read-only fallback (ne-admin, nebo žádné dostupné kategorie) #}
+                <div class="box" style="margin-bottom:1.5rem;">
+                    {% for flagGroup in participant.flagGroups|default([]) %}
+                        <div style="padding:.3rem 0; border-top:1px solid #e3e9f0;">
+                            <strong>{{ flagGroup.flagGroupRange.flagCategory.name|default(flagGroup.name|default('Skupina')) }}:</strong>
+                            {% for participantFlag in flagGroup.participantFlags|default([]) %}
+                                {% if participantFlag.active|default %}
+                                    <span class="badge" style="background: {{ participantFlag.flagOffer.flag.color|default('#006FAD') }}; color:#fff;">
+                                        {{ participantFlag.flagOffer.flag.shortName|default(participantFlag.flagOffer.flag.name|default('—')) }}
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <em class="text-muted">—</em>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <em class="text-muted">Žádné příznaky.</em>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-            {# Komunikace timeline #}
-            <div class="card" style="margin-bottom: 1rem;" id="komunikace">
-                <div class="card-body">
-                    <h5 class="card-title" style="border-bottom: 1px solid #dee2e6; padding-bottom: .25rem;">Komunikace</h5>
-                    {% include '@OswisOrgOswisCalendar/web_admin/communication/_timeline_list.html.twig' with {
-                        entries:           entries|default([]),
-                        isAdmin:           isAdmin|default(true),
-                        participantId:     participantId|default(participant.id),
-                        resendableMailIds: resendableMailIds|default({}),
-                    } only %}
+            {# Poznámky #}
+            <h3 id="poznamky">Poznámky</h3>
+            {% set notes = participant.notes|default([]) %}
+            <form method="post"
+                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_create', { participantId: participant.id }) }}"
+                  class="box" style="margin-bottom:1rem;">
+                <input type="hidden" name="_token" value="{{ csrf_token('participant_note_create_' ~ participant.id) }}">
+                <div style="display:flex; gap:.5rem; align-items:flex-start; flex-wrap:wrap;">
+                    <textarea name="textValue" rows="2" placeholder="Nová poznámka…" required
+                              class="form-control form-control-sm" style="flex:1 1 22rem; min-width:15rem;"></textarea>
+                    <label class="small" style="white-space:nowrap; margin-top:.35rem;">
+                        <input type="checkbox" name="publicNote" value="1"> veřejná (vidí účastník)
+                    </label>
+                    <button type="submit" class="btn btn-sm btn-primary">+ Přidat</button>
                 </div>
-            </div>
+            </form>
+            {% if notes|length == 0 %}
+                <p class="text-muted">Žádné poznámky.</p>
+            {% else %}
+                <table class="list" style="margin-bottom:1.5rem;">
+                    <thead><tr><th>Kdy / kdo</th><th>Poznámka</th><th class="text-center">Akce</th></tr></thead>
+                    {% for note in notes %}
+                        <tbody><tr>
+                            <td class="small" style="white-space:nowrap;">
+                                {{ note.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('') }}
+                                {% set author = note.createdBy|default %}
+                                {% if author %}<div class="block small text-muted">{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</div>{% endif %}
+                                <span class="badge {{ note.publicNote|default(false) ? 'bg-info' : 'bg-secondary' }}">{{ note.publicNote|default(false) ? 'veřejná' : 'interní' }}</span>
+                            </td>
+                            <td style="white-space:pre-line;">{{ note.textValue|default('') }}</td>
+                            <td class="text-center">
+                                <details>
+                                    <summary class="btn btn-sm btn-outline-primary" style="list-style:none;">✎</summary>
+                                    <div style="text-align:left; margin-top:.4rem; min-width:16rem;">
+                                        <form method="post"
+                                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_edit', { participantId: participant.id, noteId: note.id }) }}"
+                                              style="margin-bottom:.5rem;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('participant_note_edit_' ~ note.id) }}">
+                                            <textarea name="textValue" rows="3" class="form-control form-control-sm">{{ note.textValue|default('') }}</textarea>
+                                            <label class="small" style="display:block; margin:.25rem 0;">
+                                                <input type="checkbox" name="publicNote" value="1" {{ note.publicNote|default(false) ? 'checked' : '' }}> veřejná
+                                            </label>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                                        </form>
+                                        <form method="post"
+                                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_delete', { participantId: participant.id, noteId: note.id }) }}"
+                                              onsubmit="return confirm('Opravdu smazat tuto poznámku?');" style="margin:0;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('participant_note_delete_' ~ note.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr></tbody>
+                    {% endfor %}
+                </table>
+            {% endif %}
+
+            {# Historie a komunikace #}
+            <h3 id="historie">Historie a komunikace</h3>
+            <span id="komunikace"></span>
+            {% include '@OswisOrgOswisCalendar/web_admin/_participant_timeline.html.twig' with {
+                timeline:          timeline|default([]),
+                isAdmin:           isAdmin|default(true),
+                participantId:     participantId|default(participant.id),
+                resendableMailIds: resendableMailIds|default({}),
+            } only %}
         {% endif %}
-    </main>
+    </div>
 {% endblock body_content %}

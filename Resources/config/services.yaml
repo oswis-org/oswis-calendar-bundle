@@ -731,3 +731,8 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository'
       - '@oswis_org_oswis_calendar.participant.participant_service'
     tags: [ 'console.command' ]
+
+  OswisOrg\OswisCalendarBundle\Command\Setup2026FlagsCommand:
+    autowire: true
+    autoconfigure: true
+    tags: [ 'console.command' ]

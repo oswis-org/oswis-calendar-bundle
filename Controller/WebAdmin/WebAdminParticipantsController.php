@@ -109,9 +109,15 @@ final class WebAdminParticipantsController extends AbstractController
             }
         }
         $admin = (bool) $request->request->get('admin_override', false);
+        $textValues = [];
+        foreach ((array) $request->request->all('flagTextValues') as $rawId => $rawText) {
+            if (is_numeric($rawId)) {
+                $textValues[(int) $rawId] = is_string($rawText) ? $rawText : null;
+            }
+        }
 
         try {
-            $this->flagUpdateService->setFlags($participant, $groupOffer, $flagOfferIds, $admin);
+            $this->flagUpdateService->setFlags($participant, $groupOffer, $flagOfferIds, $admin, $textValues);
             $this->addFlash('success', sprintf(
                 'Příznaky kategorie „%s" u účastníka #%d uloženy%s.',
                 $groupOffer->getFlagCategory()?->getName() ?? '?',
@@ -190,8 +196,49 @@ final class WebAdminParticipantsController extends AbstractController
         } catch (\Throwable) {
         }
 
+        // Drobečková navigace libovolné hloubky: Úvod › Účastníci › akce › turnus › jméno.
+        $crumbs = [[
+            'label' => 'Účastníci',
+            'url'   => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_list'),
+        ]];
+        $turnus = $participant->getEvent();
+        $superEvent = $turnus?->getSuperEvent();
+        if (null !== $superEvent && null !== $superEvent->getName()) {
+            $crumbs[] = ['label' => $superEvent->getName()];
+        }
+        if (null !== $turnus && null !== $turnus->getName()) {
+            $crumbs[] = ['label' => $turnus->getName()];
+        }
+        $crumbs[] = ['label' => ($participant->getContact()?->getName() ?? 'Účastník').' #'.$participantId];
+
+        // Sloučená timeline: komunikační záznamy + kondenzované změny přihlášky, nejnovější nahoře.
+        // Změny se stejným časovým razítkem se sloučí do jedné položky (proti hlučnému per-příznak logu).
+        $timeline = [];
+        foreach ($entries as $commEntry) {
+            $timeline[] = ['at' => $commEntry->getOccurredAt(), 'kind' => 'comm', 'entry' => $commEntry];
+        }
+        $historyGroups = [];
+        foreach ($history as $ev) {
+            $tsKey = $ev['at']->format('Y-m-d\TH:i:s');
+            if (!isset($historyGroups[$tsKey])) {
+                $historyGroups[$tsKey] = ['at' => $ev['at'], 'events' => []];
+            }
+            $historyGroups[$tsKey]['events'][] = $ev;
+        }
+        foreach ($historyGroups as $group) {
+            $timeline[] = ['at' => $group['at'], 'kind' => 'change', 'change' => $this->summarizeHistoryGroup($group['events'])];
+        }
+        usort($timeline, static function (array $a, array $b): int {
+            $ta = $a['at'] instanceof \DateTimeInterface ? $a['at']->getTimestamp() : PHP_INT_MIN;
+            $tb = $b['at'] instanceof \DateTimeInterface ? $b['at']->getTimestamp() : PHP_INT_MIN;
+
+            return $tb <=> $ta;
+        });
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
             'participant'        => $participant,
+            'crumbs'             => $crumbs,
+            'timeline'           => $timeline,
             'entries'            => $entries,
             'history'            => $history,
             'flagSelectionModel' => $flagSelectionModel,
@@ -202,6 +249,67 @@ final class WebAdminParticipantsController extends AbstractController
             'page_title'         => sprintf('Přihláška #%d', $participantId),
             'pageTitle'          => sprintf('Přihláška #%d', $participantId),
         ]);
+    }
+
+    /**
+     * Shrne skupinu změn přihlášky se stejným časovým razítkem do JEDNÉ položky timeline (kondenzace
+     * hlučného per-příznak logu): vznik přihlášky / změna turnusu / úprava příznaků + výčet změn.
+     *
+     * @param list<array{at: \DateTimeInterface, verb: 'created'|'added'|'removed', kind: 'participant'|'registration'|'flag', category: string|null, label: string}> $events
+     *
+     * @return array{icon: string, color: string, title: string, lines: list<string>}
+     */
+    private function summarizeHistoryGroup(array $events): array
+    {
+        $created = false;
+        /** @var list<string> $flagAdded */
+        $flagAdded = [];
+        /** @var list<string> $flagRemoved */
+        $flagRemoved = [];
+        /** @var list<string> $regAdded */
+        $regAdded = [];
+        /** @var list<string> $regRemoved */
+        $regRemoved = [];
+        foreach ($events as $ev) {
+            if ('participant' === $ev['kind'] && 'created' === $ev['verb']) {
+                $created = true;
+                continue;
+            }
+            if ('flag' === $ev['kind']) {
+                if ('removed' === $ev['verb']) {
+                    $flagRemoved[] = $ev['label'];
+                } else {
+                    $flagAdded[] = $ev['label'];
+                }
+            } elseif ('registration' === $ev['kind']) {
+                if ('removed' === $ev['verb']) {
+                    $regRemoved[] = $ev['label'];
+                } else {
+                    $regAdded[] = $ev['label'];
+                }
+            }
+        }
+        $lines = [];
+        foreach ($regAdded as $l) {
+            $lines[] = $l;
+        }
+        foreach ($regRemoved as $l) {
+            $lines[] = 'zrušeno: '.$l;
+        }
+        if ([] !== $flagAdded) {
+            $lines[] = '+ '.implode(', ', $flagAdded);
+        }
+        if ([] !== $flagRemoved) {
+            $lines[] = '− '.implode(', ', $flagRemoved);
+        }
+        if ($created) {
+            return ['icon' => '★', 'color' => '#006FAD', 'title' => 'Přihláška vytvořena', 'lines' => $lines];
+        }
+        if ([] !== $regAdded || [] !== $regRemoved) {
+            return ['icon' => '➡', 'color' => '#6f42c1', 'title' => 'Změna turnusu', 'lines' => $lines];
+        }
+
+        return ['icon' => '🔖', 'color' => '#198754', 'title' => 'Úprava příznaků', 'lines' => $lines];
     }
 
     /**
