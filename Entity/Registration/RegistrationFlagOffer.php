@@ -190,6 +190,17 @@ class RegistrationFlagOffer implements NameableInterface
         return $remaining < 1 ? 0 : $remaining;
     }
 
+    /**
+     * Příznak smí být zcela bez kapacitního stropu. Na rozdíl od {@see CapacityTrait::setBaseCapacity()}
+     * (kde se null koeruje na 0) zachováváme null = „neomezeno": pak {@see getCapacityInt()} i
+     * {@see getRemainingCapacity()} vrací null, příznak nemá čítač „[zbývá N]" a jde vždy přiřadit.
+     * Vědomě zúženo jen na příznaky — sdílený trait (a tím Event/RegistrationOffer) neměníme.
+     */
+    public function setBaseCapacity(?int $baseCapacity): void
+    {
+        $this->baseCapacity = null === $baseCapacity ? null : max(0, $baseCapacity);
+    }
+
     public function getFlagGroupName(): ?string
     {
         if (null !== $this->getFlagFormGroup()) {

@@ -227,7 +227,10 @@ final class Setup2026FlagsCommand extends Command
             $io->writeln('    + flag offer "'.$offerSlug.'"');
             $flagOffer = new RegistrationFlagOffer(
                 $flag,
-                new Capacity(null, null), // bez kapacitního stropu
+                // Bez kapacitního stropu — admin dietní/dopravní příznaky nejsou omezený zdroj.
+                // null tu funguje díky RegistrationFlagOffer::setBaseCapacity(), který (na rozdíl
+                // od CapacityTrait) zachová null → příznak nemá čítač a jde vždy přiřadit.
+                new Capacity(null, null),
                 new Price(0, 0),          // zdarma, bez zálohy
                 new FlagAmountRange(0, null),
                 null,
