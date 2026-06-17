@@ -1,0 +1,71 @@
+{# Sloučená timeline (komunikace + kondenzované změny přihlášky), nejnovější nahoře.
+   Vlastní prvek v jazyce aplikace: brand modré tečky/linka, nativní .badge, Ciutadella nadpisy.
+   Vstup: timeline (list<{at, kind:'comm'|'change', entry?, change?}>), isAdmin, participantId, resendableMailIds. #}
+{% set adm = isAdmin|default(false) %}
+{% if timeline|default([])|length == 0 %}
+    <p class="text-muted" style="margin:.25rem 0 1.5rem;">Žádné záznamy.</p>
+{% else %}
+    <div class="oswis-tl">
+        {% for item in timeline %}
+            {% if item.kind == 'comm' %}
+                {% set e = item.entry %}
+                {% set internal = not e.isPublicForParticipant() %}
+                <div class="oswis-tl__row">
+                    <div class="oswis-tl__time">
+                        {% if e.occurredAt %}{{ e.occurredAt|date('j. n. Y', 'Europe/Prague') }}<span>{{ e.occurredAt|date('H:i', 'Europe/Prague') }}</span>{% else %}—{% endif %}
+                    </div>
+                    <div class="oswis-tl__rail"><span class="oswis-tl__dot oswis-tl__dot--mail" title="E-mail / komunikace"></span></div>
+                    <div class="oswis-tl__body">
+                        <div class="oswis-tl__title">
+                            {{ e.subject|default('(bez předmětu)') }}
+                            {% if internal and adm %}<span class="badge bg-secondary">interní</span>{% endif %}
+                            {% if adm and resendableMailIds is defined and resendableMailIds[e.id]|default and participantId is defined %}
+                                <form method="post"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_mail', { participantId: participantId, mailId: e.id }) }}"
+                                      style="display:inline; margin-left:.4rem;" onsubmit="return confirm('Znovu odeslat tento e-mail účastníkovi?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_mail_' ~ e.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-info" style="padding:.02rem .4rem; font-size:.78rem;">↻ Resend</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="oswis-tl__meta">
+                            {{ e.channel.label() }} · {{ e.direction.label() }}{% if e.summary|default %} — {{ e.summary|slice(0, 120) }}{% if e.summary|length > 120 %}…{% endif %}{% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                {% set c = item.change %}
+                <div class="oswis-tl__row">
+                    <div class="oswis-tl__time">{{ item.at|date('j. n. Y', 'Europe/Prague') }}<span>{{ item.at|date('H:i', 'Europe/Prague') }}</span></div>
+                    <div class="oswis-tl__rail"><span class="oswis-tl__dot oswis-tl__dot--change" title="Změna přihlášky"></span></div>
+                    <div class="oswis-tl__body">
+                        <div class="oswis-tl__title">{{ c.title }}</div>
+                        {% for line in c.lines|slice(0, 2) %}
+                            <div class="oswis-tl__meta">{{ line|length > 110 ? line|slice(0, 110) ~ '…' : line }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <style>
+        .oswis-tl { margin: .25rem 0 1.5rem; }
+        .oswis-tl__row { display: flex; gap: .6rem; align-items: stretch; }
+        .oswis-tl__time { width: 5.5rem; flex: none; text-align: right; font-size: .78rem; color: #6c757d; white-space: nowrap; line-height: 1.25; padding-top: .15rem; }
+        .oswis-tl__time span { display: block; font-size: .72rem; }
+        .oswis-tl__rail { width: 1rem; flex: none; position: relative; }
+        .oswis-tl__rail::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #d6e3ef; transform: translateX(-50%); }
+        .oswis-tl__row:first-child .oswis-tl__rail::before { top: .35rem; }
+        .oswis-tl__row:last-child .oswis-tl__rail::before { bottom: auto; height: .35rem; }
+        .oswis-tl__dot { position: relative; z-index: 1; display: block; width: .7rem; height: .7rem; margin: .35rem auto 0; border-radius: 50%; background: #006FAD; border: 2px solid #fff; box-shadow: 0 0 0 1px #d6e3ef; }
+        .oswis-tl__body { flex: 1 1 auto; min-width: 0; padding-bottom: .85rem; }
+        .oswis-tl__title { font-weight: 600; }
+        .oswis-tl__meta { color: #6c757d; font-size: .85rem; margin-top: .05rem; word-break: break-word; }
+        @media (max-width: 575.98px) {
+            .oswis-tl__rail { display: none; }
+            .oswis-tl__time { width: auto; text-align: left; }
+            .oswis-tl__row { gap: .35rem; flex-wrap: wrap; }
+            .oswis-tl__body { flex-basis: 100%; }
+        }
+    </style>
+{% endif %}
