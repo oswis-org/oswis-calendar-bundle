@@ -3,7 +3,7 @@
    prázdna. Po rozkliknutí editor. Třídy .oa-flag* jsou v app.scss. #}
 {% set single = cat.max == 1 %}
 {% set selectedFlags = cat.flagOffers|filter(fo => fo.selected) %}
-<details class="oa-flag">
+<details class="oa-flag" name="oa-flag-edit">
     <summary class="oa-flag__sum">
         <span class="oa-flag__name">{{ cat.categoryName }}{% if cat.min > 0 %} <span class="text-danger" title="povinné">*</span>{% endif %}</span>
         <span class="oa-flag__val">

@@ -21,7 +21,7 @@
                     </div>
                     <div class="oswis-tl__rail"><span class="oswis-tl__dot" title="E-mail / komunikace"></span></div>
                     <div class="oswis-tl__body">
-                        <details class="oswis-tl__entry"{% if not hasDetail %} open{% endif %}>
+                        <details class="oswis-tl__entry">
                             <summary class="oswis-tl__sum">
                                 <span class="oswis-tl__title">
                                     {{ e.subject|default('(bez předmětu)') }}
@@ -67,7 +67,7 @@
                     <div class="oswis-tl__time">{{ item.at|date('j. n. Y', 'Europe/Prague') }}<span>{{ item.at|date('H:i', 'Europe/Prague') }}</span></div>
                     <div class="oswis-tl__rail"><span class="oswis-tl__dot" title="Změna přihlášky"></span></div>
                     <div class="oswis-tl__body">
-                        <details class="oswis-tl__entry"{% if not extraLines %} open{% endif %}>
+                        <details class="oswis-tl__entry">
                             <summary class="oswis-tl__sum">
                                 <span class="oswis-tl__title">{{ c.title }}</span>
                                 {% if c.lines|length > 0 %}<span class="oswis-tl__meta">{{ c.lines|first|length > 110 ? (c.lines|first|slice(0, 110)) ~ '…' : c.lines|first }}</span>{% endif %}
