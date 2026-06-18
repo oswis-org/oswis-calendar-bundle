@@ -216,15 +216,8 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
         return null;
     }
 
-    public function getBody(): ?string
-    {
-        return null;
-    }
-
-    public function getBodyHtml(): ?string
-    {
-        return null;
-    }
+    // getBody() / getBodyHtml() satisfied by parent (AbstractMail) — the rendered
+    // mail body is captured + persisted at send time by MailService.
 
     public function isPublicForParticipant(): bool
     {
