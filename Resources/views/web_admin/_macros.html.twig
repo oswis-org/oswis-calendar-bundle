@@ -1,0 +1,15 @@
+{#
+ Sdílená web-admin Twig makra (stavební kameny admin design-systému).
+
+ flag_badge: Bootstrap `.badge` pilulka jednoho příznaku — používá detail účastníka
+ (zobrazení i editor-souhrn), kde platí stejné Bootstrap CSS.
+
+ ZÁMĚRNĚ to NEpoužívá HTML výpis přihlášek (.oswis-flag-badge/.ofb-* split-badge,
+ CSS scopované na .participants-page) ani PDF (.fb/.fb-price, mPDF <style>): mají
+ vlastní CSS systémy a sjednocení do jednoho markupu by změnilo jejich vzhled.
+
+ Pozn.: žádný `spaceless` (způsobil prod fatal 2026-05-31) — bílé znaky řeší {%- -%}.
+#}
+{% macro flag_badge(color, label, textValue) -%}
+<span class="badge" style="background: {{ color|default('#006FAD') }}; color:#fff;">{{ label|default('—') }}{% if textValue is defined and textValue %}: {{ textValue }}{% endif %}</span>
+{%- endmacro %}

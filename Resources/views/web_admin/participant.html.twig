@@ -237,15 +237,14 @@
                 </div>
             {% else %}
                 {# Read-only fallback (ne-admin, nebo žádné dostupné kategorie) #}
+                {% import '@OswisOrgOswisCalendar/web_admin/_macros.html.twig' as ui %}
                 <div class="box" style="margin-bottom:1.5rem;">
                     {% for flagGroup in participant.flagGroups|default([]) %}
                         <div style="padding:.3rem 0; border-top:1px solid #e3e9f0;">
                             <strong>{{ flagGroup.flagGroupRange.flagCategory.name|default(flagGroup.name|default('Skupina')) }}:</strong>
                             {% for participantFlag in flagGroup.participantFlags|default([]) %}
                                 {% if participantFlag.active|default %}
-                                    <span class="badge" style="background: {{ participantFlag.flagOffer.flag.color|default('#006FAD') }}; color:#fff;">
-                                        {{ participantFlag.flagOffer.flag.shortName|default(participantFlag.flagOffer.flag.name|default('—')) }}
-                                    </span>
+                                    {{ ui.flag_badge(participantFlag.flagOffer.flag.color, participantFlag.flagOffer.flag.shortName|default(participantFlag.flagOffer.flag.name)) }}
                                 {% endif %}
                             {% else %}
                                 <em class="text-muted">—</em>

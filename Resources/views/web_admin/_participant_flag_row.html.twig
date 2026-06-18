@@ -1,6 +1,7 @@
 {# Jedna příznaková kategorie jako rozbalovací prvek (ne tabulka). Mřížkové zarovnání
    summary: název | hodnota | upravit — konzistentní sloupce napříč řádky, bez plovoucího
    prázdna. Po rozkliknutí editor. Třídy .oa-flag* jsou v app.scss. #}
+{% import '@OswisOrgOswisCalendar/web_admin/_macros.html.twig' as ui %}
 {% set single = cat.max == 1 %}
 {% set selectedFlags = cat.flagOffers|filter(fo => fo.selected) %}
 <details class="oa-flag" name="oa-flag-edit">
@@ -8,7 +9,7 @@
         <span class="oa-flag__name">{{ cat.categoryName }}{% if cat.min > 0 %} <span class="text-danger" title="povinné">*</span>{% endif %}</span>
         <span class="oa-flag__val">
             {% for fo in selectedFlags %}
-                <span class="badge" style="background: {{ fo.offer.flag.color|default('#006FAD') }}; color:#fff;">{{ fo.offer.flag.shortName|default(fo.offer.flag.name|default(fo.offer.name|default('—'))) }}{% if fo.textValue %}: {{ fo.textValue }}{% endif %}</span>
+                {{ ui.flag_badge(fo.offer.flag.color, fo.offer.flag.shortName|default(fo.offer.flag.name|default(fo.offer.name)), fo.textValue) }}
             {% else %}
                 <em class="oa-flag__empty">nenastaveno</em>
             {% endfor %}
