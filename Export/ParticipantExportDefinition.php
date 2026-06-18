@@ -6,7 +6,6 @@ namespace OswisOrg\OswisCalendarBundle\Export;
 
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractPerson;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
 use OswisOrg\OswisCoreBundle\Export\ExportColumn;
 use OswisOrg\OswisCoreBundle\Export\ExportDefinitionInterface;
@@ -83,11 +82,17 @@ final class ParticipantExportDefinition implements ExportDefinitionInterface
             return null;
         }
         $names = [];
-        foreach ($participant->getFlags(null, $flagType) as $flag) {
-            $name = $flag instanceof RegistrationFlag ? $flag->getName() : null;
-            if (is_string($name) && '' !== $name) {
-                $names[] = $name;
+        // ParticipantFlag connection (ne master RegistrationFlag) — drží per-flag textValue,
+        // takže „Jiné" dietní omezení vyexportuje i s upřesněním (kuchyň potřebuje detail).
+        foreach ($participant->getParticipantFlags(null, $flagType, true) as $participantFlag) {
+            $name = $participantFlag->getFlag()?->getName();
+            if (!is_string($name) || '' === $name) {
+                continue;
             }
+            $textValue = $participantFlag->getTextValue();
+            $names[] = (is_string($textValue) && '' !== trim($textValue))
+                ? $name.' ('.trim($textValue).')'
+                : $name;
         }
 
         return implode(', ', $names);
