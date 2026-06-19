@@ -20,33 +20,36 @@
         <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_flags', { participantId: participant.id }) }}">
             <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_flags_' ~ participant.id) }}">
             <input type="hidden" name="flagGroupOfferId" value="{{ cat.groupOffer.id }}">
-            <div class="small text-muted" style="margin-bottom:.4rem;">
-                {% if single %}vyber právě 1{% else %}min {{ cat.min }}{% if cat.max is not null %}, max {{ cat.max }}{% endif %}{% endif %}
-            </div>
-            {% if single and cat.min == 0 %}
-                <label style="display:block; margin-bottom:.25rem;">
-                    <input type="radio" name="flagOfferIds[]" value="" {{ selectedFlags|length == 0 ? 'checked' : '' }}> <span class="text-muted">— žádný —</span>
-                </label>
-            {% endif %}
-            {% for fo in cat.flagOffers %}
-                <label style="display:block; margin-bottom:.2rem; {{ fo.full ? 'opacity:.5;' : '' }}">
-                    <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]" value="{{ fo.offer.id }}" {{ fo.selected ? 'checked' : '' }} {{ fo.full ? 'disabled' : '' }}>
-                    {{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}
-                    {% if fo.offer.price|default(0) != 0 %}<span class="text-muted">({{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }} Kč)</span>{% endif %}
-                    {% if fo.remaining is not null %}<span class="text-muted small">[zbývá {{ fo.remaining }}]</span>{% endif %}
-                </label>
-                {% if fo.formValueAllowed %}
-                    <div style="margin:-.05rem 0 .5rem 1.5rem;">
-                        <input type="text" name="flagTextValues[{{ fo.offer.id }}]" value="{{ fo.textValue|default('') }}"
-                               placeholder="{{ fo.formValueLabel|default('Upřesnění') }}" class="form-control form-control-sm" style="max-width:22rem;">
-                    </div>
+            <p class="oa-flag__hint">
+                {% if single %}Vyber jednu možnost{% else %}Vyber libovolný počet{% if cat.min > 0 %} (min&nbsp;{{ cat.min }}){% endif %}{% if cat.max is not null %} (max&nbsp;{{ cat.max }}){% endif %}{% endif %}
+            </p>
+            <div class="oa-opts">
+                {% if single and cat.min == 0 %}
+                    <label class="oa-opt">
+                        <input type="radio" name="flagOfferIds[]" value="" {{ selectedFlags|length == 0 ? 'checked' : '' }}>
+                        <span class="oa-opt__label oa-opt__label--none">— žádný —</span>
+                    </label>
                 {% endif %}
-            {% else %}
-                <em class="text-muted">žádné nabídky</em>
-            {% endfor %}
-            <div style="margin-top:.5rem; display:flex; align-items:center; gap:.9rem; flex-wrap:wrap;">
+                {% for fo in cat.flagOffers %}
+                    <label class="oa-opt{{ fo.full ? ' oa-opt--full' : '' }}">
+                        <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]" value="{{ fo.offer.id }}" {{ fo.selected ? 'checked' : '' }} {{ fo.full ? 'disabled' : '' }}>
+                        <span class="oa-opt__label">{{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}</span>
+                        {% if fo.offer.price|default(0) != 0 %}<span class="oa-opt__meta">{{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }}&nbsp;Kč</span>{% endif %}
+                        {% if fo.remaining is not null %}<span class="oa-opt__meta">zbývá {{ fo.remaining }}</span>{% endif %}
+                    </label>
+                    {% if fo.formValueAllowed %}
+                        <div class="oa-opt__text-row">
+                            <input type="text" name="flagTextValues[{{ fo.offer.id }}]" value="{{ fo.textValue|default('') }}"
+                                   placeholder="{{ fo.formValueLabel|default('Upřesnění') }}" class="oa-opt__text form-control form-control-sm">
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <em class="text-muted">žádné nabídky</em>
+                {% endfor %}
+            </div>
+            <div class="oa-flag__actions">
                 <button type="submit" class="btn btn-sm btn-primary">Uložit</button>
-                <label class="small" style="margin:0;" title="Obejít naplněnou kapacitu">
+                <label class="oa-flag__override" title="Obejít naplněnou kapacitu">
                     <input type="checkbox" name="admin_override" value="1"> překročit kapacitu
                 </label>
             </div>
