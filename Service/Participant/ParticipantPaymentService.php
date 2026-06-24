@@ -49,6 +49,19 @@ class ParticipantPaymentService
                 $payment->setParticipant($participant);
                 $this->logger->info("OK: Participant '$participantId' assigned to payment '$paymentId'.");
             }
+            // API Platform denormalises an embedded {participant: {id}} into a NEW, unmanaged
+            // Participant entity; under Doctrine ORM 3 the flush then fails with "A new entity was
+            // found through the relationship ParticipantPayment#participant ... not configured to
+            // cascade persist". Re-resolve it to the managed entity so manual payment creation works.
+            $paymentParticipant = $payment->getParticipant();
+            if (null !== $paymentParticipant
+                && !$this->em->contains($paymentParticipant)
+                && null !== ($managedId = $paymentParticipant->getId())) {
+                $managedParticipant = $this->em->find(Participant::class, $managedId);
+                if (null !== $managedParticipant) {
+                    $payment->setParticipant($managedParticipant);
+                }
+            }
             $this->em->persist($payment);
             $this->em->flush();
             $id = $payment->getId();
