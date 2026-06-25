@@ -81,6 +81,14 @@ class SubEventAttendance implements BasicInterface
     #[Column(type: 'datetime', nullable: false)]
     protected DateTimeInterface $registeredAt;
 
+    /** Zaplaceno za tuto účast (nullable = neevidováno). */
+    #[Column(type: 'boolean', nullable: true)]
+    protected ?bool $paid = null;
+
+    /** Kdy bylo zaplaceno. */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?DateTimeInterface $paidAt = null;
+
     public function __construct(Participant $participant, Event $event)
     {
         $this->participant = $participant;
@@ -121,6 +129,32 @@ class SubEventAttendance implements BasicInterface
     public function getRegisteredAt(): DateTimeInterface
     {
         return $this->registeredAt;
+    }
+
+    public function isPaid(): ?bool
+    {
+        return $this->paid;
+    }
+
+    public function setPaid(?bool $paid): void
+    {
+        $this->paid = $paid;
+        if (true === $paid && null === $this->paidAt) {
+            $this->paidAt = new DateTime();
+        }
+        if (true !== $paid) {
+            $this->paidAt = null;
+        }
+    }
+
+    public function getPaidAt(): ?DateTimeInterface
+    {
+        return $this->paidAt;
+    }
+
+    public function setPaidAt(?DateTimeInterface $paidAt): void
+    {
+        $this->paidAt = $paidAt;
     }
 
     public function cancel(): void

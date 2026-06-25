@@ -106,6 +106,26 @@ class Event implements NameableInterface
     #[Column(type: 'string', nullable: true)]
     protected ?string $placeText = null;
 
+    /** Režim přihlašování na aktivitu: none|optional|required|staff. Default 'required' = stávající chování (BC). */
+    #[Column(type: 'string', length: 16, options: ['default' => 'required'])]
+    protected string $signupMode = 'required';
+
+    /** Doplňková informace k přihlašování na aktivitu (zobrazí se účastníkovi). */
+    #[Column(type: 'text', nullable: true)]
+    protected ?string $signupNote = null;
+
+    /** Uzávěrka přihlašování na aktivitu. */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?\DateTimeInterface $signupDeadline = null;
+
+    /** Cena aktivity v CELÝCH Kč (stejná jednotka jako RegistrationOffer/PriceTrait — potvrzeno userem 2026-06-25). */
+    #[Column(type: 'integer', nullable: true)]
+    protected ?int $price = null;
+
+    /** Zvýraznění aktivity v programu. */
+    #[Column(type: 'boolean', options: ['default' => false])]
+    protected bool $highlight = false;
+
     // fetch=EAGER: Doctrine ORM 3's strict identity-map check
     // (EntityIdentityCollisionException) throws when a Participant lazy ghost
     // is initialised mid-request after the same participant was already
@@ -363,6 +383,56 @@ class Event implements NameableInterface
     public function setPlaceText(?string $placeText): void
     {
         $this->placeText = $placeText;
+    }
+
+    public function getSignupMode(): string
+    {
+        return $this->signupMode;
+    }
+
+    public function setSignupMode(string $signupMode): void
+    {
+        $this->signupMode = $signupMode;
+    }
+
+    public function getSignupNote(): ?string
+    {
+        return $this->signupNote;
+    }
+
+    public function setSignupNote(?string $signupNote): void
+    {
+        $this->signupNote = $signupNote;
+    }
+
+    public function getSignupDeadline(): ?\DateTimeInterface
+    {
+        return $this->signupDeadline;
+    }
+
+    public function setSignupDeadline(?\DateTimeInterface $signupDeadline): void
+    {
+        $this->signupDeadline = $signupDeadline;
+    }
+
+    public function getPrice(): ?int
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?int $price): void
+    {
+        $this->price = $price;
+    }
+
+    public function isHighlight(): bool
+    {
+        return $this->highlight;
+    }
+
+    public function setHighlight(bool $highlight): void
+    {
+        $this->highlight = $highlight;
     }
 
     public function setPlace(?Place $event): void
