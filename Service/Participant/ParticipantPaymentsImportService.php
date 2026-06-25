@@ -42,7 +42,20 @@ class ParticipantPaymentsImportService
                 $payment->setImport($paymentsImport);
             }
             $participant = $this->getParticipantByPayment($payment);
-            $importedPayments->add($this->paymentService->create($payment, true, $participant));
+            $created = $this->paymentService->create($payment, true, $participant);
+            // create() returns null only when it caught an error (e.g. the confirmation mail threw after
+            // the payment was already flushed). Never add null to the report collection — a null row would
+            // break the report Twig and silently drop the entry; log the discrepancy instead.
+            // (audit 2026-06-25, A2-Bug3)
+            if ($created instanceof ParticipantPayment) {
+                $importedPayments->add($created);
+            } else {
+                $this->logger->error(sprintf(
+                    'CSV import: payment create() returned null — excluded from report (VS %s, value %s).',
+                    (string) $payment->getVariableSymbol(),
+                    (string) $payment->getNumericValue(),
+                ));
+            }
         }
         try {
             $this->em->flush();
