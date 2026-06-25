@@ -273,12 +273,21 @@ final class ParticipantFlagUpdateService
         RegistrationFlagGroupOffer $groupOffer,
         bool $includeDeleted = false,
     ): ?ParticipantFlagGroup {
+        // A turnus move can leave a participant with MORE THAN ONE non-deleted group instance bound to
+        // the same group offer (one holding the active flags, the other(s) empty). Returning an empty
+        // duplicate would hide the participant's selection in the editor AND let a re-save write a
+        // second flag into the empty group = duplicate flag / double charge. So prefer an instance that
+        // actually holds active flags; only fall back to the first match when none do.
+        $fallback = null;
         foreach ($participant->getFlagGroups(null, null, !$includeDeleted) as $group) {
             if ($group->getFlagGroupOffer()?->getId() === $groupOffer->getId()) {
-                return $group;
+                if (!$group->getParticipantFlags(true)->isEmpty()) {
+                    return $group;
+                }
+                $fallback ??= $group;
             }
         }
 
-        return null;
+        return $fallback;
     }
 }
