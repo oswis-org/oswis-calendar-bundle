@@ -470,8 +470,19 @@ class RegistrationOffer implements NameableInterface
         if ($this->isFlagRangeCompatible($oldFlagRange)) {
             return $oldParticipantFlag;
         }
+        // Fail-fast BEFORE deleting the old flag: if the target offer has no compatible flag, throw now
+        // so the side-effect-free simulate pass (run before any mutation in setParticipantRegistration)
+        // rejects the move cleanly. Without this, the real pass deleted the old flag and only THEN threw
+        // in replaceParticipantFlag, silently losing the participant's flag. (audit 2026-06-25, A1-Bug2)
+        $newFlagRange = $this->findCompatibleFlagRange($oldFlagRange);
+        if (!($newFlagRange instanceof RegistrationFlagOffer)) {
+            throw new FlagOutOfRangeException(sprintf(
+                'Příznak „%s" nelze přenést do cílové nabídky (cílová nabídka ho neobsahuje).',
+                $oldParticipantFlag->getFlag()->getName() ?? ''
+            ));
+        }
         $newParticipantFlag = new ParticipantFlag(
-            $this->findCompatibleFlagRange($oldFlagRange), null, $oldParticipantFlag->getTextValue()
+            $newFlagRange, null, $oldParticipantFlag->getTextValue()
         );
         if (!$onlySimulate) {
             $oldParticipantFlag->delete();

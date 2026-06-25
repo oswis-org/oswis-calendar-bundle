@@ -373,11 +373,11 @@ class Participant implements ParticipantInterface
      * @throws NotImplementedException
      * @throws OswisException
      */
-    public function setOffer(?RegistrationOffer $offer): void
+    public function setOffer(?RegistrationOffer $offer, bool $admin = false): void
     {
         if ($this->getOffer(true) !== $offer) {
             $participantRange = new ParticipantRegistration($offer);
-            $this->setParticipantRegistration($participantRange);
+            $this->setParticipantRegistration($participantRange, $admin);
             $participantRange->setParticipant($this);
         }
     }
@@ -417,8 +417,12 @@ class Participant implements ParticipantInterface
 
     public function deleteParticipantRegistrations(bool $exceptLatest = false): void
     {
-        foreach ($ranges = $this->getParticipantRegistrations() as $range) {
-            if ($exceptLatest && $ranges->first() === $range) {
+        // Keep the NEWEST registration, not the raw collection's first element: the collection is
+        // hydrated oldest-first (id ASC), so `->first()` would preserve the oldest and delete the
+        // just-created one. Sort newest-first to pick the right survivor. (audit 2026-06-25, A1-Bug3)
+        $latest = self::sortCollection($this->getParticipantRegistrations(), true)->first();
+        foreach ($this->getParticipantRegistrations() as $range) {
+            if ($exceptLatest && $latest === $range) {
                 continue;
             }
             $range->delete();
@@ -496,9 +500,15 @@ class Participant implements ParticipantInterface
         //
         // CASE 4: RegistrationOffer is already set, change it and change flags by new range.
         if (null !== $oldParticipantRange) {
+            // Validate the full flag migration via the side-effect-free simulate pass BEFORE deleting
+            // anything: if a flag cannot be carried to the new offer (or a flag capacity is exceeded),
+            // this throws here and the participant is left fully intact. Only after the simulate passes
+            // do we delete the old registration and apply the real changes. Pass $admin so an admin
+            // move can override flag capacity, same as the event-capacity check above.
+            // (audit 2026-06-25, A1-Bug2 — the delete used to happen first → lost flag/registration on failure.)
+            $this->changeFlagsByNewOffer($newRegRange, true, $admin);
             $oldParticipantRange->delete();
-            $this->changeFlagsByNewOffer($newRegRange, true);
-            $this->changeFlagsByNewOffer($newRegRange);
+            $this->changeFlagsByNewOffer($newRegRange, false, $admin);
         }
         // Finally, add participant range.
         foreach ($this->getParticipantRegistrations() as $participantRange) {

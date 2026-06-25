@@ -136,7 +136,11 @@ final class WebAdminBulkReassignController extends AbstractController
                     continue;
                 }
                 try {
-                    $p->setOffer($targetOffer);
+                    // admin=true: an explicit ROLE_ADMIN bulk move overrides capacity (mirrors the
+                    // flag editor's "překročit kapacitu"). Without it the move was checked against the
+                    // cached base_usage (stale within this pre-flush loop → could both over-book a
+                    // near-full target AND falsely block a legitimate admin move). (audit 2026-06-25, A1-Bug1 / #226-A)
+                    $p->setOffer($targetOffer, true);
                     $this->em->persist($p);
                     $moved[] = sprintf('#%d %s', $id, $p->getContact()?->getName() ?? '?');
                     $movedSideEffects[] = ['participant' => $p, 'oldOffer' => $oldOffer];
