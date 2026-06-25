@@ -30,6 +30,7 @@ use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use OswisOrg\OswisCalendarBundle\ApiPlatform\EventRangeFilter;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
@@ -180,6 +181,11 @@ class Event implements NameableInterface
     #[JoinColumn(name: 'event_series_id', referencedColumnName: 'id')]
     #[MaxDepth(1)]
     private ?EventGroup $group = null;
+
+    /** Cílová skupina pásků pro rotaci slotů (program modul). LAZY: zatím mimo serializaci. */
+    #[ManyToOne(targetEntity: ParticipantGroup::class)]
+    #[JoinColumn(name: 'target_group_id', referencedColumnName: 'id', nullable: true)]
+    private ?ParticipantGroup $targetGroup = null;
 
     public function __construct(
         ?Nameable $nameable = null,
@@ -576,6 +582,16 @@ class Event implements NameableInterface
             $this->group->removeEvent($this);
         }
         $this->group = $group;
+    }
+
+    public function getTargetGroup(): ?ParticipantGroup
+    {
+        return $this->targetGroup;
+    }
+
+    public function setTargetGroup(?ParticipantGroup $targetGroup): void
+    {
+        $this->targetGroup = $targetGroup;
     }
 
     public function isEventSuperEvent(?self $event = null, ?bool $recursive = true): bool

@@ -173,6 +173,11 @@ class Participant implements ParticipantInterface
     #[JoinColumn(nullable: true)]
     protected ?ParticipantCategory $participantCategory = null;
 
+    /** Skupina pásků (program modul) — přiřazení účastníka do barevné skupiny turnusu. LAZY: zatím mimo serializaci. */
+    #[ManyToOne(targetEntity: ParticipantGroup::class)]
+    #[JoinColumn(name: 'group_id', nullable: true)]
+    protected ?ParticipantGroup $group = null;
+
     /** @var Collection<int, ParticipantFlagGroup> */
     #[ApiProperty(readableLink: true, writableLink: true)]
     #[ManyToMany(targetEntity: ParticipantFlagGroup::class, cascade: ['all'])]
@@ -342,6 +347,16 @@ class Participant implements ParticipantInterface
             $participantContact->setParticipant($this);
         }
         $this->updateVariableSymbol();
+    }
+
+    public function getGroup(): ?ParticipantGroup
+    {
+        return $this->group;
+    }
+
+    public function setGroup(?ParticipantGroup $group): void
+    {
+        $this->group = $group;
     }
 
     public function updateCachedColumns(): void
