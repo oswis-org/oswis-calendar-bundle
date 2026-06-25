@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
+use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
@@ -80,6 +83,26 @@ final class EventEditType extends AbstractType
             ->add('publicOnWeb', CheckboxType::class, [
                 'label'    => 'Veřejné na webu',
                 'required' => false,
+            ])
+            ->add('category', EntityType::class, [
+                'label'        => 'Kategorie',
+                'class'        => EventCategory::class,
+                'choice_label' => 'name',
+                'required'     => false,
+                'placeholder'  => '— bez kategorie —',
+                'help'         => 'Typ aktivity / bloku / služby (řídí barvu a default časy).',
+            ])
+            ->add('place', EntityType::class, [
+                'label'        => 'Místo',
+                'class'        => Place::class,
+                'choice_label' => 'name',
+                'required'     => false,
+                'placeholder'  => '— bez místa —',
+            ])
+            ->add('placeText', TextType::class, [
+                'label'    => 'Místo (text/upřesnění)',
+                'required' => false,
+                'help'     => 'Samostatné místo nebo upřesnění k vybranému místu (např. „Aula — sraz před vchodem").',
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Uložit',

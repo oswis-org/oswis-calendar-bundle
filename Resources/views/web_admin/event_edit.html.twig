@@ -52,6 +52,17 @@
             </div>
         </fieldset>
 
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Program a místo</legend>
+            <div class="row">
+                <div class="col-12 col-md-6 mb-3">{{ form_row(form.category) }}</div>
+                <div class="col-12 col-md-6 mb-3">{{ form_row(form.place) }}</div>
+            </div>
+            <div class="row">
+                <div class="col-12 mb-3">{{ form_row(form.placeText) }}</div>
+            </div>
+        </fieldset>
+
         <div style="position: sticky; bottom: 0; background: rgba(255,255,255,.95); border-top: 1px solid #dee2e6; padding: .75rem 0; margin-top: 1rem; display: flex; gap: .5rem; justify-content: flex-end;">
             <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) }}"
                class="btn btn-outline-secondary">Zrušit</a>
