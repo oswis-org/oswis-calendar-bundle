@@ -117,6 +117,48 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
       groups:
         - 'calendar_events_get'
         - 'calendar_event_get'
+    placeText:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    signupMode:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    signupNote:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    signupDeadline:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    price:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    highlight:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    targetGroup:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
 
 OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
   attributes:
@@ -172,6 +214,25 @@ OswisOrg\OswisAddressBookBundle\Entity\Place:
         - 'calendar_events_get'
         - 'calendar_event_get'
     ionIcon:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup:
+  attributes:
+    id:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    name:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    color:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+    mealOrder:
       groups:
         - 'calendar_events_get'
         - 'calendar_event_get'

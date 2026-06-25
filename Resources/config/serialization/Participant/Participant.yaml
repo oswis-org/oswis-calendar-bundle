@@ -10,6 +10,8 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     event:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    group:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     flagGroups:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
     priceRest:
@@ -29,6 +31,17 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     sortableName:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     payments:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup:
+  attributes:
+    id:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    name:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    color:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    mealOrder:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
 

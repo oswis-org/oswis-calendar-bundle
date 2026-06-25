@@ -1,0 +1,33 @@
+OswisOrg\OswisCalendarBundle\Entity\Participant\SubEventAttendance:
+  attributes:
+    id:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
+    participant:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
+        - 'calendar_sub_event_attendances_post'
+    event:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
+        - 'calendar_sub_event_attendances_post'
+    status:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
+    registeredAt:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
+    paid:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
+        - 'calendar_sub_event_attendances_post'
+    paidAt:
+      groups:
+        - 'calendar_sub_event_attendances_get'
+        - 'calendar_sub_event_attendance_get'
