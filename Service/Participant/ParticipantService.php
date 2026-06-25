@@ -212,7 +212,7 @@ class ParticipantService
         // API Platform deserialization (no lock) and only catches obviously-full ranges
         // for friendly errors. Concurrent registrations would still race; serialize them
         // here on the RegistrationOffer row.
-        return $this->em->wrapInTransaction(function () use ($participant): Participant {
+        $participant = $this->em->wrapInTransaction(function () use ($participant): Participant {
             $regRange = $participant->getOffer();
             if (null !== $regRange && null !== $regRange->getId()) {
                 $this->em->lock($regRange, LockMode::PESSIMISTIC_WRITE);
@@ -224,7 +224,6 @@ class ParticipantService
             }
             $this->em->persist($participant);
             $participant->updateCachedColumns();
-            $this->requestActivation($participant);
             // Flush the new participant (and, by cascade, its ParticipantRegistration + flags)
             // BEFORE recomputing the cached usage counters. Doctrine ORM 3 does NOT auto-flush
             // before a DQL query, so updateUsage()/updateUsages() COUNT the DB directly: counting
@@ -240,6 +239,21 @@ class ParticipantService
 
             return $participant;
         });
+        // The activation e-mail is a SIDE EFFECT, not a precondition of the registration: send it AFTER
+        // the registration transaction has committed, so a mail failure (e.g. a broken template — the
+        // "spaceless" incident class) can never roll back an otherwise-valid registration. On failure the
+        // admin resends via the "Aktivační e-mail" action. (audit 2026-06-25, A2-Bug5)
+        try {
+            $this->requestActivation($participant);
+        } catch (\Throwable $activationException) {
+            $this->logger->error(sprintf(
+                'Registrace #%s uložena, ale odeslání aktivačního e-mailu selhalo: %s',
+                $participant->getId() ?? '?',
+                $activationException->getMessage(),
+            ));
+        }
+
+        return $participant;
     }
 
     final public function getRepository(): ParticipantRepository
@@ -431,9 +445,14 @@ class ParticipantService
             if (null === $participant || null === ($appUser = $participantToken->getAppUser())) {
                 throw new NotFoundException('Uživatel nenalezen.');
             }
+            // Send the summary only on the FIRST activation: the token is not consumed (it is validated
+            // with use(simulate:true)), so the link stays clickable for its 24h TTL — re-clicking would
+            // otherwise re-send the full summary every time. AppUser::activate() is already idempotent.
+            // (audit 2026-06-25, A2-Bug1) Overlaps activation rework #233.
+            $alreadyActivated = $appUser->isActivated();
             $this->appUserService->activate($appUser, false);
             $participant->setUserConfirmed($appUser);
-            if (true === $sendConfirmation) {
+            if (true === $sendConfirmation && !$alreadyActivated) {
                 $this->participantMailService->sendSummary($participant);
             }
             $this->em->persist($participant);
