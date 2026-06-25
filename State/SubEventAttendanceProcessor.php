@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\SubEventAttendance;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
@@ -56,13 +57,29 @@ final class SubEventAttendanceProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException('Účet nemá aktivní registraci na ročník.');
         }
 
-        return $this->em->wrapInTransaction(function () use ($data, $participant): SubEventAttendance {
-            $event = $data->getEvent();
-            $full = $event->getFullCapacity();
-            if (null !== $full) {
-                $count = $this->attendanceRepository->countActiveByEvent($event);
-                if ($count >= $full) {
-                    throw new ConflictHttpException('Aktivita je plná.');
+        $event = $data->getEvent();
+        $signupMode = $event->getSignupMode();
+
+        // 'none' → na tuto aktivitu se vůbec nepřihlašuje (informativní / docházka jinde).
+        if (Event::SIGNUP_MODE_NONE === $signupMode) {
+            throw new AccessDeniedHttpException('Na tuto aktivitu se nelze přihlásit.');
+        }
+        // 'staff' → self-signup smí jen organizační tým; běžný účastník ne.
+        // (Hromadný staff zápis kohokoli = samostatný admin endpoint, ne tato self-signup cesta.)
+        if (Event::SIGNUP_MODE_STAFF === $signupMode && !$this->security->isGranted('ROLE_MANAGER')) {
+            throw new AccessDeniedHttpException('Na tuto aktivitu zapisuje organizační tým osobně.');
+        }
+
+        return $this->em->wrapInTransaction(function () use ($event, $signupMode, $participant): SubEventAttendance {
+            // Kapacitu vynucujeme JEN u 'required' (BC: stávající akce mají default 'required').
+            // 'optional' = bez vynucení; 'staff' = tým zapisuje vždy (bez blokace kapacitou).
+            if (Event::SIGNUP_MODE_REQUIRED === $signupMode) {
+                $full = $event->getFullCapacity();
+                if (null !== $full) {
+                    $count = $this->attendanceRepository->countActiveByEvent($event);
+                    if ($count >= $full) {
+                        throw new ConflictHttpException('Aktivita je plná.');
+                    }
                 }
             }
             $existing = $this->attendanceRepository->findActiveForParticipantAndEvent($participant, $event);

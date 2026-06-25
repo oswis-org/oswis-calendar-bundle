@@ -108,7 +108,7 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
       groups:
         - 'calendar_events_get'
         - 'calendar_event_get'
-      max_depth: 2
+      max_depth: 3
     baseCapacity:
       groups:
         - 'calendar_events_get'

@@ -107,6 +107,25 @@ class Event implements NameableInterface
     #[Column(type: 'string', nullable: true)]
     protected ?string $placeText = null;
 
+    /** Na aktivitu se vůbec nepřihlašuje (jen informativní / docházka řešena jinde). */
+    public const SIGNUP_MODE_NONE = 'none';
+
+    /** Dobrovolné přidání aktivity do „mého programu"; kapacita se NEvynucuje. */
+    public const SIGNUP_MODE_OPTIONAL = 'optional';
+
+    /** Nutné přihlášení v appce; kapacita vynucená (409 při plnu) — DEFAULT, stávající chování (BC). */
+    public const SIGNUP_MODE_REQUIRED = 'required';
+
+    /** Zápis osobně (nástěnka/kiosek/kancelář); self-signup smí jen organizační tým. */
+    public const SIGNUP_MODE_STAFF = 'staff';
+
+    public const SIGNUP_MODES = [
+        self::SIGNUP_MODE_NONE,
+        self::SIGNUP_MODE_OPTIONAL,
+        self::SIGNUP_MODE_REQUIRED,
+        self::SIGNUP_MODE_STAFF,
+    ];
+
     /** Režim přihlašování na aktivitu: none|optional|required|staff. Default 'required' = stávající chování (BC). */
     #[Column(type: 'string', length: 16, options: ['default' => 'required'])]
     protected string $signupMode = 'required';
@@ -153,8 +172,9 @@ class Event implements NameableInterface
     /**
      * @var Collection<int, Event> $subEvents
      */
+    // MaxDepth 3 (program modul): turnus → blok (program-block) → podakce.
     #[OneToMany(targetEntity: self::class, mappedBy: 'superEvent')]
-    #[MaxDepth(2)]
+    #[MaxDepth(3)]
     protected Collection $subEvents;
 
     /** @var Collection<int, EventContent> $contents */
