@@ -35,6 +35,7 @@ use OswisOrg\OswisCalendarBundle\ApiPlatform\EventRangeFilter;
 use OswisOrg\OswisCalendarBundle\Filter\SubEventFilter;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor;
+use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -58,16 +59,20 @@ use function assert;
             security: "is_granted('ROLE_CUSTOMER')"
         ),
         new Post(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
             denormalizationContext: ['groups' => ['entities_post', 'calendar_events_post'], 'enable_max_depth' => true],
-            security: "is_granted('ROLE_MANAGER')"
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
         new Get(
             normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_CUSTOMER')"
         ),
         new Put(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
             denormalizationContext: ['groups' => ['entity_put', 'calendar_event_put'], 'enable_max_depth' => true],
-            security: "is_granted('ROLE_MANAGER')"
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
         new Delete(
             denormalizationContext: ['groups' => ['calendar_event_delete'], 'enable_max_depth' => true],

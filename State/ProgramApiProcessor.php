@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\State;
 use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
@@ -43,15 +44,24 @@ final class ProgramApiProcessor implements ProcessorInterface
     {
         $payload = $this->payload();
         if ([] !== $payload) {
-            // Every program resource carries the per-turnus `event` relation.
-            $this->resolveSingle($data, $payload, 'event', 'setEvent');
+            if ($data instanceof Event) {
+                // Event itself (POST/PUT) — its relations hit the same denormalizer gotcha.
+                $this->resolveSingle($data, $payload, 'group', 'setGroup');
+                $this->resolveSingle($data, $payload, 'category', 'setCategory');
+                $this->resolveSingle($data, $payload, 'place', 'setPlace');
+                $this->resolveSingle($data, $payload, 'superEvent', 'setSuperEvent');
+                $this->resolveSingle($data, $payload, 'targetGroup', 'setTargetGroup');
+            } else {
+                // Every program resource carries the per-turnus `event` relation.
+                $this->resolveSingle($data, $payload, 'event', 'setEvent');
 
-            if ($data instanceof EventStaffAssignment) {
-                $this->resolveSingle($data, $payload, 'participant', 'setParticipant');
-                $this->resolveSingle($data, $payload, 'team', 'setTeam');
-            }
-            if ($data instanceof StaffTeam) {
-                $this->resolveMembers($data, $payload);
+                if ($data instanceof EventStaffAssignment) {
+                    $this->resolveSingle($data, $payload, 'participant', 'setParticipant');
+                    $this->resolveSingle($data, $payload, 'team', 'setTeam');
+                }
+                if ($data instanceof StaffTeam) {
+                    $this->resolveMembers($data, $payload);
+                }
             }
         }
 
