@@ -41,6 +41,26 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
     /**
      * @return list<SubEventAttendance>
      */
+    public function getActiveByEvent(Event $event): array
+    {
+        $result = $this->createQueryBuilder('a')
+            ->where('a.event = :event')
+            ->andWhere('a.status = :status')
+            ->andWhere('a.deletedAt IS NULL')
+            ->setParameter('event', $event)
+            ->setParameter('status', SubEventAttendance::STATUS_REGISTERED)
+            ->getQuery()
+            ->getResult();
+
+        return is_array($result) ? array_values(array_filter(
+            $result,
+            static fn (mixed $row): bool => $row instanceof SubEventAttendance,
+        )) : [];
+    }
+
+    /**
+     * @return list<SubEventAttendance>
+     */
     public function getActiveByParticipant(Participant $participant): array
     {
         $result = $this->createQueryBuilder('a')

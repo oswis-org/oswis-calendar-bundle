@@ -16,6 +16,11 @@ services:
     autowire: true
     tags: [ 'twig.extension' ]
 
+  ## Program module data layer (read-only DTO arrays for outputs)
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService:
+    autowire: true
+    public: true
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
     autowire: true
