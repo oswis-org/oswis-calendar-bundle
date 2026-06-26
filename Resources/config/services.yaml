@@ -694,6 +694,11 @@ services:
       $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
     tags: [ 'api_platform.state_processor' ]
 
+  ## Editor "duplicate slot" — POST /api/events/{id}/duplicate
+  OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor:
+    autowire: true
+    tags: [ 'api_platform.state_processor' ]
+
 
   oswis_org_oswis_calendar.calendar_site_map_extender:
     class: OswisOrg\OswisCalendarBundle\Extender\CalendarSitemapExtender

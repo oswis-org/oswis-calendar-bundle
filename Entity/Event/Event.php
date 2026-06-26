@@ -34,6 +34,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use OswisOrg\OswisCalendarBundle\ApiPlatform\EventRangeFilter;
 use OswisOrg\OswisCalendarBundle\Filter\SubEventFilter;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -71,6 +72,16 @@ use function assert;
         new Delete(
             denormalizationContext: ['groups' => ['calendar_event_delete'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')"
+        ),
+        // Editor "duplicate slot" — clones a single activity/block (no children) to a new
+        // time/group. Body (optional): startDateTime/endDateTime/name/targetGroup/superEvent.
+        new Post(
+            uriTemplate: '/events/{id}/duplicate',
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_events_post'], 'enable_max_depth' => true],
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+            name: 'calendar_event_duplicate',
+            processor: EventDuplicateProcessor::class,
         ),
     ],
     filters: ['search'],

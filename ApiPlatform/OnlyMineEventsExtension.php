@@ -61,7 +61,7 @@ final class OnlyMineEventsExtension implements QueryCollectionExtensionInterface
             }
             foreach ($p->getSubEventAttendances() as $att) {
                 if ($att->isActive()) {
-                    $eventIds[] = $att->getEvent()->getId();
+                    $eventIds[] = $att->getEvent()?->getId();
                 }
             }
         }

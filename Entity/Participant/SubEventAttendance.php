@@ -66,13 +66,20 @@ class SubEventAttendance implements BasicInterface
 
     public const ALLOWED_STATUSES = [self::STATUS_REGISTERED, self::STATUS_CANCELED];
 
+    /**
+     * Nullable v PHP (aby šel objekt postavit přes API Platform bez konstruktorové relace —
+     * self-signup neposílá `participant`, ten doplní {@see SubEventAttendanceProcessor} z
+     * přihlášeného uživatele). Reálná attendance vzniká vždy v processoru s NON-null relacemi,
+     * proto DB sloupce zůstávají nullable:false a žádný #[Assert\NotNull] zde není (prázdný
+     * denormalizovaný $data MUSÍ projít validací, aby processor mohl vytvořit tu pravou).
+     */
     #[ManyToOne(targetEntity: Participant::class, inversedBy: 'subEventAttendances')]
     #[JoinColumn(nullable: false)]
-    protected Participant $participant;
+    protected ?Participant $participant = null;
 
     #[ManyToOne(targetEntity: Event::class)]
     #[JoinColumn(nullable: false)]
-    protected Event $event;
+    protected ?Event $event = null;
 
     #[Column(type: 'string', length: 32)]
     #[Assert\Choice(choices: self::ALLOWED_STATUSES)]
@@ -89,7 +96,7 @@ class SubEventAttendance implements BasicInterface
     #[Column(type: 'datetime', nullable: true)]
     protected ?DateTimeInterface $paidAt = null;
 
-    public function __construct(Participant $participant, Event $event)
+    public function __construct(?Participant $participant = null, ?Event $event = null)
     {
         $this->participant = $participant;
         $this->event = $event;
@@ -103,6 +110,9 @@ class SubEventAttendance implements BasicInterface
 
     public function validateEventIsSubActivity(ExecutionContextInterface $context): void
     {
+        if (null === $this->event) {
+            return; // empty denormalized $data — the processor builds the real attendance.
+        }
         $type = $this->event->getCategory()?->getType();
         if (in_array($type, ['year-of-event', 'batch-of-event'], true)) {
             $context->buildViolation('SubEventAttendance.event must be a sub-activity, not a year or batch event.')
@@ -111,12 +121,12 @@ class SubEventAttendance implements BasicInterface
         }
     }
 
-    public function getParticipant(): Participant
+    public function getParticipant(): ?Participant
     {
         return $this->participant;
     }
 
-    public function getEvent(): Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
