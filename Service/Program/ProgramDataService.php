@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Program;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
@@ -30,6 +31,7 @@ final class ProgramDataService
         private readonly EventStaffAssignmentRepository $assignmentRepository,
         private readonly SubEventAttendanceRepository $attendanceRepository,
         private readonly StaffTeamRepository $teamRepository,
+        private readonly EventSectionRepository $sectionRepository,
         private readonly ProgramExtension $names,
     ) {
     }
@@ -170,6 +172,37 @@ final class ProgramDataService
     }
 
     /**
+     * Information sections of a turnus, ordered by priority. $publicOnly = true keeps only
+     * `publicInApp` sections (participant outputs); false returns all (internal team outputs).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getSections(Event $turnus, bool $publicOnly = false): array
+    {
+        $rows = [];
+        foreach ($this->sectionRepository->getByEvent($turnus) as $section) {
+            if ($publicOnly && true !== $section->isPublicInApp()) {
+                continue;
+            }
+            $rows[] = [
+                'name' => $section->getName(),
+                'textValue' => $section->getTextValue(),
+                'icon' => $section->getIcon(),
+                'priority' => $section->getPriority(),
+                'publicInApp' => $section->isPublicInApp(),
+            ];
+        }
+        usort($rows, static function (array $a, array $b): int {
+            $pa = is_int($a['priority'] ?? null) ? $a['priority'] : 0;
+            $pb = is_int($b['priority'] ?? null) ? $b['priority'] : 0;
+
+            return $pb <=> $pa;
+        });
+
+        return $rows;
+    }
+
+    /**
      * @return list<EventStaffAssignment>
      */
     private function collectAssignments(Event $turnus): array
@@ -214,11 +247,18 @@ final class ProgramDataService
                 'targetGroup' => $this->groupArray($sub),
             ];
         }
+        $staff = [];
+        foreach ($this->assignmentRepository->getByEvent($event) as $assignment) {
+            if (!$assignment->isExcluded()) {
+                $staff[] = $this->assignmentArray($assignment);
+            }
+        }
         $targetGroup = $event->getTargetGroup();
 
         return [
             'id' => $event->getId(),
             'name' => $event->getName(),
+            'staff' => $staff,
             'date' => $event->getStartDateTimeRecursive()?->format('Y-m-d'),
             'start' => $event->getStartDateTimeRecursive()?->format('H:i'),
             'end' => $event->getEndDateTimeRecursive()?->format('H:i'),

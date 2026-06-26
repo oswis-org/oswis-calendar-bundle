@@ -21,6 +21,11 @@ services:
     autowire: true
     public: true
 
+  ## Program module output renderer (PDF via ExportService)
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramOutputService:
+    autowire: true
+    public: true
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
     autowire: true
