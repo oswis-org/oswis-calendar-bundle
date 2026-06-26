@@ -1,0 +1,33 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block content %}
+    <h1>Program — {{ turnusName }}</h1>
+
+    {% if days is empty %}
+        <p class="muted">Zatím není zveřejněný žádný program.</p>
+    {% else %}
+        {% for day in days %}
+            <div class="day">
+                <h2 class="day">
+                    {%- if day.name %}{{ day.name }}{% if day.date %} <span style="font-weight: normal;">({{ day.date|cz_weekday }} {{ day.date|cz_date }})</span>{% endif %}{% else %}{{ day.date|cz_weekday }} {{ day.date|cz_date }}{% endif -%}
+                </h2>
+                {% for label, activities in day.blocks %}
+                    {% if activities is not empty %}
+                        <h3 style="color: #555; text-transform: uppercase; letter-spacing: 0.2pt;">{{ label }}</h3>
+                        <table class="prog">
+                            {% for a in activities %}
+                                <tr>
+                                    <td class="time">{{ a.start|hm }}</td>
+                                    <td>
+                                        <span class="{{ a.highlight ? 'hl' : '' }}">{{ a.name }}{% if a.seriesRoman %} {{ a.seriesRoman }}.{% endif %}</span>{% if a.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: a.targetGroup } only %}{% endif %}{% if a.placeText %} <span class="place">{{ a.placeText }}</span>{% endif %}
+                                        {% for sub in a.subActivities %}<div class="sub">{{ sub.name }}{% if sub.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: sub.targetGroup } only %}{% endif %}</div>{% endfor %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

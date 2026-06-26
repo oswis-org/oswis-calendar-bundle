@@ -21,6 +21,12 @@ final class ProgramOutputService
 {
     private const string TPL = '@OswisOrgOswisCalendar/web_admin/program/';
 
+    /** Sign-up sheet: extra blank lines past capacity (latecomers / corrections). */
+    private const int SIGNUP_RESERVE = 4;
+
+    /** Sign-up sheet: rows when the activity has no capacity set. */
+    private const int SIGNUP_DEFAULT_ROWS = 30;
+
     public function __construct(
         private readonly ProgramDataService $programData,
         private readonly Environment $twig,
@@ -66,21 +72,13 @@ final class ProgramOutputService
     public function participantDayHtml(Event $turnus, string $date): string
     {
         $dayName = null;
-        $blocks = ['DOPOLEDNÍ' => [], 'ODPOLEDNÍ' => [], 'VEČERNÍ' => []];
+        $blocks = $this->emptyBlocks();
         foreach ($this->programData->getProgramTree($turnus) as $node) {
             if (($node['day']['date'] ?? null) !== $date) {
                 continue;
             }
             $dayName = $node['day']['name'] ?? null;
-            foreach ($node['activities'] as $activity) {
-                if (true !== ($activity['publicInApp'] ?? null)) {
-                    continue;
-                }
-                $start = is_string($activity['start'] ?? null) ? $activity['start'] : '00';
-                $hour = (int) substr($start, 0, 2);
-                $label = $hour < 12 ? 'DOPOLEDNÍ' : ($hour < 18 ? 'ODPOLEDNÍ' : 'VEČERNÍ');
-                $blocks[$label][] = $activity;
-            }
+            $blocks = $this->groupIntoBlocks($node['activities']);
         }
 
         return $this->twig->render(self::TPL . 'participant-day.pdf.html.twig', [
@@ -98,6 +96,107 @@ final class ProgramOutputService
             false,
             'Denní program ' . $date,
         );
+    }
+
+    /**
+     * Whole-turnus participant programme — every day's public activities as one continuous
+     * document (DRŽÍME — user 2026-06-13). Days with no public activity are skipped.
+     */
+    public function participantFullProgramHtml(Event $turnus): string
+    {
+        $days = [];
+        foreach ($this->programData->getProgramTree($turnus) as $node) {
+            if (null === ($node['day'] ?? null)) {
+                continue;
+            }
+            $blocks = $this->groupIntoBlocks($node['activities']);
+            if ([] === array_filter($blocks, static fn (array $list): bool => [] !== $list)) {
+                continue;
+            }
+            $days[] = [
+                'date' => $node['day']['date'] ?? null,
+                'name' => $node['day']['name'] ?? null,
+                'blocks' => $blocks,
+            ];
+        }
+
+        return $this->twig->render(self::TPL . 'participant-full.pdf.html.twig', [
+            'turnusName' => $turnus->getName(),
+            'days' => $days,
+        ]);
+    }
+
+    public function participantFullProgramPdf(Event $turnus): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->participantFullProgramHtml($turnus),
+            false,
+            'Program — ' . ($turnus->getName() ?? ''),
+        );
+    }
+
+    /**
+     * Empty numbered sign-up sheet for an activity (à la "první pomoc ARCH") — pinned on a board,
+     * people write their own names. Row count = capacity + reserve, default 30. NOT an attendance
+     * list (that is {@see SubEventAttendanceExportDefinition}).
+     */
+    public function signupSheetHtml(Event $activity): string
+    {
+        $capacity = $activity->getFullCapacity() ?? $activity->getBaseCapacity();
+        $rowCount = null !== $capacity && $capacity > 0
+            ? $capacity + self::SIGNUP_RESERVE
+            : self::SIGNUP_DEFAULT_ROWS;
+        $category = $activity->getCategory()?->getName();
+        $title = (null !== $category && '' !== $category ? $category . ': ' : '') . ($activity->getName() ?? '');
+
+        return $this->twig->render(self::TPL . 'signup-sheet.pdf.html.twig', [
+            'title' => $title,
+            'date' => $activity->getStartDateTimeRecursive()?->format('Y-m-d'),
+            'rowCount' => $rowCount,
+        ]);
+    }
+
+    public function signupSheetPdf(Event $activity): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->signupSheetHtml($activity),
+            false,
+            'Zápisový arch — ' . ($activity->getName() ?? ''),
+        );
+    }
+
+    /** @return array{DOPOLEDNÍ: list<mixed>, ODPOLEDNÍ: list<mixed>, VEČERNÍ: list<mixed>} */
+    private function emptyBlocks(): array
+    {
+        return ['DOPOLEDNÍ' => [], 'ODPOLEDNÍ' => [], 'VEČERNÍ' => []];
+    }
+
+    /**
+     * Group a day's activities into morning/afternoon/evening blocks (public activities only).
+     *
+     * @param list<array<string, mixed>> $activities
+     *
+     * @return array{DOPOLEDNÍ: list<mixed>, ODPOLEDNÍ: list<mixed>, VEČERNÍ: list<mixed>}
+     */
+    private function groupIntoBlocks(array $activities): array
+    {
+        $blocks = $this->emptyBlocks();
+        foreach ($activities as $activity) {
+            if (true !== ($activity['publicInApp'] ?? null)) {
+                continue;
+            }
+            $start = is_string($activity['start'] ?? null) ? $activity['start'] : '00';
+            $hour = (int) substr($start, 0, 2);
+            if ($hour < 12) {
+                $blocks['DOPOLEDNÍ'][] = $activity;
+            } elseif ($hour < 18) {
+                $blocks['ODPOLEDNÍ'][] = $activity;
+            } else {
+                $blocks['VEČERNÍ'][] = $activity;
+            }
+        }
+
+        return $blocks;
     }
 
     /** Personal itinerary for one instructor ("kde mám být") — their slots, chronological. */
