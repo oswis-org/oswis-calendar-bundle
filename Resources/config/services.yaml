@@ -11,6 +11,11 @@ services:
     OswisOrg\OswisCoreBundle\Export\ExportDefinitionInterface:
       tags: [ 'oswis.export_definition' ]
 
+  ## Program module Twig helpers (staff_name / time_block / roman) — STOPA 1.3 výstupy
+  OswisOrg\OswisCalendarBundle\Twig\Extension\ProgramExtension:
+    autowire: true
+    tags: [ 'twig.extension' ]
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
     autowire: true
