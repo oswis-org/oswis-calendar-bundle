@@ -1,4 +1,4 @@
-{# Group (páska) inline highlight — uppercase name on the group colour (white text), no border,
-   like "MODRÁ"/"ZELENÁ" in 3.den.pdf. Falls back to an outlined chip when no colour is set.
-   `group` = { name, color } from ProgramDataService. #}
-{%- if group %}{% if group.color %}<span class="gchip" style="background-color: {{ group.color }};">{{ group.name|upper }}</span>{% else %}<span class="gchip-plain">{{ group.name|upper }}</span>{% endif %}{% endif -%}
+{# Group (páska) inline highlight — uppercase name on the group colour, with readable text
+   (white on MODRÁ, black on ŽLUTÁ), no border, like 3.den.pdf. Falls back to an outlined chip
+   when no colour is set. `group` = { name, color } from ProgramDataService. #}
+{%- if group %}{% if group.color %}<span class="gchip" style="background-color: {{ group.color }}; color: {{ group.color|contrast_color }};">{{ group.name|upper }}</span>{% else %}<span class="gchip-plain">{{ group.name|upper }}</span>{% endif %}{% endif -%}

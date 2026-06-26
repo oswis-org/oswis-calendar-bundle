@@ -3,6 +3,7 @@
 {% block content %}
     <h1>Instruktorský program — {{ turnusName }}</h1>
 
+    <div class="cols">
     {% for node in tree %}
         <div class="day">
             <h2 class="day">
@@ -30,6 +31,7 @@
             {% endif %}
         </div>
     {% endfor %}
+    </div>
 
     {% if sheets %}
         <h2 class="section">Archy (kapacitní aktivity)</h2>

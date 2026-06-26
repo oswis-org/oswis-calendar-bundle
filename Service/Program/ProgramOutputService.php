@@ -53,7 +53,7 @@ final class ProgramOutputService
     {
         return $this->exportService->getPdfFromHtml(
             $this->instructorProgramHtml($turnus),
-            false,
+            true,
             'Instruktorský program — ' . ($turnus->getName() ?? ''),
         );
     }

@@ -32,7 +32,26 @@ final class ProgramExtension extends AbstractExtension
             new TwigFilter('cz_weekday', $this->czechWeekday(...)),
             new TwigFilter('cz_date', $this->czechDate(...)),
             new TwigFilter('hm', $this->hourMinute(...)),
+            new TwigFilter('contrast_color', $this->contrastColor(...)),
         ];
+    }
+
+    /** Black or white — whichever reads on the given hex background (e.g. white on MODRÁ, black on ŽLUTÁ). */
+    public function contrastColor(mixed $hex): string
+    {
+        if (!is_string($hex)) {
+            return '#fff';
+        }
+        $h = ltrim($hex, '#');
+        if (3 === strlen($h)) {
+            $h = $h[0] . $h[0] . $h[1] . $h[1] . $h[2] . $h[2];
+        }
+        if (6 !== strlen($h) || !ctype_xdigit($h)) {
+            return '#fff';
+        }
+        $luminance = 0.299 * hexdec(substr($h, 0, 2)) + 0.587 * hexdec(substr($h, 2, 2)) + 0.114 * hexdec(substr($h, 4, 2));
+
+        return $luminance > 150 ? '#111' : '#fff';
     }
 
     /** Czech weekday name ("úterý") from a 'Y-m-d' string or DateTimeInterface. */

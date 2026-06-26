@@ -1,39 +1,43 @@
 {# Base print layout for program-module outputs (STOPA 1.3), styled after the 2025 originals
-   (3.den / 2TURNUS_INSTRUKTORSKY / SLUŽBY). DejaVu Sans for Czech diacritics (mPDF UTF-8).
-   Two typographic modes: borderless tight program lists (table.prog) for the schedules, and a
-   bold centred bordered matrix (table.matrix) for the service roster. Branded header/footer
-   come from ExportService — do NOT repeat them. mPDF: CSS only inline, no rounded cells. #}
+   (3.den / 2TURNUS_INSTRUKTORSKY / SLUŽBY). DejaVu Sans Condensed for a tight, humanist feel
+   close to the Word originals while keeping full Czech diacritics (mPDF UTF-8). Two typographic
+   modes: borderless tight program lists (table.prog) for schedules, and a bold centred bordered
+   matrix (table.matrix) for the roster. `.cols` = two-column flow (instructor, landscape).
+   Branded header/footer come from ExportService. mPDF: inline CSS only, no rounded cells. #}
 <style>
-    * { font-family: 'DejaVu Sans', sans-serif; }
-    body { font-size: 9.5pt; color: #1a1a1a; line-height: 1.25; }
+    * { font-family: 'dejavusanscondensed', 'DejaVu Sans', sans-serif; }
+    body { font-size: 9pt; color: #1a1a1a; line-height: 1.18; }
 
-    h1 { font-size: 15pt; margin: 0 0 8pt; text-transform: uppercase; letter-spacing: 0.2pt; }
-    h2.section { font-size: 10.5pt; font-weight: bold; text-transform: uppercase; margin: 11pt 0 2pt;
-        border-bottom: 1pt solid #333; padding-bottom: 2pt; }
-    h2.day { font-size: 12pt; color: #006FAD; font-weight: bold; margin: 11pt 0 3pt;
-        border-bottom: 0.6pt solid #006FAD; padding-bottom: 2pt; }
-    h3 { font-size: 10pt; margin: 7pt 0 2pt; }
+    h1 { font-size: 16pt; margin: 0 0 9pt; text-transform: uppercase; letter-spacing: 0.4pt; color: #14181c; }
+    h2.section { font-size: 10.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3pt;
+        margin: 10pt 0 2pt; border-bottom: 1.1pt solid #2b2b2b; padding-bottom: 1.5pt; }
+    h2.day { font-size: 11.5pt; color: #006FAD; font-weight: bold; margin: 9pt 0 2pt;
+        border-bottom: 0.7pt solid #9fc9e4; padding-bottom: 1.5pt; }
+    h3 { font-size: 9.5pt; margin: 6pt 0 1pt; }
 
     /* Borderless program list — time | content (| staff). Tight, no row rules. */
     table.prog { width: 100%; border-collapse: collapse; }
-    table.prog td { border: 0; padding: 1pt 8pt 1pt 0; vertical-align: top; }
-    td.time { white-space: nowrap; width: 50pt; color: #333; }
-    td.staff { width: 34%; }
+    table.prog td { border: 0; padding: 0.8pt 8pt 0.8pt 0; vertical-align: top; }
+    td.time { white-space: nowrap; width: 48pt; color: #444; }
+    td.staff { width: 33%; }
 
     .hl { font-weight: bold; }
-    .place { font-style: italic; color: #444; }
-    .note { font-style: italic; color: #666; font-size: 8.5pt; }
+    .place { font-style: italic; color: #555; }
+    .note { font-style: italic; color: #6a6a6a; font-size: 8pt; }
     .staff { color: #1a7a3c; }
-    .muted { color: #777; }
-    .sub { color: #555; padding-left: 12pt; }
+    .muted { color: #808080; }
+    .sub { color: #4a4a4a; padding-left: 12pt; }
 
-    /* Inline group (páska) highlight — coloured background, no border (mPDF). */
-    .gchip { padding: 0 4pt; font-weight: bold; color: #fff; }
-    .gchip-plain { padding: 0 4pt; font-weight: bold; border: 0.4pt solid #999; }
+    /* Inline group (páska) highlight — coloured background, readable text, no border. */
+    .gchip { padding: 0.3pt 4.5pt; font-weight: bold; font-size: 8.5pt; }
+    .gchip-plain { padding: 0.3pt 4.5pt; font-weight: bold; font-size: 8.5pt; border: 0.4pt solid #999; }
+
+    /* Two-column flow (instructor landscape — two days side by side, like the original). */
+    .cols { column-count: 2; column-gap: 20pt; }
 
     /* Service roster matrix — bold, centred, bordered (à la SLUŽBY). */
     table.matrix { width: 100%; border-collapse: collapse; margin-top: 6pt; }
-    table.matrix th, table.matrix td { border: 0.8pt solid #333; padding: 6pt 8pt; text-align: center; vertical-align: middle; }
+    table.matrix th, table.matrix td { border: 0.9pt solid #2b2b2b; padding: 7pt 8pt; text-align: center; vertical-align: middle; }
     table.matrix th { font-size: 11pt; font-weight: bold; text-transform: uppercase; }
     table.matrix td { font-size: 11pt; }
     table.matrix td.date { font-weight: bold; }
