@@ -268,6 +268,7 @@ final class ProgramDataService
             'baseCapacity' => $event->getBaseCapacity(),
             'fullCapacity' => $event->getFullCapacity(),
             'highlight' => $event->isHighlight(),
+            'publicInApp' => $event->isPublicInApp(),
             'internalNote' => $event->getInternalNote(),
             'targetGroup' => null !== $targetGroup ? [
                 'name' => $targetGroup->getName(),

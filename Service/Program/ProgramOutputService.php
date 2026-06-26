@@ -58,6 +58,47 @@ final class ProgramOutputService
         );
     }
 
+    /**
+     * Participant daily programme (à la 3.den.pdf) — one day, public activities only,
+     * grouped into morning/afternoon/evening blocks. `$date` = 'Y-m-d'.
+     */
+    public function participantDayHtml(Event $turnus, string $date): string
+    {
+        $dayName = null;
+        $blocks = ['DOPOLEDNÍ' => [], 'ODPOLEDNÍ' => [], 'VEČERNÍ' => []];
+        foreach ($this->programData->getProgramTree($turnus) as $node) {
+            if (($node['day']['date'] ?? null) !== $date) {
+                continue;
+            }
+            $dayName = $node['day']['name'] ?? null;
+            foreach ($node['activities'] as $activity) {
+                if (true !== ($activity['publicInApp'] ?? null)) {
+                    continue;
+                }
+                $start = is_string($activity['start'] ?? null) ? $activity['start'] : '00';
+                $hour = (int) substr($start, 0, 2);
+                $label = $hour < 12 ? 'DOPOLEDNÍ' : ($hour < 18 ? 'ODPOLEDNÍ' : 'VEČERNÍ');
+                $blocks[$label][] = $activity;
+            }
+        }
+
+        return $this->twig->render(self::TPL . 'participant-day.pdf.html.twig', [
+            'turnusName' => $turnus->getName(),
+            'date' => $date,
+            'dayName' => $dayName,
+            'blocks' => $blocks,
+        ]);
+    }
+
+    public function participantDayPdf(Event $turnus, string $date): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->participantDayHtml($turnus, $date),
+            false,
+            'Denní program ' . $date,
+        );
+    }
+
     /** Service roster matrix (à la SLUŽBY 2.TURNUS) — date × service category. */
     public function serviceRosterHtml(Event $turnus): string
     {
