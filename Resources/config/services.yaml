@@ -26,6 +26,11 @@ services:
     autowire: true
     public: true
 
+  ## Program module output dispatch (type → ExportResult) shared by web admin + API controllers
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramOutputResolver:
+    autowire: true
+    public: true
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
     autowire: true
