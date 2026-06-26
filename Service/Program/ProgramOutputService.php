@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Service\Program;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Twig\Environment;
 
@@ -96,6 +97,43 @@ final class ProgramOutputService
             $this->participantDayHtml($turnus, $date),
             false,
             'Denní program ' . $date,
+        );
+    }
+
+    /** Personal itinerary for one instructor ("kde mám být") — their slots, chronological. */
+    public function instructorItineraryHtml(Event $turnus, Participant $instructor): string
+    {
+        return $this->twig->render(self::TPL . 'itinerary-personal.pdf.html.twig', [
+            'turnusName' => $turnus->getName(),
+            'instructorName' => $this->programData->staffName($instructor),
+            'rows' => $this->programData->getInstructorItinerary($turnus, $instructor),
+        ]);
+    }
+
+    public function instructorItineraryPdf(Event $turnus, Participant $instructor): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->instructorItineraryHtml($turnus, $instructor),
+            false,
+            'Itinerář — ' . $this->programData->staffName($instructor),
+        );
+    }
+
+    /** Whole-team overview — every staff person (sub-teams expanded) with their slots. */
+    public function teamOverviewHtml(Event $turnus): string
+    {
+        return $this->twig->render(self::TPL . 'itinerary-team-overview.pdf.html.twig', [
+            'turnusName' => $turnus->getName(),
+            'people' => $this->programData->getTeamOverview($turnus),
+        ]);
+    }
+
+    public function teamOverviewPdf(Event $turnus): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->teamOverviewHtml($turnus),
+            false,
+            'Přehled týmu — ' . ($turnus->getName() ?? ''),
         );
     }
 

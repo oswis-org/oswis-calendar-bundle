@@ -1,0 +1,24 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block content %}
+    <h1>Přehled týmu — {{ turnusName }}</h1>
+
+    {% if people is empty %}
+        <p class="muted">Žádná obsazení.</p>
+    {% else %}
+        {% for person in people %}
+            <div class="block">
+                <h2 class="section">{{ person.name }}</h2>
+                <table class="prog">
+                    {% for r in person.rows %}
+                        <tr>
+                            <td class="time">{{ r.date|cz_date }} {{ r.time|hm }}</td>
+                            <td>{{ r.activity }}{% if r.placeText %} <span class="place">{{ r.placeText }}</span>{% endif %}</td>
+                            <td class="staff">{{ r.roleLabel }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

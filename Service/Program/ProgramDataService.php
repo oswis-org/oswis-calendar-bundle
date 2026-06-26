@@ -152,17 +152,82 @@ final class ProgramDataService
             if (!$byParticipant && !$byTeam) {
                 continue;
             }
-            $event = $assignment->getEvent();
-            $rows[] = [
-                'start' => $event?->getStartDateTimeRecursive()?->format('Y-m-d H:i'),
-                'activity' => $event?->getName(),
-                'placeText' => $event?->getPlaceText(),
-                'roleLabel' => $assignment->getRoleLabel(),
-            ];
+            $rows[] = $this->itineraryRow($assignment);
         }
-        usort($rows, static fn (array $a, array $b): int => ($a['start'] ?? '') <=> ($b['start'] ?? ''));
+        usort($rows, static fn (array $a, array $b): int => (is_string($a['start'] ?? null) ? $a['start'] : '') <=> (is_string($b['start'] ?? null) ? $b['start'] : ''));
 
         return $rows;
+    }
+
+    /**
+     * One itinerary line for a staff assignment (date/time split out for clean day-grouped rendering).
+     *
+     * @return array<string, mixed>
+     */
+    private function itineraryRow(EventStaffAssignment $assignment): array
+    {
+        $event = $assignment->getEvent();
+        $dateTime = $event?->getStartDateTimeRecursive();
+
+        return [
+            'start' => $dateTime?->format('Y-m-d H:i'),
+            'date' => $dateTime?->format('Y-m-d'),
+            'time' => $dateTime?->format('H:i'),
+            'activity' => $event?->getName(),
+            'placeText' => $event?->getPlaceText(),
+            'roleLabel' => $assignment->getRoleLabel(),
+        ];
+    }
+
+    /** Display name for a staff person (nickname / "Given F." / composed) — see ProgramExtension. */
+    public function staffName(Participant $participant): string
+    {
+        return $this->names->staffName($participant);
+    }
+
+    /**
+     * Team overview: every staff person (sub-teams expanded to individuals, externals included,
+     * excluded assignments skipped) with their chronological slots. Each person appears once with
+     * the activities they serve. Ordered by display name.
+     *
+     * @return list<array{name: string, rows: list<array<string, mixed>>}>
+     */
+    public function getTeamOverview(Event $turnus): array
+    {
+        $people = [];
+        foreach ($this->collectAssignments($turnus) as $assignment) {
+            if ($assignment->isExcluded()) {
+                continue;
+            }
+            $row = $this->itineraryRow($assignment);
+            $participant = $assignment->getParticipant();
+            $team = $assignment->getTeam();
+            $targets = [];
+            if (null !== $participant) {
+                $targets['p' . ($participant->getId() ?? spl_object_id($participant))] = $this->names->staffName($participant);
+            } elseif (null !== $team) {
+                foreach ($team->getMembers() as $member) {
+                    $targets['p' . ($member->getId() ?? spl_object_id($member))] = $this->names->staffName($member);
+                }
+            } else {
+                $external = (string) $assignment->getExternalName();
+                if ('' !== $external) {
+                    $targets['x' . $external] = $external;
+                }
+            }
+            foreach ($targets as $key => $name) {
+                $people[$key] ??= ['name' => $name, 'rows' => []];
+                $people[$key]['rows'][] = $row;
+            }
+        }
+        foreach ($people as &$person) {
+            usort($person['rows'], static fn (array $a, array $b): int => (is_string($a['start'] ?? null) ? $a['start'] : '') <=> (is_string($b['start'] ?? null) ? $b['start'] : ''));
+        }
+        unset($person);
+        $people = array_values($people);
+        usort($people, static fn (array $a, array $b): int => $a['name'] <=> $b['name']);
+
+        return $people;
     }
 
     /**
