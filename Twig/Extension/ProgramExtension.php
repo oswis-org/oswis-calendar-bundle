@@ -19,13 +19,63 @@ use Twig\TwigFilter;
  */
 final class ProgramExtension extends AbstractExtension
 {
+    private const array CZECH_WEEKDAYS = [
+        1 => 'pondělí', 2 => 'úterý', 3 => 'středa', 4 => 'čtvrtek', 5 => 'pátek', 6 => 'sobota', 7 => 'neděle',
+    ];
+
     public function getFilters(): array
     {
         return [
             new TwigFilter('staff_name', $this->staffName(...)),
             new TwigFilter('time_block', $this->timeBlock(...)),
             new TwigFilter('roman', $this->roman(...)),
+            new TwigFilter('cz_weekday', $this->czechWeekday(...)),
+            new TwigFilter('cz_date', $this->czechDate(...)),
+            new TwigFilter('hm', $this->hourMinute(...)),
         ];
+    }
+
+    /** Czech weekday name ("úterý") from a 'Y-m-d' string or DateTimeInterface. */
+    public function czechWeekday(mixed $value): string
+    {
+        $date = $this->toDate($value);
+
+        return null === $date ? '' : self::CZECH_WEEKDAYS[(int) $date->format('N')];
+    }
+
+    /** Czech short date "10. 9." from a 'Y-m-d' string or DateTimeInterface. */
+    public function czechDate(mixed $value): string
+    {
+        $date = $this->toDate($value);
+
+        return null === $date ? '' : ((int) $date->format('j') . '. ' . (int) $date->format('n') . '.');
+    }
+
+    /** "9:00" from a 'H:i' string (strips the hour's leading zero). */
+    public function hourMinute(mixed $value): string
+    {
+        if (!is_string($value) || !str_contains($value, ':')) {
+            return is_string($value) ? $value : '';
+        }
+        [$hour, $minute] = explode(':', $value, 2);
+
+        return (int) $hour . ':' . $minute;
+    }
+
+    private function toDate(mixed $value): ?\DateTimeInterface
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value;
+        }
+        if (is_string($value) && '' !== $value) {
+            try {
+                return new \DateTimeImmutable($value);
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /**

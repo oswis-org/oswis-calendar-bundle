@@ -1,23 +1,44 @@
-{# Base print layout for program-module outputs (STOPA 1.3). DejaVu Sans for Czech
-   diacritics (mPDF UTF-8), table basics, page-break safety, brand blue #006FAD.
-   Branded header/footer (logo + time + page numbers) come from ExportService —
-   do NOT repeat them here. Concrete templates `{% extends %}` this and fill `content`.
-   mPDF limits: CSS only inline in <style>, no border-radius inside table cells. #}
+{# Base print layout for program-module outputs (STOPA 1.3), styled after the 2025 originals
+   (3.den / 2TURNUS_INSTRUKTORSKY / SLUŽBY). DejaVu Sans for Czech diacritics (mPDF UTF-8).
+   Two typographic modes: borderless tight program lists (table.prog) for the schedules, and a
+   bold centred bordered matrix (table.matrix) for the service roster. Branded header/footer
+   come from ExportService — do NOT repeat them. mPDF: CSS only inline, no rounded cells. #}
 <style>
     * { font-family: 'DejaVu Sans', sans-serif; }
-    body { font-size: 10pt; color: #222; }
-    h1 { font-size: 15pt; color: #006FAD; margin: 0 0 6pt; }
-    h2 { font-size: 12pt; color: #006FAD; margin: 10pt 0 4pt; border-bottom: 0.6pt solid #006FAD; padding-bottom: 2pt; }
-    h3 { font-size: 10.5pt; margin: 6pt 0 2pt; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; vertical-align: top; padding: 2pt 4pt; border-bottom: 0.4pt solid #ccc; }
-    th { background: #eef5fa; font-size: 9pt; }
-    tr, .row, .block, .day { page-break-inside: avoid; }
+    body { font-size: 9.5pt; color: #1a1a1a; line-height: 1.25; }
+
+    h1 { font-size: 15pt; margin: 0 0 8pt; text-transform: uppercase; letter-spacing: 0.2pt; }
+    h2.section { font-size: 10.5pt; font-weight: bold; text-transform: uppercase; margin: 11pt 0 2pt;
+        border-bottom: 1pt solid #333; padding-bottom: 2pt; }
+    h2.day { font-size: 12pt; color: #006FAD; font-weight: bold; margin: 11pt 0 3pt;
+        border-bottom: 0.6pt solid #006FAD; padding-bottom: 2pt; }
+    h3 { font-size: 10pt; margin: 7pt 0 2pt; }
+
+    /* Borderless program list — time | content (| staff). Tight, no row rules. */
+    table.prog { width: 100%; border-collapse: collapse; }
+    table.prog td { border: 0; padding: 1pt 8pt 1pt 0; vertical-align: top; }
+    td.time { white-space: nowrap; width: 50pt; color: #333; }
+    td.staff { width: 34%; }
+
+    .hl { font-weight: bold; }
+    .place { font-style: italic; color: #444; }
+    .note { font-style: italic; color: #666; font-size: 8.5pt; }
+    .staff { color: #1a7a3c; }
     .muted { color: #777; }
-    .note { font-style: italic; color: #555; font-size: 9pt; }
-    .price, .time { white-space: nowrap; }
-    .strong { font-weight: bold; }
-    .chip { display: inline-block; padding: 1pt 5pt; border: 0.4pt solid #999; font-size: 8.5pt; }
+    .sub { color: #555; padding-left: 12pt; }
+
+    /* Inline group (páska) highlight — coloured background, no border (mPDF). */
+    .gchip { padding: 0 4pt; font-weight: bold; color: #fff; }
+    .gchip-plain { padding: 0 4pt; font-weight: bold; border: 0.4pt solid #999; }
+
+    /* Service roster matrix — bold, centred, bordered (à la SLUŽBY). */
+    table.matrix { width: 100%; border-collapse: collapse; margin-top: 6pt; }
+    table.matrix th, table.matrix td { border: 0.8pt solid #333; padding: 6pt 8pt; text-align: center; vertical-align: middle; }
+    table.matrix th { font-size: 11pt; font-weight: bold; text-transform: uppercase; }
+    table.matrix td { font-size: 11pt; }
+    table.matrix td.date { font-weight: bold; }
+
+    tr, .day, .block { page-break-inside: avoid; }
     {% block style %}{% endblock %}
 </style>
 {% block content %}{% endblock %}

@@ -1,30 +1,26 @@
 {% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
 
 {% block content %}
-    <h1>Program{% if dayName %} — {{ dayName }}{% endif %} <span class="muted">({{ date }})</span></h1>
+    <h1>Program{% if dayName %} {{ dayName }}{% endif %} <span style="font-weight: normal;">({{ date|cz_weekday }} {{ date|cz_date }})</span></h1>
 
     {% set anyActivity = false %}
     {% for label, activities in blocks %}
         {% if activities is not empty %}
             {% set anyActivity = true %}
-            <h2>{{ label }}</h2>
-            <table>
-                <tbody>
+            <div class="block">
+                <h2 class="section">{{ label }} program</h2>
+                <table class="prog">
                     {% for a in activities %}
-                        <tr class="row">
-                            <td class="time" style="width: 56pt;">{{ a.start }}{% if a.end %}–{{ a.end }}{% endif %}</td>
+                        <tr>
+                            <td class="time">{{ a.start|hm }}</td>
                             <td>
-                                {% if a.highlight %}<span class="strong">{{ a.name }}</span>{% else %}{{ a.name }}{% endif %}
-                                {% if a.targetGroup %} {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: a.targetGroup } only %}{% endif %}
-                                {% for sub in a.subActivities %}
-                                    <div>&nbsp;&nbsp;{{ sub.start }} {{ sub.name }}{% if sub.targetGroup %} {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: sub.targetGroup } only %}{% endif %}</div>
-                                {% endfor %}
-                                {% if a.placeText %} <span class="muted">{{ a.placeText }}</span>{% endif %}
+                                <span class="{{ a.highlight ? 'hl' : '' }}">{{ a.name }}</span>{% if a.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: a.targetGroup } only %}{% endif %}{% if a.placeText %} <span class="place">{{ a.placeText }}</span>{% endif %}
+                                {% for sub in a.subActivities %}<div class="sub">{{ sub.name }}{% if sub.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: sub.targetGroup } only %}{% endif %}</div>{% endfor %}
                             </td>
                         </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                </table>
+            </div>
         {% endif %}
     {% endfor %}
     {% if not anyActivity %}<p class="muted">Na tento den zatím není zveřejněný program.</p>{% endif %}
