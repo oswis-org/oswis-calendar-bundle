@@ -1,0 +1,4 @@
+{# Group (páska) chip — square label tinted with the group colour (mPDF can't do rounded
+   corners in a cell). `group` = { name, color } from ProgramDataService. Colourless when the
+   group has no colour assigned yet. #}
+{%- if group %}<span class="chip"{% if group.color %} style="background-color: {{ group.color }}; color: #fff; border-color: {{ group.color }};"{% endif %}>{{ group.name }}</span>{% endif -%}

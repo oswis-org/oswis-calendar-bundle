@@ -1,0 +1,5 @@
+{# One staff assignment: display name + optional role. `assignment` = { name, roleLabel,
+   team, external } from ProgramDataService (name already formatted via staff_name / external
+   name). #}
+{{- assignment.name -}}
+{%- if assignment.roleLabel %} <span class="muted">({{ assignment.roleLabel }})</span>{% endif -%}
