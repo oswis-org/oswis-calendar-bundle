@@ -49,12 +49,27 @@ final class ProgramDataService
         foreach ($turnus->getSubEvents() as $sub) {
             $activities[] = $this->activityArray($sub);
         }
-        usort($activities, static function (array $a, array $b): int {
-            $sa = is_string($a['start'] ?? null) ? $a['start'] : '';
-            $sb = is_string($b['start'] ?? null) ? $b['start'] : '';
+        $sortKey = static fn (array $a): string => (is_string($a['date'] ?? null) ? $a['date'] : '')
+            . ' ' . (is_string($a['start'] ?? null) ? $a['start'] : '');
+        usort($activities, static fn (array $a, array $b): int => $sortKey($a) <=> $sortKey($b));
 
-            return $sa <=> $sb;
-        });
+        // Roman numbering for same-activity series ("Lukostřelba I./II./…"), by chronological order.
+        $bySeries = [];
+        foreach ($activities as $index => $activity) {
+            $seriesId = $activity['seriesId'] ?? null;
+            if (is_int($seriesId)) {
+                $bySeries[$seriesId][] = $index;
+            }
+        }
+        foreach ($bySeries as $indexes) {
+            if (count($indexes) < 2) {
+                continue;
+            }
+            $number = 1;
+            foreach ($indexes as $index) {
+                $activities[$index]['seriesRoman'] = $this->names->roman($number++);
+            }
+        }
 
         $tree = [];
         $usedIndexes = [];
@@ -254,11 +269,15 @@ final class ProgramDataService
             }
         }
         $targetGroup = $event->getTargetGroup();
+        $series = $event->getGroup();
+        $seriesId = null !== $series && $series->isSameActivity() ? $series->getId() : null;
 
         return [
             'id' => $event->getId(),
             'name' => $event->getName(),
             'staff' => $staff,
+            'seriesId' => $seriesId,
+            'seriesRoman' => null,
             'date' => $event->getStartDateTimeRecursive()?->format('Y-m-d'),
             'start' => $event->getStartDateTimeRecursive()?->format('H:i'),
             'end' => $event->getEndDateTimeRecursive()?->format('H:i'),
