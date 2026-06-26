@@ -1,0 +1,18 @@
+OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay:
+  attributes:
+    id:
+      groups:
+        - 'calendar_program_days_get'
+        - 'calendar_program_day_get'
+    date:
+      groups:
+        - 'calendar_program_days_get'
+        - 'calendar_program_day_get'
+        - 'calendar_program_days_post'
+        - 'calendar_program_day_put'
+    event:
+      groups:
+        - 'calendar_program_days_get'
+        - 'calendar_program_day_get'
+        - 'calendar_program_days_post'
+        - 'calendar_program_day_put'

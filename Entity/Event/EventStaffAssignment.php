@@ -7,6 +7,14 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Event;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -16,6 +24,7 @@ use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
+use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
@@ -29,6 +38,31 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  *
  * Spec: docs/superpowers/specs/2026-06-12-program-module-design.md (krok 5).
  */
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['entities_get', 'calendar_event_staff_assignments_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_staff_assignment_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_event_staff_assignments_post'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
+        ),
+        new Put(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_staff_assignment_get'], 'enable_max_depth' => true],
+            denormalizationContext: ['groups' => ['entity_put', 'calendar_event_staff_assignment_put'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
+        ),
+        new Delete(security: "is_granted('ROLE_MANAGER')"),
+    ],
+)]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['event.id', 'participant.id'])]
 #[Entity(repositoryClass: EventStaffAssignmentRepository::class)]
 #[Table(name: 'calendar_event_staff_assignment')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
@@ -37,10 +71,14 @@ class EventStaffAssignment implements BasicInterface
     use BasicTrait;
     use NoteTrait;
 
-    /** Aktivita (Event), ke které je přiřazení vázáno. */
+    /**
+     * Aktivita (Event), ke které je přiřazení vázáno. Nastavuje se setterem (NE konstruktorem) —
+     * API Platform resolvuje IRI relace jen přes setter, ne přes constructor argument.
+     */
     #[ManyToOne(targetEntity: Event::class)]
     #[JoinColumn(name: 'event_id', nullable: false)]
-    protected Event $event;
+    #[Assert\NotNull]
+    protected ?Event $event = null;
 
     /** Interní účastník (pokud přiřazení odkazuje na registrovaného). */
     #[ManyToOne(targetEntity: Participant::class)]
@@ -65,13 +103,9 @@ class EventStaffAssignment implements BasicInterface
     protected bool $excluded = false;
 
     public function __construct(
-        Event $event,
-        ?Participant $participant = null,
         ?string $externalName = null,
         ?string $roleLabel = null,
     ) {
-        $this->event = $event;
-        $this->participant = $participant;
         $this->externalName = $externalName;
         $this->roleLabel = $roleLabel;
     }
@@ -90,12 +124,12 @@ class EventStaffAssignment implements BasicInterface
         }
     }
 
-    public function getEvent(): Event
+    public function getEvent(): ?Event
     {
         return $this->event;
     }
 
-    public function setEvent(Event $event): void
+    public function setEvent(?Event $event): void
     {
         $this->event = $event;
     }

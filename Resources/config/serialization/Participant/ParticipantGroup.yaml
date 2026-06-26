@@ -1,0 +1,24 @@
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup:
+  attributes:
+    id:
+      groups:
+        - 'calendar_participant_groups_get'
+        - 'calendar_participant_group_get'
+    color:
+      groups:
+        - 'calendar_participant_groups_get'
+        - 'calendar_participant_group_get'
+        - 'calendar_participant_groups_post'
+        - 'calendar_participant_group_put'
+    mealOrder:
+      groups:
+        - 'calendar_participant_groups_get'
+        - 'calendar_participant_group_get'
+        - 'calendar_participant_groups_post'
+        - 'calendar_participant_group_put'
+    event:
+      groups:
+        - 'calendar_participant_groups_get'
+        - 'calendar_participant_group_get'
+        - 'calendar_participant_groups_post'
+        - 'calendar_participant_group_put'

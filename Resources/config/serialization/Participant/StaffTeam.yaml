@@ -1,0 +1,18 @@
+OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam:
+  attributes:
+    id:
+      groups:
+        - 'calendar_staff_teams_get'
+        - 'calendar_staff_team_get'
+    event:
+      groups:
+        - 'calendar_staff_teams_get'
+        - 'calendar_staff_team_get'
+        - 'calendar_staff_teams_post'
+        - 'calendar_staff_team_put'
+    members:
+      groups:
+        - 'calendar_staff_teams_get'
+        - 'calendar_staff_team_get'
+        - 'calendar_staff_teams_post'
+        - 'calendar_staff_team_put'

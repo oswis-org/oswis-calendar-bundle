@@ -398,6 +398,52 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  ## Program module repositories (STOPA 1.1 entities, exposed via API in 1.2)
+  OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantGroupRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantGroupRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
   OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository
     autowire: true
@@ -630,8 +676,22 @@ services:
       - { name: api_platform.doctrine.orm.query_extension.collection }
       - { name: api_platform.doctrine.orm.query_extension.item }
 
+  OswisOrg\OswisCalendarBundle\ApiPlatform\EventSectionVisibleExtension:
+    autowire: true
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+      - { name: api_platform.doctrine.orm.query_extension.item }
+
   OswisOrg\OswisCalendarBundle\State\SubEventAttendanceProcessor:
     autowire: true
+    tags: [ 'api_platform.state_processor' ]
+
+  ## Program module CRUD write processor — resolves relation IRIs (default denormalizer
+  ## builds empty embedded entities → Doctrine cascade error) then delegates to persist.
+  OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor:
+    autowire: true
+    arguments:
+      $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
     tags: [ 'api_platform.state_processor' ]
 
 

@@ -1,0 +1,42 @@
+OswisOrg\OswisCalendarBundle\Entity\Event\EventSection:
+  attributes:
+    id:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+    icon:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+        - 'calendar_event_sections_post'
+        - 'calendar_event_section_put'
+    textValue:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+        - 'calendar_event_sections_post'
+        - 'calendar_event_section_put'
+    priority:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+        - 'calendar_event_sections_post'
+        - 'calendar_event_section_put'
+    publicOnWeb:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+        - 'calendar_event_sections_post'
+        - 'calendar_event_section_put'
+    publicInApp:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+        - 'calendar_event_sections_post'
+        - 'calendar_event_section_put'
+    event:
+      groups:
+        - 'calendar_event_sections_get'
+        - 'calendar_event_section_get'
+        - 'calendar_event_sections_post'
+        - 'calendar_event_section_put'
