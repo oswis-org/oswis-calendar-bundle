@@ -58,6 +58,35 @@ final class ProgramOutputService
         );
     }
 
+    /** Service roster matrix (à la SLUŽBY 2.TURNUS) — date × service category. */
+    public function serviceRosterHtml(Event $turnus): string
+    {
+        $matrix = $this->programData->getStaffMatrix($turnus);
+        $categories = [];
+        foreach ($matrix as $byCategory) {
+            foreach (array_keys($byCategory) as $category) {
+                $categories[$category] = true;
+            }
+        }
+        $categories = array_keys($categories);
+        sort($categories);
+
+        return $this->twig->render(self::TPL . 'service-roster.pdf.html.twig', [
+            'turnusName' => $turnus->getName(),
+            'matrix' => $matrix,
+            'categories' => $categories,
+        ]);
+    }
+
+    public function serviceRosterPdf(Event $turnus): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->serviceRosterHtml($turnus),
+            true,
+            'Rozpis služeb — ' . ($turnus->getName() ?? ''),
+        );
+    }
+
     /**
      * @param array<array-key, mixed> $activity
      * @param list<array<array-key, mixed>> $sheets

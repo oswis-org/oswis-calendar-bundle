@@ -1,0 +1,29 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block content %}
+    <h1>Rozpis služeb — {{ turnusName }}</h1>
+    {% if categories is empty %}
+        <p class="muted">Žádné přiřazené služby.</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 64pt;">Datum</th>
+                    {% for category in categories %}<th>{{ category }}</th>{% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for date, byCategory in matrix %}
+                    <tr class="row">
+                        <td class="time">{{ date }}</td>
+                        {% for category in categories %}
+                            <td>
+                                {%- if byCategory[category] is defined %}{% for r in byCategory[category] %}{% include '@OswisOrgOswisCalendar/web_admin/program/_staff_label.html.twig' with { assignment: r } only %}{% if not loop.last %}, {% endif %}{% endfor %}{% endif -%}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
