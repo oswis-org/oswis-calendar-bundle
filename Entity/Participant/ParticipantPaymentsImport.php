@@ -211,8 +211,14 @@ class ParticipantPaymentsImport
         // ('Datum' is rarely at index 0) — [0] on the raw result raised an undefined-key warning,
         // which Symfony's ErrorHandler turns into an ErrorException inside a web request.
         $candidates = [$dateColumnName, '"'.$dateColumnName.'"', "\\\"{$dateColumnName}\\\""];
-        foreach (array_values(preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: []) as $matchedKey) {
-            $candidates[] = self::toString($matchedKey);
+        if ('' !== $dateColumnName) {
+            // Poslední pokus: jakýkoli sloupec, jehož název konfigurovaný název obsahuje (jinak
+            // zabalený do uvozovek či jinak ozdobený). Dřív tu bylo natvrdo „Datum" bez ohledu
+            // na nastavení, takže jiná než česká Fio hlavička by sem nikdy nedosáhla.
+            $pattern = '/'.preg_quote($dateColumnName, '/').'/i';
+            foreach (array_values(preg_grep($pattern, array_keys($csvPaymentRow)) ?: []) as $matchedKey) {
+                $candidates[] = self::toString($matchedKey);
+            }
         }
         foreach ($candidates as $candidate) {
             if ('' === $candidate || !array_key_exists($candidate, $csvPaymentRow)) {
