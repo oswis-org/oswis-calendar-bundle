@@ -209,6 +209,13 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
                 try {
                     $addedFlag->setParticipantFlagGroup($this);
                 } catch (NotImplementedException) {
+                    // A ParticipantFlag belongs to exactly one group for its whole life
+                    // ({@see ParticipantFlag::setParticipantFlagGroup()}). Swallowing this used to
+                    // leave the flag in the assignment below anyway, so this group's collection held
+                    // a flag whose own back-reference still pointed at the old group. The flag is the
+                    // owning side, so Doctrine keeps the old group in the DB and the in-memory graph
+                    // silently disagrees with what is stored. Drop it instead of pretending.
+                    $newParticipantFlags->removeElement($addedFlag);
                 }
             }
             $this->participantFlags = $newParticipantFlags;
