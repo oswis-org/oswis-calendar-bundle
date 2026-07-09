@@ -41,6 +41,17 @@ class ParticipantPaymentsImportService
             if (null === $payment->getImport()) {
                 $payment->setImport($paymentsImport);
             }
+            // errorMessage is set by makePaymentFromCsv (unknown currency, unreadable date) but was
+            // never read anywhere — the row imported and the problem stayed invisible. Surface it.
+            $paymentError = $payment->getErrorMessage();
+            if (null !== $paymentError && '' !== $paymentError) {
+                $this->logger->warning(sprintf(
+                    'CSV import: vadný řádek platby (VS %s, částka %s): %s',
+                    (string) $payment->getVariableSymbol(),
+                    (string) $payment->getNumericValue(),
+                    $paymentError,
+                ));
+            }
             $participant = $this->getParticipantByPayment($payment);
             $created = $this->paymentService->create($payment, true, $participant);
             // create() returns null only when it caught an error (e.g. the confirmation mail threw after
