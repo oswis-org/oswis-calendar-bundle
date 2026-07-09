@@ -78,8 +78,9 @@
     </thead>
     <tbody>
     {% for participant in participants %}
-        {% set contact = participant.contact(false)|default %}
-        {% set appUser = contact.appUser|default %}
+        {# Bez `|default` — viz participant-list-inner: entita s prázdným __toString() by se zahodila. #}
+        {% set contact = participant.contact(false) %}
+        {% set appUser = contact is null ? null : contact.appUser %}
         {% set isDeleted = participant.deletedAt|default %}
         {% set paidPercentage = (participant.paidPricePercentage * 100)|round %}
         {% set paidColor = participant.remainingPrice > 0 ? 'danger' : 'success' %}
