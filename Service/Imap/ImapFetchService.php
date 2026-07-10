@@ -387,12 +387,11 @@ final class ImapFetchService
             if (!$contact instanceof AbstractContact) {
                 continue;
             }
-            $participants = $this->em->getRepository(Participant::class)
-                ->findBy(['contact' => $contact], ['createdAt' => 'DESC'], 1);
-            if (count($participants) > 0) {
-                $id = $participants[0]->getId();
+            $participant = $this->findNewestParticipantForContact($contact);
+            if (null !== $participant) {
+                $id = $participant->getId();
                 if (null !== $id && !isset($seenIds[$id])) {
-                    $matched[] = $participants[0];
+                    $matched[] = $participant;
                     $seenIds[$id] = true;
                 }
             }
@@ -498,6 +497,28 @@ final class ImapFetchService
      * `details` collection (ContactDetail rows with category type = 'email'),
      * not as a direct column — so a `findOneBy(['email' => ...])` does not work.
      */
+    /**
+     * Přihláška, na kterou se příchozí zpráva navěsí.
+     *
+     * Doctrine tu NEMÁ zapnutý soft-delete filtr (ověřeno: `em->getFilters()->getEnabledFilters()` je
+     * prázdné), takže prosté `findBy(['contact' => …], ['createdAt' => 'DESC'], 1)` klidně vrátí
+     * SMAZANOU přihlášku. Zpráva se pak pověsí na smazanou registraci a v adminu ji nikdo neuvidí.
+     * V klon-DB má 518 kontaktů nejnovější přihlášku smazanou — u řady z nich existuje starší aktivní.
+     *
+     * Proto: nejnovější AKTIVNÍ přihláška; teprve když žádná není, nejnovější vůbec (zpráva se má
+     * zobrazit i u člověka, který už žádnou aktivní registraci nemá).
+     */
+    private function findNewestParticipantForContact(AbstractContact $contact): ?Participant
+    {
+        $repository = $this->em->getRepository(Participant::class);
+        $active = $repository->findBy(['contact' => $contact, 'deletedAt' => null], ['createdAt' => 'DESC'], 1);
+        if ([] !== $active) {
+            return $active[0];
+        }
+
+        return $repository->findBy(['contact' => $contact], ['createdAt' => 'DESC'], 1)[0] ?? null;
+    }
+
     private function findContactByEmail(string $email): ?AbstractContact
     {
         $qb = $this->em->createQueryBuilder()
