@@ -1,7 +1,9 @@
-{% set contact = participant.contact(false)|default %}
-{% set event = participant.event(false)|default %}
+{# `|default` se na entity nesmí: Twig objekt s prázdným __toString() (kontakt bez jména)
+   vyhodnotí jako prázdný a zahodí celý objekt — pak zmizí i telefon a e-mail. #}
+{% set contact = participant.contact(false) %}
+{% set event = participant.event(false) %}
 {% set regRange = participant.regRange|default %}
-{% set appUser = contact.appUser|default %}
+{% set appUser = contact is null ? null : contact.appUser %}
 
 <tbody>
 <tr {{ participant.deletedAt ? 'style="background-color:rgba(255,0,0,.3);"' : '' }}
@@ -55,7 +57,7 @@
                     {% set listGenderIcon = "👩" %}
                 {% endif %}
                 <li style="list-style-type: '{{ listGenderIcon }}' {{ participantContact.active|default ? '' : 'text-decoration:line-through;' }}">
-                    <strong style="font-size: 1.08em; color: #1a2533;">{{ participantContact.contact.name|default }}</strong>
+                    <strong style="font-size: 1.08em; color: #1a2533;">{{ participantContact.contact.name|default('(bez jména)') }}</strong>
                 </li>
             {% endfor %}
             {% for participantRange in participant.participantRegistrations(false, false) %}

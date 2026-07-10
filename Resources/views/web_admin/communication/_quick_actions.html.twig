@@ -7,7 +7,7 @@
      - participant: Participant
      - subject_prefill: ?string  (default: "Re: tvá přihláška na {event}")
 #}
-{% set contact = participant.contact|default %}
+{% set contact = participant.contact %}
 {% set email   = contact.email|default %}
 {% set phone   = contact.phone|default %}
 {% set eventName = (participant.event(false).shortName|default) ?: (participant.event(false).name|default) %}

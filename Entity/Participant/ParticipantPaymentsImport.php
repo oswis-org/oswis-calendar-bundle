@@ -130,18 +130,28 @@ class ParticipantPaymentsImport
     ): ParticipantPayment {
         $csvCurrency = $csvPaymentRow[(string) $csvSettings->getCurrencyColumnName()] ?? null;
         $currencyAllowed = $csvSettings->getCurrencyAllowed();
+        $dateTime = $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings);
         $payment = new ParticipantPayment(
             self::toInt($csvPaymentRow[(string) $csvSettings->getValueColumnName()] ?? 0),
-            $this->getDateFromCsvPayment($csvPaymentRow, $csvSettings),
+            $dateTime,
             ParticipantPayment::TYPE_BANK_TRANSFER
         );
         $payment->setInternalNote($csvRow);
         $payment->setExternalId(self::toString($csvPaymentRow[(string) $csvSettings->getIdentifierColumnName()] ?? null));
+        $errors = [];
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
             $payment->setNumericValue(0);
             $csvCurrencyString = self::toString($csvCurrency);
             $currencyAllowedString = self::toString($currencyAllowed);
-            $payment->setErrorMessage("Wrong payment currency ('$csvCurrencyString' instead of '$currencyAllowedString').");
+            $errors[] = "Wrong payment currency ('$csvCurrencyString' instead of '$currencyAllowedString').";
+        }
+        if (null === $dateTime) {
+            // Without this the payment silently inherits the import time and skews the matcher's
+            // date-proximity score. The raw CSV row stays in internalNote for manual correction.
+            $errors[] = 'Datum platby se nepodařilo přečíst z CSV řádku.';
+        }
+        if ([] !== $errors) {
+            $payment->setErrorMessage(implode(' ', $errors));
         }
         $payment->setVariableSymbol($this->getVsFromCsvPayment($csvPaymentRow, $csvSettings));
 
@@ -184,37 +194,48 @@ class ParticipantPaymentsImport
         return $default ?? 0;
     }
 
+    /**
+     * Reads the transaction date from a CSV row, or null when the row carries none we can read.
+     *
+     * Null is deliberate: the old code fell back to `new DateTime()` (the import time) and swallowed
+     * every parse failure into null as well. `ParticipantPayment::getDateTime()` then falls back to
+     * `createdAt` — also the import time. Either way the payment entered the matcher's date-proximity
+     * score stamped with the wrong day and nothing anywhere said so. makePaymentFromCsv() now turns a
+     * null into a visible error message on the payment instead.
+     */
     private function getDateFromCsvPayment(array $csvPaymentRow, CsvPaymentImportSettings $csvSettings): ?DateTime
     {
-        try {
-            // preg_grep PRESERVES keys ('Datum' is rarely at index 0) — [0] on the raw result
-            // raised an undefined-key warning, which Symfony's ErrorHandler turns into an
-            // ErrorException inside a web request → catch → date silently null on every import.
-            $dateKey = self::toString(array_values(preg_grep('/.*Datum.*/', array_keys($csvPaymentRow)) ?: [])[0] ?? '');
-            $dateColumnName = $csvSettings->getDateColumnName();
-            if (array_key_exists(''.$dateColumnName, $csvPaymentRow)) {
-                $dateColumnValue = self::toString($csvPaymentRow[(string) $dateColumnName]);
-
-                return new DateTime($dateColumnValue);
+        $dateColumnName = ''.$csvSettings->getDateColumnName();
+        // The exporting bank quotes (and sometimes escapes) header cells inconsistently, so the
+        // configured column name is tried raw, quoted and escaped-quoted. preg_grep PRESERVES keys
+        // ('Datum' is rarely at index 0) — [0] on the raw result raised an undefined-key warning,
+        // which Symfony's ErrorHandler turns into an ErrorException inside a web request.
+        $candidates = [$dateColumnName, '"'.$dateColumnName.'"', "\\\"{$dateColumnName}\\\""];
+        if ('' !== $dateColumnName) {
+            // Poslední pokus: jakýkoli sloupec, jehož název konfigurovaný název obsahuje (jinak
+            // zabalený do uvozovek či jinak ozdobený). Dřív tu bylo natvrdo „Datum" bez ohledu
+            // na nastavení, takže jiná než česká Fio hlavička by sem nikdy nedosáhla.
+            $pattern = '/'.preg_quote($dateColumnName, '/').'/i';
+            foreach (array_values(preg_grep($pattern, array_keys($csvPaymentRow)) ?: []) as $matchedKey) {
+                $candidates[] = self::toString($matchedKey);
             }
-            if (array_key_exists('"'.$dateColumnName.'"', $csvPaymentRow)) {
-                $dateColumnValue = self::toString($csvPaymentRow["\"$dateColumnName\""]);
-
-                return new DateTime($dateColumnValue);
-            }
-            if (array_key_exists("\\\"{$dateColumnName}\\\"", $csvPaymentRow)) {
-                $dateColumnValue = self::toString($csvPaymentRow["\\\"{$dateColumnName}\\\""]);
-
-                return new DateTime($dateColumnValue);
-            }
-            if (array_key_exists($dateKey, $csvPaymentRow)) {
-                return new DateTime(self::toString($csvPaymentRow[$dateKey]));
-            }
-
-            return new DateTime();
-        } catch (Exception $e) {
-            return null;
         }
+        foreach ($candidates as $candidate) {
+            if ('' === $candidate || !array_key_exists($candidate, $csvPaymentRow)) {
+                continue;
+            }
+            $rawDate = self::toString($csvPaymentRow[$candidate]);
+            if ('' === $rawDate) {
+                continue;
+            }
+            try {
+                return new DateTime($rawDate);
+            } catch (Exception) {
+                // Unreadable value in this column — keep looking, report only if nothing works.
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -6,7 +6,8 @@
     <main class="container">
         <h2>{{ pageTitle }}</h2>
 
-        {% if participant.contact|default %}
+        {# Ne `|default`: kontakt bez jména má prázdné __toString() → Twig by ho vyhodnotil jako empty a skryl i e-mail s telefonem. #}
+        {% if participant.contact is not null %}
             <p>
                 <strong>Příjemce:</strong>
                 {{ participant.contact.name|default('(bez jména)') }}

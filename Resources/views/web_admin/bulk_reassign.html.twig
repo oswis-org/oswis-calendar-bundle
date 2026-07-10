@@ -103,7 +103,7 @@
                     </thead>
                     <tbody>
                         {% for participant in participants %}
-                            {% set contact = participant.contact(false)|default %}
+                            {% set contact = participant.contact(false) %}
                             <tr>
                                 <td>
                                     <input type="checkbox" name="participantIds[]" value="{{ participant.id }}" class="bulk-row-check" {{ participant.id in preselectedIds|default([]) ? 'checked' : '' }}>

@@ -179,11 +179,15 @@ final class WebAdminParticipantsController extends AbstractController
         } catch (\Throwable) {
         }
 
-        // Only ParticipantMail (system + ad-hoc) rows are resend-able.
-        // IMAP-imported and manual-note rows have no underlying mailer.
+        // Only ParticipantMail (system + ad-hoc) rows are resend-able. IMAP-imported and manual-note
+        // rows have no underlying mailer. Payment confirmations, activation requests and
+        // registration-changed mails are excluded too: their templates need data a bare re-send
+        // cannot reconstruct ({@see ParticipantMail::NON_RESENDABLE_TYPES}).
         $resendableMailIds = [];
         foreach ($entries as $entry) {
-            if ($entry instanceof ParticipantMail && $entry->getId() !== null) {
+            if ($entry instanceof ParticipantMail
+                && $entry->getId() !== null
+                && ParticipantMail::isResendableType($entry->getType())) {
                 $resendableMailIds[$entry->getId()] = true;
             }
         }
