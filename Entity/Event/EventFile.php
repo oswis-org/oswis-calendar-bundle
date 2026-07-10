@@ -33,7 +33,10 @@ use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
             controller: EventFileAction::class,
             deserialize: false
         ),
-    ]
+    ],
+    // Bez tohoto byl resource dostupný bez tokenu (firewall /api nemá access_control,
+    // autorizaci drží jen security na resource). Sjednoceno s WebImage/WebFile.
+    security: "is_granted('ROLE_MANAGER')"
 )]
 #[Entity]
 #[Table(name: 'calendar_event_file')]
