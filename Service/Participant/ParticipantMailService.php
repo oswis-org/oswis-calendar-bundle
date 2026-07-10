@@ -264,6 +264,18 @@ class ParticipantMailService
         if (null === $participant || null === $appUser || null === $type) {
             throw new OswisException('Nelze znovu odeslat: chybí účastník, uživatel nebo typ.');
         }
+        // sendSummaryToUser() umí sestavit jen obecná data (účastník, kontakt, oslovení). Šablony
+        // některých typů potřebují víc — a Twig na produkci (`strict_variables=false`) chybějící
+        // proměnnou tiše nahradí, takže by účastníkovi přišel mail s nepravdivým obsahem:
+        // platební potvrzení „0,- Kč, dnešní datum, celá částka zaplacena" nebo aktivační e-mail
+        // s mrtvým odkazem. Radši hlasitě odmítnout.
+        if (!ParticipantMail::isResendableType($type)) {
+            throw new OswisException(match ($type) {
+                ParticipantMail::TYPE_PAYMENT => 'Potvrzení platby nelze přeposlat — jeho obsah se váže ke konkrétní platbě.',
+                ParticipantMail::TYPE_ACTIVATION_REQUEST => 'Aktivační e-mail pošli tlačítkem „↻ Aktivační e-mail" — vygeneruje nový platný odkaz.',
+                default => "E-mail typu '$type' nelze znovu odeslat.",
+            });
+        }
         $this->sendSummaryToUser($participant, $appUser, $type);
     }
 

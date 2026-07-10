@@ -61,6 +61,27 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
     /** Sent on an UPDATE to an existing registration (not the initial confirmation) — lists what changed. */
     public const TYPE_REGISTRATION_CHANGED = 'registration-changed';
 
+    /**
+     * Types whose template needs data that a bare re-send cannot reconstruct.
+     *
+     * - `payment`: the template reads `payment.numericValue`, `payment.dateTime`, `payment.participant.remainingPrice`.
+     *   A re-send has no way to know WHICH payment the original mail confirmed, and Twig with
+     *   `strict_variables=false` (production) silently renders "0,- Kč, dnešní datum, vše uhrazeno".
+     * - `activation-request`: the template needs a valid `participantToken`; a re-send would ship a dead link.
+     *   Use the dedicated "↻ Aktivační e-mail" action, which mints a fresh token.
+     * - `registration-changed`: rendered from a file template with a computed diff, not from a DB mail category.
+     */
+    public const NON_RESENDABLE_TYPES = [
+        self::TYPE_PAYMENT,
+        self::TYPE_ACTIVATION_REQUEST,
+        self::TYPE_REGISTRATION_CHANGED,
+    ];
+
+    public static function isResendableType(?string $type): bool
+    {
+        return null !== $type && !in_array($type, self::NON_RESENDABLE_TYPES, true);
+    }
+
     #[ManyToOne(targetEntity: Participant::class, fetch: 'EAGER', inversedBy: 'eMails')]
     #[JoinColumn(name: 'participant_id', referencedColumnName: 'id')]
     protected ?Participant $participant = null;
