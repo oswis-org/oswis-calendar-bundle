@@ -148,7 +148,12 @@ final class ImapFetchService
             $state->setLastFetchAt(new DateTime());
             $this->em->persist($state);
             $this->em->flush();
-            $this->em->clear();
+            // Žádné em->clear() — viz varování níže u chunked sweepu. Tahle větev běží uvnitř cyklu
+            // přes složky (default `INBOX,Sent`), takže vyčištění tady odpojí security actora a
+            // následující složka by při persistu spustila Gedmo Blameable rekurzi → OOM. Dnes to
+            // nehrozí jen proto, že `--init-from-now` chodí výhradně z CLI, kde actor neexistuje;
+            // stačilo by ale tenhle přepínač jednou vystavit z webu. A není co uvolňovat: v této
+            // větvi se nenačítají těla zpráv ani se nic dalšího nepersistuje.
 
             return ['fetched' => 0, 'matched' => 0, 'unmatched' => 0, 'lastUid' => $maxUid];
         }
