@@ -3,7 +3,11 @@
    (pick scope, pick a filter pill) is always visible; power features (flag facets, boolean
    expression, sub-event depth) live in a collapsed "Pokročilé" panel so ordinary users aren't
    overwhelmed and the page stays compact. #}
-{% set qbase = app.request.query.all %}
+{# Base for link/merge controls (event picker, category switcher, sort headers, pagination).
+   MUST start from the canonical scope (scopeParams) — the raw query alone omits the IMPLICIT
+   default event, so on the landing view sort/category/paging links would drop the event scope
+   and silently widen to all events. The raw query overlays it (explicit params win). #}
+{% set qbase = scopeParams|merge(app.request.query.all) %}
 <div class="container participants-page">
 
     {# ---- PAGE TITLE ----------------------------------------------------- #}
