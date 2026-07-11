@@ -684,12 +684,45 @@ class Participant implements ParticipantInterface
         }
     }
 
+    /**
+     * Nahradí skupinu příznaků novou (kompatibilní s cílovou nabídkou) a přitom nedopustí, aby
+     * účastníkovi zůstaly DVĚ nesmazané instance pro tutéž nabídku skupiny příznaků.
+     *
+     * `RegistrationOffer::findCompatibleFlagGroupRange()` páruje cílovou skupinu podle kategorie,
+     * takže dvě staré skupiny téže kategorie zkonvergují na jednu cílovou nabídku. Slepé přidání
+     * nechalo prázdnou duplicitu; `findGroup()` pak mohlo vrátit ji, uložení příznaku do ní znamenalo
+     * duplicitní příplatek a zobrazení se rozešlo s cenou (kořen #226).
+     *
+     * Příznak se přitom nikdy nezahazuje: když příznaky nesou obě instance, ponechají se obě
+     * (to už řeší guard v `findGroup`, který preferuje instanci s aktivními příznaky).
+     */
     public function replaceParticipantFlagGroup(
         ParticipantFlagGroup $oldParticipantFlagGroup,
         ParticipantFlagGroup $newParticipantFlagGroup,
     ): void
     {
         $oldParticipantFlagGroup->delete();
+        $newFlagGroupOffer = $newParticipantFlagGroup->getFlagGroupOffer();
+        $newHasFlags = !$newParticipantFlagGroup->getParticipantFlags(true)->isEmpty();
+        if (null !== $newFlagGroupOffer) {
+            foreach ($this->getFlagGroups(null, null, true) as $existingFlagGroup) {
+                if ($existingFlagGroup === $newParticipantFlagGroup
+                    || $existingFlagGroup->getFlagGroupOffer() !== $newFlagGroupOffer) {
+                    continue;
+                }
+                if (!$existingFlagGroup->getParticipantFlags(true)->isEmpty()) {
+                    if (!$newHasFlags) {
+                        return; // Prázdný nováček by byl jen duplicita.
+                    }
+                    break; // Obě nesou příznaky — raději duplicita než ztráta zaplaceného příznaku.
+                }
+                if (!$newHasFlags) {
+                    return; // Obě prázdné — ponecháme tu, která už v kolekci je.
+                }
+                $existingFlagGroup->delete(); // Prázdnou duplicitu nahradí ta, která nese příznaky.
+                break;
+            }
+        }
         $this->getFlagGroups()->add($newParticipantFlagGroup);
     }
 
