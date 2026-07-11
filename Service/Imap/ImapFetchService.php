@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Imap;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Imap\ImapSyncState;
 use OswisOrg\OswisCalendarBundle\Entity\Imap\ParticipantIncomingMail;
 use OswisOrg\OswisCalendarBundle\Entity\Imap\ParticipantUnmatchedMail;
@@ -52,6 +53,7 @@ final class ImapFetchService
 
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly TokenStorageInterface $tokenStorage,
         private readonly LoggerInterface $logger,
         private readonly ImapSyncStateRepository $syncStateRepository,
         private readonly ParticipantIncomingMailRepository $incomingRepository,
@@ -317,28 +319,36 @@ final class ImapFetchService
                 }
 
             }
-            // Round complete: persist + advance the UID watermark, flush, clear,
-            // and free the chunk (webklex messages + their EAGER participant
-            // graphs) before the next IMAP pull. Watermark advances per round →
-            // a crash/timeout mid-sweep is resumable, not re-pulled from scratch.
+            // Round complete: persist + advance the UID watermark, flush, then
+            // free the chunk before the next IMAP pull. Watermark advances per
+            // round → a crash/timeout mid-sweep is resumable, not re-pulled.
             $state->setLastSeenUid($maxUid);
             $state->setLastFetchAt(new DateTime());
             $this->em->persist($state);
             $this->em->flush();
-            // DO NOT em->clear() here. clear() detaches the security actor
-            // (the authenticated AppUser from the token). The next Blameable
-            // prePersist then sees an UNMANAGED actor, and Gedmo re-persist()s it
-            // (AbstractTrackingListener::updateField, "if field value is reference,
-            // persist object"). Because AppUser is itself Blameable and references
-            // the same actor, that persist re-enters prePersist → persist → …
-            // infinitely → the worker balloons and is cgroup-OOM-killed (~12s,
-            // SIGKILL). THAT recursion — not message accumulation — was the real
-            // /imap-refresh failure (the "405" was a stale-cache symptom of the
-            // crash). Chunked fetch + unset($messages) already bounds the heavy
-            // webklex body/attachment memory; the Doctrine UoW holds only the
-            // lightweight mail rows for this cap, so keeping the actor managed
-            // (no clear) is both correct and memory-safe. CLI never hit this
-            // because there is no security token there (getActor() === null).
+            // Bound peak memory across the WHOLE run. unset($messages) frees the
+            // webklex bodies/attachments, but the Doctrine identity map still
+            // retains every matched Participant graph — and those are EAGER-loaded
+            // and heavy, so over a cap=100 backlog sweep they accumulate until the
+            // process is cgroup-OOM-killed (observed on the prod cron: php8.5 grew
+            // to ~1.55 GB, SIGKILL). em->clear() detaches them and bounds peak
+            // memory to a single chunk regardless of $cap.
+            //
+            // BUT clear() also detaches the Blameable security actor: the next
+            // prePersist sees an unmanaged actor and Gedmo re-persist()s it
+            // (AbstractTrackingListener::updateField) which — because AppUser is
+            // itself Blameable — re-enters prePersist infinitely and balloons the
+            // worker (the real in-request /imap-refresh OOM, misread once as a
+            // "405"). That recursion exists ONLY when there is an actor, i.e. the
+            // FPM "refresh" button. In CLI/cron getToken() is null — which is
+            // exactly where the big sweep runs — so we clear there and keep the
+            // UoW managed under FPM (the button uses a small cap, no balloon).
+            if (null === $this->tokenStorage->getToken()) {
+                $this->em->clear();
+                // clear() detached $state; re-attach a managed row so the next
+                // round's setLastSeenUid()/persist() UPDATEs it (not re-INSERT).
+                $state = $this->syncStateRepository->getOrCreate($folderName);
+            }
             unset($messages);
 
             // Fewer messages than requested → no more mail in the UID range, stop.
