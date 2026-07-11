@@ -143,6 +143,13 @@ class WebAdminParticipantsListController extends AbstractController
             $defaultEvent = $this->eventService->getDefaultEvent();
             if (null !== $defaultEvent) {
                 $events = [$defaultEvent];
+                // Carry the implicit default event forward as an explicit scope slug. Without this,
+                // scopeParams (→ the filter form's hidden fields) omits the event, so clicking a
+                // status pill submits `?participantCategorySlug=…&filter=…` with no event — and the
+                // presence of participantCategorySlug disables this very fallback → the list silently
+                // widens to ALL events. Making the default scope explicit keeps pills/tabs scoped.
+                $defaultSlug = (string) $defaultEvent->getSlug();
+                $eventSlugs = '' === $defaultSlug ? [] : [$defaultSlug];
                 $isDefaultScope = true;
             }
         }
