@@ -30,8 +30,12 @@ use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use OswisOrg\OswisCalendarBundle\ApiPlatform\EventRangeFilter;
+use OswisOrg\OswisCalendarBundle\Filter\SubEventFilter;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor;
+use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\BankAccount;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\DateTimeRange;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
@@ -55,20 +59,34 @@ use function assert;
             security: "is_granted('ROLE_CUSTOMER')"
         ),
         new Post(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
             denormalizationContext: ['groups' => ['entities_post', 'calendar_events_post'], 'enable_max_depth' => true],
-            security: "is_granted('ROLE_MANAGER')"
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
         new Get(
             normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_CUSTOMER')"
         ),
         new Put(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
             denormalizationContext: ['groups' => ['entity_put', 'calendar_event_put'], 'enable_max_depth' => true],
-            security: "is_granted('ROLE_MANAGER')"
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
         new Delete(
             denormalizationContext: ['groups' => ['calendar_event_delete'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')"
+        ),
+        // Editor "duplicate slot" — clones a single activity/block (no children) to a new
+        // time/group. Body (optional): startDateTime/endDateTime/name/targetGroup/superEvent.
+        new Post(
+            uriTemplate: '/events/{id}/duplicate',
+            denormalizationContext: ['groups' => ['entities_post', 'calendar_events_post'], 'enable_max_depth' => true],
+            normalizationContext: ['groups' => ['entity_get', 'calendar_event_get'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+            name: 'calendar_event_duplicate',
+            processor: EventDuplicateProcessor::class,
         ),
     ],
     filters: ['search'],
@@ -77,6 +95,7 @@ use function assert;
 #[SearchAnnotation(['id', 'name', 'description', 'note', 'shortName', 'slug'])]
 #[ApiFilter(OrderFilter::class)]
 #[ApiFilter(EventRangeFilter::class)]
+#[ApiFilter(SubEventFilter::class)]
 /**
  */
 #[Entity(repositoryClass: EventRepository::class)]
@@ -106,6 +125,45 @@ class Event implements NameableInterface
     #[Column(type: 'string', nullable: true)]
     protected ?string $placeText = null;
 
+    /** Na aktivitu se vůbec nepřihlašuje (jen informativní / docházka řešena jinde). */
+    public const SIGNUP_MODE_NONE = 'none';
+
+    /** Dobrovolné přidání aktivity do „mého programu"; kapacita se NEvynucuje. */
+    public const SIGNUP_MODE_OPTIONAL = 'optional';
+
+    /** Nutné přihlášení v appce; kapacita vynucená (409 při plnu) — DEFAULT, stávající chování (BC). */
+    public const SIGNUP_MODE_REQUIRED = 'required';
+
+    /** Zápis osobně (nástěnka/kiosek/kancelář); self-signup smí jen organizační tým. */
+    public const SIGNUP_MODE_STAFF = 'staff';
+
+    public const SIGNUP_MODES = [
+        self::SIGNUP_MODE_NONE,
+        self::SIGNUP_MODE_OPTIONAL,
+        self::SIGNUP_MODE_REQUIRED,
+        self::SIGNUP_MODE_STAFF,
+    ];
+
+    /** Režim přihlašování na aktivitu: none|optional|required|staff. Default 'required' = stávající chování (BC). */
+    #[Column(type: 'string', length: 16, options: ['default' => 'required'])]
+    protected string $signupMode = 'required';
+
+    /** Doplňková informace k přihlašování na aktivitu (zobrazí se účastníkovi). */
+    #[Column(type: 'text', nullable: true)]
+    protected ?string $signupNote = null;
+
+    /** Uzávěrka přihlašování na aktivitu. */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?\DateTimeInterface $signupDeadline = null;
+
+    /** Cena aktivity v CELÝCH Kč (stejná jednotka jako RegistrationOffer/PriceTrait — potvrzeno userem 2026-06-25). */
+    #[Column(type: 'integer', nullable: true)]
+    protected ?int $price = null;
+
+    /** Zvýraznění aktivity v programu. */
+    #[Column(type: 'boolean', options: ['default' => false])]
+    protected bool $highlight = false;
+
     // fetch=EAGER: Doctrine ORM 3's strict identity-map check
     // (EntityIdentityCollisionException) throws when a Participant lazy ghost
     // is initialised mid-request after the same participant was already
@@ -132,8 +190,9 @@ class Event implements NameableInterface
     /**
      * @var Collection<int, Event> $subEvents
      */
+    // MaxDepth 3 (program modul): turnus → blok (program-block) → podakce.
     #[OneToMany(targetEntity: self::class, mappedBy: 'superEvent')]
-    #[MaxDepth(2)]
+    #[MaxDepth(3)]
     protected Collection $subEvents;
 
     /** @var Collection<int, EventContent> $contents */
@@ -160,6 +219,11 @@ class Event implements NameableInterface
     #[JoinColumn(name: 'event_series_id', referencedColumnName: 'id')]
     #[MaxDepth(1)]
     private ?EventGroup $group = null;
+
+    /** Cílová skupina pásků pro rotaci slotů (program modul). LAZY: zatím mimo serializaci. */
+    #[ManyToOne(targetEntity: ParticipantGroup::class)]
+    #[JoinColumn(name: 'target_group_id', referencedColumnName: 'id', nullable: true)]
+    private ?ParticipantGroup $targetGroup = null;
 
     public function __construct(
         ?Nameable $nameable = null,
@@ -365,6 +429,56 @@ class Event implements NameableInterface
         $this->placeText = $placeText;
     }
 
+    public function getSignupMode(): string
+    {
+        return $this->signupMode;
+    }
+
+    public function setSignupMode(string $signupMode): void
+    {
+        $this->signupMode = $signupMode;
+    }
+
+    public function getSignupNote(): ?string
+    {
+        return $this->signupNote;
+    }
+
+    public function setSignupNote(?string $signupNote): void
+    {
+        $this->signupNote = $signupNote;
+    }
+
+    public function getSignupDeadline(): ?\DateTimeInterface
+    {
+        return $this->signupDeadline;
+    }
+
+    public function setSignupDeadline(?\DateTimeInterface $signupDeadline): void
+    {
+        $this->signupDeadline = $signupDeadline;
+    }
+
+    public function getPrice(): ?int
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?int $price): void
+    {
+        $this->price = $price;
+    }
+
+    public function isHighlight(): bool
+    {
+        return $this->highlight;
+    }
+
+    public function setHighlight(bool $highlight): void
+    {
+        $this->highlight = $highlight;
+    }
+
     public function setPlace(?Place $event): void
     {
         $this->place = $event;
@@ -506,6 +620,16 @@ class Event implements NameableInterface
             $this->group->removeEvent($this);
         }
         $this->group = $group;
+    }
+
+    public function getTargetGroup(): ?ParticipantGroup
+    {
+        return $this->targetGroup;
+    }
+
+    public function setTargetGroup(?ParticipantGroup $targetGroup): void
+    {
+        $this->targetGroup = $targetGroup;
     }
 
     public function isEventSuperEvent(?self $event = null, ?bool $recursive = true): bool

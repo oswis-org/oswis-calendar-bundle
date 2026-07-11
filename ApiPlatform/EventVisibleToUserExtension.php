@@ -36,10 +36,12 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if ($resourceClass !== Event::class || $this->security->isGranted('ROLE_ADMIN')
-            || $this->security->isGranted(
-                'ROLE_ROOT'
-            )) {
+        // ROLE_MANAGER+ (staff/editor) sees every event — incl. internal services — needed for the
+        // program editor. ROLE_ADMIN/ROOT already implied by the role hierarchy, kept explicit.
+        if ($resourceClass !== Event::class
+            || $this->security->isGranted('ROLE_MANAGER')
+            || $this->security->isGranted('ROLE_ADMIN')
+            || $this->security->isGranted('ROLE_ROOT')) {
             return;
         }
         $user = $this->security->getUser();
@@ -53,12 +55,26 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->leftJoin("$rootAlias.superEvent", 'superEvent')
-            ->leftJoin("$rootAlias.category", 'visibilityCategory')
+            ->leftJoin("$rootAlias.category", 'visibilityCategory');
+        // A participant sees the whole PUBLIC program subtree of their turnus (blok → podakce → …),
+        // not just direct children — so the app can render the full programme with foreign groups
+        // dimmed. Internal services (publicInApp = false) stay hidden. Strictly ADDITIVE: walks the
+        // superEvent chain a few levels up and only WIDENS visibility to publicInApp=true events.
+        $ancestorConditions = ['superEvent IN (:user_event_ids)'];
+        $prevAncestor = 'superEvent';
+        for ($i = 2; $i <= 5; $i++) {
+            $join = "ancestorEvt$i";
+            $queryBuilder->leftJoin("$prevAncestor.superEvent", $join);
+            $ancestorConditions[] = "$join IN (:user_event_ids)";
+            $prevAncestor = $join;
+        }
+        $queryBuilder
             ->andWhere(sprintf(
                 '(%s.id IN (:user_event_ids)'
                 .' OR %s.superEvent IN (:user_event_ids)'
-                .' OR (%s.publicInApp = true AND visibilityCategory.type IN (:public_category_types)))',
-                $rootAlias, $rootAlias, $rootAlias,
+                .' OR (%s.publicInApp = true AND visibilityCategory.type IN (:public_category_types))'
+                .' OR (%s.publicInApp = true AND (%s)))',
+                $rootAlias, $rootAlias, $rootAlias, $rootAlias, implode(' OR ', $ancestorConditions),
             ))
             ->setParameter('user_event_ids', array_map(static fn (?Event $event) => $event?->getId(), $events))
             ->setParameter('public_category_types', [EventCategory::YEAR_OF_EVENT, EventCategory::BATCH_OF_EVENT]);

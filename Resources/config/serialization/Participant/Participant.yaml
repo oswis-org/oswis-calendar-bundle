@@ -7,8 +7,10 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     offer:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
     contact:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_staff_teams_get', 'calendar_staff_team_get', 'calendar_event_staff_assignments_get', 'calendar_event_staff_assignment_get' ]
     event:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    group:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     flagGroups:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
@@ -29,6 +31,17 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     sortableName:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     payments:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+
+OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup:
+  attributes:
+    id:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    name:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    color:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    mealOrder:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
 
@@ -227,6 +240,10 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+        - 'calendar_staff_teams_get'
+        - 'calendar_staff_team_get'
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
     contactName:
       groups:
         - 'calendar_participants_get'

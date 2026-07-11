@@ -1,0 +1,26 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block content %}
+    <h1>Itinerář — {{ instructorName }}</h1>
+    <p class="muted">{{ turnusName }}</p>
+
+    {% if rows is empty %}
+        <p class="muted">Žádné přiřazené aktivity.</p>
+    {% else %}
+        {% set lastDate = null %}
+        {% for r in rows %}
+            {% if r.date != lastDate %}
+                {% if not loop.first %}</table>{% endif %}
+                {% set lastDate = r.date %}
+                <h2 class="day">{{ r.date|cz_weekday }} {{ r.date|cz_date }}</h2>
+                <table class="prog">
+            {% endif %}
+            <tr>
+                <td class="time">{{ r.time|hm }}</td>
+                <td>{{ r.activity }}{% if r.placeText %} <span class="place">{{ r.placeText }}</span>{% endif %}</td>
+                <td class="staff">{{ r.roleLabel }}</td>
+            </tr>
+            {% if loop.last %}</table>{% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock %}

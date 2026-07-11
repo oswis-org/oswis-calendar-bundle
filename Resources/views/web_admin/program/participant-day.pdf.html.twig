@@ -1,0 +1,27 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block content %}
+    <h1>Program{% if dayName %} {{ dayName }}{% endif %} <span style="font-weight: normal;">({{ date|cz_weekday }} {{ date|cz_date }})</span></h1>
+
+    {% set anyActivity = false %}
+    {% for label, activities in blocks %}
+        {% if activities is not empty %}
+            {% set anyActivity = true %}
+            <div class="block">
+                <h2 class="section">{{ label }} program</h2>
+                <table class="prog">
+                    {% for a in activities %}
+                        <tr>
+                            <td class="time">{{ a.start|hm }}</td>
+                            <td>
+                                <span class="{{ a.highlight ? 'hl' : '' }}">{{ a.name }}{% if a.seriesRoman %} {{ a.seriesRoman }}.{% endif %}</span>{% if a.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: a.targetGroup } only %}{% endif %}{% if a.placeText %} <span class="place">{{ a.placeText }}</span>{% endif %}
+                                {% for sub in a.subActivities %}<div class="sub">{{ sub.name }}{% if sub.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: sub.targetGroup } only %}{% endif %}</div>{% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+    {% endfor %}
+    {% if not anyActivity %}<p class="muted">Na tento den zatím není zveřejněný program.</p>{% endif %}
+{% endblock %}

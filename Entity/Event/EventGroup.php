@@ -16,6 +16,7 @@ use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
+use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\OneToMany;
@@ -64,10 +65,38 @@ class EventGroup implements NameableInterface
     #[MaxDepth(1)]
     protected ?Collection $events = null;
 
+    /** Rozlišení typu série: 'program-series' (série aktivit v programu) vs 'brand-series' (ročníková/brandová série). STRING, nezaměňovat s EventCategory.type. */
+    #[Column(type: 'string', nullable: true)]
+    protected ?string $type = null;
+
+    /** Série pokrývá TÉŽE aktivitu v různých slotech (např. opakovaný workshop) → účastníkovi se nabídne další slot, pokud je první plný. */
+    #[Column(type: 'boolean', options: ['default' => false])]
+    protected bool $sameActivity = false;
+
     public function __construct(?Nameable $nameable = null)
     {
         $this->events = new ArrayCollection();
         $this->setFieldsFromNameable($nameable);
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): void
+    {
+        $this->type = $type;
+    }
+
+    public function isSameActivity(): bool
+    {
+        return $this->sameActivity;
+    }
+
+    public function setSameActivity(bool $sameActivity): void
+    {
+        $this->sameActivity = $sameActivity;
     }
 
     public function addEvent(?Event $event): void

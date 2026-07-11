@@ -1,0 +1,48 @@
+OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment:
+  attributes:
+    id:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+    event:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'
+    participant:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'
+    externalName:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'
+    roleLabel:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'
+    team:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'
+    excluded:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'
+    note:
+      groups:
+        - 'calendar_event_staff_assignments_get'
+        - 'calendar_event_staff_assignment_get'
+        - 'calendar_event_staff_assignments_post'
+        - 'calendar_event_staff_assignment_put'

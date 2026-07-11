@@ -1,0 +1,32 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block style %}
+    table.signup { width: 100%; border-collapse: collapse; margin-top: 10pt; }
+    table.signup td { padding: 9pt 6pt; vertical-align: bottom; }
+    td.snum { width: 24pt; text-align: right; font-weight: bold; color: #444; white-space: nowrap; }
+    td.sline { border-bottom: 0.6pt solid #888; }
+    td.sgap { width: 22pt; border: 0; }
+{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <p style="font-size: 11pt; margin: 0 0 4pt;">Dne: <strong>{% if date %}{{ date|cz_weekday }} {{ date|cz_date }}{% else %}____________{% endif %}</strong></p>
+
+    {% set half = (rowCount + 1) // 2 %}
+    <table class="signup">
+        {% for i in 1..half %}
+            <tr>
+                <td class="snum">{{ i }}.</td>
+                <td class="sline"></td>
+                <td class="sgap"></td>
+                {% if i + half <= rowCount %}
+                    <td class="snum">{{ i + half }}.</td>
+                    <td class="sline"></td>
+                {% else %}
+                    <td class="sgap"></td>
+                    <td></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

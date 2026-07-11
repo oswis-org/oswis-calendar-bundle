@@ -11,8 +11,32 @@ services:
     OswisOrg\OswisCoreBundle\Export\ExportDefinitionInterface:
       tags: [ 'oswis.export_definition' ]
 
+  ## Program module Twig helpers (staff_name / time_block / roman) — STOPA 1.3 výstupy
+  OswisOrg\OswisCalendarBundle\Twig\Extension\ProgramExtension:
+    autowire: true
+    tags: [ 'twig.extension' ]
+
+  ## Program module data layer (read-only DTO arrays for outputs)
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService:
+    autowire: true
+    public: true
+
+  ## Program module output renderer (PDF via ExportService)
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramOutputService:
+    autowire: true
+    public: true
+
+  ## Program module output dispatch (type → ExportResult) shared by web admin + API controllers
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramOutputResolver:
+    autowire: true
+    public: true
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
+    autowire: true
+    public: false
+
+  OswisOrg\OswisCalendarBundle\Export\SubEventAttendanceExportDefinition:
     autowire: true
     public: false
 
@@ -398,6 +422,52 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  ## Program module repositories (STOPA 1.1 entities, exposed via API in 1.2)
+  OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantGroupRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantGroupRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
   OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Registration\RegistrationFlagOfferRepository
     autowire: true
@@ -630,7 +700,26 @@ services:
       - { name: api_platform.doctrine.orm.query_extension.collection }
       - { name: api_platform.doctrine.orm.query_extension.item }
 
+  OswisOrg\OswisCalendarBundle\ApiPlatform\EventSectionVisibleExtension:
+    autowire: true
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+      - { name: api_platform.doctrine.orm.query_extension.item }
+
   OswisOrg\OswisCalendarBundle\State\SubEventAttendanceProcessor:
+    autowire: true
+    tags: [ 'api_platform.state_processor' ]
+
+  ## Program module CRUD write processor — resolves relation IRIs (default denormalizer
+  ## builds empty embedded entities → Doctrine cascade error) then delegates to persist.
+  OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor:
+    autowire: true
+    arguments:
+      $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+    tags: [ 'api_platform.state_processor' ]
+
+  ## Editor "duplicate slot" — POST /api/events/{id}/duplicate
+  OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor:
     autowire: true
     tags: [ 'api_platform.state_processor' ]
 

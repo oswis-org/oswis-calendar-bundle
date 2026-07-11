@@ -1,0 +1,51 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{% block content %}
+    <h1>Instruktorský program — {{ turnusName }}</h1>
+
+    <div class="cols">
+    {% for node in tree %}
+        <div class="day">
+            <h2 class="day">
+                {%- if node.day %}{{ node.day.name ?: node.day.date|cz_date }}{% if node.day.date %} <span class="muted" style="font-weight: normal;">({{ node.day.date|cz_weekday }} {{ node.day.date|cz_date }})</span>{% endif %}{% else %}Nezařazené aktivity{% endif -%}
+            </h2>
+            <table class="prog">
+                {% for a in node.activities %}
+                    <tr>
+                        <td class="time">{{ a.start|hm }}{% if a.end %}–{{ a.end|hm }}{% endif %}</td>
+                        <td>
+                            <span class="{{ a.highlight ? 'hl' : '' }}">{{ a.name }}{% if a.seriesRoman %} {{ a.seriesRoman }}.{% endif %}</span>{% if a.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: a.targetGroup } only %}{% endif %}{% if a.placeText %} <span class="place">{{ a.placeText }}</span>{% endif %}{% if a.category %} <span class="muted">· {{ a.category }}</span>{% endif %}
+                            {% for sub in a.subActivities %}<div class="sub">{{ sub.start|hm }} {{ sub.name }}{% if sub.targetGroup %} – {% include '@OswisOrgOswisCalendar/web_admin/program/_group_chip.html.twig' with { group: sub.targetGroup } only %}{% endif %}</div>{% endfor %}
+                            {% if a.internalNote %}<div class="note">{{ a.internalNote }}</div>{% endif %}
+                        </td>
+                        <td class="staff">
+                            {%- for s in a.staff %}{% include '@OswisOrgOswisCalendar/web_admin/program/_staff_label.html.twig' with { assignment: s } only %}{% if not loop.last %}, {% endif %}{% endfor -%}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% if node.day and matrix[node.day.date] is defined %}
+                <div class="note" style="margin-top: 3pt;">
+                    {%- for category, list in matrix[node.day.date] %}{{ category }}: {% for r in list %}{{ r.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% if not loop.last %} · {% endif %}{% endfor -%}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+
+    {% if sheets %}
+        <h2 class="section">Archy (kapacitní aktivity)</h2>
+        <table class="prog">{% for s in sheets %}<tr><td>{{ s.name }}</td><td class="muted">kapacita {{ s.baseCapacity ?? s.fullCapacity }}</td></tr>{% endfor %}</table>
+    {% endif %}
+    {% if prices %}
+        <h2 class="section">Ceny</h2>
+        <table class="prog">{% for p in prices %}<tr><td>{{ p.name }}</td><td>{{ p.price }} Kč</td></tr>{% endfor %}</table>
+    {% endif %}
+    {% if sections %}
+        <h2 class="section">Sekce</h2>
+        {% for section in sections %}
+            <h3>{{ section.name }}{% if section.publicInApp is not same as (true) %} <span class="muted">[interní]</span>{% endif %}</h3>
+            {% if section.textValue %}<div>{{ section.textValue|raw }}</div>{% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock %}

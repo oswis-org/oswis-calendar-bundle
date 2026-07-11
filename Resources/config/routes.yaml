@@ -17,6 +17,13 @@ oswis_org_oswis_calendar_api_participant_set_flags:
     participantId: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_api_program_output:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\ProgramOutputController
+  path: "/api/program/{type}"
+  requirements:
+    type: 'instruktorsky|sluzby|den|itinerar|itinerar-tym|arch|prihlaseni|cely-program'
+  methods: [GET]
+
 oswis_org_oswis_calendar_participant_resend_activation_email:
   controller: oswis_org_oswis_calendar.participant.participant_controller::resendActivationEmail
   path: "/akce/prihlaska/email-overeni/{participantId}"
@@ -127,6 +134,56 @@ oswis_org_oswis_calendar_web_admin_participants_list_csv:
 oswis_org_oswis_calendar_web_admin_participants_list_pdf:
   controller: oswis_org_oswis_calendar.web_admin.participants_list_controller::showParticipantsListPdf
   path: "/web_admin/seznam-prihlasek-pdf"
+  methods: [GET]
+
+## Program-module outputs (STOPA 1.3 Fáze 7) — PDF/CSV downloads, ROLE_MANAGER
+oswis_org_oswis_calendar_web_admin_program_instructor:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput
+  path: "/web_admin/program/{eventSlug}/instruktorsky.pdf"
+  defaults: { type: instruktorsky }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_roster:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput
+  path: "/web_admin/program/{eventSlug}/sluzby.pdf"
+  defaults: { type: sluzby }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_team:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput
+  path: "/web_admin/program/{eventSlug}/itinerar-tym.pdf"
+  defaults: { type: itinerar-tym }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_full:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput
+  path: "/web_admin/program/{eventSlug}/cely-program.pdf"
+  defaults: { type: cely-program }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_day:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::dayOutput
+  path: "/web_admin/program/{eventSlug}/den/{dayId}.pdf"
+  requirements: { dayId: '\d+' }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_itinerary:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::itineraryOutput
+  path: "/web_admin/program/{eventSlug}/itinerar/{participantId}.pdf"
+  requirements: { participantId: '\d+' }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_signup:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::signupOutput
+  path: "/web_admin/program/{eventSlug}/arch/{activityId}.pdf"
+  requirements: { activityId: '\d+' }
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_attendees:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::attendeesOutput
+  path: "/web_admin/program/{eventSlug}/prihlaseni/{activityId}.{format}"
+  requirements: { activityId: '\d+', format: 'pdf|csv|csv-rfc' }
+  defaults: { format: pdf }
   methods: [GET]
 
 oswis_org_oswis_calendar_web_admin_event:

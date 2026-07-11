@@ -1,0 +1,52 @@
+OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
+  attributes:
+    id:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+    name:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
+    shortName:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
+    slug:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+    type:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
+    color:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
+    defaultStartTime:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
+    defaultEndTime:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
+    defaultPublic:
+      groups:
+        - 'calendar_event_categories_get'
+        - 'calendar_event_category_get'
+        - 'calendar_event_categories_post'
+        - 'calendar_event_category_put'
