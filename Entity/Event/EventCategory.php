@@ -86,12 +86,22 @@ class EventCategory implements NameableInterface
     public const FOOD = 'food';
     /** Nadřazený „blok" programu (nadakce) — sdružuje pod-aktivity (rotace/série); čas se odvozuje z pod-akcí. */
     public const PROGRAM_BLOCK = 'program-block';
+    /** Veřejný program — další typy aktivit (viditelné účastníkovi v appce). */
+    public const CEREMONY = 'ceremony';          // Ceremoniál (zahájení/zakončení)
+    public const FREE_TIME = 'free-time';        // Volný program / pauza
+    public const EVENING_PROGRAM = 'evening-program'; // Večerní program / party
     /** Služby (rozpis SLUŽEB) — kdo má kdy směnu na daném stanovišti. */
     public const SERVICE_STEERING = 'service-steering'; // Řízení
     public const SERVICE_CALLING = 'service-calling';   // Svolávání
     public const SERVICE_CANTEEN = 'service-canteen';   // Jídelna
     public const SERVICE_BAR = 'service-bar';           // Stolárna
     public const SERVICE_KIOSK = 'service-kiosk';       // Kiosek
+    public const SERVICE_MEDIC = 'service-medic';       // Zdravotník
+    public const SERVICE_CHECKOUT = 'service-checkout'; // Check-out (odjezdové úkony)
+    public const SERVICE_NIGHT_WATCH = 'service-night-watch'; // Noční hlídka
+    public const SERVICE_CLEANING = 'service-cleaning'; // Úklid
+    public const SERVICE_TECH = 'service-tech';         // Technika / AV
+    public const SERVICE_PHOTO = 'service-photo';       // Foto / dokumentace
     public const ALLOWED_TYPES
         = [
             self::YEAR_OF_EVENT,
@@ -106,11 +116,20 @@ class EventCategory implements NameableInterface
             self::SPORT,
             self::FOOD,
             self::PROGRAM_BLOCK,
+            self::CEREMONY,
+            self::FREE_TIME,
+            self::EVENING_PROGRAM,
             self::SERVICE_STEERING,
             self::SERVICE_CALLING,
             self::SERVICE_CANTEEN,
             self::SERVICE_BAR,
             self::SERVICE_KIOSK,
+            self::SERVICE_MEDIC,
+            self::SERVICE_CHECKOUT,
+            self::SERVICE_NIGHT_WATCH,
+            self::SERVICE_CLEANING,
+            self::SERVICE_TECH,
+            self::SERVICE_PHOTO,
         ];
 
     /**
