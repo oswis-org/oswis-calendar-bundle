@@ -3,6 +3,7 @@
 namespace OswisOrg\OswisCalendarBundle\Controller\Event;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventFile;
+use OswisOrg\OswisCalendarBundle\Form\MediaObject\EventFileType;
 use OswisOrg\OswisCoreBundle\Controller\AbstractClass\AbstractFileAction;
 
 final class EventFileAction extends AbstractFileAction
@@ -10,6 +11,11 @@ final class EventFileAction extends AbstractFileAction
     public static function getFileClassName(): string
     {
         return EventFile::class;
+    }
+
+    public static function getFileFormClass(): string
+    {
+        return EventFileType::class;
     }
 
     public static function getFileNewInstance(): EventFile
