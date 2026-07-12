@@ -37,15 +37,15 @@
                 </mj-text>
             {% endif %}
 
-            {% if payment.participant.remainingRest > 0 %}
+            {% if payment.participant.remainingPriceRest > 0 %}
                 <mj-text>
                     Pro plné uhrazení <b>doplatku</b> zbývá doplatit ještě
-                    <b>{{ payment.participant.remainingRest }},-&nbsp;Kč</b>
+                    <b>{{ payment.participant.remainingPriceRest }},-&nbsp;Kč</b>
                     {%- block message_payment_rest_date -%}{%- endblock -%}.
                 </mj-text>
             {% endif %}
 
-            {% if payment.participant.remainingDeposit > 0 and payment.participant.remainingRest > 0 %}
+            {% if payment.participant.remainingDeposit > 0 and payment.participant.remainingPriceRest > 0 %}
                 <mj-text>
                     Celou částku {{ f ? 'můžete' : 'můžeš' }} zaplatit i&nbsp;v&nbsp;jedné společné platbě
                     — potom jde o&nbsp;částku
