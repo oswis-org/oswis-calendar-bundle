@@ -58,7 +58,7 @@ final class ParticipantExportDefinition implements ExportDefinitionInterface
             new ExportColumn('price', 'Celková cena', static fn (object $p): mixed => $p instanceof Participant ? $p->getPrice() : null, true, ExportColumn::TYPE_NUMBER),
             new ExportColumn('paidPrice', 'Zaplaceno [Kč]', static fn (object $p): mixed => $p instanceof Participant ? $p->getPaidPrice() : null, true, ExportColumn::TYPE_NUMBER),
             new ExportColumn('remainingPrice', 'Zbývá [Kč]', static fn (object $p): mixed => $p instanceof Participant ? $p->getRemainingPrice() : null, true, ExportColumn::TYPE_NUMBER),
-            new ExportColumn('paidPercentage', 'Zaplaceno [%]', static fn (object $p): mixed => $p instanceof Participant ? str_replace('.', ',', (string) ($p->getPaidPricePercentage() * 100)) : null),
+            new ExportColumn('paidPercentage', 'Zaplaceno [%]', static fn (object $p): mixed => $p instanceof Participant ? str_replace('.', ',', (string) round($p->getPaidPricePercentage() * 100)) : null),
             new ExportColumn('deletedAt', 'Smazáno', static fn (object $p): mixed => $p instanceof Participant ? ($p->getDeletedAt()?->format('Y-m-d') ?? '') : null),
         ];
     }
