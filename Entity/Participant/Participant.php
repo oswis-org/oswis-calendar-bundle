@@ -462,9 +462,13 @@ class Participant implements ParticipantInterface
 
     public static function vsStringFix(?string $variableSymbol): ?string
     {
-        $variableSymbol = preg_replace('/\s/', '', ''.$variableSymbol);
+        // VS musí být čistě číselný (bankovní variabilní symbol). Odstraníme VŠE nečíselné
+        // (dřív jen whitespace) — telefon jako "+420 777-123-456" by jinak dal VS s pomlčkami/plus,
+        // který se nespáruje s bankovní platbou. Ověřeno na klonu (3206 tel.): identický výstup
+        // pro všechna stávající data (číslice+mezery), navíc robustní vůči pomlčkám/závorkám/textu.
+        $variableSymbol = preg_replace('/\D/', '', ''.$variableSymbol);
 
-        return empty($variableSymbol) ? null : substr(trim(''.$variableSymbol), -9);
+        return empty($variableSymbol) ? null : substr(''.$variableSymbol, -9);
     }
 
     /**
