@@ -1,0 +1,17 @@
+{% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
+
+{# Oznámení o zrušení (soft-delete) přihlášky. Proměnné (set v PHP $data,
+   viz ParticipantMailService::sendRegistrationCancelled):
+     - participant / appUser / contact / salutationName: jako u každého participant mailu
+     - f: vykání (true) vs tykání (false)
+   Pozdrav (Dobrý den / Ahoj + salName) řeší base message.html.twig. #}
+
+{% block content_inner %}
+    <p>
+        {{ f ? 'Vaše' : 'Tvá' }} přihláška{% if participant.event(false) %} na akci <strong>{{ participant.event(false).name }}</strong>{% endif %}
+        byla zrušena.
+    </p>
+    <p>
+        {% if f %}Pokud jde o omyl nebo se chcete přihlásit znovu, ozvěte se nám prosím — rádi pomůžeme.{% else %}Pokud jde o omyl nebo se chceš přihlásit znovu, ozvi se nám prosím — rádi pomůžeme.{% endif %}
+    </p>
+{% endblock %}

@@ -427,6 +427,18 @@ class ParticipantService
         $this->em->persist($participant);
         $this->em->flush();
         $this->logger->info("Participant ({$participant->getId()}) soft-deleted.");
+        // Sjednocení s app/API cestou (PUT → postWrite → notifyParticipantChanged): web admin delete
+        // teď taky pošle notifikaci „zrušení přihlášky", takže obě cesty se chovají stejně.
+        // Best-effort — selhání mailu nesmí shodit smazání.
+        try {
+            $this->participantMailService->notifyParticipantChanged($participant);
+        } catch (\Throwable $e) {
+            $this->logger->error(sprintf(
+                'Cancellation notice for participant #%d failed: %s',
+                $participant->getId() ?? 0,
+                $e->getMessage(),
+            ));
+        }
     }
 
     /**

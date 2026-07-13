@@ -60,6 +60,8 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
     public const TYPE_PAYMENT = 'payment';
     /** Sent on an UPDATE to an existing registration (not the initial confirmation) — lists what changed. */
     public const TYPE_REGISTRATION_CHANGED = 'registration-changed';
+    /** Sent when a registration is soft-deleted (cancelled) — a plain cancellation notice, not a diff. */
+    public const TYPE_REGISTRATION_CANCELLED = 'registration-cancelled';
 
     /**
      * Types whose template needs data that a bare re-send cannot reconstruct.
@@ -75,6 +77,8 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
         self::TYPE_PAYMENT,
         self::TYPE_ACTIVATION_REQUEST,
         self::TYPE_REGISTRATION_CHANGED,
+        // `registration-cancelled`: standalone file template (like registration-changed), not a DB category.
+        self::TYPE_REGISTRATION_CANCELLED,
     ];
 
     public static function isResendableType(?string $type): bool

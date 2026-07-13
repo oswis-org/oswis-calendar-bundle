@@ -156,6 +156,25 @@
                         <tbody><tr><td>Kategorie</td><td>{{ participant.participantCategory(false).name|default('—') }}</td></tr></tbody>
                         <tbody><tr><td>Var. symbol</td><td>{{ participant.variableSymbol|default('—') }}</td></tr></tbody>
                     </table>
+                    <div id="partial-stay" style="margin-top: .5rem;">
+                        <strong>Partial-stay</strong>
+                        <span class="text-muted" style="font-size: .8rem;">(pozdější příjezd / dřívější odjezd — volný text, plní tým z e-mailu/poznámky)</span>
+                        <form method="post" style="margin-top: .25rem;"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_partial_stay', {participantId: participantId}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('participant_partial_stay_' ~ participantId) }}">
+                            <div style="display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end;">
+                                <label style="font-size: .82rem;">Pozdější příjezd<br>
+                                    <input type="text" name="plannedArrival" value="{{ participant.plannedArrival|default('') }}"
+                                           placeholder="např. 2. 9. kolem 17:00" style="width: 12rem;">
+                                </label>
+                                <label style="font-size: .82rem;">Dřívější odjezd<br>
+                                    <input type="text" name="plannedDeparture" value="{{ participant.plannedDeparture|default('') }}"
+                                           placeholder="např. 4. 9. odpoledne" style="width: 12rem;">
+                                </label>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 

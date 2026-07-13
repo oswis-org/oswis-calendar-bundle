@@ -201,6 +201,41 @@ class Participant implements ParticipantInterface
     protected ?string $variableSymbol = null;
 
     /**
+     * Partial-stay: plánovaný pozdější příjezd, VOLNÝ TEXT (realita je mlhavá — „2. 9. kolem 17:00",
+     * „10:22 vlak", „po snídani"; viz Drive `pozdější příjezdy a dřívejší odjezdy`). Prázdné = přijede standardně.
+     * Plní tým z e-mailu/poznámky; zobrazeno v check-in seznamu i na detailu.
+     */
+    #[Column(type: 'string', nullable: true)]
+    protected ?string $plannedArrival = null;
+
+    /**
+     * Partial-stay: plánovaný dřívější odjezd, VOLNÝ TEXT („4. 9. odpoledne", „po snídani").
+     * Prázdné = odjíždí hromadně se všemi.
+     */
+    #[Column(type: 'string', nullable: true)]
+    protected ?string $plannedDeparture = null;
+
+    /**
+     * Check-in: čas příjezdu (null = zatím nepřijel / no-show). TIMESTAMP, ne flag — příjezd/odjezd jako
+     * flag kategorie (TYPE_ARRIVED/TYPE_LEFT) byly jen nepoužité konstanty; pole je pro check-in desk rychlejší
+     * (přímý toggle, čas příjezdu, present-count/no-show bez flag-joinů). Odjezd zůstává hromadný — per-osoba
+     * dřívější odjezd = `departedAt` jen u výjimek.
+     */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $arrivedAt = null;
+
+    /** Check-in: čas dřívějšího odjezdu (jen u výjimek; hromadný odjezd se NEzapisuje per-osoba). */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $departedAt = null;
+
+    /**
+     * Check-in: čas výdeje trička (null = nevydáno). TIMESTAMP jako arrivedAt (flag t-shirt-handed-over byl
+     * jen nepoužitá konstanta). Velikost trička je JINÁ věc (flag TYPE_T_SHIRT_SIZE, {@see getTShirt()}).
+     */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?DateTime $tShirtHandedOverAt = null;
+
+    /**
      * @param RegistrationOffer|null $regRange
      * @param AbstractContact|null  $contact
      * @param Collection|null       $participantNotes
@@ -1079,6 +1114,72 @@ class Participant implements ParticipantInterface
     public function setVariableSymbol(?string $variableSymbol): void
     {
         $this->variableSymbol = $variableSymbol;
+    }
+
+    public function getPlannedArrival(): ?string
+    {
+        return $this->plannedArrival;
+    }
+
+    public function setPlannedArrival(?string $plannedArrival): void
+    {
+        $this->plannedArrival = '' === trim((string) $plannedArrival) ? null : trim((string) $plannedArrival);
+    }
+
+    public function getPlannedDeparture(): ?string
+    {
+        return $this->plannedDeparture;
+    }
+
+    public function setPlannedDeparture(?string $plannedDeparture): void
+    {
+        $this->plannedDeparture = '' === trim((string) $plannedDeparture) ? null : trim((string) $plannedDeparture);
+    }
+
+    /** Má účastník nějakou odchylku od standardního příjezdu/odjezdu (partial-stay)? */
+    public function hasPartialStay(): bool
+    {
+        return null !== $this->plannedArrival || null !== $this->plannedDeparture;
+    }
+
+    public function getArrivedAt(): ?DateTime
+    {
+        return $this->arrivedAt;
+    }
+
+    public function setArrivedAt(?DateTime $arrivedAt): void
+    {
+        $this->arrivedAt = $arrivedAt;
+    }
+
+    public function isArrived(): bool
+    {
+        return null !== $this->arrivedAt;
+    }
+
+    public function getDepartedAt(): ?DateTime
+    {
+        return $this->departedAt;
+    }
+
+    public function setDepartedAt(?DateTime $departedAt): void
+    {
+        $this->departedAt = $departedAt;
+    }
+
+    public function getTShirtHandedOverAt(): ?DateTime
+    {
+        return $this->tShirtHandedOverAt;
+    }
+
+    public function setTShirtHandedOverAt(?DateTime $tShirtHandedOverAt): void
+    {
+        $this->tShirtHandedOverAt = $tShirtHandedOverAt;
+    }
+
+    public function isTShirtHandedOver(): bool
+    {
+        return null !== $this->tShirtHandedOverAt;
     }
 
     public function getTShirt(): string

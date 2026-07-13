@@ -1,0 +1,46 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{# Tisknutelný check-in seznam per turnus (papírový fallback). Prázdné ☐ = ruční odškrtnutí příjezdu u stolu.
+   Data: WebAdminCheckInController::listPdf. #}
+
+{% block content %}
+    <h1>Check-in — {{ eventName }}</h1>
+    <p class="muted">Přijelo {{ arrived }} / {{ total }} · vytištěno {{ 'now'|date('j.n.Y H:i') }}</p>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+        <thead>
+            <tr style="border-bottom: 2px solid #333;">
+                <th style="text-align: left; padding: 3px 4px;">#</th>
+                <th style="text-align: left; padding: 3px 4px;">Jméno</th>
+                <th style="text-align: left; padding: 3px 4px;">Skupina / pásek</th>
+                <th style="text-align: left; padding: 3px 4px;">Platba</th>
+                <th style="text-align: left; padding: 3px 4px;">Partial-stay</th>
+                <th style="text-align: center; padding: 3px 4px; width: 90px;">Příjezd</th>
+                <th style="text-align: center; padding: 3px 4px; width: 90px;">Tričko</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in participants %}
+                <tr style="border-bottom: 1px solid #ccc;">
+                    <td style="padding: 3px 4px;">{{ loop.index }}</td>
+                    <td style="padding: 3px 4px;">{{ p.contact.name ?? ('#' ~ p.id) }}</td>
+                    <td style="padding: 3px 4px;">
+                        {%- if p.group %}{% if p.group.color %}● {% endif %}{{ p.group.name ?? '—' }}{% endif -%}
+                    </td>
+                    <td style="padding: 3px 4px;">{% if p.remainingPrice > 0 %}zbývá {{ p.remainingPrice }} Kč{% else %}OK{% endif %}</td>
+                    <td style="padding: 3px 4px;">
+                        {%- if p.plannedArrival %}⏱ {{ p.plannedArrival }}{% endif %}{% if p.plannedDeparture %} ↩ {{ p.plannedDeparture }}{% endif -%}
+                    </td>
+                    <td style="text-align: center; padding: 3px 4px;">
+                        {%- if p.arrived %}✓ {{ p.arrivedAt|date('H:i') }}{% else %}☐{% endif -%}
+                    </td>
+                    <td style="text-align: center; padding: 3px 4px;">
+                        {%- if p.tShirtHandedOver %}✓{% else %}☐{% endif %}{% if p.tShirt %} {{ p.tShirt }}{% endif -%}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" style="text-align: center; padding: 8px;">Žádní účastníci v tomto turnusu.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

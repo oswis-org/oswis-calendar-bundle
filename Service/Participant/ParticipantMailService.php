@@ -33,6 +33,7 @@ class ParticipantMailService
 {
     /** Standalone file template for the on-update change notice (no DB category/group config needed). */
     public const REGISTRATION_CHANGED_TEMPLATE = '@OswisOrgOswisCalendar/e-mail/pages/participant-registration-changed.html.twig';
+    public const REGISTRATION_CANCELLED_TEMPLATE = '@OswisOrgOswisCalendar/e-mail/pages/participant-registration-cancelled.html.twig';
 
     public function __construct(
         protected EntityManagerInterface $em,
@@ -56,6 +57,21 @@ class ParticipantMailService
     public function notifyParticipantChanged(Participant $participant): void
     {
         $since = $this->lastRegistrationMailSentAt($participant);
+        // Soft-delete (cancellation): send a dedicated "registration cancelled" notice instead of the
+        // confusing "changed (everything removed)" diff. Only when the participant had a live registration
+        // (a prior summary/changed mail) — don't notify abandoned/never-completed registrations.
+        if (null !== $participant->getDeletedAt()) {
+            if (null !== $since) {
+                $this->sendRegistrationCancelled($participant);
+            } else {
+                $this->logger->info(sprintf(
+                    'Participant #%d cancelled but had no prior registration mail — no cancellation notice.',
+                    $participant->getId() ?? 0,
+                ));
+            }
+
+            return;
+        }
         if (null === $since) {
             try {
                 $this->sendSummary($participant);
@@ -137,6 +153,47 @@ class ParticipantMailService
             } catch (\Throwable $exception) {
                 $this->logger->error(sprintf(
                     'Registration-changed mail for participant #%d to user #%d failed: %s',
+                    $participant->getId() ?? 0,
+                    $appUser->getId() ?? 0,
+                    $exception->getMessage(),
+                ));
+            }
+        }
+    }
+
+    /**
+     * Send the "registration cancelled" notice to each of the participant's contact persons via a
+     * standalone file template. Fired on soft-delete from BOTH the web admin ({@see ParticipantService::delete})
+     * and the API/app PUT ({@see notifyParticipantChanged}), so cancellation behaves the same everywhere.
+     * Plain notice — no diff, no QR. Per-recipient failures are logged, not thrown (must not break delete).
+     */
+    public function sendRegistrationCancelled(Participant $participant): void
+    {
+        $contact = $participant->getContact();
+        $event = $participant->getEvent();
+        $title = 'Zrušení přihlášky'.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : '');
+        foreach ($participant->getContactPersons(true) as $contactPerson) {
+            if (!$contactPerson instanceof AbstractContact || null === ($appUser = $contactPerson->getAppUser())) {
+                continue;
+            }
+            try {
+                $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CANCELLED);
+                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
+                $data = [
+                    'participant'    => $participant,
+                    'appUser'        => $appUser,
+                    'contact'        => $contact,
+                    // f (vykání) jen z participant.formal/kategorie — viz sendRegistrationChanged.
+                    'f'              => $participant->isFormal(true) ?? false,
+                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+                    'type'           => ParticipantMail::TYPE_REGISTRATION_CANCELLED,
+                ];
+                $this->em->persist($participantMail);
+                $this->mailService->sendEMail($participantMail, self::REGISTRATION_CANCELLED_TEMPLATE, $data);
+                $this->em->flush();
+            } catch (\Throwable $exception) {
+                $this->logger->error(sprintf(
+                    'Registration-cancelled mail for participant #%d to user #%d failed: %s',
                     $participant->getId() ?? 0,
                     $appUser->getId() ?? 0,
                     $exception->getMessage(),

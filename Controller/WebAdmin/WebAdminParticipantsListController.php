@@ -749,13 +749,6 @@ class WebAdminParticipantsListController extends AbstractController
     }
 
     /**
-     * Summary statistics over a (pre-filter) participant collection.
-     *
-     * @param Collection<int, Participant> $participants
-     *
-     * @return array{total: int, deleted: int, paid: int, unpaid: int, sumPaid: int, sumPrice: int, sumRemaining: int}
-     */
-    /**
      * Count, over the given (scoped) set, how many non-deleted participants carry each flag,
      * keyed by flag slug — shown next to each facet option. Uses only primed collections (no
      * queries) and getSlug() (never the mutating getName(); see the OOM note in getTShirtGroup).
