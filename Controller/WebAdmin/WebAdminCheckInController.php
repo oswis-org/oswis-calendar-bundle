@@ -1,0 +1,210 @@
+<?php
+
+namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
+
+use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
+use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCoreBundle\Service\ExportService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+/**
+ * Check-in obrazovka per turnus (modul D2, Fáze A — {@see docs/OSWIS_1_CHECKIN_MODULE_ANALYSIS_2026-07-13.md}).
+ * Seznam účastníků turnusu s rychlým označením příjezdu, present-count/no-show, řazením (dietáři-first dle
+ * `ParticipantGroup.mealOrder` / pásek dle barvy / abecedně) a viditelným partial-stay + platbou.
+ * Odjezd se per-osoba NEřeší (hromadný) — jen výjimky (dřívější odjezd) přes departedAt.
+ */
+#[IsGranted('ROLE_MANAGER')]
+final class WebAdminCheckInController extends AbstractController
+{
+    public function __construct(
+        private readonly ParticipantRepository $participantRepository,
+        private readonly EventRepository $eventRepository,
+        private readonly EntityManagerInterface $em,
+        private readonly ExportService $exportService,
+    ) {
+    }
+
+    public function list(Request $request, string $eventSlug): Response
+    {
+        $event = $this->resolveEvent($eventSlug);
+        $sort = (string) $request->query->get('sort', 'diet');
+        $participants = $this->loadSortedParticipants($event, $sort);
+
+        $arrived = 0;
+        foreach ($participants as $p) {
+            if ($p->isArrived()) {
+                ++$arrived;
+            }
+        }
+        $total = count($participants);
+        $title = 'Check-in — '.($event->getName() ?? $eventSlug);
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/check-in.html.twig', [
+            'event'        => $event,
+            'eventSlug'    => $eventSlug,
+            'participants' => $participants,
+            'total'        => $total,
+            'arrived'      => $arrived,
+            'noShow'       => $total - $arrived,
+            'sort'         => $sort,
+            'page_title'   => $title,
+            'pageTitle'    => $title,
+        ]);
+    }
+
+    /**
+     * Tisknutelný seznam pro fyzickou evidenci (papírový fallback je load-bearing — tým ho drží u stolu,
+     * ne-app účastníci, wifi/baterie). Landscape A4.
+     */
+    public function listPdf(Request $request, string $eventSlug): Response
+    {
+        $event = $this->resolveEvent($eventSlug);
+        $sort = (string) $request->query->get('sort', 'diet');
+        $participants = $this->loadSortedParticipants($event, $sort);
+        $eventName = $event->getName() ?? $eventSlug;
+        $arrived = 0;
+        foreach ($participants as $p) {
+            if ($p->isArrived()) {
+                ++$arrived;
+            }
+        }
+
+        $html = $this->renderView('@OswisOrgOswisCalendar/web_admin/check-in-print.html.twig', [
+            'eventName'    => $eventName,
+            'participants' => $participants,
+            'arrived'      => $arrived,
+            'total'        => count($participants),
+        ]);
+        $pdf = $this->exportService->getPdfFromHtml($html, true, 'Check-in — '.$eventName);
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="check-in-'.$eventSlug.'.pdf"',
+        ]);
+    }
+
+    private function resolveEvent(string $eventSlug): Event
+    {
+        return $this->eventRepository->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug])
+            ?? throw $this->createNotFoundException("Turnus '$eventSlug' nenalezen.");
+    }
+
+    /**
+     * Načte účastníky turnusu, prime-uje LAZY kolekce (flagy/platby — jinak N+1) a seřadí.
+     *
+     * @return list<Participant>
+     */
+    private function loadSortedParticipants(Event $event, string $sort): array
+    {
+        // POZOR na konzistenci počtů (user 2026-07-13): filtrujeme na TYPE_ATTENDEE, aby headcount
+        // check-inu (total/přítomní/no-show) byl BY-CONSTRUCTION shodný s dashboardem „přihlášky"
+        // ({@see AdminDashboardExtension} → countAttendeesGroupedBySubEvent, také jen attendee).
+        // Organizátoři/tým jsou účastníci ROČNÍKOVÉ (parent) akce, ne turnusu, takže dnes je to no-op —
+        // ale drží obě obrazovky ve shodě, i kdyby někdo někdy zaregistroval ne-attendee přímo na turnus.
+        // deletedAt IS NULL a dedup řeší getParticipants/filterCollection.
+        /** @var list<Participant> $participants */
+        $participants = $this->participantRepository->getParticipants([
+            ParticipantRepository::CRITERIA_EVENT                 => $event,
+            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 0,
+            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => ParticipantCategory::TYPE_ATTENDEE,
+        ], true)->getValues();
+
+        $ids = [];
+        foreach ($participants as $p) {
+            if (null !== $p->getId()) {
+                $ids[] = $p->getId();
+            }
+        }
+        if ([] !== $ids) {
+            $this->participantRepository->primeAggregationCollections($ids);
+        }
+
+        return $this->sortParticipants($participants, $sort);
+    }
+
+    public function markArrived(Request $request, int $participantId): Response
+    {
+        return $this->toggleTimestamp($request, $participantId, 'arrived');
+    }
+
+    public function markDeparted(Request $request, int $participantId): Response
+    {
+        return $this->toggleTimestamp($request, $participantId, 'departed');
+    }
+
+    public function markTShirt(Request $request, int $participantId): Response
+    {
+        return $this->toggleTimestamp($request, $participantId, 'tshirt');
+    }
+
+    private function toggleTimestamp(Request $request, int $participantId, string $which): Response
+    {
+        if (!$this->isCsrfTokenValid("checkin_{$which}_{$participantId}", (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->em->find(Participant::class, $participantId);
+        if (!$participant instanceof Participant || $participant->isDeleted()) {
+            throw $this->createNotFoundException('Účastník nenalezen.');
+        }
+        // Toggle: neoznačený → nyní; označený → zrušit (překlik omylem).
+        match ($which) {
+            'arrived' => $participant->setArrivedAt($participant->isArrived() ? null : new DateTime()),
+            'tshirt'  => $participant->setTShirtHandedOverAt($participant->isTShirtHandedOver() ? null : new DateTime()),
+            default   => $participant->setDepartedAt(null !== $participant->getDepartedAt() ? null : new DateTime()),
+        };
+        $this->em->flush();
+
+        return new RedirectResponse($this->safeBackToList($request, (string) $participant->getEvent()?->getSlug()));
+    }
+
+    /**
+     * @param list<Participant> $participants
+     *
+     * @return list<Participant>
+     */
+    private function sortParticipants(array $participants, string $sort): array
+    {
+        $byName = static fn(Participant $a, Participant $b): int => strcmp(
+            (string) $a->getContact()?->getName(),
+            (string) $b->getContact()?->getName(),
+        );
+        usort($participants, match ($sort) {
+            'band' => static function (Participant $a, Participant $b) use ($byName): int {
+                $ca = (string) $a->getGroup()?->getColor();
+                $cb = (string) $b->getGroup()?->getColor();
+
+                return $ca === $cb ? $byName($a, $b) : strcmp($ca, $cb);
+            },
+            'alpha' => $byName,
+            // default 'diet': skupina s nižším mealOrder první (dietáři jdou na jídlo první),
+            // NULL mealOrder (bez skupiny) na konec; v rámci skupiny abecedně.
+            default => static function (Participant $a, Participant $b) use ($byName): int {
+                $ma = $a->getGroup()?->getMealOrder() ?? PHP_INT_MAX;
+                $mb = $b->getGroup()?->getMealOrder() ?? PHP_INT_MAX;
+
+                return $ma === $mb ? $byName($a, $b) : $ma <=> $mb;
+            },
+        });
+
+        return $participants;
+    }
+
+    private function safeBackToList(Request $request, string $eventSlug): string
+    {
+        $return = (string) $request->request->get('return', '');
+        if (str_starts_with($return, '/web_admin/') && !str_contains($return, "\n") && !str_contains($return, "\r")) {
+            return $return;
+        }
+
+        return $this->generateUrl('oswis_org_oswis_calendar_web_admin_checkin_list', ['eventSlug' => $eventSlug]);
+    }
+}

@@ -136,6 +136,35 @@ oswis_org_oswis_calendar_web_admin_participants_list_pdf:
   path: "/web_admin/seznam-prihlasek-pdf"
   methods: [GET]
 
+## Check-in modul (D2, Fáze A) — ROLE_MANAGER
+oswis_org_oswis_calendar_web_admin_checkin_arrived:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::markArrived
+  path: "/web_admin/check-in/ucastnik/{participantId}/prijel"
+  requirements: { participantId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_checkin_departed:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::markDeparted
+  path: "/web_admin/check-in/ucastnik/{participantId}/odjel"
+  requirements: { participantId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_checkin_tshirt:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::markTShirt
+  path: "/web_admin/check-in/ucastnik/{participantId}/tricko"
+  requirements: { participantId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_checkin_pdf:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::listPdf
+  path: "/web_admin/check-in/{eventSlug}/tisk.pdf"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_checkin_list:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::list
+  path: "/web_admin/check-in/{eventSlug}"
+  methods: [GET]
+
 ## Program-module outputs (STOPA 1.3 Fáze 7) — PDF/CSV downloads, ROLE_MANAGER
 oswis_org_oswis_calendar_web_admin_program_instructor:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput
@@ -332,6 +361,13 @@ oswis_org_oswis_calendar_web_admin_participant_resend_activation:
 oswis_org_oswis_calendar_web_admin_participant_set_gender:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::setGender
   path: "/web_admin/ucastnici/{participantId}/pohlavi"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_partial_stay:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::setPartialStay
+  path: "/web_admin/ucastnici/{participantId}/partial-stay"
   requirements:
     participantId: '\d+'
   methods: [POST]

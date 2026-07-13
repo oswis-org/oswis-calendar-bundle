@@ -526,6 +526,37 @@ final class WebAdminParticipantsController extends AbstractController
     }
 
     /**
+     * Nastaví partial-stay (plánovaný pozdější příjezd / dřívější odjezd) — VOLNÝ TEXT, plní tým z e-mailu/
+     * poznámky. Lightweight DQL UPDATE + L2 evikce (jako setGender) — vyhne se getName/L2 OOM na plném grafu.
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function setPartialStay(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_partial_stay_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $arrival = trim((string) $request->request->get('plannedArrival', ''));
+        $departure = trim((string) $request->request->get('plannedDeparture', ''));
+        $this->em->createQuery(
+            'UPDATE '.Participant::class.' p SET p.plannedArrival = :a, p.plannedDeparture = :d WHERE p.id = :id'
+        )
+            ->setParameter('a', '' === $arrival ? null : $arrival)
+            ->setParameter('d', '' === $departure ? null : $departure)
+            ->setParameter('id', $participantId)
+            ->execute();
+        $cache = $this->em->getCache();
+        if (null !== $cache) {
+            $cache->evictEntity(Participant::class, $participantId);
+        }
+        $this->addFlash('success', sprintf('Partial-stay účastníka #%d uložen.', $participantId));
+
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_detail',
+            ['participantId' => $participantId, '_fragment' => 'partial-stay'],
+        ));
+    }
+
+    /**
      * Resolve a safe post-action redirect target: the `return` form field if it is a
      * same-host admin (/web_admin/...) path, otherwise the participant detail page.
      * Never trusts an absolute/off-site URL (open-redirect guard).

@@ -16,6 +16,11 @@ services:
     autowire: true
     tags: [ 'twig.extension' ]
 
+  ## Admin úvod — lehké dashboard staty (STOPA 2.2), jen levné SQL COUNT
+  OswisOrg\OswisCalendarBundle\Twig\Extension\AdminDashboardExtension:
+    autowire: true
+    tags: [ 'twig.extension' ]
+
   ## Program module data layer (read-only DTO arrays for outputs)
   OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService:
     autowire: true
@@ -114,6 +119,11 @@ services:
     public: true
 
   OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminEventController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController:
     autowire: true
     autoconfigure: true
     public: true
