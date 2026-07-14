@@ -1,0 +1,52 @@
+OswisOrg\OswisCalendarBundle\Entity\CheckIn\ParticipantStationVisit:
+  attributes:
+    id:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'
+        - 'calendar_participant_get'
+        - 'calendar_participants_get'
+    participant:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'
+        - 'calendar_participant_station_visit_post'
+        - 'calendar_participant_station_visit_put'
+    station:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'
+        - 'calendar_participant_station_visit_post'
+        - 'calendar_participant_station_visit_put'
+        - 'calendar_participant_get'
+        - 'calendar_participants_get'
+        - 'calendar_check_in_queue'
+    completedAt:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'
+        - 'calendar_participant_station_visit_post'
+        - 'calendar_participant_station_visit_put'
+        - 'calendar_participant_get'
+        - 'calendar_participants_get'
+        - 'calendar_check_in_queue'
+    value:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'
+        - 'calendar_participant_station_visit_post'
+        - 'calendar_participant_station_visit_put'
+        - 'calendar_participant_get'
+        - 'calendar_participants_get'
+    note:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'
+        - 'calendar_participant_station_visit_post'
+        - 'calendar_participant_station_visit_put'
+        - 'calendar_participant_get'
+        - 'calendar_participants_get'
+    createdBy:
+      groups:
+        - 'calendar_participant_station_visits_get'
+        - 'calendar_participant_station_visit_get'

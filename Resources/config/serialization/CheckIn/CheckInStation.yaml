@@ -1,0 +1,76 @@
+OswisOrg\OswisCalendarBundle\Entity\CheckIn\CheckInStation:
+  attributes:
+    id:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+    name:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    shortName:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    slug:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+    stationKind:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    orderNumber:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    icon:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    capturesValue:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    valueLabel:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    valueOptions:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    functionalRole:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    requiresOnline:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'
+    event:
+      groups:
+        - 'calendar_check_in_stations_get'
+        - 'calendar_check_in_station_get'
+        - 'calendar_check_in_stations_post'
+        - 'calendar_check_in_station_put'

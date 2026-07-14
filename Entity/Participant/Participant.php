@@ -32,6 +32,8 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCalendarBundle\Entity\CheckIn\CheckInStation;
+use OswisOrg\OswisCalendarBundle\Entity\CheckIn\ParticipantStationVisit;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\FlagsByType;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
@@ -98,6 +100,16 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
             normalizationContext: ['groups' => ['entities_get', 'calendar_participants_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_CUSTOMER')"
         ),
+        // Odlehčená fronta pro check-in stůl: jen skaláry potřebné do seznamu (jméno, VS,
+        // telefon, platba, arrivedAt, deletedAt, skupina, splněné stanice) — BEZ vloženého
+        // turnusu, definic příznaků, plateb, auditních objektů. ~12 kB/účastník → ~1 kB.
+        // Scoped per-akce (?event.id=), bez paginace (konvence scoped seznamů).
+        new GetCollection(
+            uriTemplate: '/participant_check_in_queue',
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['calendar_check_in_queue'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')"
+        ),
         new Post(
             denormalizationContext: ['groups' => ['entities_post', 'calendar_participants_post'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')"
@@ -133,6 +145,11 @@ class Participant implements ParticipantInterface
     #[OneToMany(targetEntity: ParticipantNote::class, mappedBy: 'participant', cascade: ['all'])]
     #[MaxDepth(1)]
     protected Collection $notes;
+
+    /** @var Collection<int, ParticipantStationVisit> Check-in: splněné stanice pipeline (příjezdový den). */
+    #[OneToMany(targetEntity: ParticipantStationVisit::class, mappedBy: 'participant', cascade: ['all'])]
+    #[MaxDepth(1)]
+    protected Collection $stationVisits;
 
     /** @var Collection<int, ParticipantPayment> */
     #[OneToMany(targetEntity: ParticipantPayment::class, mappedBy: 'participant', cascade: ['all'])]
@@ -256,6 +273,7 @@ class Participant implements ParticipantInterface
         $this->participantContacts = new ArrayCollection();
         $this->participantRegistrations = new ArrayCollection();
         $this->notes = new ArrayCollection();
+        $this->stationVisits = new ArrayCollection();
         $this->flagGroups = (is_array($flagGroups) ? new ArrayCollection($flagGroups) : $flagGroups) ?? new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->eMails = new ArrayCollection();
@@ -1180,6 +1198,29 @@ class Participant implements ParticipantInterface
     public function isTShirtHandedOver(): bool
     {
         return null !== $this->tShirtHandedOverAt;
+    }
+
+    /** @return Collection<int, ParticipantStationVisit> */
+    public function getStationVisits(): Collection
+    {
+        return $this->stationVisits;
+    }
+
+    /** Splnění konkrétní stanice (nebo null, pokud jí účastník ještě neprošel). */
+    public function getStationVisit(CheckInStation $station): ?ParticipantStationVisit
+    {
+        foreach ($this->stationVisits as $visit) {
+            if ($visit->getStation() === $station) {
+                return $visit;
+            }
+        }
+
+        return null;
+    }
+
+    public function hasCompletedStation(CheckInStation $station): bool
+    {
+        return null !== $this->getStationVisit($station);
     }
 
     public function getTShirt(): string

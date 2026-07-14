@@ -1,0 +1,12 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\Bed:
+  attributes:
+    id:
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_accommodation_unit_get' ]
+    unit:
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put' ]
+    label:
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put', 'calendar_accommodation_unit_get' ]
+    bedType:
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put', 'calendar_accommodation_unit_get' ]
+    pairedWith:
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put' ]

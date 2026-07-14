@@ -1,17 +1,31 @@
 OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
   attributes:
+    id:
+      groups: [ 'calendar_check_in_queue' ]
+    deletedAt:
+      groups: [ 'calendar_check_in_queue' ]
     participantCategory:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     notes:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+    arrivedAt:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
+    departedAt:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    plannedArrival:
+      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+    plannedDeparture:
+      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+    stationVisits:
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     offer:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
     contact:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_staff_teams_get', 'calendar_staff_team_get', 'calendar_event_staff_assignments_get', 'calendar_event_staff_assignment_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_staff_teams_get', 'calendar_staff_team_get', 'calendar_event_staff_assignments_get', 'calendar_event_staff_assignment_get', 'calendar_check_in_queue' ]
     event:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     group:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     flagGroups:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
     priceRest:
@@ -19,28 +33,28 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
     priceDeposit:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     price:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     remainingPrice:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     paidPrice:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     activatedContactUser:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     variableSymbol:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     sortableName:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     payments:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
 OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup:
   attributes:
     id:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     name:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     color:
-      groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+      groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     mealOrder:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
 
@@ -244,6 +258,7 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
         - 'calendar_staff_team_get'
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
+        - 'calendar_check_in_queue'
     contactName:
       groups:
         - 'calendar_participants_get'
@@ -256,10 +271,12 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+        - 'calendar_check_in_queue'
     phone:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+        - 'calendar_check_in_queue'
     url:
       groups:
         - 'calendar_participant_get'

@@ -1,0 +1,14 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\PricingTemplate:
+  attributes:
+    id:
+      groups: [ 'calendar_pricing_templates_get', 'calendar_pricing_template_get' ]
+    name:
+      groups: [ 'calendar_pricing_templates_get', 'calendar_pricing_template_get', 'calendar_pricing_templates_post', 'calendar_pricing_template_put' ]
+    rateKind:
+      groups: [ 'calendar_pricing_templates_get', 'calendar_pricing_template_get', 'calendar_pricing_templates_post', 'calendar_pricing_template_put' ]
+    baseRate:
+      groups: [ 'calendar_pricing_templates_get', 'calendar_pricing_template_get', 'calendar_pricing_templates_post', 'calendar_pricing_template_put' ]
+    extraBedRate:
+      groups: [ 'calendar_pricing_templates_get', 'calendar_pricing_template_get', 'calendar_pricing_templates_post', 'calendar_pricing_template_put' ]
+    depositPercentage:
+      groups: [ 'calendar_pricing_templates_get', 'calendar_pricing_template_get', 'calendar_pricing_templates_post', 'calendar_pricing_template_put' ]

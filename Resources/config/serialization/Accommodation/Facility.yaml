@@ -1,0 +1,14 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\Facility:
+  attributes:
+    id:
+      groups: [ 'calendar_facilities_get', 'calendar_facility_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_get' ]
+    name:
+      groups: [ 'calendar_facilities_get', 'calendar_facility_get', 'calendar_facilities_post', 'calendar_facility_put', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_get' ]
+    slug:
+      groups: [ 'calendar_facilities_get', 'calendar_facility_get' ]
+    facilityType:
+      groups: [ 'calendar_facilities_get', 'calendar_facility_get', 'calendar_facilities_post', 'calendar_facility_put' ]
+    operatesYearRound:
+      groups: [ 'calendar_facilities_get', 'calendar_facility_get', 'calendar_facilities_post', 'calendar_facility_put' ]
+    onlineBookingEnabled:
+      groups: [ 'calendar_facilities_get', 'calendar_facility_get', 'calendar_facilities_post', 'calendar_facility_put' ]

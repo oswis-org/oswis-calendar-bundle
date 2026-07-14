@@ -1,0 +1,24 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\AccommodationUnit:
+  attributes:
+    id:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_reservation_get', 'calendar_reservations_get' ]
+    name:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put', 'calendar_reservation_get', 'calendar_reservations_get' ]
+    slug:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get' ]
+    facility:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    unitType:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    capacity:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    floor:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    temporarilyUnavailable:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    features:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    pricingTemplate:
+      groups: [ 'calendar_accommodation_units_get', 'calendar_accommodation_unit_get', 'calendar_accommodation_units_post', 'calendar_accommodation_unit_put' ]
+    beds:
+      groups: [ 'calendar_accommodation_unit_get' ]
