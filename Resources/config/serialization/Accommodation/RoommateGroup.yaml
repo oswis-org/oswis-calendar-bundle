@@ -1,0 +1,10 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\RoommateGroup:
+  attributes:
+    id:
+      groups: [ 'calendar_roommate_groups_get', 'calendar_roommate_group_get' ]
+    name:
+      groups: [ 'calendar_roommate_groups_get', 'calendar_roommate_group_get', 'calendar_roommate_groups_post', 'calendar_roommate_group_put' ]
+    event:
+      groups: [ 'calendar_roommate_groups_get', 'calendar_roommate_group_get', 'calendar_roommate_groups_post', 'calendar_roommate_group_put' ]
+    members:
+      groups: [ 'calendar_roommate_groups_get', 'calendar_roommate_group_get', 'calendar_roommate_groups_post', 'calendar_roommate_group_put' ]

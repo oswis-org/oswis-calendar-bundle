@@ -128,6 +128,18 @@ services:
     autoconfigure: true
     public: true
 
+  ## Check-in modul (D2) — doménová logika pipeline (idempotentní upsert, arrival, progress)
+  OswisOrg\OswisCalendarBundle\Service\CheckIn\CheckInService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  ## Accommodation (D2) — assign-during-checkin, měkký constraint engine, obousměrné dohledání
+  OswisOrg\OswisCalendarBundle\Service\Accommodation\AccommodationService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAdHocMailController:
     autowire: true
     autoconfigure: true
@@ -469,6 +481,81 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  OswisOrg\OswisCalendarBundle\Repository\CheckIn\CheckInStationRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\CheckIn\CheckInStationRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\CheckIn\ParticipantStationVisitRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\CheckIn\ParticipantStationVisitRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  ## Accommodation modul (D2) — repozitáře
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\FacilityRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\FacilityRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\AccommodationFeatureRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\AccommodationFeatureRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\AccommodationUnitRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\AccommodationUnitRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\ReservationRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\ReservationRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\BedRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\BedRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommateGroupRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommateGroupRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\PricingTemplateRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\PricingTemplateRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommatePreferenceRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommatePreferenceRepository
+    autowire: true
+    public: true
+    arguments: [ '@doctrine' ]
+    tags: [ 'doctrine.repository_service' ]
+
   OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository
     autowire: true
@@ -723,6 +810,20 @@ services:
   ## Program module CRUD write processor — resolves relation IRIs (default denormalizer
   ## builds empty embedded entities → Doctrine cascade error) then delegates to persist.
   OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor:
+    autowire: true
+    arguments:
+      $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+    tags: [ 'api_platform.state_processor' ]
+
+  ## Check-in station visit (D2) — idempotentní upsert per (participant, station); DELETE přes remove.
+  OswisOrg\OswisCalendarBundle\State\ParticipantStationVisitProcessor:
+    autowire: true
+    arguments:
+      $removeProcessor: '@api_platform.doctrine.orm.state.remove_processor'
+    tags: [ 'api_platform.state_processor' ]
+
+  ## Accommodation CRUD write processor — resolvuje IRI relací (facility/unit/bed/pairedWith/event/members).
+  OswisOrg\OswisCalendarBundle\State\AccommodationApiProcessor:
     autowire: true
     arguments:
       $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'

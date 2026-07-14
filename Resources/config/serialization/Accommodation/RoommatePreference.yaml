@@ -1,0 +1,14 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\RoommatePreference:
+  attributes:
+    id:
+      groups: [ 'calendar_roommate_preferences_get', 'calendar_roommate_preference_get' ]
+    participant:
+      groups: [ 'calendar_roommate_preferences_get', 'calendar_roommate_preference_get' ]
+    withParticipant:
+      groups: [ 'calendar_roommate_preferences_get', 'calendar_roommate_preference_get' ]
+    preferenceText:
+      groups: [ 'calendar_roommate_preferences_get', 'calendar_roommate_preference_get' ]
+    source:
+      groups: [ 'calendar_roommate_preferences_get', 'calendar_roommate_preference_get' ]
+    status:
+      groups: [ 'calendar_roommate_preferences_get', 'calendar_roommate_preference_get' ]

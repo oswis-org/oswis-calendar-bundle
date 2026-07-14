@@ -1,0 +1,18 @@
+OswisOrg\OswisCalendarBundle\Entity\Accommodation\Reservation:
+  attributes:
+    id:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    participant:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    unit:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    bed:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    status:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    fromDate:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    toDate:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+    checkedInAt:
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
