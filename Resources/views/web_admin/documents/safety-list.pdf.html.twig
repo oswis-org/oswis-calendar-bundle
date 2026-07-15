@@ -1,0 +1,53 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{# Bezpečnostní list k podpisu (#212 F3 / check-in §7) — per-osoba předvyplněné (jméno + datum narození
+   z přihlášky), 1 prohlášení na stranu. Text = verbatim reálný `Bezpečnostní list 2025.docx` (legislativně
+   fixní; STUDENTLIFE opt-in bod 8 + GDPR foto bod 9 jsou vtělené v textu). Data: OperationalDocumentService. #}
+
+{% block style %}
+    .decl { page-break-after: always; }
+    .decl:last-child { page-break-after: auto; }
+    .decl h1 { font-size: 14pt; margin: 0 0 6pt; text-transform: none; letter-spacing: 0; }
+    .decl ol { font-size: 8pt; line-height: 1.22; padding-left: 15pt; margin: 4pt 0; }
+    .decl ol li { margin-bottom: 2.5pt; text-align: justify; }
+    .sign { margin-top: 12pt; font-size: 9.5pt; line-height: 1.4; }
+    .sign .fill { font-weight: bold; }
+    .sign .line { border-bottom: 0.7pt solid #333; display: inline-block; min-width: 170pt; }
+{% endblock %}
+
+{% block content %}
+    {% for person in people %}
+        <div class="decl">
+            <h1>Bezpečnostní list — {{ eventName }}</h1>
+            <ol>
+                <li>Účastník akce Seznamovák pro studenty Univerzity Palackého (dále jen „Seznamovák“) je povinen dodržovat platné hygienické, bezpečnostní, protipožární a další relevantní právní předpisy. Chovat se tak, aby neohrožoval zdraví sebe ani ostatních a žádným způsobem nezpůsoboval škodu na cizím majetku.</li>
+                <li>Účastník akce Seznamovák je povinen bezodkladně oznámit na recepci jakékoliv závady, nedostatky nebo potřebné opravy zjištěné jak v prostorách vyhrazených k jeho ubytování, tak společenských prostorách kempu. Tyto závady budou zaznamenány v knize závad a provozovatel akce Seznamovák se bude snažit sjednat jejich neprodlenou nápravu.</li>
+                <li>Účastník akce Seznamovák nesmí poškozovat zařízení kempu.</li>
+                <li>Účastník Seznamováku bere na vědomí, že vstup do areálu kempu je mu umožněn nepřetržitě s tím, že služba na recepci je oprávněna požádat o jeho doklad totožnosti.</li>
+                <li>Účastník akce Seznamovák je povinen hlídat si své osobní věci, zejména věci vyšší hodnoty. Vaše auto není trezor.</li>
+                <li>Účastník akce Seznamovák prohlašuje, že se v případě sportovních, společenských a jiných společných aktivit, bude řídit pokyny instruktorů.</li>
+                <li>V případě, že účastník akce Seznamovák bude ničit majetek, ohrožovat zdraví ostatních nebo je opakovaně fyzicky či slovně napadat, nebo v případě společných aktivit se nebude řídit pokyny instruktorů, může být z akce vyloučen.</li>
+                <li>Účastník akce Seznamovák projevuje svůj zájem stát se členem zapsaného spolku „STUDENTLIFE z.s., sídlem K. Čapka 891/25, Moravská Třebová 571 01“ a zároveň bere na vědomí, že o jeho členství v zapsaném spolku rozhoduje předseda zapsaného spolku a že na členství nemá právní nárok a členství v zapsaném spolku nemůže vzniknout bez rozhodnutí předsedy zapsaného spolku.</li>
+                <li>Účastník akce Seznamovák souhlasí s tím, aby zapsaný spolek z této akce použil vytvořené fotografie nebo video záznam jeho osoby, a to zejména pro svou vlastní potřebu a pro účely prezentace aktivit zapsaného spolku.</li>
+                <li>Účastník Seznamováku se bude vždy snažit při svém každodenním jednání dbát o dobré jméno Seznamováku.</li>
+                <li>Účastník Seznamováku je povinen zodpovědně zacházet se svěřeným nářadím a sportovními potřebami. Bude zacházet opatrně a bude se chovat tak, aby žádnému účastníkovi nevzniklo žádné nebezpečí. Vždy všechny vypůjčené věci v pořádku a včas vrátí na určené místo. O případné ztrátě nebo poškození vypůjčených věcí bude neprodleně informovat instruktory nebo recepci kempu.</li>
+                <li>Účastník Seznamováku bude respektovat ostatní účastníky a brát je jako sobě rovné.</li>
+                <li>Účastník Seznamováku svým přístupem nebude jakýmkoli způsobem omezovat ostatní účastníky Seznamováku, nebude záměrně kazit společné akce, sportovní aktivity a celkově celý program, pokud o ně nebude mít zájem.</li>
+                <li>Účastník Seznamováku se bude zdržovat takového jednání, které by vedlo ke slovním sporům, fyzickému napadání či vzájemné nesnášenlivosti.</li>
+                <li>Účastník Seznamováku se zavazuje dodržovat čistotu ve svém okolí. Bude se chovat šetrně k přírodě i zařízení a vybavení Seznamováku a vyvaruje se jeho úmyslného ničení. V případě úmyslného ničení nese materiální odpovědnost za způsobenou škodu. V rámci možností se bude snažit šetřit elektrickou a tepelnou energií, teplou a studenou vodou.</li>
+                <li>Účastník akce Seznamovák bude odpadky odhazovat pouze do nádob k tomu určených a bude se snažit o jejich třídění.</li>
+                <li>Účastník akce Seznamovák bez svolení instruktora nebude v prostorách kempu manipulovat s otevřeným ohněm, hořlavinami nebo pyrotechnikou.</li>
+                <li>Účastník Seznamováku se zavazuje, že nebude používat cizí předměty bez vědomí či svolení jeho vlastníka. Případné protiprávní jednání v jakékoli formě bude ohlášeno a následně řešeno ve spolupráci s Policií České republiky.</li>
+                <li>Účastník Seznamováku bude dbát na svou bezpečnost a bezpečnost ostatních. Účastník Seznamováku jakékoli i sebemenší zranění či nevolnost ihned ohlásí instruktorovi, žádné zdravotní obtíže nezatají.</li>
+                <li>Účastník se zavazuje, že bude dodržovat přechodná opatření proti šíření virové nákazy v souladu s aktuálními vyhláškami Ministerstva zdravotnictví a vlády České republiky.</li>
+                <li>Účastník Seznamováku je oprávněn v prostorách kempu přijímat návštěvy pouze ve výjimečných případech, a to se souhlasem instruktora. Pokud účastník Seznamováku v areálu kempu zjistí pobyt cizích osob, které zjevně nejsou členy akce Seznamovák, tuto skutečnost nahlásí neprodleně jakémukoliv instruktorovi.</li>
+                <li>Účastník Seznamováku bude dodržovat výše uvedená pravidla.</li>
+            </ol>
+
+            <div class="sign">
+                <p>Já <span class="fill">{{ person.name }}</span>, narozen/á <span class="fill">{{ person.birthDate ?: '………………………' }}</span>, souhlasím s bezpečnostními předpisy a ostatními smluvními podmínkami akce Seznamovák pro studenty Univerzity Palackého v plném rozsahu.</p>
+                <p style="margin-top: 14pt;">V Mohelnici dne <span class="line" style="min-width: 110pt;"></span> &nbsp;&nbsp;&nbsp; Podpis <span class="line"></span></p>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

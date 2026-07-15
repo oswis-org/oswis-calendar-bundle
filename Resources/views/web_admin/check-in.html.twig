@@ -12,6 +12,8 @@
                 {% if noShow > 0 %}
                     <span class="badge bg-secondary" style="font-size: 1rem;">Nepřijelo {{ noShow }}</span>
                 {% endif %}
+                <a class="btn btn-sm btn-outline-primary" style="margin-left: auto;"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_stations', { eventSlug: eventSlug }) }}">⚙ Konfigurace stanic</a>
             </div>
         </div>
 
@@ -25,6 +27,10 @@
                 {% endfor %}
                 <a class="btn btn-sm btn-outline-dark" target="_blank" rel="noopener" style="margin-left: auto;"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_pdf', { eventSlug: eventSlug, sort: sort }) }}">🖨 Tisk PDF</a>
+                <a class="btn btn-sm btn-outline-dark" target="_blank" rel="noopener"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_safety_pdf', { eventSlug: eventSlug }) }}">🖊 Bezpečnostní listy</a>
+                <a class="btn btn-sm btn-outline-dark" target="_blank" rel="noopener"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_band_pdf', { eventSlug: eventSlug }) }}">🎗 Seznam dle pásku</a>
             </div>
         </div>
 

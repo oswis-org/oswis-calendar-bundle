@@ -1,0 +1,51 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{# Seznam účastníků dle skupiny/pásku (#212 F4) — sekce per skupina v pořadí výdeje jídla (mealOrder),
+   řádek = jméno · telefon · dietní omezení. Papírový fallback (stanice pásky + výdej stravy / kuchyň).
+   Data: OperationalDocumentService::bandListHtml. #}
+
+{% block style %}
+    .grp { page-break-inside: avoid; margin-bottom: 10pt; }
+    .swatch { display: inline-block; width: 10pt; height: 10pt; border: 0.5pt solid #888; vertical-align: middle; margin-right: 4pt; }
+    table.bl { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-top: 2pt; }
+    table.bl th, table.bl td { border-bottom: 0.4pt solid #ccc; padding: 2pt 5pt; text-align: left; vertical-align: top; }
+    table.bl th { border-bottom: 1pt solid #333; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.2pt; }
+    td.num { color: #888; width: 6%; }
+    td.diet { color: #9c4221; font-weight: bold; }
+{% endblock %}
+
+{% block content %}
+    <h1>Seznam dle pásku — {{ eventName }}</h1>
+    <p class="muted">Skupiny v pořadí výdeje jídla (dietáři první). Vytištěno {{ 'now'|date('j.n.Y H:i') }}.</p>
+
+    {% for g in groups %}
+        <div class="grp">
+            <h2 class="section">
+                {% if g.color %}<span class="swatch" style="background: {{ g.color }};"></span>{% endif %}
+                {{ g.name }} <span class="muted">({{ g.rows|length }})</span>
+            </h2>
+            <table class="bl">
+                <thead>
+                    <tr>
+                        <th class="num">#</th>
+                        <th>Jméno</th>
+                        <th style="width: 22%;">Telefon</th>
+                        <th style="width: 34%;">Dietní omezení</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in g.rows %}
+                        <tr>
+                            <td class="num">{{ loop.index }}</td>
+                            <td>{{ r.name }}</td>
+                            <td>{{ r.phone }}</td>
+                            <td class="{{ r.diet ? 'diet' : '' }}">{{ r.diet }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="muted">Žádní účastníci v tomto turnusu.</p>
+    {% endfor %}
+{% endblock %}
