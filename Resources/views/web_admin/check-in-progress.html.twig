@@ -1,0 +1,89 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{# Přehled průběhu příjezdu (spec §10) — pro organizátorku, vzdálené sledování. Kolik přijelo/nedorazilo
+   + kolik prošlo kterou stanicí + capnutý seznam no-show. Auto-refresh 30 s.
+   Data: WebAdminCheckInController::progress (no-show jsou HOTOVÁ jména = bez lazy loadů v šabloně). #}
+
+{% block html_title %}{{ page_title|default(pageTitle) }}{% endblock %}
+
+{% set kindLabels = {
+    evidence: 'Evidence', wristband: 'Pásky', accommodation: 'Ubytování',
+    food: 'Strava / stravenky', tshirt: 'Tričko', safety: 'Bezpečnost', generic: 'Obecná'
+} %}
+
+{% block body_content %}
+    <div class="container-fluid" style="padding: 1rem;">
+        <div class="row">
+            <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <h2 style="margin: 0;">Průběh příjezdu — {{ event.name ?? eventSlug }}</h2>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">← Zpět na check-in</a>
+                <span class="text-muted small" style="margin-left: auto;">Obnovuje se automaticky každých 30 s.</span>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 1rem;">
+            <div class="col-6 col-md-3 mb-2">
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; background: #f0fff4;">
+                    <div class="text-muted small">Přijelo</div>
+                    <div style="font-size: 2rem; font-weight: 700; color: #2f855a;">{{ arrived }} <span style="font-size: 1rem; color: #718096;">/ {{ total }}</span></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; background: {{ noShow > 0 ? '#fffaf0' : '#f7fafc' }};">
+                    <div class="text-muted small">Ještě nedorazilo</div>
+                    <div style="font-size: 2rem; font-weight: 700; color: {{ noShow > 0 ? '#c05621' : '#718096' }};">{{ noShow }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 1rem;">
+            <div class="col">
+                <h3 style="font-size: 1.15rem;">Průchod stanicemi</h3>
+                {% for item in pipeline %}
+                    {% set st = item.station %}
+                    {% set pct = total > 0 ? (item.completed / total * 100)|round : 0 %}
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                            <span style="font-weight: 600;">
+                                {{ st.name ?? kindLabels[st.stationKind] ?? st.stationKind }}
+                                <span class="text-muted small">({{ kindLabels[st.stationKind] ?? st.stationKind }})</span>
+                            </span>
+                            <span class="text-muted small">{{ item.completed }} hotovo{% if total > 0 %} z {{ total }}{% endif %}</span>
+                        </div>
+                        <div class="progress" style="height: 18px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: {{ pct }}%;" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100">{{ pct }} %</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-muted">
+                        Turnus nemá nastavené žádné stanice.
+                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_stations', { eventSlug: eventSlug }) }}">Nastavit stanice →</a>
+                    </p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if noShowNames is not empty %}
+            <div class="row" style="margin-top: 1rem;">
+                <div class="col">
+                    <h3 style="font-size: 1.15rem;">Ještě nedorazili ({{ noShow }})</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        {% for name in noShowNames %}
+                            <span class="badge" style="background: #edf2f7; color: #2d3748; font-weight: 500; font-size: 0.85rem; padding: 5px 9px;">{{ name }}</span>
+                        {% endfor %}
+                        {% if noShowMore > 0 %}
+                            <span class="text-muted small" style="align-self: center;">… a dalších {{ noShowMore }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Živé sledování: obnov stránku každých 30 s (organizátorka nechá otevřené).
+        setTimeout(function () { window.location.reload(); }, 30000);
+    </script>
+{% endblock %}

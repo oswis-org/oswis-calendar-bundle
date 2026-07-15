@@ -198,6 +198,11 @@ oswis_org_oswis_calendar_web_admin_checkin_station_delete:
   requirements: { stationId: '\d+' }
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_checkin_progress:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::progress
+  path: "/web_admin/check-in/{eventSlug}/prubeh"
+  methods: [GET]
+
 oswis_org_oswis_calendar_web_admin_checkin_list:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::list
   path: "/web_admin/check-in/{eventSlug}"

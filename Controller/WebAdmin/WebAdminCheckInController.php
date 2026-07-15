@@ -9,6 +9,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\CheckIn\CheckInService;
 use OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,13 +27,54 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_MANAGER')]
 final class WebAdminCheckInController extends AbstractController
 {
+    /** Strop počtu vypsaných jmen no-show na přehledu (zbytek jen číslem) — lehký render. */
+    private const int PROGRESS_NOSHOW_CAP = 80;
+
     public function __construct(
         private readonly ParticipantRepository $participantRepository,
         private readonly EventRepository $eventRepository,
         private readonly EntityManagerInterface $em,
         private readonly ExportService $exportService,
         private readonly OperationalDocumentService $documentService,
+        private readonly CheckInService $checkInService,
     ) {
+    }
+
+    /**
+     * Přehled průběhu příjezdu pro organizátorku (vzdálené sledování): kolik přijelo/nedorazilo + kolik
+     * prošlo kterou stanicí (reálný SQL COUNT přes {@see CheckInService::getPipeline}) + seznam no-show
+     * (capnutý, read-only jména). Read-only obrazovka, auto-refresh 30 s.
+     */
+    public function progress(string $eventSlug): Response
+    {
+        $event = $this->resolveEvent($eventSlug);
+        $participants = $this->loadSortedParticipants($event, 'alpha');
+        $total = count($participants);
+        $arrived = 0;
+        $noShowNames = [];
+        foreach ($participants as $p) {
+            if ($p->isArrived()) {
+                ++$arrived;
+            } elseif (count($noShowNames) < self::PROGRESS_NOSHOW_CAP) {
+                // Read-only jméno (getContactForRead — bez mutace/L2, viz feedback_getname_mutates_l2cache_oom).
+                $noShowNames[] = $p->getContactForRead()?->getName() ?? ('#'.$p->getId());
+            }
+        }
+        $noShow = $total - $arrived;
+        $title = 'Průběh příjezdu — '.($event->getName() ?? $eventSlug);
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/check-in-progress.html.twig', [
+            'event'        => $event,
+            'eventSlug'    => $eventSlug,
+            'total'        => $total,
+            'arrived'      => $arrived,
+            'noShow'       => $noShow,
+            'noShowNames'  => $noShowNames,
+            'noShowMore'   => max(0, $noShow - count($noShowNames)),
+            'pipeline'     => $this->checkInService->getPipeline($event),
+            'page_title'   => $title.' :: ADMIN',
+            'pageTitle'    => $title,
+        ]);
     }
 
     public function list(Request $request, string $eventSlug): Response

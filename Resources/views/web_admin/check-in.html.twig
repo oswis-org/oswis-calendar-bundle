@@ -13,6 +13,8 @@
                     <span class="badge bg-secondary" style="font-size: 1rem;">Nepřijelo {{ noShow }}</span>
                 {% endif %}
                 <a class="btn btn-sm btn-outline-primary" style="margin-left: auto;"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_progress', { eventSlug: eventSlug }) }}">📊 Průběh příjezdu</a>
+                <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_stations', { eventSlug: eventSlug }) }}">⚙ Konfigurace stanic</a>
             </div>
         </div>
