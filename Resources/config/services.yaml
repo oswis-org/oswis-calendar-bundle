@@ -128,6 +128,11 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInStationController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   ## Check-in modul (D2) — doménová logika pipeline (idempotentní upsert, arrival, progress)
   OswisOrg\OswisCalendarBundle\Service\CheckIn\CheckInService:
     autowire: true
@@ -136,6 +141,12 @@ services:
 
   ## Accommodation (D2) — assign-during-checkin, měkký constraint engine, obousměrné dohledání
   OswisOrg\OswisCalendarBundle\Service\Accommodation\AccommodationService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  ## Provozní dokumenty (#212) — bezpečnostní list PDF (per-osoba předvyplněné, à la 2025 vzor)
+  OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService:
     autowire: true
     autoconfigure: true
     public: true
@@ -933,6 +944,11 @@ services:
     tags: [ 'console.command' ]
 
   OswisOrg\OswisCalendarBundle\Command\Setup2026FlagsCommand:
+    autowire: true
+    autoconfigure: true
+    tags: [ 'console.command' ]
+
+  OswisOrg\OswisCalendarBundle\Command\SeedCheckInStationsCommand:
     autowire: true
     autoconfigure: true
     tags: [ 'console.command' ]

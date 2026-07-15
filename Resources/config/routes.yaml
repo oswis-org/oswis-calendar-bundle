@@ -160,6 +160,44 @@ oswis_org_oswis_calendar_web_admin_checkin_pdf:
   path: "/web_admin/check-in/{eventSlug}/tisk.pdf"
   methods: [GET]
 
+oswis_org_oswis_calendar_web_admin_checkin_safety_pdf:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::safetyListPdf
+  path: "/web_admin/check-in/{eventSlug}/bezpecnostni-listy.pdf"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_checkin_band_pdf:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::bandListPdf
+  path: "/web_admin/check-in/{eventSlug}/seznam-pasky.pdf"
+  methods: [GET]
+
+## Check-in stanice — konfigurace (D2, konfigurovatelná sada) — ROLE_MANAGER
+oswis_org_oswis_calendar_web_admin_checkin_stations:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInStationController::config
+  path: "/web_admin/check-in/{eventSlug}/stanice"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_checkin_station_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInStationController::stationForm
+  path: "/web_admin/check-in/{eventSlug}/stanice/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_checkin_stations_clone:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInStationController::cloneStations
+  path: "/web_admin/check-in/{eventSlug}/stanice/klonovat"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_checkin_station_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInStationController::stationForm
+  path: "/web_admin/check-in/{eventSlug}/stanice/{stationId}"
+  requirements: { stationId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_checkin_station_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInStationController::stationDelete
+  path: "/web_admin/check-in/{eventSlug}/stanice/{stationId}/smazat"
+  requirements: { stationId: '\d+' }
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_checkin_list:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::list
   path: "/web_admin/check-in/{eventSlug}"

@@ -9,6 +9,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -30,6 +31,7 @@ final class WebAdminCheckInController extends AbstractController
         private readonly EventRepository $eventRepository,
         private readonly EntityManagerInterface $em,
         private readonly ExportService $exportService,
+        private readonly OperationalDocumentService $documentService,
     ) {
     }
 
@@ -89,6 +91,48 @@ final class WebAdminCheckInController extends AbstractController
         return new Response($pdf, Response::HTTP_OK, [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="check-in-'.$eventSlug.'.pdf"',
+        ]);
+    }
+
+    /**
+     * Bezpečnostní listy k podpisu — 1 předvyplněné prohlášení na stranu (papírový fallback:
+     * tisk → podpis → archiv). Bez parametru celý turnus (hromadný tisk); s `?participant=<id>`
+     * jen jeden účastník (stanice bezpečnost / dotisk jednotlivce). #212 F3 / check-in §7.
+     */
+    public function safetyListPdf(Request $request, string $eventSlug): Response
+    {
+        $event = $this->resolveEvent($eventSlug);
+
+        $only = null;
+        $pid = $request->query->get('participant');
+        if (is_string($pid) && ctype_digit($pid)) {
+            $candidate = $this->em->find(Participant::class, (int) $pid);
+            if ($candidate instanceof Participant && !$candidate->isDeleted()) {
+                $only = $candidate;
+            }
+        }
+
+        $pdf = $this->documentService->safetyListPdf($event, $only);
+        $suffix = null !== $only ? 'ucastnik-'.$only->getId() : $eventSlug;
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="bezpecnostni-list-'.$suffix.'.pdf"',
+        ]);
+    }
+
+    /**
+     * Seznam účastníků dle skupiny/pásku — sekce per skupina (pořadí výdeje jídla), jméno · telefon ·
+     * dieta. Papírový fallback pro stanici pásky + výdej stravy (kuchyň). #212 F4.
+     */
+    public function bandListPdf(string $eventSlug): Response
+    {
+        $event = $this->resolveEvent($eventSlug);
+        $pdf = $this->documentService->bandListPdf($event);
+
+        return new Response($pdf, Response::HTTP_OK, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="seznam-pasky-'.$eventSlug.'.pdf"',
         ]);
     }
 

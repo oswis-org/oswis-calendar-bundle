@@ -1,0 +1,113 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{# Konfigurace check-in stanic per turnus (modul D2). Tým si z 7 kindů složí/upraví sadu stolů.
+   Data: WebAdminCheckInStationController. Styl = sibling check-in.html.twig (Bootstrap tabulka). #}
+
+{% block html_title %}{{ page_title|default(pageTitle) }}{% endblock %}
+
+{% set kindLabels = {
+    evidence: 'Evidence',
+    wristband: 'Pásky',
+    accommodation: 'Ubytování',
+    food: 'Strava / stravenky',
+    tshirt: 'Tričko',
+    safety: 'Bezpečnost',
+    generic: 'Obecná'
+} %}
+
+{% block body_content %}
+    <div class="container-fluid" style="padding: 1rem;">
+        <div class="row">
+            <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <h2 style="margin: 0;">Check-in stanice — {{ event.name ?? eventSlug }}</h2>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">← Zpět na check-in</a>
+                <a class="btn btn-sm btn-primary" style="margin-left: auto;"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_station_new', { eventSlug: eventSlug }) }}">+ Přidat stanici</a>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: .5rem;">
+            <div class="col">
+                <p class="text-muted small" style="margin: 0;">
+                    Sada stanic je konfigurovatelná — poskládej stoly příjezdového dne z dostupných druhů a jejich pořadí.
+                    Tyto stanice vidí tým v mobilní/tabletové appce i v desktopovém check-inu.
+                </p>
+            </div>
+        </div>
+
+        {% if sourceEvents is not empty %}
+            <div class="row" style="margin-top: .5rem;">
+                <div class="col">
+                    <form method="post" style="display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_stations_clone', { eventSlug: eventSlug }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('checkin_stations_clone_' ~ eventSlug) }}">
+                        <span class="text-muted small">Klonovat stanice z jiného turnusu:</span>
+                        <select name="source" class="form-select form-select-sm" style="width: auto;">
+                            {% for e in sourceEvents %}
+                                <option value="{{ e.id }}">{{ e.name ?? ('#' ~ e.id) }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">⧉ Klonovat</button>
+                        <span class="text-muted small">(přeskočí stanice, jejichž název už tu je)</span>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row" style="margin-top: .75rem;">
+            <div class="col" style="overflow-x: auto;">
+                <table class="table table-sm table-hover" style="min-width: 720px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 4rem;">Pořadí</th>
+                            <th>Název</th>
+                            <th>Druh</th>
+                            <th>Hodnota</th>
+                            <th style="width: 6rem;">Online</th>
+                            <th style="width: 11rem;">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in stations %}
+                            <tr>
+                                <td>{{ s.orderNumber ?? '—' }}</td>
+                                <td>{{ s.name ?? '—' }}</td>
+                                <td>{{ kindLabels[s.stationKind] ?? s.stationKind }}</td>
+                                <td>
+                                    {% if s.capturesValue %}
+                                        {{ s.valueLabel ?? 'hodnota' }}
+                                        {% if s.valueOptions %}
+                                            <span class="text-muted small">[{{ s.valueOptions|join(' / ') }}]</span>
+                                        {% else %}
+                                            <span class="text-muted small">[volný text]</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{% if s.requiresOnline %}<span class="badge bg-info text-dark">online</span>{% endif %}</td>
+                                <td style="display: flex; gap: .35rem;">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_station_edit', { eventSlug: eventSlug, stationId: s.id }) }}">Upravit</a>
+                                    <form method="post" style="margin: 0;"
+                                          action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_station_delete', { eventSlug: eventSlug, stationId: s.id }) }}"
+                                          onsubmit="return confirm('Smazat stanici „{{ s.name }}“?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('checkin_station_delete_' ~ s.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    Zatím žádné stanice. Přidej první stanici (typicky „Evidence").
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

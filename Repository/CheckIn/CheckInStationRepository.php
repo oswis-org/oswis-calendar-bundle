@@ -40,4 +40,34 @@ class CheckInStationRepository extends ServiceEntityRepository
             static fn (mixed $row): bool => $row instanceof CheckInStation,
         )) : [];
     }
+
+    /**
+     * Turnusy (Event) s aspoň jednou nesmazanou stanicí — zdroje pro „klonovat z jiného turnusu".
+     * (Přes IDENTITY → findBy: DQL nedovolí SELECT DISTINCT joinovaného aliasu jako entitu.)
+     *
+     * @return list<Event>
+     */
+    public function findEventsWithStations(): array
+    {
+        /** @var list<array{eid: int|string|null}> $rows */
+        $rows = $this->createQueryBuilder('s')
+            ->select('DISTINCT IDENTITY(s.event) AS eid')
+            ->where('s.deletedAt IS NULL')
+            ->getQuery()
+            ->getScalarResult();
+
+        $eventIds = array_values(array_filter(array_map(
+            static fn (array $row): int => (int) ($row['eid'] ?? 0),
+            $rows,
+        )));
+        if ([] === $eventIds) {
+            return [];
+        }
+
+        /** @var list<Event> $events */
+        $events = $this->getEntityManager()->getRepository(Event::class)->findBy(['id' => $eventIds]);
+        usort($events, static fn (Event $a, Event $b): int => ($b->getId() ?? 0) <=> ($a->getId() ?? 0));
+
+        return $events;
+    }
 }
