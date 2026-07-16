@@ -833,6 +833,13 @@ services:
       $removeProcessor: '@api_platform.doctrine.orm.state.remove_processor'
     tags: [ 'api_platform.state_processor' ]
 
+  ## Přiřazení ubytování z check-in stolu (POST /api/reservations) — deleguje na AccommodationService
+  ## (kapacita + constrainty), API je neobchází. Bez tagu `api_platform.state_processor` API Platform
+  ## procesor NENAJDE a operace padá na 500 „Processor not found" (build ani PHPStan to nechytí).
+  OswisOrg\OswisCalendarBundle\State\ReservationAssignProcessor:
+    autowire: true
+    tags: [ 'api_platform.state_processor' ]
+
   ## Accommodation CRUD write processor — resolvuje IRI relací (facility/unit/bed/pairedWith/event/members).
   OswisOrg\OswisCalendarBundle\State\AccommodationApiProcessor:
     autowire: true
