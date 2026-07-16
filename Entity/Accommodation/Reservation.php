@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use DateTime;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
@@ -21,6 +22,9 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Accommodation\ReservationRepository;
+use OswisOrg\OswisCalendarBundle\Service\Accommodation\AccommodationService;
+use OswisOrg\OswisCalendarBundle\Service\Accommodation\AccommodationWarning;
+use OswisOrg\OswisCalendarBundle\State\ReservationAssignProcessor;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
@@ -45,6 +49,15 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Get(
             normalizationContext: ['groups' => ['entity_get', 'calendar_reservation_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MEMBER')",
+        ),
+        // Přiřazení ubytování z check-in stolu. Zápis jde přes AccommodationService (kapacita +
+        // constrainty) — API ho NEobchází, jen ho zpřístupňuje. Bez téhle operace neměl stůl jak
+        // pokoj přiřadit a zůstával u volného textu.
+        new Post(
+            normalizationContext: ['groups' => ['entity_get', 'calendar_reservation_get'], 'enable_max_depth' => true],
+            denormalizationContext: ['groups' => ['calendar_reservation_post']],
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ReservationAssignProcessor::class,
         ),
     ],
     security: "is_granted('ROLE_MEMBER')",
@@ -97,6 +110,16 @@ class Reservation implements BasicInterface
     #[Column(type: 'string', length: 16)]
     #[Assert\Choice(choices: self::ALLOWED_STATUSES)]
     protected string $status = self::STATUS_CONFIRMED;
+
+    /**
+     * MĚKKÁ varování z {@see AccommodationService} (kapacita, nedostupná jednotka, nesoulad s typem
+     * ubytování…). NEUKLÁDAJÍ SE — jdou jen do odpovědi na přiřazení, aby je obsluha u stolu viděla.
+     * NEblokují: výjimky jsou u příjezdu běžné (ZTP, páry, kamarádi) a user chce „upozorňovat,
+     * netvrdě zakazovat".
+     *
+     * @var list<array{code: string, message: string}>
+     */
+    private array $warnings = [];
 
     /** Partial-stay: od kdy (null = od začátku akce). */
     #[Column(type: 'date', nullable: true)]
@@ -165,6 +188,25 @@ class Reservation implements BasicInterface
             throw new \InvalidArgumentException("Neplatný stav rezervace: '$status'.");
         }
         $this->status = $status;
+    }
+
+    /**
+     * @return list<array{code: string, message: string}>
+     */
+    public function getWarnings(): array
+    {
+        return $this->warnings;
+    }
+
+    /**
+     * @param list<AccommodationWarning> $warnings
+     */
+    public function setWarnings(array $warnings): void
+    {
+        $this->warnings = array_map(
+            static fn (AccommodationWarning $w): array => ['code' => $w->code, 'message' => $w->message],
+            $warnings,
+        );
     }
 
     public function getFromDate(): ?DateTime

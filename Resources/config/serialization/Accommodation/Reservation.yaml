@@ -3,15 +3,19 @@ OswisOrg\OswisCalendarBundle\Entity\Accommodation\Reservation:
     id:
       groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
     participant:
-      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get', 'calendar_reservation_post' ]
     unit:
-      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get', 'calendar_reservation_post' ]
     bed:
-      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get', 'calendar_reservation_post' ]
+    # Měkká varování z AccommodationService — neukládají se, jdou jen v odpovědi na přiřazení.
+    # Bez nich by obsluha u stolu nevěděla, že jednotka je plná / nesedí typ ubytování.
+    warnings:
+      groups: [ 'calendar_reservation_get' ]
     status:
       groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
     fromDate:
-      groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
+      groups: [ 'calendar_reservations_get', 'calendar_reservation_get', 'calendar_reservation_post' ]
     toDate:
       groups: [ 'calendar_reservations_get', 'calendar_reservation_get' ]
     checkedInAt:
