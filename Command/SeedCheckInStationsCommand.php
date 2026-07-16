@@ -98,8 +98,9 @@ final class SeedCheckInStationsCommand extends Command
         return [
             [
                 // Před evidencí (řidiči u brány) → proto ENTRY kind, negatuje se evidencí.
+                // Hodnota = SPZ (user 2026-07-16: „je nutné zapsat SPZ").
                 'kind' => CheckInStation::KIND_PARKING, 'name' => 'Parkovací karty', 'order' => 10,
-                'icon' => 'car-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'icon' => 'car-outline', 'capturesValue' => true, 'valueLabel' => 'SPZ',
                 'valueOptions' => null, 'requiresOnline' => false,
             ],
             [
