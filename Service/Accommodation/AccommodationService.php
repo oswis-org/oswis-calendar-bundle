@@ -26,6 +26,15 @@ use OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommateGroupRepositor
  */
 class AccommodationService
 {
+    /** Sekce kempu, která je „hotelového typu" (Motel). Ostatní sekce = běžné ubytování. */
+    private const string SECTION_MOTEL = 'motel';
+
+    /** Slugy příznaků typu ubytování (kategorie `accommodation-type`). */
+    private const string ACCOMMODATION_SLUG_HOTEL = 'hotel';
+    private const string ACCOMMODATION_SLUG_CAMP = 'kemp';
+    private const string ACCOMMODATION_SLUG_TENT = 'stan';
+    private const string ACCOMMODATION_SLUG_NONE = 'bez-ubytovani';
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly ReservationRepository $reservationRepository,
@@ -90,14 +99,14 @@ class AccommodationService
             }
         }
 
-        // Vazba na zvolený typ ubytování (flag) — heuristická shoda s jednotkou.
-        $chosenType = $this->getParticipantAccommodationType($participant);
-        if (null !== $chosenType && !$this->unitMatchesType($unit, $chosenType)) {
+        // Vazba na zvolený typ ubytování z přihlášky (dle SLUGU příznaku, ne jeho názvu).
+        $flag = $this->getParticipantAccommodationFlag($participant);
+        if (null !== $flag && !$this->unitMatchesType($unit, $flag)) {
             $warnings[] = new AccommodationWarning(
                 AccommodationWarning::CODE_FLAG_TYPE_MISMATCH,
                 sprintf(
                     'Účastník zvolil typ ubytování „%s", jednotka je typu „%s".',
-                    $chosenType,
+                    (string) $flag->getName(),
                     (string) ($unit->getUnitType() ?? $unit->getFacility()?->getFacilityType()),
                 ),
             );
@@ -177,33 +186,42 @@ class AccommodationService
      */
     public function getParticipantAccommodationType(Participant $participant): ?string
     {
+        return $this->getParticipantAccommodationFlag($participant)?->getName();
+    }
+
+    /** Příznak typu ubytování z přihlášky (hotel / kemp / stan / bez-ubytovani). */
+    public function getParticipantAccommodationFlag(Participant $participant): ?RegistrationFlag
+    {
         foreach ($participant->getFlags(null, RegistrationFlagCategory::TYPE_ACCOMMODATION_TYPE) as $flag) {
-            if (!$flag instanceof RegistrationFlag) {
-                continue;
-            }
-            $name = $flag->getName();
-            if (is_string($name) && '' !== $name) {
-                return $name;
+            if ($flag instanceof RegistrationFlag) {
+                return $flag;
             }
         }
 
         return null;
     }
 
-    /** Heuristická shoda jednotky se zvoleným typem (klíčové slovo v typu/facility/názvu). */
-    private function unitMatchesType(AccommodationUnit $unit, string $chosenType): bool
+    /**
+     * Sedí jednotka ke zvolenému typu ubytování? Klíčem je SLUG příznaku, ne jeho název.
+     *
+     * Předchozí implementace hledala slova z NÁZVU příznaku v názvu jednotky
+     * („ubytování", „hotelového", „typu" v „motel camp 101") → neshodla se NIKDY, takže varování
+     * „špatný typ ubytování" padalo u KAŽDÉHO přiřazení (letos 242 lidí). Varování, které svítí
+     * vždycky, se obsluha naučí ignorovat — a tím přestane fungovat i to, které svítit má.
+     *
+     * Pravidla dle reality (user 2026-07-16): hotelové → Motel · běžné → ostatní pokoje a chatky ·
+     * vlastní stan / bez ubytování → nepřiřazuje se jednotka vůbec.
+     * Neznámý slug = nekontrolujeme (raději ticho než falešný poplach).
+     */
+    private function unitMatchesType(AccommodationUnit $unit, RegistrationFlag $flag): bool
     {
-        $haystack = mb_strtolower(implode(' ', array_filter([
-            $unit->getUnitType(),
-            $unit->getFacility()?->getFacilityType(),
-            $unit->getName(),
-        ])));
-        foreach (preg_split('/\s+/', mb_strtolower($chosenType)) ?: [] as $word) {
-            if (mb_strlen($word) >= 3 && str_contains($haystack, $word)) {
-                return true;
-            }
-        }
+        $unitType = (string) $unit->getUnitType();
 
-        return false;
+        return match ($flag->getSlug()) {
+            self::ACCOMMODATION_SLUG_HOTEL => self::SECTION_MOTEL === $unitType,
+            self::ACCOMMODATION_SLUG_CAMP => self::SECTION_MOTEL !== $unitType,
+            self::ACCOMMODATION_SLUG_TENT, self::ACCOMMODATION_SLUG_NONE => false,
+            default => true,
+        };
     }
 }
