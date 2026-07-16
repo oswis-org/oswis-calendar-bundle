@@ -168,6 +168,12 @@ OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
+    # Bez typu klient nerozliší turnus (batch-of-event) od ročníku nebo bodu programu
+    # a musel by hádat z názvu — check-in hub na tom stojí (nabízí JEN turnusy).
+    type:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
     name:
       groups:
         - 'calendar_events_get'

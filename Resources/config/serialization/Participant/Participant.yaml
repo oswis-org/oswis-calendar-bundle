@@ -105,6 +105,17 @@ OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+    # Typ (food / t-shirt-size / accommodation-type / …) je jediný stabilní klíč, podle
+    # kterého klient pozná VÝZNAM příznaku — check-in karta podle něj zvýrazňuje dietu.
+    # Slug je uživatelsky přejmenovatelný, na ten se spoléhat nelze.
+    type:
+      groups:
+        - 'calendar_participants_get'
+        - 'calendar_participant_get'
+    name:
+      groups:
+        - 'calendar_participants_get'
+        - 'calendar_participant_get'
     slug:
       groups:
         - 'calendar_participants_get'
@@ -284,6 +295,9 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+        # U účastníka bez jména (pozůstatek ztráty jména z registrace) je e-mail jediná
+        # identifikace, kterou obsluha u stolu pozná — fronta ho proto musí nést.
+        - 'calendar_check_in_queue'
     gender:
       groups:
         - 'calendar_participants_get'
