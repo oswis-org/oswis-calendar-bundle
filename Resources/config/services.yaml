@@ -952,3 +952,10 @@ services:
     autowire: true
     autoconfigure: true
     tags: [ 'console.command' ]
+
+  ## Ubytovací kapacity Morava Campu (z reálného ubytovacího archu) — datový seed pro přiřazování
+  ## pokojů na check-in stole. Bez něj nemá picker z čeho vybírat (model má 0 dat).
+  OswisOrg\OswisCalendarBundle\Command\SeedMoravaCampCommand:
+    autowire: true
+    autoconfigure: true
+    tags: [ 'console.command' ]
