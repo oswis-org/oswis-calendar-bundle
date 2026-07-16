@@ -120,9 +120,10 @@ final class SeedCheckInStationsCommand extends Command
                 'valueOptions' => null, 'requiresOnline' => false,
             ],
             [
-                // Hodnota = číslo pokoje/chatky (fallback, dokud není přiřazování proti Accommodation modelu).
+                // Hodnotu NEsbírá: pokoj se VYBÍRÁ z kapacit kempu (picker → rezervace), ne píše ručně.
+                // Volný text tu byl jen stopgap, dokud ubytovací model neměl data (dnes 101 jednotek).
                 'kind' => CheckInStation::KIND_ACCOMMODATION, 'name' => 'Ubytování', 'order' => 50,
-                'icon' => 'bed-outline', 'capturesValue' => true, 'valueLabel' => 'Pokoj / chatka',
+                'icon' => 'bed-outline', 'capturesValue' => false, 'valueLabel' => null,
                 'valueOptions' => null, 'requiresOnline' => true,
             ],
             [
