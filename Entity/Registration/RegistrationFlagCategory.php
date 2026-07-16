@@ -61,6 +61,19 @@ class RegistrationFlagCategory implements NameableInterface
     public const TYPE_T_SHIRT_SIZE = 't-shirt-size';
     public const TYPE_T_SHIRT_HANDED_OVER = 't-shirt-handed-over';
     public const TYPE_ACCOMMODATION_TYPE = 'accommodation-type';
+
+    /**
+     * Parkování v areálu — příznak BEZ vlivu na cenu: „účastník parkuje v areálu a zaplatil
+     * poplatek", hodnota příznaku = SPZ (user 2026-07-16).
+     *
+     * Proč příznak, a ne cena/platba: poplatek (2026: 200 Kč, mění se dle ročníku) jde do JINÉ
+     * KASY než platby za přihlášky. Kdyby měl nabídka příznaku cenu, spadl by přes
+     * {@see \OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::getFlagsPrice()} do ceny
+     * přihlášky, do `remainingPrice` i do párování bankovních plateb — tedy přesně tam, kam nemá.
+     * Nabídka tohoto příznaku proto musí mít cenu 0. Částka se needviduje vůbec (user: stačí, že
+     * zaplatil); obsah kasy = počet příznaků × poplatek ročníku.
+     */
+    public const TYPE_PARKING = 'parking';
     public const TYPE_ARRIVED = 'arrived';
     public const TYPE_LEFT = 'left';
     public const TYPE_PARTNER_HOMEPAGE = 'partner-homepage';
@@ -89,6 +102,7 @@ class RegistrationFlagCategory implements NameableInterface
             self::TYPE_T_SHIRT_SIZE,
             self::TYPE_T_SHIRT_HANDED_OVER,
             self::TYPE_ACCOMMODATION_TYPE,
+            self::TYPE_PARKING,
             self::TYPE_ARRIVED,
             self::TYPE_LEFT,
             self::TYPE_PARTNER_HOMEPAGE,
