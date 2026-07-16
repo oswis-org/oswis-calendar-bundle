@@ -120,7 +120,22 @@ class ParticipantController extends AbstractController
             } catch (UnexpectedValueException) {
             }
         }
-        $participant = $this->participantService->getEmptyParticipant($range, $contact ?? null);
+        try {
+            $participant = $this->participantService->getEmptyParticipant($range, $contact ?? null);
+        } catch (EventCapacityExceededException $capacityException) {
+            // Plná nabídka: konstrukce prázdné přihlášky kontroluje kapacitu → dřív to tady byla
+            // neodchycená výjimka = 500 pro každého návštěvníka formuláře plné akce. Friendly stránka.
+            $this->logger->info('Registration form for full offer '.$rangeSlug.': '.$capacityException->getMessage());
+
+            return $this->getResponse(
+                type: 'disabled',
+                title: 'Kapacita akce je naplněna',
+                event: $range->getEvent(),
+                range: $range,
+                message: $capacityException->getMessage().' Zkuste jiný turnus, nebo nás kontaktujte.',
+                disabled: true,
+            );
+        }
         $this->logger->info("GOT EMPTY PARTICIPANT");
         try {
             $form = $this->createForm(ParticipantType::class, $participant);

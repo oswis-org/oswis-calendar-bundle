@@ -562,7 +562,9 @@ class Participant implements ParticipantInterface
         // Check capacity of new range.
         $remainingCapacity = $newRegRange->getRemainingCapacity($admin);
         if (null !== $remainingCapacity && (0 === $remainingCapacity || -1 >= $remainingCapacity)) {
-            throw new EventCapacityExceededException($newParticipantRegistration->getEventName());
+            // Jméno akce s fallbackem na jméno nabídky — event může chybět / být beze jména
+            // (prod 3.7. + 14.7.2026: hláška s prázdným jménem) a hláška jde až k uživateli.
+            throw new EventCapacityExceededException($newParticipantRegistration->getEventName() ?? $newRegRange->getName());
         }
         //
         // CASE 3: RegistrationOffer is not set yet, set initial RegistrationOffer and set new flags by range.
