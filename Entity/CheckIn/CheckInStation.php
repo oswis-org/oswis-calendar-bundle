@@ -131,6 +131,19 @@ class CheckInStation implements NameableInterface, DeletedInterface
     ];
 
     /**
+     * Druhy, kterými NEPROCHÁZEJÍ všichni — jen ti, koho se to týká (user 2026-07-16:
+     * „přes parkování jdou jen ti, co přijeli autem a chtějí parkovat přímo v areálu,
+     * ostatní přes stanoviště neprocházejí").
+     *
+     * Důsledek pro UI: taková stanice NEMÁ jmenovatel. „3 / 110" a fronta „Čeká 107" by
+     * lhaly — těch 107 tam nikdy nepřijde a vypadalo by to jako neodbavený zástup.
+     * Místo poměru se ukazuje absolutní počet odbavených a stůl je hledací, ne odškrtávací.
+     */
+    public const array SELECTIVE_KINDS = [
+        self::KIND_PARKING,
+    ];
+
+    /**
      * Turnus (Event), na kterém stanice platí. Setter, ne konstruktor — API Platform resolvuje
      * IRI relace jen přes setter ({@see reference_apiplatform_relation_iri_on_post}).
      */
