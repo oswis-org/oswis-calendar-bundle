@@ -46,8 +46,12 @@ final class Setup2026FlagsCommand extends Command
      * odpovídají existujícím master příznakům (ověřeno v DB) — ty se NEpřejmenovávají, jen se na ně
      * vytvoří nabídky. Nové dietní příznaky (vejce/sója/ořechy/jiné) se vytvoří.
      *
+     * `categoryName`/`categoryType` jsou volitelné — uvádí je jen spec, který smí kategorii i ZALOŽIT
+     * (jinak platí „neexistuje → přeskoč", ať nevznikají data naslepo).
+     *
      * @return list<array{
-     *   categorySlug: string, groupOfferSlug: string, groupName: string, groupShortName: string,
+     *   categorySlug: string, categoryName?: string, categoryType?: string,
+     *   groupOfferSlug: string, groupName: string, groupShortName: string,
      *   min: int, max: int|null,
      *   flags: list<array{slug: string, name: string, shortName: string, formValueLabel: ?string}>
      * }>
@@ -71,6 +75,24 @@ final class Setup2026FlagsCommand extends Command
                     ['slug' => 'soja', 'name' => 'Sója', 'shortName' => 'Sója', 'formValueLabel' => null],
                     ['slug' => 'orechy', 'name' => 'Ořechy', 'shortName' => 'Ořechy', 'formValueLabel' => null],
                     ['slug' => 'jine-dieta', 'name' => 'Jiné (upřesněte)', 'shortName' => 'Jiné', 'formValueLabel' => 'Upřesnění (alergie/dieta)'],
+                ],
+            ],
+            [
+                // Parkování v areálu — příznak BEZ CENY. Poplatek (2026: 200 Kč) jde do JINÉ KASY než
+                // platby za přihlášky, takže nabídka NESMÍ mít cenu: spadla by přes getFlagsPrice()
+                // do ceny přihlášky, remainingPrice i párování plateb (user 2026-07-16). Částka se
+                // needviduje vůbec — stačí, že zaplatil; obsah kasy = počet příznaků × poplatek.
+                // Hodnota příznaku = SPZ (stejný vzor jako čas u dopravy).
+                'categorySlug'   => 'parkovani',
+                'categoryType'   => RegistrationFlagCategory::TYPE_PARKING,
+                'categoryName'   => 'Parkování v areálu',
+                'groupOfferSlug' => 'parkovani-2026',
+                'groupName'      => 'Parkování v areálu',
+                'groupShortName' => 'Parkování',
+                'min'            => 0,
+                'max'            => 1,
+                'flags'          => [
+                    ['slug' => 'parkuje-v-arealu', 'name' => 'Parkuje v areálu (poplatek zaplacen)', 'shortName' => 'Parkuje', 'formValueLabel' => 'SPZ'],
                 ],
             ],
             [
@@ -129,8 +151,22 @@ final class Setup2026FlagsCommand extends Command
         foreach ($this->categoriesSpec() as $spec) {
             $category = $this->em->getRepository(RegistrationFlagCategory::class)->findOneBy(['slug' => $spec['categorySlug']]);
             if (!$category instanceof RegistrationFlagCategory) {
-                $io->error("Kategorie \"{$spec['categorySlug']}\" nenalezena — přeskakuji.");
-                continue;
+                // Novou kategorii založíme jen tehdy, když spec říká, JAKÁ má být (název + typ).
+                // U ostatních zůstává chování „neexistuje → přeskoč" (nevymýšlet data naslepo).
+                if (!isset($spec['categoryName'], $spec['categoryType'])) {
+                    $io->error("Kategorie \"{$spec['categorySlug']}\" nenalezena — přeskakuji.");
+                    continue;
+                }
+                $io->writeln("  + zakládám kategorii \"{$spec['categorySlug']}\" (typ {$spec['categoryType']})");
+                if ($apply) {
+                    $category = new RegistrationFlagCategory(
+                        new Nameable($spec['categoryName'], $spec['categoryName'], null, null, $spec['categorySlug']),
+                        $spec['categoryType'],
+                    );
+                    $this->em->persist($category);
+                } else {
+                    continue;
+                }
             }
             $io->section($spec['groupName']." ({$spec['categorySlug']})");
             $flags = $this->syncMasterFlags($category, $spec['flags'], $io, $apply);
