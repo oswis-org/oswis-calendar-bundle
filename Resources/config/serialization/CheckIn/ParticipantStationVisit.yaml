@@ -38,6 +38,9 @@ OswisOrg\OswisCalendarBundle\Entity\CheckIn\ParticipantStationVisit:
         - 'calendar_participant_station_visit_put'
         - 'calendar_participant_get'
         - 'calendar_participants_get'
+        # Bez hodnoty ve frontě nemá stůl s `capturesValue` (ubytování = číslo chatky) jak
+        # ukázat, co už je zapsané — obsluha by to musela hádat nebo přepisovat naslepo.
+        - 'calendar_check_in_queue'
     note:
       groups:
         - 'calendar_participant_station_visits_get'

@@ -81,8 +81,21 @@ class CheckInStation implements NameableInterface, DeletedInterface
     /** Ubytování — assign-during-check-in proti Accommodation modelu; výdej klíče. requiresOnline. */
     public const string KIND_ACCOMMODATION = 'accommodation';
 
-    /** Strava — read-view dietních flagů (kuchyň/medik). */
+    /** Strava — výdej stravenek dle pásky (per jídlo, plackovač). NENÍ příjezdové stanoviště. */
     public const string KIND_FOOD = 'food';
+
+    /**
+     * Zdravotník / diety — read-view dietních omezení a poznámek; dietáře vede rovnou za kuchařku.
+     * Oddělené od {@see KIND_FOOD}: „food" byl přetížený (stravenky × dietní read-view) a na
+     * příjezdu se řeší JEN tohle. Reálné stanoviště 2025 (rekonstrukce příjezdového dne §3).
+     */
+    public const string KIND_MEDIC = 'medic';
+
+    /** Příjezdový balíček (merch) — výdej uvítacího balíčku. Reálné stanoviště 2025. */
+    public const string KIND_WELCOME = 'welcome';
+
+    /** Parkovací karty — řidiči dostanou kartu k bráně (týká se jen části lidí). */
+    public const string KIND_PARKING = 'parking';
 
     /** Tričko — hodnota = vydaná velikost/varianta (default z objednané = flag TYPE_T_SHIRT_SIZE). */
     public const string KIND_TSHIRT = 'tshirt';
@@ -99,9 +112,22 @@ class CheckInStation implements NameableInterface, DeletedInterface
         self::KIND_WRISTBAND,
         self::KIND_ACCOMMODATION,
         self::KIND_FOOD,
+        self::KIND_MEDIC,
         self::KIND_TSHIRT,
         self::KIND_SAFETY,
+        self::KIND_WELCOME,
+        self::KIND_PARKING,
         self::KIND_GENERIC,
+    ];
+
+    /**
+     * Druhy, které NEsmí být „za branou" evidence — tj. samy tvoří vstup do pipeline.
+     * Ostatní stoly zásadně vidí jen ty, co prošli evidencí (závazná UX představa usera
+     * 2026-06-12: „jen první stůl hledá v plném seznamu účastníků").
+     */
+    public const array ENTRY_KINDS = [
+        self::KIND_EVIDENCE,
+        self::KIND_PARKING,
     ];
 
     /**

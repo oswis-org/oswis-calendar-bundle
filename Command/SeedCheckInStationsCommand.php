@@ -18,8 +18,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Idempotentně vytvoří STANDARDNÍ sadu check-in stanic pro turnus (Event) — Seznamovák pipeline
- * příjezdového dne (evidence → bezpečnost → ubytování → pásky → strava → tričko).
+ * Idempotentně vytvoří sadu check-in stanic pro turnus (Event).
+ *
+ * Dva presety: `minimal` (default) = jen evidence (gate), zbytek si tým složí ve web-adminu;
+ * `arrival` = celá REÁLNÁ příjezdová linka Seznamováku zrekonstruovaná z produkčních dokumentů
+ * 2025 (parkování → evidence → bezpečnostní list → pásky → ubytování → balíček → zdravotník).
  *
  * Kontext: Ionic check-in hub i stůl jsou plně data-driven z {@see CheckInStation} řádků
  * ({@see \OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController} je zatím
@@ -36,7 +39,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 #[AsCommand(
     name: 'oswis:checkin:seed-stations',
-    description: 'Idempotentně vytvoří standardní sadu check-in stanic (evidence/bezpečnost/ubytování/pásky/strava/tričko) pro turnus.',
+    description: 'Idempotentně vytvoří check-in stanice turnusu (--preset=minimal|arrival).',
 )]
 final class SeedCheckInStationsCommand extends Command
 {
@@ -57,11 +60,20 @@ final class SeedCheckInStationsCommand extends Command
      *   capturesValue: bool, valueLabel: ?string, valueOptions: list<string>|null, requiresOnline: bool
      * }>
      */
-    private function stationsSpec(): array
+    private function stationsSpec(string $preset): array
     {
-        // MINIMÁLNÍ default (user 2026-07-15): jen evidence = gate, ať hub není prázdný. Zbytek sady si tým
-        // složí z 7 kindů ve web-admin konfiguraci stanic (rozhodnutí „kolik stanic = na místě", analýza §7.2).
-        // Záměrně nic nevnucujeme (žádné tričko/pásky/... napevno).
+        return self::PRESET_ARRIVAL === $preset ? $this->arrivalSpec() : $this->minimalSpec();
+    }
+
+    /**
+     * MINIMÁLNÍ default (user 2026-07-15): jen evidence = gate, ať hub není prázdný. Zbytek sady si tým
+     * složí ve web-admin konfiguraci stanic (rozhodnutí „kolik stanic = na místě", analýza §7.2).
+     * Záměrně nic nevnucujeme.
+     *
+     * @return list<array{kind: string, name: string, order: int, icon: string, capturesValue: bool, valueLabel: ?string, valueOptions: list<string>|null, requiresOnline: bool}>
+     */
+    private function minimalSpec(): array
+    {
         return [
             [
                 'kind' => CheckInStation::KIND_EVIDENCE, 'name' => 'Evidence', 'order' => 10,
@@ -71,10 +83,82 @@ final class SeedCheckInStationsCommand extends Command
         ];
     }
 
+    /**
+     * REÁLNÁ příjezdová linka Seznamováku — zrekonstruovaná z produkčních dokumentů 2025
+     * (instruktorský rozpis „PŘÍJEZDOVÝ DEN" + „Postřehy → Evidence při příjezdu"), viz
+     * `docs/OSWIS_1_CHECKIN_RECONCILIATION_2026-07-15.md` §3.
+     *
+     * Záměrně BEZ trička a stravenek (§4): tričko = 3. den (rotace po skupinách v aule),
+     * stravenky = per jídlo dle pásky (plackovač) — ani jedno není příjezdové stanoviště.
+     *
+     * @return list<array{kind: string, name: string, order: int, icon: string, capturesValue: bool, valueLabel: ?string, valueOptions: list<string>|null, requiresOnline: bool}>
+     */
+    private function arrivalSpec(): array
+    {
+        return [
+            [
+                // Před evidencí (řidiči u brány) → proto ENTRY kind, negatuje se evidencí.
+                'kind' => CheckInStation::KIND_PARKING, 'name' => 'Parkovací karty', 'order' => 10,
+                'icon' => 'car-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => false,
+            ],
+            [
+                'kind' => CheckInStation::KIND_EVIDENCE, 'name' => 'Evidence', 'order' => 20,
+                'icon' => 'clipboard-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => false,
+            ],
+            [
+                'kind' => CheckInStation::KIND_SAFETY, 'name' => 'Bezpečnostní list', 'order' => 30,
+                'icon' => 'shield-checkmark-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => false,
+            ],
+            [
+                // Barva pásky je na skupině (on-site), stanice jen odškrtne výdej.
+                'kind' => CheckInStation::KIND_WRISTBAND, 'name' => 'Pásky', 'order' => 40,
+                'icon' => 'ellipse-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => false,
+            ],
+            [
+                // Hodnota = číslo pokoje/chatky (fallback, dokud není přiřazování proti Accommodation modelu).
+                'kind' => CheckInStation::KIND_ACCOMMODATION, 'name' => 'Ubytování', 'order' => 50,
+                'icon' => 'bed-outline', 'capturesValue' => true, 'valueLabel' => 'Pokoj / chatka',
+                'valueOptions' => null, 'requiresOnline' => true,
+            ],
+            [
+                'kind' => CheckInStation::KIND_WELCOME, 'name' => 'Příjezdový balíček', 'order' => 60,
+                'icon' => 'gift-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => false,
+            ],
+            [
+                // Read-view diet — dietáře vede rovnou za kuchařku; „hotovo" = probráno.
+                'kind' => CheckInStation::KIND_MEDIC, 'name' => 'Zdravotník / diety', 'order' => 70,
+                'icon' => 'medkit-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => false,
+            ],
+        ];
+    }
+
+    /** Jen evidence (gate) — tým si zbytek složí ve web-adminu. */
+    public const string PRESET_MINIMAL = 'minimal';
+
+    /** Celá zrekonstruovaná příjezdová linka Seznamováku ({@see arrivalSpec}). */
+    public const string PRESET_ARRIVAL = 'arrival';
+
     protected function configure(): void
     {
         $this->addArgument('eventSlug', InputArgument::REQUIRED, 'Slug turnusu (Event), na který se stanice vytvoří.');
         $this->addOption('apply', null, InputOption::VALUE_NONE, 'Skutečně zapsat (bez tohoto jen dry-run).');
+        $this->addOption(
+            'preset',
+            null,
+            InputOption::VALUE_REQUIRED,
+            sprintf(
+                '"%s" = jen evidence (default), "%s" = celá reálná příjezdová linka Seznamováku (parkování, evidence, bezpečnost, pásky, ubytování, balíček, zdravotník).',
+                self::PRESET_MINIMAL,
+                self::PRESET_ARRIVAL,
+            ),
+            self::PRESET_MINIMAL,
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -87,6 +171,12 @@ final class SeedCheckInStationsCommand extends Command
             return Command::FAILURE;
         }
         $apply = true === $input->getOption('apply');
+        $preset = $input->getOption('preset');
+        if (!in_array($preset, [self::PRESET_MINIMAL, self::PRESET_ARRIVAL], true)) {
+            $io->error(sprintf('Neznámý preset — použij "%s" nebo "%s".', self::PRESET_MINIMAL, self::PRESET_ARRIVAL));
+
+            return Command::FAILURE;
+        }
 
         $event = $this->eventRepository->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug]);
         if (!$event instanceof Event) {
@@ -96,13 +186,13 @@ final class SeedCheckInStationsCommand extends Command
         }
 
         $io->title('Seed check-in stanic — turnus: '.((string) $event->getName()).' ('.$eventSlug.')');
-        $io->writeln('Režim: '.($apply ? '<comment>APPLY (zápis)</comment>' : 'dry-run (jen výpis)'));
+        $io->writeln('Režim: '.($apply ? '<comment>APPLY (zápis)</comment>' : 'dry-run (jen výpis)').', preset: <info>'.$preset.'</info>');
 
         $repo = $this->em->getRepository(CheckInStation::class);
         $created = 0;
         $skipped = 0;
         $rows = [];
-        foreach ($this->stationsSpec() as $spec) {
+        foreach ($this->stationsSpec($preset) as $spec) {
             $existing = $repo->findOneBy(['event' => $event, 'stationKind' => $spec['kind']]);
             if ($existing instanceof CheckInStation && !$existing->isDeleted()) {
                 ++$skipped;
