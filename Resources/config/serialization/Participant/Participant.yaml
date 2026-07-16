@@ -12,10 +12,12 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     departedAt:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    # Partial-stay i do fronty: „pozdější příjezd / dřívější odjezd" musí být vidět na ŘÁDKU, ne až
+    # po rozkliknutí — obsluha podle toho u stolu jedná (dnes to tým drží v Excelu mimo systém).
     plannedArrival:
-      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put', 'calendar_check_in_queue' ]
     plannedDeparture:
-      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put', 'calendar_check_in_queue' ]
     stationVisits:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     offer:
