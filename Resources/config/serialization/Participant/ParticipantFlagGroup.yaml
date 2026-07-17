@@ -65,5 +65,8 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag:
         - 'calendar_participant_flag_group_get'
         - 'calendar_participant_flag_group_put'
         - 'calendar_participant_flag_groups_get'
+    # `textValue` (SPZ, číslo parkovací karty, upřesnění diety, čas příjezdu) se tu NEuvádí schválně:
+    # ParticipantFlag implementuje TextValueInterface a ten ho mapuje na entity_get/entities_get,
+    # které jsou v kontextu všech těchto operací → serializuje se už teď (ověřeno na kartě stolu).
 
 

@@ -78,11 +78,22 @@ final class Setup2026FlagsCommand extends Command
                 ],
             ],
             [
-                // Parkování v areálu — příznak BEZ CENY. Poplatek (2026: 200 Kč) jde do JINÉ KASY než
+                // Parkování v areálu — příznaky BEZ CENY. Poplatek (2026: 200 Kč) jde do JINÉ KASY než
                 // platby za přihlášky, takže nabídka NESMÍ mít cenu: spadla by přes getFlagsPrice()
                 // do ceny přihlášky, remainingPrice i párování plateb (user 2026-07-16). Částka se
                 // needviduje vůbec — stačí, že zaplatil; obsah kasy = počet příznaků × poplatek.
-                // Hodnota příznaku = SPZ (stejný vzor jako čas u dopravy).
+                //
+                // DVA příznaky, protože jde o dva různé údaje o TÉŽE přihlášce (max 2):
+                //   • parkuje-v-arealu → hodnota SPZ (vlastní auto účastníka),
+                //   • parkovaci-karta  → hodnota číslo karty ZAPŮJČENÉ od kempu (majetek kempu, vrací se).
+                // Karta patří na PŘIHLÁŠKU, ne jen na průchod stanicí (user 16.7., závazné): u průchodu
+                // by přežila jen jako historie události u stolu a nešla by najít u člověka, kterého
+                // řeším. Až vznikne modul zápůjček (D9, deskovky/sporty), je tohle jeho první případ
+                // a údaj se přestěhuje — proto samostatný příznak, ne přilepení k SPZ.
+                //
+                // Obojí zapisuje výhradně stůl: skupina i nabídky mají publicOnWeb=false, takže se
+                // v registračním formuláři nenabídnou (FlagGroupOfParticipantType je přeskočí) —
+                // účastník je vyplnit nemůže, ale mezi svými příznaky je vidí (user 16.7.).
                 'categorySlug'   => 'parkovani',
                 'categoryType'   => RegistrationFlagCategory::TYPE_PARKING,
                 'categoryName'   => 'Parkování v areálu',
@@ -90,9 +101,10 @@ final class Setup2026FlagsCommand extends Command
                 'groupName'      => 'Parkování v areálu',
                 'groupShortName' => 'Parkování',
                 'min'            => 0,
-                'max'            => 1,
+                'max'            => 2,
                 'flags'          => [
                     ['slug' => 'parkuje-v-arealu', 'name' => 'Parkuje v areálu (poplatek zaplacen)', 'shortName' => 'Parkuje', 'formValueLabel' => 'SPZ'],
+                    ['slug' => 'parkovaci-karta', 'name' => 'Zapůjčená parkovací karta', 'shortName' => 'Parkovací karta', 'formValueLabel' => 'Číslo karty'],
                 ],
             ],
             [
@@ -224,8 +236,13 @@ final class Setup2026FlagsCommand extends Command
 
     /**
      * Vytvoří (pokud chybí) group offer pro daný ročník + flag offers (admin-only, zdarma, bez kapacity)
-     * a naváže group offer na přihlášku. Idempotentní: existující group offer (dle slug navázaný na
-     * přihlášku) přeskočí.
+     * a naváže group offer na přihlášku.
+     *
+     * Idempotentní, ale NE „všechno nebo nic": existující group offer se DOROVNÁ na specifikaci
+     * ({@see reconcileGroupOffer()}) — přidají se chybějící flag offers a srovná se min/max. Dřív se
+     * celá skupina přeskočila, což tiše zahodilo každou pozdější změnu specifikace: přidání příznaku
+     * `parkovaci-karta` (16.7.) by se na existující instalaci NIKDY neprojevilo a `max` by zůstal 1,
+     * takže by zápis obou příznaků spadl na validaci. Ticho je tu horší než práce navíc.
      *
      * @param array{
      *   categorySlug: string, groupOfferSlug: string, groupName: string, groupShortName: string,
@@ -244,7 +261,7 @@ final class Setup2026FlagsCommand extends Command
     ): void {
         foreach ($offer->getFlagGroupRanges() as $existing) {
             if ($spec['groupOfferSlug'] === $existing->getSlug()) {
-                $io->writeln('  = group offer "'.$spec['groupOfferSlug'].'" už navázaný — přeskakuji.');
+                $this->reconcileGroupOffer($existing, $spec, $flags, $io, $apply);
 
                 return;
             }
@@ -258,38 +275,101 @@ final class Setup2026FlagsCommand extends Command
         $group->setPublicOnWeb(false); // admin-set: mimo registrační formulář, editor (onlyPublic=false) ho nabídne
 
         foreach ($spec['flags'] as $f) {
-            $flag = $flags[$f['slug']];
-            $offerSlug = $f['slug'].'-2026';
-            $io->writeln('    + flag offer "'.$offerSlug.'"');
-            $flagOffer = new RegistrationFlagOffer(
-                $flag,
-                // Bez kapacitního stropu — admin dietní/dopravní příznaky nejsou omezený zdroj.
-                // null tu funguje díky RegistrationFlagOffer::setBaseCapacity(), který (na rozdíl
-                // od CapacityTrait) zachová null → příznak nemá čítač a jde vždy přiřadit.
-                new Capacity(null, null),
-                new Price(0, 0),          // zdarma, bez zálohy
-                new FlagAmountRange(0, null),
-                null,
-            );
-            $flagOffer->setName($f['name']);
-            $flagOffer->setShortName($f['shortName']);
-            $flagOffer->setForcedSlug($offerSlug);
-            $flagOffer->setPublicOnWeb(false);
-            $flagOffer->setBaseUsage(0);
-            $flagOffer->setFullUsage(0);
-            if (null !== $f['formValueLabel']) {
-                $flagOffer->setFormValueLabel($f['formValueLabel']);
-                $flagOffer->setFormValueRegex('.{0,255}'); // povolí volný text → isFormValueAllowed()=true
-            }
-            $group->addFlagRange($flagOffer);
-            if ($apply) {
-                $this->em->persist($flagOffer);
-            }
+            $io->writeln('    + flag offer "'.$f['slug'].'-2026"');
+            $group->addFlagRange($this->createFlagOffer($f, $flags[$f['slug']], $apply));
         }
 
         $offer->addFlagGroupRange($group);
         if ($apply) {
             $this->em->persist($group);
         }
+    }
+
+    /**
+     * Dorovná JIŽ EXISTUJÍCÍ group offer na specifikaci: přidá chybějící flag offers a srovná min/max.
+     *
+     * Záměrně NEsahá na to, co už existuje (názvy, ceny, hodnoty u přihlášek) — přejmenování je
+     * legitimní adminova změna a command ji nesmí přepsat. Řeší jen to, co ve specifikaci PŘIBYLO.
+     * Min/max se srovnat MUSÍ: bez toho by nový příznak sice existoval, ale nešel zapsat (validace
+     * skupiny) — což je přesně ten tichý polovičatý stav, kvůli kterému tahle metoda vznikla.
+     *
+     * @param array{
+     *   categorySlug: string, groupOfferSlug: string, groupName: string, groupShortName: string,
+     *   min: int, max: int|null,
+     *   flags: list<array{slug: string, name: string, shortName: string, formValueLabel: ?string}>
+     * } $spec
+     * @param array<string, RegistrationFlag> $flags
+     */
+    private function reconcileGroupOffer(
+        RegistrationFlagGroupOffer $group,
+        array $spec,
+        array $flags,
+        SymfonyStyle $io,
+        bool $apply,
+    ): void {
+        $existingSlugs = [];
+        foreach ($group->getFlagOffers(false) as $existingOffer) {
+            $existingSlugs[] = $existingOffer->getSlug();
+        }
+
+        $added = 0;
+        foreach ($spec['flags'] as $f) {
+            $offerSlug = $f['slug'].'-2026';
+            if (in_array($offerSlug, $existingSlugs, true)) {
+                continue;
+            }
+            $io->writeln('    + flag offer "'.$offerSlug.'" (doplněn do existující skupiny)');
+            $group->addFlagRange($this->createFlagOffer($f, $flags[$f['slug']], $apply));
+            ++$added;
+        }
+
+        $minMaxChanged = $group->getMin() !== $spec['min'] || $group->getMax() !== $spec['max'];
+        if ($minMaxChanged) {
+            $io->writeln(
+                '    ~ min/max '.$group->getMin().'/'.($group->getMax() ?? '∞')
+                .' → '.$spec['min'].'/'.($spec['max'] ?? '∞'),
+            );
+            $group->setFlagAmountRange(new FlagAmountRange($spec['min'], $spec['max']));
+        }
+
+        if (0 === $added && !$minMaxChanged) {
+            $io->writeln('  = group offer "'.$spec['groupOfferSlug'].'" už odpovídá specifikaci.');
+        } else {
+            $io->writeln('  ~ group offer "'.$spec['groupOfferSlug'].'" dorovnán.');
+        }
+    }
+
+    /**
+     * Admin-only nabídka příznaku: zdarma, bez kapacitního stropu, mimo registrační formulář.
+     *
+     * @param array{slug: string, name: string, shortName: string, formValueLabel: ?string} $f
+     */
+    private function createFlagOffer(array $f, RegistrationFlag $flag, bool $apply): RegistrationFlagOffer
+    {
+        $flagOffer = new RegistrationFlagOffer(
+            $flag,
+            // Bez kapacitního stropu — admin dietní/dopravní příznaky nejsou omezený zdroj.
+            // null tu funguje díky RegistrationFlagOffer::setBaseCapacity(), který (na rozdíl
+            // od CapacityTrait) zachová null → příznak nemá čítač a jde vždy přiřadit.
+            new Capacity(null, null),
+            new Price(0, 0),          // zdarma, bez zálohy
+            new FlagAmountRange(0, null),
+            null,
+        );
+        $flagOffer->setName($f['name']);
+        $flagOffer->setShortName($f['shortName']);
+        $flagOffer->setForcedSlug($f['slug'].'-2026');
+        $flagOffer->setPublicOnWeb(false);
+        $flagOffer->setBaseUsage(0);
+        $flagOffer->setFullUsage(0);
+        if (null !== $f['formValueLabel']) {
+            $flagOffer->setFormValueLabel($f['formValueLabel']);
+            $flagOffer->setFormValueRegex('.{0,255}'); // povolí volný text → isFormValueAllowed()=true
+        }
+        if ($apply) {
+            $this->em->persist($flagOffer);
+        }
+
+        return $flagOffer;
     }
 }

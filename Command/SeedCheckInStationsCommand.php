@@ -43,6 +43,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class SeedCheckInStationsCommand extends Command
 {
+    /** Našla se u existující stanice odchylka od předlohy? Řídí závěrečné varování. */
+    private bool $driftFound = false;
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EventRepository $eventRepository,
@@ -98,13 +101,13 @@ final class SeedCheckInStationsCommand extends Command
         return [
             [
                 // Před evidencí (řidiči u brány) → proto ENTRY kind, negatuje se evidencí.
-                // Hodnota návštěvy = ČÍSLO ZAPŮJČENÉ KARTY (majetek kempu, vrací se → zápůjčka,
-                // stejná rodina jako klíčky/deskovky u check-outu). SPZ patří na PŘÍZNAK
-                // („parkuje v areálu, poplatek zaplacen“) — je to trvalý údaj o člověku, ne
-                // o události u stolu. Dvě různé věci, dvě různé životnosti (user 2026-07-16).
+                // Hodnotu NEsbírá: SPZ i číslo zapůjčené karty jdou na PŘÍZNAKY PŘIHLÁŠKY
+                // (kategorie `parkovani`, viz Setup2026FlagsCommand) — u průchodu by přežily jen
+                // jako historie události u stolu a nešly by najít u přihlášky, kterou řeším
+                // (user 16.7., závazné). Stanice tedy jen odškrtne „odbaveno“, stejně jako pásky.
                 'kind' => CheckInStation::KIND_PARKING, 'name' => 'Parkovací karty', 'order' => 10,
-                'icon' => 'car-outline', 'capturesValue' => true, 'valueLabel' => 'Číslo parkovací karty',
-                'valueOptions' => null, 'requiresOnline' => false,
+                'icon' => 'car-outline', 'capturesValue' => false, 'valueLabel' => null,
+                'valueOptions' => null, 'requiresOnline' => true,
             ],
             [
                 'kind' => CheckInStation::KIND_EVIDENCE, 'name' => 'Evidence', 'order' => 20,
@@ -164,6 +167,13 @@ final class SeedCheckInStationsCommand extends Command
             ),
             self::PRESET_MINIMAL,
         );
+        $this->addOption(
+            'reconcile',
+            null,
+            InputOption::VALUE_NONE,
+            'U EXISTUJÍCÍCH stanic srovná sběr hodnoty (captures/label/options) a requiresOnline na předlohu. '
+            .'Bez tohoto se odchylka jen vypíše — konfigurace stanic je adminova (web-admin), předloha ji nesmí přepsat sama od sebe.',
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -176,6 +186,7 @@ final class SeedCheckInStationsCommand extends Command
             return Command::FAILURE;
         }
         $apply = true === $input->getOption('apply');
+        $reconcile = true === $input->getOption('reconcile');
         $preset = $input->getOption('preset');
         if (!in_array($preset, [self::PRESET_MINIMAL, self::PRESET_ARRIVAL], true)) {
             $io->error(sprintf('Neznámý preset — použij "%s" nebo "%s".', self::PRESET_MINIMAL, self::PRESET_ARRIVAL));
@@ -196,12 +207,19 @@ final class SeedCheckInStationsCommand extends Command
         $repo = $this->em->getRepository(CheckInStation::class);
         $created = 0;
         $skipped = 0;
+        $reconciled = 0;
         $rows = [];
         foreach ($this->stationsSpec($preset) as $spec) {
             $existing = $repo->findOneBy(['event' => $event, 'stationKind' => $spec['kind']]);
             if ($existing instanceof CheckInStation && !$existing->isDeleted()) {
-                ++$skipped;
-                $rows[] = [$spec['order'], $spec['kind'], $spec['name'], '= existuje (přeskočeno)'];
+                $action = $this->describeExisting($existing, $spec, $reconcile, $apply);
+                // Srovnaná stanice NENÍ přeskočená — hlásit ji jako přeskočenou by zakrylo zápis.
+                if (str_starts_with($action, '~')) {
+                    ++$reconciled;
+                } else {
+                    ++$skipped;
+                }
+                $rows[] = [$spec['order'], $spec['kind'], $spec['name'], $action];
                 continue;
             }
             ++$created;
@@ -228,14 +246,72 @@ final class SeedCheckInStationsCommand extends Command
         }
 
         $io->table(['#', 'druh', 'název', 'akce'], $rows);
+        if (!$reconcile && $this->driftFound) {
+            $io->warning(
+                'Některé existující stanice se liší od předlohy (viz „≠“ výše). Pokud je to adminova záměrná '
+                .'konfigurace, nech to být; pokud jde o zastaralý seed, srovnej ho přepínačem --reconcile.',
+            );
+        }
 
         if ($apply) {
             $this->em->flush();
-            $io->success("Zapsáno: {$created} nových, {$skipped} přeskočeno. Ověř doctrine:schema:validate + hub v prohlížeči.");
+            $io->success(
+                "Zapsáno: {$created} nových, {$reconciled} srovnáno, {$skipped} beze změny. "
+                .'Ověř doctrine:schema:validate + hub v prohlížeči.',
+            );
         } else {
-            $io->note("Dry-run: {$created} by se vytvořilo, {$skipped} už existuje. Spusť znovu s --apply pro zápis.");
+            $io->note(
+                "Dry-run: {$created} by se vytvořilo, {$reconciled} srovnalo, {$skipped} beze změny. "
+                .'Spusť znovu s --apply pro zápis.',
+            );
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Popíše existující stanici vůči předloze a (s `--reconcile`) ji srovná.
+     *
+     * Proč to není automatika: konfiguraci stanic si admin edituje ve web-adminu (od 15. 7.),
+     * takže tiché přepsání by mu zadupalo záměrné nastavení. Ale tiché „přeskočeno“ je stejně zlé
+     * z druhé strany — po změně předlohy (parkování přestalo sbírat číslo karty, 16.7.) by stará
+     * instalace dál nabízela pole, do kterého už stůl nepíše, a nikdo by se to nedozvěděl.
+     * Proto: nahlásit vždy, přepsat jen na vyžádání.
+     *
+     * @param array{kind: string, name: string, order: int, icon: string, capturesValue: bool, valueLabel: ?string, valueOptions: list<string>|null, requiresOnline: bool} $spec
+     */
+    private function describeExisting(CheckInStation $station, array $spec, bool $reconcile, bool $apply): string
+    {
+        $diffs = [];
+        if ($station->isCapturesValue() !== $spec['capturesValue']) {
+            $diffs[] = 'sběr hodnoty '.($station->isCapturesValue() ? 'ano' : 'ne').'→'.($spec['capturesValue'] ? 'ano' : 'ne');
+        }
+        if ($station->getValueLabel() !== $spec['valueLabel']) {
+            $diffs[] = 'popisek "'.((string) $station->getValueLabel()).'"→"'.((string) $spec['valueLabel']).'"';
+        }
+        if ($station->getValueOptions() !== $spec['valueOptions']) {
+            $diffs[] = 'volby';
+        }
+        if ($station->isRequiresOnline() !== $spec['requiresOnline']) {
+            $diffs[] = 'online '.($station->isRequiresOnline() ? 'ano' : 'ne').'→'.($spec['requiresOnline'] ? 'ano' : 'ne');
+        }
+
+        if ([] === $diffs) {
+            return '= existuje (odpovídá předloze)';
+        }
+        if (!$reconcile) {
+            $this->driftFound = true;
+
+            return '≠ liší se: '.implode(', ', $diffs);
+        }
+
+        if ($apply) {
+            $station->setCapturesValue($spec['capturesValue']);
+            $station->setValueLabel($spec['valueLabel']);
+            $station->setValueOptions($spec['valueOptions']);
+            $station->setRequiresOnline($spec['requiresOnline']);
+        }
+
+        return '~ srovnáno: '.implode(', ', $diffs);
     }
 }

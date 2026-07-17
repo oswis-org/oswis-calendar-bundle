@@ -99,7 +99,7 @@ final class ParticipantFlagApiController
     /**
      * Flatten {@see ParticipantFlagUpdateService::getFlagSelectionModel()} into JSON-safe scalars.
      *
-     * @return list<array{flagGroupOffer: int|null, category: string, min: int, max: int|null, hasGroup: bool, flagOffers: list<array{id: int|null, name: string|null, price: int, selected: bool, remaining: int|null, full: bool, formValueAllowed: bool, formValueLabel: string|null, textValue: string|null}>}>
+     * @return list<array{flagGroupOffer: int|null, category: string, categoryType: string|null, min: int, max: int|null, hasGroup: bool, flagOffers: list<array{id: int|null, slug: string, name: string|null, price: int, selected: bool, remaining: int|null, full: bool, formValueAllowed: bool, formValueLabel: string|null, textValue: string|null}>}>
      */
     private function serializeModel(Participant $participant): array
     {
@@ -110,6 +110,10 @@ final class ParticipantFlagApiController
                 $offer = $flagOffer['offer'];
                 $offers[] = [
                     'id'               => $offer->getId(),
+                    // Slug + typ kategorie = stabilní identifikace nabídky pro konzumenta, který
+                    // hledá KONKRÉTNÍ příznak (check-in stůl: SPZ vs. číslo parkovací karty).
+                    // Bez nich zbývá jen český název, který je admin volný přepsat.
+                    'slug'             => $offer->getSlug(),
                     'name'             => $offer->getFlag()?->getName() ?? $offer->getName(),
                     'price'            => $offer->getPrice(),
                     'selected'         => $flagOffer['selected'],
@@ -123,6 +127,7 @@ final class ParticipantFlagApiController
             $out[] = [
                 'flagGroupOffer' => $cat['groupOffer']->getId(),
                 'category'       => $cat['categoryName'],
+                'categoryType'   => $cat['categoryType'],
                 'min'            => $cat['min'],
                 'max'            => $cat['max'],
                 'hasGroup'       => $cat['hasGroup'],

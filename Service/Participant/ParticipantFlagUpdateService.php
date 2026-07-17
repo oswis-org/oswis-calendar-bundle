@@ -196,6 +196,7 @@ final class ParticipantFlagUpdateService
      * @return list<array{
      *     groupOffer: RegistrationFlagGroupOffer,
      *     categoryName: string,
+     *     categoryType: string|null,
      *     min: int,
      *     max: int|null,
      *     hasGroup: bool,
@@ -237,6 +238,9 @@ final class ParticipantFlagUpdateService
             $model[] = [
                 'groupOffer'   => $groupOffer,
                 'categoryName' => $groupOffer->getFlagCategory()?->getName() ?? 'Ostatní',
+                // Typ = STABILNÍ identifikátor kategorie. Název je lokalizovaný text, který smí admin
+                // kdykoliv přejmenovat — konzument (check-in stůl) proto nesmí hledat podle něj.
+                'categoryType' => $groupOffer->getFlagCategory()?->getType(),
                 'min'          => $groupOffer->getMin(),
                 'max'          => $groupOffer->getMax(),
                 'hasGroup'     => $group instanceof ParticipantFlagGroup,
