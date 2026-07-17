@@ -1,7 +1,9 @@
 OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
   attributes:
     id:
-      groups: [ 'calendar_check_in_queue' ]
+      # `calendar_reservations_get`: bez id se rezervace nedá spárovat s frontou check-inu →
+      # ubytovací stůl by nevěděl, KDO už v pokoji je (spolubydlící, kluci/holky zvlášť).
+      groups: [ 'calendar_check_in_queue', 'calendar_reservations_get' ]
     deletedAt:
       groups: [ 'calendar_check_in_queue' ]
     participantCategory:
@@ -306,6 +308,11 @@ OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact:
       groups:
         - 'calendar_participants_get'
         - 'calendar_participant_get'
+        # Ubytovací stůl: „kluky zvlášť a holky zvlášť, pokud účastníci nechtějí jinak" (user 17.7.).
+        # POZOR — je to NÁPOVĚDA, ne pravda: `Person::getGender()` ho odvozuje ze jména přes vokativ,
+        # který neznámá/cizí jména defaultně považuje za MUŽSKÁ, a přihláška bez jména vrátí `unisex`.
+        # Proto smí řídit jen ŘAZENÍ nabídky, nikdy zákaz. Ruční oprava = `genderOverride` na kontaktu.
+        - 'calendar_check_in_queue'
     oneImage:
       groups:
         - 'calendar_participants_get'

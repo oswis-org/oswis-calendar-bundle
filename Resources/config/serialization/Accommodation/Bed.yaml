@@ -1,11 +1,13 @@
 OswisOrg\OswisCalendarBundle\Entity\Accommodation\Bed:
   attributes:
+    # `calendar_reservations_get`: bez id/popisku lůžka nepozná ubytovací stůl, KTERÉ lůžko je už
+    # obsazené — nabízel by plné a přiřazoval dva lidi do jedné postele.
     id:
-      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_accommodation_unit_get' ]
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_accommodation_unit_get', 'calendar_reservations_get' ]
     unit:
       groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put' ]
     label:
-      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put', 'calendar_accommodation_unit_get' ]
+      groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put', 'calendar_accommodation_unit_get', 'calendar_reservations_get' ]
     bedType:
       groups: [ 'calendar_beds_get', 'calendar_bed_get', 'calendar_beds_post', 'calendar_bed_put', 'calendar_accommodation_unit_get' ]
     pairedWith:
