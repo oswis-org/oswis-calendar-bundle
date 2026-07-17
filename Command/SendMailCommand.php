@@ -100,7 +100,46 @@ final class SendMailCommand extends Command
                     ));
                 }
                 $io->writeln(sprintf('Pending bulků: %d, příjemců zbývá celkem: %d', count($pending), $totalRemaining));
-                $io->writeln($withAutomails ? 'Automaily: ZAPNUTO (běh by zpracoval aktivní automail skupiny).' : 'Automaily: vypnuto (--automails pro zapnutí).');
+
+                if ($withAutomails) {
+                    $io->section('Automaily (náhled — nic se neodešle)');
+                    $preview = $this->participantService->previewAutoMails(null, null, $automailLimit);
+                    if ([] === $preview) {
+                        $io->writeln('Žádná aktivní automail skupina (automaticMailing=1 a okno obsahuje teď).');
+                    } else {
+                        $totalRecipients = 0;
+                        foreach ($preview as $group) {
+                            $totalRecipients += $group['recipients'];
+                            $window = (null === $group['start'] && null === $group['end'])
+                                ? '⚠ bez okna (platí VŽDY)'
+                                : sprintf(
+                                    '%s – %s',
+                                    $group['start']?->format('j.n.Y H:i') ?? '−∞',
+                                    $group['end']?->format('j.n.Y H:i') ?? '∞',
+                                );
+                            $io->writeln(sprintf(
+                                '  • „%s" [%s] · akce: %s · okno: %s · obeslalo by %d%s příjemců',
+                                $group['name'],
+                                $group['type'] ?? '?',
+                                $group['event'] ?? '?',
+                                $window,
+                                $group['recipients'],
+                                $group['cappedAtLimit'] ? '+ (strop '.$automailLimit.'/skupinu)' : '',
+                            ));
+                            if (null !== $group['filterError']) {
+                                $io->writeln(sprintf('      ⚠ neplatný filtr → skupina by se PŘESKOČILA: %s', $group['filterError']));
+                            }
+                        }
+                        $io->writeln(sprintf(
+                            'Automaily by odeslaly celkem ~%d e-mailů z %d aktivních skupin (strop %d/skupinu).',
+                            $totalRecipients,
+                            count($preview),
+                            $automailLimit,
+                        ));
+                    }
+                } else {
+                    $io->writeln('Automaily: vypnuto (--automails pro zapnutí).');
+                }
 
                 return Command::SUCCESS;
             }

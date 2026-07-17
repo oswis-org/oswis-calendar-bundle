@@ -706,4 +706,65 @@ class ParticipantService
         return ['sent' => $sent, 'failed' => $failed, 'errors' => $errors];
     }
 
+    /**
+     * Dry-run counterpart to {@see sendAutoMails()} — reports, per active auto-mail group, how many
+     * recipients a real run would mail RIGHT NOW, WITHOUT sending anything. Mirrors the same selection
+     * (armed + in-window groups, recursive event scope, per-type unmailed dedup, and per-entity
+     * applicability incl. the filter expression) so the count is the real "if I flip it on now" number,
+     * capped at $limit exactly like the live run. Lets the team preview an armed campaign before enabling
+     * automaticMailing (empty window = applies always → a real run would send within one cron tick).
+     *
+     * @return list<array{name: string, type: string|null, event: string|null, start: ?\DateTimeInterface, end: ?\DateTimeInterface, filterError: ?string, recipients: int, cappedAtLimit: bool}>
+     */
+    public function previewAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): array
+    {
+        $preview = [];
+        foreach ($this->participantMailService->getAutoMailGroups($event, $type) ?? new ArrayCollection() as $group) {
+            $groupEvent = $group->getEvent();
+            $groupType = $group->getType();
+            $filterError = $this->filterEvaluator->validate($group->getFilterExpression());
+            $recipients = 0;
+            if ($groupEvent instanceof Event && null !== $groupType && null === $filterError) {
+                $remaining = max(1, $limit);
+                $afterId = 0;
+                while ($remaining > 0) {
+                    $ids = $this->participantRepository->findUnmailedParticipantIds(
+                        $groupEvent,
+                        $groupType,
+                        max(1, $limit),
+                        4,
+                        !$group->isOnlyActive(),
+                        $afterId,
+                    );
+                    if ([] === $ids) {
+                        break;
+                    }
+                    foreach ($ids as $id) {
+                        $afterId = $id;
+                        $participant = $this->em->find(Participant::class, $id);
+                        if (!$participant instanceof Participant || !$group->isApplicable($participant)) {
+                            continue;
+                        }
+                        ++$recipients;
+                        if (--$remaining <= 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            $preview[] = [
+                'name'          => $group->getName() ?? '?',
+                'type'          => $groupType,
+                'event'         => $groupEvent?->getName() ?? $groupEvent?->getShortName(),
+                'start'         => $group->getStartDateTime(),
+                'end'           => $group->getEndDateTime(),
+                'filterError'   => $filterError,
+                'recipients'    => $recipients,
+                'cappedAtLimit' => $recipients >= max(1, $limit),
+            ];
+        }
+
+        return $preview;
+    }
+
 }
