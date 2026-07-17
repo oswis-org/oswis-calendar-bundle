@@ -12,6 +12,8 @@ use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -53,6 +55,25 @@ final class ParticipantMailGroupEditType extends AbstractType
             ->add('automaticMailing', CheckboxType::class, [
                 'label'    => 'Automatické rozesílání',
                 'required' => false,
+                'help'     => '⚠️ POZOR: skupina s prázdným oknem platí VŽDY — zapnutí bez nastaveného '
+                    .'okna začne rozesílat do 5 minut (cron). Nejdřív nastav okno, pak teprve zapni.',
+            ])
+            ->add('startDateTime', DateTimeType::class, [
+                'label'    => 'Okno OD',
+                'required' => false,
+                'widget'   => 'single_text',
+                'help'     => 'Začátek platnosti skupiny. Prázdné = bez omezení zdola.',
+            ])
+            ->add('endDateTime', DateTimeType::class, [
+                'label'    => 'Okno DO',
+                'required' => false,
+                'widget'   => 'single_text',
+                'help'     => 'Konec platnosti skupiny. Prázdné = bez omezení shora.',
+            ])
+            ->add('priority', IntegerType::class, [
+                'label'    => 'Priorita',
+                'required' => false,
+                'help'     => 'Vyšší priorita vyhrává, když stejný typ pokrývá víc skupin (varianta s filtrem + záchytná bez filtru).',
             ])
             ->add('onlyActive', CheckboxType::class, [
                 'label'    => 'Pouze aktivní účastníci',
