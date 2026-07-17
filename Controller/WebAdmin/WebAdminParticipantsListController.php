@@ -34,6 +34,7 @@ use OswisOrg\OswisCoreBundle\Export\ExportResponseFactory;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,6 +55,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Volume: scoped views load the full set (full-export need, no pagination); unscoped views
  * default to pagination and offer an explicit "show all" with a warning.
  */
+#[IsGranted('ROLE_ADMIN')]
 class WebAdminParticipantsListController extends AbstractController
 {
     public const string FILTER_ALL               = 'all';

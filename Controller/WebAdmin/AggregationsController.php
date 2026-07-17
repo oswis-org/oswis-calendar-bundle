@@ -6,8 +6,10 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use OswisOrg\OswisCalendarBundle\Service\Aggregations\AggregationsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Response;
 
+#[IsGranted('ROLE_ADMIN')]
 class AggregationsController extends AbstractController
 {
     public function __construct(

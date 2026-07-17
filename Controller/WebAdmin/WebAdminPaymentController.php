@@ -13,10 +13,12 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentReposi
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\PaymentMatchingService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+#[IsGranted('ROLE_ADMIN')]
 class WebAdminPaymentController extends AbstractController
 {
     public function __construct(
