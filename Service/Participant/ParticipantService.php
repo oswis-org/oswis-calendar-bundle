@@ -742,7 +742,14 @@ class ParticipantService
                     foreach ($ids as $id) {
                         $afterId = $id;
                         $participant = $this->em->find(Participant::class, $id);
-                        if (!$participant instanceof Participant || !$group->isApplicable($participant)) {
+                        $applicable = $participant instanceof Participant && $group->isApplicable($participant);
+                        if ($participant instanceof Participant) {
+                            // Preview is read-only → detach each candidate so a high --automail-limit
+                            // scan can't accumulate the whole event in memory (the em->find loop is the
+                            // known automail OOM pattern; here it is safe to bound because we never write).
+                            $this->em->detach($participant);
+                        }
+                        if (!$applicable) {
                             continue;
                         }
                         ++$recipients;
