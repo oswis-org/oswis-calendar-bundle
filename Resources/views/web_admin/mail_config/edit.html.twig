@@ -24,7 +24,7 @@
                     : { expr: entity.filterExpression } %}
                 <a class="btn btn-sm btn-outline-secondary" target="_blank"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', listParams) }}">
-                    👥 Zobrazit účastníky odpovídající filtru v seznamu přihlášek
+                    <twig:ux:icon name="tabler:users" class="oa-icon" /> Zobrazit účastníky odpovídající filtru v seznamu přihlášek
                 </a>
             </p>
         {% endif %}
@@ -37,7 +37,7 @@
             <div id="mtPreview" style="margin-top: 1rem;"
                  data-url="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_preview', { id: entity.id }) }}"
                  data-token="{{ csrf_token('mail_template_preview') }}">
-                <h3>👁 Náhled e-mailu</h3>
+                <h3><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled e-mailu</h3>
                 <p class="text-muted" style="max-width: 60rem;">
                     Vykreslí <strong>aktuální (i neuložený) obsah</strong> šablony přes stejnou MJML cestu,
                     kterou používá reálné odeslání. Vyber vzorového příjemce (např. z 1. vs 2. turnusu)
@@ -59,8 +59,8 @@
                         </select>
                     </div>
                     <div class="btn-group" role="group" aria-label="Šířka náhledu">
-                        <button type="button" class="btn btn-sm btn-outline-secondary active" id="mtWidthDesktop">🖥 Desktop</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="mtWidthMobile">📱 Mobil</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary active" id="mtWidthDesktop"><twig:ux:icon name="tabler:device-desktop" class="oa-icon" /> Desktop</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="mtWidthMobile"><twig:ux:icon name="tabler:device-mobile" class="oa-icon" /> Mobil</button>
                     </div>
                     <button type="button" class="btn btn-sm btn-primary" id="mtPreviewBtn">Vykreslit náhled</button>
                 </div>

@@ -70,7 +70,7 @@
                                 {% if g.startDateTime or g.endDateTime %}
                                     {{ g.startDateTime ? g.startDateTime|date('j. n. Y H:i') : '…' }} – {{ g.endDateTime ? g.endDateTime|date('j. n. Y H:i') : '…' }}
                                 {% elseif g.automaticMailing %}
-                                    <span style="color: #b02a37; font-weight: 600;" title="Zapnutá skupina bez okna platí vždy!">⚠️ vždy</span>
+                                    <span style="color: #b02a37; font-weight: 600;" title="Zapnutá skupina bez okna platí vždy!"><twig:ux:icon name="tabler:alert-triangle" class="oa-icon" /> vždy</span>
                                 {% else %}
                                     —
                                 {% endif %}
@@ -85,9 +85,9 @@
                             </td>
                             <td style="white-space: nowrap;">
                                 <a class="btn btn-sm btn-outline-primary"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}">✎ Upravit</a>
+                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
                                 <a class="btn btn-sm btn-outline-secondary" title="Založit novou skupinu předvyplněnou z této (okno a automatika se nekopírují)"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new', { from: g.id }) }}">⧉ Kopie</a>
+                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new', { from: g.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
                             </td>
                         </tr>
                     {% else %}
@@ -121,9 +121,9 @@
                             <td><code style="font-size: .85em;">{{ c.slug|default('—') }}</code></td>
                             <td style="white-space: nowrap;">
                                 <a class="btn btn-sm btn-outline-primary"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_edit', { id: c.id }) }}">✎ Upravit</a>
+                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_edit', { id: c.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
                                 <a class="btn btn-sm btn-outline-secondary" title="Založit novou kategorii předvyplněnou z této (typ musí být unikátní — před uložením ho uprav)"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_new', { from: c.id }) }}">⧉ Kopie</a>
+                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_new', { from: c.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
                             </td>
                         </tr>
                     {% else %}
@@ -170,7 +170,7 @@
                             </td>
                             <td>
                                 <a class="btn btn-sm btn-outline-primary"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: t.id }) }}">✎ Upravit</a>
+                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: t.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
                             </td>
                         </tr>
                     {% else %}

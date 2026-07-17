@@ -33,7 +33,7 @@
     {% if email %}
         <a class="btn btn-sm btn-outline-primary"
            href="mailto:{{ email }}?subject={{ subject|url_encode }}"
-           title="Odeslat e-mail">✉ E-mail</a>
+           title="Odeslat e-mail"><twig:ux:icon name="tabler:mail" class="oa-icon" /> E-mail</a>
         <button type="button" class="btn btn-sm btn-outline-secondary"
                 title="Zkopírovat e-mail do schránky"
                 data-clipboard="{{ email }}"
@@ -42,7 +42,7 @@
         </button>
     {% else %}
         <button type="button" class="btn btn-sm btn-outline-secondary" disabled
-                title="E-mail neznáme">✉ E-mail</button>
+                title="E-mail neznáme"><twig:ux:icon name="tabler:mail" class="oa-icon" /> E-mail</button>
     {% endif %}
 
     {# Telefon #}
