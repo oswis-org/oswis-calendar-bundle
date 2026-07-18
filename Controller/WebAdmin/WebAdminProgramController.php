@@ -366,6 +366,34 @@ final class WebAdminProgramController extends AbstractController
         ));
     }
 
+    /**
+     * Zveřejnění / skrytí PROGRAMU turnusu účastníkům (žádost usera): přepne `programReleasedAt` na
+     * turnusu. Skrytý program se staví a účastníci ho v aplikaci nevidí; tým ho zveřejní až hotový a
+     * zkontrolovaný. Brána: {@see \OswisOrg\OswisCalendarBundle\ApiPlatform\EventVisibleToUserExtension}.
+     */
+    public function toggleProgramRelease(Request $request, string $eventSlug): RedirectResponse
+    {
+        // Přes em->find (ne getEvent/DQL) — entita z DQL query se s L2 NONSTRICT cache spolehlivě
+        // netrackovala pro dirty-update a flush nic nezapsal; find vrátí managed instanci.
+        $turnusId = $this->resolveEvent($eventSlug)->getId();
+        $turnus = $this->em->find(Event::class, $turnusId)
+            ?? throw $this->createNotFoundException("Turnus '$eventSlug' nenalezen.");
+        if (!$this->isCsrfTokenValid('program_release_'.$turnusId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        if ($turnus->isProgramReleased()) {
+            $turnus->setProgramReleasedAt(null);
+            $this->addFlash('warning', 'Program SKRYT — účastníci ho v aplikaci nevidí.');
+        } else {
+            $turnus->setProgramReleasedAt(new DateTime());
+            $this->addFlash('success', 'Program ZVEŘEJNĚN účastníkům.');
+        }
+        $this->em->persist($turnus);
+        $this->em->flush();
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]));
+    }
+
     private function resolveEvent(string $eventSlug): Event
     {
         return $this->eventRepository->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug])

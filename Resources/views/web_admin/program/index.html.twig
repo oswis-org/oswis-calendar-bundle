@@ -16,6 +16,32 @@
             </div>
         </div>
 
+        <div class="row" style="margin-top: .5rem;">
+            <div class="col">
+                {% if event.isProgramReleased %}
+                    <div class="alert alert-success" style="display: flex; align-items: center; gap: 1rem; padding: .45rem 1rem; margin: 0;">
+                        <span><span class="badge bg-success">ZVEŘEJNĚNO</span> Program vidí účastníci v aplikaci{% if event.programReleasedAt %} (od {{ event.programReleasedAt|date('j. n. Y H:i') }}){% endif %}.</span>
+                        <form method="post" style="margin: 0 0 0 auto;"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
+                              onsubmit="return confirm('Skrýt program účastníkům?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('program_release_' ~ event.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-warning">Skrýt program</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning" style="display: flex; align-items: center; gap: 1rem; padding: .45rem 1rem; margin: 0;">
+                        <span><span class="badge bg-warning text-dark">SKRYTO</span> Program se staví — účastníci ho v aplikaci nevidí. Zveřejni ho, až bude hotový a zkontrolovaný.</span>
+                        <form method="post" style="margin: 0 0 0 auto;"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
+                              onsubmit="return confirm('Zveřejnit program všem účastníkům turnusu?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('program_release_' ~ event.id) }}">
+                            <button type="submit" class="btn btn-sm btn-success">Zveřejnit program</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
         <div class="row" style="margin-top: .75rem;">
             <div class="col" style="display: flex; gap: .4rem; flex-wrap: wrap;">
                 <a class="btn btn-sm btn-primary"

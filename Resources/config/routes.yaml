@@ -225,6 +225,11 @@ oswis_org_oswis_calendar_web_admin_program_activity_edit:
   requirements: { activityId: '\d+' }
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_program_release:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::toggleProgramRelease
+  path: "/web_admin/program/{eventSlug}/zverejnit"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_program_activity_duplicate:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::duplicateActivity
   path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/duplikovat"
