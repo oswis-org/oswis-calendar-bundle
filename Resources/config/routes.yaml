@@ -237,6 +237,23 @@ oswis_org_oswis_calendar_web_admin_program_staff_delete:
   requirements: { activityId: '\d+', assignmentId: '\d+' }
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_program_section_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newSection
+  path: "/web_admin/program/{eventSlug}/sekce/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_section_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editSection
+  path: "/web_admin/program/{eventSlug}/sekce/{sectionId}/upravit"
+  requirements: { sectionId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_section_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteSection
+  path: "/web_admin/program/{eventSlug}/sekce/{sectionId}/smazat"
+  requirements: { sectionId: '\d+' }
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_program_day_new:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newDay
   path: "/web_admin/program/{eventSlug}/den/nova"

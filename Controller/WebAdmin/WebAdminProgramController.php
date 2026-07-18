@@ -7,10 +7,12 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventSection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventEditType;
+use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventSectionEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
@@ -279,6 +281,65 @@ final class WebAdminProgramController extends AbstractController
         $this->addFlash('warning', 'Obsazení odebráno.');
 
         return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_activity_staff', ['eventSlug' => $eventSlug, 'activityId' => $activityId]));
+    }
+
+    /** Přidání informační sekce (patička/info) k turnusu. */
+    public function newSection(Request $request, string $eventSlug): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $section = new EventSection();
+        $section->setEvent($turnus);
+
+        return $this->handleSectionForm($request, $eventSlug, $section, 'Nová sekce programu', 'Sekce přidána.');
+    }
+
+    /** Úprava informační sekce. */
+    public function editSection(Request $request, string $eventSlug, int $sectionId): Response
+    {
+        $this->resolveEvent($eventSlug);
+        $section = $this->em->find(EventSection::class, $sectionId)
+            ?? throw $this->createNotFoundException("Sekce #$sectionId nenalezena.");
+
+        return $this->handleSectionForm($request, $eventSlug, $section, 'Upravit sekci programu', 'Sekce uložena.');
+    }
+
+    /** Smazání informační sekce. */
+    public function deleteSection(Request $request, string $eventSlug, int $sectionId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $section = $this->em->find(EventSection::class, $sectionId)
+            ?? throw $this->createNotFoundException("Sekce #$sectionId nenalezena.");
+        if (!$this->isCsrfTokenValid('program_section_delete_'.$sectionId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $this->em->remove($section);
+        $this->em->flush();
+        $this->addFlash('warning', 'Sekce smazána.');
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]));
+    }
+
+    private function handleSectionForm(Request $request, string $eventSlug, EventSection $section, string $title, string $flash): Response
+    {
+        $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
+        $form = $this->createForm(EventSectionEditType::class, $section);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (empty($section->getSlug())) {
+                $section->updateSlug();
+            }
+            $this->em->persist($section);
+            $this->em->flush();
+            $this->addFlash('success', $flash);
+
+            return new RedirectResponse($backUrl);
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/program/section_edit.html.twig', [
+            'form'      => $form,
+            'back_url'  => $backUrl,
+            'pageTitle' => $title,
+        ]);
     }
 
     private function resolveEvent(string $eventSlug): Event

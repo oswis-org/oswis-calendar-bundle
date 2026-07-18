@@ -22,6 +22,8 @@
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Přidat aktivitu</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Přidat den</a>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Přidat sekci</a>
                 <span style="width: .5rem;"></span>
                 <a class="btn btn-sm btn-outline-primary" target="_blank"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský program (PDF)</a>
@@ -129,6 +131,15 @@
                                 <strong>{{ s.name ?? '—' }}</strong>
                                 {% if s.publicInApp %}<span class="badge bg-success">veřejné</span>{% else %}<span class="badge bg-light text-dark">interní</span>{% endif %}
                                 <span style="color: #adb5bd; margin-left: auto;">priorita {{ s.priority ?? 0 }}</span>
+                                {% if s.id %}
+                                    <a style="font-size: .8rem;" href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_edit', {eventSlug: eventSlug, sectionId: s.id}) }}">upravit</a>
+                                    <form method="post" style="display: inline; margin: 0;"
+                                          action="{{ path('oswis_org_oswis_calendar_web_admin_program_section_delete', {eventSlug: eventSlug, sectionId: s.id}) }}"
+                                          onsubmit="return confirm('Smazat sekci „{{ s.name }}"?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('program_section_delete_' ~ s.id) }}">
+                                        <button type="submit" style="border: 0; background: none; color: #b02a37; cursor: pointer; padding: 0; font-size: .8rem;">smazat</button>
+                                    </form>
+                                {% endif %}
                             </li>
                         {% endfor %}
                     </ul>

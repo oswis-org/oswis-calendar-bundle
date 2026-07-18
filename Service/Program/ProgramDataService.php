@@ -265,6 +265,7 @@ final class ProgramDataService
                 continue;
             }
             $rows[] = [
+                'id' => $section->getId(),
                 'name' => $section->getName(),
                 'textValue' => $section->getTextValue(),
                 'icon' => $section->getIcon(),
