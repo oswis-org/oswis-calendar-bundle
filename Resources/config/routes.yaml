@@ -225,6 +225,18 @@ oswis_org_oswis_calendar_web_admin_program_activity_edit:
   requirements: { activityId: '\d+' }
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_program_activity_staff:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::activityStaff
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/obsazeni"
+  requirements: { activityId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_staff_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteStaff
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/obsazeni/{assignmentId}/smazat"
+  requirements: { activityId: '\d+', assignmentId: '\d+' }
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_program_day_new:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newDay
   path: "/web_admin/program/{eventSlug}/den/nova"

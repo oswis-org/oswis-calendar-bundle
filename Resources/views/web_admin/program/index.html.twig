@@ -107,6 +107,8 @@
                                         {% if a.id %}
                                             <a class="btn btn-sm btn-outline-secondary"
                                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: a.id}) }}">upravit</a>
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_staff', {eventSlug: eventSlug, activityId: a.id}) }}">obsazení</a>
                                         {% endif %}
                                     </td>
                                 </tr>

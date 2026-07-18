@@ -7,10 +7,14 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -34,6 +38,8 @@ final class WebAdminProgramController extends AbstractController
         private readonly ProgramDataService $programData,
         private readonly EventRepository $eventRepository,
         private readonly EntityManagerInterface $em,
+        private readonly EventStaffAssignmentRepository $assignmentRepository,
+        private readonly ParticipantRepository $participantRepository,
     ) {
     }
 
@@ -189,6 +195,90 @@ final class WebAdminProgramController extends AbstractController
             'back_url'  => $backUrl,
             'pageTitle' => $title,
         ]);
+    }
+
+    /**
+     * Obsazení aktivity (spec 2026-06-12: EventStaffAssignment — účastník z týmových přihlášek NEBO
+     * externí jméno + role). Týmy (StaffTeam ±) = navazující slice. Ruční přiřazení, žádné auto-návrhy
+     * rotace (services se domlouvají v týmu, jen se zapíší — user 2026-06-13).
+     */
+    public function activityStaff(Request $request, string $eventSlug, int $activityId): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $activity = $this->em->find(Event::class, $activityId)
+            ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        $pageUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_activity_staff', ['eventSlug' => $eventSlug, 'activityId' => $activityId]);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('program_staff_add_'.$activityId, (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Neplatný CSRF token.');
+            }
+            $participantId = (int) $request->request->get('participant');
+            $externalName = trim((string) $request->request->get('externalName'));
+            $roleLabel = trim((string) $request->request->get('roleLabel'));
+            $participant = $participantId > 0 ? $this->em->find(Participant::class, $participantId) : null;
+            if (!$participant instanceof Participant && '' === $externalName) {
+                $this->addFlash('danger', 'Vyber člověka ze seznamu, nebo zadej externí jméno.');
+
+                return new RedirectResponse($pageUrl);
+            }
+            $assignment = new EventStaffAssignment('' !== $externalName ? $externalName : null, '' !== $roleLabel ? $roleLabel : null);
+            $assignment->setEvent($activity);
+            if ($participant instanceof Participant) {
+                $assignment->setParticipant($participant);
+            }
+            $this->em->persist($assignment);
+            $this->em->flush();
+            $this->addFlash('success', 'Obsazení přidáno.');
+
+            return new RedirectResponse($pageUrl);
+        }
+
+        $assignments = [];
+        foreach ($this->assignmentRepository->getByEvent($activity) as $a) {
+            $participant = $a->getParticipant();
+            $assignments[] = [
+                'id'        => $a->getId(),
+                'name'      => $participant instanceof Participant ? $this->programData->staffName($participant) : (string) $a->getExternalName(),
+                'roleLabel' => $a->getRoleLabel(),
+                'external'  => !$participant instanceof Participant,
+            ];
+        }
+        $staffPool = [];
+        foreach ($this->participantRepository->getParticipants([
+            ParticipantRepository::CRITERIA_EVENT                 => $turnus,
+            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 3,
+            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => 'staff',
+        ]) as $p) {
+            if ($p instanceof Participant) {
+                $staffPool[] = ['id' => $p->getId(), 'name' => $this->programData->staffName($p)];
+            }
+        }
+        usort($staffPool, static fn (array $a, array $b): int => strcoll($a['name'], $b['name']));
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/program/activity_staff.html.twig', [
+            'eventSlug'   => $eventSlug,
+            'activity'    => $activity,
+            'assignments' => $assignments,
+            'staffPool'   => $staffPool,
+            'back_url'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]),
+        ]);
+    }
+
+    /** Odebrání jednoho obsazení aktivity. */
+    public function deleteStaff(Request $request, string $eventSlug, int $activityId, int $assignmentId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $assignment = $this->em->find(EventStaffAssignment::class, $assignmentId)
+            ?? throw $this->createNotFoundException("Obsazení #$assignmentId nenalezeno.");
+        if (!$this->isCsrfTokenValid('program_staff_delete_'.$assignmentId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $this->em->remove($assignment);
+        $this->em->flush();
+        $this->addFlash('warning', 'Obsazení odebráno.');
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_activity_staff', ['eventSlug' => $eventSlug, 'activityId' => $activityId]));
     }
 
     private function resolveEvent(string $eventSlug): Event
