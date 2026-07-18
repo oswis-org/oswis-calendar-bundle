@@ -10,6 +10,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -103,6 +104,44 @@ final class EventEditType extends AbstractType
                 'label'    => 'Místo (text/upřesnění)',
                 'required' => false,
                 'help'     => 'Samostatné místo nebo upřesnění k vybranému místu (např. „Aula — sraz před vchodem").',
+            ])
+            // Programová pole aktivity (spec 2026-06-12 krok 4). Dosud šla nastavit jen přes API —
+            // teď i z web adminu (editor programu / obecná editace události).
+            ->add('signupMode', ChoiceType::class, [
+                'label'   => 'Přihlašování',
+                'choices' => [
+                    'Bez přihlašování (jen položka programu)'        => Event::SIGNUP_MODE_NONE,
+                    'Dobrovolné (účastník si přidá do svého programu)' => Event::SIGNUP_MODE_OPTIONAL,
+                    'Povinné přihlášení v aplikaci (hlídá kapacitu)'  => Event::SIGNUP_MODE_REQUIRED,
+                    'Zapisuje tým osobně (nástěnka/kiosek)'           => Event::SIGNUP_MODE_STAFF,
+                ],
+                'required' => true,
+                'help'     => 'Jak se účastník na aktivitu dostane.',
+            ])
+            ->add('signupNote', TextType::class, [
+                'label'    => 'Poznámka k zápisu',
+                'required' => false,
+                'help'     => 'Kde/jak se zapisuje — zobrazí se u aktivity (např. „Registrace v kiosku v hotovosti").',
+            ])
+            ->add('signupDeadline', DateTimeType::class, [
+                'label'    => 'Uzávěrka přihlašování',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime',
+            ])
+            ->add('price', IntegerType::class, [
+                'label'    => 'Cena (Kč)',
+                'required' => false,
+                'help'     => 'Placené aktivity (typicky hotově v kiosku). Prázdné = zdarma.',
+            ])
+            ->add('highlight', CheckboxType::class, [
+                'label'    => 'Zvýraznit v programu',
+                'required' => false,
+            ])
+            ->add('publicInApp', CheckboxType::class, [
+                'label'    => 'Veřejné v aplikaci',
+                'required' => false,
+                'help'     => 'Vypnuté = interní (služby, týmové body) — účastník aktivitu v appce nevidí.',
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Uložit',

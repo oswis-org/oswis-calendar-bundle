@@ -59,6 +59,7 @@
                                 <th>Místo</th>
                                 <th>Kategorie</th>
                                 <th>Obsazení</th>
+                                <th style="width: 4rem;"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,6 +88,12 @@
                                         {% for s in a.staff %}
                                             {{ s.name }}{% if s.roleLabel %} <span style="color: #6c757d;">({{ s.roleLabel }})</span>{% endif %}{% if not loop.last %}, {% endif %}
                                         {% else %}<span style="color: #adb5bd;">—</span>{% endfor %}
+                                    </td>
+                                    <td style="white-space: nowrap;">
+                                        {% if a.id %}
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: a.id}) }}">upravit</a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
