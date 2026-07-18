@@ -1,0 +1,116 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{# Program editor — přehledová stránka (spec krok 8, slice 1). Dny → aktivity + sekce + odkazy na PDF
+   výstupy. Read-only; blbuvzdorné formuláře (přidat/upravit/duplikovat) se navěsí v dalších slicech.
+   Data: WebAdminProgramController::index (ProgramDataService). #}
+
+{% block body_content %}
+    <div class="container" style="padding: 1rem;">
+        <div class="row">
+            <div class="col" style="display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;">
+                <h2 style="margin: 0;">Program — {{ event.name ?? eventSlug }}</h2>
+                {% set dayCount = tree|filter(row => row.day is not null)|length %}
+                {% set activityCount = 0 %}
+                {% for row in tree %}{% set activityCount = activityCount + row.activities|length %}{% endfor %}
+                <span class="badge bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: .75rem;">
+            <div class="col" style="display: flex; gap: .4rem; flex-wrap: wrap;">
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský program (PDF)</a>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_roster', {eventSlug: eventSlug}) }}">Rozpis služeb (PDF)</a>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', {eventSlug: eventSlug}) }}">Přehled týmu (PDF)</a>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', {eventSlug: eventSlug}) }}">Celý program (PDF)</a>
+            </div>
+        </div>
+
+        {% if activityCount == 0 %}
+            <div class="row" style="margin-top: 1.5rem;">
+                <div class="col">
+                    <div class="alert alert-info" style="max-width: 46rem;">
+                        Program tohoto turnusu zatím nemá žádné aktivity. Zadávání aktivit z tohoto rozhraní
+                        přibude v dalším kroku editoru; do té doby program vzniká přes API (mobilní admin / import).
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% for row in tree %}
+            <div class="row" style="margin-top: 1.25rem;">
+                <div class="col">
+                    <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem;">
+                        {% if row.day %}
+                            {{ row.day.name ?? 'Den' }}
+                            <small style="color: #6c757d; font-weight: normal;">{{ row.day.date }}</small>
+                        {% else %}
+                            Nezařazené aktivity <small style="color: #6c757d; font-weight: normal;">(bez data)</small>
+                        {% endif %}
+                    </h3>
+                    <table class="table table-sm" style="margin: 0;">
+                        <thead>
+                            <tr>
+                                <th style="width: 6rem;">Čas</th>
+                                <th>Aktivita</th>
+                                <th>Místo</th>
+                                <th>Kategorie</th>
+                                <th>Obsazení</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in row.activities %}
+                                <tr>
+                                    <td style="white-space: nowrap;">{{ a.start ?? '—' }}{% if a.end %}–{{ a.end }}{% endif %}</td>
+                                    <td>
+                                        {% if a.highlight %}<strong>{{ a.name }}</strong>{% else %}{{ a.name }}{% endif %}
+                                        {% if a.seriesRoman %} {{ a.seriesRoman }}{% endif %}
+                                        {% if a.isBlock %}<span class="badge bg-secondary" style="margin-left: .3rem;">blok</span>{% endif %}
+                                        {% if a.price %}<span class="badge bg-warning text-dark" style="margin-left: .3rem;">{{ a.price }} Kč</span>{% endif %}
+                                        {% if a.targetGroup %}
+                                            <span class="badge" style="margin-left: .3rem; background: {{ a.targetGroup.color ?? '#6c757d' }};">{{ a.targetGroup.name }}</span>
+                                        {% endif %}
+                                        {% if not a.publicInApp %}<span class="badge bg-light text-dark" style="margin-left: .3rem;" title="Neveřejné (interní)">interní</span>{% endif %}
+                                        {% for sub in a.subActivities %}
+                                            <div style="margin-left: 1rem; color: #444; font-size: .9rem;">
+                                                ↳ {{ sub.start ?? '' }} {{ sub.name }}
+                                                {% if sub.targetGroup %}<span class="badge" style="background: {{ sub.targetGroup.color ?? '#6c757d' }};">{{ sub.targetGroup.name }}</span>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </td>
+                                    <td style="color: #444;">{{ a.placeText ?? '—' }}</td>
+                                    <td>{% if a.category %}<span class="badge bg-info text-dark">{{ a.category }}</span>{% else %}—{% endif %}</td>
+                                    <td style="font-size: .9rem;">
+                                        {% for s in a.staff %}
+                                            {{ s.name }}{% if s.roleLabel %} <span style="color: #6c757d;">({{ s.roleLabel }})</span>{% endif %}{% if not loop.last %}, {% endif %}
+                                        {% else %}<span style="color: #adb5bd;">—</span>{% endfor %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if sections|length > 0 %}
+            <div class="row" style="margin-top: 1.5rem;">
+                <div class="col">
+                    <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem;">Sekce (info / patička)</h3>
+                    <ul class="list-group" style="max-width: 46rem;">
+                        {% for s in sections %}
+                            <li class="list-group-item" style="display: flex; align-items: center; gap: .5rem;">
+                                <strong>{{ s.name ?? '—' }}</strong>
+                                {% if s.publicInApp %}<span class="badge bg-success">veřejné</span>{% else %}<span class="badge bg-light text-dark">interní</span>{% endif %}
+                                <span style="color: #adb5bd; margin-left: auto;">priorita {{ s.priority ?? 0 }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

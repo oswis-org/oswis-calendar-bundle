@@ -208,6 +208,12 @@ oswis_org_oswis_calendar_web_admin_checkin_list:
   path: "/web_admin/check-in/{eventSlug}"
   methods: [GET]
 
+## Program editor (spec krok 8) — přehledová stránka, ROLE_MANAGER
+oswis_org_oswis_calendar_web_admin_program_index:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::index
+  path: "/web_admin/program/{eventSlug}"
+  methods: [GET]
+
 ## Program-module outputs (STOPA 1.3 Fáze 7) — PDF/CSV downloads, ROLE_MANAGER
 oswis_org_oswis_calendar_web_admin_program_instructor:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput
