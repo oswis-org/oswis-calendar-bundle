@@ -262,6 +262,13 @@ final class WebAdminProgramController extends AbstractController
 
                 return new RedirectResponse($pageUrl);
             }
+            // Scoping: přiřazovaný účastník i tým musí patřit do turnusu (POST id nesmí obejít scopované selecty).
+            if ($participant instanceof Participant) {
+                $this->assertBelongsToTurnus($turnus, $participant->getEvent());
+            }
+            if ($team instanceof StaffTeam) {
+                $this->assertBelongsToTurnus($turnus, $team->getEvent());
+            }
             $assignment = new EventStaffAssignment('' !== $externalName ? $externalName : null, '' !== $roleLabel ? $roleLabel : null);
             $assignment->setEvent($activity);
             if ($participant instanceof Participant) {
@@ -510,6 +517,8 @@ final class WebAdminProgramController extends AbstractController
         }
         $participant = $this->em->find(Participant::class, (int) $request->request->get('participant'));
         if ($participant instanceof Participant) {
+            // Scoping: přidávaný člen musí patřit do turnusu (POST id nesmí obejít scopovaný select).
+            $this->assertBelongsToTurnus($turnus, $participant->getEvent());
             $team->addMember($participant);
             $this->em->flush();
             $this->addFlash('success', 'Člen přidán do týmu.');
