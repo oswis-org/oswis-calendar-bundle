@@ -111,6 +111,11 @@
                                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: a.id}) }}">upravit</a>
                                             <a class="btn btn-sm btn-outline-secondary"
                                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_staff', {eventSlug: eventSlug, activityId: a.id}) }}">obsazení</a>
+                                            <form method="post" style="display: inline; margin: 0;"
+                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_duplicate', {eventSlug: eventSlug, activityId: a.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('program_activity_duplicate_' ~ a.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">duplikovat</button>
+                                            </form>
                                         {% endif %}
                                     </td>
                                 </tr>

@@ -18,6 +18,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
+use OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,6 +43,7 @@ final class WebAdminProgramController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly EventStaffAssignmentRepository $assignmentRepository,
         private readonly ParticipantRepository $participantRepository,
+        private readonly EventDuplicateProcessor $duplicateProcessor,
     ) {
     }
 
@@ -340,6 +342,28 @@ final class WebAdminProgramController extends AbstractController
             'back_url'  => $backUrl,
             'pageTitle' => $title,
         ]);
+    }
+
+    /**
+     * Duplikace aktivity (spec: vícenásobné sloty = duplikace, žádný recurrence engine). Klon BEZ
+     * dětí přes {@see EventDuplicateProcessor::duplicate} (sdíleno s API), pak rovnou na jeho editaci,
+     * aby uživatel upravil čas/skupinu.
+     */
+    public function duplicateActivity(Request $request, string $eventSlug, int $activityId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $source = $this->em->find(Event::class, $activityId)
+            ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        if (!$this->isCsrfTokenValid('program_activity_duplicate_'.$activityId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $clone = $this->duplicateProcessor->duplicate($source, name: ($source->getName() ?? 'Aktivita').' (kopie)');
+        $this->addFlash('success', 'Aktivita zduplikována — uprav čas/skupinu.');
+
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_program_activity_edit',
+            ['eventSlug' => $eventSlug, 'activityId' => $clone->getId()],
+        ));
     }
 
     private function resolveEvent(string $eventSlug): Event
