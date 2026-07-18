@@ -214,6 +214,11 @@ oswis_org_oswis_calendar_web_admin_program_index:
   path: "/web_admin/program/{eventSlug}"
   methods: [GET]
 
+oswis_org_oswis_calendar_web_admin_program_activity_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newActivity
+  path: "/web_admin/program/{eventSlug}/aktivita/nova"
+  methods: [GET, POST]
+
 oswis_org_oswis_calendar_web_admin_program_activity_edit:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editActivity
   path: "/web_admin/program/{eventSlug}/aktivita/{activityId}"

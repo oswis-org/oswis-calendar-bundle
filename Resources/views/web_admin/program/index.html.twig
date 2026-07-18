@@ -18,6 +18,9 @@
 
         <div class="row" style="margin-top: .75rem;">
             <div class="col" style="display: flex; gap: .4rem; flex-wrap: wrap;">
+                <a class="btn btn-sm btn-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Přidat aktivitu</a>
+                <span style="width: .5rem;"></span>
                 <a class="btn btn-sm btn-outline-primary" target="_blank"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský program (PDF)</a>
                 <a class="btn btn-sm btn-outline-primary" target="_blank"

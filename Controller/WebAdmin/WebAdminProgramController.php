@@ -88,6 +88,48 @@ final class WebAdminProgramController extends AbstractController
         ]);
     }
 
+    /**
+     * Přidání nové aktivity (pod-události) do turnusu z editoru programu. Nová událost dostane
+     * `superEvent = turnus`; slug se odvodí z názvu, když ho uživatel nevyplní (žádný listener
+     * ho negeneruje — viz feedback_app). Po uložení zpět na přehled programu.
+     */
+    public function newActivity(Request $request, string $eventSlug): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $activity = new Event(superEvent: $turnus);
+        $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
+
+        $form = $this->createForm(EventEditType::class, $activity);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $start = $form->get('startDate')->getData();
+            $end = $form->get('endDate')->getData();
+            if ($start instanceof DateTime) {
+                $activity->setStartDateTime($start);
+            }
+            if ($end instanceof DateTime) {
+                $activity->setEndDateTime($end);
+            }
+            if (empty($activity->getSlug())) {
+                $activity->updateSlug();
+            }
+            $this->em->persist($activity);
+            $this->em->flush();
+            $this->addFlash('success', sprintf('Aktivita „%s" přidána do programu.', $activity->getName() ?? ''));
+
+            return new RedirectResponse($backUrl);
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/event_edit.html.twig', [
+            'event'      => $activity,
+            'form'       => $form,
+            'back_url'   => $backUrl,
+            'pageTitle'  => 'Nová aktivita programu',
+            'page_title' => 'Nová aktivita programu :: ADMIN',
+        ]);
+    }
+
     private function resolveEvent(string $eventSlug): Event
     {
         return $this->eventRepository->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug])
