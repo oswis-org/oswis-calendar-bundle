@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventSection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
@@ -547,6 +548,114 @@ final class WebAdminProgramController extends AbstractController
         return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_teams', ['eventSlug' => $eventSlug]));
     }
 
+    /**
+     * Série programu (spec: EventGroup type='program-series' + `sameActivity`; přehled čísluje
+     * sameActivity série římsky). EventGroup NEMÁ vazbu na turnus → série se zakládá rovnou z
+     * VYBRANÝCH aktivit turnusu (rodí se se svými akcemi → je vždy vázaná na turnus přes ně, žádná
+     * prázdná dvojznačná série, žádný cross-turnus). Přiřazení je scopované (každá akce ověřena).
+     * ⚠️ Záměrně NE přes sdílený EventEditType (ročníky mají brand-série → filtrovaný select by je smazal).
+     */
+    public function series(Request $request, string $eventSlug): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $seriesUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_series', ['eventSlug' => $eventSlug]);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('program_series_create_'.$turnus->getId(), (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Neplatný CSRF token.');
+            }
+            $name = trim((string) $request->request->get('name'));
+            $sameActivity = $request->request->getBoolean('sameActivity');
+            $validActs = [];
+            foreach ($request->request->all('activities') as $rawId) {
+                if (!is_numeric($rawId)) {
+                    continue;
+                }
+                $act = $this->em->find(Event::class, (int) $rawId);
+                if ($act instanceof Event && $this->isUnderTurnus($turnus->getId(), $act)) {
+                    $validActs[] = $act;
+                }
+            }
+            if (count($validActs) < 2) {
+                $this->addFlash('danger', 'Vyber aspoň dvě aktivity z tohoto turnusu.');
+
+                return new RedirectResponse($seriesUrl);
+            }
+            $group = new EventGroup();
+            $group->setName('' !== $name ? $name : 'Série');
+            $group->setType('program-series');
+            $group->setSameActivity($sameActivity);
+            if (empty($group->getSlug())) {
+                $group->updateSlug();
+            }
+            $this->em->persist($group);
+            foreach ($validActs as $act) {
+                $act->setGroup($group);
+            }
+            $this->em->flush();
+            $this->addFlash('success', 'Série vytvořena.');
+
+            return new RedirectResponse($seriesUrl);
+        }
+
+        $activities = [];
+        $seriesMap = [];
+        foreach ($turnus->getSubEvents() as $act) {
+            $g = $act->getGroup();
+            $gid = ($g instanceof EventGroup && 'program-series' === $g->getType()) ? $g->getId() : null;
+            $activities[] = ['id' => $act->getId(), 'name' => $act->getName(), 'start' => $act->getStartDateTimeRecursive()?->format('j.n. H:i'), 'seriesId' => $gid];
+            if (null !== $gid && $g instanceof EventGroup) {
+                $seriesMap[$gid] ??= ['id' => $gid, 'name' => $g->getName() ?? ('#'.$gid), 'sameActivity' => $g->isSameActivity(), 'activities' => []];
+                $seriesMap[$gid]['activities'][] = $act->getName();
+            }
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/program/series.html.twig', [
+            'eventSlug'  => $eventSlug,
+            'turnusId'   => $turnus->getId(),
+            'activities' => $activities,
+            'series'     => array_values($seriesMap),
+            'back_url'   => $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]),
+        ]);
+    }
+
+    /** Zrušení série (rozpustí ji — akcím se vymaže group; EventGroup se smaže). */
+    public function deleteSeries(Request $request, string $eventSlug, int $seriesId): RedirectResponse
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $group = $this->em->find(EventGroup::class, $seriesId) ?? throw $this->createNotFoundException("Série #$seriesId nenalezena.");
+        $this->assertSeriesBelongsToTurnus($turnus, $group);
+        if (!$this->isCsrfTokenValid('program_series_delete_'.$seriesId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        foreach ($group->getEvents() as $ev) {
+            if ($ev instanceof Event) {
+                $ev->setGroup(null);
+            }
+        }
+        $this->em->remove($group);
+        $this->em->flush();
+        $this->addFlash('warning', 'Série zrušena.');
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_series', ['eventSlug' => $eventSlug]));
+    }
+
+    /** Odebrání jedné aktivity ze série (vymaže její group). */
+    public function removeSeriesActivity(Request $request, string $eventSlug, int $activityId): RedirectResponse
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $activity = $this->em->find(Event::class, $activityId) ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $activity);
+        if (!$this->isCsrfTokenValid('program_series_remove_'.$activityId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $activity->setGroup(null);
+        $this->em->flush();
+        $this->addFlash('warning', 'Aktivita odebrána ze série.');
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_series', ['eventSlug' => $eventSlug]));
+    }
+
     private function resolveEvent(string $eventSlug): Event
     {
         return $this->eventRepository->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug])
@@ -558,15 +667,33 @@ final class WebAdminProgramController extends AbstractController
      * přes `{eventSlug}` jednoho turnusu manipulovat s entitou jiného (IDOR). `$event` je buď entita
      * sama (aktivita = Event, chodíme po superEvent řetězci), nebo její `getEvent()` (den/sekce/tým).
      */
-    private function assertBelongsToTurnus(Event $turnus, ?Event $event, int $depth = 6): void
+    private function isUnderTurnus(?int $turnusId, ?Event $event, int $depth = 6): bool
     {
-        $turnusId = $turnus->getId();
         for ($i = 0; $i <= $depth && null !== $event; $i++) {
             if (null !== $turnusId && $event->getId() === $turnusId) {
-                return;
+                return true;
             }
             $event = $event->getSuperEvent();
         }
-        throw $this->createNotFoundException('Položka nepatří do tohoto turnusu.');
+
+        return false;
+    }
+
+    private function assertBelongsToTurnus(Event $turnus, ?Event $event, int $depth = 6): void
+    {
+        if (!$this->isUnderTurnus($turnus->getId(), $event, $depth)) {
+            throw $this->createNotFoundException('Položka nepatří do tohoto turnusu.');
+        }
+    }
+
+    /** Série (EventGroup nemá vazbu na turnus) patří k turnusu, když aspoň jedna její akce je pod turnusem. */
+    private function assertSeriesBelongsToTurnus(Event $turnus, EventGroup $series): void
+    {
+        foreach ($series->getEvents() as $ev) {
+            if ($ev instanceof Event && $this->isUnderTurnus($turnus->getId(), $ev)) {
+                return;
+            }
+        }
+        throw $this->createNotFoundException('Série nepatří do tohoto turnusu.');
     }
 }

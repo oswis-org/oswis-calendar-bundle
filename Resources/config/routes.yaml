@@ -242,6 +242,23 @@ oswis_org_oswis_calendar_web_admin_program_activity_staff:
   requirements: { activityId: '\d+' }
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_program_series:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::series
+  path: "/web_admin/program/{eventSlug}/serie"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_series_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteSeries
+  path: "/web_admin/program/{eventSlug}/serie/{seriesId}/zrusit"
+  requirements: { seriesId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_series_remove_activity:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::removeSeriesActivity
+  path: "/web_admin/program/{eventSlug}/serie/aktivita/{activityId}/odebrat"
+  requirements: { activityId: '\d+' }
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_program_teams:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::teams
   path: "/web_admin/program/{eventSlug}/tymy"

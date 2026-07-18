@@ -1,0 +1,66 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}Série programu{% endblock %}
+
+{# Série aktivit (EventGroup program-series). „Stejná aktivita" = táž aktivita opakovaná kvůli
+   kapacitě/protočení (lukostřelby, degustace) → přehled čísluje římsky. Zakládá se z vybraných
+   aktivit turnusu. Data: WebAdminProgramController::series. #}
+
+{% block body_content %}
+    <main class="container" style="padding-bottom: 4rem;">
+        <div style="display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem;">
+            <h2 style="margin: 0;">Série</h2>
+            <a href="{{ back_url }}" class="btn btn-sm btn-outline-secondary">← Zpět na program</a>
+        </div>
+
+        {% for s in series %}
+            <div style="border: 1px solid #dee2e6; border-radius: .375rem; padding: .8rem 1.1rem; margin-bottom: .8rem; max-width: 52rem;">
+                <div style="display: flex; align-items: center; gap: .75rem;">
+                    <strong style="font-size: 1.05rem;">{{ s.name }}</strong>
+                    {% if s.sameActivity %}<span class="badge bg-info text-dark">stejná aktivita (číslování I./II./…)</span>{% endif %}
+                    <span style="color: #adb5bd;">{{ s.activities|length }} aktivit</span>
+                    <form method="post" style="margin: 0 0 0 auto;"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_program_series_delete', {eventSlug: eventSlug, seriesId: s.id}) }}"
+                          onsubmit="return confirm('Zrušit sérii „{{ s.name }}"? Aktivity zůstanou, jen se rozpojí.');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('program_series_delete_' ~ s.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" style="padding: .05rem .4rem;">zrušit sérii</button>
+                    </form>
+                </div>
+                <div style="color: #444; font-size: .9rem; margin-top: .3rem;">{{ s.activities|join(' · ') }}</div>
+            </div>
+        {% else %}
+            <p style="color: #adb5bd;">Zatím žádné série.</p>
+        {% endfor %}
+
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-top: 1rem; max-width: 52rem;">
+            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto;">Nová série z aktivit</legend>
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_program_series', {eventSlug: eventSlug}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('program_series_create_' ~ turnusId) }}">
+                <div class="row">
+                    <div class="col-12 col-md-8 mb-3">
+                        <label class="form-label">Název série</label>
+                        <input type="text" name="name" class="form-control" placeholder="např. Lukostřelba, Vinná degustace">
+                    </div>
+                    <div class="col-12 col-md-4 mb-3 d-flex align-items-end">
+                        <label style="display: inline-flex; gap: .4rem; align-items: center;">
+                            <input type="checkbox" name="sameActivity" value="1"> Stejná aktivita (číslovat)
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-bottom: .5rem; color: #6c757d; font-size: .85rem;">Vyber aspoň dvě aktivity, které patří do série:</div>
+                <div style="max-height: 18rem; overflow-y: auto; border: 1px solid #eee; border-radius: .3rem; padding: .4rem .6rem;">
+                    {% for a in activities %}
+                        <label style="display: block; padding: .15rem 0;">
+                            <input type="checkbox" name="activities[]" value="{{ a.id }}">
+                            {{ a.start }} {{ a.name }}
+                            {% if a.seriesId %}<span class="badge bg-light text-dark">už v sérii</span>{% endif %}
+                        </label>
+                    {% else %}
+                        <span style="color: #adb5bd;">Turnus zatím nemá aktivity.</span>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: .7rem;">Vytvořit sérii</button>
+            </form>
+        </fieldset>
+    </main>
+{% endblock %}
