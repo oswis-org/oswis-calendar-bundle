@@ -225,6 +225,23 @@ oswis_org_oswis_calendar_web_admin_program_activity_edit:
   requirements: { activityId: '\d+' }
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_program_day_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newDay
+  path: "/web_admin/program/{eventSlug}/den/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_day_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editDay
+  path: "/web_admin/program/{eventSlug}/den/{dayId}/upravit"
+  requirements: { dayId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_day_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteDay
+  path: "/web_admin/program/{eventSlug}/den/{dayId}/smazat"
+  requirements: { dayId: '\d+' }
+  methods: [POST]
+
 ## Program-module outputs (STOPA 1.3 Fáze 7) — PDF/CSV downloads, ROLE_MANAGER
 oswis_org_oswis_calendar_web_admin_program_instructor:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput

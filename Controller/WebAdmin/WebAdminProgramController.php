@@ -7,7 +7,9 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventEditType;
+use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -127,6 +129,65 @@ final class WebAdminProgramController extends AbstractController
             'back_url'   => $backUrl,
             'pageTitle'  => 'Nová aktivita programu',
             'page_title' => 'Nová aktivita programu :: ADMIN',
+        ]);
+    }
+
+    /** Přidání dne programu (label + datum) do turnusu; datum seskupí aktivity v přehledu. */
+    public function newDay(Request $request, string $eventSlug): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $day = new ProgramDay();
+        $day->setEvent($turnus);
+
+        return $this->handleDayForm($request, $eventSlug, $day, 'Nový den programu', 'Den přidán.');
+    }
+
+    /** Úprava dne programu. */
+    public function editDay(Request $request, string $eventSlug, int $dayId): Response
+    {
+        $this->resolveEvent($eventSlug);
+        $day = $this->em->find(ProgramDay::class, $dayId)
+            ?? throw $this->createNotFoundException("Den #$dayId nenalezen.");
+
+        return $this->handleDayForm($request, $eventSlug, $day, 'Upravit den programu', 'Den uložen.');
+    }
+
+    /** Smazání dne programu (aktivity zůstanou — jen se přestanou pod tento den seskupovat). */
+    public function deleteDay(Request $request, string $eventSlug, int $dayId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $day = $this->em->find(ProgramDay::class, $dayId)
+            ?? throw $this->createNotFoundException("Den #$dayId nenalezen.");
+        if (!$this->isCsrfTokenValid('program_day_delete_'.$dayId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $this->em->remove($day);
+        $this->em->flush();
+        $this->addFlash('warning', 'Den programu smazán.');
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]));
+    }
+
+    private function handleDayForm(Request $request, string $eventSlug, ProgramDay $day, string $title, string $flash): Response
+    {
+        $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
+        $form = $this->createForm(ProgramDayEditType::class, $day);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (empty($day->getSlug())) {
+                $day->updateSlug();
+            }
+            $this->em->persist($day);
+            $this->em->flush();
+            $this->addFlash('success', $flash);
+
+            return new RedirectResponse($backUrl);
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/program/day_edit.html.twig', [
+            'form'      => $form,
+            'back_url'  => $backUrl,
+            'pageTitle' => $title,
         ]);
     }
 

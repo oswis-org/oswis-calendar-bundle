@@ -20,6 +20,8 @@
             <div class="col" style="display: flex; gap: .4rem; flex-wrap: wrap;">
                 <a class="btn btn-sm btn-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Přidat aktivitu</a>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Přidat den</a>
                 <span style="width: .5rem;"></span>
                 <a class="btn btn-sm btn-outline-primary" target="_blank"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský program (PDF)</a>
@@ -46,12 +48,21 @@
         {% for row in tree %}
             <div class="row" style="margin-top: 1.25rem;">
                 <div class="col">
-                    <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem;">
+                    <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem; display: flex; align-items: baseline; gap: .5rem;">
                         {% if row.day %}
-                            {{ row.day.name ?? 'Den' }}
-                            <small style="color: #6c757d; font-weight: normal;">{{ row.day.date }}</small>
+                            <span>{{ row.day.name ?? 'Den' }}
+                                <small style="color: #6c757d; font-weight: normal;">{{ row.day.date }}</small></span>
+                            <span style="margin-left: auto; font-size: .8rem; font-weight: normal; display: inline-flex; gap: .4rem; align-items: baseline;">
+                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_edit', {eventSlug: eventSlug, dayId: row.day.id}) }}">upravit</a>
+                                <form method="post" style="display: inline; margin: 0;"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_program_day_delete', {eventSlug: eventSlug, dayId: row.day.id}) }}"
+                                      onsubmit="return confirm('Smazat den „{{ row.day.name ?? row.day.date }}"? Aktivity zůstanou.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('program_day_delete_' ~ row.day.id) }}">
+                                    <button type="submit" style="border: 0; background: none; color: #b02a37; cursor: pointer; padding: 0; font-size: .8rem;">smazat</button>
+                                </form>
+                            </span>
                         {% else %}
-                            Nezařazené aktivity <small style="color: #6c757d; font-weight: normal;">(bez data)</small>
+                            <span>Nezařazené aktivity <small style="color: #6c757d; font-weight: normal;">(bez data)</small></span>
                         {% endif %}
                     </h3>
                     <table class="table table-sm" style="margin: 0;">
