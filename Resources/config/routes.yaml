@@ -242,6 +242,29 @@ oswis_org_oswis_calendar_web_admin_program_activity_staff:
   requirements: { activityId: '\d+' }
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_program_teams:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::teams
+  path: "/web_admin/program/{eventSlug}/tymy"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_team_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteTeam
+  path: "/web_admin/program/{eventSlug}/tymy/{teamId}/smazat"
+  requirements: { teamId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_team_member_add:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::addTeamMember
+  path: "/web_admin/program/{eventSlug}/tymy/{teamId}/clen"
+  requirements: { teamId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_team_member_remove:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::removeTeamMember
+  path: "/web_admin/program/{eventSlug}/tymy/{teamId}/clen/{participantId}/odebrat"
+  requirements: { teamId: '\d+', participantId: '\d+' }
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_program_staff_delete:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteStaff
   path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/obsazeni/{assignmentId}/smazat"

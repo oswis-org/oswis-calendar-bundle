@@ -11,12 +11,15 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\EventSection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventSectionEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
+use OswisOrg\OswisCalendarBundle\Form\WebAdmin\StaffTeamEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
 use OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -44,7 +47,34 @@ final class WebAdminProgramController extends AbstractController
         private readonly EventStaffAssignmentRepository $assignmentRepository,
         private readonly ParticipantRepository $participantRepository,
         private readonly EventDuplicateProcessor $duplicateProcessor,
+        private readonly StaffTeamRepository $teamRepository,
     ) {
+    }
+
+    /**
+     * Staff okruh turnusu pro obsazení / členství týmů = účastníci turnusu mimo běžné „attendee"
+     * (organizer/staff/manager…). CRITERIA_PARTICIPANT_TYPE bere jen jeden typ, tak sloučíme přes typy.
+     *
+     * @return list<array{id: int|null, name: string}>
+     */
+    private function staffPool(Event $turnus): array
+    {
+        $pool = [];
+        foreach (['organizer', 'staff', 'manager'] as $type) {
+            foreach ($this->participantRepository->getParticipants([
+                ParticipantRepository::CRITERIA_EVENT                 => $turnus,
+                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 3,
+                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $type,
+            ]) as $p) {
+                if ($p instanceof Participant && null !== $p->getId()) {
+                    $pool[$p->getId()] = ['id' => $p->getId(), 'name' => $this->programData->staffName($p)];
+                }
+            }
+        }
+        $pool = array_values($pool);
+        usort($pool, static fn (array $a, array $b): int => strcoll($a['name'], $b['name']));
+
+        return $pool;
     }
 
     public function index(string $eventSlug): Response
@@ -220,9 +250,11 @@ final class WebAdminProgramController extends AbstractController
             $participantId = (int) $request->request->get('participant');
             $externalName = trim((string) $request->request->get('externalName'));
             $roleLabel = trim((string) $request->request->get('roleLabel'));
+            $teamId = (int) $request->request->get('team');
             $participant = $participantId > 0 ? $this->em->find(Participant::class, $participantId) : null;
-            if (!$participant instanceof Participant && '' === $externalName) {
-                $this->addFlash('danger', 'Vyber člověka ze seznamu, nebo zadej externí jméno.');
+            $team = $teamId > 0 ? $this->em->find(StaffTeam::class, $teamId) : null;
+            if (!$participant instanceof Participant && '' === $externalName && !$team instanceof StaffTeam) {
+                $this->addFlash('danger', 'Vyber člověka, tým, nebo zadej externí jméno.');
 
                 return new RedirectResponse($pageUrl);
             }
@@ -230,6 +262,9 @@ final class WebAdminProgramController extends AbstractController
             $assignment->setEvent($activity);
             if ($participant instanceof Participant) {
                 $assignment->setParticipant($participant);
+            }
+            if ($team instanceof StaffTeam) {
+                $assignment->setTeam($team);
             }
             $this->em->persist($assignment);
             $this->em->flush();
@@ -241,30 +276,35 @@ final class WebAdminProgramController extends AbstractController
         $assignments = [];
         foreach ($this->assignmentRepository->getByEvent($activity) as $a) {
             $participant = $a->getParticipant();
+            $team = $a->getTeam();
+            if ($participant instanceof Participant) {
+                $name = $this->programData->staffName($participant);
+                $kind = 'person';
+            } elseif ($team instanceof StaffTeam) {
+                $name = 'Tým: '.($team->getName() ?? '?');
+                $kind = 'team';
+            } else {
+                $name = (string) $a->getExternalName();
+                $kind = 'external';
+            }
             $assignments[] = [
                 'id'        => $a->getId(),
-                'name'      => $participant instanceof Participant ? $this->programData->staffName($participant) : (string) $a->getExternalName(),
+                'name'      => $name,
                 'roleLabel' => $a->getRoleLabel(),
-                'external'  => !$participant instanceof Participant,
+                'kind'      => $kind,
             ];
         }
-        $staffPool = [];
-        foreach ($this->participantRepository->getParticipants([
-            ParticipantRepository::CRITERIA_EVENT                 => $turnus,
-            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 3,
-            ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => 'staff',
-        ]) as $p) {
-            if ($p instanceof Participant) {
-                $staffPool[] = ['id' => $p->getId(), 'name' => $this->programData->staffName($p)];
-            }
+        $teams = [];
+        foreach ($this->teamRepository->getByEvent($turnus) as $t) {
+            $teams[] = ['id' => $t->getId(), 'name' => $t->getName() ?? ('#'.$t->getId())];
         }
-        usort($staffPool, static fn (array $a, array $b): int => strcoll($a['name'], $b['name']));
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/program/activity_staff.html.twig', [
             'eventSlug'   => $eventSlug,
             'activity'    => $activity,
             'assignments' => $assignments,
-            'staffPool'   => $staffPool,
+            'staffPool'   => $this->staffPool($turnus),
+            'teams'       => $teams,
             'back_url'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]),
         ]);
     }
@@ -392,6 +432,99 @@ final class WebAdminProgramController extends AbstractController
         $this->em->flush();
 
         return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]));
+    }
+
+    /**
+     * Týmy/podtýmy turnusu (spec: StaffTeam per turnus, M2M členství). Seznam + založení + správa
+     * členů; přiřazení týmu k aktivitě je v obsazení ({@see activityStaff}).
+     */
+    public function teams(Request $request, string $eventSlug): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
+        $teamsUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_teams', ['eventSlug' => $eventSlug]);
+
+        $newTeam = new StaffTeam();
+        $newTeam->setEvent($turnus);
+        $form = $this->createForm(StaffTeamEditType::class, $newTeam);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if (empty($newTeam->getSlug())) {
+                $newTeam->updateSlug();
+            }
+            $this->em->persist($newTeam);
+            $this->em->flush();
+            $this->addFlash('success', 'Tým vytvořen.');
+
+            return new RedirectResponse($teamsUrl);
+        }
+
+        $teams = [];
+        foreach ($this->teamRepository->getByEvent($turnus) as $t) {
+            $members = [];
+            foreach ($t->getMembers() as $m) {
+                $members[] = ['id' => $m->getId(), 'name' => $this->programData->staffName($m)];
+            }
+            $teams[] = ['id' => $t->getId(), 'name' => $t->getName() ?? ('#'.$t->getId()), 'members' => $members];
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/program/teams.html.twig', [
+            'eventSlug' => $eventSlug,
+            'teams'     => $teams,
+            'staffPool' => $this->staffPool($turnus),
+            'form'      => $form,
+            'back_url'  => $backUrl,
+        ]);
+    }
+
+    public function deleteTeam(Request $request, string $eventSlug, int $teamId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $team = $this->em->find(StaffTeam::class, $teamId) ?? throw $this->createNotFoundException("Tým #$teamId nenalezen.");
+        if (!$this->isCsrfTokenValid('program_team_delete_'.$teamId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $this->em->remove($team);
+        $this->em->flush();
+        $this->addFlash('warning', 'Tým smazán.');
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_teams', ['eventSlug' => $eventSlug]));
+    }
+
+    public function addTeamMember(Request $request, string $eventSlug, int $teamId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $team = $this->em->find(StaffTeam::class, $teamId) ?? throw $this->createNotFoundException("Tým #$teamId nenalezen.");
+        if (!$this->isCsrfTokenValid('program_team_member_'.$teamId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->em->find(Participant::class, (int) $request->request->get('participant'));
+        if ($participant instanceof Participant) {
+            $team->addMember($participant);
+            $this->em->flush();
+            $this->addFlash('success', 'Člen přidán do týmu.');
+        } else {
+            $this->addFlash('danger', 'Vyber člověka ze seznamu.');
+        }
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_teams', ['eventSlug' => $eventSlug]));
+    }
+
+    public function removeTeamMember(Request $request, string $eventSlug, int $teamId, int $participantId): RedirectResponse
+    {
+        $this->resolveEvent($eventSlug);
+        $team = $this->em->find(StaffTeam::class, $teamId) ?? throw $this->createNotFoundException("Tým #$teamId nenalezen.");
+        if (!$this->isCsrfTokenValid('program_team_member_remove_'.$teamId.'_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->em->find(Participant::class, $participantId);
+        if ($participant instanceof Participant) {
+            $team->removeMember($participant);
+            $this->em->flush();
+            $this->addFlash('warning', 'Člen odebrán z týmu.');
+        }
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_teams', ['eventSlug' => $eventSlug]));
     }
 
     private function resolveEvent(string $eventSlug): Event

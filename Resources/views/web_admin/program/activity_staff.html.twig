@@ -19,7 +19,9 @@
             <tbody>
                 {% for a in assignments %}
                     <tr>
-                        <td>{{ a.name ?: '—' }}{% if a.external %} <span class="badge bg-light text-dark">externí</span>{% endif %}</td>
+                        <td>{{ a.name ?: '—' }}
+                            {% if a.kind == 'team' %} <span class="badge bg-info text-dark">tým</span>
+                            {% elseif a.kind == 'external' %} <span class="badge bg-light text-dark">externí</span>{% endif %}</td>
                         <td>{{ a.roleLabel ?? '—' }}</td>
                         <td>
                             <form method="post" style="margin: 0;"
@@ -56,6 +58,18 @@
                         <input type="text" name="externalName" class="form-control" placeholder="např. P. Svačina, ASC">
                     </div>
                 </div>
+                {% if teams|length > 0 %}
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Nebo celý tým</label>
+                            <select name="team" class="form-select">
+                                <option value="">— žádný tým —</option>
+                                {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                            </select>
+                            <div class="form-text">Přiřadí celý tým; v itineráři se rozepíše na jednotlivce.</div>
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="row">
                     <div class="col-12 col-md-6 mb-3">
                         <label class="form-label">Role</label>

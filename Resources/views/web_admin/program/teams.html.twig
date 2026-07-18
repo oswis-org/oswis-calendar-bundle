@@ -1,0 +1,74 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}Týmy programu{% endblock %}
+
+{# Týmy/podtýmy turnusu (StaffTeam, M2M členství). Přiřazují se k aktivitám v obsazení.
+   Data: WebAdminProgramController::teams. #}
+
+{% block body_content %}
+    <main class="container" style="padding-bottom: 4rem;">
+        <div style="display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem;">
+            <h2 style="margin: 0;">Týmy</h2>
+            <a href="{{ back_url }}" class="btn btn-sm btn-outline-secondary">← Zpět na program</a>
+        </div>
+
+        {% if staffPool|length == 0 %}
+            <div class="alert alert-info" style="max-width: 52rem;">
+                Zatím nejsou žádné týmové přihlášky (instruktoři/pořadatelé) na tomto turnusu, takže není z koho
+                skládat členy. Týmy jde založit, členy přidáš, až budou instruktoři zaregistrovaní jako účastníci.
+            </div>
+        {% endif %}
+
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1.25rem; max-width: 40rem;">
+            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto;">Nový tým</legend>
+            {{ form_start(form) }}
+            <div style="display: flex; gap: .5rem; align-items: flex-end;">
+                <div style="flex: 1;">{{ form_row(form.name) }}</div>
+                {{ form_row(form.submit, { attr: { class: 'btn btn-primary' } }) }}
+            </div>
+            {{ form_end(form) }}
+        </fieldset>
+
+        {% for team in teams %}
+            <div style="border: 1px solid #dee2e6; border-radius: .375rem; padding: .8rem 1.1rem; margin-bottom: .8rem; max-width: 52rem;">
+                <div style="display: flex; align-items: center; gap: .75rem;">
+                    <strong style="font-size: 1.05rem;">{{ team.name }}</strong>
+                    <span style="color: #adb5bd;">{{ team.members|length }} členů</span>
+                    <form method="post" style="margin: 0 0 0 auto;"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_program_team_delete', {eventSlug: eventSlug, teamId: team.id}) }}"
+                          onsubmit="return confirm('Smazat tým „{{ team.name }}"?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('program_team_delete_' ~ team.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" style="padding: .05rem .4rem;">smazat tým</button>
+                    </form>
+                </div>
+                <ul style="margin: .5rem 0 .3rem; padding-left: 1.2rem;">
+                    {% for m in team.members %}
+                        <li style="display: flex; align-items: center; gap: .5rem;">
+                            {{ m.name }}
+                            <form method="post" style="margin: 0;"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_team_member_remove', {eventSlug: eventSlug, teamId: team.id, participantId: m.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('program_team_member_remove_' ~ team.id ~ '_' ~ m.id) }}">
+                                <button type="submit" style="border: 0; background: none; color: #b02a37; cursor: pointer; padding: 0; font-size: .8rem;">odebrat</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li style="color: #adb5bd; list-style: none; margin-left: -1.2rem;">Zatím bez členů.</li>
+                    {% endfor %}
+                </ul>
+                {% if staffPool|length > 0 %}
+                    <form method="post" style="display: flex; gap: .4rem; align-items: center;"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_program_team_member_add', {eventSlug: eventSlug, teamId: team.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('program_team_member_' ~ team.id) }}">
+                        <select name="participant" class="form-select" style="max-width: 20rem;">
+                            <option value="">— přidat člena —</option>
+                            {% for p in staffPool %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Přidat</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% else %}
+            <p style="color: #adb5bd;">Zatím žádné týmy.</p>
+        {% endfor %}
+    </main>
+{% endblock %}
