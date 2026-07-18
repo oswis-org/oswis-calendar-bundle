@@ -96,9 +96,10 @@ final class WebAdminProgramController extends AbstractController
      */
     public function editActivity(Request $request, string $eventSlug, int $activityId): Response
     {
-        $this->resolveEvent($eventSlug); // 404 když turnus neexistuje
+        $turnus = $this->resolveEvent($eventSlug);
         $activity = $this->em->find(Event::class, $activityId)
             ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $activity);
         $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
 
         $form = $this->createForm(EventEditType::class, $activity);
@@ -185,9 +186,10 @@ final class WebAdminProgramController extends AbstractController
     /** Úprava dne programu. */
     public function editDay(Request $request, string $eventSlug, int $dayId): Response
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $day = $this->em->find(ProgramDay::class, $dayId)
             ?? throw $this->createNotFoundException("Den #$dayId nenalezen.");
+        $this->assertBelongsToTurnus($turnus, $day->getEvent());
 
         return $this->handleDayForm($request, $eventSlug, $day, 'Upravit den programu', 'Den uložen.');
     }
@@ -195,9 +197,10 @@ final class WebAdminProgramController extends AbstractController
     /** Smazání dne programu (aktivity zůstanou — jen se přestanou pod tento den seskupovat). */
     public function deleteDay(Request $request, string $eventSlug, int $dayId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $day = $this->em->find(ProgramDay::class, $dayId)
             ?? throw $this->createNotFoundException("Den #$dayId nenalezen.");
+        $this->assertBelongsToTurnus($turnus, $day->getEvent());
         if (!$this->isCsrfTokenValid('program_day_delete_'.$dayId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -241,6 +244,7 @@ final class WebAdminProgramController extends AbstractController
         $turnus = $this->resolveEvent($eventSlug);
         $activity = $this->em->find(Event::class, $activityId)
             ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $activity);
         $pageUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_activity_staff', ['eventSlug' => $eventSlug, 'activityId' => $activityId]);
 
         if ($request->isMethod('POST')) {
@@ -312,9 +316,10 @@ final class WebAdminProgramController extends AbstractController
     /** Odebrání jednoho obsazení aktivity. */
     public function deleteStaff(Request $request, string $eventSlug, int $activityId, int $assignmentId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $assignment = $this->em->find(EventStaffAssignment::class, $assignmentId)
             ?? throw $this->createNotFoundException("Obsazení #$assignmentId nenalezeno.");
+        $this->assertBelongsToTurnus($turnus, $assignment->getEvent());
         if (!$this->isCsrfTokenValid('program_staff_delete_'.$assignmentId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -338,9 +343,10 @@ final class WebAdminProgramController extends AbstractController
     /** Úprava informační sekce. */
     public function editSection(Request $request, string $eventSlug, int $sectionId): Response
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $section = $this->em->find(EventSection::class, $sectionId)
             ?? throw $this->createNotFoundException("Sekce #$sectionId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $section->getEvent());
 
         return $this->handleSectionForm($request, $eventSlug, $section, 'Upravit sekci programu', 'Sekce uložena.');
     }
@@ -348,9 +354,10 @@ final class WebAdminProgramController extends AbstractController
     /** Smazání informační sekce. */
     public function deleteSection(Request $request, string $eventSlug, int $sectionId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $section = $this->em->find(EventSection::class, $sectionId)
             ?? throw $this->createNotFoundException("Sekce #$sectionId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $section->getEvent());
         if (!$this->isCsrfTokenValid('program_section_delete_'.$sectionId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -391,9 +398,10 @@ final class WebAdminProgramController extends AbstractController
      */
     public function duplicateActivity(Request $request, string $eventSlug, int $activityId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $source = $this->em->find(Event::class, $activityId)
             ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $source);
         if (!$this->isCsrfTokenValid('program_activity_duplicate_'.$activityId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -479,8 +487,9 @@ final class WebAdminProgramController extends AbstractController
 
     public function deleteTeam(Request $request, string $eventSlug, int $teamId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $team = $this->em->find(StaffTeam::class, $teamId) ?? throw $this->createNotFoundException("Tým #$teamId nenalezen.");
+        $this->assertBelongsToTurnus($turnus, $team->getEvent());
         if (!$this->isCsrfTokenValid('program_team_delete_'.$teamId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -493,8 +502,9 @@ final class WebAdminProgramController extends AbstractController
 
     public function addTeamMember(Request $request, string $eventSlug, int $teamId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $team = $this->em->find(StaffTeam::class, $teamId) ?? throw $this->createNotFoundException("Tým #$teamId nenalezen.");
+        $this->assertBelongsToTurnus($turnus, $team->getEvent());
         if (!$this->isCsrfTokenValid('program_team_member_'.$teamId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -512,8 +522,9 @@ final class WebAdminProgramController extends AbstractController
 
     public function removeTeamMember(Request $request, string $eventSlug, int $teamId, int $participantId): RedirectResponse
     {
-        $this->resolveEvent($eventSlug);
+        $turnus = $this->resolveEvent($eventSlug);
         $team = $this->em->find(StaffTeam::class, $teamId) ?? throw $this->createNotFoundException("Tým #$teamId nenalezen.");
+        $this->assertBelongsToTurnus($turnus, $team->getEvent());
         if (!$this->isCsrfTokenValid('program_team_member_remove_'.$teamId.'_'.$participantId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
@@ -531,5 +542,22 @@ final class WebAdminProgramController extends AbstractController
     {
         return $this->eventRepository->getEvent([EventRepository::CRITERIA_SLUG => $eventSlug])
             ?? throw $this->createNotFoundException("Turnus '$eventSlug' nenalezen.");
+    }
+
+    /**
+     * Scoping: dítě (aktivita/den/sekce/tým/assignment) musí patřit do turnusu z URL — jinak by šlo
+     * přes `{eventSlug}` jednoho turnusu manipulovat s entitou jiného (IDOR). `$event` je buď entita
+     * sama (aktivita = Event, chodíme po superEvent řetězci), nebo její `getEvent()` (den/sekce/tým).
+     */
+    private function assertBelongsToTurnus(Event $turnus, ?Event $event, int $depth = 6): void
+    {
+        $turnusId = $turnus->getId();
+        for ($i = 0; $i <= $depth && null !== $event; $i++) {
+            if (null !== $turnusId && $event->getId() === $turnusId) {
+                return;
+            }
+            $event = $event->getSuperEvent();
+        }
+        throw $this->createNotFoundException('Položka nepatří do tohoto turnusu.');
     }
 }
