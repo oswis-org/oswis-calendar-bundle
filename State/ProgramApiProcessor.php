@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -16,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Write processor for the program-module CRUD resources (ProgramDay, EventSection,
- * ParticipantGroup, StaffTeam, EventStaffAssignment).
+ * ParticipantGroup, StaffTeam).
  *
  * API Platform's default denormalizer does NOT resolve relation IRIs into managed
  * entities for these resources — it builds empty embedded entities, which then trip a
@@ -55,10 +54,6 @@ final class ProgramApiProcessor implements ProcessorInterface
                 // Every program resource carries the per-turnus `event` relation.
                 $this->resolveSingle($data, $payload, 'event', 'setEvent');
 
-                if ($data instanceof EventStaffAssignment) {
-                    $this->resolveSingle($data, $payload, 'participant', 'setParticipant');
-                    $this->resolveSingle($data, $payload, 'team', 'setTeam');
-                }
                 if ($data instanceof StaffTeam) {
                     $this->resolveMembers($data, $payload);
                 }

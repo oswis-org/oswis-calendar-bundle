@@ -18,7 +18,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractPerson;
  *
  * Proč samostatná třída: totéž pravidlo potřebuje jak Twig na webu/PDF
  * ({@see \OswisOrg\OswisCalendarBundle\Twig\Extension\ProgramExtension::staffName}), tak API
- * serializace roštu služeb ({@see \OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment::getStaffName}).
+ * serializace roštu služeb ({@see \OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment::getStaffName}).
  * Entita nemůže injektovat Twig rozšíření, proto je jádro vytažené sem jako čistá statická funkce,
  * ať se pravidlo nepíše dvakrát a nemůže se rozejít. Viz [[feedback_quality_code_documentation]].
  */

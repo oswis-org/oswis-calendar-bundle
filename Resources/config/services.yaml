@@ -26,11 +26,6 @@ services:
     autowire: true
     public: true
 
-  ## Program module — zápisová strana rozpisu služeb (find-or-create směny + přiřazení), sdílená web+API
-  OswisOrg\OswisCalendarBundle\Service\Program\ProgramRosterService:
-    autowire: true
-    public: true
-
   ## Program module output renderer (PDF via ExportService)
   OswisOrg\OswisCalendarBundle\Service\Program\ProgramOutputService:
     autowire: true
@@ -479,8 +474,8 @@ services:
     tags:
       - 'doctrine.repository_service'
 
-  OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository:
-    class: OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository
+  OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository
     autowire: true
     public: true
     arguments:
@@ -807,12 +802,6 @@ services:
     tags:
       - { name: api_platform.doctrine.orm.query_extension.collection }
 
-  # Scopuje /program_service_roster na service-eventy jednoho turnusu (?turnus=<id>). Jen collection.
-  OswisOrg\OswisCalendarBundle\ApiPlatform\ServiceRosterScopeExtension:
-    autowire: true
-    tags:
-      - { name: api_platform.doctrine.orm.query_extension.collection }
-
   OswisOrg\OswisCalendarBundle\ApiPlatform\OwnSubEventAttendanceExtension:
     autowire: true
     tags:
@@ -848,12 +837,6 @@ services:
   ## (kapacita + constrainty), API je neobchází. Bez tagu `api_platform.state_processor` API Platform
   ## procesor NENAJDE a operace padá na 500 „Processor not found" (build ani PHPStan to nechytí).
   OswisOrg\OswisCalendarBundle\State\ReservationAssignProcessor:
-    autowire: true
-    tags: [ 'api_platform.state_processor' ]
-
-  ## Zápis směny rozpisu služeb (POST /api/program_service_roster) — command procesor, deleguje na
-  ## ProgramRosterService::assignShift (find-or-create service-Eventu + přiřazení). Bez tagu 500 "Processor not found".
-  OswisOrg\OswisCalendarBundle\State\RosterShiftAssignProcessor:
     autowire: true
     tags: [ 'api_platform.state_processor' ]
 

@@ -185,7 +185,7 @@ final class ProgramDataService
     }
 
     /**
-     * Activities where the instructor serves — directly (EventStaffAssignment.participant) or
+     * Activities where the instructor serves — directly (StaffAssignment.participant) or
      * through a StaffTeam they belong to — excluding `excluded` assignments. Chronological.
      *
      * @return list<array<string, mixed>>

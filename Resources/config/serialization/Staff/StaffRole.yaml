@@ -1,0 +1,38 @@
+OswisOrg\OswisCalendarBundle\Entity\Staff\StaffRole:
+  attributes:
+    id:
+      groups:
+        - 'calendar_staff_roles_get'
+        - 'calendar_staff_role_get'
+        - 'calendar_staff_assignments_get'
+        - 'calendar_staff_assignment_get'
+    name:
+      groups:
+        - 'calendar_staff_roles_get'
+        - 'calendar_staff_role_get'
+        - 'calendar_staff_roles_post'
+        - 'calendar_staff_role_put'
+        - 'calendar_staff_assignments_get'
+        - 'calendar_staff_assignment_get'
+    type:
+      groups:
+        - 'calendar_staff_roles_get'
+        - 'calendar_staff_role_get'
+        - 'calendar_staff_roles_post'
+        - 'calendar_staff_role_put'
+        - 'calendar_staff_assignments_get'
+        - 'calendar_staff_assignment_get'
+    color:
+      groups:
+        - 'calendar_staff_roles_get'
+        - 'calendar_staff_role_get'
+        - 'calendar_staff_roles_post'
+        - 'calendar_staff_role_put'
+        - 'calendar_staff_assignments_get'
+        - 'calendar_staff_assignment_get'
+    appliesTo:
+      groups:
+        - 'calendar_staff_roles_get'
+        - 'calendar_staff_role_get'
+        - 'calendar_staff_roles_post'
+        - 'calendar_staff_role_put'

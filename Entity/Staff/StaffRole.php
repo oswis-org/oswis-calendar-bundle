@@ -18,7 +18,6 @@ use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\ColorTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
-use OswisOrg\OswisCoreBundle\Traits\Common\TypeTrait;
 
 /**
  * Číselník FUNKCÍ/ROLÍ týmu (řízení, jídelna, svolávání, technika, vede, dozor, chystání…).
@@ -61,7 +60,14 @@ class StaffRole implements NameableInterface
 {
     use NameableTrait;
     use ColorTrait;
-    use TypeTrait;
+
+    /**
+     * Stabilní kód role (rizeni/technika/…). VOLNĚ konfigurovatelný per nasazení — NENÍ pevný enum
+     * (na rozdíl od EventCategory::type), aby si každé nasazení nadefinovalo svoje funkce. Proto
+     * BEZ TypeTrait (ten validuje proti povolenému seznamu).
+     */
+    #[Column(type: 'string', nullable: true)]
+    protected ?string $type = null;
 
     /** Celodenní služba (řízení/jídelna) — `activity` u přiřazení je prázdná. */
     public const string APPLIES_SERVICE = 'service';
@@ -96,6 +102,16 @@ class StaffRole implements NameableInterface
     public function setAppliesTo(?string $appliesTo): void
     {
         $this->appliesTo = $appliesTo;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): void
+    {
+        $this->type = null !== $type && '' !== $type ? $type : null;
     }
 
     /** Použitelná jako celodenní služba (service nebo both)? */

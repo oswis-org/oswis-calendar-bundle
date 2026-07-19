@@ -1,0 +1,37 @@
+OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment:
+  attributes:
+    id:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]
+    turnus:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    activity:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    role:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    participant:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    externalName:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    team:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    excluded:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    startDateTime:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    endDateTime:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    leadMinutes:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    coversDuring:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    trailMinutes:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    note:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get', 'calendar_staff_assignments_post', 'calendar_staff_assignment_put' ]
+    # Odvozená (jen čtení): jméno pro rozpis + efektivní časový úsek (dopočet z aktivity u relativních).
+    staffName:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]
+    effectiveStart:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]
+    effectiveEnd:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]

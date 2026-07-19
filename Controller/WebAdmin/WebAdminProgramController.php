@@ -10,7 +10,8 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventSection;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
+use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment;
+use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffRole;
 use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
@@ -21,7 +22,7 @@ use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventSectionEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\StaffTeamEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
-use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
@@ -48,7 +49,7 @@ final class WebAdminProgramController extends AbstractController
         private readonly ProgramDataService $programData,
         private readonly EventRepository $eventRepository,
         private readonly EntityManagerInterface $em,
-        private readonly EventStaffAssignmentRepository $assignmentRepository,
+        private readonly StaffAssignmentRepository $assignmentRepository,
         private readonly ParticipantRepository $participantRepository,
         private readonly EventDuplicateProcessor $duplicateProcessor,
         private readonly StaffTeamRepository $teamRepository,
@@ -408,7 +409,7 @@ final class WebAdminProgramController extends AbstractController
     }
 
     /**
-     * Obsazení aktivity (spec 2026-06-12: EventStaffAssignment — účastník z týmových přihlášek NEBO
+     * Obsazení aktivity (spec 2026-06-12 → StaffAssignment — účastník z týmových přihlášek NEBO
      * externí jméno + role). Týmy (StaffTeam ±) = navazující slice. Ruční přiřazení, žádné auto-návrhy
      * rotace (services se domlouvají v týmu, jen se zapíší — user 2026-06-13).
      */
@@ -426,10 +427,11 @@ final class WebAdminProgramController extends AbstractController
             }
             $participantId = (int) $request->request->get('participant');
             $externalName = trim((string) $request->request->get('externalName'));
-            $roleLabel = trim((string) $request->request->get('roleLabel'));
+            $roleId = (int) $request->request->get('role');
             $teamId = (int) $request->request->get('team');
             $participant = $participantId > 0 ? $this->em->find(Participant::class, $participantId) : null;
             $team = $teamId > 0 ? $this->em->find(StaffTeam::class, $teamId) : null;
+            $role = $roleId > 0 ? $this->em->find(StaffRole::class, $roleId) : null;
             if (!$participant instanceof Participant && '' === $externalName && !$team instanceof StaffTeam) {
                 $this->addFlash('danger', 'Vyber člověka, tým, nebo zadej externí jméno.');
 
@@ -442,8 +444,11 @@ final class WebAdminProgramController extends AbstractController
             if ($team instanceof StaffTeam) {
                 $this->assertBelongsToTurnus($turnus, $team->getEvent());
             }
-            $assignment = new EventStaffAssignment('' !== $externalName ? $externalName : null, '' !== $roleLabel ? $roleLabel : null);
-            $assignment->setEvent($activity);
+            // Nový model: obsazení aktivity = StaffAssignment vázaný na aktivitu (activity), scope turnus.
+            $assignment = new StaffAssignment('' !== $externalName ? $externalName : null);
+            $assignment->setTurnus($turnus);
+            $assignment->setActivity($activity);
+            $assignment->setRole($role);
             if ($participant instanceof Participant) {
                 $assignment->setParticipant($participant);
             }
@@ -458,7 +463,7 @@ final class WebAdminProgramController extends AbstractController
         }
 
         $assignments = [];
-        foreach ($this->assignmentRepository->getByEvent($activity) as $a) {
+        foreach ($this->assignmentRepository->getByActivity($activity) as $a) {
             $participant = $a->getParticipant();
             $team = $a->getTeam();
             if ($participant instanceof Participant) {
@@ -474,13 +479,20 @@ final class WebAdminProgramController extends AbstractController
             $assignments[] = [
                 'id'        => $a->getId(),
                 'name'      => $name,
-                'roleLabel' => $a->getRoleLabel(),
+                'roleLabel' => $a->getRole()?->getName(),
                 'kind'      => $kind,
             ];
         }
         $teams = [];
         foreach ($this->teamRepository->getByEvent($turnus) as $t) {
             $teams[] = ['id' => $t->getId(), 'name' => $t->getName() ?? ('#'.$t->getId())];
+        }
+        // Číselník funkcí použitelných u aktivity (activity/both) pro výběr role.
+        $roles = [];
+        foreach ($this->em->getRepository(StaffRole::class)->findBy([], ['name' => 'ASC']) as $r) {
+            if ($r->isForActivity()) {
+                $roles[] = ['id' => $r->getId(), 'name' => $r->getName() ?? ('#'.$r->getId())];
+            }
         }
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/program/activity_staff.html.twig', [
@@ -489,6 +501,7 @@ final class WebAdminProgramController extends AbstractController
             'assignments' => $assignments,
             'staffPool'   => $this->staffPool($turnus),
             'teams'       => $teams,
+            'roles'       => $roles,
             'back_url'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]),
         ]);
     }
@@ -497,13 +510,16 @@ final class WebAdminProgramController extends AbstractController
     public function deleteStaff(Request $request, string $eventSlug, int $activityId, int $assignmentId): RedirectResponse
     {
         $turnus = $this->resolveEvent($eventSlug);
-        $assignment = $this->em->find(EventStaffAssignment::class, $assignmentId)
+        $assignment = $this->em->find(StaffAssignment::class, $assignmentId)
             ?? throw $this->createNotFoundException("Obsazení #$assignmentId nenalezeno.");
-        $this->assertBelongsToTurnus($turnus, $assignment->getEvent());
+        // IDOR scope: závazek musí patřit do tohoto turnusu.
+        if ($assignment->getTurnus()?->getId() !== $turnus->getId()) {
+            throw $this->createNotFoundException('Obsazení nepatří k tomuto turnusu.');
+        }
         if (!$this->isCsrfTokenValid('program_staff_delete_'.$assignmentId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
-        $this->em->remove($assignment);
+        $assignment->setDeletedAt(new DateTime()); // StaffAssignment má DeletedTrait (soft-delete)
         $this->em->flush();
         $this->addFlash('warning', 'Obsazení odebráno.');
 

@@ -78,7 +78,6 @@ class EventCategory implements NameableInterface
     public const LECTURE = 'lecture';
     public const WORKSHOP = 'workshop';
     public const MODERATED_DISCUSSION = 'moderated-discussion';
-    public const TRANSPORT = 'transport';
     public const TEAM_BUILDING_STAY = 'team-building-stay';
     public const TEAM_BUILDING = 'team-building';
     public const EVIDENCE = 'evidence';
@@ -90,34 +89,8 @@ class EventCategory implements NameableInterface
     public const CEREMONY = 'ceremony';          // Ceremoniál (zahájení/zakončení)
     public const FREE_TIME = 'free-time';        // Volný program / pauza
     public const EVENING_PROGRAM = 'evening-program'; // Večerní program / party
-    /** Služby (rozpis SLUŽEB) — kdo má kdy směnu na daném stanovišti. */
-    public const SERVICE_STEERING = 'service-steering'; // Řízení
-    public const SERVICE_CALLING = 'service-calling';   // Svolávání
-    public const SERVICE_CANTEEN = 'service-canteen';   // Jídelna
-    public const SERVICE_BAR = 'service-bar';           // Stolárna
-    public const SERVICE_KIOSK = 'service-kiosk';       // Kiosek
-    public const SERVICE_MEDIC = 'service-medic';       // Zdravotník
-    public const SERVICE_CHECKOUT = 'service-checkout'; // Check-out (odjezdové úkony)
-    public const SERVICE_NIGHT_WATCH = 'service-night-watch'; // Noční hlídka
-    public const SERVICE_CLEANING = 'service-cleaning'; // Úklid
-    public const SERVICE_TECH = 'service-tech';         // Technika / AV
-    public const SERVICE_PHOTO = 'service-photo';       // Foto / dokumentace
-
-    /** Denní služby (rozpis SLUŽEB) — člen týmu má směnu na daném stanovišti v daném čase. */
-    public const SERVICE_TYPES
-        = [
-            self::SERVICE_STEERING,
-            self::SERVICE_CALLING,
-            self::SERVICE_CANTEEN,
-            self::SERVICE_BAR,
-            self::SERVICE_KIOSK,
-            self::SERVICE_MEDIC,
-            self::SERVICE_CHECKOUT,
-            self::SERVICE_NIGHT_WATCH,
-            self::SERVICE_CLEANING,
-            self::SERVICE_TECH,
-            self::SERVICE_PHOTO,
-        ];
+    // Pozn.: služby (řízení/jídelna/…) a doprava NEJSOU EventCategory — jsou to provozní věci
+    // s vlastním modelem (StaffRole/StaffAssignment). Viz reference_event_is_only_happenings.
     public const ALLOWED_TYPES
         = [
             self::YEAR_OF_EVENT,
@@ -125,7 +98,6 @@ class EventCategory implements NameableInterface
             self::LECTURE,
             self::WORKSHOP,
             self::MODERATED_DISCUSSION,
-            self::TRANSPORT,
             self::TEAM_BUILDING_STAY,
             self::TEAM_BUILDING,
             self::EVIDENCE,
@@ -135,17 +107,6 @@ class EventCategory implements NameableInterface
             self::CEREMONY,
             self::FREE_TIME,
             self::EVENING_PROGRAM,
-            self::SERVICE_STEERING,
-            self::SERVICE_CALLING,
-            self::SERVICE_CANTEEN,
-            self::SERVICE_BAR,
-            self::SERVICE_KIOSK,
-            self::SERVICE_MEDIC,
-            self::SERVICE_CHECKOUT,
-            self::SERVICE_NIGHT_WATCH,
-            self::SERVICE_CLEANING,
-            self::SERVICE_TECH,
-            self::SERVICE_PHOTO,
         ];
 
     /**
@@ -170,11 +131,6 @@ class EventCategory implements NameableInterface
     public static function getAllowedTypesCustom(): array
     {
         return [];
-    }
-
-    public static function isServiceType(?string $type): bool
-    {
-        return null !== $type && in_array($type, self::SERVICE_TYPES, true);
     }
 
     public function getDefaultStartTime(): ?DateTimeInterface

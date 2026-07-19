@@ -302,7 +302,7 @@ class StaffAssignment implements BasicInterface
         $this->leadMinutes = $leadMinutes;
     }
 
-    public function coversDuring(): bool
+    public function isCoversDuring(): bool
     {
         return $this->coversDuring;
     }
