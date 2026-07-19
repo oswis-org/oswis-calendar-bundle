@@ -857,6 +857,13 @@ services:
     autowire: true
     tags: [ 'api_platform.state_processor' ]
 
+  ## StaffAssignment write — resolvuje IRI relací (turnus/activity/role/participant/team) pak persist.
+  OswisOrg\OswisCalendarBundle\State\StaffAssignmentProcessor:
+    autowire: true
+    arguments:
+      $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+    tags: [ 'api_platform.state_processor' ]
+
   ## Accommodation CRUD write processor — resolvuje IRI relací (facility/unit/bed/pairedWith/event/members).
   OswisOrg\OswisCalendarBundle\State\AccommodationApiProcessor:
     autowire: true
