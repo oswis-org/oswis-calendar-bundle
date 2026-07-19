@@ -802,6 +802,12 @@ services:
     tags:
       - { name: api_platform.doctrine.orm.query_extension.collection }
 
+  # Scopuje /program_service_roster na service-eventy jednoho turnusu (?turnus=<id>). Jen collection.
+  OswisOrg\OswisCalendarBundle\ApiPlatform\ServiceRosterScopeExtension:
+    autowire: true
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+
   OswisOrg\OswisCalendarBundle\ApiPlatform\OwnSubEventAttendanceExtension:
     autowire: true
     tags:

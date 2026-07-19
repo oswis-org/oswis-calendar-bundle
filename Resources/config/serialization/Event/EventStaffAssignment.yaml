@@ -4,45 +4,71 @@ OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
+        - 'calendar_service_roster'
     event:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+        - 'calendar_service_roster'
     participant:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+        - 'calendar_service_roster'
     externalName:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+        - 'calendar_service_roster'
     roleLabel:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+        - 'calendar_service_roster'
     team:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+        - 'calendar_service_roster'
     excluded:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+        - 'calendar_service_roster'
     note:
       groups:
         - 'calendar_event_staff_assignments_get'
         - 'calendar_event_staff_assignment_get'
         - 'calendar_event_staff_assignments_post'
         - 'calendar_event_staff_assignment_put'
+    # ── Leanové view-accessory pro tabulku služeb (mapují na getStaffName / getService* / getShift* / getTeamName). ──
+    # Ploché skaláry, ze kterých si klient poskládá tabulku den × typ × směna. event/participant/team výše
+    # zůstávají jako IRI (identita pro smazání/úpravu směny); tady jsou jen odvozená zobrazovací pole.
+    staffName:
+      groups: [ 'calendar_service_roster' ]
+    serviceType:
+      groups: [ 'calendar_service_roster' ]
+    serviceName:
+      groups: [ 'calendar_service_roster' ]
+    serviceColor:
+      groups: [ 'calendar_service_roster' ]
+    shiftDate:
+      groups: [ 'calendar_service_roster' ]
+    shiftStartTime:
+      groups: [ 'calendar_service_roster' ]
+    shiftEndTime:
+      groups: [ 'calendar_service_roster' ]
+    teamName:
+      groups: [ 'calendar_service_roster' ]

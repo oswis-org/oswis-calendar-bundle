@@ -45,6 +45,15 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
             normalizationContext: ['groups' => ['entities_get', 'calendar_event_staff_assignments_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')",
         ),
+        // Rozpis služeb pro web/Ionic editor: TÁŽ entita, jen lean serializační grupa
+        // (`calendar_service_roster`) = ploché řádky (kdo · den · čas · typ služby), ze kterých si
+        // klient poskládá tabulku „den × typ služby". Scopnutí na service-eventy daného turnusu
+        // řeší ServiceRosterScopeExtension přes `?turnus=<slug>` (mimo ni vrací prázdno — bezpečné).
+        new GetCollection(
+            uriTemplate: '/program_service_roster',
+            normalizationContext: ['groups' => ['calendar_service_roster'], 'enable_max_depth' => true],
+            security: "is_granted('ROLE_MANAGER')",
+        ),
         new Get(
             normalizationContext: ['groups' => ['entity_get', 'calendar_event_staff_assignment_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')",
@@ -211,5 +220,54 @@ class EventStaffAssignment implements BasicInterface
         $external = trim((string) $this->externalName);
 
         return '' !== $external ? $external : null;
+    }
+
+    // ── Leanové view-accessory pro rozpis služeb (serializační grupa `calendar_service_roster`) ──
+    // Rozpis služeb = tabulka „den × typ služby × směna". Klient si ji z těchto PLOCHÝCH skalárů
+    // poskládá sám (seskupí dle serviceType + shiftDate, seřadí dle shiftStartTime). Data jsou
+    // odvozená ze service-Eventu daného přiřazení; držíme je plochá (ne vnořený Event objekt)
+    // kvůli předvídatelné serializaci a snadnému pivotu na klientu — stejný přístup jako lean
+    // check-in fronta. Čas směny = vlastní rozsah service-Eventu (rozhodnutí „časově, ne půldny").
+
+    /** Typ služby (`EventCategory::SERVICE_*`) = sloupec tabulky služeb. */
+    public function getServiceType(): ?string
+    {
+        return $this->event?->getCategory()?->getType();
+    }
+
+    /** Název typu služby (např. „Řízení") = popisek sloupce. */
+    public function getServiceName(): ?string
+    {
+        return $this->event?->getCategory()?->getName();
+    }
+
+    /** Barva typu služby = barva sloupce/čipu. */
+    public function getServiceColor(): ?string
+    {
+        return $this->event?->getCategory()?->getColor();
+    }
+
+    /** Datum směny (řádek tabulky), `Y-m-d`. */
+    public function getShiftDate(): ?string
+    {
+        return $this->event?->getStartDateTimeRecursive()?->format('Y-m-d');
+    }
+
+    /** Začátek směny, `H:i`. */
+    public function getShiftStartTime(): ?string
+    {
+        return $this->event?->getStartDateTimeRecursive()?->format('H:i');
+    }
+
+    /** Konec směny, `H:i`. */
+    public function getShiftEndTime(): ?string
+    {
+        return $this->event?->getEndDateTimeRecursive()?->format('H:i');
+    }
+
+    /** Název podtýmu, když je přiřazen celý tým místo jednotlivce (jinak `null`). */
+    public function getTeamName(): ?string
+    {
+        return $this->team?->getName();
     }
 }
