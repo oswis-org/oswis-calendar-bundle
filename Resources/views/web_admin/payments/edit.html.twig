@@ -19,7 +19,7 @@
                 <a href="{{ path('oswis_org_oswis_calendar_web_admin_payment_match', { id: payment.id }) }}"
                    class="btn btn-sm btn-outline-secondary">Změnit / přiřadit jiného</a>
             {% else %}
-                ⚠️ NEPŘIŘAZENO
+                <twig:ux:icon name="tabler:alert-triangle" class="oa-icon" /> NEPŘIŘAZENO
                 <a href="{{ path('oswis_org_oswis_calendar_web_admin_payment_match', { id: payment.id }) }}"
                    class="btn btn-sm btn-warning">Spárovat</a>
             {% endif %}
@@ -28,13 +28,13 @@
         <p>
             <strong>Potvrzení e-mailem:</strong>
             {% if payment.confirmedByMail %}
-                ✅ odesláno {{ payment.confirmedByMailAt|date('j. n. Y H:i') }}
+                <twig:ux:icon name="tabler:circle-check" class="oa-icon" /> odesláno {{ payment.confirmedByMailAt|date('j. n. Y H:i') }}
             {% elseif payment.participant %}
-                ⚠️ neodesláno
+                <twig:ux:icon name="tabler:alert-triangle" class="oa-icon" /> neodesláno
                 <form method="post" style="display:inline;"
                       action="{{ path('oswis_org_oswis_calendar_web_admin_payment_send_confirmation', { id: payment.id }) }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('payment_send_confirmation_' ~ payment.id) }}">
-                    <button type="submit" class="btn btn-sm btn-warning">✉ Poslat potvrzení účastníkovi</button>
+                    <button type="submit" class="btn btn-sm btn-warning"><twig:ux:icon name="tabler:mail" class="oa-icon" /> Poslat potvrzení účastníkovi</button>
                 </form>
             {% else %}
                 — (nejdřív spáruj platbu)

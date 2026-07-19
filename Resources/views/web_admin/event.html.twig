@@ -16,7 +16,7 @@
                     <div style="display: inline-flex; gap: .5rem; flex-wrap: wrap; align-items: center;">
                         <a class="btn btn-sm btn-outline-primary"
                            href="{{ path('oswis_org_oswis_calendar_web_admin_event_edit', { eventSlug: event.slug }) }}">
-                            ✎ Upravit
+                            <twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit
                         </a>
                         {% if event.deletedAt|default %}
                             <form method="post"
@@ -40,7 +40,7 @@
                 {% if is_granted('ROLE_MANAGER') and event.slug|default %}
                     <div style="display: inline-flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-bottom: .5rem;">
                         <a class="btn btn-sm btn-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: event.slug }) }}">
-                            ✅ Check-in
+                            <twig:ux:icon name="tabler:circle-check" class="oa-icon" /> Check-in
                         </a>
                     </div>
                     {# Program-module tiskové výstupy (STOPA 1.3, ex-PR #37). Turnus-level = jen eventSlug;

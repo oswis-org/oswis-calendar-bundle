@@ -33,7 +33,7 @@
             <p style="display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;">
                 <a class="btn btn-primary btn-sm"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}">
-                    ✎ Nová zpráva (e-mail)
+                    <twig:ux:icon name="tabler:pencil" class="oa-icon" /> Nová zpráva (e-mail)
                 </a>
                 <a class="btn btn-outline-primary btn-sm"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}">
@@ -43,11 +43,11 @@
                       action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}"
                       style="display: inline-block;">
                     <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">🔄 Stáhnout nové e-maily z IMAP</button>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Stáhnout nové e-maily z IMAP</button>
                 </form>
                 <a class="btn btn-outline-secondary btn-sm"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}">
-                    📥 Nezařazené e-maily
+                    <twig:ux:icon name="tabler:inbox" class="oa-icon" /> Nezařazené e-maily
                 </a>
             </p>
         {% endif %}

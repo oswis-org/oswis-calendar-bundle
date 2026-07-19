@@ -51,13 +51,13 @@
             {% if is_granted('ROLE_ADMIN') %}
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}"
-                   title="Napsat a odeslat ad-hoc e-mail účastníkovi">✎ Nová zpráva</a>
+                   title="Napsat a odeslat ad-hoc e-mail účastníkovi"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Nová zpráva</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}"
                    title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt">📞 Záznam komunikace</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}"
-                   title="Nezařazené příchozí / odchozí e-maily z IMAP">📥 Nezařazené e-maily</a>
+                   title="Nezařazené příchozí / odchozí e-maily z IMAP"><twig:ux:icon name="tabler:inbox" class="oa-icon" /> Nezařazené e-maily</a>
                 <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display:inline-block; margin:0;" title="Stáhnout nové e-maily z IMAP serveru">
                     <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
                     <button type="submit" class="btn btn-sm btn-outline-primary">↻ Stáhnout z IMAP</button>
@@ -307,7 +307,7 @@
                             <td style="white-space:pre-line;">{{ note.textValue|default('') }}</td>
                             <td class="text-center">
                                 <details>
-                                    <summary class="btn btn-sm btn-outline-primary" style="list-style:none;">✎</summary>
+                                    <summary class="btn btn-sm btn-outline-primary" style="list-style:none;"><twig:ux:icon name="tabler:pencil" class="oa-icon" /></summary>
                                     <div style="text-align:left; margin-top:.4rem; min-width:16rem;">
                                         <form method="post"
                                               action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_edit', { participantId: participant.id, noteId: note.id }) }}"

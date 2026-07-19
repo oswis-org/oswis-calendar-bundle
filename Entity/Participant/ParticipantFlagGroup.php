@@ -202,6 +202,14 @@ class ParticipantFlagGroup implements BasicInterface, TextValueInterface, Delete
             foreach ($removedFlags as $removedFlag) {
                 assert($removedFlag instanceof ParticipantFlag);
                 $removedFlag->delete();
+                // Keep the soft-deleted flag in the collection: it is still a member row in the DB
+                // (a fresh load includes it — there is no soft-delete SQL filter), and dropping it
+                // here made the in-memory graph disagree with the DB. Concretely it blinded the
+                // "registration changed" diff (ParticipantChangeService) to removals done in the
+                // same request, so the participant never got the "odebráno" notification.
+                if (!$newParticipantFlags->contains($removedFlag)) {
+                    $newParticipantFlags->add($removedFlag);
+                }
             }
             foreach ($addedFlags as $addedFlag) {
                 assert($addedFlag instanceof ParticipantFlag);

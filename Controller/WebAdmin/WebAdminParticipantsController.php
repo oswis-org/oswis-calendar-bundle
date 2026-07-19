@@ -77,8 +77,11 @@ final class WebAdminParticipantsController extends AbstractController
      * materialised on demand (admin-only categories like Sleva / Zkrácený pobyt / Poznámky k platbě
      * never auto-create at registration because setFlagGroupsByOffer filters onlyPublic=true). The
      * heavy lifting (validation, capacity, soft-delete, activation, usage recompute) lives in
-     * {@see ParticipantFlagUpdateService::setFlags()}. Silent — sends no e-mail. With the
-     * `admin_override` checkbox the capacity ceiling is bypassed ($admin=true).
+     * {@see ParticipantFlagUpdateService::setFlags()}. After a successful save the unified
+     * "registration changed" notification fires ({@see ParticipantMailService::notifyParticipantChanged}
+     * — diff-based, no-op when nothing notifiable changed), matching the app/API PUT path and the
+     * already-unified admin move + delete flows. With the `admin_override` checkbox the capacity
+     * ceiling is bypassed ($admin=true).
      *
      * Uses a lightweight em->find() + flush (the proven bulk-reassign persist path), not the full
      * detail-graph hydration, to avoid the L2-cache/getName() memory blow-up on large graphs.
@@ -124,6 +127,16 @@ final class WebAdminParticipantsController extends AbstractController
                 $participantId,
                 $admin ? ' (povoleno překročení kapacity)' : '',
             ));
+            // Parity with the app/API path: notify AFTER the flush inside setFlags() (the diff reads
+            // versioned records created by the write). Failure must not break the admin flow.
+            try {
+                $this->participantMailService->notifyParticipantChanged($participant);
+            } catch (\Throwable $mailException) {
+                $this->addFlash('warning', sprintf(
+                    'Příznaky uloženy, ale oznámení o změně se účastníkovi nepodařilo odeslat: %s',
+                    $mailException->getMessage(),
+                ));
+            }
         } catch (FlagCapacityExceededException $e) {
             $this->addFlash('error', sprintf(
                 'Kapacita překročena: %s. Zaškrtni „povolit překročení kapacity" pro vynucení.',
