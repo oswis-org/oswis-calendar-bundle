@@ -26,6 +26,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\StaffNameFormatter;
 use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
+use OswisOrg\OswisCalendarBundle\State\RosterShiftAssignProcessor;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
 use OswisOrg\OswisCoreBundle\Traits\Common\NoteTrait;
@@ -53,6 +54,19 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
             uriTemplate: '/program_service_roster',
             normalizationContext: ['groups' => ['calendar_service_roster'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')",
+        ),
+        // Zápis směny: command payload (turnus/serviceType/date/start/end + kdo) → RosterShiftAssignProcessor
+        // najde-nebo-založí service-Event a přiřadí. Denorm grupa je PRÁZDNÁ + allow_extra_attributes:
+        // command pole nejsou vlastnosti entity, procesor je čte z raw payloadu; denormalizované $data
+        // se zahodí. Validace přeskočena nepoužitou grupou — jinak by callback validateHasAssignee spadl
+        // na prázdném $data 422 dřív, než procesor sestaví reálné přiřazení (to validuje assignShift samo).
+        new Post(
+            uriTemplate: '/program_service_roster',
+            normalizationContext: ['groups' => ['calendar_service_roster'], 'enable_max_depth' => true],
+            denormalizationContext: ['groups' => ['calendar_service_roster_command'], 'allow_extra_attributes' => true],
+            validationContext: ['groups' => ['calendar_service_roster_command']],
+            security: "is_granted('ROLE_MANAGER')",
+            processor: RosterShiftAssignProcessor::class,
         ),
         new Get(
             normalizationContext: ['groups' => ['entity_get', 'calendar_event_staff_assignment_get'], 'enable_max_depth' => true],
