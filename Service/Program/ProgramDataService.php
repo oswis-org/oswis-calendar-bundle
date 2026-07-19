@@ -126,65 +126,6 @@ final class ProgramDataService
     }
 
     /**
-     * Rošt služeb pro editor/API — filtrováno na SERVICE kategorie, ČASOVĚ (ne půldny — user 2026-07-19).
-     * Buňka (den × typ služby) nese časově seřazené SMĚNY; čas směny = časový rozsah service-Eventu.
-     * Směna = 1 service-Event + jeho přiřazení (dvojice = víc přiřazení na 1 směně).
-     *
-     * @return array{
-     *     days: list<string>,
-     *     serviceTypes: list<array{type: string, name: string, color: string|null}>,
-     *     cells: array<string, array<string, list<array<string, mixed>>>>
-     * }
-     */
-    public function getServiceRoster(Event $turnus): array
-    {
-        $days = [];
-        $types = [];
-        $cells = [];
-        // Nový model: služby = StaffAssignment bez konkrétní aktivity (activity NULL). Čas z getEffectiveSpan.
-        foreach ($this->assignmentRepository->getServicesByTurnus($turnus) as $assignment) {
-            $role = $assignment->getRole();
-            $type = $role?->getType() ?? '—';
-            $start = $assignment->getEffectiveStart();
-            $date = $start?->format('Y-m-d') ?? '—';
-            $days[$date] = true;
-            $types[$type] = [
-                'type' => $type,
-                'name' => $role?->getName() ?? $type,
-                'color' => $role?->getColor(),
-            ];
-            // Buňka (den × typ) = seznam řádků-závazků; dvojice (Gabča+Pája) = dva řádky se stejným časem.
-            $cells[$date][$type][] = [
-                'assignmentId' => $assignment->getId(),
-                'start' => $start?->format('Y-m-d H:i'),
-                'end' => $assignment->getEffectiveEnd()?->format('Y-m-d H:i'),
-                'staffName' => $assignment->getStaffName(),
-                'participantId' => $assignment->getParticipant()?->getId(),
-                'team' => $assignment->getTeam()?->getName(),
-                'external' => null === $assignment->getParticipant(),
-            ];
-        }
-        foreach ($cells as $date => $byType) {
-            foreach ($byType as $type => $rows) {
-                usort(
-                    $rows,
-                    static fn (array $a, array $b): int => (is_string($a['start'] ?? null) ? $a['start'] : '')
-                        <=> (is_string($b['start'] ?? null) ? $b['start'] : ''),
-                );
-                $cells[$date][$type] = $rows;
-            }
-        }
-        ksort($days);
-        ksort($types);
-
-        return [
-            'days' => array_keys($days),
-            'serviceTypes' => array_values($types),
-            'cells' => $cells,
-        ];
-    }
-
-    /**
      * Activities where the instructor serves — directly (StaffAssignment.participant) or
      * through a StaffTeam they belong to — excluding `excluded` assignments. Chronological.
      *
