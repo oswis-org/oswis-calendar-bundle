@@ -159,6 +159,18 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
+    publicInApp:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
+    programReleasedAt:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_events_post'
+        - 'calendar_event_get'
+        - 'calendar_event_put'
 
 OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory:
   attributes:
