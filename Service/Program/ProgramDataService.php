@@ -6,10 +6,10 @@ namespace OswisOrg\OswisCalendarBundle\Service\Program;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
-use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
+use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository;
-use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository;
@@ -25,11 +25,10 @@ use OswisOrg\OswisCalendarBundle\Twig\Extension\ProgramExtension;
  */
 final class ProgramDataService
 {
-    private const int RECURSION_DEPTH = 5;
 
     public function __construct(
         private readonly ProgramDayRepository $programDayRepository,
-        private readonly EventStaffAssignmentRepository $assignmentRepository,
+        private readonly StaffAssignmentRepository $assignmentRepository,
         private readonly SubEventAttendanceRepository $attendanceRepository,
         private readonly StaffTeamRepository $teamRepository,
         private readonly EventSectionRepository $sectionRepository,
@@ -116,14 +115,10 @@ final class ProgramDataService
     public function getStaffMatrix(Event $turnus): array
     {
         $matrix = [];
-        foreach ($this->collectAssignments($turnus) as $assignment) {
-            $event = $assignment->getEvent();
-            if (null === $event) {
-                continue;
-            }
-            $date = $event->getStartDateTimeRecursive()?->format('Y-m-d') ?? '—';
-            $category = $event->getCategory()?->getName() ?? $event->getName() ?? '—';
-            $matrix[$date][$category][] = $this->assignmentArray($assignment);
+        foreach ($this->assignmentRepository->getServicesByTurnus($turnus) as $assignment) {
+            $date = $assignment->getEffectiveStart()?->format('Y-m-d') ?? '—';
+            $role = $assignment->getRole()?->getName() ?? '—';
+            $matrix[$date][$role][] = $this->assignmentArray($assignment);
         }
         ksort($matrix);
 
@@ -143,46 +138,40 @@ final class ProgramDataService
      */
     public function getServiceRoster(Event $turnus): array
     {
-        $events = [];
-        $this->collectEvents($turnus, $events, 0);
         $days = [];
         $types = [];
         $cells = [];
-        foreach ($events as $event) {
-            if (null !== $event->getDeletedAt()) {
-                continue;
-            }
-            $category = $event->getCategory();
-            $type = $category?->getType();
-            if (null === $type || !EventCategory::isServiceType($type)) {
-                continue;
-            }
-            $start = $event->getStartDateTimeRecursive();
+        // Nový model: služby = StaffAssignment bez konkrétní aktivity (activity NULL). Čas z getEffectiveSpan.
+        foreach ($this->assignmentRepository->getServicesByTurnus($turnus) as $assignment) {
+            $role = $assignment->getRole();
+            $type = $role?->getType() ?? '—';
+            $start = $assignment->getEffectiveStart();
             $date = $start?->format('Y-m-d') ?? '—';
             $days[$date] = true;
             $types[$type] = [
                 'type' => $type,
-                'name' => $category->getName() ?? $type,
-                'color' => $category->getColor(),
+                'name' => $role?->getName() ?? $type,
+                'color' => $role?->getColor(),
             ];
+            // Buňka (den × typ) = seznam řádků-závazků; dvojice (Gabča+Pája) = dva řádky se stejným časem.
             $cells[$date][$type][] = [
-                'eventId' => $event->getId(),
+                'assignmentId' => $assignment->getId(),
                 'start' => $start?->format('Y-m-d H:i'),
-                'end' => $event->getEndDateTimeRecursive()?->format('Y-m-d H:i'),
-                'assignments' => array_map(
-                    fn (EventStaffAssignment $a): array => $this->assignmentArray($a),
-                    $this->assignmentRepository->getByEvent($event),
-                ),
+                'end' => $assignment->getEffectiveEnd()?->format('Y-m-d H:i'),
+                'staffName' => $assignment->getStaffName(),
+                'participantId' => $assignment->getParticipant()?->getId(),
+                'team' => $assignment->getTeam()?->getName(),
+                'external' => null === $assignment->getParticipant(),
             ];
         }
         foreach ($cells as $date => $byType) {
-            foreach ($byType as $type => $shifts) {
+            foreach ($byType as $type => $rows) {
                 usort(
-                    $shifts,
+                    $rows,
                     static fn (array $a, array $b): int => (is_string($a['start'] ?? null) ? $a['start'] : '')
                         <=> (is_string($b['start'] ?? null) ? $b['start'] : ''),
                 );
-                $cells[$date][$type] = $shifts;
+                $cells[$date][$type] = $rows;
             }
         }
         ksort($days);
@@ -233,18 +222,20 @@ final class ProgramDataService
      *
      * @return array<string, mixed>
      */
-    private function itineraryRow(EventStaffAssignment $assignment): array
+    private function itineraryRow(StaffAssignment $assignment): array
     {
-        $event = $assignment->getEvent();
-        $dateTime = $event?->getStartDateTimeRecursive();
+        $start = $assignment->getEffectiveStart();
+        $activity = $assignment->getActivity();
+        $role = $assignment->getRole();
 
         return [
-            'start' => $dateTime?->format('Y-m-d H:i'),
-            'date' => $dateTime?->format('Y-m-d'),
-            'time' => $dateTime?->format('H:i'),
-            'activity' => $event?->getName(),
-            'placeText' => $event?->getPlaceText(),
-            'roleLabel' => $assignment->getRoleLabel(),
+            'start' => $start?->format('Y-m-d H:i'),
+            'date' => $start?->format('Y-m-d'),
+            'time' => $start?->format('H:i'),
+            // U služby (bez aktivity) je „aktivitou" v itineráři samotná funkce (Řízení…).
+            'activity' => $activity?->getName() ?? $role?->getName(),
+            'placeText' => $activity?->getPlaceText(),
+            'roleLabel' => $role?->getName(),
         ];
     }
 
@@ -353,37 +344,12 @@ final class ProgramDataService
     }
 
     /**
-     * @return list<EventStaffAssignment>
+     * @return list<StaffAssignment>
      */
     private function collectAssignments(Event $turnus): array
     {
-        $events = [];
-        $this->collectEvents($turnus, $events, 0);
-        $assignments = [];
-        foreach ($events as $event) {
-            foreach ($this->assignmentRepository->getByEvent($event) as $assignment) {
-                $assignments[] = $assignment;
-            }
-        }
-
-        return $assignments;
-    }
-
-    /**
-     * @param list<Event> $out
-     */
-    private function collectEvents(Event $event, array &$out, int $depth): void
-    {
-        if ($depth > self::RECURSION_DEPTH) {
-            return;
-        }
-        foreach ($event->getSubEvents() as $sub) {
-            if (null !== $sub->getDeletedAt()) {
-                continue; // smazané (soft-delete) podakce se do sběru (obsazení/matice služeb) nepočítají
-            }
-            $out[] = $sub;
-            $this->collectEvents($sub, $out, $depth + 1);
-        }
+        // Nový model: závazky jsou vlastní entita scopnutá na turnus (ne procházení service-Eventů).
+        return $this->assignmentRepository->getByTurnus($turnus);
     }
 
     /**
@@ -413,7 +379,7 @@ final class ProgramDataService
             ];
         }
         $staff = [];
-        foreach ($this->assignmentRepository->getByEvent($event) as $assignment) {
+        foreach ($this->assignmentRepository->getByActivity($event) as $assignment) {
             if (!$assignment->isExcluded()) {
                 $staff[] = $this->assignmentArray($assignment);
             }
@@ -463,17 +429,15 @@ final class ProgramDataService
     /**
      * @return array<string, mixed>
      */
-    private function assignmentArray(EventStaffAssignment $assignment): array
+    private function assignmentArray(StaffAssignment $assignment): array
     {
-        $participant = $assignment->getParticipant();
-
         return [
             'id' => $assignment->getId(),
-            'name' => null !== $participant ? $this->names->staffName($participant) : (string) $assignment->getExternalName(),
-            'participantId' => $participant?->getId(),
-            'roleLabel' => $assignment->getRoleLabel(),
+            'name' => $assignment->getStaffName() ?? '',
+            'participantId' => $assignment->getParticipant()?->getId(),
+            'roleLabel' => $assignment->getRole()?->getName(),
             'team' => $assignment->getTeam()?->getName(),
-            'external' => null === $participant,
+            'external' => null === $assignment->getParticipant(),
         ];
     }
 }
