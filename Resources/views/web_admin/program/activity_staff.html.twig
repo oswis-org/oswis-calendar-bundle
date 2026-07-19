@@ -1,0 +1,85 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}Obsazení aktivity{% endblock %}
+
+{# Obsazení aktivity (spec krok 8): účastník z týmových přihlášek NEBO externí jméno + role.
+   Data: WebAdminProgramController::activityStaff. #}
+
+{% block body_content %}
+    <main class="container" style="padding-bottom: 4rem;">
+        <div style="display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; flex-wrap: wrap;">
+            <h2 style="margin: 0;">Obsazení — {{ activity.name ?? ('#' ~ activity.id) }}</h2>
+            <a href="{{ back_url }}" class="btn btn-sm btn-outline-secondary">← Zpět na program</a>
+        </div>
+
+        <table class="table table-sm" style="max-width: 46rem;">
+            <thead>
+                <tr><th>Kdo</th><th>Role</th><th style="width: 5rem;"></th></tr>
+            </thead>
+            <tbody>
+                {% for a in assignments %}
+                    <tr>
+                        <td>{{ a.name ?: '—' }}
+                            {% if a.kind == 'team' %} <span class="badge bg-info text-dark">tým</span>
+                            {% elseif a.kind == 'external' %} <span class="badge bg-light text-dark">externí</span>{% endif %}</td>
+                        <td>{{ a.roleLabel ?? '—' }}</td>
+                        <td>
+                            <form method="post" style="margin: 0;"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_staff_delete', {eventSlug: eventSlug, activityId: activity.id, assignmentId: a.id}) }}"
+                                  onsubmit="return confirm('Odebrat „{{ a.name }}" z obsazení?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('program_staff_delete_' ~ a.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" style="padding: .05rem .4rem;">odebrat</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" style="color: #adb5bd;">Zatím nikdo není obsazený.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; max-width: 46rem;">
+            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto;">Přidat obsazení</legend>
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_staff', {eventSlug: eventSlug, activityId: activity.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('program_staff_add_' ~ activity.id) }}">
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label">Člen týmu</label>
+                        <select name="participant" class="form-select">
+                            <option value="">— vyber ze seznamu —</option>
+                            {% for p in staffPool %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Nebo níže zadej externího člověka (mimo přihlášky).</div>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label">Externí jméno</label>
+                        <input type="text" name="externalName" class="form-control" placeholder="např. P. Svačina, ASC">
+                    </div>
+                </div>
+                {% if teams|length > 0 %}
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Nebo celý tým</label>
+                            <select name="team" class="form-select">
+                                <option value="">— žádný tým —</option>
+                                {% for t in teams %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                            </select>
+                            <div class="form-text">Přiřadí celý tým; v itineráři se rozepíše na jednotlivce.</div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label">Role</label>
+                        <input type="text" name="roleLabel" class="form-control" placeholder="moderátor / technika / pomocník…">
+                    </div>
+                    <div class="col-12 col-md-6 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">Přidat</button>
+                    </div>
+                </div>
+            </form>
+        </fieldset>
+    </main>
+{% endblock %}

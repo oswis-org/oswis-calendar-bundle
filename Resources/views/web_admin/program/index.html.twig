@@ -1,0 +1,200 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{# Program editor — přehledová stránka (spec krok 8, slice 1). Dny → aktivity + sekce + odkazy na PDF
+   výstupy. Read-only; blbuvzdorné formuláře (přidat/upravit/duplikovat) se navěsí v dalších slicech.
+   Data: WebAdminProgramController::index (ProgramDataService). #}
+
+{% block body_content %}
+    <div class="container" style="padding: 1rem;">
+        <div class="row">
+            <div class="col" style="display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;">
+                <h2 style="margin: 0;">Program — {{ event.name ?? eventSlug }}</h2>
+                {% set dayCount = tree|filter(row => row.day is not null)|length %}
+                {% set activityCount = 0 %}
+                {% for row in tree %}{% set activityCount = activityCount + row.activities|length %}{% endfor %}
+                <span class="badge bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: .5rem;">
+            <div class="col">
+                {% if event.isProgramReleased %}
+                    <div class="alert alert-success" style="display: flex; align-items: center; gap: 1rem; padding: .45rem 1rem; margin: 0;">
+                        <span><span class="badge bg-success">ZVEŘEJNĚNO</span> Program vidí účastníci v aplikaci{% if event.programReleasedAt %} (od {{ event.programReleasedAt|date('j. n. Y H:i') }}){% endif %}.</span>
+                        <form method="post" style="margin: 0 0 0 auto;"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
+                              onsubmit="return confirm('Skrýt program účastníkům?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('program_release_' ~ event.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-warning">Skrýt program</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning" style="display: flex; align-items: center; gap: 1rem; padding: .45rem 1rem; margin: 0;">
+                        <span><span class="badge bg-warning text-dark">SKRYTO</span> Program se staví — účastníci ho v aplikaci nevidí. Zveřejni ho, až bude hotový a zkontrolovaný.</span>
+                        <form method="post" style="margin: 0 0 0 auto;"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
+                              onsubmit="return confirm('Zveřejnit program všem účastníkům turnusu?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('program_release_' ~ event.id) }}">
+                            <button type="submit" class="btn btn-sm btn-success">Zveřejnit program</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: .75rem;">
+            <div class="col" style="display: flex; gap: .4rem; flex-wrap: wrap;">
+                <a class="btn btn-sm btn-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Přidat aktivitu</a>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_block_new', {eventSlug: eventSlug}) }}"
+                   title="Nadřazený bod programu pro rotaci / sérii (např. dopolední rotace stanovišť)">+ Vytvořit blok</a>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Přidat den</a>
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Přidat sekci</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_teams', {eventSlug: eventSlug}) }}">Týmy</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_series', {eventSlug: eventSlug}) }}">Série</a>
+                <span style="width: .5rem;"></span>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský program (PDF)</a>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_roster', {eventSlug: eventSlug}) }}">Rozpis služeb (PDF)</a>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', {eventSlug: eventSlug}) }}">Přehled týmu (PDF)</a>
+                <a class="btn btn-sm btn-outline-primary" target="_blank"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', {eventSlug: eventSlug}) }}">Celý program (PDF)</a>
+            </div>
+        </div>
+
+        {% if activityCount == 0 %}
+            <div class="row" style="margin-top: 1.5rem;">
+                <div class="col">
+                    <div class="alert alert-info" style="max-width: 46rem;">
+                        Program tohoto turnusu zatím nemá žádné aktivity. Začni tlačítkem
+                        <strong>„+ Přidat aktivitu"</strong> (jednotlivý bod programu) nebo
+                        <strong>„+ Vytvořit blok"</strong> (rotace / série s podakcemi).
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% for row in tree %}
+            <div class="row" style="margin-top: 1.25rem;">
+                <div class="col">
+                    <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem; display: flex; align-items: baseline; gap: .5rem;">
+                        {% if row.day %}
+                            <span>{{ row.day.name ?? 'Den' }}
+                                <small style="color: #6c757d; font-weight: normal;">{{ row.day.date }}</small></span>
+                            <span style="margin-left: auto; font-size: .8rem; font-weight: normal; display: inline-flex; gap: .4rem; align-items: baseline;">
+                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_edit', {eventSlug: eventSlug, dayId: row.day.id}) }}">upravit</a>
+                                <form method="post" style="display: inline; margin: 0;"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_program_day_delete', {eventSlug: eventSlug, dayId: row.day.id}) }}"
+                                      onsubmit="return confirm('Smazat den „{{ row.day.name ?? row.day.date }}"? Aktivity zůstanou.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('program_day_delete_' ~ row.day.id) }}">
+                                    <button type="submit" style="border: 0; background: none; color: #b02a37; cursor: pointer; padding: 0; font-size: .8rem;">smazat</button>
+                                </form>
+                            </span>
+                        {% else %}
+                            <span>Nezařazené aktivity <small style="color: #6c757d; font-weight: normal;">(bez data)</small></span>
+                        {% endif %}
+                    </h3>
+                    <table class="table table-sm" style="margin: 0;">
+                        <thead>
+                            <tr>
+                                <th style="width: 6rem;">Čas</th>
+                                <th>Aktivita</th>
+                                <th>Místo</th>
+                                <th>Kategorie</th>
+                                <th>Obsazení</th>
+                                <th style="width: 4rem;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in row.activities %}
+                                <tr>
+                                    <td style="white-space: nowrap;">{{ a.start ?? '—' }}{% if a.end %}–{{ a.end }}{% endif %}</td>
+                                    <td>
+                                        {% if a.highlight %}<strong>{{ a.name }}</strong>{% else %}{{ a.name }}{% endif %}
+                                        {% if a.seriesRoman %} {{ a.seriesRoman }}{% endif %}
+                                        {% if a.isBlock %}<span class="badge bg-secondary" style="margin-left: .3rem;">blok</span>{% endif %}
+                                        {% if a.price %}<span class="badge bg-warning text-dark" style="margin-left: .3rem;">{{ a.price }} Kč</span>{% endif %}
+                                        {% if a.targetGroup %}
+                                            <span class="badge" style="margin-left: .3rem; background: {{ a.targetGroup.color ?? '#6c757d' }};">{{ a.targetGroup.name }}</span>
+                                        {% endif %}
+                                        {% if not a.publicInApp %}<span class="badge bg-light text-dark" style="margin-left: .3rem;" title="Neveřejné (interní)">interní</span>{% endif %}
+                                        {% for sub in a.subActivities %}
+                                            <div style="margin-left: 1rem; color: #444; font-size: .9rem;">
+                                                ↳ {{ sub.start ?? '' }} {{ sub.name }}
+                                                {% if sub.targetGroup %}<span class="badge" style="background: {{ sub.targetGroup.color ?? '#6c757d' }};">{{ sub.targetGroup.name }}</span>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </td>
+                                    <td style="color: #444;">{{ a.placeText ?? '—' }}</td>
+                                    <td>{% if a.category %}<span class="badge bg-info text-dark">{{ a.category }}</span>{% else %}—{% endif %}</td>
+                                    <td style="font-size: .9rem;">
+                                        {% for s in a.staff %}
+                                            {{ s.name }}{% if s.roleLabel %} <span style="color: #6c757d;">({{ s.roleLabel }})</span>{% endif %}{% if not loop.last %}, {% endif %}
+                                        {% else %}<span style="color: #adb5bd;">—</span>{% endfor %}
+                                    </td>
+                                    <td style="white-space: nowrap;">
+                                        {% if a.id %}
+                                            {% if a.isBlock %}
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug, block: a.id}) }}"
+                                                   title="Přidat podakci (rotační slot) do tohoto bloku">+ podakce</a>
+                                            {% endif %}
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: a.id}) }}">upravit</a>
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_staff', {eventSlug: eventSlug, activityId: a.id}) }}">obsazení</a>
+                                            <form method="post" style="display: inline; margin: 0;"
+                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_duplicate', {eventSlug: eventSlug, activityId: a.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('program_activity_duplicate_' ~ a.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">duplikovat</button>
+                                            </form>
+                                            <form method="post" style="display: inline; margin: 0;"
+                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_delete', {eventSlug: eventSlug, activityId: a.id}) }}"
+                                                  onsubmit="return confirm({% if a.subActivities|length > 0 %}'Smazat blok „{{ a.name|e('js') }}" i s {{ a.subActivities|length }} podakcemi? (skryje se z programu)'{% else %}'Smazat „{{ a.name|e('js') }}"? (skryje se z programu)'{% endif %});">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('program_activity_delete_' ~ a.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">smazat</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if sections|length > 0 %}
+            <div class="row" style="margin-top: 1.5rem;">
+                <div class="col">
+                    <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem;">Sekce (info / patička)</h3>
+                    <ul class="list-group" style="max-width: 46rem;">
+                        {% for s in sections %}
+                            <li class="list-group-item" style="display: flex; align-items: center; gap: .5rem;">
+                                <strong>{{ s.name ?? '—' }}</strong>
+                                {% if s.publicInApp %}<span class="badge bg-success">veřejné</span>{% else %}<span class="badge bg-light text-dark">interní</span>{% endif %}
+                                <span style="color: #adb5bd; margin-left: auto;">priorita {{ s.priority ?? 0 }}</span>
+                                {% if s.id %}
+                                    <a style="font-size: .8rem;" href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_edit', {eventSlug: eventSlug, sectionId: s.id}) }}">upravit</a>
+                                    <form method="post" style="display: inline; margin: 0;"
+                                          action="{{ path('oswis_org_oswis_calendar_web_admin_program_section_delete', {eventSlug: eventSlug, sectionId: s.id}) }}"
+                                          onsubmit="return confirm('Smazat sekci „{{ s.name }}"?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('program_section_delete_' ~ s.id) }}">
+                                        <button type="submit" style="border: 0; background: none; color: #b02a37; cursor: pointer; padding: 0; font-size: .8rem;">smazat</button>
+                                    </form>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -208,6 +208,131 @@ oswis_org_oswis_calendar_web_admin_checkin_list:
   path: "/web_admin/check-in/{eventSlug}"
   methods: [GET]
 
+## Program editor (spec krok 8) — přehledová stránka, ROLE_MANAGER
+oswis_org_oswis_calendar_web_admin_program_index:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::index
+  path: "/web_admin/program/{eventSlug}"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_program_activity_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newActivity
+  path: "/web_admin/program/{eventSlug}/aktivita/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_block_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newBlock
+  path: "/web_admin/program/{eventSlug}/blok/novy"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_activity_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editActivity
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}"
+  requirements: { activityId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_release:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::toggleProgramRelease
+  path: "/web_admin/program/{eventSlug}/zverejnit"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_activity_duplicate:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::duplicateActivity
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/duplikovat"
+  requirements: { activityId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_activity_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteActivity
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/smazat"
+  requirements: { activityId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_activity_staff:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::activityStaff
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/obsazeni"
+  requirements: { activityId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_series:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::series
+  path: "/web_admin/program/{eventSlug}/serie"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_series_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteSeries
+  path: "/web_admin/program/{eventSlug}/serie/{seriesId}/zrusit"
+  requirements: { seriesId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_series_remove_activity:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::removeSeriesActivity
+  path: "/web_admin/program/{eventSlug}/serie/aktivita/{activityId}/odebrat"
+  requirements: { activityId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_teams:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::teams
+  path: "/web_admin/program/{eventSlug}/tymy"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_team_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteTeam
+  path: "/web_admin/program/{eventSlug}/tymy/{teamId}/smazat"
+  requirements: { teamId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_team_member_add:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::addTeamMember
+  path: "/web_admin/program/{eventSlug}/tymy/{teamId}/clen"
+  requirements: { teamId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_team_member_remove:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::removeTeamMember
+  path: "/web_admin/program/{eventSlug}/tymy/{teamId}/clen/{participantId}/odebrat"
+  requirements: { teamId: '\d+', participantId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_staff_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteStaff
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/obsazeni/{assignmentId}/smazat"
+  requirements: { activityId: '\d+', assignmentId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_section_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newSection
+  path: "/web_admin/program/{eventSlug}/sekce/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_section_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editSection
+  path: "/web_admin/program/{eventSlug}/sekce/{sectionId}/upravit"
+  requirements: { sectionId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_section_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteSection
+  path: "/web_admin/program/{eventSlug}/sekce/{sectionId}/smazat"
+  requirements: { sectionId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_day_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newDay
+  path: "/web_admin/program/{eventSlug}/den/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_day_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editDay
+  path: "/web_admin/program/{eventSlug}/den/{dayId}/upravit"
+  requirements: { dayId: '\d+' }
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_program_day_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteDay
+  path: "/web_admin/program/{eventSlug}/den/{dayId}/smazat"
+  requirements: { dayId: '\d+' }
+  methods: [POST]
+
 ## Program-module outputs (STOPA 1.3 Fáze 7) — PDF/CSV downloads, ROLE_MANAGER
 oswis_org_oswis_calendar_web_admin_program_instructor:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramOutputController::turnusOutput

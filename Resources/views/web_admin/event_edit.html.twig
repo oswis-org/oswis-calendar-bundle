@@ -11,7 +11,7 @@
                     <span class="badge bg-danger" style="font-size: .55em; vertical-align: middle;">SMAZÁNO</span>
                 {% endif %}
             </h2>
-            <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) }}"
+            <a href="{{ back_url|default((event.slug|default(false)) ? path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) : '#') }}"
                class="btn btn-sm btn-outline-secondary">← Zpět na přehled</a>
         </div>
 
@@ -61,10 +61,32 @@
             <div class="row">
                 <div class="col-12 mb-3">{{ form_row(form.placeText) }}</div>
             </div>
+            {% if form.parentBlock is defined %}
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">{{ form_row(form.parentBlock) }}</div>
+                    <div class="col-12 col-md-6 mb-3">{{ form_row(form.targetGroup) }}</div>
+                </div>
+            {% endif %}
+        </fieldset>
+
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Přihlašování a cena</legend>
+            <div class="row">
+                <div class="col-12 col-md-6 mb-3">{{ form_row(form.signupMode) }}</div>
+                <div class="col-12 col-md-6 mb-3">{{ form_row(form.signupDeadline) }}</div>
+            </div>
+            <div class="row">
+                <div class="col-12 mb-3">{{ form_row(form.signupNote) }}</div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4 mb-3">{{ form_row(form.price) }}</div>
+                <div class="col-6 col-md-4 mb-3 d-flex align-items-end">{{ form_row(form.highlight) }}</div>
+                <div class="col-6 col-md-4 mb-3 d-flex align-items-end">{{ form_row(form.publicInApp) }}</div>
+            </div>
         </fieldset>
 
         <div style="position: sticky; bottom: 0; background: rgba(255,255,255,.95); border-top: 1px solid #dee2e6; padding: .75rem 0; margin-top: 1rem; display: flex; gap: .5rem; justify-content: flex-end;">
-            <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) }}"
+            <a href="{{ back_url|default((event.slug|default(false)) ? path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) : '#') }}"
                class="btn btn-outline-secondary">Zrušit</a>
             {{ form_row(form.submit, { attr: { class: 'btn btn-primary' } }) }}
         </div>

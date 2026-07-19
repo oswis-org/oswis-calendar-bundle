@@ -52,6 +52,15 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         }
         $participants = $this->participantService->getParticipants([ParticipantRepository::CRITERIA_APP_USER => $user]);
         $events = array_map(static fn (Participant $p) => $p->getEvent(), $participants->toArray());
+        // Program-release gate (žádost usera): účastník uvidí PROGRAMOVÝ podstrom turnusu jen když je
+        // program turnusu ZVEŘEJNĚN (Event::isProgramReleased — programReleasedAt nastaveno a už nastalo).
+        // Svůj turnus (a veřejné ročník/turnus) vidí vždy; program se staví skrytě a tým ho zveřejní až
+        // hotový a zkontrolovaný. Prázdné releasedIds → IN () nic nematchne → program skrytý.
+        $now = new \DateTime();
+        $releasedIds = array_values(array_filter(array_map(
+            static fn (?Event $e) => (null !== $e && $e->isProgramReleased($now)) ? $e->getId() : null,
+            $events,
+        )));
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->leftJoin("$rootAlias.superEvent", 'superEvent')
@@ -59,24 +68,26 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         // A participant sees the whole PUBLIC program subtree of their turnus (blok → podakce → …),
         // not just direct children — so the app can render the full programme with foreign groups
         // dimmed. Internal services (publicInApp = false) stay hidden. Strictly ADDITIVE: walks the
-        // superEvent chain a few levels up and only WIDENS visibility to publicInApp=true events.
-        $ancestorConditions = ['superEvent IN (:user_event_ids)'];
+        // superEvent chain a few levels up and only WIDENS visibility to publicInApp=true events —
+        // ale jen u turnusů s VYDANÝM programem (:released_event_ids).
+        $ancestorConditions = ['superEvent IN (:released_event_ids)'];
         $prevAncestor = 'superEvent';
         for ($i = 2; $i <= 5; $i++) {
             $join = "ancestorEvt$i";
             $queryBuilder->leftJoin("$prevAncestor.superEvent", $join);
-            $ancestorConditions[] = "$join IN (:user_event_ids)";
+            $ancestorConditions[] = "$join IN (:released_event_ids)";
             $prevAncestor = $join;
         }
         $queryBuilder
             ->andWhere(sprintf(
                 '(%s.id IN (:user_event_ids)'
-                .' OR %s.superEvent IN (:user_event_ids)'
+                .' OR %s.superEvent IN (:released_event_ids)'
                 .' OR (%s.publicInApp = true AND visibilityCategory.type IN (:public_category_types))'
                 .' OR (%s.publicInApp = true AND (%s)))',
                 $rootAlias, $rootAlias, $rootAlias, $rootAlias, implode(' OR ', $ancestorConditions),
             ))
             ->setParameter('user_event_ids', array_map(static fn (?Event $event) => $event?->getId(), $events))
+            ->setParameter('released_event_ids', $releasedIds)
             ->setParameter('public_category_types', [EventCategory::YEAR_OF_EVENT, EventCategory::BATCH_OF_EVENT]);
     }
 

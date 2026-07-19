@@ -1,0 +1,37 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}Nový blok programu{% endblock %}
+
+{# Vytvoření bloku programu (nadakce, kategorie program-block). Blok sdružuje podakce jedné rotace
+   nebo série; jeho čas se dopočítá z podakcí (vlastní čas zůstává prázdný). Po vytvoření se podakce
+   přidávají v přehledu tlačítkem „+ podakce". Data: WebAdminProgramController::newBlock. #}
+
+{% block body_content %}
+    <main class="container" style="padding-bottom: 4rem;">
+        <div style="display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem;">
+            <h2 style="margin: 0;">Nový blok programu</h2>
+            <a href="{{ back_url }}" class="btn btn-sm btn-outline-secondary">← Zpět na program</a>
+        </div>
+
+        <div class="alert alert-info" style="max-width: 46rem;">
+            <strong>Blok</strong> je nadřazený bod programu, který sdružuje více podakcí — typicky
+            <em>rotaci</em> (např. „Dopolední rotace stanovišť": tři stanoviště, kterými se pásky
+            postupně protočí) nebo sérii. Čas bloku se <strong>dopočítá z podakcí</strong>, takže ho
+            teď nezadáváš. Podakce (rotační sloty) přidáš vzápětí v přehledu tlačítkem
+            <strong>„+ podakce"</strong> — u každé nastavíš čas a pásek (barevnou skupinu).
+        </div>
+
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; max-width: 46rem;">
+            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto;">Název bloku</legend>
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_program_block_new', {eventSlug: eventSlug}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('program_block_new_' ~ turnusId) }}">
+                <div class="mb-3">
+                    <label class="form-label" for="block_name">Název</label>
+                    <input type="text" id="block_name" name="name" class="form-control" required autofocus
+                           placeholder="např. Dopolední rotace stanovišť">
+                </div>
+                <button type="submit" class="btn btn-primary">Vytvořit blok</button>
+            </form>
+        </fieldset>
+    </main>
+{% endblock %}

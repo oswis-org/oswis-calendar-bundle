@@ -1,0 +1,27 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ pageTitle }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding-bottom: 4rem;">
+        <div style="display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem;">
+            <h2 style="margin: 0;">{{ pageTitle }}</h2>
+            <a href="{{ back_url }}" class="btn btn-sm btn-outline-secondary">← Zpět na program</a>
+        </div>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem; max-width: 46rem;">
+            <div class="row">
+                <div class="col-12 col-md-4 mb-3">{{ form_row(form.date) }}</div>
+                <div class="col-12 col-md-8 mb-3">{{ form_row(form.name) }}</div>
+            </div>
+            <div class="row"><div class="col-12 mb-3">{{ form_row(form.description) }}</div></div>
+            <div class="row"><div class="col-12 mb-3">{{ form_row(form.note) }}</div></div>
+        </fieldset>
+        <div style="display: flex; gap: .5rem; justify-content: flex-end; max-width: 46rem;">
+            <a href="{{ back_url }}" class="btn btn-outline-secondary">Zrušit</a>
+            {{ form_row(form.submit, { attr: { class: 'btn btn-primary' } }) }}
+        </div>
+        {{ form_end(form) }}
+    </main>
+{% endblock %}

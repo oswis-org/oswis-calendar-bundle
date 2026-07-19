@@ -117,8 +117,11 @@ class EventStaffAssignment implements BasicInterface
 
     public function validateHasAssignee(ExecutionContextInterface $context): void
     {
-        if (null === $this->participant && (null === $this->externalName || '' === trim($this->externalName))) {
-            $context->buildViolation('EventStaffAssignment musí mít buď účastníka, nebo externí jméno.')
+        // Dle specu je přiřazení buď osoba (účastník / externí jméno) NEBO tým/podtým. Dřív validátor
+        // tým nezohledňoval → přiřazení celého týmu by neprošlo.
+        $hasExternal = null !== $this->externalName && '' !== trim($this->externalName);
+        if (null === $this->participant && !$hasExternal && null === $this->team) {
+            $context->buildViolation('EventStaffAssignment musí mít účastníka, tým, nebo externí jméno.')
                 ->atPath('externalName')
                 ->addViolation();
         }

@@ -181,7 +181,7 @@ final class ProgramOutputService
     private function groupIntoBlocks(array $activities): array
     {
         $blocks = $this->emptyBlocks();
-        foreach ($activities as $activity) {
+        foreach ($this->flattenBlocks($activities) as $activity) {
             if (true !== ($activity['publicInApp'] ?? null)) {
                 continue;
             }
@@ -195,8 +195,47 @@ final class ProgramOutputService
                 $blocks['VEČERNÍ'][] = $activity;
             }
         }
+        // Po zploštění rotací se sloty (různé časy) prokládají s ostatními aktivitami → seřadit po čase.
+        // usort je v PHP 8 stabilní, takže stejný čas zachová vstupní pořadí (např. pořadí stanovišť).
+        foreach ($blocks as &$list) {
+            usort($list, static function (mixed $x, mixed $y): int {
+                $xs = is_array($x) && is_string($x['start'] ?? null) ? $x['start'] : '99';
+                $ys = is_array($y) && is_string($y['start'] ?? null) ? $y['start'] : '99';
+
+                return $xs <=> $ys;
+            });
+        }
+        unset($list);
 
         return $blocks;
+    }
+
+    /**
+     * Rozbalí bloky (nadakce) na jejich sloty — účastnický program ukazuje rotaci PLOŠE po časech
+     * (jeden slot = jeden řádek s vlastním časem a páskem, à la 3.den.pdf), NE blok jako jeden bod;
+     * blok samotný je interní kontejner (publicInApp=false), takže se nevykresluje. Ostatní aktivity
+     * projdou beze změny. Sloty nesou vlastní publicInApp/start/place… ({@see ProgramDataService}).
+     *
+     * @param  list<array<string, mixed>>  $activities
+     * @return list<array<mixed>>
+     */
+    private function flattenBlocks(array $activities): array
+    {
+        $out = [];
+        foreach ($activities as $activity) {
+            $subs = is_array($activity['subActivities'] ?? null) ? $activity['subActivities'] : [];
+            if (true === ($activity['isBlock'] ?? false) && [] !== $subs) {
+                foreach ($subs as $slot) {
+                    if (is_array($slot)) {
+                        $out[] = $slot;
+                    }
+                }
+                continue;
+            }
+            $out[] = $activity;
+        }
+
+        return $out;
     }
 
     /** Personal itinerary for one instructor ("kde mám být") — their slots, chronological. */

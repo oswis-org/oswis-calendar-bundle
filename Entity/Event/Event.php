@@ -164,6 +164,16 @@ class Event implements NameableInterface
     #[Column(type: 'boolean', options: ['default' => false])]
     protected bool $highlight = false;
 
+    /**
+     * Zveřejnění PROGRAMU turnusu účastníkům (nová žádost usera): NULL = program skrytý (staví se,
+     * účastníci ho v aplikaci nevidí), datum = zveřejněno od té chvíle. Na TURNUSU; brána je v
+     * {@see \OswisOrg\OswisCalendarBundle\ApiPlatform\EventVisibleToUserExtension} — dokud není
+     * vydáno, účastník vidí svůj turnus, ale ne jeho programový podstrom. Tým program dokončí,
+     * zkontroluje a pak zveřejní jedním tlačítkem.
+     */
+    #[Column(type: 'datetime', nullable: true)]
+    protected ?\DateTimeInterface $programReleasedAt = null;
+
     // fetch=EAGER: Doctrine ORM 3's strict identity-map check
     // (EntityIdentityCollisionException) throws when a Participant lazy ghost
     // is initialised mid-request after the same participant was already
@@ -477,6 +487,22 @@ class Event implements NameableInterface
     public function setHighlight(bool $highlight): void
     {
         $this->highlight = $highlight;
+    }
+
+    public function getProgramReleasedAt(): ?\DateTimeInterface
+    {
+        return $this->programReleasedAt;
+    }
+
+    public function setProgramReleasedAt(?\DateTimeInterface $programReleasedAt): void
+    {
+        $this->programReleasedAt = $programReleasedAt;
+    }
+
+    /** Program turnusu je účastníkům viditelný, jen když je zveřejněn a od zveřejnění už nastal čas. */
+    public function isProgramReleased(?\DateTimeInterface $now = null): bool
+    {
+        return null !== $this->programReleasedAt && $this->programReleasedAt <= ($now ?? new \DateTime());
     }
 
     public function setPlace(?Place $event): void

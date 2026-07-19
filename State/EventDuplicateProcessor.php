@@ -47,12 +47,38 @@ final class EventDuplicateProcessor implements ProcessorInterface
         }
         $payload = $this->payload();
 
+        return $this->duplicate(
+            $source,
+            $this->resolve($payload, 'superEvent', Event::class),
+            $this->resolve($payload, 'category', EventCategory::class),
+            $this->resolve($payload, 'targetGroup', ParticipantGroup::class),
+            $this->dateTime($payload['startDateTime'] ?? null),
+            $this->dateTime($payload['endDateTime'] ?? null),
+            $this->str($payload['name'] ?? null),
+        );
+    }
+
+    /**
+     * Naklonuje jeden programový slot (aktivita/blok) BEZ dětí (subEvents/attendances/staff) —
+     * JEDINÝ zdroj toho, co se při duplikaci kopíruje. Sdílí API POST /duplicate i web-admin editor.
+     * Přepisy (nový nadčas / kategorie / cílová skupina / nadakce / jméno) jsou volitelné; jinak se
+     * převezmou ze zdroje.
+     */
+    public function duplicate(
+        Event $source,
+        ?Event $superEvent = null,
+        ?EventCategory $category = null,
+        ?ParticipantGroup $targetGroup = null,
+        ?DateTime $start = null,
+        ?DateTime $end = null,
+        ?string $name = null,
+    ): Event {
         $clone = new Event();
-        $clone->setName($this->str($payload['name'] ?? null) ?? $source->getName());
+        $clone->setName($name ?? $source->getName());
         $clone->setShortName($source->getShortName());
         $clone->setDescription($source->getDescription());
         $clone->setColor($source->getColor());
-        $clone->setCategory($this->resolve($payload, 'category', EventCategory::class) ?? $source->getCategory());
+        $clone->setCategory($category ?? $source->getCategory());
         $clone->setPlace($source->getPlace(false));
         $clone->setPlaceText($source->getPlaceText());
         $clone->setSignupMode($source->getSignupMode());
@@ -62,19 +88,24 @@ final class EventDuplicateProcessor implements ProcessorInterface
         $clone->setCapacity(new Capacity($source->getBaseCapacity(), $source->getFullCapacity()));
         $clone->setHighlight($source->isHighlight());
         $clone->setGroup($source->getGroup());
-        $clone->setSuperEvent($this->resolve($payload, 'superEvent', Event::class) ?? $source->getSuperEvent());
-        $clone->setTargetGroup($this->resolve($payload, 'targetGroup', ParticipantGroup::class) ?? $source->getTargetGroup());
+        $clone->setSuperEvent($superEvent ?? $source->getSuperEvent());
+        $clone->setTargetGroup($targetGroup ?? $source->getTargetGroup());
         $clone->setPublicOnWeb($source->isPublicOnWeb());
         $clone->setPublicInApp($source->isPublicInApp());
 
-        // New time from request; fall back to the source slot's time (admin shifts later).
-        $start = $this->dateTime($payload['startDateTime'] ?? null) ?? $source->getStartDateTime();
-        $end = $this->dateTime($payload['endDateTime'] ?? null) ?? $source->getEndDateTime();
+        // New time from override; fall back to the source slot's time (admin shifts later).
+        $start ??= $source->getStartDateTime();
+        $end ??= $source->getEndDateTime();
         if (null !== $start) {
             $clone->setStartDateTime($start);
         }
         if (null !== $end) {
             $clone->setEndDateTime($end);
+        }
+        // Odvodit slug z názvu — bez toho měl duplikát slug NULL (žádný listener ho negeneruje;
+        // dosud latentní i u API /duplicate).
+        if (empty($clone->getSlug())) {
+            $clone->updateSlug();
         }
 
         $this->em->persist($clone);
