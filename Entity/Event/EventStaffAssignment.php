@@ -24,6 +24,7 @@ use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventStaffAssignmentRepository;
+use OswisOrg\OswisCalendarBundle\Service\Program\StaffNameFormatter;
 use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\BasicInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\BasicTrait;
@@ -187,9 +188,28 @@ class EventStaffAssignment implements BasicInterface
         $this->excluded = $excluded;
     }
 
-    /** Zobrazitelné jméno přiřazené osoby (interní účastník má přednost). */
+    /** Zobrazitelné jméno přiřazené osoby (interní účastník má přednost). PLNÉ jméno. */
     public function getDisplayName(): ?string
     {
         return $this->participant?->getName() ?? $this->externalName;
+    }
+
+    /**
+     * Zobrazované jméno pro ROZPIS SLUŽEB — přezdívkový tvar („GABČA", „KUBA V.") přes
+     * {@see StaffNameFormatter}. Na rozdíl od {@see getDisplayName()}, které vrací PLNÉ jméno;
+     * v rozpisu služeb se lidé vedou přezdívkami (viz dokument „SLUŽBY"). Interní účastník má
+     * přednost, jinak externí jméno. Slouží leanové serializaci roštu (grupa `calendar_service_roster`).
+     */
+    public function getStaffName(): ?string
+    {
+        if ($this->participant instanceof Participant) {
+            $name = StaffNameFormatter::format($this->participant->getContactForRead());
+            if ('' !== $name) {
+                return $name;
+            }
+        }
+        $external = trim((string) $this->externalName);
+
+        return '' !== $external ? $external : null;
     }
 }

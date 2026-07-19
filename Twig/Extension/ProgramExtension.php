@@ -6,8 +6,8 @@ namespace OswisOrg\OswisCalendarBundle\Twig\Extension;
 
 use DateTimeInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractPerson;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Service\Program\StaffNameFormatter;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
@@ -100,30 +100,13 @@ final class ProgramExtension extends AbstractExtension
     /**
      * Display name of a team member: nickname if set, else "Křestní P." (given name + family
      * initial), else the contact's composed name. Accepts a Participant or a contact.
+     *
+     * Formátovací pravidlo je sdílené s API serializací roštu služeb — žije v
+     * {@see StaffNameFormatter}, ať se nepíše (a nerozejde) dvakrát.
      */
     public function staffName(mixed $subject): string
     {
-        $contact = $this->resolveContact($subject);
-        if ($contact instanceof AbstractPerson) {
-            $nickname = trim((string) $contact->getNickname());
-            if ('' !== $nickname) {
-                return $nickname;
-            }
-            $given = trim((string) $contact->getGivenName());
-            if ('' !== $given) {
-                $family = trim((string) $contact->getFamilyName());
-                $initial = '' !== $family ? ' ' . mb_strtoupper(mb_substr($family, 0, 1)) . '.' : '';
-
-                return $given . $initial;
-            }
-        }
-        if ($contact instanceof AbstractContact) {
-            $name = trim((string) $contact->getName());
-
-            return '' !== $name ? $name : trim((string) $contact->getSortableName());
-        }
-
-        return '';
+        return StaffNameFormatter::format($this->resolveContact($subject));
     }
 
     /** Morning/afternoon/evening label (boundaries: <12:00, <18:00, else). */
