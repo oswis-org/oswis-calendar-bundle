@@ -219,6 +219,11 @@ oswis_org_oswis_calendar_web_admin_program_activity_new:
   path: "/web_admin/program/{eventSlug}/aktivita/nova"
   methods: [GET, POST]
 
+oswis_org_oswis_calendar_web_admin_program_block_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::newBlock
+  path: "/web_admin/program/{eventSlug}/blok/novy"
+  methods: [GET, POST]
+
 oswis_org_oswis_calendar_web_admin_program_activity_edit:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::editActivity
   path: "/web_admin/program/{eventSlug}/aktivita/{activityId}"
@@ -233,6 +238,12 @@ oswis_org_oswis_calendar_web_admin_program_release:
 oswis_org_oswis_calendar_web_admin_program_activity_duplicate:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::duplicateActivity
   path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/duplikovat"
+  requirements: { activityId: '\d+' }
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_program_activity_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminProgramController::deleteActivity
+  path: "/web_admin/program/{eventSlug}/aktivita/{activityId}/smazat"
   requirements: { activityId: '\d+' }
   methods: [POST]
 

@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 use OswisOrg\OswisAddressBookBundle\Entity\Place;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -105,6 +106,29 @@ final class EventEditType extends AbstractType
                 'required' => false,
                 'help'     => 'Samostatné místo nebo upřesnění k vybranému místu (např. „Aula — sraz před vchodem").',
             ])
+            // Zařazení do bloku (rotace) — přesun/přiřazení aktivity pod nadakci. Nabídku bloků plní
+            // kontroler (bloky turnusu), non-mapped (superEvent nastavuje kontroler ručně + hlídá hloubku).
+            ->add('parentBlock', EntityType::class, [
+                'label'        => 'Blok (rotace)',
+                'class'        => Event::class,
+                'choices'      => $options['blocks'],
+                'choice_label' => 'name',
+                'required'     => false,
+                'mapped'       => false,
+                'placeholder'  => '— na úrovni dne (mimo blok) —',
+                'help'         => 'Zařadit aktivitu jako podakci bloku (rotace), nebo ji nechat samostatně v programu dne.',
+            ])
+            // Cílová skupina (pásek) — rotační sloty. Nabídka se plní z kontroleru (pásky turnusu/
+            // ročníku), aby form nedělal vlastní dotaz (IDOR) a při 0 páscích byl prázdný, ne rozbitý.
+            ->add('targetGroup', EntityType::class, [
+                'label'        => 'Cílová skupina (pásek)',
+                'class'        => ParticipantGroup::class,
+                'choices'      => $options['groups'],
+                'choice_label' => 'name',
+                'required'     => false,
+                'placeholder'  => '— všichni (mimo rotaci) —',
+                'help'         => 'Jen u rotačního slotu — komu je slot určen (např. MODRÁ). Prázdné = pro všechny.',
+            ])
             // Programová pole aktivity (spec 2026-06-12 krok 4). Dosud šla nastavit jen přes API —
             // teď i z web adminu (editor programu / obecná editace události).
             ->add('signupMode', ChoiceType::class, [
@@ -153,6 +177,12 @@ final class EventEditType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Event::class,
+            // Nabídka pásků (ParticipantGroup) pro pole targetGroup; naplní kontroler dle turnusu.
+            'groups'     => [],
+            // Nabídka bloků (Event program-block) pro pole parentBlock; naplní kontroler dle turnusu.
+            'blocks'     => [],
         ]);
+        $resolver->setAllowedTypes('groups', 'array');
+        $resolver->setAllowedTypes('blocks', 'array');
     }
 }

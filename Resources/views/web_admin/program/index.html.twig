@@ -47,6 +47,9 @@
                 <a class="btn btn-sm btn-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Přidat aktivitu</a>
                 <a class="btn btn-sm btn-outline-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_block_new', {eventSlug: eventSlug}) }}"
+                   title="Nadřazený bod programu pro rotaci / sérii (např. dopolední rotace stanovišť)">+ Vytvořit blok</a>
+                <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Přidat den</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Přidat sekci</a>
@@ -70,8 +73,9 @@
             <div class="row" style="margin-top: 1.5rem;">
                 <div class="col">
                     <div class="alert alert-info" style="max-width: 46rem;">
-                        Program tohoto turnusu zatím nemá žádné aktivity. Zadávání aktivit z tohoto rozhraní
-                        přibude v dalším kroku editoru; do té doby program vzniká přes API (mobilní admin / import).
+                        Program tohoto turnusu zatím nemá žádné aktivity. Začni tlačítkem
+                        <strong>„+ Přidat aktivitu"</strong> (jednotlivý bod programu) nebo
+                        <strong>„+ Vytvořit blok"</strong> (rotace / série s podakcemi).
                     </div>
                 </div>
             </div>
@@ -137,6 +141,11 @@
                                     </td>
                                     <td style="white-space: nowrap;">
                                         {% if a.id %}
+                                            {% if a.isBlock %}
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug, block: a.id}) }}"
+                                                   title="Přidat podakci (rotační slot) do tohoto bloku">+ podakce</a>
+                                            {% endif %}
                                             <a class="btn btn-sm btn-outline-secondary"
                                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: a.id}) }}">upravit</a>
                                             <a class="btn btn-sm btn-outline-secondary"
@@ -145,6 +154,12 @@
                                                   action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_duplicate', {eventSlug: eventSlug, activityId: a.id}) }}">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('program_activity_duplicate_' ~ a.id) }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-secondary">duplikovat</button>
+                                            </form>
+                                            <form method="post" style="display: inline; margin: 0;"
+                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_delete', {eventSlug: eventSlug, activityId: a.id}) }}"
+                                                  onsubmit="return confirm({% if a.subActivities|length > 0 %}'Smazat blok „{{ a.name|e('js') }}" i s {{ a.subActivities|length }} podakcemi? (skryje se z programu)'{% else %}'Smazat „{{ a.name|e('js') }}"? (skryje se z programu)'{% endif %});">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('program_activity_delete_' ~ a.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">smazat</button>
                                             </form>
                                         {% endif %}
                                     </td>

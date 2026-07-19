@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Service\Program;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventSectionRepository;
@@ -47,6 +48,9 @@ final class ProgramDataService
     {
         $activities = [];
         foreach ($turnus->getSubEvents() as $sub) {
+            if (null !== $sub->getDeletedAt()) {
+                continue; // smazané (soft-delete) aktivity/bloky se v programu ani výstupech nezobrazují
+            }
             $activities[] = $this->activityArray($sub);
         }
         $sortKey = static fn (array $a): string => (is_string($a['date'] ?? null) ? $a['date'] : '')
@@ -309,6 +313,9 @@ final class ProgramDataService
             return;
         }
         foreach ($event->getSubEvents() as $sub) {
+            if (null !== $sub->getDeletedAt()) {
+                continue; // smazané (soft-delete) podakce se do sběru (obsazení/matice služeb) nepočítají
+            }
             $out[] = $sub;
             $this->collectEvents($sub, $out, $depth + 1);
         }
@@ -321,11 +328,23 @@ final class ProgramDataService
     {
         $subActivities = [];
         foreach ($event->getSubEvents() as $sub) {
+            if (null !== $sub->getDeletedAt()) {
+                continue; // smazaný (soft-delete) slot rotace se nezobrazuje
+            }
+            // Sloty nesou i pole, která potřebuje účastnický výstup, až se blok „zploští" po časech
+            // (viz ProgramOutputService::flattenBlocks). Přehled web adminu čte jen podmnožinu (↳ řádek).
             $subActivities[] = [
                 'id' => $sub->getId(),
                 'name' => $sub->getName(),
                 'start' => $sub->getStartDateTimeRecursive()?->format('H:i'),
+                'end' => $sub->getEndDateTimeRecursive()?->format('H:i'),
+                'placeText' => $sub->getPlaceText(),
+                'highlight' => $sub->isHighlight(),
+                'publicInApp' => $sub->isPublicInApp(),
+                'price' => $sub->getPrice(),
+                'seriesRoman' => null,
                 'targetGroup' => $this->groupArray($sub),
+                'subActivities' => [],
             ];
         }
         $staff = [];
@@ -359,7 +378,9 @@ final class ProgramDataService
                 'name' => $targetGroup->getName(),
                 'color' => $targetGroup->getColor(),
             ] : null,
-            'isBlock' => [] !== $subActivities,
+            // Blok = má podakce (strukturálně nadakce) NEBO je kategorie „program-block" — aby i PRÁZDNÝ
+            // blok nabídl „+ podakce" (jinak by do něj nešlo přidat první podakci).
+            'isBlock' => [] !== $subActivities || EventCategory::PROGRAM_BLOCK === $event->getCategory()?->getType(),
             'subActivities' => $subActivities,
         ];
     }

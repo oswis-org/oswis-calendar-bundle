@@ -7,12 +7,15 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventSection;
 use OswisOrg\OswisCalendarBundle\Entity\Event\EventStaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Event\ProgramDay;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
+use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventSectionEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
@@ -78,6 +81,89 @@ final class WebAdminProgramController extends AbstractController
         return $pool;
     }
 
+    /**
+     * Pásky (ParticipantGroup) pro rotační sloty — hledáme na turnusu i jeho nadřazených událostech
+     * (ročník), protože skupiny mohou být definované na rodiči (viz reference_flag_groups_belong_to_parent_offer).
+     * 0 pásků = prázdná nabídka (datový úkol týmu); pole targetGroup je code-ready, ne rozbité.
+     *
+     * @return list<ParticipantGroup>
+     */
+    private function paseks(Event $turnus): array
+    {
+        $events = [];
+        $event = $turnus;
+        for ($i = 0; $i < 6 && null !== $event; $i++) {
+            if (null !== $event->getId()) {
+                $events[] = $event;
+            }
+            $event = $event->getSuperEvent();
+        }
+        if ([] === $events) {
+            return [];
+        }
+
+        /** @var list<ParticipantGroup> $groups */
+        $groups = $this->em->getRepository(ParticipantGroup::class)
+            ->createQueryBuilder('g')
+            ->andWhere('g.event IN (:events)')
+            ->setParameter('events', $events)
+            ->orderBy('g.mealOrder', 'ASC')
+            ->addOrderBy('g.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $groups;
+    }
+
+    /**
+     * Kategorie „blok programu" ({@see EventCategory::PROGRAM_BLOCK}) — je naseedovaná; defenzivně ji
+     * založíme, kdyby na cílovém prostředí chyběla, ať vytvoření bloku nespadne.
+     */
+    private function resolveBlockCategory(): EventCategory
+    {
+        $category = $this->em->getRepository(EventCategory::class)
+            ->findOneBy(['type' => EventCategory::PROGRAM_BLOCK]);
+        if ($category instanceof EventCategory) {
+            return $category;
+        }
+        $category = new EventCategory(new Nameable('Blok programu'), EventCategory::PROGRAM_BLOCK, '#6c757d');
+        $this->em->persist($category);
+        $this->em->flush();
+
+        return $category;
+    }
+
+    /**
+     * Aktivní bloky (nadakce s kategorií program-block) turnusu — nabídka pro přiřazení/přesun aktivity
+     * pod blok v editačním formuláři.
+     *
+     * @return list<Event>
+     */
+    private function turnusBlocks(Event $turnus): array
+    {
+        $blocks = [];
+        foreach ($turnus->getSubEvents() as $sub) {
+            if (null === $sub->getDeletedAt()
+                && EventCategory::PROGRAM_BLOCK === $sub->getCategory()?->getType()) {
+                $blocks[] = $sub;
+            }
+        }
+
+        return $blocks;
+    }
+
+    /** Má událost aspoň jednu NEsmazanou podakci? (nadakce/blok → nesmí se vnořit do jiného bloku.) */
+    private function hasActiveSubEvents(Event $event): bool
+    {
+        foreach ($event->getSubEvents() as $sub) {
+            if (null === $sub->getDeletedAt()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function index(string $eventSlug): Response
     {
         $turnus = $this->resolveEvent($eventSlug);
@@ -103,24 +189,40 @@ final class WebAdminProgramController extends AbstractController
         $this->assertBelongsToTurnus($turnus, $activity);
         $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
 
-        $form = $this->createForm(EventEditType::class, $activity);
+        $form = $this->createForm(EventEditType::class, $activity, [
+            'groups' => $this->paseks($turnus),
+            'blocks' => $this->turnusBlocks($turnus),
+        ]);
         $form->get('startDate')->setData($activity->getStartDateTime());
         $form->get('endDate')->setData($activity->getEndDateTime());
+        $currentParent = $activity->getSuperEvent();
+        if (null !== $currentParent && EventCategory::PROGRAM_BLOCK === $currentParent->getCategory()?->getType()) {
+            $form->get('parentBlock')->setData($currentParent); // předvyplní aktuální blok, když je aktivita slotem
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $start = $form->get('startDate')->getData();
-            $end = $form->get('endDate')->getData();
-            if ($start instanceof DateTime) {
-                $activity->setStartDateTime($start);
-            }
-            if ($end instanceof DateTime) {
-                $activity->setEndDateTime($end);
-            }
-            $this->em->flush();
-            $this->addFlash('success', sprintf('Aktivita „%s" uložena.', $activity->getName() ?? ''));
+            // Přesun do/z bloku: nadakci (je program-block nebo má podakce) NELZE vnořit do bloku (MaxDepth 3).
+            $targetBlock = $form->get('parentBlock')->getData();
+            $nadakceIntoBlock = $targetBlock instanceof Event
+                && (EventCategory::PROGRAM_BLOCK === $activity->getCategory()?->getType() || $this->hasActiveSubEvents($activity));
+            if ($nadakceIntoBlock) {
+                $this->addFlash('danger', 'Blok/nadakci nelze vložit do jiného bloku (má vlastní podakce). Změna neuložena.');
+            } else {
+                $start = $form->get('startDate')->getData();
+                $end = $form->get('endDate')->getData();
+                if ($start instanceof DateTime) {
+                    $activity->setStartDateTime($start);
+                }
+                if ($end instanceof DateTime) {
+                    $activity->setEndDateTime($end);
+                }
+                $activity->setSuperEvent($targetBlock instanceof Event ? $targetBlock : $turnus);
+                $this->em->flush();
+                $this->addFlash('success', sprintf('Aktivita „%s" uložena.', $activity->getName() ?? ''));
 
-            return new RedirectResponse($backUrl);
+                return new RedirectResponse($backUrl);
+            }
         }
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/event_edit.html.twig', [
@@ -136,14 +238,31 @@ final class WebAdminProgramController extends AbstractController
      * Přidání nové aktivity (pod-události) do turnusu z editoru programu. Nová událost dostane
      * `superEvent = turnus`; slug se odvodí z názvu, když ho uživatel nevyplní (žádný listener
      * ho negeneruje — viz feedback_app). Po uložení zpět na přehled programu.
+     *
+     * Volitelný `?block={id}` zakládá aktivitu jako PODAKCI bloku (rotační slot) — `superEvent = blok`
+     * místo turnusu. Blok musí patřit do turnusu (IDOR guard přes {@see assertBelongsToTurnus}).
      */
     public function newActivity(Request $request, string $eventSlug): Response
     {
         $turnus = $this->resolveEvent($eventSlug);
+        $block = null;
+        $blockId = $request->query->get('block');
+        if (is_numeric($blockId)) {
+            $block = $this->em->find(Event::class, (int) $blockId)
+                ?? throw $this->createNotFoundException("Blok #$blockId nenalezen.");
+            $this->assertBelongsToTurnus($turnus, $block);
+        }
+        // superEvent řídí pole parentBlock (předvyplněné z ?block); default = turnus.
         $activity = new Event(superEvent: $turnus);
         $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
 
-        $form = $this->createForm(EventEditType::class, $activity);
+        $form = $this->createForm(EventEditType::class, $activity, [
+            'groups' => $this->paseks($turnus),
+            'blocks' => $this->turnusBlocks($turnus),
+        ]);
+        if (null !== $block) {
+            $form->get('parentBlock')->setData($block);
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -158,9 +277,13 @@ final class WebAdminProgramController extends AbstractController
             if (empty($activity->getSlug())) {
                 $activity->updateSlug();
             }
+            $targetBlock = $form->get('parentBlock')->getData();
+            $activity->setSuperEvent($targetBlock instanceof Event ? $targetBlock : $turnus);
             $this->em->persist($activity);
             $this->em->flush();
-            $this->addFlash('success', sprintf('Aktivita „%s" přidána do programu.', $activity->getName() ?? ''));
+            $this->addFlash('success', $targetBlock instanceof Event
+                ? sprintf('Podakce „%s" přidána do bloku „%s".', $activity->getName() ?? '', $targetBlock->getName() ?? '')
+                : sprintf('Aktivita „%s" přidána do programu.', $activity->getName() ?? ''));
 
             return new RedirectResponse($backUrl);
         }
@@ -169,8 +292,57 @@ final class WebAdminProgramController extends AbstractController
             'event'      => $activity,
             'form'       => $form,
             'back_url'   => $backUrl,
-            'pageTitle'  => 'Nová aktivita programu',
+            'pageTitle'  => null !== $block
+                ? sprintf('Nová podakce bloku: %s', $block->getName() ?? '')
+                : 'Nová aktivita programu',
             'page_title' => 'Nová aktivita programu :: ADMIN',
+        ]);
+    }
+
+    /**
+     * Vytvoření BLOKU programu (nadakce) — Event s kategorií `program-block`, `superEvent = turnus`,
+     * vlastní čas NULL (odvozuje se z podakcí přes rekurzivní gettery). Blok sdružuje rotační sloty
+     * (aktivita×pásek×čas) nebo série; podakce se do něj přidají tlačítkem „+ podakce"
+     * (= newActivity s `?block`). Spec 2.2: „Vytvořit blok s podakcemi", blbuvzdorné, čas odvozený.
+     */
+    public function newBlock(Request $request, string $eventSlug): Response
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $backUrl = $this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('program_block_new_'.($turnus->getId() ?? 0), (string) $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Neplatný CSRF token.');
+            }
+            $name = trim((string) $request->request->get('name'));
+            if ('' === $name) {
+                $this->addFlash('danger', 'Zadej název bloku (např. „Dopolední rotace stanovišť").');
+
+                return new RedirectResponse($this->generateUrl(
+                    'oswis_org_oswis_calendar_web_admin_program_block_new',
+                    ['eventSlug' => $eventSlug],
+                ));
+            }
+            $block = new Event(superEvent: $turnus);
+            $block->setName($name);
+            $block->setCategory($this->resolveBlockCategory());
+            $block->updateSlug();
+            $this->em->persist($block);
+            $this->em->flush();
+            $this->addFlash('success', sprintf(
+                'Blok „%s" vytvořen — teď do něj přidej podakce tlačítkem „+ podakce".',
+                $name,
+            ));
+
+            return new RedirectResponse($backUrl);
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/program/block_new.html.twig', [
+            'eventSlug'  => $eventSlug,
+            'turnusId'   => $turnus->getId(),
+            'back_url'   => $backUrl,
+            'pageTitle'  => 'Nový blok programu',
+            'page_title' => 'Nový blok programu :: ADMIN',
         ]);
     }
 
@@ -420,6 +592,48 @@ final class WebAdminProgramController extends AbstractController
             'oswis_org_oswis_calendar_web_admin_program_activity_edit',
             ['eventSlug' => $eventSlug, 'activityId' => $clone->getId()],
         ));
+    }
+
+    /**
+     * Smazání aktivity (pod-události) z programu — SOFT delete přes `setDeletedAt` (Event NENÍ Gedmo
+     * SoftDeleteable; `em->remove` by ho smazal natvrdo a spadl na FK, kdyby měl obsazení/přihlášky).
+     * Soft-delete zachová vazby (obsazení, přihlášky), je vratné v DB, a `getProgramTree` smazané
+     * odfiltruje → z programu i výstupů zmizí. BLOK se maže i s podakcemi (celá rotace); kaskáda
+     * projde celý podstrom. IDOR: aktivita musí patřit do turnusu. Spec: „potvrzení u mazání".
+     */
+    public function deleteActivity(Request $request, string $eventSlug, int $activityId): RedirectResponse
+    {
+        $turnus = $this->resolveEvent($eventSlug);
+        $activity = $this->em->find(Event::class, $activityId)
+            ?? throw $this->createNotFoundException("Aktivita #$activityId nenalezena.");
+        $this->assertBelongsToTurnus($turnus, $activity);
+        if (!$this->isCsrfTokenValid('program_activity_delete_'.$activityId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+
+        // Podstrom (podakce bloku…) → soft-delete i děti, ať nezůstanou osiřelé pod smazaným blokem.
+        $descendants = [];
+        $stack = [$activity];
+        for ($guard = 0; [] !== $stack && $guard < 500; $guard++) {
+            $node = array_pop($stack);
+            foreach ($node->getSubEvents() as $sub) {
+                $descendants[] = $sub;
+                $stack[] = $sub;
+            }
+        }
+        $name = $activity->getName() ?? '';
+        $now = new DateTime();
+        foreach ($descendants as $child) {
+            $child->setDeletedAt($now);
+        }
+        $activity->setDeletedAt($now);
+        $this->em->flush();
+
+        $this->addFlash('warning', [] !== $descendants
+            ? sprintf('Blok „%s" smazán i s %d podakcemi (skryt z programu).', $name, count($descendants))
+            : sprintf('Aktivita „%s" smazána (skryta z programu).', $name));
+
+        return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_program_index', ['eventSlug' => $eventSlug]));
     }
 
     /**
