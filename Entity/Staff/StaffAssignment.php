@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Staff;
 
+use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -54,6 +55,8 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
     ],
 )]
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['turnus.id', 'activity.id', 'participant.id'])]
+// Rozpis SLUŽEB = ?activity[exists]=false (bez konkrétní aktivity); role u aktivit = true.
+#[ApiFilter(ExistsFilter::class, properties: ['activity'])]
 #[Entity(repositoryClass: StaffAssignmentRepository::class)]
 #[Table(name: 'calendar_staff_assignment')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_event')]
