@@ -131,6 +131,71 @@ final class ProgramDataService
     }
 
     /**
+     * Rošt služeb pro editor/API — filtrováno na SERVICE kategorie, ČASOVĚ (ne půldny — user 2026-07-19).
+     * Buňka (den × typ služby) nese časově seřazené SMĚNY; čas směny = časový rozsah service-Eventu.
+     * Směna = 1 service-Event + jeho přiřazení (dvojice = víc přiřazení na 1 směně).
+     *
+     * @return array{
+     *     days: list<string>,
+     *     serviceTypes: list<array{type: string, name: string, color: string|null}>,
+     *     cells: array<string, array<string, list<array<string, mixed>>>>
+     * }
+     */
+    public function getServiceRoster(Event $turnus): array
+    {
+        $events = [];
+        $this->collectEvents($turnus, $events, 0);
+        $days = [];
+        $types = [];
+        $cells = [];
+        foreach ($events as $event) {
+            if (null !== $event->getDeletedAt()) {
+                continue;
+            }
+            $category = $event->getCategory();
+            $type = $category?->getType();
+            if (null === $type || !EventCategory::isServiceType($type)) {
+                continue;
+            }
+            $start = $event->getStartDateTimeRecursive();
+            $date = $start?->format('Y-m-d') ?? '—';
+            $days[$date] = true;
+            $types[$type] = [
+                'type' => $type,
+                'name' => $category->getName() ?? $type,
+                'color' => $category->getColor(),
+            ];
+            $cells[$date][$type][] = [
+                'eventId' => $event->getId(),
+                'start' => $start?->format('Y-m-d H:i'),
+                'end' => $event->getEndDateTimeRecursive()?->format('Y-m-d H:i'),
+                'assignments' => array_map(
+                    fn (EventStaffAssignment $a): array => $this->assignmentArray($a),
+                    $this->assignmentRepository->getByEvent($event),
+                ),
+            ];
+        }
+        foreach ($cells as $date => $byType) {
+            foreach ($byType as $type => $shifts) {
+                usort(
+                    $shifts,
+                    static fn (array $a, array $b): int => (is_string($a['start'] ?? null) ? $a['start'] : '')
+                        <=> (is_string($b['start'] ?? null) ? $b['start'] : ''),
+                );
+                $cells[$date][$type] = $shifts;
+            }
+        }
+        ksort($days);
+        ksort($types);
+
+        return [
+            'days' => array_keys($days),
+            'serviceTypes' => array_values($types),
+            'cells' => $cells,
+        ];
+    }
+
+    /**
      * Activities where the instructor serves — directly (EventStaffAssignment.participant) or
      * through a StaffTeam they belong to — excluding `excluded` assignments. Chronological.
      *
@@ -403,7 +468,9 @@ final class ProgramDataService
         $participant = $assignment->getParticipant();
 
         return [
+            'id' => $assignment->getId(),
             'name' => null !== $participant ? $this->names->staffName($participant) : (string) $assignment->getExternalName(),
+            'participantId' => $participant?->getId(),
             'roleLabel' => $assignment->getRoleLabel(),
             'team' => $assignment->getTeam()?->getName(),
             'external' => null === $participant,

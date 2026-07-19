@@ -102,6 +102,22 @@ class EventCategory implements NameableInterface
     public const SERVICE_CLEANING = 'service-cleaning'; // Úklid
     public const SERVICE_TECH = 'service-tech';         // Technika / AV
     public const SERVICE_PHOTO = 'service-photo';       // Foto / dokumentace
+
+    /** Denní služby (rozpis SLUŽEB) — člen týmu má směnu na daném stanovišti v daném čase. */
+    public const SERVICE_TYPES
+        = [
+            self::SERVICE_STEERING,
+            self::SERVICE_CALLING,
+            self::SERVICE_CANTEEN,
+            self::SERVICE_BAR,
+            self::SERVICE_KIOSK,
+            self::SERVICE_MEDIC,
+            self::SERVICE_CHECKOUT,
+            self::SERVICE_NIGHT_WATCH,
+            self::SERVICE_CLEANING,
+            self::SERVICE_TECH,
+            self::SERVICE_PHOTO,
+        ];
     public const ALLOWED_TYPES
         = [
             self::YEAR_OF_EVENT,
@@ -154,6 +170,11 @@ class EventCategory implements NameableInterface
     public static function getAllowedTypesCustom(): array
     {
         return [];
+    }
+
+    public static function isServiceType(?string $type): bool
+    {
+        return null !== $type && in_array($type, self::SERVICE_TYPES, true);
     }
 
     public function getDefaultStartTime(): ?DateTimeInterface
