@@ -717,3 +717,33 @@ oswis_org_oswis_calendar_web_admin_mail_template_preview:
   requirements:
     id: '\d+'
   methods: [POST]
+
+# Číselník funkcí týmu (StaffRole) — spotřebovává ho rozpis služeb i obsazení aktivit.
+oswis_org_oswis_calendar_web_admin_staff_roles:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminStaffRoleController::index
+  path: "/web_admin/funkce-tymu"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_staff_role_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminStaffRoleController::new
+  path: "/web_admin/funkce-tymu/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_staff_role_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminStaffRoleController::edit
+  path: "/web_admin/funkce-tymu/{id}/upravit"
+  requirements:
+    id: '\d+'
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_staff_role_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminStaffRoleController::delete
+  path: "/web_admin/funkce-tymu/{id}/smazat"
+  requirements:
+    id: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_staff_role_seed:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminStaffRoleController::seedDefaults
+  path: "/web_admin/funkce-tymu/vychozi-sada"
+  methods: [POST]

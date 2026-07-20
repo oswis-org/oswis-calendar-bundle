@@ -1,0 +1,85 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Číselník <strong>funkcí týmu</strong> — co kdo na akci dělá. Používá se ve dvou rovinách:
+            v <strong>rozpisu služeb</strong> (celodenní služby jako řízení nebo jídelna) a u
+            <strong>konkrétních aktivit</strong> (kdo aktivitu vede, technika u ní). Kde se která funkce
+            nabízí, řídí sloupec <em>Použití</em>.
+        </p>
+
+        <p style="margin: 1rem 0 1.25rem; display: flex; gap: .5rem; flex-wrap: wrap;">
+            <a class="btn btn-sm btn-primary"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_staff_role_new') }}">
+                <twig:ux:icon name="tabler:plus" class="oa-icon" /> Nová funkce
+            </a>
+            {# Pomůcka pro nové nasazení/ročník: bez funkcí je rozpis služeb nepoužitelný. Idempotentní. #}
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_staff_role_seed') }}"
+                  style="display: inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('staff_role_seed') }}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <twig:ux:icon name="tabler:wand" class="oa-icon" /> Založit výchozí sadu
+                </button>
+            </form>
+        </p>
+
+        {% if roles is empty %}
+            <div class="alert alert-warning" style="max-width: 60rem;">
+                <strong>Zatím nejsou žádné funkce.</strong> Dokud tu nějaká nebude, rozpis služeb nemá
+                co nabídnout — založ je ručně, nebo použij „Založit výchozí sadu“.
+            </div>
+        {% else %}
+            <table class="table table-sm table-hover" style="max-width: 60rem;">
+                <thead>
+                <tr>
+                    <th>Název</th>
+                    <th>Použití</th>
+                    <th>Strojový klíč</th>
+                    <th class="text-end">Obsazení</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for role in roles %}
+                    {% set used = usage[role.id]|default(0) %}
+                    <tr>
+                        <td>
+                            {# Barva funkce jako proužek — stejná řeč jako v rozpisu. #}
+                            <span style="display: inline-block; width: .35rem; height: 1rem; vertical-align: -.15rem;
+                                         border-radius: 2px; margin-right: .4rem;
+                                         background: {{ role.color|default('#006FAD') }};"></span>
+                            <strong>{{ role.name }}</strong>
+                        </td>
+                        <td>
+                            {% if role.appliesTo == 'service' %}Celodenní služba
+                            {% elseif role.appliesTo == 'activity' %}Role u aktivity
+                            {% else %}Obojí{% endif %}
+                        </td>
+                        <td><code>{{ role.type|default('—') }}</code></td>
+                        <td class="text-end">{{ used }}</td>
+                        <td class="text-end" style="white-space: nowrap;">
+                            <a class="btn btn-sm btn-outline-secondary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_staff_role_edit', { id: role.id }) }}">Upravit</a>
+                            {% if used == 0 %}
+                                <form method="post" style="display: inline;"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_staff_role_delete', { id: role.id }) }}"
+                                      onsubmit="return confirm('Opravdu smazat funkci „{{ role.name|e('js') }}“?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('staff_role_delete_' ~ role.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
+                                </form>
+                            {% else %}
+                                {# Použitou funkci nelze smazat — mazání je natvrdo (není soft-delete). #}
+                                <span class="text-muted" style="font-size: .85rem;">používá se</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </main>
+{% endblock %}
