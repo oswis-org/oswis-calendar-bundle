@@ -1,0 +1,83 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Celodenní <strong>služby</strong> turnusu (řízení, jídelna, vrátnice…) — mřížka dny × funkce.
+            Tady se rozpis připravuje v klidu před akcí; na místě se pak dolaďuje v mobilní aplikaci
+            (obojí pracuje nad týmiž daty). Prázdná buňka = <em>+</em> zapíše službu rovnou na ten den a funkci.
+        </p>
+
+        <p style="margin: 1rem 0 1.25rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;">
+            <a class="btn btn-sm btn-primary"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster_new', { eventSlug: eventSlug }) }}">
+                <twig:ux:icon name="tabler:plus" class="oa-icon" /> Nová služba
+            </a>
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_staff_roles') }}">Funkce týmu</a>
+            <span class="text-muted" style="font-size: .85rem;">celkem služeb: {{ total }}</span>
+        </p>
+
+        {% if roles is empty %}
+            <div class="alert alert-warning" style="max-width: 60rem;">
+                <strong>Nejsou nastavené žádné funkce služeb.</strong>
+                Založ je v <a href="{{ path('oswis_org_oswis_calendar_web_admin_staff_roles') }}">číselníku funkcí</a>
+                (je tam i „Založit výchozí sadu“) — bez nich nemá rozpis co nabídnout.
+            </div>
+        {% elseif days is empty %}
+            <div class="alert alert-warning">Turnus nemá vyplněný termín, mřížku nelze sestavit.</div>
+        {% else %}
+            <div style="overflow-x: auto;">
+                <table class="table table-sm" style="min-width: 100%;">
+                    <thead>
+                    <tr>
+                        <th style="min-width: 9rem;">Funkce</th>
+                        {% for day in days %}
+                            <th style="white-space: nowrap; min-width: 9rem;">{{ day|date('D j. n.') }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for role in roles %}
+                        <tr>
+                            <th style="white-space: nowrap; border-left: .25rem solid {{ role.color|default('#006FAD') }};">
+                                {{ role.name }}
+                            </th>
+                            {% for day in days %}
+                                {% set cell = grid[day][role.id]|default([]) %}
+                                <td style="vertical-align: top;">
+                                    {% for a in cell %}
+                                        {% set start = a.effectiveStart %}
+                                        {% set end = a.effectiveEnd %}
+                                        <div style="margin-bottom: .2rem; line-height: 1.3;">
+                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster_edit', { eventSlug: eventSlug, id: a.id }) }}"
+                                               style="text-decoration: none;">
+                                                <span style="font-variant-numeric: tabular-nums; font-weight: 600;">
+                                                    {%- if start and end and start|date('H:i') == '00:00' and end|date('H:i') in ['23:59', '00:00'] -%}
+                                                        celý den
+                                                    {%- elseif start and end -%}
+                                                        {{ start|date('G:i') }}–{{ end|date('G:i') }}{% if end|date('Y-m-d') != start|date('Y-m-d') %} +1{% endif %}
+                                                    {%- elseif start -%}
+                                                        od {{ start|date('G:i') }}
+                                                    {%- else -%}—{%- endif -%}
+                                                </span>
+                                                {# Externí host odlišen TVAREM (kurzíva), ne jen barvou. #}
+                                                <span {% if not a.participant %}style="font-style: italic;"{% endif %}>{{ a.staffName|default('—') }}</span>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                    <a href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster_new', { eventSlug: eventSlug, day: day, role: role.id }) }}"
+                                       class="text-muted" style="font-size: .8rem; text-decoration: none;" title="Přidat službu">+</a>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </main>
+{% endblock %}

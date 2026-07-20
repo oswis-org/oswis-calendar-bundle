@@ -747,3 +747,29 @@ oswis_org_oswis_calendar_web_admin_staff_role_seed:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminStaffRoleController::seedDefaults
   path: "/web_admin/funkce-tymu/vychozi-sada"
   methods: [POST]
+
+# Rozpis služeb ve web adminu (mřížka dny × funkce) — příprava před akcí u počítače;
+# na místě se totéž dolaďuje v mobilní aplikaci nad týmiž daty.
+oswis_org_oswis_calendar_web_admin_service_roster:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminServiceRosterController::index
+  path: "/web_admin/rozpis-sluzeb/{eventSlug}"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_service_roster_new:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminServiceRosterController::new
+  path: "/web_admin/rozpis-sluzeb/{eventSlug}/nova"
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_service_roster_edit:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminServiceRosterController::edit
+  path: "/web_admin/rozpis-sluzeb/{eventSlug}/{id}/upravit"
+  requirements:
+    id: '\d+'
+  methods: [GET, POST]
+
+oswis_org_oswis_calendar_web_admin_service_roster_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminServiceRosterController::delete
+  path: "/web_admin/rozpis-sluzeb/{eventSlug}/{id}/odebrat"
+  requirements:
+    id: '\d+'
+  methods: [POST]

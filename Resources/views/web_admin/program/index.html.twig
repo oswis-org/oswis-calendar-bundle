@@ -53,6 +53,9 @@
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Přidat den</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Přidat sekci</a>
+                {# Editovatelný rozpis služeb (dosud šel z webu jen vytisknout — PDF níže). #}
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', {eventSlug: eventSlug}) }}">Rozpis služeb</a>
                 <a class="btn btn-sm btn-outline-secondary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_program_teams', {eventSlug: eventSlug}) }}">Týmy</a>
                 <a class="btn btn-sm btn-outline-secondary"

@@ -1,0 +1,26 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        <h2>{{ pageTitle }}</h2>
+        <p>
+            <a class="btn btn-sm btn-link"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: eventSlug }) }}">← Zpět na rozpis služeb</a>
+        </p>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        {{ form_widget(form) }}
+        {{ form_end(form, { render_rest: false }) }}
+
+        {% if assignment.id %}
+            <form method="post" style="margin-top: 1rem;"
+                  action="{{ path('oswis_org_oswis_calendar_web_admin_service_roster_delete', { eventSlug: eventSlug, id: assignment.id }) }}"
+                  onsubmit="return confirm('Opravdu odebrat tuto službu z rozpisu?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('service_roster_delete_' ~ assignment.id) }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Odebrat z rozpisu</button>
+            </form>
+        {% endif %}
+    </main>
+{% endblock %}
