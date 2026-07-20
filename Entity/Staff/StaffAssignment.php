@@ -195,7 +195,15 @@ class StaffAssignment implements BasicInterface
         return $this->getEffectiveSpan()[1];
     }
 
-    /** Přezdývkový tvar jména pro rozpis (viz {@see StaffNameFormatter}); interní má přednost. */
+    /**
+     * Kdo závazek drží — pro rozpis/itinerář/PDF. Pořadí: interní účastník (přezdívkový tvar, viz
+     * {@see StaffNameFormatter}) → externí jméno → NÁZEV PODTÝMU.
+     *
+     * Týmový fallback je podstatný: závazek smí místo jednotlivce držet celý podtým
+     * ({@see $team}), a bez něj by se takové obsazení všude zobrazovalo jako prázdné („—“).
+     * U záznamu „tým, ale bez Franty" ({@see $excluded}) má přednost jmenovaný účastník — přesně
+     * o něm ten záznam je.
+     */
     public function getStaffName(): ?string
     {
         if ($this->participant instanceof Participant) {
@@ -205,8 +213,12 @@ class StaffAssignment implements BasicInterface
             }
         }
         $external = trim((string) $this->externalName);
+        if ('' !== $external) {
+            return $external;
+        }
+        $team = trim((string) $this->team?->getName());
 
-        return '' !== $external ? $external : null;
+        return '' !== $team ? $team : null;
     }
 
     /**

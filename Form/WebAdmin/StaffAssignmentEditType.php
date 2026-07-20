@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffRole;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -32,6 +34,8 @@ final class StaffAssignmentEditType extends AbstractType
         $roles = $options['roles'];
         /** @var list<Participant> $staffPool */
         $staffPool = $options['staff_pool'];
+        /** @var list<StaffTeam> $teams */
+        $teams = $options['teams'];
 
         $builder
             ->add('role', EntityType::class, [
@@ -56,6 +60,22 @@ final class StaffAssignmentEditType extends AbstractType
             ->add('externalName', TextType::class, [
                 'label'    => 'Externí jméno',
                 'required' => false,
+            ])
+            ->add('team', EntityType::class, [
+                'label'        => 'Nebo celý podtým',
+                'class'        => StaffTeam::class,
+                'choices'      => $teams,
+                'choice_label' => static fn (StaffTeam $t): string => $t->getName() ?? ('#'.$t->getId()),
+                'required'     => false,
+                'placeholder'  => '— bez týmu —',
+                'help'         => [] === $teams
+                    ? 'Na tomto turnusu zatím nejsou podtýmy.'
+                    : 'Službu může držet celý podtým místo jednotlivce.',
+            ])
+            ->add('excluded', CheckboxType::class, [
+                'label'    => 'Vyjmout z týmového obsazení',
+                'required' => false,
+                'help'     => 'Záznam typu „tým, ale bez tohohle člověka“ — vybraný člen týmu se do služby nepočítá.',
             ])
             ->add('startDateTime', DateTimeType::class, [
                 'label'    => 'Začátek',
@@ -85,8 +105,10 @@ final class StaffAssignmentEditType extends AbstractType
             'data_class' => StaffAssignment::class,
             'roles'      => [],
             'staff_pool' => [],
+            'teams'      => [],
         ]);
         $resolver->setAllowedTypes('roles', 'array');
         $resolver->setAllowedTypes('staff_pool', 'array');
+        $resolver->setAllowedTypes('teams', 'array');
     }
 }

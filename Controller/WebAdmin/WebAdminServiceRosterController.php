@@ -14,6 +14,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffRole;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\StaffAssignmentEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -39,6 +40,7 @@ final class WebAdminServiceRosterController extends AbstractController
         private readonly EventRepository $eventRepository,
         private readonly StaffAssignmentRepository $assignmentRepository,
         private readonly ParticipantRepository $participantRepository,
+        private readonly StaffTeamRepository $teamRepository,
     ) {
     }
 
@@ -123,6 +125,7 @@ final class WebAdminServiceRosterController extends AbstractController
         $form = $this->createForm(StaffAssignmentEditType::class, $assignment, [
             'roles'      => $this->serviceRoles(),
             'staff_pool' => $this->staffPool($turnus),
+            'teams'      => $this->teamRepository->getByEvent($turnus),
         ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
