@@ -86,6 +86,10 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
     'offer.event.superEvent.id',
     'contact.id',
     'contact.appUser.id',
+    // Typ kategorie = ROVINA účasti (attendee / staff / organizer / manager…). Umožňuje vytáhnout
+    // POOL TÝMU pro obsazování služeb: `?participantCategory.type[]=staff&participantCategory.type[]=organizer`
+    // (tým bývá registrovaný na RODIČOVSKÉ akci, turnusy jsou její pod-akce → kombinovat s recursiveEventId).
+    'participantCategory.type',
 ])]
 #[Entity(repositoryClass: ParticipantRepository::class)]
 #[Table(name: 'calendar_participant')]
