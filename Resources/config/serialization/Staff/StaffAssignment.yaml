@@ -31,6 +31,9 @@ OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment:
     # Odvozená (jen čtení): jméno pro rozpis + efektivní časový úsek (dopočet z aktivity u relativních).
     staffName:
       groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]
+    # Název aktivity (null u služby) — itinerář ho potřebuje, relace je jen IRI.
+    activityName:
+      groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]
     effectiveStart:
       groups: [ 'calendar_staff_assignments_get', 'calendar_staff_assignment_get' ]
     effectiveEnd:

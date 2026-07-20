@@ -209,6 +209,18 @@ class StaffAssignment implements BasicInterface
         return '' !== $external ? $external : null;
     }
 
+    /**
+     * Název aktivity, kvůli které závazek je (null u celodenní služby). Odvozené pole — itinerář
+     * potřebuje popisek, ale relace se serializuje jen jako IRI (lean), takže by jinak musel
+     * dotahovat každou aktivitu zvlášť. Zrcadlo {@see getStaffName()}.
+     */
+    public function getActivityName(): ?string
+    {
+        $name = trim((string) $this->activity?->getName());
+
+        return '' !== $name ? $name : null;
+    }
+
     public function getTurnus(): ?Event
     {
         return $this->turnus;
