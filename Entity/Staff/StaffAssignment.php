@@ -47,10 +47,14 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 #[ApiResource(
     operations: [
-        new GetCollection(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['entities_get', 'calendar_staff_assignments_get'], 'enable_max_depth' => true]),
-        new Get(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['entity_get', 'calendar_staff_assignment_get'], 'enable_max_depth' => true]),
-        new Post(security: "is_granted('ROLE_MANAGER')", denormalizationContext: ['groups' => ['calendar_staff_assignments_post'], 'enable_max_depth' => true], processor: StaffAssignmentProcessor::class),
-        new Put(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['entity_get', 'calendar_staff_assignment_get'], 'enable_max_depth' => true], denormalizationContext: ['groups' => ['calendar_staff_assignment_put'], 'enable_max_depth' => true], processor: StaffAssignmentProcessor::class),
+        // Lean čtení: turnus/activity/participant/team se serializují jako IRI (ne celý Event/účastník)
+        // — rošt je čte jen jako scope/null-test; role zůstává embedded (StaffRole má tuto grupu),
+        // computed staffName/effectiveStart/End dopočte backend. Bez širokého `entities_get` (jinak
+        // se turnus embeduje i s created/updatedBy uživateli, 22× redundantně).
+        new GetCollection(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['calendar_staff_assignments_get'], 'enable_max_depth' => true]),
+        new Get(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['calendar_staff_assignment_get'], 'enable_max_depth' => true]),
+        new Post(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['calendar_staff_assignment_get'], 'enable_max_depth' => true], denormalizationContext: ['groups' => ['calendar_staff_assignments_post'], 'enable_max_depth' => true], processor: StaffAssignmentProcessor::class),
+        new Put(security: "is_granted('ROLE_MANAGER')", normalizationContext: ['groups' => ['calendar_staff_assignment_get'], 'enable_max_depth' => true], denormalizationContext: ['groups' => ['calendar_staff_assignment_put'], 'enable_max_depth' => true], processor: StaffAssignmentProcessor::class),
         new Delete(security: "is_granted('ROLE_MANAGER')"),
     ],
 )]
