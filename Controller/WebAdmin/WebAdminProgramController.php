@@ -17,6 +17,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\EventSectionEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
@@ -77,7 +78,9 @@ final class WebAdminProgramController extends AbstractController
             }
         }
         $pool = array_values($pool);
-        usort($pool, static fn (array $a, array $b): int => strcoll($a['name'], $b['name']));
+        // České řazení jmen (Collator cs_CZ) — `strcoll` je v C-locale bytová komparace a hází
+        // diakritiku za „z" (viz WebAdminCheckInController / compareParticipants).
+        usort($pool, static fn (array $a, array $b): int => StringUtils::compareCzech($a['name'], $b['name']));
 
         return $pool;
     }

@@ -14,6 +14,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Event\ProgramDayRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository;
 use OswisOrg\OswisCalendarBundle\Twig\Extension\ProgramExtension;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 
 /**
  * Assembles a turnus' program data for the STOPA 1.3 outputs as read-only arrays (NOT
@@ -226,7 +227,9 @@ final class ProgramDataService
         }
         unset($person);
         $people = array_values($people);
-        usort($people, static fn (array $a, array $b): int => $a['name'] <=> $b['name']);
+        // České řazení jmen (Collator cs_CZ) — spaceship na řetězcích je bytová komparace a hodila
+        // by diakritiku (Č/Š/Ř…) za „z" (viz WebAdminCheckInController / compareParticipants).
+        usort($people, static fn (array $a, array $b): int => StringUtils::compareCzech($a['name'], $b['name']));
 
         return $people;
     }
