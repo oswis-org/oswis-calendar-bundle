@@ -12,6 +12,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\CheckIn\CheckInService;
 use OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
+use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -259,9 +260,13 @@ final class WebAdminCheckInController extends AbstractController
      */
     private function sortParticipants(array $participants, string $sort): array
     {
-        $byName = static fn(Participant $a, Participant $b): int => strcmp(
-            (string) $a->getContact()?->getName(),
-            (string) $b->getContact()?->getName(),
+        // České řazení jmen: `strcmp` (bytová komparace) tlačí diakritiku (Č/Š/Ř/Ž/Á…) AŽ ZA „z",
+        // takže by na check-in seznamu (i v PDF a uvnitř skupin/pásků) tým hůř hledal lidi u stolu.
+        // `StringUtils::compareCzech` (Collator cs_CZ) je zavedený lék — viz compareParticipants /
+        // OperationalDocumentService, které už ho používají.
+        $byName = static fn(Participant $a, Participant $b): int => StringUtils::compareCzech(
+            $a->getContact()?->getName(),
+            $b->getContact()?->getName(),
         );
         usort($participants, match ($sort) {
             'band' => static function (Participant $a, Participant $b) use ($byName): int {
