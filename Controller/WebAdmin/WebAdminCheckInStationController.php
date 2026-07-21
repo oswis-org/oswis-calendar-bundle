@@ -164,8 +164,12 @@ final class WebAdminCheckInStationController extends AbstractController
         if (!$this->isCsrfTokenValid("checkin_station_delete_{$stationId}", (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
+        // Scoping na turnus z URL (stejně jako stationForm ř. ~117) — stanici cizího turnusu nemazat
+        // přes jinou URL (konzistence + defense-in-depth; jinak by delete ignoroval eventSlug).
+        $event = $this->resolveEvent($eventSlug);
         $station = $this->em->find(CheckInStation::class, $stationId);
-        if ($station instanceof CheckInStation && !$station->isDeleted()) {
+        if ($station instanceof CheckInStation && !$station->isDeleted()
+            && $station->getEvent()?->getId() === $event->getId()) {
             $station->setDeletedAt(new DateTime());
             $this->em->flush();
             $this->addFlash('success', sprintf('Stanice „%s" smazána.', $station->getName() ?? ''));
