@@ -49,15 +49,15 @@
     {% if phone %}
         <a class="btn btn-sm btn-outline-primary"
            href="tel:{{ rawPhone|replace({' ': ''}) }}"
-           title="Zavolat">☏ Volat</a>
+           title="Zavolat"><twig:ux:icon name="tabler:phone" class="oa-icon" /> Volat</a>
         <a class="btn btn-sm btn-outline-primary"
            href="sms:{{ rawPhone|replace({' ': ''}) }}"
-           title="Poslat SMS">💬 SMS</a>
+           title="Poslat SMS"><twig:ux:icon name="tabler:message" class="oa-icon" /> SMS</a>
         <a class="btn btn-sm btn-outline-success"
            href="https://wa.me/{{ phoneE164 }}"
            target="_blank"
            rel="noopener"
-           title="WhatsApp">🟢 WhatsApp</a>
+           title="WhatsApp"><twig:ux:icon name="tabler:brand-whatsapp" class="oa-icon" /> WhatsApp</a>
         <button type="button" class="btn btn-sm btn-outline-secondary"
                 title="Zkopírovat telefon do schránky"
                 data-clipboard="{{ rawPhone }}"
@@ -66,6 +66,6 @@
         </button>
     {% else %}
         <button type="button" class="btn btn-sm btn-outline-secondary" disabled
-                title="Telefon neznáme">☏ Volat</button>
+                title="Telefon neznáme"><twig:ux:icon name="tabler:phone" class="oa-icon" /> Volat</button>
     {% endif %}
 </div>

@@ -54,13 +54,13 @@
                    title="Napsat a odeslat ad-hoc e-mail účastníkovi"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Nová zpráva</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}"
-                   title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt">📞 Záznam komunikace</a>
+                   title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt"><twig:ux:icon name="tabler:notes" class="oa-icon" /> Záznam komunikace</a>
                 <a class="btn btn-sm btn-outline-primary"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}"
                    title="Nezařazené příchozí / odchozí e-maily z IMAP"><twig:ux:icon name="tabler:inbox" class="oa-icon" /> Nezařazené e-maily</a>
                 <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display:inline-block; margin:0;" title="Stáhnout nové e-maily z IMAP serveru">
                     <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
-                    <button type="submit" class="btn btn-sm btn-outline-primary">↻ Stáhnout z IMAP</button>
+                    <button type="submit" class="btn btn-sm btn-outline-primary"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Stáhnout z IMAP</button>
                 </form>
                 {% if contact and contact.email|default and not acctActive %}
                     <form method="post"
@@ -68,7 +68,7 @@
                           style="display:inline-block; margin:0;"
                           onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
                         <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-info">↻ Aktivační e-mail</button>
+                        <button type="submit" class="btn btn-sm btn-outline-info"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Aktivační e-mail</button>
                     </form>
                 {% endif %}
                 {% if participant.deletedAt|default %}
@@ -77,7 +77,7 @@
                           style="display:inline-block; margin:0;"
                           onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
                         <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
+                        <button type="submit" class="btn btn-sm btn-outline-success"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Obnovit</button>
                     </form>
                 {% endif %}
             {% endif %}
@@ -323,7 +323,7 @@
                                               action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_delete', { participantId: participant.id, noteId: note.id }) }}"
                                               onsubmit="return confirm('Opravdu smazat tuto poznámku?');" style="margin:0;">
                                             <input type="hidden" name="_token" value="{{ csrf_token('participant_note_delete_' ~ note.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:trash" class="oa-icon" /> Smazat</button>
                                         </form>
                                     </div>
                                 </details>
