@@ -57,6 +57,12 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  ## API turnus (offer) change controller (JWT, ROLE_MANAGER) — Ionic admin
+  OswisOrg\OswisCalendarBundle\Controller\Api\ParticipantOfferApiController:
+    autowire: true
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
   ###
   ### CONTROLLERS
   ###
