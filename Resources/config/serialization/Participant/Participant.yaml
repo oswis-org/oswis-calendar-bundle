@@ -22,8 +22,12 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put', 'calendar_check_in_queue' ]
     stationVisits:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
+    # `offer` (turnus) se přes generický PUT NEmění — je to virtuální relace s doménovou logikou,
+    # kterou API Platform 4 neumí resolvovat z {id}/IRI (vyrobí prázdnou nabídku → 409). Změna
+    # turnusu jde přes dedikovaný POST /participants/{id}/offer (ParticipantOfferApiController).
+    # `calendar_participant_put` proto z grup vyjmuto, aby PUT nemohl vyrobit prázdnou nabídku.
     offer:
-      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
+      groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get' ]
     contact:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_staff_teams_get', 'calendar_staff_team_get', 'calendar_event_staff_assignments_get', 'calendar_event_staff_assignment_get', 'calendar_check_in_queue' ]
     event:

@@ -17,6 +17,13 @@ oswis_org_oswis_calendar_api_participant_set_flags:
     participantId: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_api_participant_change_offer:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\ParticipantOfferApiController::change
+  path: "/api/participants/{participantId}/offer"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_api_program_output:
   controller: OswisOrg\OswisCalendarBundle\Controller\Api\ProgramOutputController
   path: "/api/program/{type}"
