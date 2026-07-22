@@ -7,7 +7,7 @@
         <h2>{{ pageTitle }}</h2>
         <p class="text-muted" style="max-width: 60rem;">
             Číselník <strong>funkcí týmu</strong> — co kdo na akci dělá. Používá se ve dvou rovinách:
-            v <strong>rozpisu služeb</strong> (celodenní služby jako řízení nebo jídelna) a u
+            v <strong>rozpisu služeb</strong> (služby jako řízení nebo jídelna) a u
             <strong>konkrétních aktivit</strong> (kdo aktivitu vede, technika u ní). Kde se která funkce
             nabízí, řídí sloupec <em>Použití</em>.
         </p>
@@ -55,7 +55,7 @@
                             <strong>{{ role.name }}</strong>
                         </td>
                         <td>
-                            {% if role.appliesTo == 'service' %}Celodenní služba
+                            {% if role.appliesTo == 'service' %}Služba
                             {% elseif role.appliesTo == 'activity' %}Role u aktivity
                             {% else %}Obojí{% endif %}
                         </td>

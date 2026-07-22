@@ -115,6 +115,28 @@ class StaffAssignment implements BasicInterface
     #[Column(type: 'datetime', nullable: true)]
     protected ?DateTimeInterface $endDateTime = null;
 
+    // ── Denní slot služby (jídlo / celodenní) — NEPOVINNÝ, univerzální ──
+    // NULL = nezadáno (vlastní čas z startDateTime). Slouží ke dvěma věcem: předvyplnit čas z default
+    // časů turnusu (snídaně/oběd/večeře) a seskupit rozpis „po jídlech". Viz spec 2026-07-22.
+    public const string SLOT_BREAKFAST = 'breakfast';
+    public const string SLOT_LUNCH = 'lunch';
+    public const string SLOT_DINNER = 'dinner';
+    public const string SLOT_ALL_DAY = 'all_day';
+
+    /** @var list<string> Pořadí slotů = pořadí v rozpisu. */
+    public const array SLOTS = [self::SLOT_BREAKFAST, self::SLOT_LUNCH, self::SLOT_DINNER, self::SLOT_ALL_DAY];
+
+    /** @var array<string, string> Slot → český popisek. */
+    public const array SLOT_LABELS = [
+        self::SLOT_BREAKFAST => 'Snídaně',
+        self::SLOT_LUNCH => 'Oběd',
+        self::SLOT_DINNER => 'Večeře',
+        self::SLOT_ALL_DAY => 'Celodenní',
+    ];
+
+    #[Column(type: 'string', nullable: true)]
+    protected ?string $slot = null;
+
     /** RELATIVNÍ: kolik minut PŘED začátkem aktivity (svolávání/technika). Posune se s aktivitou. */
     #[Column(type: 'integer', nullable: true)]
     protected ?int $leadMinutes = null;
@@ -321,6 +343,29 @@ class StaffAssignment implements BasicInterface
     public function setEndDateTime(?DateTimeInterface $endDateTime): void
     {
         $this->endDateTime = $endDateTime;
+    }
+
+    public function getSlot(): ?string
+    {
+        return $this->slot;
+    }
+
+    /** Přijme jen platný slot, jinak NULL (nezadáno / vlastní čas). */
+    public function setSlot(?string $slot): void
+    {
+        $this->slot = (null !== $slot && in_array($slot, self::SLOTS, true)) ? $slot : null;
+    }
+
+    /** Český popisek slotu (Snídaně/Oběd/Večeře/Celodenní), nebo NULL když slot nezadán. */
+    public function getSlotLabel(): ?string
+    {
+        return null !== $this->slot ? (self::SLOT_LABELS[$this->slot] ?? null) : null;
+    }
+
+    /** Je to jídlo (snídaně/oběd/večeře)? — pro seskupení rozpisu „po jídlech". */
+    public function isMealSlot(): bool
+    {
+        return in_array($this->slot, [self::SLOT_BREAKFAST, self::SLOT_LUNCH, self::SLOT_DINNER], true);
     }
 
     public function getLeadMinutes(): ?int

@@ -34,7 +34,7 @@ final class StaffRoleEditType extends AbstractType
             ->add('appliesTo', ChoiceType::class, [
                 'label'   => 'Kde se funkce používá',
                 'choices' => [
-                    'Celodenní služba (rozpis služeb)' => StaffRole::APPLIES_SERVICE,
+                    'Služba (rozpis služeb)' => StaffRole::APPLIES_SERVICE,
                     'Role u konkrétní aktivity'        => StaffRole::APPLIES_ACTIVITY,
                     'Obojí'                            => StaffRole::APPLIES_BOTH,
                 ],

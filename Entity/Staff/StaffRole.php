@@ -29,7 +29,8 @@ use OswisOrg\OswisCoreBundle\Traits\Common\NameableTrait;
  * NE EventCategory samotný (funkce nejsou událost — viz [[reference_event_is_only_happenings]]).
  *
  * `type` = stabilní kód (rizeni/jidelna/…), `name` = zobrazované jméno, `color` = barva čipu,
- * `appliesTo` = kde se používá (celodenní služba / u aktivity / obojí).
+ * `appliesTo` = kde se funkce NABÍZÍ (služba / u aktivity / obojí) — NE jak dlouho trvá. Zda je
+ * konkrétní služba celodenní nebo jen na snídani/oběd/večeři se řeší časem u {@see StaffAssignment}.
  */
 #[ApiResource(
     operations: [
@@ -69,7 +70,7 @@ class StaffRole implements NameableInterface
     #[Column(type: 'string', nullable: true)]
     protected ?string $type = null;
 
-    /** Celodenní služba (řízení/jídelna) — `activity` u přiřazení je prázdná. */
+    /** Služba (řízení/jídelna) — nabízí se v rozpisu služeb (u přiřazení bez konkrétní aktivity). */
     public const string APPLIES_SERVICE = 'service';
 
     /** Role u konkrétní aktivity (vede/technika) — `activity` u přiřazení je vyplněná. */
@@ -114,7 +115,7 @@ class StaffRole implements NameableInterface
         $this->type = null !== $type && '' !== $type ? $type : null;
     }
 
-    /** Použitelná jako celodenní služba (service nebo both)? */
+    /** Použitelná jako služba (service nebo both)? */
     public function isForService(): bool
     {
         return in_array($this->appliesTo, [self::APPLIES_SERVICE, self::APPLIES_BOTH, null], true);

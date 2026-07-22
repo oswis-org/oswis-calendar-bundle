@@ -30,7 +30,7 @@ final class WebAdminStaffRoleController extends AbstractController
     /**
      * Výchozí sada funkcí pro nové nasazení: [název, strojový klíč, barva, rovina použití].
      * Vychází z reálného provozu (řízení, jídelna, recepce, zdravotník, svolávání, technika, úklid,
-     * vrátnice = celodenní služby; vedení aktivity + technika u aktivity = role u aktivit).
+     * vrátnice = služby (rozpis); vedení aktivity + technika u aktivity = role u aktivit).
      *
      * @var list<array{0: string, 1: string, 2: string, 3: string}>
      */

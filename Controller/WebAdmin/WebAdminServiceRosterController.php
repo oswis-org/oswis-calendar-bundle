@@ -149,7 +149,7 @@ final class WebAdminServiceRosterController extends AbstractController
         ]);
     }
 
-    /** Funkce použitelné jako celodenní SLUŽBA (`appliesTo` service/both; prázdná hodnota = všude). */
+    /** Funkce nabízené jako SLUŽBA (`appliesTo` service/both; prázdná hodnota = všude). */
     private function serviceRoles(): array
     {
         $roles = [];
