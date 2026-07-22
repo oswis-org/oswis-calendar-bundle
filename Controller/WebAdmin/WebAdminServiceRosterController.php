@@ -129,6 +129,8 @@ final class WebAdminServiceRosterController extends AbstractController
         ]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            // Slot (jídlo/celodenní) předvyplní čas na daný den — ať se nemusí klepat ručně.
+            $this->applySlotTime($assignment);
             // Služba = závazek BEZ aktivity; turnus drží scope (obojí nastavujeme my, ne formulář).
             $assignment->setActivity(null);
             $assignment->setTurnus($turnus);
@@ -147,6 +149,35 @@ final class WebAdminServiceRosterController extends AbstractController
             'pageTitle'  => null === $assignment->getId() ? 'Nová služba' : 'Úprava služby',
             'page_title' => 'Rozpis služeb :: ADMIN',
         ]);
+    }
+
+    /**
+     * Ze slotu (snídaně/oběd/večeře/celodenní) odvodí čas na den (z data ve `startDateTime`).
+     * Zatím PEVNÉ časy jídel — editovatelné časy na turnusu jsou další krok (spec 2026-07-22).
+     * Prázdný slot = ponechá ruční „vlastní čas".
+     */
+    private function applySlotTime(StaffAssignment $assignment): void
+    {
+        $slot = $assignment->getSlot();
+        if (null === $slot) {
+            return;
+        }
+        $base = $assignment->getStartDateTime() ?? $assignment->getEndDateTime();
+        if (!$base instanceof DateTimeInterface) {
+            return; // bez dne neumíme odvodit — čas necháme, jak je
+        }
+        $day = $base->format('Y-m-d');
+        [$from, $to] = match ($slot) {
+            StaffAssignment::SLOT_BREAKFAST => ['07:30', '08:30'],
+            StaffAssignment::SLOT_LUNCH     => ['12:00', '13:00'],
+            StaffAssignment::SLOT_DINNER    => ['18:00', '19:00'],
+            StaffAssignment::SLOT_ALL_DAY   => ['00:00', '23:59'],
+            default                         => [null, null],
+        };
+        if (null !== $from && null !== $to) {
+            $assignment->setStartDateTime(new DateTime($day.' '.$from));
+            $assignment->setEndDateTime(new DateTime($day.' '.$to));
+        }
     }
 
     /** Funkce nabízené jako SLUŽBA (`appliesTo` service/both; prázdná hodnota = všude). */

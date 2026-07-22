@@ -11,6 +11,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffRole;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -76,6 +77,18 @@ final class StaffAssignmentEditType extends AbstractType
                 'label'    => 'Vyjmout z týmového obsazení',
                 'required' => false,
                 'help'     => 'Záznam typu „tým, ale bez tohohle člověka“ — vybraný člen týmu se do služby nepočítá.',
+            ])
+            ->add('slot', ChoiceType::class, [
+                'label'       => 'Denní slot',
+                'required'    => false,
+                'placeholder' => '— vlastní čas (níže) —',
+                'choices'     => [
+                    'Snídaně'   => StaffAssignment::SLOT_BREAKFAST,
+                    'Oběd'      => StaffAssignment::SLOT_LUNCH,
+                    'Večeře'    => StaffAssignment::SLOT_DINNER,
+                    'Celodenní' => StaffAssignment::SLOT_ALL_DAY,
+                ],
+                'help' => 'Jídlo nebo celodenní — předvyplní čas. Prázdné = zadej čas ručně níže.',
             ])
             ->add('startDateTime', DateTimeType::class, [
                 'label'    => 'Začátek',
