@@ -14,7 +14,7 @@
         </div>
 
         {% for s in series %}
-            <div style="border: 1px solid #dee2e6; border-radius: .375rem; padding: .8rem 1.1rem; margin-bottom: .8rem; max-width: 52rem;">
+            <div class="box" style="margin-bottom: .8rem; max-width: 52rem;">
                 <div style="display: flex; align-items: center; gap: .75rem;">
                     <strong style="font-size: 1.05rem;">{{ s.name }}</strong>
                     {% if s.sameActivity %}<span class="badge bg-info text-dark">stejná aktivita (číslování I./II./…)</span>{% endif %}
