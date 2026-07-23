@@ -5,6 +5,8 @@
 
 {% block body_content %}
     <div class="container" style="padding: 1rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+            with { eventSlug: eventSlug, eventName: (event is defined ? (event.shortName|default(event.name|default(''))) : ''), current: 'checkin' } only %}
         <div class="row">
             <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <h2 style="margin: 0;">Check-in — {{ event.name ?? eventSlug }}</h2>

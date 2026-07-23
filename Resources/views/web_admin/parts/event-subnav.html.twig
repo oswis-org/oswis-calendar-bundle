@@ -1,0 +1,34 @@
+{# Kontextové PODMENU turnusu/akce — TÝŽ pruh na detailu akce i na všech jejích podstránkách
+   (účastníci / check-in / program / rozpis služeb), aby šlo mezi nimi přecházet bez vracení se na
+   detail a aby bylo vidět „kde jsem". Renderuje se jako tab-bar (aktivní = tučně + modré podtržení).
+
+   Parametry (include with { ... } only):
+     - eventSlug  (povinné) — slug turnusu pro odkazy
+     - eventName  (nepovinné) — popisek turnusu vlevo
+     - current    (nepovinné) — klíč aktivní položky: overview|participants|checkin|program|roster
+
+   Funkce týmu ZÁMĚRNĚ není v pruhu — je to globální číselník rolí (bez eventSlug), ne podstránka
+   turnusu; odkaz na něj žije na stránce Rozpis služeb a v úvodce. #}
+{% set _cur = current|default('') %}
+<nav class="oa-subnav" aria-label="Podmenu turnusu">
+    {% if eventName|default %}<span class="oa-subnav__label">{{ eventName }}</span>{% endif %}
+    <a class="oa-subnav__item{{ _cur == 'overview' ? ' is-active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: eventSlug }) }}">Přehled</a>
+    <a class="oa-subnav__item{{ _cur == 'participants' ? ' is-active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', { eventSlug: eventSlug, participantCategorySlug: 'attendee' }) }}">Účastníci</a>
+    <a class="oa-subnav__item{{ _cur == 'checkin' ? ' is-active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">Check-in</a>
+    <a class="oa-subnav__item{{ _cur == 'program' ? ' is-active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_program_index', { eventSlug: eventSlug }) }}">Program</a>
+    <a class="oa-subnav__item{{ _cur == 'roster' ? ' is-active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: eventSlug }) }}">Rozpis služeb</a>
+</nav>
+<style>
+    .oa-subnav { display: flex; flex-wrap: wrap; gap: .1rem 1.15rem; align-items: center;
+        border-bottom: 2px solid #e3e9f0; margin: 0 0 1.15rem; padding: 0; }
+    .oa-subnav__label { font-weight: 700; color: #6c757d; margin-right: .5rem; }
+    .oa-subnav__item { padding: .45rem 0 .5rem; color: #006FAD; text-decoration: none;
+        border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+    .oa-subnav__item:hover { border-bottom-color: rgba(0, 111, 173, .35); }
+    .oa-subnav__item.is-active { font-weight: 700; border-bottom-color: #006FAD; }
+</style>

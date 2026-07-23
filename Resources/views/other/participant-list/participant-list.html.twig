@@ -10,6 +10,16 @@
 {% set qbase = scopeParams|merge(app.request.query.all) %}
 <div class="container participants-page">
 
+    {# Kontextové podmenu turnusu — jen když je seznam scopovaný na jeden turnus (ne „všechny akce").
+       Umožní skok na Přehled/Check-in/Program/Rozpis téhož turnusu; scope-bar níž mění filtr účastníků.
+       Skryté v tisku (seznam se tiskne). #}
+    {% if event|default and event.slug|default %}
+        <div class="d-print-none">
+            {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+                with { eventSlug: event.slug, eventName: (event.shortName|default(event.name|default(''))), current: 'participants' } only %}
+        </div>
+    {% endif %}
+
     {# ---- PAGE TITLE ----------------------------------------------------- #}
     <div class="d-flex align-items-center gap-2 mb-2 mt-1">
         <h1 class="h3 m-0">Přehled přihlášek</h1>

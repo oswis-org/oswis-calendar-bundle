@@ -4,6 +4,8 @@
 
 {% block body_content %}
     <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+            with { eventSlug: eventSlug, eventName: (event is defined ? (event.shortName|default(event.name|default(''))) : ''), current: 'roster' } only %}
         <h2>{{ pageTitle }}</h2>
         <p class="text-muted" style="max-width: 60rem;">
             <strong>Služby</strong> turnusu (řízení, jídelna, vrátnice…) — mřížka dny × funkce.
