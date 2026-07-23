@@ -45,8 +45,7 @@
                     {# Navigace mezi podstránkami turnusu (Účastníci/Check-in/Program/Rozpis) je v podmenu
                        nahoře (event-subnav). Tady zůstávají jen tiskové výstupy programu (PDF, ex-PR #37).
                        Turnus-level = jen eventSlug; na turnusu bez programu vrací controller 404. #}
-                    <div style="display: inline-flex; gap: .5rem; flex-wrap: wrap; align-items: center;">
-                        <span class="small text-muted" style="margin-right: .25rem;">Tisk (PDF):</span>
+                    <twig:Admin:Toolbar label="Tisk (PDF):">
                         <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"
                            href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', { eventSlug: event.slug }) }}">
                             Celý program
@@ -63,7 +62,7 @@
                            href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', { eventSlug: event.slug }) }}">
                             Itinerář týmu
                         </a>
-                    </div>
+                    </twig:Admin:Toolbar>
                 {% endif %}
             </div>
         </div>
