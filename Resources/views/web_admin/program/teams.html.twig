@@ -30,10 +30,10 @@
         </fieldset>
 
         {% for team in teams %}
-            <div style="border: 1px solid #dee2e6; border-radius: .375rem; padding: .8rem 1.1rem; margin-bottom: .8rem; max-width: 52rem;">
+            <div class="box" style="margin-bottom: .8rem; max-width: 52rem;">
                 <div style="display: flex; align-items: center; gap: .75rem;">
                     <strong style="font-size: 1.05rem;">{{ team.name }}</strong>
-                    <span style="color: #adb5bd;">{{ team.members|length }} členů</span>
+                    <span class="text-muted">{{ team.members|length }} členů</span>
                     <form method="post" style="margin: 0 0 0 auto;"
                           action="{{ path('oswis_org_oswis_calendar_web_admin_program_team_delete', {eventSlug: eventSlug, teamId: team.id}) }}"
                           onsubmit="return confirm('Smazat tým „{{ team.name }}"?');">
@@ -68,7 +68,7 @@
                 {% endif %}
             </div>
         {% else %}
-            <p style="color: #adb5bd;">Zatím žádné týmy.</p>
+            <p class="text-muted">Zatím žádné týmy.</p>
         {% endfor %}
     </main>
 {% endblock %}
