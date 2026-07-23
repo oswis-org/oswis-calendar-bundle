@@ -49,8 +49,7 @@
            oranžová obrys = výstupy/exporty (PDF/CSV) · červená = mazání · zelená = zveřejnit. #}
         <div class="row" style="margin-top: .75rem;">
             <div class="col" style="display: flex; gap: .6rem 1.4rem; flex-wrap: wrap; align-items: center;">
-                <span style="display: inline-flex; gap: .4rem; flex-wrap: wrap; align-items: center;">
-                    <span class="small text-muted" style="font-weight: 600;">Vytvořit:</span>
+                <twig:Admin:Toolbar label="Vytvořit:">
                     <a class="btn btn-sm btn-primary"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Aktivita</a>
                     <a class="btn btn-sm btn-outline-primary"
@@ -60,19 +59,17 @@
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Den</a>
                     <a class="btn btn-sm btn-outline-primary"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Sekce</a>
-                </span>
-                <span style="display: inline-flex; gap: .4rem; flex-wrap: wrap; align-items: center;">
-                    <span class="small text-muted" style="font-weight: 600;">Nástroje:</span>
-                    {# provozní editory = modrá (navigace do sekce), sjednoceno s detailem turnusu #}
+                </twig:Admin:Toolbar>
+                {# provozní editory = modrá (navigace do sekce), sjednoceno s detailem turnusu #}
+                <twig:Admin:Toolbar label="Nástroje:">
                     <a class="btn btn-sm btn-outline-primary"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', {eventSlug: eventSlug}) }}">Rozpis služeb</a>
                     <a class="btn btn-sm btn-outline-primary"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_teams', {eventSlug: eventSlug}) }}">Týmy</a>
                     <a class="btn btn-sm btn-outline-primary"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_series', {eventSlug: eventSlug}) }}">Série</a>
-                </span>
-                <span style="display: inline-flex; gap: .4rem; flex-wrap: wrap; align-items: center;">
-                    <span class="small text-muted" style="font-weight: 600;">Tisk (PDF):</span>
+                </twig:Admin:Toolbar>
+                <twig:Admin:Toolbar label="Tisk (PDF):">
                     <a class="btn btn-sm btn-outline-secondary" target="_blank"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský</a>
                     <a class="btn btn-sm btn-outline-secondary" target="_blank"
@@ -81,7 +78,7 @@
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', {eventSlug: eventSlug}) }}">Tým</a>
                     <a class="btn btn-sm btn-outline-secondary" target="_blank"
                        href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', {eventSlug: eventSlug}) }}">Celý program</a>
-                </span>
+                </twig:Admin:Toolbar>
             </div>
         </div>
 
