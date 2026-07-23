@@ -38,9 +38,19 @@
                     </div>
                 {% endif %}
                 {% if is_granted('ROLE_MANAGER') and event.slug|default %}
+                    {# „Provoz turnusu" = jednotný kontextový panel akcí, které se dělají S tímto turnusem
+                       (účastníci, check-in, program, služby, funkce). Dřív roztroušené ve dvou skupinách;
+                       program editor navíc nebyl odnikud odkazovaný (osiřelý — celý modul jen přes URL). #}
                     <div style="display: inline-flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin-bottom: .5rem;">
+                        <span class="small text-muted" style="margin-right: .25rem;">Provoz turnusu:</span>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', { eventSlug: event.slug, participantCategorySlug: 'attendee' }) }}">
+                            <twig:ux:icon name="tabler:users" class="oa-icon" /> Účastníci
+                        </a>
                         <a class="btn btn-sm btn-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: event.slug }) }}">
                             <twig:ux:icon name="tabler:circle-check" class="oa-icon" /> Check-in
+                        </a>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_program_index', { eventSlug: event.slug }) }}">
+                            <twig:ux:icon name="tabler:clipboard-list" class="oa-icon" /> Program
                         </a>
                         <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: event.slug }) }}">
                             <twig:ux:icon name="tabler:calendar-time" class="oa-icon" /> Rozpis služeb
@@ -52,7 +62,7 @@
                     {# Program-module tiskové výstupy (STOPA 1.3, ex-PR #37). Turnus-level = jen eventSlug;
                        na turnusu bez programu vrací controller 404 „chybí podklad" (ne chybu). #}
                     <div style="display: inline-flex; gap: .5rem; flex-wrap: wrap; align-items: center;">
-                        <span class="small text-muted" style="margin-right: .25rem;">Program (PDF):</span>
+                        <span class="small text-muted" style="margin-right: .25rem;">Tisk (PDF):</span>
                         <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"
                            href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', { eventSlug: event.slug }) }}">
                             Celý program
