@@ -8,15 +8,12 @@
     <div class="container" style="padding: 1rem;">
         {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
             with { eventSlug: eventSlug, eventName: (event is defined ? (event.shortName|default(event.name|default(''))) : ''), current: 'program' } only %}
-        <div class="row">
-            <div class="col" style="display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;">
-                <h2 style="margin: 0;">Program — {{ event.name ?? eventSlug }}</h2>
-                {% set dayCount = tree|filter(row => row.day is not null)|length %}
-                {% set activityCount = 0 %}
-                {% for row in tree %}{% set activityCount = activityCount + row.activities|length %}{% endfor %}
-                <span class="badge bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
-            </div>
-        </div>
+        {% set dayCount = tree|filter(row => row.day is not null)|length %}
+        {% set activityCount = 0 %}
+        {% for row in tree %}{% set activityCount = activityCount + row.activities|length %}{% endfor %}
+        <twig:Admin:PageHeader :title="'Program — ' ~ (event.name ?? eventSlug)">
+            <span class="badge bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
+        </twig:Admin:PageHeader>
 
         <div class="row" style="margin-top: .5rem;">
             <div class="col">
