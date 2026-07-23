@@ -34,7 +34,7 @@
         <div class="mt-3 d-flex gap-2">
             {{ form_widget(form.submit) }}
             {% if offer.event %}
-                <a class="btn btn-outline-secondary"
+                <a class="btn btn-link"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_event', {eventSlug: offer.event.slug}) }}">Zrušit</a>
             {% endif %}
         </div>

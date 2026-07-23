@@ -20,7 +20,7 @@
         <div class="row">
             <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <h2 style="margin: 0;">Check-in stanice — {{ event.name ?? eventSlug }}</h2>
-                <a class="btn btn-sm btn-outline-secondary"
+                <a class="btn btn-sm btn-link"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">← Zpět na check-in</a>
                 <a class="btn btn-sm btn-primary" style="margin-left: auto;"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_station_new', { eventSlug: eventSlug }) }}">+ Přidat stanici</a>

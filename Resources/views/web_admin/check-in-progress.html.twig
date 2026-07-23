@@ -16,7 +16,7 @@
         <div class="row">
             <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <h2 style="margin: 0;">Průběh příjezdu — {{ event.name ?? eventSlug }}</h2>
-                <a class="btn btn-sm btn-outline-secondary"
+                <a class="btn btn-sm btn-link"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">← Zpět na check-in</a>
                 <span class="text-muted small" style="margin-left: auto;">Obnovuje se automaticky každých 30 s.</span>
             </div>
