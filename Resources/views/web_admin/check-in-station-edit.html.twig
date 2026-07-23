@@ -14,8 +14,8 @@
 
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Stanice</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Stanice</legend>
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.name) }}</div>
                 <div class="col-12 col-md-4 mb-3">{{ form_row(form.stationKind) }}</div>
@@ -29,8 +29,8 @@
             </div>
         </fieldset>
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Zachytávaná hodnota (nepovinné)</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Zachytávaná hodnota (nepovinné)</legend>
             <div class="row">
                 <div class="col-12 col-md-4 mb-3 d-flex align-items-end">{{ form_row(form.capturesValue) }}</div>
                 <div class="col-12 col-md-8 mb-3">{{ form_row(form.valueLabel) }}</div>

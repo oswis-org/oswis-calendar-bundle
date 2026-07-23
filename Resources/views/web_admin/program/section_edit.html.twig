@@ -10,7 +10,7 @@
         </div>
 
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem; max-width: 52rem;">
+        <fieldset class="admin-fieldset" style="max-width: 52rem;">
             <div class="row">
                 <div class="col-12 col-md-8 mb-3">{{ form_row(form.name) }}</div>
                 <div class="col-12 col-md-4 mb-3">{{ form_row(form.priority) }}</div>
