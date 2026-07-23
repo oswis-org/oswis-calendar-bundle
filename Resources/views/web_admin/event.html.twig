@@ -28,7 +28,7 @@
                                   style="display: inline-block; margin: 0;"
                                   onsubmit="return confirm('Opravdu obnovit událost?');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('event_restore_' ~ event.id) }}">
-                                <button type="submit" class="btn btn-sm btn-outline-success">↻ Obnovit</button>
+                                <button type="submit" class="btn btn-sm btn-outline-success"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Obnovit</button>
                             </form>
                         {% else %}
                             <form method="post"
@@ -36,7 +36,7 @@
                                   style="display: inline-block; margin: 0;"
                                   onsubmit="return confirm('Opravdu smazat? Smazání lze obnovit.');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('event_delete_' ~ event.id) }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">✗ Smazat</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:x" class="oa-icon" /> Smazat</button>
                             </form>
                         {% endif %}
                     </div>
