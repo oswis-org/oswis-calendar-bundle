@@ -107,7 +107,7 @@ final class ParticipantFilterEvaluator
         return [
             'hasFlag', 'hasFlagInCategory', 'hasFlagOfType', 'flagCount',
             'isPaid', 'isOverpaid', 'remainingPrice', 'remainingDeposit',
-            'isDeleted', 'isActivated', 'hasNote', 'hasRegistration',
+            'isDeleted', 'isActivated', 'isConfirmed', 'hasNote', 'hasRegistration',
             'gender', 'eventSlug',
         ];
     }
@@ -127,7 +127,11 @@ final class ParticipantFilterEvaluator
             $this->fn('remainingPrice', static fn (Participant $p): int => $p->getRemainingPrice()),
             $this->fn('remainingDeposit', static fn (Participant $p): int => $p->getRemainingDeposit()),
             $this->fn('isDeleted', static fn (Participant $p): bool => $p->isDeleted()),
+            // POZOR na rozdíl (zdroj chyby z 2026-07-29): `isActivated` se ptá na ÚČET kontaktu —
+            // ten může být aktivovaný z loňské/jiné přihlášky, takže o TÉHLE přihlášce neříká nic.
+            // Na otázku „potvrdil účastník tuhle přihlášku klikem v e-mailu?" odpovídá `isConfirmed`.
             $this->fn('isActivated', static fn (Participant $p): bool => $p->hasActivatedContactUser()),
+            $this->fn('isConfirmed', static fn (Participant $p): bool => null !== $p->getUserConfirmedAt()),
             $this->fn('hasNote', static fn (Participant $p): bool => self::hasNote($p)),
             $this->fn('hasRegistration', static fn (Participant $p): bool => null !== $p->getParticipantRegistration()),
             $this->fn('gender', static fn (Participant $p): string => $p->getContact()?->getGender() ?? ''),

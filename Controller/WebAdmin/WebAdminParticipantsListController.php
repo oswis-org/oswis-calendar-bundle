@@ -571,7 +571,10 @@ class WebAdminParticipantsListController extends AbstractController
             ['key' => self::FILTER_UNPAID_DEPOSIT, 'label' => 'Nezaplacená záloha',  'group' => 'Platby',   'expr' => 'remainingDeposit() > 0'],
             ['key' => self::FILTER_UNPAID_BALANCE, 'label' => 'Nezaplacený doplatek','group' => 'Platby',   'expr' => 'remainingDeposit() <= 0 and remainingPrice() > 0'],
             ['key' => self::FILTER_OVERPAID,       'label' => 'Přeplaceno',          'group' => 'Platby',   'expr' => 'remainingPrice() < 0'],
-            ['key' => self::FILTER_NOT_ACTIVATED,  'label' => 'Neaktivované',        'group' => 'Stav',     'expr' => 'not isActivated()'],
+            // `not isConfirmed()`, ne `not isActivated()`: druhé se ptá na účet kontaktu, který může být
+            // aktivovaný z dřívější přihlášky — takový účastník pak v seznamu nepotvrzených CHYBĚL a
+            // nebylo ho jak dohnat (2026-07-29).
+            ['key' => self::FILTER_NOT_ACTIVATED,  'label' => 'Neaktivované',        'group' => 'Stav',     'expr' => 'not isConfirmed()'],
             ['key' => self::FILTER_WITH_NOTE,      'label' => 'S poznámkou',         'group' => 'Stav',     'expr' => 'hasNote()'],
             ['key' => self::FILTER_FOOD,           'label' => 'Stravovací omezení',  'group' => 'Příznaky', 'expr' => sprintf("hasFlagOfType('%s')", RegistrationFlagCategory::TYPE_FOOD)],
             ['key' => self::FILTER_DELETED,        'label' => 'Smazané',             'group' => 'Stav',     'expr' => null],
