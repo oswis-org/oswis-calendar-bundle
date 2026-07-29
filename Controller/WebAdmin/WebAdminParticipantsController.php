@@ -414,6 +414,47 @@ final class WebAdminParticipantsController extends AbstractController
     }
 
     /**
+     * Send the registration summary (= the mail with the payment instructions and the QR codes)
+     * to the participant's contact persons, on demand.
+     *
+     * Unlike the per-entry "↻ Odeslat znovu" in the timeline, this does NOT need an existing mail
+     * row to copy — it renders a fresh summary from the participant's CURRENT data, so it is the
+     * recovery path when the summary was never sent at all (see the `userConfirmedAt` guard in
+     * {@see ParticipantService::activate()}) or when the participant lost it. Summary data is fully
+     * reconstructible (amounts, QR, ICS), so the content is always truthful — that is why this type
+     * is re-sendable while payment confirmations and activation requests are not.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function sendSummary(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_send_summary_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            true,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        try {
+            $this->participantMailService->sendSummary($participant);
+            $this->addFlash('success', sprintf(
+                'Shrnutí přihlášky (pokyny k platbě) odesláno účastníkovi #%d.',
+                $participantId,
+            ));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', sprintf('Shrnutí nešlo odeslat: %s', $e->getMessage()));
+        }
+
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_detail',
+            ['participantId' => $participantId, '_fragment' => 'komunikace'],
+        ));
+    }
+
+    /**
      * Restore a soft-deleted participant (set deletedAt back to null).
      * Cascade-deleted children (flags, registrations) stay deleted — admin
      * can verify and act on them from the participant detail page.

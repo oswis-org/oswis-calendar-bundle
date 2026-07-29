@@ -457,14 +457,23 @@ class ParticipantService
             if (null === $participant || null === ($appUser = $participantToken->getAppUser())) {
                 throw new NotFoundException('Uživatel nenalezen.');
             }
-            // Send the summary only on the FIRST activation: the token is not consumed (it is validated
-            // with use(simulate:true)), so the link stays clickable for its 24h TTL — re-clicking would
-            // otherwise re-send the full summary every time. AppUser::activate() is already idempotent.
+            // Send the summary only on the FIRST confirmation OF THIS REGISTRATION: the token is not
+            // consumed (it is validated with use(simulate:true)), so the link stays clickable for its
+            // 24h TTL — re-clicking would otherwise re-send the full summary every time.
             // (audit 2026-06-25, A2-Bug1) Overlaps activation rework #233.
-            $alreadyActivated = $appUser->isActivated();
+            //
+            // ⚠️ The guard MUST key on the participant, not on the AppUser. `AppUser::isActivated()` is
+            // a lifetime property of the ACCOUNT: a returning participant (or anyone who registers a
+            // second time) already has an activated account from an earlier year/registration, so the
+            // old `!$appUser->isActivated()` guard silently swallowed the summary — the participant
+            // confirmed the registration and never received the payment instructions, with nothing in
+            // the log to show for it (4 such registrations in the 2026 season, prod). `userConfirmedAt`
+            // is per-registration and is exactly the "did THIS registration already confirm?" question;
+            // setUserConfirmed() below is idempotent (it only sets the timestamp when still null).
+            $alreadyConfirmed = null !== $participant->getUserConfirmedAt();
             $this->appUserService->activate($appUser, false);
             $participant->setUserConfirmed($appUser);
-            if (true === $sendConfirmation && !$alreadyActivated) {
+            if (true === $sendConfirmation && !$alreadyConfirmed) {
                 $this->participantMailService->sendSummary($participant);
             }
             $this->em->persist($participant);

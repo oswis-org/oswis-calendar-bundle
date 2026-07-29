@@ -71,6 +71,19 @@
                         <button type="submit" class="btn btn-sm btn-outline-info"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Aktivační e-mail</button>
                     </form>
                 {% endif %}
+                {# Shrnutí = pokyny k platbě + QR. Renderuje se z aktuálních dat, takže ho lze poslat
+                   kdykoliv — i když v evidenci žádné shrnutí není (přihláška ověřená účtem, který už
+                   byl aktivovaný z dřívějška, ho historicky nedostala). #}
+                {% if contact and contact.email|default %}
+                    <form method="post"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_send_summary', { participantId: participant.id }) }}"
+                          style="display:inline-block; margin:0;"
+                          onsubmit="return confirm('Odeslat účastníkovi #{{ participant.id }} shrnutí přihlášky s pokyny k platbě?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_send_summary_' ~ participant.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-info"
+                                title="Poslat shrnutí přihlášky s pokyny k platbě a QR kódem (podle aktuálních dat)"><twig:ux:icon name="tabler:receipt" class="oa-icon" /> Shrnutí přihlášky</button>
+                    </form>
+                {% endif %}
                 {% if participant.deletedAt|default %}
                     <form method="post"
                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
