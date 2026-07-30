@@ -330,7 +330,10 @@
         .participants-page .oswis-flag-badge { display: inline-flex; align-items: stretch; overflow: hidden;
             border-radius: .3rem; font-size: .68rem; font-weight: 600; line-height: 1.4; vertical-align: middle;
             background-color: #17a2b8; color: #fff; }
-        .participants-page .oswis-flag-badge .ofb-name { padding: .12em .45em; display: inline-flex; align-items: center; }
+        /* `nowrap` i na názvu: bez něj se na úzkém displeji (sloupec se smrskne) láme po PÍSMENECH
+           a z „HOTEL" je svislý sloupec písmen — cenová půlka to nepotkalo, ta nowrap měla. */
+        .participants-page .oswis-flag-badge .ofb-name { padding: .12em .45em; display: inline-flex; align-items: center;
+            white-space: nowrap; }
         .participants-page .oswis-flag-badge .ofb-price,
         .participants-page .oswis-flag-badge .ofb-text { padding: .12em .45em; display: inline-flex; align-items: center;
             white-space: nowrap; }
