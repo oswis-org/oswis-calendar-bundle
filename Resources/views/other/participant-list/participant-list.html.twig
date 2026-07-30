@@ -509,8 +509,7 @@
              data-csrf-export="{{ csrf_token('bulk_export') }}"
              data-csrf-delete="{{ csrf_token('bulk_delete') }}"
              data-mail-url="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_compose') }}"
-             data-csrf-mail="{{ csrf_token('bulk_mail') }}"
-             data-return="{{ app.request.requestUri }}">
+             data-csrf-mail="{{ csrf_token('bulk_mail') }}">
             <span class="bulk-count">Vybráno: <strong id="bulkCount">0</strong></span>
             <span class="bulk-actions">
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="csv" disabled>⬇ Export (CSV)</button>
@@ -601,7 +600,6 @@
                 f.action = url;
                 function hidden(name, value) { var i = document.createElement('input'); i.type = 'hidden'; i.name = name; i.value = value; f.appendChild(i); }
                 if (csrf) { hidden('_token', csrf); }
-                hidden('return', bar.getAttribute('data-return') || '');
                 var field = (idField || 'ids') + '[]';
                 ids.forEach(function (id) { hidden(field, id); });
                 if (extra) { Object.keys(extra).forEach(function (k) { hidden(k, extra[k]); }); }

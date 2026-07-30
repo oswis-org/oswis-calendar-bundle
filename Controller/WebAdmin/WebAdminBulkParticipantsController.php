@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisCoreBundle\Enum\ExportFormat;
 use OswisOrg\OswisCoreBundle\Export\ExportManager;
 use OswisOrg\OswisCoreBundle\Export\ExportRequest;
@@ -162,12 +163,13 @@ final class WebAdminBulkParticipantsController extends AbstractController
     }
 
     /**
-     * Návratová URL z POST `return`; jen same-origin relativní cesta (žádný open-redirect).
+     * Návratová URL ze stránky, na které formulář byl (`Referer`); jen same-origin admin cesta,
+     * žádný open-redirect. Skryté pole s URL to být nemůže — {@see AdminReturnUrl}.
      */
     private function safeReturn(Request $request): string
     {
-        $return = $request->request->getString('return');
-        if ('' !== $return && str_starts_with($return, '/') && !str_starts_with($return, '//')) {
+        $return = AdminReturnUrl::fromReferer($request);
+        if (null !== $return) {
             return $return;
         }
 

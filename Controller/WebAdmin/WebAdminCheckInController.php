@@ -11,6 +11,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\CheckIn\CheckInService;
 use OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService;
+use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -291,8 +292,9 @@ final class WebAdminCheckInController extends AbstractController
 
     private function safeBackToList(Request $request, string $eventSlug): string
     {
-        $return = (string) $request->request->get('return', '');
-        if (str_starts_with($return, '/web_admin/') && !str_contains($return, "\n") && !str_contains($return, "\r")) {
+        // Stránka, na které formulář byl (`Referer`) — ne skryté pole s URL, {@see AdminReturnUrl}.
+        $return = AdminReturnUrl::fromReferer($request);
+        if (null !== $return) {
             return $return;
         }
 

@@ -156,7 +156,6 @@
                       action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
                       onsubmit="return confirm('Opravdu smazat účastníka #{{ participant.id }}? (lze obnovit)');">
                     <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
-                    <input type="hidden" name="return" value="{{ app.request.requestUri }}">
                     <button type="submit" class="btn btn-sm btn-outline-danger d-block w-100" style="padding:2px 6px; font-size:.75rem;">🗑 Smazat</button>
                 </form>
             {% endif %}

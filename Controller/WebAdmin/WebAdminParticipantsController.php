@@ -13,6 +13,7 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFlagUpdateService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
+use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
@@ -611,14 +612,14 @@ final class WebAdminParticipantsController extends AbstractController
     }
 
     /**
-     * Resolve a safe post-action redirect target: the `return` form field if it is a
-     * same-host admin (/web_admin/...) path, otherwise the participant detail page.
-     * Never trusts an absolute/off-site URL (open-redirect guard).
+     * Resolve a safe post-action redirect target: the admin page the form was on (`Referer`),
+     * otherwise the participant detail page. Never trusts an off-site URL (open-redirect guard).
+     * {@see AdminReturnUrl} for why this is not a hidden URL field any more.
      */
     private function safeListRedirect(Request $request, int $participantId): string
     {
-        $return = (string) $request->request->get('return', '');
-        if (str_starts_with($return, '/web_admin/') && !str_contains($return, "\n") && !str_contains($return, "\r")) {
+        $return = AdminReturnUrl::fromReferer($request);
+        if (null !== $return) {
             return $return;
         }
 

@@ -87,7 +87,6 @@
                                     <form method="post" style="margin: 0;"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_arrived', { participantId: p.id }) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('checkin_arrived_' ~ p.id) }}">
-                                        <input type="hidden" name="return" value="{{ app.request.requestUri }}">
                                         {% if p.arrived %}
                                             <button type="submit" class="btn btn-sm btn-success" title="Zrušit příjezd (překlik)">
                                                 ✓ přijel {{ p.arrivedAt|date('H:i') }}
@@ -102,7 +101,6 @@
                                     <form method="post" style="margin: 0;"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_tshirt', { participantId: p.id }) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('checkin_tshirt_' ~ p.id) }}">
-                                        <input type="hidden" name="return" value="{{ app.request.requestUri }}">
                                         {% if p.tShirtHandedOver %}
                                             <button type="submit" class="btn btn-sm btn-success" title="Zrušit výdej (překlik)">✓ vydáno{% if size %} ({{ size }}){% endif %}</button>
                                         {% else %}
