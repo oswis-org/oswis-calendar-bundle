@@ -38,8 +38,17 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
       groups: [ 'calendar_participants_get', 'calendar_participants_post', 'calendar_participant_get', 'calendar_participant_put' ]
     priceRest:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
-    priceDeposit:
+    # Byl tu `priceDeposit`, jenže entita má getter `getDepositValue()` — ten řádek byl MRTVÝ
+    # a záloha se do API nikdy neposílala (ověřeno na odpovědi 2026-07-30). Klient na starý název
+    # spoléhat nemohl, protože nikdy nedorazil, takže přejmenování nic nerozbíjí.
+    depositValue:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
+    # Zbývající částky rozpadlé na zálohu a doplatek — portál musí umět říct, co se platí teď
+    # (záloha) a co do termínu (doplatek), ne jen jedno číslo.
+    remainingDeposit:
+      groups: [ 'calendar_participant_get' ]
+    remainingPriceRest:
+      groups: [ 'calendar_participant_get' ]
     price:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     remainingPrice:
@@ -50,6 +59,12 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\Participant:
       groups: [ 'calendar_participants_get', 'calendar_participant_get' ]
     variableSymbol:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
+    # Platební instrukce pro portál — JEN item GET. V kolekci by to byla zbytečná zátěž
+    # (SPD řetězec na každý řádek seznamu) a do výpisů to nepatří.
+    bankAccountNumber:
+      groups: [ 'calendar_participant_get' ]
+    remainingPaymentQrString:
+      groups: [ 'calendar_participant_get' ]
     sortableName:
       groups: [ 'calendar_participants_get', 'calendar_participant_get', 'calendar_check_in_queue' ]
     payments:

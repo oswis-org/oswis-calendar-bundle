@@ -1128,6 +1128,33 @@ class Participant implements ParticipantInterface
     }
 
     /**
+     * Číslo účtu akce ve tvaru pro člověka (`předčíslí-číslo/kód banky`), zděděné z nadřazené akce.
+     *
+     * Účastník ho potřebuje i bez QR — platí z počítače, nebo mobilní bankovnictví vůbec nemá.
+     * Appka NENÍ jediný kanál (viz vize portálu), takže platební údaje musí být čitelné jako text.
+     */
+    public function getBankAccountNumber(): ?string
+    {
+        return $this->getEvent()?->getBankAccount(true)?->getFull();
+    }
+
+    /**
+     * Platební příkaz (SPD 1.0) na ZBÝVAJÍCÍ částku, nebo null když není co platit / chybí účet.
+     *
+     * Záměrně stejná sémantika jako {@see generateRemainingQrPng()} používaná v mailech: kdo má
+     * doplaceno, QR nedostane, aby nezaplatil podruhé.
+     */
+    public function getRemainingPaymentQrString(): ?string
+    {
+        $remaining = $this->getRemainingPrice();
+        if ($remaining <= 0 || null === ($bankAccount = $this->getEvent()?->getBankAccount(true))) {
+            return null;
+        }
+
+        return $bankAccount->getQrString($remaining, $this->getVariableSymbol(), 'zbývá k úhradě');
+    }
+
+    /**
      * Get variable symbol of this eventParticipant.
      */
     public function getVariableSymbol(): ?string
