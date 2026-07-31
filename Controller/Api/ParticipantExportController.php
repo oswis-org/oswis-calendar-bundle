@@ -6,7 +6,9 @@ namespace OswisOrg\OswisCalendarBundle\Controller\Api;
 
 use OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantListFilter;
 use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantCategoryService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
@@ -37,6 +39,7 @@ final class ParticipantExportController
 {
     public function __construct(
         private readonly EventService $eventService,
+        private readonly ParticipantListFilter $listFilter,
         private readonly ParticipantCategoryService $participantCategoryService,
         private readonly ParticipantService $participantService,
         private readonly ExportManager $exportManager,
@@ -91,6 +94,11 @@ final class ParticipantExportController
             ], Response::HTTP_REQUEST_ENTITY_TOO_LARGE);
         }
 
+        // Export musí ctít TOTÉŽ, co má klient na obrazovce — filtr, fasety, výraz, hledání
+        // i řazení. Do 2026-07-31 uměl jen rozsah (akce/kategorie) a zbytek ignoroval, takže
+        // vracel celou akci bez ohledu na nastavení seznamu.
+        $filtered = new ArrayCollection($this->listFilter->applyFromRequest($participants, $request));
+
         $columnKeys = array_values(array_filter($request->query->all('columns'), 'is_string'));
         $exportRequest = new ExportRequest(
             ExportFormat::fromRequest($request->query->getString('format')),
@@ -98,7 +106,7 @@ final class ParticipantExportController
         );
 
         return $this->exportResponseFactory->toResponse(
-            $this->exportManager->render($this->participantExportDefinition, $participants, $exportRequest),
+            $this->exportManager->render($this->participantExportDefinition, $filtered, $exportRequest),
         );
     }
 }

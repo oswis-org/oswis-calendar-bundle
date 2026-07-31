@@ -334,6 +334,10 @@ services:
     arguments:
       - '@doctrine.orm.entity_manager'
       - '@monolog.logger'
+  # Jediný vlastník výběru přihlášek pro seznam i exporty (viz komentář ve třídě).
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantListFilter:
+    autowire: true
+
   OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagCategoryService:
     alias: oswis_org_oswis_calendar.registration.registration_flag_category_service
     public: true
