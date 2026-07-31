@@ -1144,14 +1144,37 @@ class Participant implements ParticipantInterface
      * Záměrně stejná sémantika jako {@see generateRemainingQrPng()} používaná v mailech: kdo má
      * doplaceno, QR nedostane, aby nezaplatil podruhé.
      */
+    /**
+     * QR na CELÝ zbytek („zbývá celkem“) — pro toho, kdo chce poslat všechno najednou.
+     *
+     * Trojice QR řetězců je záměrně shodná s tím, co dělá `generateRemainingQrPng()` pro e-maily
+     * (celkem / zbývající záloha / zbývající doplatek), aby účastník viděl v aplikaci TOTÉŽ co
+     * v e-mailu. Portál ukazuje zálohu a doplatek zvlášť, stejně jako e-mail se shrnutím.
+     */
     public function getRemainingPaymentQrString(): ?string
     {
-        $remaining = $this->getRemainingPrice();
-        if ($remaining <= 0 || null === ($bankAccount = $this->getEvent()?->getBankAccount(true))) {
+        return $this->buildRemainingQrString($this->getRemainingPrice(), 'zbývá celkem');
+    }
+
+    /** QR na zbývající ZÁLOHU — v e-mailu je to levý kód („Záloha“). */
+    public function getRemainingDepositQrString(): ?string
+    {
+        return $this->buildRemainingQrString($this->getRemainingDeposit(), 'zbývající záloha');
+    }
+
+    /** QR na zbývající DOPLATEK — v e-mailu je to pravý kód („Doplatek“). */
+    public function getRemainingRestQrString(): ?string
+    {
+        return $this->buildRemainingQrString($this->getRemainingPriceRest(), 'zbývající doplatek');
+    }
+
+    private function buildRemainingQrString(int $amount, string $message): ?string
+    {
+        if ($amount <= 0 || null === ($bankAccount = $this->getEvent()?->getBankAccount(true))) {
             return null;
         }
 
-        return $bankAccount->getQrString($remaining, $this->getVariableSymbol(), 'zbývá k úhradě');
+        return $bankAccount->getQrString($amount, $this->getVariableSymbol(), $message);
     }
 
     /**
