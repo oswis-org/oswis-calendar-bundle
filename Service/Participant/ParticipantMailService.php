@@ -272,6 +272,7 @@ class ParticipantMailService
         if ($participant->getDeletedAt()) {
             $title = "Shrnutí smazané přihlášky";
         }
+        $title = $this->withEventTitle($title, $participant->getEvent());
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
         $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
@@ -474,6 +475,23 @@ class ParticipantMailService
      * Doména pro UID iCal — používáme stejnou jako pro Message-ID
      * (oswis.<domain>), aby UID byly globálně unikátní a vázané k naší doméně.
      */
+    /**
+     * Doplní do předmětu název akce, ať účastník pozná ročník na první pohled.
+     *
+     * Kdo jezdí opakovaně, měl v poště několik zpráv „Shrnutí přihlášky“ bez rozlišení a nevěděl,
+     * která je letošní. Vzor je shodný s „Změna v přihlášce – <akce>“, který to dělal odjakživa.
+     * Když už název v předmětu je (šablony si ho někdy nesou samy), nepřidává se podruhé.
+     */
+    private function withEventTitle(string $title, ?Event $event): string
+    {
+        $eventName = $event?->getShortName();
+        if (empty($eventName)) {
+            $eventName = $event?->getName();
+        }
+
+        return empty($eventName) || str_contains($title, $eventName) ? $title : $title.' – '.$eventName;
+    }
+
     private function getMessageIdDomain(): string
     {
         return 'oswis.seznamovakup.cz';
@@ -573,6 +591,7 @@ class ParticipantMailService
             throw new NotFoundException("Skupina '$groupName' nebo šablona '$templateName' e-mailů nebyla nalezena.");
         }
         $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
+        $title = $this->withEventTitle($title, $participant->getEvent());
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
         $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
@@ -730,8 +749,9 @@ class ParticipantMailService
         if (null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Šablona e-mailů nebyla nalezena.');
         }
-        $defaultTitle = "Informace k akci".(null !== $group->getEvent() ? $group->getEvent()->getShortName() : '');
-        $title = $twigTemplate->getName() ?? $defaultTitle;
+        // Dřív se název akce lepil bez mezery → „Informace k akciSeznamovák“.
+        $defaultTitle = $this->withEventTitle('Informace k akci', $group->getEvent());
+        $title = $this->withEventTitle($twigTemplate->getName() ?? $defaultTitle, $group->getEvent());
         $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
         $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
