@@ -208,11 +208,8 @@ class WebAdminParticipantsListController extends AbstractController
         // option (how many in the current scope carry that flag), like an e-shop facet count.
         $flagCounts = $this->computeFlagCounts($loaded);
 
-        $matched = $loaded->filter(fn (Participant $p): bool => $this->filterEvaluator->matches($p, $expression));
-        if (null !== $q) {
-            $matched = $matched->filter(fn (Participant $p): bool => $this->participantMatchesQuery($p, $q));
-        }
-        $participantsArray = $this->sortParticipants(array_values($matched->toArray()), $sort, $dir);
+        $participantsArray = $this->applyListFilters($loaded, $expression, $q, $sort, $dir);
+        $matched = new ArrayCollection($participantsArray);
 
         // Summary stats reflect the *filtered* set (so picking "Nezaplacení" or searching
         // recomputes the totals to match what's shown). Skipped on the unscoped paginated
@@ -393,6 +390,33 @@ class WebAdminParticipantsListController extends AbstractController
      * a turnus's sub-events (e.g. skupiny) by default; use the sub-event links or an explicit
      * ?depth= override for that.
      */
+    /**
+     * Aplikuje na načtenou množinu TYTÉŽ filtry, hledání a řazení, jaké má obrazovka seznamu.
+     *
+     * Sdílené mezi seznamem a exporty. Do 2026-07-31 měl export vlastní cestu, která uměla jen
+     * ROZSAH (akce/kategorie/hloubka) a zbytek ignorovala — takže uživatel si vyfiltroval třeba
+     * nezaplacené, dal export a dostal všechny účastníky akce. Filtrovat na dvou místech dvěma
+     * způsoby je přesně to, co se rozešlo; proto to má jediného vlastníka.
+     *
+     * @param Collection<int, Participant> $loaded
+     *
+     * @return list<Participant>
+     */
+    private function applyListFilters(
+        Collection $loaded,
+        ?string $expression,
+        ?string $q,
+        string $sort,
+        string $dir,
+    ): array {
+        $matched = $loaded->filter(fn (Participant $p): bool => $this->filterEvaluator->matches($p, $expression));
+        if (null !== $q) {
+            $matched = $matched->filter(fn (Participant $p): bool => $this->participantMatchesQuery($p, $q));
+        }
+
+        return $this->sortParticipants(array_values($matched->toArray()), $sort, $dir);
+    }
+
     private function defaultDepth(\OswisOrg\OswisCalendarBundle\Entity\Event\Event $event): int
     {
         return $event->isYear() ? 1 : 0;
@@ -1012,11 +1036,25 @@ class WebAdminParticipantsListController extends AbstractController
 
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list', $redirectParams);
         }
-        $participantsArray = $participants->toArray();
-        usort(
-            $participantsArray,
-            static fn (Participant $a, Participant $b): int => StringUtils::compareCzech($a->getSortableName(), $b->getSortableName()),
-        );
+        // Export musí projít TOUTÉŽ branou jako obrazovka — filtr, fasety, výraz, hledání i řazení.
+        // Bez tohohle exportoval celý rozsah bez ohledu na to, co měl uživatel na obrazovce.
+        $filterKey = $request->query->getString('filter', self::FILTER_ALL);
+        if (!$this->isKnownFilter($filterKey)) {
+            $filterKey = self::FILTER_ALL;
+        }
+        $selectedFlags = array_values(array_filter($request->query->all('flags'), 'is_string'));
+        $advancedExpr = trim($request->query->getString('expr'));
+        $advancedExpr = '' === $advancedExpr ? null : $advancedExpr;
+        $q = trim($request->query->getString('q'));
+        $q = '' === $q ? null : $q;
+        $sort = $this->normalizeSort($request->query->getString('sort', self::SORT_NAME));
+        $dir = 'desc' === $request->query->getString('dir') ? 'desc' : 'asc';
+        // Hledání potřebuje kontaktní údaje (telefon/VS) — bez nahrání by to byl dotaz na řádek.
+        $ids = array_values(array_filter($participants->map(static fn (Participant $p): ?int => $p->getId())->toArray()));
+        $this->participantService->getRepository()->primeAggregationCollections($ids, null !== $q);
+        [, $slugToCategory] = $this->buildFlagOffering($selectedFlags);
+        $expression = $this->compileFilterExpression($filterKey, $selectedFlags, $advancedExpr, $slugToCategory, null === $q);
+        $participantsArray = $this->applyListFilters($participants, $expression, $q, $sort, $dir);
         // Human scope subtitle: akce/typ + počet — ať je výstup jednoznačně identifikovatelný.
         $scopeBits = [];
         if (1 === count($events)) {
@@ -1028,6 +1066,9 @@ class WebAdminParticipantsListController extends AbstractController
         }
         if (null !== $participantCategory) {
             $scopeBits[] = (string) $participantCategory->getName();
+        }
+        if (self::FILTER_ALL !== $filterKey || [] !== $selectedFlags || null !== $advancedExpr || null !== $q) {
+            $scopeBits[] = 'filtrovaný výběr';
         }
         $scopeBits[] = count($participantsArray).' záznamů';
 
