@@ -4271,16 +4271,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.2.37",
+      "version": "v0.2.38",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "c6e130a3d38018d4917d14a23289b161c2fca9ad"
+        "reference": "62edb3489039cead19ed5274fa9b00fbba397fc6"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/c6e130a3d38018d4917d14a23289b161c2fca9ad",
-        "reference": "c6e130a3d38018d4917d14a23289b161c2fca9ad",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/62edb3489039cead19ed5274fa9b00fbba397fc6",
+        "reference": "62edb3489039cead19ed5274fa9b00fbba397fc6",
         "shasum": ""
       },
       "require": {
@@ -4388,9 +4388,9 @@
       ],
       "support": {
         "issues": "https://github.com/oswis-org/oswis-core-bundle/issues",
-        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.37"
+        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.38"
       },
-      "time": "2026-07-30T18:17:20+00:00"
+      "time": "2026-07-31T07:57:14+00:00"
     },
     {
       "name": "paragonie/random_compat",

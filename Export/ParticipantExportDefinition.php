@@ -40,25 +40,31 @@ final class ParticipantExportDefinition implements ExportDefinitionInterface
     public function getColumns(): array
     {
         return [
-            new ExportColumn('id', 'ID', static fn (object $p): mixed => $p instanceof Participant ? $p->getId() : null),
+            new ExportColumn('id', 'ID', static fn (object $p): mixed => $p instanceof Participant ? $p->getId() : null, true, ExportColumn::TYPE_TEXT, ExportColumn::ALIGN_RIGHT),
             new ExportColumn('familyName', 'Příjmení', static fn (object $p): mixed => self::person($p)?->getFamilyName()),
             new ExportColumn('givenName', 'Křestní jméno', static fn (object $p): mixed => self::person($p)?->getGivenName()),
             new ExportColumn('fullName', 'Celé jméno', static fn (object $p): mixed => self::person($p)?->getFullName()),
             new ExportColumn('variableSymbol', 'Variabilní symbol', static fn (object $p): mixed => $p instanceof Participant ? $p->getVariableSymbol() : null),
             new ExportColumn('event', 'Akce', static fn (object $p): mixed => $p instanceof Participant ? ($p->getEvent()?->getShortName() ?? $p->getEvent()?->getName()) : null),
             new ExportColumn('category', 'Kategorie', static fn (object $p): mixed => $p instanceof Participant ? $p->getParticipantCategory()?->getName() : null),
-            new ExportColumn('email', 'E-mail', static fn (object $p): mixed => $p instanceof Participant ? $p->getContactForRead()?->getEmail() : null),
-            new ExportColumn('phone', 'Telefon', static fn (object $p): mixed => $p instanceof Participant ? $p->getContactForRead()?->getPhone() : null),
+            new ExportColumn('email', 'E-mail', static fn (object $p): mixed => $p instanceof Participant ? $p->getContactForRead()?->getEmail() : null, true, ExportColumn::TYPE_EMAIL),
+            new ExportColumn('phone', 'Telefon', static fn (object $p): mixed => $p instanceof Participant ? $p->getContactForRead()?->getPhone() : null, true, ExportColumn::TYPE_PHONE),
             new ExportColumn('tShirt', 'Velikost trička', static fn (object $p): mixed => $p instanceof Participant ? $p->getTShirt() : null),
             // Flag-derived provozní sloupce (nejsou ve výchozím exportu — slouží provozním listům).
             new ExportColumn('accommodation', 'Ubytování', static fn (object $p): mixed => self::flagNames($p, RegistrationFlagCategory::TYPE_ACCOMMODATION_TYPE), false),
             new ExportColumn('food', 'Strava', static fn (object $p): mixed => self::flagNames($p, RegistrationFlagCategory::TYPE_FOOD), false),
             new ExportColumn('createdAt', 'Datum přihlášky', static fn (object $p): mixed => $p instanceof Participant ? $p->getCreatedAt() : null, true, ExportColumn::TYPE_DATETIME),
-            new ExportColumn('activated', 'Aktivováno', static fn (object $p): mixed => $p instanceof Participant ? ($p->getActivated()?->format('Y-m-d') ?? 'Ne') : null),
+            // Čte se `userConfirmedAt` = kdy účastník potvrdil přihlášku klikem v e-mailu.
+            // Dřív se sahalo na `Participant::getActivated()`, jenže to pole se NIKDY neplní
+            // (na klonu 0 z 244 letošních přihlášek, potvrzených přitom 236) → ve sloupci bylo
+            // u všech „Ne". Táž záměna os jako u filtru „Neaktivované" (opraveno 2026-07-30).
+            new ExportColumn('activated', 'Potvrzeno', static fn (object $p): mixed => $p instanceof Participant ? ($p->getUserConfirmedAt()?->format('j. n. Y') ?? 'Ne') : null),
             new ExportColumn('price', 'Celková cena', static fn (object $p): mixed => $p instanceof Participant ? $p->getPrice() : null, true, ExportColumn::TYPE_NUMBER),
             new ExportColumn('paidPrice', 'Zaplaceno [Kč]', static fn (object $p): mixed => $p instanceof Participant ? $p->getPaidPrice() : null, true, ExportColumn::TYPE_NUMBER),
             new ExportColumn('remainingPrice', 'Zbývá [Kč]', static fn (object $p): mixed => $p instanceof Participant ? $p->getRemainingPrice() : null, true, ExportColumn::TYPE_NUMBER),
-            new ExportColumn('paidPercentage', 'Zaplaceno [%]', static fn (object $p): mixed => $p instanceof Participant ? str_replace('.', ',', (string) round($p->getPaidPricePercentage() * 100)) : null),
+            // Vpravo jako číslo, ale ZÁMĚRNĚ ne TYPE_NUMBER — ten se v PDF sčítá do řádku
+            // součtů a součet procent nedává smysl.
+            new ExportColumn('paidPercentage', 'Zaplaceno [%]', static fn (object $p): mixed => $p instanceof Participant ? str_replace('.', ',', (string) round($p->getPaidPricePercentage() * 100)) : null, true, ExportColumn::TYPE_TEXT, ExportColumn::ALIGN_RIGHT),
             new ExportColumn('deletedAt', 'Smazáno', static fn (object $p): mixed => $p instanceof Participant ? ($p->getDeletedAt()?->format('Y-m-d') ?? '') : null),
         ];
     }
