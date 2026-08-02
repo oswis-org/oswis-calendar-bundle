@@ -98,17 +98,24 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
+    # ⚠️ Rekurzivní vazba — hloubku je nutné držet na OBOU stranách.
+    # Do 2026-08-02 měl `superEvent` v kolekci neomezenou hloubku a `subEvents` max_depth 3:
+    # každá ze 104 aktivit vypsala CELÝ turnus i se všemi jeho podakcemi, takže
+    # `GET /api/events?itemsPerPage=300` vracelo 13,8 MB za 55 s a program se v aplikaci
+    # vůbec nenačetl. Analýza: docs/OSWIS_1_EVENT_PAYLOAD_ANALYSIS_2026-08-02.md
     superEvent:
       groups:
         - 'calendar_events_get'
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
+      max_depth: 1
+    # V KOLEKCI podakce nejsou: admin menu si strom stejně staví z plochého seznamu
+    # (`menu.component.ts` serializované `subEvents` zahazuje a přepočítává). Detail je má dál.
     subEvents:
       groups:
-        - 'calendar_events_get'
         - 'calendar_event_get'
-      max_depth: 3
+      max_depth: 2
     baseCapacity:
       groups:
         - 'calendar_events_get'

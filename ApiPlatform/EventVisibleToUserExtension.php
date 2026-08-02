@@ -81,10 +81,14 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         $queryBuilder
             ->andWhere(sprintf(
                 '(%s.id IN (:user_event_ids)'
-                .' OR %s.superEvent IN (:released_event_ids)'
+                // ⚠️ `publicInApp = true` MUSÍ být i tady. Do 2026-08-02 tahle větev podmínku
+                // neměla, takže účastník viděl KAŽDOU přímou podakci turnusu se zveřejněným
+                // programem — včetně interních („Informační schůze instruktorů"). Neprojevilo se
+                // to, dokud byl program prázdný.
+                .' OR (%s.publicInApp = true AND %s.superEvent IN (:released_event_ids))'
                 .' OR (%s.publicInApp = true AND visibilityCategory.type IN (:public_category_types))'
                 .' OR (%s.publicInApp = true AND (%s)))',
-                $rootAlias, $rootAlias, $rootAlias, $rootAlias, implode(' OR ', $ancestorConditions),
+                $rootAlias, $rootAlias, $rootAlias, $rootAlias, $rootAlias, implode(' OR ', $ancestorConditions),
             ))
             ->setParameter('user_event_ids', array_map(static fn (?Event $event) => $event?->getId(), $events))
             ->setParameter('released_event_ids', $releasedIds)
