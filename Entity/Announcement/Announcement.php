@@ -29,6 +29,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup;
 use OswisOrg\OswisCalendarBundle\Repository\Announcement\AnnouncementRepository;
+use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use OswisOrg\OswisCoreBundle\Interfaces\Common\NameableInterface;
 use OswisOrg\OswisCoreBundle\Traits\Common\DeletedTrait;
@@ -65,14 +66,20 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => ['calendar_announcement_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_CUSTOMER')",
         ),
+        // ⚠️ `processor` je POVINNÝ, ne ozdoba: výchozí denormalizér API Platform u těchhle
+        // zdrojů neresolvuje IRI relací, postaví prázdnou entitu a Doctrine pak při flushi
+        // spadne na „A new entity was found through the relationship". Tatáž past už je
+        // ošetřená u program modulu — nástěnka jede na stejném procesoru.
         new Post(
             denormalizationContext: ['groups' => ['entities_post', 'calendar_announcements_post'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
         new Put(
             normalizationContext: ['groups' => ['entity_get', 'calendar_announcement_get'], 'enable_max_depth' => true],
             denormalizationContext: ['groups' => ['entity_put', 'calendar_announcement_put'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
         new Delete(security: "is_granted('ROLE_MANAGER')"),
     ],

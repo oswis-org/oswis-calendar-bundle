@@ -56,9 +56,16 @@ OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement:
     # Push je PŘÍZNAK příspěvku, ne samostatný kanál; `pushSentAt` je jen stopa pro tým.
     pushRequested:
       groups:
+        - 'calendar_announcements_get'
         - 'calendar_announcement_get'
         - 'calendar_announcements_post'
         - 'calendar_announcement_put'
     pushSentAt:
       groups:
         - 'calendar_announcement_get'
+    # Stažení vzkazu z nástěnky. Tým ho NEMAŽE natvrdo — vzkaz je provozní záznam, kdo co kdy
+    # vyhlásil se během akce potřebuje dohledat. Odsud jen zápis: účastníkovi se smazané vzkazy
+    # stejně nedostanou (filtruje je `AnnouncementVisibleToUserExtension`).
+    deletedAt:
+      groups:
+        - 'calendar_announcement_put'
