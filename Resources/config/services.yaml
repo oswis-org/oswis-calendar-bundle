@@ -502,6 +502,15 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  OswisOrg\OswisCalendarBundle\Repository\Announcement\AnnouncementRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Announcement\AnnouncementRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
   OswisOrg\OswisCalendarBundle\Repository\CheckIn\CheckInStationRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\CheckIn\CheckInStationRepository
     autowire: true
@@ -805,6 +814,20 @@ services:
     public: true
   OswisOrg\OswisCalendarBundle\ApiPlatform\EventVisibleToUserExtension:
     alias: oswis_org_oswis_calendar.event_visible_to_user_extension
+    public: true
+
+  # Nástěnka: účastník vidí jen ZVEŘEJNĚNÉ vzkazy mířené na jeho turnus / pásku / na něj.
+  oswis_org_oswis_calendar.announcement_visible_to_user_extension:
+    class: OswisOrg\OswisCalendarBundle\ApiPlatform\AnnouncementVisibleToUserExtension
+    autowire: true
+    arguments:
+      - '@security.helper'
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+      - { name: api_platform.doctrine.orm.query_extension.item }
+    public: true
+  OswisOrg\OswisCalendarBundle\ApiPlatform\AnnouncementVisibleToUserExtension:
+    alias: oswis_org_oswis_calendar.announcement_visible_to_user_extension
     public: true
 
   OswisOrg\OswisCalendarBundle\ApiPlatform\OnlyMineEventsExtension:

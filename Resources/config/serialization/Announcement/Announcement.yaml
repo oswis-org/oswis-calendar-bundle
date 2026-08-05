@@ -1,0 +1,62 @@
+# ⚠️ Serializační grupy tohoto projektu žijí TADY, ne v atributech `#[Groups]` na entitě.
+# Když se na to zapomene, getter tiše chybí v odpovědi a aplikace nemá co zobrazit — přesně tak
+# byla 11 měsíců mrtvá obnova hesla. Po změně navíc FYZICKY smazat `var/cache`.
+OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement:
+  attributes:
+    id:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+    name:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    shortName:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    # Vlastní text vzkazu.
+    textValue:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    publishedAt:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    pinnedUntil:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    # Cílení. Účastník ho vidí jen pro informaci („pro tvoji skupinu"), měnit ho smí tým.
+    event:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    targetGroup:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    # Push je PŘÍZNAK příspěvku, ne samostatný kanál; `pushSentAt` je jen stopa pro tým.
+    pushRequested:
+      groups:
+        - 'calendar_announcement_get'
+        - 'calendar_announcements_post'
+        - 'calendar_announcement_put'
+    pushSentAt:
+      groups:
+        - 'calendar_announcement_get'
