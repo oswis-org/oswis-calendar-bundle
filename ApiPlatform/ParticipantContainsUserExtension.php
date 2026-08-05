@@ -42,6 +42,7 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
 
             return;
         }
+        $this->skryjSmazane($queryBuilder);
         // Portal frontends pass `?onlyMine=1` to force per-user scoping even
         // for ROLE_MANAGER / ROLE_ADMIN sessions (data-leak prevention when
         // admin opens /portal/participants). Without it, legacy behaviour
@@ -58,6 +59,30 @@ class ParticipantContainsUserExtension implements QueryCollectionExtensionInterf
         $queryBuilder->leftJoin("$rootAlias.contact", 'contact');
         $queryBuilder->leftJoin("contact.appUser", 'appUser');
         $queryBuilder->andWhere('appUser = :appUserId')->setParameter('appUserId', $user->getId());
+    }
+
+    /**
+     * Zrušené (soft-smazané) přihlášky z API pryč.
+     *
+     * ⚠️ Bez tohohle je vracelo — globální filtr `softdeleteable` NENÍ zapnutý (stof konfiguruje
+     * jen timestampable a blameable), takže API Platform stavěl dotaz bez ohledu na `deletedAt`,
+     * zatímco `ParticipantRepository` smazané standardně vylučuje (`CRITERIA_INCLUDE_DELETED`).
+     * API se tím chovalo jinak než zbytek systému: účastník, kterému tým přihlášku zrušil, ji
+     * v aplikaci dál viděl jako platnou — i s odpočtem, platbami a QR kódy (nalezeno 2026-08-05).
+     * Ionic admin si proti tomu už musel pomáhat filtrem na klientovi (`check-in-hub`), což je
+     * přesně ta „druhá pravda", které se chceme zbavit.
+     *
+     * `?includeDeleted=1` drží stejnou konvenci jako export přihlášek — kdo smazané opravdu
+     * potřebuje (obnova, revize), si o ně řekne výslovně.
+     */
+    private function skryjSmazane(QueryBuilder $queryBuilder): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (null !== $request && '' !== (string) $request->query->get('includeDeleted', '')) {
+            return;
+        }
+        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $queryBuilder->andWhere("$rootAlias.deletedAt IS NULL");
     }
 
     final public function applyToItem(

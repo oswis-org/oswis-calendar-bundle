@@ -53,12 +53,16 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ApiResource(
     operations: [
+        // ⚠️ Čtení ZÁMĚRNĚ bez obecné grupy `entities_get`/`entity_get`: ta přitáhne celý
+        // nameable balík (slug, description, note, createdBy, updatedBy…) a hlavně rozbalí
+        // vnořenou akci i s jejími autory. Nástěnka potřebuje nadpis, text, čas a cílení —
+        // nic víc. Stejná třída nafouknutí jako u kolekce akcí (13,8 MB / 55 s).
         new GetCollection(
-            normalizationContext: ['groups' => ['entities_get', 'calendar_announcements_get'], 'enable_max_depth' => true],
+            normalizationContext: ['groups' => ['calendar_announcements_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_CUSTOMER')",
         ),
         new Get(
-            normalizationContext: ['groups' => ['entity_get', 'calendar_announcement_get'], 'enable_max_depth' => true],
+            normalizationContext: ['groups' => ['calendar_announcement_get'], 'enable_max_depth' => true],
             security: "is_granted('ROLE_CUSTOMER')",
         ),
         new Post(

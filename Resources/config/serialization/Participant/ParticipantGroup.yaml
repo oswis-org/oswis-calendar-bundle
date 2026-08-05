@@ -4,12 +4,22 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantGroup:
       groups:
         - 'calendar_participant_groups_get'
         - 'calendar_participant_group_get'
+        # Nástěnka ukazuje u cíleného vzkazu štítek „pro <páska>". Bez těchto tří grup by se
+        # vnořená skupina serializovala naprázdno — vzkaz čte grupy nástěnky, ne ty obecné.
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+    name:
+      groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
     color:
       groups:
         - 'calendar_participant_groups_get'
         - 'calendar_participant_group_get'
         - 'calendar_participant_groups_post'
         - 'calendar_participant_group_put'
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
     mealOrder:
       groups:
         - 'calendar_participant_groups_get'

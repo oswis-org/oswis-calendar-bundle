@@ -39,10 +39,12 @@ OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement:
         - 'calendar_announcements_post'
         - 'calendar_announcement_put'
     # Cílení. Účastník ho vidí jen pro informaci („pro tvoji skupinu"), měnit ho smí tým.
+    #
+    # ⚠️ `event` je ZÁMĚRNĚ jen k zápisu: účastník dostává vzkazy své akce, takže by mu ji
+    # odpověď jen opakovala — a rozbalená akce s sebou tahá vlastní autory a popisy. Kdo píše
+    # (tým), si turnus vybírá předem a filtruje `?event.id=`.
     event:
       groups:
-        - 'calendar_announcements_get'
-        - 'calendar_announcement_get'
         - 'calendar_announcements_post'
         - 'calendar_announcement_put'
     targetGroup:
