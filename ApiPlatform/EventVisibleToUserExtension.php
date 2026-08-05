@@ -14,12 +14,14 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, QueryItemExtensionInterface
 {
     public function __construct(
         private readonly Security $security,
         private readonly ParticipantService $participantService,
+        private readonly RequestStack $requestStack,
     )
     {
     }
@@ -36,10 +38,15 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
+        if ($resourceClass !== Event::class) {
+            return;
+        }
+        // ⚠️ Smazané akce ven PŘED výjimkou pro tým — smazaná aktivita nemá co dělat ani
+        // v editoru programu. Platí pro všechny role, únik ven je `?includeDeleted=1`.
+        $this->skryjSmazane($queryBuilder);
         // ROLE_MANAGER+ (staff/editor) sees every event — incl. internal services — needed for the
         // program editor. ROLE_ADMIN/ROOT already implied by the role hierarchy, kept explicit.
-        if ($resourceClass !== Event::class
-            || $this->security->isGranted('ROLE_MANAGER')
+        if ($this->security->isGranted('ROLE_MANAGER')
             || $this->security->isGranted('ROLE_ADMIN')
             || $this->security->isGranted('ROLE_ROOT')) {
             return;
@@ -104,5 +111,28 @@ class EventVisibleToUserExtension implements QueryCollectionExtensionInterface, 
         array $context = []
     ): void {
         $this->addWhere($queryBuilder, $resourceClass);
+    }
+
+    /**
+     * Smazané akce a aktivity z API pryč.
+     *
+     * ⚠️ Bez tohohle je API vracelo. Event **není** Gedmo SoftDeleteable a globální filtr
+     * `softdeleteable` není zapnutý ([[reference_softdeleteable_filter_not_enabled]]), takže
+     * `deletedAt` u akcí neřešil nikdo — přitom web-admin aktivity i akce maže právě měkce
+     * (`WebAdminProgramController`, `WebAdminEventController`). Tým tedy zrušil aktivitu a
+     * účastníkům zůstala v programu: dorazili by na něco, co se nekoná (nalezeno 2026-08-05,
+     * ověřeno na klonu — smazaná akce se vracela v kolekci i detailem 200).
+     *
+     * Platí i pro tým: smazaná aktivita nemá co dělat ani v editoru programu. Kdo ji opravdu
+     * potřebuje (obnova), si řekne `?includeDeleted=1` — stejná konvence jako u přihlášek.
+     */
+    private function skryjSmazane(QueryBuilder $queryBuilder): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (null !== $request && '' !== (string) $request->query->get('includeDeleted', '')) {
+            return;
+        }
+        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $queryBuilder->andWhere("$rootAlias.deletedAt IS NULL");
     }
 }
