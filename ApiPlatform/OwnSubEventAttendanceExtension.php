@@ -52,8 +52,17 @@ final class OwnSubEventAttendanceExtension implements QueryCollectionExtensionIn
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if ($resourceClass !== SubEventAttendance::class
-            || $this->security->isGranted('ROLE_MANAGER')
+        if ($resourceClass !== SubEventAttendance::class) {
+            return;
+        }
+        // ⚠️ Zrušené přihlášení na aktivitu ven. `SubEventAttendance::cancel()` nastavuje
+        // `status = canceled` **i** `deletedAt`, ale globální filtr `softdeleteable` zapnutý není
+        // ([[reference_softdeleteable_filter_not_enabled]]) — takže se zrušené záznamy vracely dál.
+        // Neprojevilo se to jen proto, že si aplikace vždy přidává `?status=registered`; to je ale
+        // druhá pravda na klientovi, kterou stačí jednou zapomenout. Filtr platí i pro tým.
+        $rootAlias = $queryBuilder->getRootAliases()[0];
+        $queryBuilder->andWhere("$rootAlias.deletedAt IS NULL");
+        if ($this->security->isGranted('ROLE_MANAGER')
             || $this->security->isGranted('ROLE_ADMIN')) {
             return;
         }
@@ -78,7 +87,6 @@ final class OwnSubEventAttendanceExtension implements QueryCollectionExtensionIn
 
             return;
         }
-        $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder->andWhere("$rootAlias.participant IN (:ownParticipantIds)")
                      ->setParameter('ownParticipantIds', $ids);
     }
