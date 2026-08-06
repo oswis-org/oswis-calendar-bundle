@@ -1,0 +1,65 @@
+# ⚠️ Serializační grupy tohoto projektu žijí TADY, ne v atributech `#[Groups]` na entitě.
+# Když se na to zapomene, getter tiše chybí v odpovědi a aplikace nemá co zobrazit — přesně tak
+# byla 11 měsíců mrtvá obnova hesla. Po změně navíc FYZICKY smazat `var/cache`.
+OswisOrg\OswisCalendarBundle\Entity\Meal\Meal:
+  attributes:
+    id:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+    # Název jídla („Oběd"), pokud ho tým chce jiný než odvozený z typu.
+    name:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    # Popis toho, co se podává, když se nevybírá z variant (bufetová snídaně).
+    textValue:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    date:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    type:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    servedFrom:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    servedTo:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    # Varianty se vypisují ROVNOU v kolekci: jídelníček bez toho, z čeho se vybírá, je k ničemu
+    # a appka by na každý den dělala N dalších dotazů. Vnořují se přes grupu variant, která
+    # nese jen název/alergeny/pořadí — ne celý nameable balík.
+    variants:
+      groups:
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+    # ⚠️ `event` je ZÁMĚRNĚ jen k zápisu — stejně jako u nástěnky. Účastník dostává jídelníček
+    # svého turnusu, takže by mu ho odpověď jen opakovala, a rozbalený Event s sebou tahá
+    # autory a popisy. Tým si turnus vybírá předem a filtruje `?event=`.
+    event:
+      groups:
+        - 'calendar_meals_post'
+        - 'calendar_meal_put'
+    # Odstranění jídla z jídelníčku měkce — jídelníček je provozní záznam.
+    deletedAt:
+      groups:
+        - 'calendar_meal_put'

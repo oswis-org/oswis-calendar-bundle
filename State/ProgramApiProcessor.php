@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement;
+use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
@@ -63,6 +64,10 @@ final class ProgramApiProcessor implements ProcessorInterface
                     $this->resolveSingle($data, $payload, 'targetGroup', 'setTargetGroup');
                     $this->resolveSingle($data, $payload, 'participant', 'setParticipant');
                 }
+                if ($data instanceof MealVariant) {
+                    // Varianta nevisí na turnusu, ale na jídle — jinak tatáž past.
+                    $this->resolveSingle($data, $payload, 'meal', 'setMeal');
+                }
             }
         }
 
@@ -97,6 +102,13 @@ final class ProgramApiProcessor implements ProcessorInterface
     private function resolveSingle(object $data, array $payload, string $key, string $setter): void
     {
         if (!array_key_exists($key, $payload)) {
+            return;
+        }
+        // ⚠️ Čteme SYROVÉ tělo požadavku, ne denormalizovaná data — takže se sem dostane i klíč,
+        // který cílová entita vůbec nemá (`event` poslaný na MealVariant). Bez téhle pojistky
+        // by to skončilo fatální chybou „Call to undefined method", tzn. 500 z pouhého překlepu
+        // v požadavku. Neznámý klíč prostě ignorujeme — serializační grupy jsou autorita.
+        if (!method_exists($data, $setter)) {
             return;
         }
         $value = $payload[$key];
@@ -140,7 +152,15 @@ final class ProgramApiProcessor implements ProcessorInterface
         try {
             return $this->iriConverter->getResourceFromIri($iri);
         } catch (\Throwable $e) {
-            throw new BadRequestHttpException(sprintf('Neplatné IRI pro "%s": %s', $key, $iri), $e);
+            // ⚠️ Důvod PATŘÍ do hlášky. Původně tu byla jen věta „Neplatné IRI" a skutečná
+            // příčina se zahazovala do zřetězené výjimky, kterou v produkci nikdo neuvidí
+            // (`fingers_crossed` reaguje až na ERROR, tohle je 400). Stálo to zbytečné kolo
+            // hledání: „neplatné IRI pro meal" ve skutečnosti znamenalo NEZAREGISTROVANÝ
+            // repozitář. Routa je jen pro ROLE_MANAGER, takže se tím nic nevyzrazuje ven.
+            throw new BadRequestHttpException(
+                sprintf('Neplatné IRI pro "%s": %s (%s)', $key, $iri, $e->getMessage()),
+                $e,
+            );
         }
     }
 

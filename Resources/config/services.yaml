@@ -511,6 +511,28 @@ services:
     tags:
       - 'doctrine.repository_service'
 
+  # ⚠️ Repozitáře se tu registrují RUČNĚ (tag `doctrine.repository_service`) — bez toho sice
+  # třída existuje, ale Doctrine ji neumí sestavit a padá to až za běhu na
+  # „entity repository implements ServiceEntityRepositoryInterface, but its service could not
+  # be found". Navenek to vypadalo jako neplatné IRI při zakládání varianty jídla.
+  OswisOrg\OswisCalendarBundle\Repository\Meal\MealRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Meal\MealRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
+  OswisOrg\OswisCalendarBundle\Repository\Meal\MealVariantRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Meal\MealVariantRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
   OswisOrg\OswisCalendarBundle\Repository\CheckIn\CheckInStationRepository:
     class: OswisOrg\OswisCalendarBundle\Repository\CheckIn\CheckInStationRepository
     autowire: true
@@ -828,6 +850,21 @@ services:
     public: true
   OswisOrg\OswisCalendarBundle\ApiPlatform\AnnouncementVisibleToUserExtension:
     alias: oswis_org_oswis_calendar.announcement_visible_to_user_extension
+    public: true
+
+  # Jídelníček: účastník vidí jídla svého turnusu, tým všechna. Smazaná ven pro všechny
+  # (globální filtr `softdeleteable` zapnutý NENÍ — každý zdroj si to hlídá sám).
+  oswis_org_oswis_calendar.meal_visible_to_user_extension:
+    class: OswisOrg\OswisCalendarBundle\ApiPlatform\MealVisibleToUserExtension
+    autowire: true
+    arguments:
+      - '@security.helper'
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+      - { name: api_platform.doctrine.orm.query_extension.item }
+    public: true
+  OswisOrg\OswisCalendarBundle\ApiPlatform\MealVisibleToUserExtension:
+    alias: oswis_org_oswis_calendar.meal_visible_to_user_extension
     public: true
 
   OswisOrg\OswisCalendarBundle\ApiPlatform\OnlyMineEventsExtension:

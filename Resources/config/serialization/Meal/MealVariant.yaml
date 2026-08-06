@@ -1,0 +1,51 @@
+# ⚠️ Serializační grupy tohoto projektu žijí TADY, ne v atributech `#[Groups]` na entitě.
+OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant:
+  attributes:
+    id:
+      groups:
+        - 'calendar_meal_variants_get'
+        - 'calendar_meal_variant_get'
+        # Vnořeně v jídle — appka potřebuje ID kvůli budoucí volbě (vize B7).
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+    name:
+      groups:
+        - 'calendar_meal_variants_get'
+        - 'calendar_meal_variant_get'
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meal_variants_post'
+        - 'calendar_meal_variants_put'
+    position:
+      groups:
+        - 'calendar_meal_variants_get'
+        - 'calendar_meal_variant_get'
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meal_variants_post'
+        - 'calendar_meal_variants_put'
+    allergens:
+      groups:
+        - 'calendar_meal_variants_get'
+        - 'calendar_meal_variant_get'
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meal_variants_post'
+        - 'calendar_meal_variants_put'
+    meatFree:
+      groups:
+        - 'calendar_meal_variants_get'
+        - 'calendar_meal_variant_get'
+        - 'calendar_meals_get'
+        - 'calendar_meal_get'
+        - 'calendar_meal_variants_post'
+        - 'calendar_meal_variants_put'
+    # ⚠️ `meal` jen k zápisu: v odpovědi se varianty vypisují VNOŘENĚ v jídle, takže zpětný
+    # odkaz by byl nekonečná smyčka jídlo → varianty → jídlo.
+    meal:
+      groups:
+        - 'calendar_meal_variants_post'
+        - 'calendar_meal_variants_put'
+    deletedAt:
+      groups:
+        - 'calendar_meal_variants_put'
