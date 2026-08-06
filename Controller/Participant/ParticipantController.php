@@ -94,17 +94,28 @@ class ParticipantController extends AbstractController
      */
     public function registration(Request $request, ?string $rangeSlug = null): Response
     {
-        $this->logger->info("START REGISTRATION");
+        $this->logger->debug('Začátek přihlašování.');
         if (null === $rangeSlug) {
             return $this->redirectToDefaultEventRanges();
         }
         $range = $this->regRangeService->getRangeBySlug($rangeSlug, true, false);
-        $this->logger->info("GOT RANGE");
+        $this->logger->debug('Nabídka nalezena.');
         if (!($range instanceof RegistrationOffer) || !$range->isPublicOnWeb()) {
             throw new NotFoundException('Rozsah pro vytváření přihlášek nebyl nalezen nebo není aktivní.');
         }
         if (!$range->isRangeActive()) {
-            $this->logger->error('RANGE NOT ACTIVE!!!');
+            // Očekávaný stav, ne chyba — hned pod tím se vykreslí stránka „Přihlášky nejsou aktivní“.
+            // Do 2026-08-06 to byl ERROR bez kontextu (viz PlainParticipantController v aplikaci,
+            // kde tvořil 109 ze 112 „chyb“ v prod.log).
+            //
+            // ⚠️ `isRangeActive()` NEZNAMENÁ „je volno“: `getCapacityInt()` vrací NASTAVENOU
+            // kapacitu, ne zbývající, takže ta podmínka jen hlídá, že nabídka nemá kapacitu 0.
+            // Naplněnou akci řeší až `getEmptyParticipant()` níž (`EventCapacityExceededException`
+            // → stránka „Kapacita akce je naplněna“). Proto tady NEPÍŠEME „je plno“.
+            $this->logger->info('Přihlášky nejsou aktivní ({slug}): {duvod}.', [
+                'slug'  => $rangeSlug,
+                'duvod' => $range->isInDateRange() ? 'nabídka má nastavenou nulovou kapacitu' : 'mimo termín přihlašování',
+            ]);
 
             return $this->getResponse(
                 type: 'disabled',
@@ -125,7 +136,10 @@ class ParticipantController extends AbstractController
         } catch (EventCapacityExceededException $capacityException) {
             // Plná nabídka: konstrukce prázdné přihlášky kontroluje kapacitu → dřív to tady byla
             // neodchycená výjimka = 500 pro každého návštěvníka formuláře plné akce. Friendly stránka.
-            $this->logger->info('Registration form for full offer '.$rangeSlug.': '.$capacityException->getMessage());
+            $this->logger->info('Formulář plné nabídky ({slug}): {zprava}', [
+                'slug'   => $rangeSlug,
+                'zprava' => $capacityException->getMessage(),
+            ]);
 
             return $this->getResponse(
                 type: 'disabled',
@@ -136,7 +150,7 @@ class ParticipantController extends AbstractController
                 disabled: true,
             );
         }
-        $this->logger->info("GOT EMPTY PARTICIPANT");
+        $this->logger->debug('Prázdná přihláška připravena.');
         try {
             $form = $this->createForm(ParticipantType::class, $participant);
             $form->handleRequest($request);
