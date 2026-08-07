@@ -8,6 +8,7 @@ use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
+use DateTime;
 use Doctrine\ORM\QueryBuilder;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\Meal;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
@@ -108,9 +109,17 @@ final class MealVisibleToUserExtension implements
 
             return;
         }
+        // ⚠️ Brána zveřejnění, stejná jako u programu: účastník uvidí jídelníček, teprve až ho
+        // tým vydá. Jídelníček se zadává po dnech a po jídlech, takže mezistav je nevyhnutelný —
+        // a do aplikace už mají přístup stovky letošních účastníků. Bez tohohle by sledovali,
+        // jak menu vzniká. Tým (větev výš) vidí i nevydané, jinak by neměl co zadávat.
         $queryBuilder
+            ->leftJoin("$aliasJidla.event", 'turnus_jidla')
             ->andWhere("$aliasJidla.event IN (:moje_akce)")
-            ->setParameter('moje_akce', $eventIds);
+            ->andWhere('turnus_jidla.mealsReleasedAt IS NOT NULL')
+            ->andWhere('turnus_jidla.mealsReleasedAt <= :ted')
+            ->setParameter('moje_akce', $eventIds)
+            ->setParameter('ted', new DateTime());
     }
 
     /**

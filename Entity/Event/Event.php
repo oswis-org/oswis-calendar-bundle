@@ -174,6 +174,21 @@ class Event implements NameableInterface
     #[Column(type: 'datetime', nullable: true)]
     protected ?\DateTimeInterface $programReleasedAt = null;
 
+    /**
+     * Zveřejnění JÍDELNÍČKU turnusu — tatáž brána jako u programu, jen pro jídlo.
+     *
+     * NULL = jídelníček se staví, účastníci ho nevidí; datum = zveřejněno od té chvíle.
+     * Brána je v {@see \OswisOrg\OswisCalendarBundle\ApiPlatform\MealVisibleToUserExtension}.
+     *
+     * ⚠️ Proč to nestačí řešit tím, že „tým zadá až hotové": jídelníček se zadává po dnech
+     * a po jídlech, takže mezistav je nevyhnutelný — a do aplikace už mají přístup stovky
+     * letošních účastníků. Bez brány by viděli, jak menu vzniká (a měnili si podle půlky
+     * plánu očekávání). Zvlášť od programu proto, že se dokončuje jindy: program bývá hotový
+     * dřív než domluva s kuchyní.
+     */
+    #[Column(name: 'meals_released_at', type: 'datetime', nullable: true)]
+    protected ?\DateTimeInterface $mealsReleasedAt = null;
+
     // fetch=EAGER: Doctrine ORM 3's strict identity-map check
     // (EntityIdentityCollisionException) throws when a Participant lazy ghost
     // is initialised mid-request after the same participant was already
@@ -503,6 +518,22 @@ class Event implements NameableInterface
     public function isProgramReleased(?\DateTimeInterface $now = null): bool
     {
         return null !== $this->programReleasedAt && $this->programReleasedAt <= ($now ?? new \DateTime());
+    }
+
+    public function getMealsReleasedAt(): ?\DateTimeInterface
+    {
+        return $this->mealsReleasedAt;
+    }
+
+    public function setMealsReleasedAt(?\DateTimeInterface $mealsReleasedAt): void
+    {
+        $this->mealsReleasedAt = $mealsReleasedAt;
+    }
+
+    /** Jídelníček turnusu je účastníkům viditelný, jen když je zveřejněn a už nastal čas. */
+    public function areMealsReleased(?\DateTimeInterface $now = null): bool
+    {
+        return null !== $this->mealsReleasedAt && $this->mealsReleasedAt <= ($now ?? new \DateTime());
     }
 
     public function setPlace(?Place $event): void
