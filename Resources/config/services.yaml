@@ -896,6 +896,23 @@ services:
       $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
     tags: [ 'api_platform.state_processor' ]
 
+  ## Volba jídla — dosadí relace přes ProgramApiProcessor, PAK ověří vlastnictví, konzistenci
+  ## dvojice jídlo/varianta a uzávěrku při příjezdu, a teprve pak ukládá.
+  OswisOrg\OswisCalendarBundle\State\MealChoiceProcessor:
+    autowire: true
+    arguments:
+      $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+    tags: [ 'api_platform.state_processor' ]
+
+  OswisOrg\OswisCalendarBundle\Repository\Meal\ParticipantMealChoiceRepository:
+    class: OswisOrg\OswisCalendarBundle\Repository\Meal\ParticipantMealChoiceRepository
+    autowire: true
+    public: true
+    arguments:
+      - '@doctrine'
+    tags:
+      - 'doctrine.repository_service'
+
   ## Check-in station visit (D2) — idempotentní upsert per (participant, station); DELETE přes remove.
   OswisOrg\OswisCalendarBundle\State\ParticipantStationVisitProcessor:
     autowire: true

@@ -1,0 +1,28 @@
+# ⚠️ Serializační grupy tohoto projektu žijí TADY, ne v atributech `#[Groups]` na entitě.
+OswisOrg\OswisCalendarBundle\Entity\Meal\ParticipantMealChoice:
+  attributes:
+    id:
+      groups:
+        - 'calendar_meal_choices_get'
+        - 'calendar_meal_choice_get'
+    # Vybraná varianta — jediné, co klient reálně posílá. Jídlo si entita doplní z varianty
+    # sama (setter), aby klient neměl příležitost poslat nesouhlasnou dvojici.
+    variant:
+      groups:
+        - 'calendar_meal_choices_get'
+        - 'calendar_meal_choice_get'
+        - 'calendar_meal_choices_post'
+        - 'calendar_meal_choices_put'
+    # Čí volba. Účastník ji posílá (svoji), tým ji posílá při zadávání u evidence.
+    participant:
+      groups:
+        - 'calendar_meal_choices_get'
+        - 'calendar_meal_choice_get'
+        - 'calendar_meal_choices_post'
+        - 'calendar_meal_choices_put'
+    # Jídlo je odvozené z varianty, ale ve ČTENÍ se hodí: appka podle něj páruje volby
+    # k jídelníčku bez dalšího dotazu. Do zápisu ho ZÁMĚRNĚ nedáváme.
+    meal:
+      groups:
+        - 'calendar_meal_choices_get'
+        - 'calendar_meal_choice_get'

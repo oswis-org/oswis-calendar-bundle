@@ -12,6 +12,7 @@ use DateTime;
 use Doctrine\ORM\QueryBuilder;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\Meal;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
+use OswisOrg\OswisCalendarBundle\Entity\Meal\ParticipantMealChoice;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
@@ -67,6 +68,11 @@ final class MealVisibleToUserExtension implements
 
     private function addWhere(QueryBuilder $queryBuilder, string $resourceClass): void
     {
+        if (ParticipantMealChoice::class === $resourceClass) {
+            $this->omezVolby($queryBuilder);
+
+            return;
+        }
         $jeVarianta = MealVariant::class === $resourceClass;
         if (Meal::class !== $resourceClass && !$jeVarianta) {
             return;
@@ -120,6 +126,42 @@ final class MealVisibleToUserExtension implements
             ->andWhere('turnus_jidla.mealsReleasedAt <= :ted')
             ->setParameter('moje_akce', $eventIds)
             ->setParameter('ted', new DateTime());
+    }
+
+    /**
+     * Volby jídla: účastník vidí JEN SVOJE, tým všechny.
+     *
+     * ⚠️ Kdo si co vybral k jídlu, je osobní údaj — ne tajemství, ale ani nic, co by měl vidět
+     * kdokoli jiný. Zápis hlídá zvlášť `MealChoiceProcessor`; tahle extension chrání čtení.
+     */
+    private function omezVolby(QueryBuilder $queryBuilder): void
+    {
+        if ($this->security->isGranted('ROLE_MANAGER')
+            || $this->security->isGranted('ROLE_ADMIN')
+            || $this->security->isGranted('ROLE_ROOT')) {
+            return;
+        }
+        $alias = $queryBuilder->getRootAliases()[0];
+        $user = $this->security->getUser();
+        if (!$user instanceof AppUser) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+        $participantIds = array_values(array_filter(array_map(
+            static fn (Participant $p) => $p->getId(),
+            $this->participantService->getParticipants(
+                [ParticipantRepository::CRITERIA_APP_USER => $user],
+            )->toArray(),
+        )));
+        if ([] === $participantIds) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
+        $queryBuilder
+            ->andWhere("$alias.participant IN (:moje_prihlasky)")
+            ->setParameter('moje_prihlasky', $participantIds);
     }
 
     /**

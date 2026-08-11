@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
+use OswisOrg\OswisCalendarBundle\Entity\Meal\ParticipantMealChoice;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
@@ -43,6 +44,24 @@ final class ProgramApiProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $this->resolveRelations($data);
+
+        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+    }
+
+    /**
+     * Dosadí do entity relace z IRI v těle požadavku — BEZ ukládání.
+     *
+     * ⚠️ Oddělené od `process()` schválně: procesor, který chce po dosazení relací ještě něco
+     * ověřit (vlastnictví, uzávěrku), musí kontrolovat PŘED uložením. Kdyby volal `process()`,
+     * entita by už byla zapsaná a výjimka by přišla pozdě — v databázi by zůstal zápis, který
+     * se měl odmítnout. Používá to {@see MealChoiceProcessor}.
+     */
+    public function resolveRelations(mixed $data): void
+    {
+        if (!is_object($data)) {
+            return;
+        }
         $payload = $this->payload();
         if ([] !== $payload) {
             if ($data instanceof Event) {
@@ -68,10 +87,15 @@ final class ProgramApiProcessor implements ProcessorInterface
                     // Varianta nevisí na turnusu, ale na jídle — jinak tatáž past.
                     $this->resolveSingle($data, $payload, 'meal', 'setMeal');
                 }
+                if ($data instanceof ParticipantMealChoice) {
+                    // Pořadí je podstatné: `setVariant()` si z varianty dopočítá jídlo, takže
+                    // se varianta musí dosadit DŘÍV než případné explicitní `meal` z těla.
+                    $this->resolveSingle($data, $payload, 'participant', 'setParticipant');
+                    $this->resolveSingle($data, $payload, 'variant', 'setVariant');
+                    $this->resolveSingle($data, $payload, 'meal', 'setMeal');
+                }
             }
         }
-
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
     /**
