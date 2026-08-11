@@ -6,7 +6,6 @@ namespace OswisOrg\OswisCalendarBundle\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use OswisOrg\OswisCalendarBundle\Entity\CheckIn\CheckInStation;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\ParticipantMealChoice;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
@@ -105,21 +104,20 @@ final class MealChoiceProcessor implements ProcessorInterface
     }
 
     /**
-     * Odbavil se účastník na evidenci?
+     * Dorazil už účastník?
      *
-     * Příjezd se pozná podle DOKONČENÉ návštěvy stanoviště typu `evidence` — to je prezence
-     * u příjezdu. Ostatní stanoviště (pásky, ubytování, jídlo…) se odbavují až po ní a nejsou
-     * pro uzávěrku rozhodující.
+     * Používá se `Participant::isArrived()` (`arrivedAt`) — KANONICKÝ příznak příjezdu, který
+     * nastavuje check-in (`CheckInService::toggleArrival`) a který tým umí i zrušit při omylu.
+     *
+     * ⚠️ Původně jsem to počítal z návštěv stanovišť typu `evidence`. Fungovalo by to, ale byla
+     * by to DRUHÁ definice téhož — a rozešla by se v okamžiku, kdy tým příjezd zruší (návštěva
+     * stanoviště zůstane) nebo označí příjezd bez odbavení stanoviště. Jedno pravidlo, jedno místo.
+     *
+     * Klient stav pozná taky: `arrivedAt` je v grupách `calendar_participant(s)_get`, takže
+     * aplikace umí výběr zamknout sama a nemusí čekat na 403 ze serveru.
      */
     private function jePoPrijezdu(Participant $participant): bool
     {
-        foreach ($participant->getStationVisits() as $navsteva) {
-            if (null !== $navsteva->getCompletedAt()
-                && CheckInStation::KIND_EVIDENCE === $navsteva->getStation()?->getStationKind()) {
-                return true;
-            }
-        }
-
-        return false;
+        return $participant->isArrived();
     }
 }
