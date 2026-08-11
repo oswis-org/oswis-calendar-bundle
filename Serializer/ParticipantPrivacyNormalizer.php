@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Serializer;
 
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -61,6 +62,23 @@ final class ParticipantPrivacyNormalizer implements NormalizerInterface, Seriali
         // A non-public participant note's text is internal too (its publicNote flag stays visible).
         if ($object instanceof ParticipantNote && !$object->isPublicNote()) {
             unset($data['textValue']);
+        }
+
+        // ⚠️ Smazané poznámky ven — ale JEN účastníkovi. Poznámky chodí do aplikace vnořeně
+        // v přihlášce a `Participant::getNotes()` vrací celou kolekci bez ohledu na `deletedAt`
+        // (globální filtr `softdeleteable` zapnutý není), takže tým smazal veřejnou poznámku
+        // a účastníkovi zůstala na obrazovce. Doloženo testem `DeletedNoteHiddenTest`.
+        //
+        // Řeší se to TADY, a ne v getteru ani query extension, kvůli rozhodnutí uživatele
+        // (2026-08-11): **tým na spoustě obrazovek smazané záznamy vidět POTŘEBUJE**. Tenhle
+        // normalizér se pro ROLE_MANAGER vrací hned nahoře, takže adminu nic nebere — ubírá
+        // výhradně účastníkovi. ([[feedback_hide_unfinished_from_participants]])
+        if ($object instanceof Participant && isset($data['notes']) && is_array($data['notes'])) {
+            $data['notes'] = array_values(array_filter(
+                $data['notes'],
+                static fn (mixed $note): bool => !is_array($note)
+                    || null === ($note['deletedAt'] ?? null),
+            ));
         }
 
         return $data;
