@@ -6,10 +6,13 @@ namespace OswisOrg\OswisCalendarBundle\Service\Document;
 
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractPerson;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Meal\Meal;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
+use OswisOrg\OswisCalendarBundle\Repository\Meal\MealRepository;
+use OswisOrg\OswisCalendarBundle\Repository\Meal\ParticipantMealChoiceRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
@@ -34,6 +37,8 @@ final class OperationalDocumentService
         private readonly Environment $twig,
         private readonly ExportService $exportService,
         private readonly ParticipantRepository $participantRepository,
+        private readonly MealRepository $mealRepository,
+        private readonly ParticipantMealChoiceRepository $mealChoiceRepository,
     ) {
     }
 
@@ -112,6 +117,153 @@ final class OperationalDocumentService
             false,
             'Seznam dle pásku — '.($event->getName() ?? ''),
         );
+    }
+
+    /**
+     * HTML kuchyňského listu (vize B7) — kolik čeho uvařit.
+     *
+     * Dvě části, protože kuchyň potřebuje dvě různé věci:
+     *
+     *  1. **Počty per jídlo × varianta, BEZ jmen.** Kuchař vaří hrnce, ne porce pro konkrétní lidi.
+     *     Navíc „kdo si co dal k obědu" je osobní údaj, který v kuchyni nemá co dělat.
+     *  2. **Dietáři SE JMÉNY a poznámkou.** Tady je to naopak: omezení znamená zvláštní porci,
+     *     kterou někdo konkrétní přebírá u výdeje — bez jména by ji nebylo komu dát.
+     *
+     * **„Bez volby" je stejně důležité jako počty variant.** Kdo si nevybral, stejně přijde jíst;
+     * kdyby list ukazoval jen součet vybraných, kuchyň by uvařila míň, než kolik lidí dorazí.
+     *
+     * Seznam dietářů je na listu JEDNOU, ne u každého jídla: omezení se během turnusu nemění,
+     * takže patnáct kopií téhož by jen svádělo číst tu, která je zrovna po ruce.
+     *
+     * ⚠️ **Zjednodušení v1, které je potřeba znát:** počítá se celý turnus, ne „kdo tu je ten den".
+     * Zkrácené pobyty (`plannedArrival`/`plannedDeparture`) se vedou jako mlhavý text („po snídani"),
+     * ne jako datum, takže se z nich přítomnost v konkrétní den spolehlivě odvodit nedá. Dokud to
+     * tak je, je nadhodnocený počet menší zlo než podhodnocený — ale list to musí říct nahlas,
+     * ať kuchyň neplánuje podle čísla, které tuhle nuanci nezná.
+     */
+    public function mealSheetHtml(Event $event): string
+    {
+        $attendees = $this->loadAttendees($event);
+        $ids = array_values(array_filter(array_map(static fn (Participant $p): ?int => $p->getId(), $attendees)));
+        if ([] !== $ids) {
+            $this->participantRepository->primeAggregationCollections($ids, true); // anti-N+1 na flagy
+        }
+
+        // Počty [idJídla][idVarianty] => kolik. Jedna přihláška = nejvýš jedna volba na jídlo
+        // (drží unikátní klíč), takže se řádky jen sečtou.
+        $counts = [];
+        foreach ($this->mealChoiceRepository->findChoiceKeys($ids) as $key) {
+            $counts[$key['meal']][$key['variant']] = ($counts[$key['meal']][$key['variant']] ?? 0) + 1;
+        }
+
+        $days = [];
+        foreach ($this->loadMeals($event) as $meal) {
+            $mealId = (int) $meal->getId();
+            $vybrano = array_sum($counts[$mealId] ?? []);
+            $variants = [];
+            foreach ($meal->getVariants() as $variant) {
+                if (null !== $variant->getDeletedAt()) {
+                    continue; // zrušená varianta se nevaří
+                }
+                $variants[] = [
+                    'name'     => $variant->getName() ?? '',
+                    'meatFree' => $variant->isMeatFree(),
+                    'count'    => $counts[$mealId][(int) $variant->getId()] ?? 0,
+                ];
+            }
+            $den = $meal->getDate()?->format('Y-m-d') ?? '';
+            $days[$den]['date'] = $meal->getDate();
+            $days[$den]['meals'][] = [
+                'type'      => $meal->getType(),
+                'name'      => $meal->getName(),
+                // ⚠️ Čas se formátuje TADY, ne v šabloně. `servedFrom`/`servedTo` jsou sloupce typu
+                // `time` — okamžik v čase nenesou, jen „půl dvanácté". Twigový filtr `|date` je ale
+                // převádí do zobrazovací zóny, takže z 11:30 udělal 12:30 a kuchyň by podle listu
+                // vydávala o hodinu později. `format()` na DateTime žádný převod nedělá.
+                'servedFrom' => $meal->getServedFrom()?->format('H:i'),
+                'servedTo'  => $meal->getServedTo()?->format('H:i'),
+                'textValue' => $meal->getTextValue(),
+                'variants'  => $variants,
+                // Kolik lidí si u tohohle jídla nevybralo. Prázdné varianty = jídlo bez výběru,
+                // tam „bez volby" nedává smysl (nebylo z čeho vybírat) → jen celkový počet.
+                'noChoice'  => [] === $variants ? null : max(0, count($attendees) - $vybrano),
+            ];
+        }
+        ksort($days);
+
+        return $this->twig->render(self::TPL.'meal-sheet.pdf.html.twig', [
+            'eventName' => $event->getName(),
+            'total'     => count($attendees),
+            'days'      => array_values($days),
+            'diets'     => $this->dietRows($attendees),
+        ]);
+    }
+
+    public function mealSheetPdf(Event $event): string
+    {
+        return $this->exportService->getPdfFromHtml(
+            $this->mealSheetHtml($event),
+            false,
+            'Kuchyňský list — '.($event->getName() ?? ''),
+        );
+    }
+
+    /**
+     * Jídla turnusu seřazená den → pořadí v rámci dne.
+     *
+     * Řadit podle `type` v SQL nejde (abecedně by večeře předběhla oběd), proto se druhý klíč
+     * bere z `Meal::getTypeOrder()` — tentýž zdroj pravdy jako v aplikaci.
+     *
+     * @return list<Meal>
+     */
+    private function loadMeals(Event $event): array
+    {
+        /** @var list<Meal> $meals */
+        $meals = $this->mealRepository->findBy(['event' => $event, 'deletedAt' => null], ['date' => 'ASC']);
+        usort($meals, static fn (Meal $a, Meal $b): int => [$a->getDate(), $a->getTypeOrder()]
+            <=> [$b->getDate(), $b->getTypeOrder()]);
+
+        return $meals;
+    }
+
+    /**
+     * Dietáři se jmény a upřesněním — kuchyň potřebuje vědět KDO má zvláštní porci.
+     *
+     * Název a upřesnění se skládají PO JEDNOTLIVÝCH PŘÍZNACÍCH („bez lepku (celiakie, i stopy)"),
+     * ne dva nezávislé seznamy: u člověka se dvěma dietami by se dvě čárkami spojené řady
+     * rozpárovaly a upřesnění by se přiřadilo k cizí dietě — na papíře, podle kterého někdo vaří.
+     *
+     * @param list<Participant> $attendees
+     *
+     * @return list<array{name: string, diet: string, note: string}>
+     */
+    private function dietRows(array $attendees): array
+    {
+        $rows = [];
+        foreach ($attendees as $p) {
+            $polozky = [];
+            $poznamky = [];
+            foreach ($p->getParticipantFlags(null, RegistrationFlagCategory::TYPE_FOOD, true) as $flag) {
+                $nazev = $flag->getFlag()?->getName();
+                $note = trim((string) $flag->getTextValue());
+                if (null !== $nazev && '' !== $nazev) {
+                    $polozky[] = '' !== $note ? "$nazev ($note)" : $nazev;
+                } elseif ('' !== $note) {
+                    // Kategorie bez konkrétního příznaku, ale s vyplněným textem („Jiné — detail").
+                    $poznamky[] = $note;
+                }
+            }
+            if ([] === $polozky && [] === $poznamky) {
+                continue;
+            }
+            $rows[] = [
+                'name' => $p->getContactForRead()?->getName() ?? ('#'.$p->getId()),
+                'diet' => implode(', ', $polozky),
+                'note' => implode(', ', $poznamky),
+            ];
+        }
+
+        return $rows;
     }
 
     /** Názvy dietních omezení účastníka (kategorie food) čárkou — pro kuchyň. */

@@ -31,6 +31,11 @@ oswis_org_oswis_calendar_api_program_output:
     type: 'instruktorsky|sluzby|den|itinerar|itinerar-tym|arch|prihlaseni|cely-program'
   methods: [GET]
 
+oswis_org_oswis_calendar_api_meal_output:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\MealOutputController
+  path: "/api/meal-output/kuchynsky-list"
+  methods: [GET]
+
 oswis_org_oswis_calendar_participant_resend_activation_email:
   controller: oswis_org_oswis_calendar.participant.participant_controller::resendActivationEmail
   path: "/akce/prihlaska/email-overeni/{participantId}"

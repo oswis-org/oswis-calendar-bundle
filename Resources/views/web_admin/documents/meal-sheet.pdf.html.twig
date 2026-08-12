@@ -1,0 +1,114 @@
+{% extends '@OswisOrgOswisCalendar/web_admin/program/_base.print.html.twig' %}
+
+{# Kuchyňský list (vize B7) — kolik čeho uvařit.
+   Počty per jídlo × varianta BEZ jmen (kuchař vaří hrnce, a „kdo si co dal" je osobní údaj),
+   dietáři naopak SE JMÉNY (zvláštní porci u výdeje někdo konkrétní přebírá).
+   Data: OperationalDocumentService::mealSheetHtml. #}
+
+{% block style %}
+    .den { page-break-inside: avoid; margin-bottom: 12pt; }
+    table.ms { width: 100%; border-collapse: collapse; font-size: 9pt; margin-top: 2pt; }
+    table.ms th, table.ms td { border-bottom: 0.4pt solid #ccc; padding: 3pt 5pt; text-align: left; vertical-align: top; }
+    table.ms th { border-bottom: 1pt solid #333; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.2pt; }
+    /* Počet je to jediné, kvůli čemu kuchyň list drží v ruce → největší číslo na stránce. */
+    td.pocet { text-align: right; width: 12%; font-size: 12pt; font-weight: bold; }
+    td.bezmasa { width: 14%; color: #276749; }
+    tr.bez td { color: #9c4221; font-style: italic; }
+    .jidlo-hlavicka { margin: 6pt 0 0; font-size: 10pt; }
+    .cas { color: #666; font-weight: normal; }
+    .popis { font-size: 9pt; color: #444; margin: 1pt 0 0; }
+    .diety td { vertical-align: top; }
+    td.jmeno { width: 34%; }
+    td.omezeni { width: 28%; color: #9c4221; font-weight: bold; }
+{% endblock %}
+
+{% block content %}
+    <h1>Kuchyňský list — {{ eventName }}</h1>
+    <p class="muted">
+        Přihlášeno {{ total }} účastníků. Vytištěno {{ 'now'|date('j.n.Y H:i') }}.
+        {# Nadhodnocení je menší zlo než podhodnocení, ale kuchyň to musí vědět: zkrácené pobyty
+           se vedou jako mlhavý text („po snídani“), ne datum, takže se z nich přítomnost
+           v konkrétní den odvodit nedá. #}
+        Počty jsou za celý turnus — kdo přijíždí později nebo odjíždí dřív, je v nich započítaný.
+    </p>
+
+    {% for den in days %}
+        <div class="den">
+            <h2 class="section">{{ den.date|cz_weekday|capitalize }} {{ den.date|cz_date }}</h2>
+
+            {% for jidlo in den.meals %}
+                <h3 class="jidlo-hlavicka">
+                    {{ jidlo.name ?: {'breakfast': 'Snídaně', 'lunch': 'Oběd', 'snack': 'Svačina', 'dinner': 'Večeře'}[jidlo.type]|default('Jídlo') }}
+                    {% if jidlo.servedFrom %}
+                        {# Časy chodí ze služby už jako 'H:i' řetězec — `|date` by je přepočítal
+                           přes zobrazovací zónu a posunul o hodinu (sloupec `time` není okamžik). #}
+                        <span class="cas">{{ jidlo.servedFrom|hm }}{% if jidlo.servedTo %}–{{ jidlo.servedTo|hm }}{% endif %}</span>
+                    {% endif %}
+                </h3>
+
+                {% if jidlo.variants is not empty %}
+                    <table class="ms">
+                        <tbody>
+                            {% for v in jidlo.variants %}
+                                <tr>
+                                    <td>{{ v.name }}</td>
+                                    <td class="bezmasa">{{ v.meatFree ? 'bezmasá' : '' }}</td>
+                                    <td class="pocet">{{ v.count }}</td>
+                                </tr>
+                            {% endfor %}
+                            {# „Bez volby“ NENÍ nula k zanedbání: ti lidé stejně přijdou jíst.
+                               Bez tohohle řádku by kuchyň uvařila jen pro ty, kdo si vybrali. #}
+                            {% if jidlo.noChoice %}
+                                <tr class="bez">
+                                    <td>Bez volby (přijdou jíst, variantu neurčili)</td>
+                                    <td></td>
+                                    <td class="pocet">{{ jidlo.noChoice }}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    {# Jídlo bez variant = nevybírá se (bufet, příjezdová večeře). Vaří se pro všechny. #}
+                    <table class="ms">
+                        <tbody>
+                            <tr>
+                                <td>{{ jidlo.textValue ?: 'Bez výběru — pro všechny' }}</td>
+                                <td class="bezmasa"></td>
+                                <td class="pocet">{{ total }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Jídelníček zatím není zadaný.</p>
+    {% endfor %}
+
+    <h2 class="section">Stravovací omezení ({{ diets|length }})</h2>
+    {# Jednou na celý list, ne u každého jídla: omezení se během turnusu nemění a patnáct kopií
+       téhož seznamu jen svádí číst tu, která je zrovna po ruce. #}
+    {% if diets is empty %}
+        <p class="muted">Nikdo nemá zadané stravovací omezení.</p>
+    {% else %}
+        <p class="muted">Zvláštní porce — u výdeje si je přebírají tito lidé jmenovitě.</p>
+        <table class="ms diety">
+            <thead>
+                <tr>
+                    <th class="jmeno">Jméno</th>
+                    <th class="omezeni">Omezení</th>
+                    <th>Upřesnění</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in diets %}
+                    <tr>
+                        <td class="jmeno">{{ d.name }}</td>
+                        <td class="omezeni">{{ d.diet }}</td>
+                        <td>{{ d.note }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}
