@@ -17,6 +17,11 @@
                href="{{ path('oswis_org_oswis_calendar_web_admin_program_attendees', {eventSlug: eventSlug, activityId: activity.id}) }}">PDF</a>
             <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"
                href="{{ path('oswis_org_oswis_calendar_web_admin_program_attendees', {eventSlug: eventSlug, activityId: activity.id, format: 'csv'}) }}">CSV</a>
+            {# Podpisový arch k vytištění — TŘETÍ výstup téže aktivity a stejně osiřelý jako býval
+               program_attendees: renderoval se, byl krytý testem, ale odnikud na něj nevedl odkaz. #}
+            <span class="small text-muted" style="margin-left: .25rem;">Arch k podpisu:</span>
+            <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_program_signup', {eventSlug: eventSlug, activityId: activity.id}) }}">PDF</a>
         </div>
 
         <table class="list" style="max-width: 46rem;">

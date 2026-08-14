@@ -128,7 +128,15 @@ class ParticipantController extends AbstractController
             try {
                 $repository = $this->entityManager->getRepository(AbstractContact::class);
                 $contact = $repository->findBy(['appUser' => $user->getId()])[0] ?? null;
-            } catch (UnexpectedValueException) {
+            } catch (UnexpectedValueException $exception) {
+                // Spolknout se to MUSÍ (formulář se má nabídnout i tak), ale bez záznamu se o tom
+                // nikdo nedozví: přihlášenému uživateli by se tiše nepředvyplnil kontakt a vypadalo
+                // by to jako „systém mě nezná". Degradace ano, ale ne poslepu.
+                $this->logger->warning(sprintf(
+                    'Nepodařilo se dohledat kontakt přihlášeného uživatele #%s — formulář bude bez předvyplnění: %s',
+                    (string) $user->getId(),
+                    $exception->getMessage(),
+                ));
             }
         }
         try {

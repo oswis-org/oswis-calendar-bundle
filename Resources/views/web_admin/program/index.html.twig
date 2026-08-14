@@ -99,6 +99,10 @@
                             <span>{{ row.day.name ?? 'Den' }}
                                 <small style="color: #6c757d; font-weight: normal;">{{ row.day.date }}</small></span>
                             <span style="margin-left: auto; font-size: .8rem; font-weight: normal; display: inline-flex; gap: .4rem; align-items: baseline;">
+                                {# Program dne v PDF. Dřív osiřelý výstup (program_day) — renderoval se
+                                   a byl krytý testem, ale odnikud na něj nevedl odkaz. #}
+                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_day', {eventSlug: eventSlug, dayId: row.day.id}) }}"
+                                   title="Program tohoto dne v PDF">PDF</a>
                                 <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_edit', {eventSlug: eventSlug, dayId: row.day.id}) }}">upravit</a>
                                 <form method="post" style="display: inline; margin: 0;"
                                       action="{{ path('oswis_org_oswis_calendar_web_admin_program_day_delete', {eventSlug: eventSlug, dayId: row.day.id}) }}"
