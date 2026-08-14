@@ -8,6 +8,13 @@ OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote:
       groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
     deleted:
       groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
+    # `deleted` (výše) je jen ODVOZENÝ příznak ke čtení — zapisovat se musí `deletedAt`.
+    # Bez téhle grupy vracel PUT 200 a pole TIŠE ZAHODIL, takže poznámka nešla smazat z aplikace.
+    # (`entity_put`, kde `deletedAt` mapuje `DeletedInterface.yaml` v core bundlu, tahle entita
+    # v denormalizačním kontextu nemá — proto se to doplňuje cíleně tady a ne rozšířením kontextu,
+    # které by naráz odemklo i všechno ostatní z `entity_put`.)
+    deletedAt:
+      groups: [ 'calendar_participant_notes_get', 'calendar_participant_note_get', 'calendar_participant_note_put' ]
     participant:
       groups: [ 'calendar_participant_notes_get', 'calendar_participant_notes_post', 'calendar_participant_note_get' ]
 
