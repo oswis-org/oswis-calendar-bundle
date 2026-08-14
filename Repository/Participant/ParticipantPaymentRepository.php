@@ -61,6 +61,43 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+    /**
+     * Platby, které čekají na potvrzovací e-mail — podklad pro odložené odesílání z cronu
+     * (import je kvůli 504 už neposílá synchronně, {@see ParticipantPaymentsImportService}).
+     *
+     * ⚠️ `$notBefore` NENÍ optimalizace, ale POJISTKA. Podmínka „má účastníka a nemá
+     * `confirmedByMailAt`" sama o sobě sedí i na **32 historických plateb z let 2020–2025**
+     * (ověřeno na produkci 2026-08-12: 10× 2025, 6× 2024, 6× 2023, 8× 2022, 2× starší).
+     * Bez stropu na stáří by první běh cronu rozeslal těmto lidem potvrzení k platbám i šest
+     * let starým. Ty staré tam zůstaly z různých důvodů (chybějící appUser, spadlá šablona…)
+     * a rozhodně se nemají dohánět automaticky.
+     *
+     * Vrací ID, ne entity: odesílání pak načítá po jednom a průběžně detachuje, aby dávka
+     * nedržela celý objektový graf (Participant má EAGER vazby — známý OOM vzorec automailů).
+     *
+     * @return list<int>
+     */
+    public function findAwaitingConfirmationIds(\DateTimeInterface $notBefore, int $limit = 100): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.id')
+            ->andWhere('p.participant IS NOT NULL')
+            ->andWhere('p.confirmedByMailAt IS NULL')
+            ->andWhere('p.createdAt >= :notBefore')->setParameter('notBefore', $notBefore)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults(max(1, $limit))
+            ->getQuery()->getScalarResult();
+
+        $ids = [];
+        foreach ($rows as $row) {
+            if (is_array($row) && isset($row['id']) && is_numeric($row['id'])) {
+                $ids[] = (int) $row['id'];
+            }
+        }
+
+        return $ids;
+    }
+
     private function applyFilter(QueryBuilder $qb, string $filter): void
     {
         match ($filter) {

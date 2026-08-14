@@ -53,7 +53,13 @@ class ParticipantPaymentsImportService
                 ));
             }
             $participant = $this->getParticipantByPayment($payment);
-            $created = $this->paymentService->create($payment, true, $participant);
+            // `false` = NEPOSÍLAT potvrzení tady. Dřív se posílalo synchronně platbu po platbě
+            // uvnitř HTTP requestu — u reálného importu (až 173 plateb, ~99 % s účastníkem) to
+            // znamenalo ~170 sekvenčních SMTP odeslání a request padal na 504. Potvrzení teď
+            // rozešle cron ({@see ParticipantPaymentService::sendPendingConfirmations()}),
+            // který běží à 5 minut; zámek zůstává týž (`confirmedByMailAt`), takže opakovaný
+            // import je pořád bezpečný a nic se neodešle dvakrát.
+            $created = $this->paymentService->create($payment, false, $participant);
             // create() returns null only when it caught an error (e.g. the confirmation mail threw after
             // the payment was already flushed). Never add null to the report collection — a null row would
             // break the report Twig and silently drop the entry; log the discrepancy instead.

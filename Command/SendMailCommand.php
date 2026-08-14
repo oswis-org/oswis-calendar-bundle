@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Command;
 
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -38,6 +39,7 @@ final class SendMailCommand extends Command
         private readonly ParticipantBulkMailService $bulkMailService,
         private readonly ParticipantMailBulkRepository $bulkRepository,
         private readonly ParticipantService $participantService,
+        private readonly ParticipantPaymentService $paymentService,
     ) {
         parent::__construct();
     }
@@ -56,6 +58,7 @@ final class SendMailCommand extends Command
             ->addOption('max-recipients', null, InputOption::VALUE_REQUIRED, 'Cap total bulk recipients processed this run (0 = drain all pending).', '0')
             ->addOption('automails', null, InputOption::VALUE_NONE, 'ALSO run the auto-mail engine (off by default — sends real automatic mails).')
             ->addOption('automail-limit', null, InputOption::VALUE_REQUIRED, 'Max participants per auto-mail group when --automails.', '100')
+            ->addOption('payment-confirmation-limit', null, InputOption::VALUE_REQUIRED, 'Max deferred payment confirmations per run.', '200')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Report what would be sent without sending.');
     }
 
@@ -66,6 +69,7 @@ final class SendMailCommand extends Command
         $maxRecipients = max(0, $this->intOption($input, 'max-recipients', 0));
         $withAutomails = (bool) $input->getOption('automails');
         $automailLimit = max(1, $this->intOption($input, 'automail-limit', 100));
+        $paymentConfirmationLimit = max(1, $this->intOption($input, 'payment-confirmation-limit', 200));
         $dryRun = (bool) $input->getOption('dry-run');
 
         // Single-instance guard (native flock, no daemon/dependency).
@@ -100,6 +104,12 @@ final class SendMailCommand extends Command
                     ));
                 }
                 $io->writeln(sprintf('Pending bulků: %d, příjemců zbývá celkem: %d', count($pending), $totalRemaining));
+
+                $confirmationsPreview = $this->paymentService->sendPendingConfirmations($paymentConfirmationLimit, 7, true);
+                $io->writeln(sprintf(
+                    'Potvrzení plateb čekajících na odeslání: %d (jen platby mladší 7 dnů).',
+                    $confirmationsPreview['candidates'],
+                ));
 
                 if ($withAutomails) {
                     $io->section('Automaily (náhled — nic se neodešle)');
@@ -172,6 +182,19 @@ final class SendMailCommand extends Command
                 $io->success(sprintf('Bulk outbox: %d dávek, odesláno %d, selhalo %d.', $bulksTouched, $totalSent, $totalFailed));
             } else {
                 $io->writeln('Bulk outbox: nic ke zpracování.');
+            }
+
+            // Potvrzení plateb — BEZ přepínače, schválně. Nejde o kampaň, ale o transakční poštu,
+            // kterou systém posílal vždycky; import ji jen přestal posílat synchronně (504).
+            // Kdyby to viselo za volbou, potvrzení by po nasazení tiše přestala chodit.
+            $confirmations = $this->paymentService->sendPendingConfirmations($paymentConfirmationLimit);
+            if ($confirmations['candidates'] > 0) {
+                $io->success(sprintf(
+                    'Potvrzení plateb: odesláno %d, selhalo %d (kandidátů %d).',
+                    $confirmations['sent'],
+                    $confirmations['failed'],
+                    $confirmations['candidates'],
+                ));
             }
 
             if ($withAutomails) {

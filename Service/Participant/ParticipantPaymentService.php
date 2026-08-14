@@ -92,6 +92,63 @@ class ParticipantPaymentService
      * @return bool
      * @throws OswisException
      */
+    /**
+     * Odešle potvrzení k platbám, které na ně čekají — volá cron ({@see SendMailCommand}).
+     *
+     * PROČ TO VŮBEC EXISTUJE: import plateb dřív posílal potvrzení synchronně, platbu po platbě,
+     * uvnitř jednoho HTTP requestu. Reálné importy mají až **173 plateb** a **~99 % z nich má
+     * účastníka** (ověřeno na produkci), takže jeden import znamenal ~170 sekvenčních SMTP
+     * odeslání → minuty → brána utne request na 504. Teď import jen založí platby a odeslání
+     * si vezme tenhle drain z cronu, který už stejně běží à 5 minut.
+     *
+     * ⚠️ Cena za to: potvrzení dorazí do ~5 minut místo „hned". U potvrzení o přijetí platby
+     * je to přijatelné; u importu, který dřív spadl na 504 a pokladník nevěděl, co se stalo,
+     * je to spíš zlepšení.
+     *
+     * Idempotence se NEŘEŠÍ nijak nově — drží ji `confirmedByMailAt`, tedy týž zámek, který
+     * dělal bezpečným i opakovaný import po 504.
+     *
+     * @return array{sent: int, failed: int, candidates: int}
+     */
+    final public function sendPendingConfirmations(int $limit = 100, int $maxAgeDays = 7, bool $dryRun = false): array
+    {
+        $notBefore = new \DateTimeImmutable(sprintf('-%d days', max(1, $maxAgeDays)));
+        $repository = $this->em->getRepository(ParticipantPayment::class);
+        $ids = $repository instanceof \OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository
+            ? $repository->findAwaitingConfirmationIds($notBefore, $limit)
+            : [];
+        $result = ['sent' => 0, 'failed' => 0, 'candidates' => count($ids)];
+        if ($dryRun || [] === $ids) {
+            return $result;
+        }
+        foreach ($ids as $id) {
+            $payment = $this->em->find(ParticipantPayment::class, $id);
+            if (!$payment instanceof ParticipantPayment || $payment->isConfirmedByMail()) {
+                continue;
+            }
+            try {
+                $this->participantMailService->sendPaymentConfirmation($payment);
+                $result['sent']++;
+            } catch (Exception $exception) {
+                // Jedna vadná platba nesmí shodit celou dávku — zbytek fronty musí projít.
+                // Nezůstane viset: `confirmedByMailAt` se nenastavilo, takže ji vezme příští tick.
+                $result['failed']++;
+                $this->logger->error(sprintf(
+                    'Potvrzení platby #%d se nepodařilo odeslat: %s',
+                    $id,
+                    $exception->getMessage(),
+                ));
+            }
+            // Průběžný detach: Participant má EAGER vazby, takže bez tohohle by dávka držela
+            // celý objektový graf (známý OOM vzorec automailů).
+            if ($this->em->contains($payment)) {
+                $this->em->detach($payment);
+            }
+        }
+
+        return $result;
+    }
+
     final public function sendPaymentsReport(Collection $payments): bool
     {
         try {
