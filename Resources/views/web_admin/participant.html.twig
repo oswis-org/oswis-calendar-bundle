@@ -169,6 +169,45 @@
                         <tbody><tr><td>Kategorie</td><td>{{ participant.participantCategory(false).name|default('—') }}</td></tr></tbody>
                         <tbody><tr><td>Var. symbol</td><td>{{ participant.variableSymbol|default('—') }}</td></tr></tbody>
                     </table>
+                    {# Osobní itinerář účastníka. Dřív osiřelý výstup (program_itinerary): renderoval
+                       se, byl krytý testem, ale odnikud na něj nevedl odkaz — dal se otevřít jen
+                       ručně sestaveným URL. Patří sem, protože potřebuje konkrétního člověka. #}
+                    {% if participant.event.slug|default %}
+                        <div id="itinerar" style="margin-top: .5rem;">
+                            <strong>Osobní itinerář</strong>
+                            <span class="text-muted" style="font-size: .8rem;">(program tohoto účastníka k vytištění)</span>
+                            <div style="margin-top: .25rem;">
+                                <a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"
+                                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_itinerary', {eventSlug: participant.event.slug, participantId: participantId}) }}">PDF</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {# Přesun jednotlivce. Dřív šlo přesunout jen přes hromadného průvodce, kde bylo
+                       nutné vybrat zdrojovou akci a kategorii a najít člověka v seznamu — z jeho
+                       vlastního detailu cesta nevedla. Aplikace to na detailu uměla, web-admin ne. #}
+                    {% if moveOffers|default([])|length > 0 %}
+                        <div id="presun" style="margin-top: .5rem;">
+                            <strong>Přesun na jinou nabídku</strong>
+                            <span class="text-muted" style="font-size: .8rem;">(jiný turnus téhož ročníku; účastníkovi odejde oznámení o změně přihlášky)</span>
+                            <form method="post" style="margin-top: .25rem;"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_move', {participantId: participantId}) }}"
+                                  onsubmit="return confirm('Opravdu přesunout přihlášku #{{ participantId }} na vybranou nabídku? Účastníkovi odejde oznámení o změně.');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('participant_move_' ~ participantId) }}">
+                                <div style="display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end;">
+                                    <label style="font-size: .82rem;">Cílová nabídka<br>
+                                        <select name="targetOfferId" class="form-select form-select-sm" style="width: auto;">
+                                            {% for offer in moveOffers %}
+                                                <option value="{{ offer.id }}"{{ participant.offer(false).id|default(0) == offer.id ? ' selected' : '' }}>
+                                                    {{ offer.name }}{{ participant.offer(false).id|default(0) == offer.id ? ' — současná' : '' }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </label>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Přesunout</button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
                     <div id="partial-stay" style="margin-top: .5rem;">
                         <strong>Partial-stay</strong>
                         <span class="text-muted" style="font-size: .8rem;">(pozdější příjezd / dřívější odjezd — volný text, plní tým z e-mailu/poznámky)</span>

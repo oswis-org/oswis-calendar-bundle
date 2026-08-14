@@ -9,6 +9,7 @@ use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
+use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFlagUpdateService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
@@ -19,6 +20,7 @@ use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\AddressBook\ContactInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +36,7 @@ final class WebAdminParticipantsController extends AbstractController
         private readonly ParticipantChangeService $changeService,
         private readonly ParticipantFlagUpdateService $flagUpdateService,
         private readonly EntityManagerInterface $em,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -190,7 +193,10 @@ final class WebAdminParticipantsController extends AbstractController
         $history = [];
         try {
             $history = $this->changeService->buildHistory($participant);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            // Spolknutí je záměr (stránka se nesmí rozbít), ale bez záznamu by admin viděl prázdnou
+            // historii a nepoznal, že se REKONSTRUKCE nepovedla — vypadá to jako „žádné změny".
+            $this->logger->warning('Historii přihlášky se nepodařilo sestavit: '.$exception->getMessage());
         }
 
         // Only ParticipantMail (system + ad-hoc) rows are resend-able. IMAP-imported and manual-note
@@ -211,7 +217,10 @@ final class WebAdminParticipantsController extends AbstractController
         $flagSelectionModel = [];
         try {
             $flagSelectionModel = $this->flagUpdateService->getFlagSelectionModel($participant);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            // Totéž: bez záznamu se editor příznaků tiše vykreslí PRÁZDNÝ a vypadá to, že účastník
+            // žádné příznaky nabízené nemá — přitom jen selhalo sestavení modelu.
+            $this->logger->warning('Model editoru příznaků se nepodařilo sestavit: '.$exception->getMessage());
         }
 
         // Drobečková navigace libovolné hloubky: Úvod › Účastníci › akce › turnus › jméno.
@@ -253,8 +262,23 @@ final class WebAdminParticipantsController extends AbstractController
             return $tb <=> $ta;
         });
 
+        // Nabídky pro přesun jednotlivce z detailu. Omezeno na TÝŽ ročník (nadřazenou akci):
+        // přesun mezi turnusy je běžný provoz, přesun do jiného roku je téměř vždy omyl a v dlouhém
+        // seznamu by se na něj snadno kliklo. Kdo opravdu potřebuje napříč ročníky, má hromadný
+        // průvodce ({@see WebAdminBulkReassignController}).
+        $moveOffers = [];
+        if (null !== $superEvent && null !== $superEvent->getId()) {
+            $moveOffers = $this->em->createQuery(
+                'SELECT o FROM '.RegistrationOffer::class.' o'
+                .' LEFT JOIN o.event e LEFT JOIN e.superEvent se'
+                .' WHERE e.id = :superId OR se.id = :superId'
+                .' ORDER BY e.startDateTime ASC, o.name ASC',
+            )->setParameter('superId', $superEvent->getId())->setMaxResults(50)->getResult();
+        }
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
             'participant'        => $participant,
+            'moveOffers'         => $moveOffers,
             'crumbs'             => $crumbs,
             'timeline'           => $timeline,
             'entries'            => $entries,
