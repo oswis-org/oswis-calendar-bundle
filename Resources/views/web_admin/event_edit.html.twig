@@ -17,8 +17,8 @@
 
         {{ form_start(form, { attr: { novalidate: 'novalidate', class: 'event-edit-form' } }) }}
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Základní údaje</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Základní údaje</legend>
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.name) }}</div>
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.shortName) }}</div>
@@ -30,8 +30,8 @@
             </div>
         </fieldset>
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Termín a kapacita</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Termín a kapacita</legend>
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.startDate) }}</div>
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.endDate) }}</div>
@@ -42,8 +42,8 @@
             </div>
         </fieldset>
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Texty</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Texty</legend>
             <div class="row">
                 <div class="col-12 mb-3">{{ form_row(form.description) }}</div>
             </div>
@@ -52,8 +52,8 @@
             </div>
         </fieldset>
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Program a místo</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Program a místo</legend>
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.category) }}</div>
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.place) }}</div>
@@ -69,8 +69,8 @@
             {% endif %}
         </fieldset>
 
-        <fieldset style="border: 1px solid #dee2e6; border-radius: .375rem; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-            <legend style="font-size: 1rem; font-weight: 600; padding: 0 .5rem; width: auto; margin-bottom: .5rem;">Přihlašování a cena</legend>
+        <fieldset class="admin-fieldset">
+            <legend>Přihlašování a cena</legend>
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.signupMode) }}</div>
                 <div class="col-12 col-md-6 mb-3">{{ form_row(form.signupDeadline) }}</div>

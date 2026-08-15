@@ -30,7 +30,7 @@
         </div>
 
         {% if activeTab == 'flags' %}
-            <table class="list" style="width: 100%;">
+            <table class="list">
                 <thead>
                     <tr>
                         <th style="width: 3rem;">ID</th>
@@ -63,7 +63,7 @@
                 </tbody>
             </table>
         {% elseif activeTab == 'categories' %}
-            <table class="list" style="width: 100%;">
+            <table class="list">
                 <thead>
                     <tr>
                         <th style="width: 3rem;">ID</th>
@@ -91,7 +91,7 @@
             <p class="text-muted" style="margin-bottom: .5rem;">
                 <small>Zobrazeno posledních {{ counts['offers'] < 200 ? counts['offers'] : 200 }} nabídek (z {{ counts['offers'] }}).</small>
             </p>
-            <table class="list" style="width: 100%;">
+            <table class="list">
                 <thead>
                     <tr>
                         <th style="width: 3rem;">ID</th>
@@ -131,7 +131,7 @@
             <p class="text-muted" style="margin-bottom: .5rem;">
                 <small>Zobrazeno posledních {{ counts['flag-offers'] < 200 ? counts['flag-offers'] : 200 }} (z {{ counts['flag-offers'] }}).</small>
             </p>
-            <table class="list" style="width: 100%;">
+            <table class="list">
                 <thead>
                     <tr>
                         <th style="width: 3rem;">ID</th>
