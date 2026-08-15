@@ -606,6 +606,28 @@ oswis_org_oswis_calendar_web_admin_participant_note_delete:
 
 
 
+## Spolubydlení (spec §5) — zápisová cesta, kterou entita slibovala a neměla.
+oswis_org_oswis_calendar_web_admin_roommate_create:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminRoommateController::create
+  path: "/web_admin/ucastnici/{participantId}/spolubydleni-nove"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_roommate_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminRoommateController::delete
+  path: "/web_admin/ucastnici/{participantId}/spolubydleni/{preferenceId}/smazat"
+  requirements:
+    participantId: '\d+'
+    preferenceId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_roommate_rematch:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminRoommateController::rematch
+  path: "/web_admin/ucastnici/spolubydleni-preparovat"
+  methods: [POST]
+
+
 oswis_org_oswis_calendar_web_admin_aggregations:
     controller: oswis_org_oswis_calendar.web_admin.aggregations_controller::showAggregations
     path: "/web_admin/prihlasky/agregace"

@@ -23,14 +23,14 @@
             <div class="col" style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
                 <h2 style="margin:0;">
                     {{ contact.name|default('Účastník #' ~ participant.id) }}
-                    <span class="badge bg-primary" style="font-size:.5em; vertical-align:middle;">#{{ participant.id }}</span>
+                    <span class="badge text-bg-primary" style="font-size:.5em; vertical-align:middle;">#{{ participant.id }}</span>
                     {% if participant.deletedAt|default %}
-                        <span class="badge bg-danger" style="font-size:.5em; vertical-align:middle;">SMAZÁNO {{ participant.deletedAt|date('j. n. Y') }}</span>
+                        <span class="badge text-bg-danger" style="font-size:.5em; vertical-align:middle;">SMAZÁNO {{ participant.deletedAt|date('j. n. Y') }}</span>
                     {% endif %}
                     {% if acctActive %}
-                        <span class="badge bg-success" style="font-size:.5em; vertical-align:middle;">účet aktivován</span>
+                        <span class="badge text-bg-success" style="font-size:.5em; vertical-align:middle;">účet aktivován</span>
                     {% elseif contact.email|default %}
-                        <span class="badge bg-warning text-black" style="font-size:.5em; vertical-align:middle;">účet neaktivován</span>
+                        <span class="badge text-bg-warning" style="font-size:.5em; vertical-align:middle;">účet neaktivován</span>
                     {% endif %}
                 </h2>
             </div>
@@ -145,9 +145,9 @@
                                 {% if contact.appUser|default %}
                                     {{ contact.appUser.username|default(contact.appUser.email|default('—')) }}
                                     {% if acctActive %}
-                                        <span class="badge bg-success">aktivován</span>
+                                        <span class="badge text-bg-success">aktivován</span>
                                     {% else %}
-                                        <span class="badge bg-warning text-black">neaktivován</span>
+                                        <span class="badge text-bg-warning">neaktivován</span>
                                     {% endif %}
                                 {% else %}—{% endif %}
                             </td>
@@ -354,12 +354,12 @@
                                 {{ note.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('') }}
                                 {% set author = note.createdBy|default %}
                                 {% if author %}<div class="block small text-muted">{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</div>{% endif %}
-                                <span class="badge {{ note.publicNote|default(false) ? 'bg-info' : 'bg-secondary' }}">{{ note.publicNote|default(false) ? 'veřejná' : 'interní' }}</span>
+                                <span class="badge {{ note.publicNote|default(false) ? 'text-bg-info' : 'text-bg-secondary' }}">{{ note.publicNote|default(false) ? 'veřejná' : 'interní' }}</span>
                                 {# Od 15. 8. se poznámky mažou MĚKCE — bez tohohle rozlišení by smazaná
                                    poznámka vypadala v tabulce jako platná, což je horší než dřívější
                                    tvrdé mazání. Odlišuje se TVAREM (přeškrtnutí, štítek), ne jen barvou. #}
                                 {% if note.deleted|default(false) %}
-                                    <span class="badge bg-danger">smazaná</span>
+                                    <span class="badge text-bg-danger">smazaná</span>
                                 {% endif %}
                             </td>
                             <td style="white-space:pre-line;{{ note.deleted|default(false) ? ' text-decoration:line-through;' : '' }}">{{ note.textValue|default('') }}</td>
@@ -394,6 +394,105 @@
                         </tr></tbody>
                     {% endfor %}
                 </table>
+            {% endif %}
+
+            {# Spolubydlení — spec §5. Zápisová cesta, kterou entita slibovala („ZÁPIS přes web
+               admin / službu") a do 15. 8. neexistovala; požadavky šly zadat jen ručně v DB.
+               Vazba se ukazuje z OBOU stran: tým ji zadá typicky jen u jednoho z dvojice. #}
+            <h3 id="spolubydleni">Spolubydlení</h3>
+            {% set roommates = roommatePreferences|default([]) %}
+            <form method="post"
+                  action="{{ path('oswis_org_oswis_calendar_web_admin_roommate_create', { participantId: participant.id }) }}"
+                  class="box" style="margin-bottom:1rem;">
+                <input type="hidden" name="_token" value="{{ csrf_token('roommate_create_' ~ participant.id) }}">
+                <div style="display:flex; gap:.5rem; align-items:flex-start; flex-wrap:wrap;">
+                    <input type="text" name="preferenceText" required maxlength="512"
+                           placeholder="S kým chce bydlet (jméno, „chatka pro 4"…)"
+                           class="form-control form-control-sm" style="flex:1 1 20rem; min-width:14rem;">
+                    <select name="source" class="form-control form-control-sm" style="flex:0 0 9rem;"
+                            title="Odkud požadavek přišel">
+                        <option value="email">z e-mailu</option>
+                        <option value="registration">z přihlášky</option>
+                        <option value="other">jinak</option>
+                    </select>
+                    <input type="number" name="withParticipantId" min="1" placeholder="#ID"
+                           class="form-control form-control-sm" style="flex:0 0 6rem;"
+                           title="Nepovinné — číslo přihlášky toho druhého. Vyplň, jen když je jméno víceznačné nebo se nespáruje samo.">
+                    <button type="submit" class="btn btn-sm btn-primary">+ Přidat</button>
+                </div>
+                <p class="small text-muted" style="margin:.4rem 0 0;">
+                    Jméno se spáruje automaticky proti účastníkům téhož turnusu. Nespárovaný požadavek
+                    u příjezdu nezafunguje — dvojice se pak může rozdělit.
+                </p>
+            </form>
+            {% if roommates|length == 0 %}
+                <p class="text-muted">Žádný požadavek na spolubydlení.</p>
+            {% else %}
+                <table class="list" style="margin-bottom:1.5rem;">
+                    <thead><tr><th>Stav</th><th>Požadavek</th><th>Spárováno s</th><th class="text-center">Akce</th></tr></thead>
+                    {% for preference in roommates %}
+                        {# Druhá strana vazby z pohledu TOHOTO účastníka — u požadavku, který zadal
+                           někdo jiný, je „ten druhý" naopak jeho autor. #}
+                        {% set isOwn = preference.participant is not null and preference.participant.id == participant.id %}
+                        {% set counterpart = isOwn ? preference.withParticipant : preference.participant %}
+                        <tbody><tr>
+                            <td style="white-space:nowrap;">
+                                {# Odlišeno TVAREM i slovem, ne jen barvou. #}
+                                {% if preference.status == 'ok' %}
+                                    <span class="badge text-bg-success">✓ spárováno</span>
+                                {% elseif preference.status == 'conflict' %}
+                                    <span class="badge text-bg-danger">! konflikt</span>
+                                {% else %}
+                                    <span class="badge text-bg-warning">? bez shody</span>
+                                {% endif %}
+                                <div class="block small text-muted">
+                                    {% if preference.source == 'registration' %}z přihlášky
+                                    {% elseif preference.source == 'email' %}z e-mailu
+                                    {% else %}jinak{% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {{ preference.preferenceText|default('—') }}
+                                {% if not isOwn %}
+                                    <div class="block small text-muted">
+                                        požadavek zadal někdo jiný — tenhle účastník je v něm uveden
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if counterpart %}
+                                    <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: counterpart.id }) }}">
+                                        {{ counterpart.contact.name|default('#' ~ counterpart.id) }}
+                                    </a>
+                                    <div class="block small text-muted">#{{ counterpart.id }}{% if counterpart.event %} · {{ counterpart.event.name }}{% endif %}</div>
+                                {% elseif preference.status == 'conflict' %}
+                                    <em class="small">jméno sedí na víc lidí nebo na jiný turnus — vyber přihlášku ručně</em>
+                                {% else %}
+                                    <em class="small text-muted">nikdo takový zatím není přihlášený</em>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <form method="post"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_roommate_delete', { participantId: participant.id, preferenceId: preference.id }) }}"
+                                      onsubmit="return confirm('Opravdu smazat tento požadavek na spolubydlení?');" style="margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('roommate_delete_' ~ preference.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:trash" class="oa-icon" /></button>
+                                </form>
+                            </td>
+                        </tr></tbody>
+                    {% endfor %}
+                </table>
+                {# Přepárování má smysl jen když je co párovat — lidé se hlásí průběžně. #}
+                {% if roommates|filter(p => p.status != 'ok')|length > 0 %}
+                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_roommate_rematch') }}"
+                          style="margin:-1rem 0 1.5rem;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('roommate_rematch') }}">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            Přepárovat nespárované požadavky
+                        </button>
+                        <span class="small text-muted">projde celou akci, ne jen tohoto účastníka</span>
+                    </form>
+                {% endif %}
             {% endif %}
 
             {# Historie a komunikace #}

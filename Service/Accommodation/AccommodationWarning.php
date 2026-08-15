@@ -13,6 +13,10 @@ final readonly class AccommodationWarning
     public const string CODE_OVER_CAPACITY = 'over_capacity';
     public const string CODE_UNAVAILABLE = 'unavailable';
     public const string CODE_GROUP_SPLIT = 'group_split';
+
+    /** Dvojice, která se domluvila na spolubydlení, by se přiřazením rozdělila. */
+    public const string CODE_ROOMMATE_SPLIT = 'roommate_split';
+
     public const string CODE_BED_MISMATCH = 'bed_mismatch';
     public const string CODE_FLAG_TYPE_MISMATCH = 'flag_type_mismatch';
     public const string CODE_PARTIAL_STAY = 'partial_stay';

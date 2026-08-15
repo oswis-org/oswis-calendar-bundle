@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\AccommodationUnit;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Bed;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Reservation;
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagCategory;
@@ -19,6 +18,9 @@ use OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommateGroupRepositor
 /**
  * Doménová logika ubytování — assign-during-check-in, constraint engine (MĚKKÝ — warn, ne blok),
  * check-in a obousměrné dohledání (kdo kde ↔ kdo v jednotce).
+ *
+ * Constrainty pokrývají: dostupnost jednotky, kapacitu, shodu lůžka, typ ubytování z přihlášky,
+ * skupinové spolubydlení ({@see RoommateGroup}) i párové ({@see RoommatePreference}).
  *
  * KAPACITA JE MĚKKÁ (user 2026-07-14): overbooking je záměr (tým předchystá nad vyčerpanou kapacitu),
  * takže `checkAssignment` vrací UPOZORNĚNÍ, `assign` NIKDY neblokuje — jen varování předá dál (UI je ukáže).
@@ -39,6 +41,7 @@ class AccommodationService
         private readonly EntityManagerInterface $em,
         private readonly ReservationRepository $reservationRepository,
         private readonly RoommateGroupRepository $roommateGroupRepository,
+        private readonly RoommatePreferenceService $roommatePreferenceService,
     ) {
     }
 
@@ -96,6 +99,23 @@ class AccommodationService
                         ),
                     );
                 }
+            }
+        }
+
+        // Párové spolubydlení: domluvená dvojice by se přiřazením rozdělila. Kontroluje se
+        // OBOUSMĚRNĚ — požadavek zadá tým typicky jen u jednoho z dvojice (přišel e-mailem od
+        // jednoho z nich), takže hledat jen „co si přál tenhle člověk" by druhou stranu minulo.
+        foreach ($this->roommatePreferenceService->getMatchedRoommates($participant) as $roommate) {
+            $roommateRes = $this->reservationRepository->findActiveByParticipant($roommate);
+            if (null !== $roommateRes && $roommateRes->getUnit()?->getId() !== $unit->getId()) {
+                $warnings[] = new AccommodationWarning(
+                    AccommodationWarning::CODE_ROOMMATE_SPLIT,
+                    sprintf(
+                        'Domluvené spolubydlení: „%s" je v jiné jednotce „%s".',
+                        (string) $roommate->getContact()?->getName(),
+                        (string) $roommateRes->getUnit()?->getName(),
+                    ),
+                );
             }
         }
 

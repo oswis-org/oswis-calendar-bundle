@@ -151,6 +151,13 @@ services:
     autoconfigure: true
     public: true
 
+  ## Spolubydlení (spec §5) — zápisová cesta + párování textu na účastníka + detekce konfliktů.
+  ## Entita je přes API READ-ONLY právě proto, že zápis musí projít touhle službou.
+  OswisOrg\OswisCalendarBundle\Service\Accommodation\RoommatePreferenceService:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   ## Provozní dokumenty (#212) — bezpečnostní list PDF (per-osoba předvyplněné, à la 2025 vzor)
   OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService:
     autowire: true

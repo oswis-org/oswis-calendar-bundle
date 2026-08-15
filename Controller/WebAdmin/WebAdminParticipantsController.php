@@ -7,6 +7,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Accommodation\RoommatePreferenceService;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
@@ -35,6 +36,7 @@ final class WebAdminParticipantsController extends AbstractController
         private readonly ParticipantMailService $participantMailService,
         private readonly ParticipantChangeService $changeService,
         private readonly ParticipantFlagUpdateService $flagUpdateService,
+        private readonly RoommatePreferenceService $roommatePreferenceService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
     ) {
@@ -276,20 +278,26 @@ final class WebAdminParticipantsController extends AbstractController
             )->setParameter('superId', $superEvent->getId())->setMaxResults(50)->getResult();
         }
 
+        // Spolubydlení se čte z OBOU stran vazby: požadavek zadá tým typicky jen u jednoho
+        // z dvojice, ale na detailu toho druhého musí být vidět taky — jinak by u něj vypadal
+        // jako by žádnou domluvu neměl.
+        $roommatePreferences = $this->roommatePreferenceService->findRelatedTo($participant);
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/participant.html.twig', [
-            'participant'        => $participant,
-            'moveOffers'         => $moveOffers,
-            'crumbs'             => $crumbs,
-            'timeline'           => $timeline,
-            'entries'            => $entries,
-            'history'            => $history,
-            'flagSelectionModel' => $flagSelectionModel,
-            'isAdmin'            => true,
-            'showFullDetail'     => true,
-            'participantId'      => $participantId,
-            'resendableMailIds'  => $resendableMailIds,
-            'page_title'         => sprintf('Přihláška #%d', $participantId),
-            'pageTitle'          => sprintf('Přihláška #%d', $participantId),
+            'participant'         => $participant,
+            'roommatePreferences' => $roommatePreferences,
+            'moveOffers'          => $moveOffers,
+            'crumbs'              => $crumbs,
+            'timeline'            => $timeline,
+            'entries'             => $entries,
+            'history'             => $history,
+            'flagSelectionModel'  => $flagSelectionModel,
+            'isAdmin'             => true,
+            'showFullDetail'      => true,
+            'participantId'       => $participantId,
+            'resendableMailIds'   => $resendableMailIds,
+            'page_title'          => sprintf('Přihláška #%d', $participantId),
+            'pageTitle'           => sprintf('Přihláška #%d', $participantId),
         ]);
     }
 
