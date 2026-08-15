@@ -50,7 +50,12 @@
                             {% for nalez in kontrola %}
                                 <li style="font-size: .9rem;">
                                     {% if nalez.id %}
-                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: nalez.id}) }}">{{ nalez.aktivita }}</a>
+                                        {# Podtržení schválně: jinde v adminu stojí odkaz sám v buňce („upravit"),
+                                           takže je poznat z pozice — tady je UVNITŘ VĚTY a od okolního textu ho dělí
+                                           jen barva (změřeno 1,66:1, tedy pod 3:1 z WCAG 1.4.1). Barvoslepý by ho
+                                           bez podtržení nerozeznal. Globální konvenci odkazů to nemění. #}
+                                        <a style="text-decoration: underline;"
+                                           href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: nalez.id}) }}">{{ nalez.aktivita }}</a>
                                     {% else %}
                                         {{ nalez.aktivita }}
                                     {% endif %}
