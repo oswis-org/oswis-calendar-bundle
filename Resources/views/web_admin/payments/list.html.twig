@@ -12,7 +12,12 @@
                     {% for tab in filterTabs %}
                         <a href="{{ tab.url }}"
                            class="btn btn-sm {{ tab.active ? 'btn-primary' : 'btn-outline-primary' }}">
-                            {{ tab.label }}
+                            {{ tab.label }}{% if tab.badge %}
+                                {# Počet PŘÍCHOZÍCH plateb bez přihlášky = peníze, které dorazily
+                                   a nikdo je nemá připsané. Odchozí řádky výpisu (poplatky, vratky)
+                                   se nepočítají — ty k přihlášce nepatří a jen by dělaly šum. #}
+                                <span class="badge text-bg-warning" title="Příchozí platby čekající na přiřazení k přihlášce">{{ tab.badge }}</span>
+                            {% endif %}
                         </a>
                     {% endfor %}
                 </nav>

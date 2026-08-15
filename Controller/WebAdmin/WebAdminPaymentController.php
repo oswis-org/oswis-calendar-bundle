@@ -155,6 +155,10 @@ class WebAdminPaymentController extends AbstractController
             ParticipantPaymentRepository::FILTER_WITH_ERROR => 'S chybou',
             ParticipantPaymentRepository::FILTER_ASSIGNED   => 'Přiřazené',
         ];
+        // U „Nepřiřazené" se ukazuje počet PŘÍCHOZÍCH plateb bez přihlášky — tedy peněz, které
+        // dorazily a nikdo je nemá připsané. Bez čísla se to přehlédne: na produkci takhle ležela
+        // osm dní záloha 1690 Kč, přestože obrazovka na spárování existuje a funguje.
+        $ceka = $this->paymentRepo->countUnassignedIncoming();
         $tabs = [];
         foreach ($entries as $filter => $label) {
             $tabs[] = [
@@ -162,6 +166,7 @@ class WebAdminPaymentController extends AbstractController
                 'url'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_participant_payments_list', ['filter' => $filter]),
                 'label'  => $label,
                 'active' => $filter === $active,
+                'badge'  => ParticipantPaymentRepository::FILTER_ORPHANED === $filter && $ceka > 0 ? $ceka : null,
             ];
         }
 

@@ -26,6 +26,24 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
     /**
      * @return list<ParticipantPayment>
      */
+    /**
+     * Kolik PŘÍCHOZÍCH plateb čeká na přiřazení k přihlášce.
+     *
+     * Záměrně jen kladné částky: mezi nepřiřazenými je spousta odchozích řádků z bankovního
+     * výpisu (poplatky, vratky), které k žádné přihlášce nepatří a patřit nemají — surový počet
+     * „nepřiřazených" je proto šum. Kladná nepřiřazená částka naopak znamená, že někdo zaplatil
+     * a nemá to připsané: na produkci takhle 8 dní ležela záloha 1690 Kč (nález 2026-08-15).
+     */
+    public function countUnassignedIncoming(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->andWhere('p.participant IS NULL')
+            ->andWhere('p.numericValue > 0')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function findFiltered(string $filter, int $limit = 500): array
     {
         // Participant has fetch=EAGER on offer/event/participantCategory and AbstractContact
