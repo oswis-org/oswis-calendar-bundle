@@ -120,18 +120,22 @@
                        Čas přitom není povinný (formulář `required => false`), takže se to dá uložit
                        omylem. Varování se ukazuje jen tehdy, když se to opravdu stalo. #}
                     {% if not row.day %}
+                        {# Obě sdělení platí NEZÁVISLE na sobě: „mimo dny“ je definice téhle skupiny
+                           (datum aktivity neodpovídá žádnému dni), chybějící čas je další vada navrch.
+                           Dřív byly ve větvích if/else, takže když nějaká aktivita neměla čas, tým se
+                           o chybějícím dni vůbec nedozvěděl. #}
+                        <p class="text-muted" style="margin: 0 0 .5rem; font-size: .9rem;">
+                            Datum těchto aktivit neodpovídá žádnému dni programu. V aplikaci se
+                            účastníkům zobrazí normálně, v <strong>tiskových výstupech</strong> ale
+                            vypadnou z členění po dnech a vytisknou se až na konci — přidej
+                            odpovídající den tlačítkem „+ Den“.
+                        </p>
                         {% set bezCasu = row.activities|filter(a => not a.start)|length %}
                         {% if bezCasu > 0 %}
                             <p class="alert alert-warning" style="margin: 0 0 .5rem; padding: .4rem .6rem; font-size: .9rem;">
-                                <strong>{{ bezCasu }}</strong>
+                                Navíc <strong>{{ bezCasu }}</strong>
                                 {{ bezCasu == 1 ? 'aktivita nemá čas' : (bezCasu < 5 ? 'aktivity nemají čas' : 'aktivit nemá čas') }}
-                                — <strong>účastníci je v aplikaci neuvidí</strong>. Doplň čas, ať se program zobrazí celý.
-                            </p>
-                        {% else %}
-                            <p class="text-muted" style="margin: 0 0 .5rem; font-size: .9rem;">
-                                Tyhle aktivity čas mají, jen jejich datum neodpovídá žádnému dni programu.
-                                V aplikaci se účastníkům zobrazí normálně, ve výstupech po dnech ale chybí —
-                                přidej odpovídající den tlačítkem „+ Den“.
+                                — <strong>ty účastníci v aplikaci neuvidí vůbec</strong>. Doplň čas, ať se program zobrazí celý.
                             </p>
                         {% endif %}
                     {% endif %}
