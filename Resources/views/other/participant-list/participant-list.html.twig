@@ -88,7 +88,11 @@
             {% if activeFilter|default and activeFilter != 'all' %}<input type="hidden" name="filter" value="{{ activeFilter }}">{% endif %}
             {% for f in selectedFlags|default([]) %}<input type="hidden" name="flags[]" value="{{ f }}">{% endfor %}
             {% if advancedExpr|default %}<input type="hidden" name="expr" value="{{ advancedExpr }}">{% endif %}
-            <div class="position-relative" style="min-width: 21rem;">
+            {# Šířka je ve třídě, ne inline: `min-width: 21rem` (336 px) se na 360px mobilu i s okraji
+               nevejde a přetékala CELÁ stránka i s navigací. `max-width` nepomůže (min-width ho přebíjí)
+               a `min(21rem, 100%)` taky ne — tohle je FLEX položka, takže se `100%` počítá vůči
+               zúženému kontejneru a pole by se zúžilo i na desktopu (naměřeno 336 → 295 px). #}
+            <div class="position-relative oswis-search-field">
                 <input type="search" name="q" id="oswisSearchInput" autocomplete="off" value="{{ q|default }}"
                        class="form-control form-control-sm w-100"
                        placeholder="🔎 Hledat: jméno, e-mail, telefon, VS…">

@@ -47,7 +47,7 @@
                 <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: .75rem;">
                     <div>
                         <label for="mtSampleSelect" class="form-label" style="margin-bottom: .15rem;">Vzorový příjemce</label>
-                        <select id="mtSampleSelect" class="form-select form-select-sm" style="min-width: 22rem;">
+                        <select id="mtSampleSelect" class="form-select form-select-sm" style="min-width: min(22rem, 100%);">
                             <option value="">— nejnovější aktivní přihláška —</option>
                             {% for p in sampleParticipants|default([]) %}
                                 <option value="{{ p.id }}">
