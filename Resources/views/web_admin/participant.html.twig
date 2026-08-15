@@ -355,8 +355,14 @@
                                 {% set author = note.createdBy|default %}
                                 {% if author %}<div class="block small text-muted">{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</div>{% endif %}
                                 <span class="badge {{ note.publicNote|default(false) ? 'bg-info' : 'bg-secondary' }}">{{ note.publicNote|default(false) ? 'veřejná' : 'interní' }}</span>
+                                {# Od 15. 8. se poznámky mažou MĚKCE — bez tohohle rozlišení by smazaná
+                                   poznámka vypadala v tabulce jako platná, což je horší než dřívější
+                                   tvrdé mazání. Odlišuje se TVAREM (přeškrtnutí, štítek), ne jen barvou. #}
+                                {% if note.deleted|default(false) %}
+                                    <span class="badge bg-danger">smazaná</span>
+                                {% endif %}
                             </td>
-                            <td style="white-space:pre-line;">{{ note.textValue|default('') }}</td>
+                            <td style="white-space:pre-line;{{ note.deleted|default(false) ? ' text-decoration:line-through;' : '' }}">{{ note.textValue|default('') }}</td>
                             <td class="text-center">
                                 <details>
                                     <summary class="btn btn-sm btn-outline-primary" style="list-style:none;"><twig:ux:icon name="tabler:pencil" class="oa-icon" /></summary>
@@ -371,12 +377,17 @@
                                             </label>
                                             <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
                                         </form>
-                                        <form method="post"
-                                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_delete', { participantId: participant.id, noteId: note.id }) }}"
-                                              onsubmit="return confirm('Opravdu smazat tuto poznámku?');" style="margin:0;">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('participant_note_delete_' ~ note.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:trash" class="oa-icon" /> Smazat</button>
-                                        </form>
+                                        {# Už smazané poznámce se mazání nenabízí — nemá co udělat. #}
+                                        {% if not note.deleted|default(false) %}
+                                            <form method="post"
+                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_delete', { participantId: participant.id, noteId: note.id }) }}"
+                                                  onsubmit="return confirm('Opravdu smazat tuto poznámku? Tobě zůstane přeškrtnutá, účastníkovi zmizí.');" style="margin:0;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('participant_note_delete_' ~ note.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:trash" class="oa-icon" /> Smazat</button>
+                                            </form>
+                                        {% else %}
+                                            <p class="small text-muted" style="margin:0;">Poznámka je smazaná — účastník ji nevidí.</p>
+                                        {% endif %}
                                     </div>
                                 </details>
                             </td>

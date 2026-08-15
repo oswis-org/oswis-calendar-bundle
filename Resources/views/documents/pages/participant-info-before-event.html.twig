@@ -82,7 +82,11 @@
                         {{ contactDetail.content }}
                     </li>
                 {% endfor %}
-                {% for note in data.eventParticipant.eventParticipantNotes|default|filter(note => note.textValue|length > 0) %}
+                {# `not note.deleted` je nutné: od 15. 8. se poznámky mažou měkce a `getNotes()`
+                   vrací i smazané (globální filtr `softdeleteable` zapnutý není). Tenhle dokument
+                   jde ÚČASTNÍKOVI, takže smazaná poznámka v něm být nesmí — stejné pravidlo jako
+                   v `ParticipantPrivacyNormalizer`. #}
+                {% for note in data.eventParticipant.eventParticipantNotes|default|filter(note => note.textValue|length > 0 and not note.deleted) %}
                     <li>
                         <b>Poznámka:</b>
                         <p>

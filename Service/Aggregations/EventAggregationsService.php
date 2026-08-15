@@ -196,7 +196,13 @@ final readonly class EventAggregationsService
             $otherAggregations['Uživatelský účet']['Účet ověřen'] ??= 0;
             $otherAggregations['Uživatelský účet']['Účet ověřen']++;
         }
-        if ($participant->getNotes()->filter(static fn (ParticipantNote $note) => !empty($note->getTextValue()))->count() > 0) {
+        // `!$note->isDeleted()` je nutné: `getNotes()` vrací celou kolekci bez ohledu na `deletedAt`
+        // (globální filtr `softdeleteable` zapnutý není). Bez toho by účastník po smazání poznámky
+        // dál vystupoval jako „S poznámkou" — a od 15. 8. se poznámky mažou MĚKCE, takže by ten
+        // rozpor začal vznikat reálně. Stejnou kontrolu dělá i `ParticipantFilterEvaluator::hasNote()`.
+        if ($participant->getNotes()->filter(
+            static fn (ParticipantNote $note) => !$note->isDeleted() && !empty($note->getTextValue()),
+        )->count() > 0) {
             $otherAggregations['Poznámky']['S poznámkou'] ??= 0;
             $otherAggregations['Poznámky']['S poznámkou']++;
         }

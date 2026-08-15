@@ -90,10 +90,19 @@ final class WebAdminParticipantNoteController extends AbstractController
         if ($note->getParticipant()?->getId() !== $participantId) {
             throw $this->createAccessDeniedException('Poznámka nepatří účastníkovi.');
         }
-        $this->em->remove($note);
+        // MĚKKÉ mazání, ne `em->remove()`. `ParticipantNote` NENÍ Gedmo SoftDeleteable, takže
+        // `remove()` mazal natvrdo — a protože je to jediná cesta, kterou se poznámky mazaly,
+        // bylo na produkci 0 měkce smazaných ze 747 a `deletedAt` bylo mrtvé pole.
+        //
+        // Rozhodnutí uživatele (2026-08-15) po analýze dat: **měkce**. Důvod je ve struktuře
+        // těch dat — 735 ze 747 poznámek je veřejných a jen 176 má autora, čili ~571 jich napsali
+        // SAMI ÚČASTNÍCI v přihlášce. Tvrdé mazání by u nich zahodilo jediný záznam o tom, co
+        // člověk potřebuje (typicky dietní požadavek). Tým smazanou poznámku dál vidí
+        // (přeškrtnutě), účastníkovi ji odfiltruje {@see ParticipantPrivacyNormalizer}.
+        $note->setDeletedAt(new \DateTime());
         $this->em->flush();
 
-        $this->addFlash('success', 'Poznámka smazána.');
+        $this->addFlash('success', 'Poznámka smazána (tým ji uvidí přeškrtnutou, účastníkovi zmizí).');
 
         return $this->redirectToDetail($participantId);
     }
