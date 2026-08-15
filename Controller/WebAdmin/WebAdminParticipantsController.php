@@ -483,12 +483,21 @@ final class WebAdminParticipantsController extends AbstractController
             // a uloží do `statusMessage`), takže dřív tu svítilo „odesláno" i tehdy, když
             // nedorazilo nic — a nikdo se to nedozvěděl.
             $doruceno = $this->participantMailService->sendSummary($participant);
-            $this->addFlash('success', sprintf(
-                'Shrnutí přihlášky (pokyny k platbě) odesláno účastníkovi #%d (%d příjemc%s).',
-                $participantId,
-                $doruceno,
-                1 === $doruceno ? 'i' : 'ům',
-            ));
+            if (0 === $doruceno) {
+                // `sendSummary()` na nedoručení ZÁMĚRNĚ nevyhazuje výjimku (shodilo by to registraci
+                // i aktivaci — viz jeho docblock), takže se tu musí zeptat na návratovou hodnotu.
+                $this->addFlash('error', sprintf(
+                    'Shrnutí přihlášky #%d se NEPODAŘILO doručit ani jednomu příjemci — podrobnosti v logu.',
+                    $participantId,
+                ));
+            } else {
+                $this->addFlash('success', sprintf(
+                    'Shrnutí přihlášky (pokyny k platbě) odesláno účastníkovi #%d (%d příjemc%s).',
+                    $participantId,
+                    $doruceno,
+                    1 === $doruceno ? 'i' : 'ům',
+                ));
+            }
         } catch (\Throwable $e) {
             $this->addFlash('error', sprintf('Shrnutí nešlo odeslat: %s', $e->getMessage()));
         }

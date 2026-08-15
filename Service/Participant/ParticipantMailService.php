@@ -207,11 +207,20 @@ class ParticipantMailService
      *
      * ⚠️ Dřív se počítaly pokusy, které nevyhodily výjimku — jenže selhání SMTP výjimku
      * NEVYHODÍ ({@see MailService::sendEMail()} ji zaloguje a uloží do `statusMessage`).
-     * Selhané odeslání se tak počítalo jako úspěch, pojistka „0 odesláno → chyba" nikdy
-     * nesepnula a admin dostal hlášku „Shrnutí odesláno", i když nedorazilo nic.
-     * Jediný důkaz doručení je sloupec `sent`.
+     * Selhané odeslání se tak počítalo jako úspěch a admin dostal hlášku „Shrnutí odesláno",
+     * i když nedorazilo nic. Jediný důkaz doručení je sloupec `sent`.
      *
-     * @throws OswisException když se nepodařilo doručit ANI JEDNO
+     * ⚠️⚠️ NEVYHAZUJE výjimku, když se nedoručí nic — a je to záměr. Tuhle metodu volá
+     * `ParticipantSubscriber::postWrite()` (tedy API registrace, bez try/catch) a aktivace
+     * přihlášky v `ParticipantService`, která výjimku převádí na „Aktivace se nezdařila".
+     * Výpadek SMTP by tak shodil REGISTRACI nebo zabránil AKTIVACI — což je nepoměrně horší
+     * než neodeslaný mail, který jde poslat znovu tlačítkem.
+     *
+     * (Původní kód tu `OswisException` vyhazoval, jenže při počítání pokusů to nikdy nenastalo.
+     * Když jsem 15. 8. začal počítat skutečná doručení, ta mrtvá větev by najednou ožila —
+     * a testy by to nechytily, protože v testech mailer funguje.)
+     *
+     * Kdo potřebuje vědět, že se nedoručilo nic, se ptá na NÁVRATOVOU HODNOTU.
      */
     public function sendSummary(Participant $participant): int
     {
@@ -234,9 +243,14 @@ class ParticipantMailService
                 );
             }
         }
-        $this->logger->debug("SENT $sent from ".$contactPersons->count());
         if (1 > $sent && $contactPersons->count() > 0) {
-            throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail.");
+            $this->logger->error(sprintf(
+                'Shrnutí přihlášky #%d se nepodařilo doručit ANI JEDNOMU z %d příjemců.',
+                $participant->getId() ?? 0,
+                $contactPersons->count(),
+            ));
+        } else {
+            $this->logger->debug("SENT $sent from ".$contactPersons->count());
         }
 
         return $sent;
