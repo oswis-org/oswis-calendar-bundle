@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Service\Accommodation;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\RoommatePreference;
-use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Accommodation\RoommatePreferenceRepository;
-use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantListFilter;
-use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 
 /**
  * Zápisová a párovací logika pro preference spolubydlení.
@@ -38,8 +35,6 @@ class RoommatePreferenceService
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly RoommatePreferenceRepository $repository,
-        private readonly ParticipantService $participantService,
-        private readonly ParticipantListFilter $listFilter,
     ) {
     }
 
@@ -100,7 +95,7 @@ class RoommatePreferenceService
         }
 
         // 1) Nejdřív ve VLASTNÍM turnusu — tam je shoda rovnou použitelná.
-        $sameEvent = $this->findCandidates($text, $participant->getEvent(), $participant);
+        $sameEvent = $this->findCandidates($text, $this->ownEventScope($participant), $participant);
         if (1 === count($sameEvent)) {
             $preference->setWithParticipant($sameEvent[0]);
             $preference->setStatus(RoommatePreference::STATUS_OK);
@@ -202,23 +197,52 @@ class RoommatePreferenceService
     /**
      * Účastníci daného rozsahu, jejichž jméno odpovídá hledanému textu.
      *
-     * Shodu dělá {@see ParticipantListFilter::participantMatchesQuery()} — tedy přesně to, co
-     * hledání v seznamu účastníků. Záměrně: co tým najde v seznamu, to se spáruje i tady, a
-     * diakritika ani formát telefonu do toho nemluví.
+     * Hledá se DOTAZEM DO DB, ne procházením hydratovaných entit. Důvod je provozní: rozsah je
+     * celý turnus (stovky lidí) a porovnání v PHP by muselo volat `Participant::getName()`, který
+     * NENÍ čistý getter — mutuje entitu, a nad L2-cachovaným grafem to už jednou skončilo
+     * OutOfMemory ({@see feedback_getname_mutates_l2cache_oom}). Tady navíc jde o ZÁPISOVOU cestu,
+     * takže by se to platilo při každém uložení požadavku.
+     *
+     * Bezdiakritičnost („reznicek" najde „Řezníček") zajišťuje kolace sloupce
+     * `utf8mb4_unicode_ci` — ověřeno dotazem lokálně i na produkci, ne odhadem.
+     *
+     * Hydratují se až nalezení kandidáti, kterých je typicky nula nebo jeden.
+     *
+     * @param list<int> $eventIds rozsah akcí, ve kterých se hledá
      *
      * @return list<Participant>
      */
-    private function findCandidates(string $text, ?Event $scope, Participant $exclude): array
+    private function findCandidates(string $text, array $eventIds, Participant $exclude): array
     {
-        if (!$scope instanceof Event) {
+        $needle = trim($text);
+        if ([] === $eventIds || '' === $needle) {
             return [];
         }
+        // `%` a `_` mají v LIKE zvláštní význam — bez escapování by požadavek „100%" našel kohokoli.
+        $needle = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $needle);
+
+        /** @var list<int|string> $ids */
+        $ids = $this->em->getConnection()->fetchFirstColumn(
+            'SELECT p.id FROM calendar_participant p'
+            .' JOIN address_book_abstract_contact c ON c.id = p.contact_id'
+            .' WHERE p.event_id IN (:events) AND p.deleted_at IS NULL AND p.id <> :exclude'
+            // Hledat v OBOU podobách jména: `sortable_name` je „Eliášová Alena", kdežto tým
+            // požadavek zapíše v běžném pořadí („Alena Eliášová"). Jen jeden sloupec = polovina
+            // zadání se nespáruje (odhaleno testem).
+            ." AND (c.sortable_name LIKE :needle ESCAPE '\\\\' OR c.name LIKE :needle ESCAPE '\\\\')"
+            .' LIMIT 5', // stačí rozlišit „nikdo / právě jeden / víc" — víc se stejně nepáruje
+            [
+                'events'  => $eventIds,
+                'exclude' => $exclude->getId() ?? 0,
+                'needle'  => '%'.$needle.'%',
+            ],
+            ['events' => ArrayParameterType::INTEGER],
+        );
+
         $candidates = [];
-        foreach ($this->scopeParticipants($scope) as $candidate) {
-            if ($candidate->getId() === $exclude->getId() || $candidate->isDeleted()) {
-                continue;
-            }
-            if ($this->listFilter->participantMatchesQuery($candidate, $text)) {
+        foreach ($ids as $id) {
+            $candidate = $this->em->find(Participant::class, (int) $id);
+            if ($candidate instanceof Participant) {
                 $candidates[] = $candidate;
             }
         }
@@ -227,23 +251,41 @@ class RoommatePreferenceService
     }
 
     /**
-     * Rodičovská akce — rozsah, ve kterém leží sourozenecké turnusy. Null, když účastník žádnou
-     * nadřazenou akci nemá (jednorázová akce → konflikt „jiný turnus" nemůže nastat).
+     * Rozsah „vlastní turnus" — jen akce, na kterou je člověk přihlášený.
+     *
+     * @return list<int>
      */
-    private function siblingScope(Participant $participant): ?Event
+    private function ownEventScope(Participant $participant): array
     {
-        return $participant->getEvent()?->getSuperEvent();
+        $id = $participant->getEvent()?->getId();
+
+        return null === $id ? [] : [$id];
     }
 
     /**
-     * @return iterable<Participant>
+     * Rozsah „sourozenecké turnusy" — všechny akce pod touž nadřazenou akcí. Prázdný, když
+     * účastník nadřazenou akci nemá (jednorázová akce → konflikt „jiný turnus" nemůže nastat).
+     *
+     * @return list<int>
      */
-    private function scopeParticipants(Event $event): iterable
+    private function siblingScope(Participant $participant): array
     {
-        return $this->participantService->getParticipants([
-            ParticipantRepository::CRITERIA_EVENT                  => $event,
-            ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH  => 3,
-        ]);
+        $parentId = $participant->getEvent()?->getSuperEvent()?->getId();
+        if (null === $parentId) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($this->em->getConnection()->fetchFirstColumn(
+            'SELECT id FROM calendar_event WHERE super_event_id = :parent AND deleted_at IS NULL',
+            ['parent' => $parentId],
+        ) as $id) {
+            if (is_int($id) || is_string($id)) {
+                $ids[] = (int) $id;
+            }
+        }
+
+        return $ids;
     }
 
     private function sameEvent(Participant $one, Participant $other): bool
