@@ -60,12 +60,19 @@ final class WebAdminParticipantsController extends AbstractController
             throw $this->createAccessDeniedException('E-mail nepatří tomuto účastníkovi.');
         }
         try {
-            $this->participantMailService->resend($mail);
-            $this->addFlash('success', sprintf(
-                'E-mail "%s" znovu odeslán účastníkovi #%d.',
-                $mail->getSubject() ?? $mail->getType() ?? 'systémový',
-                $participantId,
-            ));
+            $novy = $this->participantMailService->resend($mail);
+            $popis = $mail->getSubject() ?? $mail->getType() ?? 'systémový';
+            // `sent` je jediný důkaz odeslání — bez téhle kontroly hlásil admin úspěch
+            // i tehdy, když mailer zprávu odmítl.
+            if ($novy->isSent()) {
+                $this->addFlash('success', sprintf('E-mail "%s" znovu odeslán účastníkovi #%d.', $popis, $participantId));
+            } else {
+                $this->addFlash('error', sprintf(
+                    'E-mail "%s" se NEODESLAL: %s',
+                    $popis,
+                    $novy->getStatusMessage() ?? 'mailer neuvedl důvod, viz log',
+                ));
+            }
         } catch (\Throwable $e) {
             $this->addFlash('error', sprintf('Re-send selhal: %s', $e->getMessage()));
         }
@@ -472,10 +479,15 @@ final class WebAdminParticipantsController extends AbstractController
         ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
 
         try {
-            $this->participantMailService->sendSummary($participant);
+            // Hlásit až podle SKUTEČNÉHO doručení. Selhání SMTP nevyhodí výjimku (zaloguje se
+            // a uloží do `statusMessage`), takže dřív tu svítilo „odesláno" i tehdy, když
+            // nedorazilo nic — a nikdo se to nedozvěděl.
+            $doruceno = $this->participantMailService->sendSummary($participant);
             $this->addFlash('success', sprintf(
-                'Shrnutí přihlášky (pokyny k platbě) odesláno účastníkovi #%d.',
+                'Shrnutí přihlášky (pokyny k platbě) odesláno účastníkovi #%d (%d příjemc%s).',
                 $participantId,
+                $doruceno,
+                1 === $doruceno ? 'i' : 'ům',
             ));
         } catch (\Throwable $e) {
             $this->addFlash('error', sprintf('Shrnutí nešlo odeslat: %s', $e->getMessage()));

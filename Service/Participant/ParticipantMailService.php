@@ -203,11 +203,17 @@ class ParticipantMailService
     }
 
     /**
-     * @param Participant $participant
+     * Odešle shrnutí přihlášky všem kontaktním osobám. Vrací počet SKUTEČNĚ doručených.
      *
-     * @throws OswisException
+     * ⚠️ Dřív se počítaly pokusy, které nevyhodily výjimku — jenže selhání SMTP výjimku
+     * NEVYHODÍ ({@see MailService::sendEMail()} ji zaloguje a uloží do `statusMessage`).
+     * Selhané odeslání se tak počítalo jako úspěch, pojistka „0 odesláno → chyba" nikdy
+     * nesepnula a admin dostal hlášku „Shrnutí odesláno", i když nedorazilo nic.
+     * Jediný důkaz doručení je sloupec `sent`.
+     *
+     * @throws OswisException když se nepodařilo doručit ANI JEDNO
      */
-    public function sendSummary(Participant $participant): void
+    public function sendSummary(Participant $participant): int
     {
         $sent = 0;
         $contactPersons = $participant->getContactPersons(true);
@@ -216,8 +222,9 @@ class ParticipantMailService
                 continue;
             }
             try {
-                $this->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_SUMMARY);
-                $sent++;
+                if ($this->sendSummaryToUser($participant, $appUser, ParticipantMail::TYPE_SUMMARY)->isSent()) {
+                    $sent++;
+                }
             } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                 $participantId = $participant->getId();
                 $userId = $appUser->getId();
@@ -231,6 +238,8 @@ class ParticipantMailService
         if (1 > $sent && $contactPersons->count() > 0) {
             throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail.");
         }
+
+        return $sent;
     }
 
     /**
@@ -249,7 +258,7 @@ class ParticipantMailService
         AppUser $appUser,
         string $type,
         ?ParticipantToken $participantToken = null
-    ): void {
+    ): ParticipantMail {
         $isIS = false;
         if (null !== $participantToken
             && (!$participantToken->isParticipant($participant)
@@ -300,6 +309,10 @@ class ParticipantMailService
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();
+
+        // Vrací se záznam, ne void: jediný důkaz doručení je `isSent()`. Selhání SMTP se sem
+        // nedostane jako výjimka, takže bez tohohle volající nemá jak poznat, že nic neodešlo.
+        return $participantMail;
     }
 
     /**
@@ -314,7 +327,7 @@ class ParticipantMailService
      * @throws NotFoundException
      * @throws InvalidTypeException
      */
-    public function resend(ParticipantMail $existingMail): void
+    public function resend(ParticipantMail $existingMail): ParticipantMail
     {
         $participant = $existingMail->getParticipant();
         $appUser = $existingMail->getAppUser();
@@ -334,7 +347,7 @@ class ParticipantMailService
                 default => "E-mail typu '$type' nelze znovu odeslat.",
             });
         }
-        $this->sendSummaryToUser($participant, $appUser, $type);
+        return $this->sendSummaryToUser($participant, $appUser, $type);
     }
 
     public function getMailCategoryByType(?string $type): ?ParticipantMailCategory
