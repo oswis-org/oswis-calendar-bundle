@@ -93,7 +93,10 @@
     {% if (not participant.deletedAt|default) and appUser|default %}
         <mj-text>
             <strong>Uživatelské jméno</strong> u uživatelského účtu pro přístup do aplikace
-            <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}" target="_blank" style="color:#006FAD;">{{ oswis.app.name|default }}</a>:
+            {# Podtržení schválně — slovo uvnitř věty; barva #006FAD na textu #103010 je 2,72:1,
+               pod hranicí 3:1 z WCAG 1.4.1, a mail má globálně `a { text-decoration: none }`. #}
+            <a href="{{ absolute_url(path('oswis_org_oswis_core_portal')) }}" target="_blank"
+               style="color:#006FAD; text-decoration:underline;">{{ oswis.app.name|default }}</a>:
             <strong>{{ appUser.username|default ? appUser.username|default : appUser.email|default }}</strong>
             {% if appUser.email|default and appUser.email|default != appUser.username|default %}
                 <br><strong>Hlavní e-mail</strong>: {{ appUser.email|default }}
