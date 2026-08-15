@@ -38,6 +38,28 @@
                         </form>
                     </div>
                 {% endif %}
+
+                {# Kontrolní seznam k bráně zveřejnění. Brána sama říká „zveřejni, až bude
+                   zkontrolovaný" — tohle je to, s čím se dá zkontrolovat. Ukazuje se i po
+                   zveřejnění: vada v programu, který účastníci UŽ vidí, je naléhavější, ne míň. #}
+                {% if kontrola|default([])|length > 0 %}
+                    <div class="alert alert-warning" style="margin: .75rem 0 0; padding: .55rem 1rem;">
+                        <strong>Před zveřejněním zkontroluj {{ kontrola|length }}
+                            {{ kontrola|length == 1 ? 'aktivitu' : (kontrola|length < 5 ? 'aktivity' : 'aktivit') }}:</strong>
+                        <ul style="margin: .35rem 0 0; padding-left: 1.2rem;">
+                            {% for nalez in kontrola %}
+                                <li style="font-size: .9rem;">
+                                    {% if nalez.id %}
+                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: nalez.id}) }}">{{ nalez.aktivita }}</a>
+                                    {% else %}
+                                        {{ nalez.aktivita }}
+                                    {% endif %}
+                                    — {{ nalez.problem }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
             </div>
         </div>
 

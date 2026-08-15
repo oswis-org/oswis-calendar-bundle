@@ -27,6 +27,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
+use OswisOrg\OswisCalendarBundle\Service\Program\ProgramReleaseCheck;
 use OswisOrg\OswisCalendarBundle\State\EventDuplicateProcessor;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -54,6 +55,7 @@ final class WebAdminProgramController extends AbstractController
         private readonly ParticipantRepository $participantRepository,
         private readonly EventDuplicateProcessor $duplicateProcessor,
         private readonly StaffTeamRepository $teamRepository,
+        private readonly ProgramReleaseCheck $releaseCheck,
     ) {
     }
 
@@ -177,6 +179,7 @@ final class WebAdminProgramController extends AbstractController
             'eventSlug' => $eventSlug,
             'tree'      => $this->programData->getProgramTree($turnus),
             'sections'  => $this->programData->getSections($turnus, false),
+            'kontrola'  => $this->releaseCheck->problemy($turnus),
         ]);
     }
 

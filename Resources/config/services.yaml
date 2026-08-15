@@ -36,6 +36,11 @@ services:
     autowire: true
     public: true
 
+  ## Program module pre-release checklist (co zkontrolovat, než program uvidí účastníci)
+  OswisOrg\OswisCalendarBundle\Service\Program\ProgramReleaseCheck:
+    autowire: true
+    public: true
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
     autowire: true
