@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
@@ -162,21 +163,46 @@ final class ParticipantFlagUpdateService
             $newFlags->add($newFlag);
         }
 
-        // Validates + applies (soft-deletes removed, activates added). Throws on capacity/min-max.
-        $group->setParticipantFlags($newFlags, $admin);
+        // Kontrola kapacity + zápis ATOMICKY, stejným vzorem jako registrace
+        // ({@see ParticipantService::create()}). `getRemainingCapacity()` čte CACHOVANÝ sloupec
+        // `usage`, který se přepočítává až po flushi — takže bez zámku můžou dvě souběžné úpravy
+        // obě přečíst „ještě je místo" a obě zapsat. U letošních aktivit s pevným stropem
+        // (degustace po 13–15 lidech) to znamená přeplněnou akci, o které se nikdo nedozví.
+        $pridavane = array_values(array_filter(
+            $selectedOffers,
+            static fn (RegistrationFlagOffer $offer): bool => !isset($existingByOfferId[(int) $offer->getId()]),
+        ));
+        // Zamykat v USTÁLENÉM pořadí (podle id) — dvě transakce, které berou tytéž zámky
+        // v opačném pořadí, se navzájem zablokují.
+        usort($pridavane, static fn (RegistrationFlagOffer $a, RegistrationFlagOffer $b): int => ($a->getId() ?? 0) <=> ($b->getId() ?? 0));
 
-        $this->em->persist($participant);
-        $this->em->flush();
+        $this->em->wrapInTransaction(function () use ($participant, $group, $groupOffer, $newFlags, $admin, $pridavane): void {
+            foreach ($pridavane as $offer) {
+                if (null === $offer->getId()) {
+                    continue;
+                }
+                $this->em->lock($offer, LockMode::PESSIMISTIC_WRITE);
+                // Bez `refresh()` by se kontrolovalo proti hodnotě načtené PŘED zámkem, tedy
+                // proti témuž zastaralému číslu, kvůli kterému se zamyká.
+                $this->em->refresh($offer);
+            }
 
-        // Recompute cached usage AFTER the flush — countParticipantFlags() counts committed rows, so a
-        // pre-flush count would be stale. Recompute EVERY offer in the edited category (not just the
-        // ones the participant still holds): a REMOVED offer is no longer in the participant's flag set,
-        // so updateUsages($participant) would never touch it and its cached usage would stay inflated.
-        $participant->updateCachedColumns();
-        foreach ($groupOffer->getFlagOffers(false) as $offer) {
-            $this->flagOfferService->updateUsage($offer);
-        }
-        $this->em->flush();
+            // Validates + applies (soft-deletes removed, activates added). Throws on capacity/min-max.
+            $group->setParticipantFlags($newFlags, $admin);
+
+            $this->em->persist($participant);
+            $this->em->flush();
+
+            // Recompute cached usage AFTER the flush — countParticipantFlags() counts committed rows, so a
+            // pre-flush count would be stale. Recompute EVERY offer in the edited category (not just the
+            // ones the participant still holds): a REMOVED offer is no longer in the participant's flag set,
+            // so updateUsages($participant) would never touch it and its cached usage would stay inflated.
+            $participant->updateCachedColumns();
+            foreach ($groupOffer->getFlagOffers(false) as $offer) {
+                $this->flagOfferService->updateUsage($offer);
+            }
+            $this->em->flush();
+        });
 
         $this->logger->info(sprintf(
             'FLAG EDIT: participant #%d category #%d set to [%s] (admin=%s).',
