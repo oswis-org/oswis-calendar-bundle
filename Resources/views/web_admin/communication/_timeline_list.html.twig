@@ -53,7 +53,7 @@
                         {% endif %}
                         <strong>{{ entry.subject|default('(bez předmětu)') }}</strong>
                         {% if isInternal and isAdmin %}
-                            <span class="badge bg-light text-dark" title="Interní záznam, účastník nevidí">interní</span>
+                            <span class="badge text-bg-light" title="Interní záznam, účastník nevidí">interní</span>
                         {% endif %}
                         {% if entry.summary|default %}
                             <br><small class="text-secondary">{{ entry.summary|slice(0, 200) }}{% if entry.summary|length > 200 %}…{% endif %}</small>

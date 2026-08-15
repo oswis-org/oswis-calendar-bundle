@@ -162,7 +162,7 @@
                 {% for facet in flagFacets|default([]) %}
                     {% for section in facet.sections %}
                         {% for flag in section.flags|filter(f => f.selected|default) %}
-                            <a class="badge bg-primary text-decoration-none" title="Odebrat tento příznak"
+                            <a class="badge text-bg-primary text-decoration-none" title="Odebrat tento příznak"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', scopeParams|merge({
                                    filter: (activeFilter|default('all') != 'all' ? activeFilter : null),
                                    expr: advancedExpr|default,

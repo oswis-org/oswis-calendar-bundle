@@ -12,14 +12,14 @@
         {% set activityCount = 0 %}
         {% for row in tree %}{% set activityCount = activityCount + row.activities|length %}{% endfor %}
         <twig:Admin:PageHeader :title="'Program — ' ~ (event.name ?? eventSlug)">
-            <span class="badge bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
+            <span class="badge text-bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
         </twig:Admin:PageHeader>
 
         <div class="row" style="margin-top: .5rem;">
             <div class="col">
                 {% if event.isProgramReleased %}
                     <div class="alert alert-success" style="display: flex; align-items: center; gap: 1rem; padding: .45rem 1rem; margin: 0;">
-                        <span><span class="badge bg-success">ZVEŘEJNĚNO</span> Program vidí účastníci v aplikaci{% if event.programReleasedAt %} (od {{ event.programReleasedAt|date('j. n. Y H:i') }}){% endif %}.</span>
+                        <span><span class="badge text-bg-success">ZVEŘEJNĚNO</span> Program vidí účastníci v aplikaci{% if event.programReleasedAt %} (od {{ event.programReleasedAt|date('j. n. Y H:i') }}){% endif %}.</span>
                         <form method="post" style="margin: 0 0 0 auto;"
                               action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
                               onsubmit="return confirm('Skrýt program účastníkům?');">
@@ -29,7 +29,7 @@
                     </div>
                 {% else %}
                     <div class="alert alert-warning" style="display: flex; align-items: center; gap: 1rem; padding: .45rem 1rem; margin: 0;">
-                        <span><span class="badge bg-warning text-dark">SKRYTO</span> Program se staví — účastníci ho v aplikaci nevidí. Zveřejni ho, až bude hotový a zkontrolovaný.</span>
+                        <span><span class="badge text-bg-warning">SKRYTO</span> Program se staví — účastníci ho v aplikaci nevidí. Zveřejni ho, až bude hotový a zkontrolovaný.</span>
                         <form method="post" style="margin: 0 0 0 auto;"
                               action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
                               onsubmit="return confirm('Zveřejnit program všem účastníkům turnusu?');">
@@ -133,21 +133,23 @@
                                     <td>
                                         {% if a.highlight %}<strong>{{ a.name }}</strong>{% else %}{{ a.name }}{% endif %}
                                         {% if a.seriesRoman %} {{ a.seriesRoman }}{% endif %}
-                                        {% if a.isBlock %}<span class="badge bg-secondary" style="margin-left: .3rem;">blok</span>{% endif %}
-                                        {% if a.price %}<span class="badge bg-warning text-dark" style="margin-left: .3rem;">{{ a.price }} Kč</span>{% endif %}
+                                        {% if a.isBlock %}<span class="badge text-bg-secondary" style="margin-left: .3rem;">blok</span>{% endif %}
+                                        {% if a.price %}<span class="badge text-bg-warning" style="margin-left: .3rem;">{{ a.price }} Kč</span>{% endif %}
                                         {% if a.targetGroup %}
-                                            <span class="badge" style="margin-left: .3rem; background: {{ a.targetGroup.color ?? '#6c757d' }};">{{ a.targetGroup.name }}</span>
+                                            {# Barvu textu počítat — pozadí je barva skupiny z dat, může být i světlá. #}
+                                            {% set groupColor = a.targetGroup.color ?? '#6c757d' %}
+                                            <span class="badge" style="margin-left: .3rem; background: {{ groupColor }}; color: {{ groupColor|contrast_color }};">{{ a.targetGroup.name }}</span>
                                         {% endif %}
-                                        {% if not a.publicInApp %}<span class="badge bg-light text-dark" style="margin-left: .3rem;" title="Neveřejné (interní)">interní</span>{% endif %}
+                                        {% if not a.publicInApp %}<span class="badge text-bg-light" style="margin-left: .3rem;" title="Neveřejné (interní)">interní</span>{% endif %}
                                         {% for sub in a.subActivities %}
                                             <div style="margin-left: 1rem; color: #444; font-size: .9rem;">
                                                 ↳ {{ sub.start ?? '' }} {{ sub.name }}
-                                                {% if sub.targetGroup %}<span class="badge" style="background: {{ sub.targetGroup.color ?? '#6c757d' }};">{{ sub.targetGroup.name }}</span>{% endif %}
+                                                {% if sub.targetGroup %}{% set subGroupColor = sub.targetGroup.color ?? '#6c757d' %}<span class="badge" style="background: {{ subGroupColor }}; color: {{ subGroupColor|contrast_color }};">{{ sub.targetGroup.name }}</span>{% endif %}
                                             </div>
                                         {% endfor %}
                                     </td>
                                     <td style="color: #444;">{{ a.placeText ?? '—' }}</td>
-                                    <td>{% if a.category %}<span class="badge bg-info text-dark">{{ a.category }}</span>{% else %}—{% endif %}</td>
+                                    <td>{% if a.category %}<span class="badge text-bg-info">{{ a.category }}</span>{% else %}—{% endif %}</td>
                                     <td style="font-size: .9rem;">
                                         {% for s in a.staff %}
                                             {{ s.name }}{% if s.roleLabel %} <span style="color: #6c757d;">({{ s.roleLabel }})</span>{% endif %}{% if not loop.last %}, {% endif %}
@@ -193,7 +195,7 @@
                         {% for s in sections %}
                             <li class="list-group-item" style="display: flex; align-items: center; gap: .5rem;">
                                 <strong>{{ s.name ?? '—' }}</strong>
-                                {% if s.publicInApp %}<span class="badge bg-success">veřejné</span>{% else %}<span class="badge bg-light text-dark">interní</span>{% endif %}
+                                {% if s.publicInApp %}<span class="badge text-bg-success">veřejné</span>{% else %}<span class="badge text-bg-light">interní</span>{% endif %}
                                 <span style="color: #adb5bd; margin-left: auto;">priorita {{ s.priority ?? 0 }}</span>
                                 {% if s.id %}
                                     <a style="font-size: .8rem;" href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_edit', {eventSlug: eventSlug, sectionId: s.id}) }}">upravit</a>

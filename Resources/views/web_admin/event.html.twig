@@ -11,7 +11,7 @@
                 <h2 style="margin: 0;">
                     Přehled události
                     {% if event.deletedAt|default %}
-                        <span class="badge bg-danger" style="font-size: .55em; vertical-align: middle;">
+                        <span class="badge text-bg-danger" style="font-size: .55em; vertical-align: middle;">
                             SMAZÁNO {{ event.deletedAt|date('j. n. Y, H:i') }}
                         </span>
                     {% endif %}

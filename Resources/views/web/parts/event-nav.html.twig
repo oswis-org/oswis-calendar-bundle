@@ -6,7 +6,7 @@
             {% block event_nav_parent %}
                 {% if event.superEvent|default %}
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.superEvent.slug}) }}"
-                       class="badge bg-info"
+                       class="badge text-bg-info"
                        data-bs-toggle="tooltip" content="{{ event.superEvent.name }}"
                        title="{{ event.superEvent.name }}">
                         <i class="fas fa-arrow-up"></i> {{ event.superEvent.shortName }}
@@ -17,7 +17,7 @@
                 {% for navEvent in navEvents|sort((a, b) => not event or event.year ? b.startYear <=> a.startYear : a.seqId <=> b.seqId) %}
                     {% set active = event is defined and navEvent.slug|default == event.slug|default %}
                     <a href="{{ path('oswis_org_oswis_calendar_web_event', {'eventSlug': navEvent.slug}) }}"
-                       class="badge {{ active ? 'bg-success' : 'bg-light text-dark' }}">
+                       class="badge {{ active ? 'text-bg-success' : 'text-bg-light' }}">
                         {% if navEvent.year and navEvent.startYear %}
                             {{ navEvent.startYear }}
                         {% elseif navEvent.batch and navEvent.seqId %}

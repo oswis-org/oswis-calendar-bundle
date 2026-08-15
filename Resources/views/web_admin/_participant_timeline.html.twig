@@ -25,7 +25,7 @@
                             <summary class="oswis-tl__sum">
                                 <span class="oswis-tl__title">
                                     {{ e.subject|default('(bez předmětu)') }}
-                                    {% if internal and adm %}<span class="badge bg-secondary">interní</span>{% endif %}
+                                    {% if internal and adm %}<span class="badge text-bg-secondary">interní</span>{% endif %}
                                 </span>
                                 <span class="oswis-tl__meta">
                                     {{ e.channel.label() }} · {{ e.direction.label() }}{% if e.summary|default %} — {{ e.summary|slice(0, 110) }}{% if e.summary|length > 110 %}…{% endif %}{% endif %}

@@ -11,5 +11,9 @@
  Pozn.: žádný `spaceless` (způsobil prod fatal 2026-05-31) — bílé znaky řeší {%- -%}.
 #}
 {% macro flag_badge(color, label, textValue) -%}
-<span class="badge" style="background: {{ color|default('#006FAD') }}; color:#fff;">{{ label|default('—') }}{% if textValue is defined and textValue %}: {{ textValue }}{% endif %}</span>
+{# Barvu textu POČÍTAT, ne psát natvrdo: pozadí si volí tým v adminu, takže šablona dopředu
+   neví, jestli bude tmavé. S natvrdo bílou byl štítek na světlejších kategoriích nečitelný
+   (naměřeno: limetka #B2C918 = 1,86:1, oranžová PřF #EB6D25 = 3,11:1, AA chce 4,5:1). #}
+{%- set flagColor = color|default('#006FAD') -%}
+<span class="badge" style="background: {{ flagColor }}; color:{{ flagColor|contrast_color }};">{{ label|default('—') }}{% if textValue is defined and textValue %}: {{ textValue }}{% endif %}</span>
 {%- endmacro %}

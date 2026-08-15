@@ -86,7 +86,7 @@
                                         <span class="text-muted">—</span>
                                     {% endif %}
                                 </td>
-                                <td>{% if s.requiresOnline %}<span class="badge bg-info text-dark">online</span>{% endif %}</td>
+                                <td>{% if s.requiresOnline %}<span class="badge text-bg-info">online</span>{% endif %}</td>
                                 <td style="display: flex; gap: .35rem;">
                                     <a class="btn btn-sm btn-outline-primary"
                                        href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_station_edit', { eventSlug: eventSlug, stationId: s.id }) }}">Upravit</a>

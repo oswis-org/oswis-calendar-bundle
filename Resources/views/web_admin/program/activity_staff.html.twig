@@ -32,8 +32,8 @@
                 {% for a in assignments %}
                     <tr>
                         <td>{{ a.name ?: '—' }}
-                            {% if a.kind == 'team' %} <span class="badge bg-info text-dark">tým</span>
-                            {% elseif a.kind == 'external' %} <span class="badge bg-light text-dark">externí</span>{% endif %}</td>
+                            {% if a.kind == 'team' %} <span class="badge text-bg-info">tým</span>
+                            {% elseif a.kind == 'external' %} <span class="badge text-bg-light">externí</span>{% endif %}</td>
                         <td>{{ a.roleLabel ?? '—' }}</td>
                         <td>
                             <form method="post" style="margin: 0;"

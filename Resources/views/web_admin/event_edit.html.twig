@@ -8,7 +8,7 @@
             <h2 style="margin: 0;">
                 {{ pageTitle|default('Upravit událost') }}
                 {% if event.deletedAt|default %}
-                    <span class="badge bg-danger" style="font-size: .55em; vertical-align: middle;">SMAZÁNO</span>
+                    <span class="badge text-bg-danger" style="font-size: .55em; vertical-align: middle;">SMAZÁNO</span>
                 {% endif %}
             </h2>
             <a href="{{ back_url|default((event.slug|default(false)) ? path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) : '#') }}"

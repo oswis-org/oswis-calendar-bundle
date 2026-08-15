@@ -10,9 +10,9 @@
         <div class="row">
             <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <h2 style="margin: 0;">Check-in — {{ event.name ?? eventSlug }}</h2>
-                <span class="badge bg-success" style="font-size: 1rem;">Přijelo {{ arrived }} / {{ total }}</span>
+                <span class="badge text-bg-success" style="font-size: 1rem;">Přijelo {{ arrived }} / {{ total }}</span>
                 {% if noShow > 0 %}
-                    <span class="badge bg-secondary" style="font-size: 1rem;">Nepřijelo {{ noShow }}</span>
+                    <span class="badge text-bg-secondary" style="font-size: 1rem;">Nepřijelo {{ noShow }}</span>
                 {% endif %}
                 <a class="btn btn-sm btn-outline-primary" style="margin-left: auto;"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_progress', { eventSlug: eventSlug }) }}"><twig:ux:icon name="tabler:chart-bar" class="oa-icon" /> Průběh příjezdu</a>
@@ -80,8 +80,8 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if p.plannedArrival %}<span class="badge bg-warning text-dark" title="pozdější příjezd"><twig:ux:icon name="tabler:clock" class="oa-icon" /> {{ p.plannedArrival }}</span>{% endif %}
-                                    {% if p.plannedDeparture %}<span class="badge bg-warning text-dark" title="dřívější odjezd"><twig:ux:icon name="tabler:arrow-back-up" class="oa-icon" /> {{ p.plannedDeparture }}</span>{% endif %}
+                                    {% if p.plannedArrival %}<span class="badge text-bg-warning" title="pozdější příjezd"><twig:ux:icon name="tabler:clock" class="oa-icon" /> {{ p.plannedArrival }}</span>{% endif %}
+                                    {% if p.plannedDeparture %}<span class="badge text-bg-warning" title="dřívější odjezd"><twig:ux:icon name="tabler:arrow-back-up" class="oa-icon" /> {{ p.plannedDeparture }}</span>{% endif %}
                                 </td>
                                 <td>
                                     <form method="post" style="margin: 0;"

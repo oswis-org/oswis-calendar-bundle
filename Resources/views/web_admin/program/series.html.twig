@@ -17,7 +17,7 @@
             <div class="box" style="margin-bottom: .8rem; max-width: 52rem;">
                 <div style="display: flex; align-items: center; gap: .75rem;">
                     <strong style="font-size: 1.05rem;">{{ s.name }}</strong>
-                    {% if s.sameActivity %}<span class="badge bg-info text-dark">stejná aktivita (číslování I./II./…)</span>{% endif %}
+                    {% if s.sameActivity %}<span class="badge text-bg-info">stejná aktivita (číslování I./II./…)</span>{% endif %}
                     <span style="color: #adb5bd;">{{ s.activities|length }} aktivit</span>
                     <form method="post" style="margin: 0 0 0 auto;"
                           action="{{ path('oswis_org_oswis_calendar_web_admin_program_series_delete', {eventSlug: eventSlug, seriesId: s.id}) }}"
@@ -53,7 +53,7 @@
                         <label style="display: block; padding: .15rem 0;">
                             <input type="checkbox" name="activities[]" value="{{ a.id }}">
                             {{ a.start }} {{ a.name }}
-                            {% if a.seriesId %}<span class="badge bg-light text-dark">už v sérii</span>{% endif %}
+                            {% if a.seriesId %}<span class="badge text-bg-light">už v sérii</span>{% endif %}
                         </label>
                     {% else %}
                         <span style="color: #adb5bd;">Turnus zatím nemá aktivity.</span>
