@@ -112,9 +112,29 @@
                                 </form>
                             </span>
                         {% else %}
-                            <span>Nezařazené aktivity <small style="color: #6c757d; font-weight: normal;">(bez data)</small></span>
+                            <span>Nezařazené aktivity <small style="color: #6c757d; font-weight: normal;">(mimo dny programu)</small></span>
                         {% endif %}
                     </h3>
+                    {# Aktivita BEZ ČASU je past: tady ji vidíš, ale v aplikaci ji účastník NEUVIDÍ —
+                       účastnický program se skládá podle časů aktivit, a co čas nemá, to se přeskočí.
+                       Čas přitom není povinný (formulář `required => false`), takže se to dá uložit
+                       omylem. Varování se ukazuje jen tehdy, když se to opravdu stalo. #}
+                    {% if not row.day %}
+                        {% set bezCasu = row.activities|filter(a => not a.start)|length %}
+                        {% if bezCasu > 0 %}
+                            <p class="alert alert-warning" style="margin: 0 0 .5rem; padding: .4rem .6rem; font-size: .9rem;">
+                                <strong>{{ bezCasu }}</strong>
+                                {{ bezCasu == 1 ? 'aktivita nemá čas' : (bezCasu < 5 ? 'aktivity nemají čas' : 'aktivit nemá čas') }}
+                                — <strong>účastníci je v aplikaci neuvidí</strong>. Doplň čas, ať se program zobrazí celý.
+                            </p>
+                        {% else %}
+                            <p class="text-muted" style="margin: 0 0 .5rem; font-size: .9rem;">
+                                Tyhle aktivity čas mají, jen jejich datum neodpovídá žádnému dni programu.
+                                V aplikaci se účastníkům zobrazí normálně, ve výstupech po dnech ale chybí —
+                                přidej odpovídající den tlačítkem „+ Den“.
+                            </p>
+                        {% endif %}
+                    {% endif %}
                     <table class="list" style="margin: 0;">
                         <thead>
                             <tr>
