@@ -29,7 +29,12 @@ class ParticipantTokenRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('token');
         $queryBuilder->where('token.token = :token')->setParameter('token', $token);
         $queryBuilder->andWhere('token.participant = :participant_id')->setParameter('participant_id', $participantId);
-        $query = $queryBuilder->getQuery();
+        // ⚠️ ZÁMĚRNĚ mimo druhoúrovňovou cache: `ParticipantToken` ji má zapnutou
+        // (`NONSTRICT_READ_WRITE`, životnost 1200 s) a zastaralé čtení by vrátilo token
+        // v PŮVODNÍM stavu — tedy jako platný i poté, co byl použit nebo zneplatněn.
+        // Jednorázový odkaz (aktivace, obnova hesla) by tak šel použít znovu až 20 minut.
+        // Stejná třída chyby jako duplicitní platby 16. 8. 2026, jen s bezpečnostním dopadem.
+        $query = $queryBuilder->getQuery()->setCacheable(false);
         try {
             $result = $query->getOneOrNullResult(AbstractQuery::HYDRATE_OBJECT);
 

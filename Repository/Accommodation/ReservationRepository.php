@@ -25,6 +25,15 @@ class ReservationRepository extends ServiceEntityRepository
      * Počet AKTIVNÍCH rezervací v jednotce — reálný SQL COUNT (kontrola kapacity, žádné load-all).
      * Nezapočítává zrušené/no-show ani smazané účastníky.
      */
+    /**
+     * Obsazenost pokoje — ROZHODOVACÍ dotaz (podle něj se u příjezdového stolu přiděluje lůžko),
+     * proto ZÁMĚRNĚ mimo druhoúrovňovou cache.
+     *
+     * ⚠️ `Reservation` má `#[Cache(NONSTRICT_READ_WRITE)]`; zastaralý počet by znamenal DVA LIDI
+     * NA JEDNOM LŮŽKU — a u stolu se to pozná až na místě. Stejná třída chyby jako incident
+     * s duplicitními platbami 16. 8. 2026
+     * ({@see docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md}).
+     */
     public function countActiveByUnit(AccommodationUnit $unit): int
     {
         $result = $this->createQueryBuilder('r')
@@ -36,6 +45,7 @@ class ReservationRepository extends ServiceEntityRepository
             ->setParameter('unit', $unit)
             ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW])
             ->getQuery()
+            ->setCacheable(false)
             ->getSingleScalarResult();
 
         return is_numeric($result) ? (int) $result : 0;

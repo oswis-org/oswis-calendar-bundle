@@ -588,8 +588,22 @@ class ParticipantMailService
                 );
             }
         }
-        if (1 > $sent && $contactPersons->count() > 0) {
-            throw new OswisException("Nepodařilo se odeslat potvrzovací e-mail o platbě účastníkovi.");
+        // ⚠️ Dřív tu bylo `1 > $sent && $contactPersons->count() > 0`, takže případ „není KOMU
+        // poslat" propadl TIŠE: nic se neodeslalo, nevyhodila se výjimka, `confirmedByMailAt`
+        // zůstalo prázdné — a nikdo se to nedozvěděl. Dvě reálné škody (nález 2026-08-16):
+        //   • cron zkoušel tutéž platbu každých 5 minut celých 7 dnů a mlčel,
+        //   • tlačítko „Poslat potvrzení účastníkovi" ve web-adminu hlásilo ÚSPĚCH, ačkoli
+        //     se nic neodeslalo.
+        // Prázdný seznam příjemců znamená, že účastník nemá AKTIVOVANÝ uživatelský účet
+        // ({@see Person::getContactPersons()} vrací prázdno, když `hasActivatedUser()` neplatí).
+        // Stejně to řeší i ad-hoc maily níž v tomhle souboru — sjednoceno.
+        if (1 > $sent) {
+            throw new OswisException(
+                sprintf('Potvrzení platby #%d nebylo odesláno', $paymentId ?? 0)
+                .(0 === $contactPersons->count()
+                    ? ': účastník nemá aktivovaný uživatelský účet, takže není komu psát.'
+                    : ' ani jednomu z '.$contactPersons->count().' příjemců.'),
+            );
         }
     }
 

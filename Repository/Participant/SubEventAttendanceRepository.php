@@ -25,6 +25,16 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
     public const CRITERIA_EVENT       = 'event';
     public const CRITERIA_STATUS      = 'status';
 
+    /**
+     * Kolik lidí je na aktivitě — ROZHODOVACÍ dotaz (blokuje zápis při plné kapacitě),
+     * proto ZÁMĚRNĚ mimo druhoúrovňovou cache.
+     *
+     * ⚠️ `SubEventAttendance` má `#[Cache(NONSTRICT_READ_WRITE)]`. Kdyby se počet četl z cache,
+     * mohl by být zastaralý a aktivita by se přeplnila — přesně takhle (jen u plateb) vzniklo
+     * 16. 8. 2026 102 fiktivních plateb, protože dedup četl přes zastaralou L2
+     * ({@see docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md}).
+     * Transakce proti tomu NEPOMŮŽE: cache se čte dřív, než se sáhne do databáze.
+     */
     public function countActiveByEvent(Event $event): int
     {
         $qb = $this->createQueryBuilder('a')
@@ -35,7 +45,7 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
             ->setParameter('event', $event)
             ->setParameter('status', SubEventAttendance::STATUS_REGISTERED);
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        return (int) $qb->getQuery()->setCacheable(false)->getSingleScalarResult();
     }
 
     /**
@@ -78,6 +88,11 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
         )) : [];
     }
 
+    /**
+     * Je člověk na aktivitě už přihlášený? ROZHODOVACÍ dotaz (brání dvojímu přihlášení), proto
+     * ZÁMĚRNĚ mimo druhoúrovňovou cache — zastaralá odpověď by vyrobila duplicitní obsazení
+     * kapacity. Viz poznámka u {@see countActiveByEvent()}.
+     */
     public function findActiveForParticipantAndEvent(Participant $participant, Event $event): ?SubEventAttendance
     {
         $result = $this->createQueryBuilder('a')
@@ -90,6 +105,7 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
             ->setParameter('status', SubEventAttendance::STATUS_REGISTERED)
             ->setMaxResults(1)
             ->getQuery()
+            ->setCacheable(false)
             ->getOneOrNullResult();
 
         return $result instanceof SubEventAttendance ? $result : null;
