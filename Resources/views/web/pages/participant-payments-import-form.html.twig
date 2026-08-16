@@ -8,7 +8,22 @@
                 <header>
                     <h2 class="text-uppercase mb-2">Import plateb účastníků akcí</h2>
                 </header>
-                {{ form_start(form) }}
+                {# ⚠️ Pojistka proti dvojímu odeslání. iPhone Safari (a in-app prohlížeč
+                   Instagramu) posílá formulář i 3–5× v rychlém sledu — u přihlášky se to řeší
+                   stejným způsobem už dřív. U importu plateb pojistka chyběla a druhé spuštění
+                   je jedna z cest, kterou 16. 8. 2026 vzniklo 102 fiktivních plateb za
+                   349 735 Kč (docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md).
+                   Server se na tohle NESPOLÉHÁ — hlavní zámek je `processedAt` na importu
+                   a unikátní index v databázi; tohle jen ušetří zbytečný požadavek a řekne
+                   obsluze, že se něco děje. #}
+                {{ form_start(form, {attr: {
+                    'data-odeslano': '0',
+                    'onsubmit': 'if (this.dataset.odeslano === "1") { return false; } '
+                        ~ 'this.dataset.odeslano = "1"; '
+                        ~ 'var b = this.querySelector("button[type=submit]"); '
+                        ~ 'if (b) { b.disabled = true; b.textContent = "Importuji…"; } '
+                        ~ 'return true;'
+                }}) }}
                 {{ form_widget(form) }}
                 {{ form_end(form) }}
             </div>

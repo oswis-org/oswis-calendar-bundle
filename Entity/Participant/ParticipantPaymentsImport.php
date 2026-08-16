@@ -67,6 +67,27 @@ class ParticipantPaymentsImport
     public ?string $settingsCode = 'fio';
 
     /**
+     * Kdy byl tenhle import ZPRACOVÁN — zámek proti dvojímu zpracování.
+     *
+     * ⚠️ Bez něj vložil import #240 dne 16. 8. 2026 každou platbu dvakrát: 102 fiktivních plateb
+     * za 349 735 Kč u 93 účastníků. Spustit jeden import dvakrát umí tři různé cesty
+     * ({@see ParticipantPaymentsImportService::processImport()}), takže zámek musí být na datech,
+     * ne v některé z nich. `null` = ještě nezpracován.
+     */
+    #[Column(name: 'processed_at', type: 'datetime', nullable: true)]
+    protected ?DateTime $processedAt = null;
+
+    public function getProcessedAt(): ?DateTime
+    {
+        return $this->processedAt;
+    }
+
+    public function setProcessedAt(?DateTime $processedAt): void
+    {
+        $this->processedAt = $processedAt;
+    }
+
+    /**
      * @param string|null $type
      * @param string|null $textValue
      * @param string|null $note

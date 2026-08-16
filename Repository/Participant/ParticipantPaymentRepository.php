@@ -44,6 +44,38 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * Existuje už platba s tímhle bankovním `externalId`? Čte se ZÁMĚRNĚ MIMO CACHE.
+     *
+     * ⚠️ **Tohle je oprava incidentu 2026-08-16** (`docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md`):
+     * import plateb #240 vložil každý řádek DVAKRÁT — 102 fiktivních plateb za 349 735 Kč u 93 lidí.
+     * Deduplikace se tehdy ptala přes `findBy(['externalId' => …])`, jenže `ParticipantPayment` má
+     * `#[Cache(usage: 'NONSTRICT_READ_WRITE')]`, takže druhý průchod dostal ZASTARALOU odpověď
+     * z druhoúrovňové cache a řádky, zapsané a flushnuté o vteřinu dřív, prostě „neviděl".
+     *
+     * Proto se tu cache pro tenhle dotaz vypíná (`setCacheable(false)`) a vrací se holé `id`
+     * skalárem — žádná hydratace entity, která by se do cache zase vrátila.
+     *
+     * ⚠️ Sama o sobě tahle metoda duplicitu NEZARUČÍ. Jediná spolehlivá vrstva je unikátní index
+     * v databázi; ten přidává migrace `Version20260816…`. Tohle je vrstva druhá, aby import
+     * neskončil výjimkou z databáze, ale tiše a správně přeskočil.
+     */
+    public function findIdByExternalId(string $externalId): ?int
+    {
+        if ('' === trim($externalId)) {
+            return null;
+        }
+        $id = $this->createQueryBuilder('p')
+            ->select('p.id')
+            ->andWhere('p.externalId = :externalId')->setParameter('externalId', $externalId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->setCacheable(false)
+            ->getOneOrNullResult();
+
+        return is_array($id) && isset($id['id']) && is_numeric($id['id']) ? (int) $id['id'] : null;
+    }
+
     public function findFiltered(string $filter, int $limit = 500): array
     {
         // Participant has fetch=EAGER on offer/event/participantCategory and AbstractContact

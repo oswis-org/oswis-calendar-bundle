@@ -33,6 +33,33 @@ class ParticipantPaymentsImportService
         $importedPayments = new ArrayCollection();
         $this->em->persist($paymentsImport);
         $this->em->flush();
+
+        // ⚠️ IDEMPOTENCE: tentýž import se nesmí zpracovat dvakrát.
+        //
+        // 16. 8. 2026 se to stalo a vzniklo 102 fiktivních plateb za 349 735 Kč u 93 lidí
+        // (docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md). Dvojí průchod je doložený:
+        // jeden `import_id`, dva souvislé bloky `id` vzdálené o velikost dávky.
+        //
+        // Spustit jeden import dvakrát umí hned tři cesty a žádná to nehlídala:
+        //   1. `processImport()` má DVA volající — web-admin kontroler i API subscriber,
+        //   2. importní formulář nemá pojistku proti dvojímu odeslání (iOS Safari posílá 3–5×),
+        //   3. cokoliv, co request zopakuje (retry proxy, F5 na POST).
+        // Proto se zámek dává SEM, na jediné místo, kterým všechny cesty procházejí.
+        //
+        // Dřív to maskoval 504: první průchod posílal potvrzení synchronně, trval minuty
+        // a request umřel dřív, než druhý začal. Po zrychlení (potvrzení jdou cronem) doběhnou oba.
+        if (null !== $paymentsImport->getProcessedAt()) {
+            $this->logger->warning(sprintf(
+                'CSV import #%s už byl zpracován (%s) — druhé volání ignorováno.',
+                (string) $paymentsImport->getId(),
+                $paymentsImport->getProcessedAt()->format('Y-m-d H:i:s'),
+            ));
+
+            return;
+        }
+        $paymentsImport->setProcessedAt(new \DateTime());
+        $this->em->flush();
+
         $payments = $paymentsImport->extractPayments($importSettings ?? new CsvPaymentImportSettings());
         foreach ($payments as $payment) {
             if (!($payment instanceof ParticipantPayment)) {

@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
@@ -37,11 +38,20 @@ class ParticipantPaymentService
         $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
             $paymentId = $payment->getId();
-            if (!empty($externalId = $payment->getExternalId())
-                && !empty($existing = $paymentsRepository->findBy(['externalId' => $externalId]))) {
+            // ⚠️ Dedup MUSÍ číst mimo druhoúrovňovou cache. Dřív se ptal přes
+            // `findBy(['externalId' => …])` a protože `ParticipantPayment` má
+            // `#[Cache(NONSTRICT_READ_WRITE)]`, dostal druhý průchod importu ZASTARALOU odpověď
+            // a řádky zapsané o vteřinu dřív neviděl → import #240 vložil 16. 8. 2026 každou
+            // platbu dvakrát (102 fiktivních plateb, 349 735 Kč, 93 lidí).
+            // Detail: docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md
+            $externalId = (string) $payment->getExternalId();
+            $existingId = '' === $externalId || !$paymentsRepository instanceof ParticipantPaymentRepository
+                ? null
+                : $paymentsRepository->findIdByExternalId($externalId);
+            if (null !== $existingId && $existingId !== $paymentId) {
                 $payment->setImport(null);
                 $payment->setParticipant(null);
-                $payment = $existing[0];
+                $payment = $this->em->find(ParticipantPayment::class, $existingId) ?? $payment;
                 $this->logger->info("Found duplicity (id '$paymentId') of payment with external id '$externalId'.");
             }
             if (null !== $participant) {

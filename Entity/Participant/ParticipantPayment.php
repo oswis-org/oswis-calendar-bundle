@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\MailConfirmationTrait;
 use OswisOrg\OswisCalendarBundle\Traits\Entity\VariableSymbolTrait;
@@ -65,6 +66,11 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
 #[Table(name: 'calendar_participant_payment')]
 // Perf: výpis plateb ORDER BY date_time DESC LIMIT 500 (participant_id už má FK index).
 #[Index(name: 'idx_payment_date_time', columns: ['date_time'])]
+// ⚠️ JEDINÁ spolehlivá pojistka proti duplicitám z importu. Deduplikace v kódu selhala
+// 16. 8. 2026 (četla přes zastaralou L2 cache) a import vložil 102 plateb dvakrát — 349 735 Kč
+// u 93 lidí. Databáze to teď nedovolí bez ohledu na cache, počet volajících i dvojí odeslání
+// formuláře. Rozbor: docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md
+#[UniqueConstraint(name: 'uniq_payment_external_id', columns: ['external_id'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 #[ApiFilter(DateFilter::class, properties: [
     "createdDateTime",
