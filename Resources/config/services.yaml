@@ -879,6 +879,18 @@ services:
     alias: oswis_org_oswis_calendar.meal_visible_to_user_extension
     public: true
 
+  # Fronta odbavení musí být vždy omezená na jeden turnus — bez `event.id` vracela přihlášky
+  # ze VŠECH ročníků (2 953 položek / 1,2 MB / 47 s, změřeno). Odpoví 400, ne prázdným seznamem.
+  oswis_org_oswis_calendar.check_in_queue_scope_extension:
+    class: OswisOrg\OswisCalendarBundle\ApiPlatform\CheckInQueueScopeExtension
+    autowire: true
+    tags:
+      - { name: api_platform.doctrine.orm.query_extension.collection }
+    public: true
+  OswisOrg\OswisCalendarBundle\ApiPlatform\CheckInQueueScopeExtension:
+    alias: oswis_org_oswis_calendar.check_in_queue_scope_extension
+    public: true
+
   OswisOrg\OswisCalendarBundle\ApiPlatform\OnlyMineEventsExtension:
     autowire: true
     tags:
