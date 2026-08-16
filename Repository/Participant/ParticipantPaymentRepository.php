@@ -45,20 +45,21 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Existuje už platba s tímhle bankovním `externalId`? Čte se ZÁMĚRNĚ MIMO CACHE.
+     * Existuje už platba s tímhle bankovním `externalId`?
      *
-     * ⚠️ **Tohle je oprava incidentu 2026-08-16** (`docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md`):
+     * Souvisí s incidentem 2026-08-16 (`docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md`):
      * import plateb #240 vložil každý řádek DVAKRÁT — 102 fiktivních plateb za 349 735 Kč u 93 lidí.
-     * Deduplikace se tehdy ptala přes `findBy(['externalId' => …])`, jenže `ParticipantPayment` má
-     * `#[Cache(usage: 'NONSTRICT_READ_WRITE')]`, takže druhý průchod dostal ZASTARALOU odpověď
-     * z druhoúrovňové cache a řádky, zapsané a flushnuté o vteřinu dřív, prostě „neviděl".
+     * Dvě zpracování téhož importu běžela SOUBĚŽNĚ (oba bloky zapisovaly v okně 19:48:33–38),
+     * takže se druhý průchod ptal dřív, než první stihl commitnout.
      *
-     * Proto se tu cache pro tenhle dotaz vypíná (`setCacheable(false)`) a vrací se holé `id`
-     * skalárem — žádná hydratace entity, která by se do cache zase vrátila.
+     * ⚠️ Proti souběhu tahle metoda NEPOMÁHÁ a pomoct ani nemůže — mezi „zeptej se" a „zapiš"
+     * je vždycky mezera. **Jedinou skutečnou pojistkou je unikátní index na `external_id`**
+     * (migrace `Version20260816210000`). Tohle je vrstva druhá: ušetří zbytečný pokus o zápis,
+     * aby opakovaný import duplicitu tiše přeskočil místo výjimky z databáze.
      *
-     * ⚠️ Sama o sobě tahle metoda duplicitu NEZARUČÍ. Jediná spolehlivá vrstva je unikátní index
-     * v databázi; ten přidává migrace `Version20260816…`. Tohle je vrstva druhá, aby import
-     * neskončil výjimkou z databáze, ale tiše a správně přeskočil.
+     * Vrací holé `id` skalárem (žádná hydratace entity) a `setCacheable(false)` je tu jako
+     * doslovné vyjádření záměru — DQL dotazy nejsou v Doctrine cachované, dokud si o to samy
+     * neřeknou přes `setCacheable(true)`, takže sám o sobě ten příznak nic nemění.
      */
     public function findIdByExternalId(string $externalId): ?int
     {

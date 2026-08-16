@@ -114,7 +114,10 @@ class ParticipantPaymentsImport
     public function extractPayments(CsvPaymentImportSettings $csvSettings): Collection
     {
         $payments = new ArrayCollection();
-        $csvRows = str_getcsv(''.$this->getTextValue(), "\n");
+        // Rozdělení na řádky (oddělovač = konec řádku). Enclosure i escape se předávají VÝSLOVNĚ
+        // v dosavadních výchozích hodnotách: od PHP 8.4 je vynechání `$escape` deprecated a jeho
+        // výchozí hodnota se má změnit — což by u importu plateb tiše změnilo parsování dat.
+        $csvRows = str_getcsv(''.$this->getTextValue(), "\n", '"', "\\");
         $csvPaymentRows = array_map(static fn ($row) => self::getColumnsFromCsvRow(''.$row, $csvSettings), $csvRows);
         array_walk($csvPaymentRows, static fn (&$a) => $a = array_combine(
             array_map(static fn (?string $item): string => $item ?? '', $csvPaymentRows[0]),

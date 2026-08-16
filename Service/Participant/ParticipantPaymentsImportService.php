@@ -48,17 +48,30 @@ class ParticipantPaymentsImportService
         //
         // Dřív to maskoval 504: první průchod posílal potvrzení synchronně, trval minuty
         // a request umřel dřív, než druhý začal. Po zrychlení (potvrzení jdou cronem) doběhnou oba.
-        if (null !== $paymentsImport->getProcessedAt()) {
+        //
+        // ⚠️ Zámek MUSÍ být atomický (podmíněný UPDATE), ne „přečti a pak zapiš". Doložený průběh
+        // 16. 8.: oba průchody zapisovaly v TÉMŽE pětivteřinovém okně (`created_at` 19:48:33–38 u
+        // obou bloků), tedy běžely SOUBĚŽNĚ. Kontrola `if (null !== getProcessedAt())` by je
+        // nezastavila — oba by přečetly `null` dřív, než kterýkoli stihne zapsat. Databáze je
+        // jediné místo, které umí souběh rozhodnout: `WHERE processed_at IS NULL` uspěje právě
+        // jednou a druhý průchod dostane 0 dotčených řádků.
+        $importId = $paymentsImport->getId();
+        $now = new \DateTime();
+        $zabrano = $this->em->getConnection()->executeStatement(
+            'UPDATE calendar_participant_payments_import SET processed_at = :now'
+            .' WHERE id = :id AND processed_at IS NULL',
+            ['now' => $now->format('Y-m-d H:i:s'), 'id' => $importId],
+        );
+        if (1 !== $zabrano) {
             $this->logger->warning(sprintf(
-                'CSV import #%s už byl zpracován (%s) — druhé volání ignorováno.',
-                (string) $paymentsImport->getId(),
-                $paymentsImport->getProcessedAt()->format('Y-m-d H:i:s'),
+                'CSV import #%s už zpracovává (nebo zpracoval) jiný běh — tohle volání se ignoruje.',
+                (string) $importId,
             ));
 
             return;
         }
-        $paymentsImport->setProcessedAt(new \DateTime());
-        $this->em->flush();
+        // Držet entitu v souladu s DB, ať `getProcessedAt()` dál nelže (hodnota je tatáž).
+        $paymentsImport->setProcessedAt($now);
 
         $payments = $paymentsImport->extractPayments($importSettings ?? new CsvPaymentImportSettings());
         foreach ($payments as $payment) {

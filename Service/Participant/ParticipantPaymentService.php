@@ -38,11 +38,13 @@ class ParticipantPaymentService
         $paymentsRepository = $this->em->getRepository(ParticipantPayment::class);
         try {
             $paymentId = $payment->getId();
-            // ⚠️ Dedup MUSÍ číst mimo druhoúrovňovou cache. Dřív se ptal přes
-            // `findBy(['externalId' => …])` a protože `ParticipantPayment` má
-            // `#[Cache(NONSTRICT_READ_WRITE)]`, dostal druhý průchod importu ZASTARALOU odpověď
-            // a řádky zapsané o vteřinu dřív neviděl → import #240 vložil 16. 8. 2026 každou
-            // platbu dvakrát (102 fiktivních plateb, 349 735 Kč, 93 lidí).
+            // ⚠️ Tahle kontrola je jen PRVNÍ vrstva a sama o sobě NESTAČÍ — proti souběhu
+            // neochrání žádná kontrola v aplikaci. 16. 8. 2026 běžela dvě zpracování importu #240
+            // paralelně (oba bloky zapisovaly v témže okně 19:48:33–38) a druhý průchod se ptal
+            // dřív, než první stihl commitnout → 102 fiktivních plateb, 349 735 Kč, 93 lidí.
+            // Skutečnou pojistkou je proto UNIKÁTNÍ INDEX na `external_id` (migrace
+            // Version20260816210000); tohle jen ušetří zbytečný pokus o zápis a udrží hezké
+            // chování „duplicitu tiše přeskoč".
             // Detail: docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md
             $externalId = (string) $payment->getExternalId();
             $existingId = '' === $externalId || !$paymentsRepository instanceof ParticipantPaymentRepository
