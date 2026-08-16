@@ -37,13 +37,16 @@ final class AdminDashboardExtension extends AbstractExtension
      * tj. NAČTE všechny účastníky a počítá v PHP (+ filterCollection) → drahé i nekonzistentní.
      * Total = součet per-turnus. Čísla ověřena proti raw SQL i proti autoritativnímu seznamu přihlášek.
      *
-     * @return array{event: Event|null, total: int, turnuses: list<array{event: Event, count: int}>}
+     * @return array{
+     *     event: Event|null, total: int, turnuses: list<array{event: Event, count: int}>,
+     *     duplicates: list<array{contactId: int, name: string, count: int}>
+     * }
      */
     public function dashboard(): array
     {
         $event = $this->eventService->getDefaultEvent();
         if (!$event instanceof Event) {
-            return ['event' => null, 'total' => 0, 'turnuses' => []];
+            return ['event' => null, 'total' => 0, 'turnuses' => [], 'duplicates' => []];
         }
 
         // JEDEN group-by SQL COUNT přes přímé sub-eventy (turnusy) default akce.
@@ -59,6 +62,12 @@ final class AdminDashboardExtension extends AbstractExtension
             $total += $count;
         }
 
-        return ['event' => $event, 'total' => $total, 'turnuses' => $turnuses];
+        return [
+            'event'      => $event,
+            'total'      => $total,
+            'turnuses'   => $turnuses,
+            // Jeden group-by COUNT navíc — stejně levné jako staty výš, žádná hydratace.
+            'duplicates' => $this->participantRepository->findDuplicateRegistrations($event),
+        ];
     }
 }

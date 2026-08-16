@@ -218,6 +218,54 @@ class ParticipantRepository extends ServiceEntityRepository
     }
 
     /**
+     * Lidé, kteří mají pod default akcí VÍC NEŽ JEDNU živou přihlášku.
+     *
+     * PROČ: server-side pojistka proti dvojímu odeslání formuláře je záměrně **60sekundová** — řeší
+     * dvojí POST z iOS Safari, ne to, že se člověk o dva dny později přihlásí znovu (typicky v domnění,
+     * že mu první přihláška nedošla). Takové duplicity nikdo neuvidí až do příjezdového stolu: drží
+     * místo v kapacitě, chodí jim dvojí pošta a u stolu se pak řeší, který záznam je ten pravý.
+     * Ověřeno na produkci 2026-08-15 — tři případy, žádný z nich systém nezachytil.
+     *
+     * Stejně LEVNÉ jako ostatní dashboard staty: jeden group-by COUNT nad `id`, žádná hydratace
+     * ({@see AdminDashboardExtension}).
+     *
+     * @return list<array{contactId: int, name: string, count: int}> seřazeno od nejvíc duplicitních
+     */
+    public function findDuplicateRegistrations(Event $parentEvent, int $limit = 20): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('IDENTITY(pc.contact) AS contactId, c.name AS name, COUNT(p.id) AS cnt')
+            ->innerJoin('p.event', 'e')
+            ->innerJoin('p.participantContacts', 'pc')
+            ->innerJoin('pc.contact', 'c')
+            ->where('e.superEvent = :parent')
+            ->andWhere('p.deletedAt IS NULL')
+            ->groupBy('pc.contact')
+            ->addGroupBy('c.name')
+            ->having('COUNT(p.id) > 1')
+            ->orderBy('cnt', 'DESC')
+            ->setParameter('parent', $parentEvent)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row) || !isset($row['contactId'], $row['cnt'])
+                || !is_numeric($row['contactId']) || !is_numeric($row['cnt'])) {
+                continue;
+            }
+            $out[] = [
+                'contactId' => (int) $row['contactId'],
+                'name'      => is_string($row['name'] ?? null) ? $row['name'] : '',
+                'count'     => (int) $row['cnt'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * IDs of participants of $event (+ recursive sub-events to $recursiveDepth) that have NOT yet
      * been sent a mail of $type, capped at $limit. SQL-side dedup (correlated NOT EXISTS) + a true
      * LIMIT on an id-only query (no fetch-joins) → no whole-cohort hydration and no lazy-collection
