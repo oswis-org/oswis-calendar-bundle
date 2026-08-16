@@ -117,9 +117,13 @@ class ParticipantController extends AbstractController
                 'duvod' => $range->isInDateRange() ? 'nabídka má nastavenou nulovou kapacitu' : 'mimo termín přihlašování',
             ]);
 
+            // `range` se předává schválně: bez něj šablona neví, JESTLI se přihlášky teprve
+            // otevřou, nebo už skončily — a napsala pak všem stejné „zkuste se vrátit za pár
+            // dní", což je po termínu nepravda (akce už běží, vrátit se nemá cenu).
             return $this->getResponse(
                 type: 'disabled',
                 title: 'Přihlášky nejsou aktivní',
+                range: $range,
                 disabled: true,
             );
         }

@@ -1,7 +1,41 @@
+{#
+    Stránka „přihlášky nejsou aktivní“ — vidí ji každý, kdo přijde mimo termín přihlašování.
+
+    ⚠️ Dřív tu stálo jedno univerzální „Zkuste se vrátit za pár dní.“ To je ale PRAVDA JEN PŘED
+    otevřením. Po uzávěrce (letos 31. 8., den před začátkem akce) už se přihlásit nedá vůbec
+    a věta posílala lidi čekat na něco, co nepřijde. Kontroler proto předává `range` a rozlišuje
+    se, jestli se teprve otevře, nebo už skončilo.
+
+    Zbývá třetí případ — nabídka s nulovou kapacitou (`isRangeActive()` hlídá i tu). Ten se
+    pozná tak, že jsme uvnitř termínu, a dostane vlastní, obecnější text.
+#}
+{#
+    ⚠️ Datum se vypisuje přes `.format()`, NE přes filtr `|date`. Filtr převádí do nastavené
+    časové zóny, takže uzávěrku uloženou jako 31. 7. 23:59:59 vypsal jako „1. 8." — tedy termín
+    o den vedle, přímo na stránce, kde na datu záleží nejvíc. `.format()` na DateTime nic
+    nepřevádí. (Chyceno při ověřování, ne v kódu.)
+#}
+{% set zacatek = range.startDateTime|default(null) %}
+{% set konec = range.endDateTime|default(null) %}
+{% set jeste_neotevreno = zacatek and date(zacatek) > date() %}
+{% set uz_zavreno = konec and date(konec) < date() %}
+
 <header>
-    <h2 class="text-uppercase">Přihlášky aktuálně nejsou spuštěny</h2>
+    <h2 class="text-uppercase">
+        {% if uz_zavreno %}Přihlašování skončilo{% else %}Přihlášky aktuálně nejsou spuštěny{% endif %}
+    </h2>
 </header>
 <p>
-    Přihlášky aktuálně není možně pomocí webových stránek odesílat.
-    Zkuste se vrátit za pár dní.
+    {% if uz_zavreno %}
+        Přihlašování na tuto akci skončilo{% if konec %} {{ konec.format('j. n. Y') }}{% endif %}
+        a přes web už přihlášku odeslat nelze.
+        Pokud potřebuješ něco dořešit, ozvi se nám na
+        <a href="mailto:info@seznamovakup.cz">info@seznamovakup.cz</a>.
+    {% elseif jeste_neotevreno %}
+        Přihlášky se otevřou {{ zacatek.format('j. n. Y') }}. Do té doby přes web odeslat nejdou.
+    {% else %}
+        Přihlášky aktuálně není možné pomocí webových stránek odesílat.
+        Zkuste to prosím později, nebo se ozvěte na
+        <a href="mailto:info@seznamovakup.cz">info@seznamovakup.cz</a>.
+    {% endif %}
 </p>
