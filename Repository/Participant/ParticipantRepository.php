@@ -218,6 +218,62 @@ class ParticipantRepository extends ServiceEntityRepository
     }
 
     /**
+     * Přihlášky, kterým se NIKDY nedoručilo shrnutí — tedy lidé bez pokynů k platbě.
+     *
+     * PROČ: shrnutí se posílá při registraci ({@see \OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantSubscriber::postWrite()})
+     * a při aktivaci. Když to jednou selže, **nic to nezopakuje** — na rozdíl od potvrzení plateb,
+     * která má cron ({@see \OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService::sendPendingConfirmations()}).
+     * Takový člověk pak nemá pokyny k platbě a nikdo se to nedozví; přesně tak zapadla přihláška
+     * #3246 (paměť `project_summary_mail_lost_2026-07-29`).
+     *
+     * Ověřeno na produkci 17. 8. 2026: **7 z 532** letošních aktivních přihlášek nemá doručené
+     * shrnutí. Většina je z doby před opravou `userConfirmedAt` (commit 7712582, v0.2.66),
+     * ale bez tohohle výpisu by na ně nikdo nepřišel.
+     *
+     * Důkaz doručení je sloupec `sent`, ne existence řádku mailu — mail se může založit a
+     * neodejít (paměť `reference_missing_serialization_group_silent_200` má tentýž motiv:
+     * „vypadá to hotově" ≠ „stalo se to").
+     *
+     * @return list<array{id: int, name: string, registered: ?\DateTimeInterface}> od nejnovější
+     */
+    public function findMissingSummary(Event $parentEvent, int $limit = 20): array
+    {
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.id AS id, c.name AS name, p.createdAt AS registered')
+            ->innerJoin('p.event', 'e')
+            ->innerJoin('p.participantContacts', 'pc')
+            ->innerJoin('pc.contact', 'c')
+            ->where('e.superEvent = :parent')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere(
+                'NOT EXISTS ('
+                .'SELECT 1 FROM '.ParticipantMail::class.' m'
+                .' WHERE m.participant = p AND m.type = :summaryType AND m.sent IS NOT NULL)',
+            )
+            ->setParameter('parent', $parentEvent)
+            ->setParameter('summaryType', ParticipantMail::TYPE_SUMMARY)
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row) || !isset($row['id']) || !is_numeric($row['id'])) {
+                continue;
+            }
+            $registered = $row['registered'] ?? null;
+            $out[] = [
+                'id'         => (int) $row['id'],
+                'name'       => is_string($row['name'] ?? null) ? $row['name'] : '',
+                'registered' => $registered instanceof \DateTimeInterface ? $registered : null,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * Lidé, kteří mají pod default akcí VÍC NEŽ JEDNU živou přihlášku.
      *
      * PROČ: server-side pojistka proti dvojímu odeslání formuláře je záměrně **60sekundová** — řeší

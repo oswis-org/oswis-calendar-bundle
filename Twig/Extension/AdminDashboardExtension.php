@@ -39,14 +39,15 @@ final class AdminDashboardExtension extends AbstractExtension
      *
      * @return array{
      *     event: Event|null, total: int, turnuses: list<array{event: Event, count: int}>,
-     *     duplicates: list<array{contactId: int, name: string, count: int}>
+     *     duplicates: list<array{contactId: int, name: string, count: int}>,
+     *     missingSummary: list<array{id: int, name: string, registered: ?\DateTimeInterface}>
      * }
      */
     public function dashboard(): array
     {
         $event = $this->eventService->getDefaultEvent();
         if (!$event instanceof Event) {
-            return ['event' => null, 'total' => 0, 'turnuses' => [], 'duplicates' => []];
+            return ['event' => null, 'total' => 0, 'turnuses' => [], 'duplicates' => [], 'missingSummary' => []];
         }
 
         // JEDEN group-by SQL COUNT přes přímé sub-eventy (turnusy) default akce.
@@ -68,6 +69,10 @@ final class AdminDashboardExtension extends AbstractExtension
             'turnuses'   => $turnuses,
             // Jeden group-by COUNT navíc — stejně levné jako staty výš, žádná hydratace.
             'duplicates' => $this->participantRepository->findDuplicateRegistrations($event),
+            // Lidé BEZ pokynů k platbě. Shrnutí nemá opakování (na rozdíl od potvrzení plateb),
+            // takže jediné, co je odhalí, je tenhle výpis. Skalární SELECT s NOT EXISTS,
+            // strop 20 řádků — žádná hydratace, stejná cena jako staty výš.
+            'missingSummary' => $this->participantRepository->findMissingSummary($event),
         ];
     }
 }
