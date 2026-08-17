@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\State;
 use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -89,6 +90,25 @@ final class SubEventAttendanceProcessor implements ProcessorInterface
             : null;
 
         return $this->em->wrapInTransaction(function () use ($event, $signupMode, $participant, $paid): SubEventAttendance {
+            // ⚠️ ZÁMEK ŘÁDKU AKTIVITY — bez něj jsou obě kontroly níž k ničemu.
+            //
+            // `countActiveByEvent()` i `findActiveForParticipantAndEvent()` jsou prosté SELECTy,
+            // po kterých teprve následuje zápis. Dva souběžné požadavky (a to je v appce běžné —
+            // dvojí ťuknutí na mobilu pošle dva POSTy) přečtou oba tentýž stav a oba zapíšou:
+            // vznikne dvojí přihláška, nebo se překročí kapacita. Samotná transakce proti tomu
+            // NEPOMÁHÁ, protože nezamčený SELECT nikoho neblokuje.
+            //
+            // Přesně takhle vzniklo 16. 8. 2026 102 fiktivních plateb — souběh, který žádná
+            // kontrola v aplikaci zachytit nemůže (docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md).
+            //
+            // `PESSIMISTIC_WRITE` na řádku aktivity požadavky na TUTÉŽ aktivitu seřadí za sebe.
+            // Zámek drží jen do konce téhle transakce (jednotky ms) a týká se vždy jediného
+            // řádku, takže přihlašování na různé aktivity běží dál paralelně.
+            //
+            // Kapacitu, na rozdíl od dvojího přihlášení, unikátní index ohlídat neumí — je to
+            // podmínka nad POČTEM řádků, ne nad jejich hodnotou. Proto zámek, ne constraint.
+            $this->em->lock($event, LockMode::PESSIMISTIC_WRITE);
+
             // Kapacitu vynucujeme JEN u 'required' (BC: stávající akce mají default 'required').
             // 'optional' = bez vynucení; 'staff' = tým zapisuje vždy (bez blokace kapacitou).
             if (Event::SIGNUP_MODE_REQUIRED === $signupMode) {
