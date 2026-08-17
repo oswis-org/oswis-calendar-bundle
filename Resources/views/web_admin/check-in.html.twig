@@ -89,10 +89,12 @@
                                         <input type="hidden" name="_token" value="{{ csrf_token('checkin_arrived_' ~ p.id) }}">
                                         {% if p.arrived %}
                                             <button type="submit" class="btn btn-sm btn-success" title="Zrušit příjezd (překlik)">
-                                                ✓ přijel {{ p.arrivedAt|date('H:i') }}
+                                                {# Bez rodu: „přijel" u dívek čte jako chyba a u stolu
+                                                   projde stovky lidí. „Příjezd" platí pro kohokoliv. #}
+                                                ✓ příjezd {{ p.arrivedAt|date('H:i') }}
                                             </button>
                                         {% else %}
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Přijel</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Zapsat příjezd</button>
                                         {% endif %}
                                     </form>
                                 </td>
