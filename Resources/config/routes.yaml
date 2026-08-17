@@ -55,9 +55,12 @@ oswis_org_oswis_calendar_participant_process_token:
   requirements:
     participantId: '\d+'
 
-oswis_org_oswis_calendar_participant_activation_request:
-  controller: oswis_org_oswis_calendar.participant.participant_controller::activationRequest
-  path: "/akce/prihlaska/overeni"
+# ODSTRANĚNO 2026-08-17: routa `/akce/prihlaska/overeni` mířila na metodu `activationRequest`,
+# která v ParticipantControlleru NIKDY neexistovala (ověřeno celou historií gitu) — každé otevření
+# té adresy tedy končilo chybou 500. Neodkazovala na ni žádná šablona, e-mail, kód ani appka.
+# Znovuposlání ověřovacího e-mailu má vlastní funkční routu
+# `oswis_org_oswis_calendar_participant_resend_activation_email` (/akce/prihlaska/email-overeni/{participantId}).
+# Nalezeno smoke testem veřejných cest po nasazení 17. 8. 2026.
 
 oswis_org_oswis_calendar_web_registration:
   controller: oswis_org_oswis_calendar.participant.participant_controller::registration
