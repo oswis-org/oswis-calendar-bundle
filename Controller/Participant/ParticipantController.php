@@ -370,9 +370,26 @@ class ParticipantController extends AbstractController
      */
     public function resendActivationEmail(?int $participantId = null): Response
     {
-        $this->participantService->requestActivation(
-            $this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId])
-        );
+        // ⚠️ `requestActivation()` VYHAZUJE výjimku, když se nedoručilo nic (od 17. 8. 2026 —
+        // dřív to u přihlášky bez kontaktní osoby s účtem propadlo mlčky a stránka přesto
+        // hlásila „odesláno"). Tahle účastnická cesta ji ale nechytala, takže se z ní stala
+        // bílá stránka s 500. Účastník nesmí dostat chybu serveru kvůli tomu, že mu nejde
+        // poslat mail — musí dostat srozumitelné vysvětlení, co s tím.
+        try {
+            $this->participantService->requestActivation(
+                $this->participantService->getParticipant([ParticipantRepository::CRITERIA_ID => $participantId])
+            );
+        } catch (OswisException) {
+            return $this->getResponse(
+                'error',
+                'Ověřovací zprávu se nepodařilo odeslat',
+                false,
+                null,
+                null,
+                'Ověřovací zprávu k Tvé přihlášce se nepodařilo odeslat. Zkus to prosím za chvíli '
+                .'znovu — a pokud to nepomůže, napiš nám a my to vyřešíme ručně.',
+            );
+        }
 
         $title = 'Ověřovací zpráva odeslána!';
         $message = "Ověřovací zpráva ke Tvé přihlášce byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.";
