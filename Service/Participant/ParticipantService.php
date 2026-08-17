@@ -296,17 +296,33 @@ class ParticipantService
                 continue;
             }
             try {
-                $this->requestActivationForUser($participant, $appUser);
-                $sent++;
+                // ⚠️ Počítat DORUČENÍ, ne pokusy. Dřív se `$sent++` provedlo vždy, když metoda
+                // nevyhodila výjimku — jenže selhání přenosu (SMTP) výjimku NEVYHAZUJE, takže se
+                // selhané odeslání počítalo jako úspěch a admin dostal hlášku „aktivační e-mail
+                // znovu odeslán", i když nedorazilo nic. Tentýž vzorec měl `sendSummary()`
+                // (opraveno 15. 8.); jediný důkaz odeslání je sloupec `sent`.
+                if ($this->requestActivationForUser($participant, $appUser)) {
+                    $sent++;
+                }
             } catch (OswisException|NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                 $this->logger->error(
                     "Participant ($participantId) activation request FAILED. ".$exception->getMessage()
                 );
             }
         }
-        if ($sent < 1 && $contactPersonsCount > 0) {
-            $this->logger->error("None activation e-mail was sent for participant ($participantId)!");
-            throw new OswisException("Nepodařilo se odeslat aktivační e-mail k přihlášce.");
+        // Původní podmínka `&& $contactPersonsCount > 0` propouštěla mlčky případ „není KOMU psát"
+        // (přihláška bez kontaktní osoby s účtem): nic se neodeslalo, nic se nevyhodilo a admin
+        // viděl úspěch. Přesně to sedm měsíců schovávalo uvázlá potvrzení plateb.
+        // Registraci to neshodí — {@see self::create()} volá tuhle metodu v try/catch a jen loguje.
+        if ($sent < 1) {
+            $this->logger->error("None activation e-mail was DELIVERED for participant ($participantId)!");
+            throw new OswisException(sprintf(
+                'Aktivační e-mail k přihlášce #%s se nepodařilo doručit%s',
+                $participantId ?? '?',
+                0 === $contactPersonsCount
+                    ? ': přihláška nemá žádnou kontaktní osobu s uživatelským účtem, takže není komu psát.'
+                    : ' ani jednomu z '.$contactPersonsCount.' příjemců.',
+            ));
         }
     }
 
@@ -319,18 +335,24 @@ class ParticipantService
      * @throws NotImplementedException
      * @throws OswisException
      */
-    private function requestActivationForUser(Participant $participant, AppUser $appUser): void
+    /** @return bool DORUČILO se to? (`false` = mail vznikl, ale neodešel — SMTP nevyhazuje výjimku) */
+    private function requestActivationForUser(Participant $participant, AppUser $appUser): bool
     {
         $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
-        $this->participantMailService->sendSummaryToUser(
+        $odeslano = $this->participantMailService->sendSummaryToUser(
             $participant,
             $appUser,
             ParticipantMail::TYPE_ACTIVATION_REQUEST,
             $participantToken
-        );
-        $this->logger->info(
-            'Sent activation request for participant '.$participant->getId().' to user '.$appUser->getId().'.'
-        );
+        )->isSent();
+        $this->logger->info(sprintf(
+            'Activation request for participant %s to user %s: %s.',
+            $participant->getId() ?? '?',
+            $appUser->getId() ?? '?',
+            $odeslano ? 'SENT' : 'NOT DELIVERED',
+        ));
+
+        return $odeslano;
     }
 
     private function getLogMessage(Participant $participant): string
