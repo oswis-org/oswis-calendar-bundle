@@ -658,7 +658,55 @@ class ParticipantService
      *
      * @return array{sent: int, failed: int, errors: list<string>}
      */
+    /**
+     * Rozešle automatické maily. **Smí běžet jen jednou naráz.**
+     *
+     * ⚠️ Tenhle engine má DVA vstupní body: cron (`oswis:mail:send --automails`) a tlačítko ve
+     * web-adminu ({@see \OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantsController::sendAutoMails()}).
+     * Cron má sice vlastní `flock`, ale ten na požadavek z webu nedosáhne — admin, který klikne
+     * během cronového tiku, tedy spustí druhý souběžný běh.
+     *
+     * Ochrana uvnitř ({@see ParticipantMailService::sendMessage()} → `countSent() > 0`) je
+     * „přečti, pak zapiš", takže souběh neustojí: oba běhy přečtou „ještě neodesláno" a oba
+     * odešlou. U automailů to znamená DVA STEJNÉ MAILY reálnému účastníkovi — a rozesílá se
+     * stovkám lidí najednou. Přesně tímhle vzorcem (dva vstupní body + kontrola v aplikaci)
+     * vzniklo 16. 8. 2026 102 fiktivních plateb.
+     *
+     * Řešeno zámkem v DATABÁZI (`GET_LOCK`), protože ten jako jediný dosáhne přes hranici
+     * web ↔ CLI i mezi procesy — stejně jako u hromadné rozesílky
+     * ({@see ParticipantBulkMailService::drainBatch()}). Čeká se 0 s: druhý běh se rovnou
+     * přeskočí, protože automaily stejně za pár minut vezme další tick.
+     *
+     * @return array{sent: int, failed: int, errors: list<string>}
+     */
     public function sendAutoMails(?Event $event = null, ?string $type = null, int $limit = 100): array
+    {
+        $connection = $this->em->getConnection();
+        $lockName = 'oswis_automails';
+        $acquired = $connection->fetchOne('SELECT GET_LOCK(?, 0)', [$lockName]);
+        if (!is_numeric($acquired) || 1 !== (int) $acquired) {
+            $this->logger->info('Automaily už běží jinde (cron × admin) — tenhle běh se přeskočil.');
+
+            return [
+                'sent'   => 0,
+                'failed' => 0,
+                'errors' => ['Automaily právě běží jinde (cron nebo jiný admin) — tenhle běh se přeskočil, nic se neodeslalo dvakrát.'],
+            ];
+        }
+
+        try {
+            return $this->sendAutoMailsLocked($event, $type, $limit);
+        } finally {
+            $connection->executeQuery('SELECT RELEASE_LOCK(?)', [$lockName]);
+        }
+    }
+
+    /**
+     * Vlastní rozesílka. Volat JEN z {@see self::sendAutoMails()}, která drží zámek.
+     *
+     * @return array{sent: int, failed: int, errors: list<string>}
+     */
+    private function sendAutoMailsLocked(?Event $event, ?string $type, int $limit): array
     {
         $sent = 0;
         $failed = 0;

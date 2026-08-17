@@ -379,13 +379,31 @@ final class WebAdminParticipantsController extends AbstractController
         if (!$this->isCsrfTokenValid('send_automails', (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
-        $this->participantService->sendAutoMails(null, $type, $limit);
+        // Hlásit SKUTEČNÝ výsledek, ne paušální „odesláno". Dřív se návratová hodnota zahodila
+        // a stránka tvrdila „E-maily rozeslány." i tehdy, když se neodeslalo nic nebo všechno
+        // selhalo — tichý úspěch, po kterém se admin nemá jak dozvědět, že se nic nestalo.
+        // (Rozesílka navíc může být přeskočená, pokud zrovna běží cron — viz zámek
+        // v ParticipantService::sendAutoMails().)
+        $vysledek = $this->participantService->sendAutoMails(null, $type, $limit);
+        $odeslano = $vysledek['sent'];
+        $selhalo = $vysledek['failed'];
+        $chyby = $vysledek['errors'];
+
+        $zprava = 0 === $odeslano && 0 === $selhalo
+            ? 'Neodeslán žádný e-mail — nikdo nový nečekal na automatický e-mail.'
+            : sprintf('Odesláno e-mailů: %d.', $odeslano).($selhalo > 0 ? sprintf(' Selhalo: %d.', $selhalo) : '');
+        if ([] !== $chyby) {
+            $zprava .= ' '.implode(' | ', array_slice($chyby, 0, 5));
+            if (count($chyby) > 5) {
+                $zprava .= sprintf(' (a dalších %d)', count($chyby) - 5);
+            }
+        }
 
         // Admin message skeleton (keeps the admin menu) — not the public message page.
         return $this->render('@OswisOrgOswisCore/web_admin/message.html.twig', [
             'title'     => 'Akce provedena.',
             'pageTitle' => 'Akce provedena.',
-            'message'   => 'E-maily rozeslány.',
+            'message'   => $zprava,
             'backUrl'   => $this->generateUrl('oswis_org_oswis_core_web_admin_homepage'),
         ]);
     }
