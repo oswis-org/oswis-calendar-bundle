@@ -17,6 +17,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\SubEventAttendanceRepository;
 use OswisOrg\OswisCalendarBundle\State\SubEventAttendanceProcessor;
@@ -55,6 +56,9 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
 )]
 #[Entity(repositoryClass: SubEventAttendanceRepository::class)]
 #[Table(name: 'calendar_sub_event_attendance')]
+// Index MUSÍ být i tady, ne jen v migraci — jinak `schema:validate` zrezaví a naivní
+// `schema:update --force` by ho tiše zahodil (pravidlo z CLAUDE.md).
+#[UniqueConstraint(name: 'uniq_attendance_active', columns: ['active_signature'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class SubEventAttendance implements BasicInterface
 {
@@ -84,6 +88,33 @@ class SubEventAttendance implements BasicInterface
     #[Column(type: 'string', length: 32)]
     #[Assert\Choice(choices: self::ALLOWED_STATUSES)]
     protected string $status = self::STATUS_REGISTERED;
+
+    /**
+     * Podpis AKTIVNÍHO přihlášení — nese ho jen řádek, který platí; jinak je NULL.
+     *
+     * ⚠️ Počítá si ho DATABÁZE (generovaný sloupec), aplikace do něj nikdy nezapisuje. Existuje
+     * kvůli unikátnímu indexu `uniq_attendance_active`, který je druhou vrstvou proti dvojímu
+     * přihlášení vedle zámku v {@see \OswisOrg\OswisCalendarBundle\State\SubEventAttendanceProcessor}.
+     *
+     * Proč takhle: „aktivní" = `deletedAt IS NULL AND status='registered'`. MariaDB nemá částečné
+     * indexy a `UNIQUE (participant, event, deletedAt)` by nepomohl — NULLy se v unikátním indexu
+     * považují za různé, takže by dvě aktivní přihlášení prošla. Tenhle sloupec je NULL u všech
+     * neaktivních řádků (a NULLy se nebijí), takže opakované přihlášení po zrušení dál funguje.
+     *
+     * Migrace: `Version20260817200000`.
+     */
+    #[Column(
+        name: 'active_signature',
+        type: 'string',
+        length: 48,
+        nullable: true,
+        insertable: false,
+        updatable: false,
+        generated: 'ALWAYS',
+        columnDefinition: "VARCHAR(48) AS (IF(deleted_at IS NULL AND status = 'registered',"
+            ." CONCAT(participant_id, '-', event_id), NULL)) STORED",
+    )]
+    protected ?string $activeSignature = null;
 
     #[Column(type: 'datetime', nullable: false)]
     protected DateTimeInterface $registeredAt;
