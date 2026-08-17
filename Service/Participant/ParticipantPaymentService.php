@@ -99,12 +99,6 @@ class ParticipantPaymentService
     }
 
     /**
-     * @param Collection $payments
-     *
-     * @return bool
-     * @throws OswisException
-     */
-    /**
      * Odešle potvrzení k platbám, které na ně čekají — volá cron ({@see SendMailCommand}).
      *
      * PROČ TO VŮBEC EXISTUJE: import plateb dřív posílal potvrzení synchronně, platbu po platbě,
@@ -120,7 +114,7 @@ class ParticipantPaymentService
      * Idempotence se NEŘEŠÍ nijak nově — drží ji `confirmedByMailAt`, tedy týž zámek, který
      * dělal bezpečným i opakovaný import po 504.
      *
-     * @return array{sent: int, failed: int, candidates: int}
+     * @return array{sent: int, failed: int, candidates: int, skipped: int} `skipped` = nebylo komu poslat
      */
     final public function sendPendingConfirmations(int $limit = 100, int $maxAgeDays = 7, bool $dryRun = false): array
     {
@@ -129,13 +123,32 @@ class ParticipantPaymentService
         $ids = $repository instanceof \OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository
             ? $repository->findAwaitingConfirmationIds($notBefore, $limit)
             : [];
-        $result = ['sent' => 0, 'failed' => 0, 'candidates' => count($ids)];
+        $result = ['sent' => 0, 'failed' => 0, 'candidates' => count($ids), 'skipped' => 0];
         if ($dryRun || [] === $ids) {
             return $result;
         }
         foreach ($ids as $id) {
             $payment = $this->em->find(ParticipantPayment::class, $id);
             if (!$payment instanceof ParticipantPayment || $payment->isConfirmedByMail()) {
+                continue;
+            }
+            // ⚠️ Platbu, které NENÍ KOMU poslat, přeskoč TIŠE (warning, ne error).
+            //
+            // Účastník bez aktivovaného účtu nemá jedinou adresu, takže odeslání nemůže vyjít
+            // NIKDY — a cron běží à 5 minut. Bez tohohle se do prod.log sype chyba ~288×/den
+            // (ověřeno na produkci 17. 8. u platby #5590) a utopí v sobě skutečné chyby;
+            // prázdný chybový log je tady provozní signál, ne kosmetika.
+            //
+            // Není to návrat k tichému selhání: stav je vidět v adminu u přihlášky
+            // („potvrzení neodesláno") — tedy tam, kde se s ním dá něco udělat. Chybou zůstává
+            // jen skutečné selhání odeslání, kde má opakování smysl.
+            if (0 === ($payment->getParticipant()?->getContactPersons(true)->count() ?? 0)) {
+                $result['skipped']++;
+                $this->logger->warning(sprintf(
+                    'Potvrzení platby #%d nelze odeslat: účastník nemá aktivovaný účet (přeskočeno).',
+                    $id,
+                ));
+
                 continue;
             }
             try {
