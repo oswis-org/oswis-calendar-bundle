@@ -22,20 +22,22 @@
                     {% endfor %}
                 </nav>
 
-                <table class="list">
-                    {% include '@OswisOrgOswisCalendar/other/payments-list/parts/payments-list-head.html.twig'
-                        with { 'isAdmin': true } %}
-                    {% for payment in payments %}
-                        {% include '@OswisOrgOswisCalendar/other/payments-list/parts/payments-list-inner.html.twig'
+                <div class="oa-table-scroll">
+                    <table class="list">
+                        {% include '@OswisOrgOswisCalendar/other/payments-list/parts/payments-list-head.html.twig'
                             with { 'isAdmin': true } %}
-                    {% else %}
-                        <tbody>
-                        <tr>
-                            <td colspan="4" class="text-center bold">Žádné platby v tomto filtru.</td>
-                        </tr>
-                        </tbody>
-                    {% endfor %}
-                </table>
+                        {% for payment in payments %}
+                            {% include '@OswisOrgOswisCalendar/other/payments-list/parts/payments-list-inner.html.twig'
+                                with { 'isAdmin': true } %}
+                        {% else %}
+                            <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center bold">Žádné platby v tomto filtru.</td>
+                            </tr>
+                            </tbody>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
         </div>
     </main>

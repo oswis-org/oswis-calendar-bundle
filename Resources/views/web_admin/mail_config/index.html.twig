@@ -40,144 +40,150 @@
                 <a class="btn btn-sm btn-success"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new') }}">+ Nová mail-skupina</a>
             </p>
-            <table class="list">
-                <thead>
-                    <tr>
-                        <th style="width: 3rem;">ID</th>
-                        <th>Název</th>
-                        <th style="width: 12rem;">Typ</th>
-                        <th>Šablona</th>
-                        <th>Kategorie</th>
-                        <th>Událost</th>
-                        <th style="width: 4rem; text-align: center;" title="Automatické odeslání">Auto</th>
-                        <th style="width: 11rem;" title="Okno platnosti — prázdné okno = platí vždy (zapnutá skupina bez okna rozesílá okamžitě)">Okno</th>
-                        <th style="width: 6rem; text-align: center;" title="Posílat jen aktivním účastníkům">Jen aktivní</th>
-                        <th style="width: 10rem;" title="Volitelný filtr příjemců (výrazový jazyk seznamu přihlášek)">Filtr</th>
-                        <th style="width: 6rem;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for g in groups %}
+            <div class="oa-table-scroll">
+                <table class="list">
+                    <thead>
                         <tr>
-                            <td>{{ g.id }}</td>
-                            <td><strong>{{ g.name|default('—') }}</strong></td>
-                            <td><code style="font-size: .85em;">{{ g.type|default('—') }}</code></td>
-                            <td>{{ g.twigTemplate ? g.twigTemplate.name : '—' }}</td>
-                            <td>{{ g.category ? g.category.name : '—' }}</td>
-                            <td>{{ g.event ? (g.event.shortName ?: g.event.name) : '— (globální)' }}</td>
-                            <td style="text-align: center;">{{ g.automaticMailing ? '✓' : '—' }}</td>
-                            <td style="font-size: .85em;">
-                                {% if g.startDateTime or g.endDateTime %}
-                                    {{ g.startDateTime ? g.startDateTime|date('j. n. Y H:i') : '…' }} – {{ g.endDateTime ? g.endDateTime|date('j. n. Y H:i') : '…' }}
-                                {% elseif g.automaticMailing %}
-                                    <span style="color: #b02a37; font-weight: 600;" title="Zapnutá skupina bez okna platí vždy!"><twig:ux:icon name="tabler:alert-triangle" class="oa-icon" /> vždy</span>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                            <td style="text-align: center;">{{ g.onlyActive ? '✓' : '—' }}</td>
-                            <td>
-                                {% if g.filterExpression %}
-                                    <code style="font-size: .8em;" title="{{ g.filterExpression }}">{{ g.filterExpression|u.truncate(28, '…') }}</code>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                            <td style="white-space: nowrap;">
-                                <a class="btn btn-sm btn-outline-primary"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
-                                <a class="btn btn-sm btn-outline-secondary" title="Založit novou skupinu předvyplněnou z této (okno a automatika se nekopírují)"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new', { from: g.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
-                            </td>
+                            <th style="width: 3rem;">ID</th>
+                            <th>Název</th>
+                            <th style="width: 12rem;">Typ</th>
+                            <th>Šablona</th>
+                            <th>Kategorie</th>
+                            <th>Událost</th>
+                            <th style="width: 4rem; text-align: center;" title="Automatické odeslání">Auto</th>
+                            <th style="width: 11rem;" title="Okno platnosti — prázdné okno = platí vždy (zapnutá skupina bez okna rozesílá okamžitě)">Okno</th>
+                            <th style="width: 6rem; text-align: center;" title="Posílat jen aktivním účastníkům">Jen aktivní</th>
+                            <th style="width: 10rem;" title="Volitelný filtr příjemců (výrazový jazyk seznamu přihlášek)">Filtr</th>
+                            <th style="width: 6rem;"></th>
                         </tr>
-                    {% else %}
-                        <tr><td colspan="11" style="text-align: center; color: #6c757d;">Žádné mail-skupiny.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for g in groups %}
+                            <tr>
+                                <td>{{ g.id }}</td>
+                                <td><strong>{{ g.name|default('—') }}</strong></td>
+                                <td><code style="font-size: .85em;">{{ g.type|default('—') }}</code></td>
+                                <td>{{ g.twigTemplate ? g.twigTemplate.name : '—' }}</td>
+                                <td>{{ g.category ? g.category.name : '—' }}</td>
+                                <td>{{ g.event ? (g.event.shortName ?: g.event.name) : '— (globální)' }}</td>
+                                <td style="text-align: center;">{{ g.automaticMailing ? '✓' : '—' }}</td>
+                                <td style="font-size: .85em;">
+                                    {% if g.startDateTime or g.endDateTime %}
+                                        {{ g.startDateTime ? g.startDateTime|date('j. n. Y H:i') : '…' }} – {{ g.endDateTime ? g.endDateTime|date('j. n. Y H:i') : '…' }}
+                                    {% elseif g.automaticMailing %}
+                                        <span style="color: #b02a37; font-weight: 600;" title="Zapnutá skupina bez okna platí vždy!"><twig:ux:icon name="tabler:alert-triangle" class="oa-icon" /> vždy</span>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: center;">{{ g.onlyActive ? '✓' : '—' }}</td>
+                                <td>
+                                    {% if g.filterExpression %}
+                                        <code style="font-size: .8em;" title="{{ g.filterExpression }}">{{ g.filterExpression|u.truncate(28, '…') }}</code>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td style="white-space: nowrap;">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_edit', { id: g.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
+                                    <a class="btn btn-sm btn-outline-secondary" title="Založit novou skupinu předvyplněnou z této (okno a automatika se nekopírují)"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new', { from: g.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="11" style="text-align: center; color: #6c757d;">Žádné mail-skupiny.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% elseif activeTab == 'categories' %}
             <p style="margin-bottom: .75rem;">
                 <a class="btn btn-sm btn-success"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_new') }}">+ Nová kategorie</a>
             </p>
-            <table class="list">
-                <thead>
-                    <tr>
-                        <th style="width: 3rem;">ID</th>
-                        <th>Název</th>
-                        <th style="width: 14rem;">Typ</th>
-                        <th style="width: 6rem; text-align: center;">Priorita</th>
-                        <th style="width: 18rem;">Slug</th>
-                        <th style="width: 6rem;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in categories %}
+            <div class="oa-table-scroll">
+                <table class="list">
+                    <thead>
                         <tr>
-                            <td>{{ c.id }}</td>
-                            <td><strong>{{ c.name|default('—') }}</strong></td>
-                            <td><code style="font-size: .85em;">{{ c.type|default('—') }}</code></td>
-                            <td style="text-align: center;">{{ c.priority|default('—') }}</td>
-                            <td><code style="font-size: .85em;">{{ c.slug|default('—') }}</code></td>
-                            <td style="white-space: nowrap;">
-                                <a class="btn btn-sm btn-outline-primary"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_edit', { id: c.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
-                                <a class="btn btn-sm btn-outline-secondary" title="Založit novou kategorii předvyplněnou z této (typ musí být unikátní — před uložením ho uprav)"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_new', { from: c.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
-                            </td>
+                            <th style="width: 3rem;">ID</th>
+                            <th>Název</th>
+                            <th style="width: 14rem;">Typ</th>
+                            <th style="width: 6rem; text-align: center;">Priorita</th>
+                            <th style="width: 18rem;">Slug</th>
+                            <th style="width: 6rem;"></th>
                         </tr>
-                    {% else %}
-                        <tr><td colspan="6" style="text-align: center; color: #6c757d;">Žádné kategorie.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for c in categories %}
+                            <tr>
+                                <td>{{ c.id }}</td>
+                                <td><strong>{{ c.name|default('—') }}</strong></td>
+                                <td><code style="font-size: .85em;">{{ c.type|default('—') }}</code></td>
+                                <td style="text-align: center;">{{ c.priority|default('—') }}</td>
+                                <td><code style="font-size: .85em;">{{ c.slug|default('—') }}</code></td>
+                                <td style="white-space: nowrap;">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_edit', { id: c.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
+                                    <a class="btn btn-sm btn-outline-secondary" title="Založit novou kategorii předvyplněnou z této (typ musí být unikátní — před uložením ho uprav)"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_mail_category_new', { from: c.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" style="text-align: center; color: #6c757d;">Žádné kategorie.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% elseif activeTab == 'templates' %}
             <p style="margin-bottom: .75rem;">
                 <a class="btn btn-sm btn-success"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_new') }}">+ Nová šablona / blok</a>
             </p>
-            <table class="list">
-                <thead>
-                    <tr>
-                        <th style="width: 3rem;">ID</th>
-                        <th>Název</th>
-                        <th style="width: 8rem;">Druh</th>
-                        <th style="width: 18rem;">Slug</th>
-                        <th>Cesta</th>
-                        <th style="width: 11rem; text-align: center;">Inline obsah?</th>
-                        <th style="width: 6rem;"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for t in templates %}
+            <div class="oa-table-scroll">
+                <table class="list">
+                    <thead>
                         <tr>
-                            <td>{{ t.id }}</td>
-                            <td><strong>{{ t.name|default('—') }}</strong></td>
-                            <td>
-                                {% set kindLabels = {'system': 'Systémový', 'campaign': 'Kampaň', 'snippet': 'Blok', 'page': 'Stránka', 'pdf': 'PDF'} %}
-                                {% if t.kind %}
-                                    <span class="badge" style="background:#e7f1ff;color:#0a58ca;border:1px solid #b6d4fe;border-radius:.4em;padding:.1em .5em;font-size:.8em;">{{ kindLabels[t.kind]|default(t.kind) }}</span>
-                                {% else %}—{% endif %}
-                            </td>
-                            <td><code style="font-size: .85em;">{{ t.slug|default('—') }}</code></td>
-                            <td><code style="font-size: .85em;">{{ t.regularTemplateName|default('—') }}</code></td>
-                            <td style="text-align: center;">
-                                {% if t.textValue|default %}
-                                    <span title="Inline HTML, {{ t.textValue|length }} znaků">✓ {{ t.textValue|length }} znaků</span>
-                                {% else %}
-                                    —
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a class="btn btn-sm btn-outline-primary"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: t.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
-                            </td>
+                            <th style="width: 3rem;">ID</th>
+                            <th>Název</th>
+                            <th style="width: 8rem;">Druh</th>
+                            <th style="width: 18rem;">Slug</th>
+                            <th>Cesta</th>
+                            <th style="width: 11rem; text-align: center;">Inline obsah?</th>
+                            <th style="width: 6rem;"></th>
                         </tr>
-                    {% else %}
-                        <tr><td colspan="7" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for t in templates %}
+                            <tr>
+                                <td>{{ t.id }}</td>
+                                <td><strong>{{ t.name|default('—') }}</strong></td>
+                                <td>
+                                    {% set kindLabels = {'system': 'Systémový', 'campaign': 'Kampaň', 'snippet': 'Blok', 'page': 'Stránka', 'pdf': 'PDF'} %}
+                                    {% if t.kind %}
+                                        <span class="badge" style="background:#e7f1ff;color:#0a58ca;border:1px solid #b6d4fe;border-radius:.4em;padding:.1em .5em;font-size:.8em;">{{ kindLabels[t.kind]|default(t.kind) }}</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td><code style="font-size: .85em;">{{ t.slug|default('—') }}</code></td>
+                                <td><code style="font-size: .85em;">{{ t.regularTemplateName|default('—') }}</code></td>
+                                <td style="text-align: center;">
+                                    {% if t.textValue|default %}
+                                        <span title="Inline HTML, {{ t.textValue|length }} znaků">✓ {{ t.textValue|length }} znaků</span>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: t.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </main>
 {% endblock %}

@@ -77,165 +77,171 @@
                         <div class="col-12">
                             <h3>Počet nezrušených přihlášek <span
                                         class="block small text-muted">běžných účastníků</span></h3>
-                            <table class="list">
-                                <thead>
-                                <tr>
-                                    <th>Událost</th>
-                                    <th>Počet</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>
-                                        <strong>{{ occupancy.event.shortName|default }}</strong>
-                                        {% if occupancy.event.shortName != occupancy.event.name %}
-                                            <span class="block small">{{ occupancy.event.name|default }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {'eventSlug': event.slug, 'participantCategorySlug': 'attendee'}) }}">
-                                            <strong>{{ occupancy.occupancy|default }}</strong>
-                                        </a>
-                                    </td>
-                                </tr>
-                                </tbody>
-                                {% for subEventOccupancy in occupancy.subEvents %}
+                            <div class="oa-table-scroll">
+                                <table class="list">
+                                    <thead>
+                                    <tr>
+                                        <th>Událost</th>
+                                        <th>Počet</th>
+                                    </tr>
+                                    </thead>
                                     <tbody>
                                     <tr>
                                         <td>
-                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': subEventOccupancy.event.slug|default}) }}">
-                                                &nbsp;➤&nbsp;&nbsp;{{ subEventOccupancy.event.shortName|default }}
-                                            </a>
-                                            {% if subEventOccupancy.event.shortName != subEventOccupancy.event.name %}
-                                                <span class="block small">{{ subEventOccupancy.event.name|default }}</span>
+                                            <strong>{{ occupancy.event.shortName|default }}</strong>
+                                            {% if occupancy.event.shortName != occupancy.event.name %}
+                                                <span class="block small">{{ occupancy.event.name|default }}</span>
                                             {% endif %}
                                         </td>
                                         <td class="text-center">
-                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {'eventSlug': subEventOccupancy.event.slug, 'participantCategorySlug': 'attendee'}) }}">
-                                                {{ subEventOccupancy.occupancy|default }}
+                                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {'eventSlug': event.slug, 'participantCategorySlug': 'attendee'}) }}">
+                                                <strong>{{ occupancy.occupancy|default }}</strong>
                                             </a>
-                                            {% if occupancy.occupancy|default(0) > 0 %}
-                                                <div class="block small">
-                                                    {{ (subEventOccupancy.occupancy|default(0) / occupancy.occupancy * 100)|round(1) }}
-                                                    % nadřazené
-                                                </div>
-                                            {% endif %}
                                         </td>
                                     </tr>
                                     </tbody>
-                                {% endfor %}
-                            </table>
+                                    {% for subEventOccupancy in occupancy.subEvents %}
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_event', {'eventSlug': subEventOccupancy.event.slug|default}) }}">
+                                                    &nbsp;➤&nbsp;&nbsp;{{ subEventOccupancy.event.shortName|default }}
+                                                </a>
+                                                {% if subEventOccupancy.event.shortName != subEventOccupancy.event.name %}
+                                                    <span class="block small">{{ subEventOccupancy.event.name|default }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', {'eventSlug': subEventOccupancy.event.slug, 'participantCategorySlug': 'attendee'}) }}">
+                                                    {{ subEventOccupancy.occupancy|default }}
+                                                </a>
+                                                {% if occupancy.occupancy|default(0) > 0 %}
+                                                    <div class="block small">
+                                                        {{ (subEventOccupancy.occupancy|default(0) / occupancy.occupancy * 100)|round(1) }}
+                                                        % nadřazené
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    {% endfor %}
+                                </table>
+                            </div>
                         </div>
 
                         <div class="col-12">
                             <h3>Rozsahy přihlášek <small class="text-muted">(počty nemusí být aktuální)</small></h3>
-                            <table class="list">
-                                <thead>
-                                <tr>
-                                    <th>Rozsah</th>
-                                    <th class="text-center">Cena</th>
-                                    <th class="text-center">Záloha</th>
-                                    <th class="text-center">Reg. od</th>
-                                    <th class="text-center">Reg. do</th>
-                                    <th class="text-center">Využití</th>
-                                    <th class="text-center">Akce</th>
-                                </tr>
-                                </thead>
-                                {% for regRange in offers %}
-                                    <tbody>
+                            <div class="oa-table-scroll">
+                                <table class="list">
+                                    <thead>
                                     <tr>
-                                        <td>
-                                            <strong>{{ regRange.shortName|default }}</strong>
-                                            {% if regRange.shortName != regRange.name %}
-                                                <span class="block small">{{ regRange.name|default }}</span>
-                                            {% endif %}
-                                            {% if regRange.requiredRegRange|default %}
-                                                <span class="block small text-muted">vyžaduje: {{ regRange.requiredRegRange.shortName|default(regRange.requiredRegRange.slug) }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            {% set rangePrice = regRange.getPrice(null, true)|default(0) %}
-                                            {% if rangePrice > 0 %}{{ rangePrice }}&nbsp;Kč{% else %}—{% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            {% set rangeDeposit = regRange.getDepositValue(null, true)|default(0) %}
-                                            {% if rangeDeposit > 0 %}{{ rangeDeposit }}&nbsp;Kč{% else %}—{% endif %}
-                                        </td>
-                                        <td class="text-center small text-muted">
-                                            {{ regRange.startDateTime|date('j. n. Y H:i')|default('—') }}
-                                        </td>
-                                        <td class="text-center small text-muted">
-                                            {{ regRange.endDate|date('j. n. Y H:i')|default('—') }}
-                                        </td>
-                                        <td class="text-center">
-                                            {% if regRange.usageInt|default > 0 %}
-                                                <strong>{{ regRange.usageInt|default }}</strong>
-                                                {% if regRange.baseCapacity|default(null) != 0 and regRange.baseCapacity|default(null) != null %}
-                                                    <span class="small">z {{ regRange.baseCapacity }}</span>
-                                                    <div class="block small">
-                                                        {{ (regRange.usageInt|default(0) / regRange.baseCapacity * 100)|round(1) -}}
-                                                        &nbsp;%
-                                                    </div>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            <a class="btn btn-sm btn-outline-primary"
-                                               href="{{ path('oswis_org_oswis_calendar_web_admin_reg_offer_edit', {slug: regRange.slug}) }}">Upravit</a>
-                                        </td>
+                                        <th>Rozsah</th>
+                                        <th class="text-center">Cena</th>
+                                        <th class="text-center">Záloha</th>
+                                        <th class="text-center">Reg. od</th>
+                                        <th class="text-center">Reg. do</th>
+                                        <th class="text-center">Využití</th>
+                                        <th class="text-center">Akce</th>
                                     </tr>
-                                    </tbody>
-                                {% endfor %}
-                            </table>
+                                    </thead>
+                                    {% for regRange in offers %}
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>{{ regRange.shortName|default }}</strong>
+                                                {% if regRange.shortName != regRange.name %}
+                                                    <span class="block small">{{ regRange.name|default }}</span>
+                                                {% endif %}
+                                                {% if regRange.requiredRegRange|default %}
+                                                    <span class="block small text-muted">vyžaduje: {{ regRange.requiredRegRange.shortName|default(regRange.requiredRegRange.slug) }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% set rangePrice = regRange.getPrice(null, true)|default(0) %}
+                                                {% if rangePrice > 0 %}{{ rangePrice }}&nbsp;Kč{% else %}—{% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% set rangeDeposit = regRange.getDepositValue(null, true)|default(0) %}
+                                                {% if rangeDeposit > 0 %}{{ rangeDeposit }}&nbsp;Kč{% else %}—{% endif %}
+                                            </td>
+                                            <td class="text-center small text-muted">
+                                                {{ regRange.startDateTime|date('j. n. Y H:i')|default('—') }}
+                                            </td>
+                                            <td class="text-center small text-muted">
+                                                {{ regRange.endDate|date('j. n. Y H:i')|default('—') }}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if regRange.usageInt|default > 0 %}
+                                                    <strong>{{ regRange.usageInt|default }}</strong>
+                                                    {% if regRange.baseCapacity|default(null) != 0 and regRange.baseCapacity|default(null) != null %}
+                                                        <span class="small">z {{ regRange.baseCapacity }}</span>
+                                                        <div class="block small">
+                                                            {{ (regRange.usageInt|default(0) / regRange.baseCapacity * 100)|round(1) -}}
+                                                            &nbsp;%
+                                                        </div>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <a class="btn btn-sm btn-outline-primary"
+                                                   href="{{ path('oswis_org_oswis_calendar_web_admin_reg_offer_edit', {slug: regRange.slug}) }}">Upravit</a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    {% endfor %}
+                                </table>
+                            </div>
                         </div>
 
                         <div class="col-12">
                             <h3>Příznaky <small class="text-muted">(modifikátory ceny i zálohy ke spáření nabídce)</small></h3>
-                            <table class="list">
-                                <thead>
-                                <tr>
-                                    <th>Skupina příznaků / příznak</th>
-                                    <th class="text-center">Cena Δ</th>
-                                    <th class="text-center">Záloha Δ</th>
-                                    <th class="text-center">Kapacita</th>
-                                    <th class="text-center">Akce</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for regRange in offers %}
-                                    {% for flagGroupOffer in regRange.flagGroupRanges|default([]) %}
-                                        <tr class="table-active">
-                                            <td colspan="5">
-                                                <strong>{{ flagGroupOffer.name|default(flagGroupOffer.flagCategory.name|default('—')) }}</strong>
-                                                <span class="small text-secondary"> &middot; rozsah: {{ regRange.shortName|default(regRange.slug) }}</span>
-                                            </td>
-                                        </tr>
-                                        {% for flagOffer in flagGroupOffer.flagOffers|default([]) %}
-                                            <tr>
-                                                <td style="padding-left: 2em;">
-                                                    {{ flagOffer.name|default(flagOffer.flag.name|default('—')) }}
-                                                </td>
-                                                <td class="text-center {% if flagOffer.price|default(0) > 0 %}text-success{% elseif flagOffer.price|default(0) < 0 %}text-danger{% endif %}">
-                                                    {% set p = flagOffer.price|default(0) %}
-                                                    {% if p > 0 %}+{{ p }}{% elseif p < 0 %}{{ p }}{% else %}0{% endif %}&nbsp;Kč
-                                                </td>
-                                                <td class="text-center {% if flagOffer.depositValue|default(0) > 0 %}text-success{% elseif flagOffer.depositValue|default(0) < 0 %}text-danger{% endif %}">
-                                                    {% set d = flagOffer.depositValue|default(0) %}
-                                                    {% if d > 0 %}+{{ d }}{% elseif d < 0 %}{{ d }}{% else %}0{% endif %}&nbsp;Kč
-                                                </td>
-                                                <td class="text-center small">
-                                                    {% if flagOffer.baseCapacity|default(null) %}{{ flagOffer.baseCapacity }}{% else %}—{% endif %}
-                                                </td>
-                                                <td class="text-center">
-                                                    <a class="btn btn-sm btn-outline-primary"
-                                                       href="{{ path('oswis_org_oswis_calendar_web_admin_flag_offer_edit', {id: flagOffer.id}) }}">Upravit</a>
+                            <div class="oa-table-scroll">
+                                <table class="list">
+                                    <thead>
+                                    <tr>
+                                        <th>Skupina příznaků / příznak</th>
+                                        <th class="text-center">Cena Δ</th>
+                                        <th class="text-center">Záloha Δ</th>
+                                        <th class="text-center">Kapacita</th>
+                                        <th class="text-center">Akce</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for regRange in offers %}
+                                        {% for flagGroupOffer in regRange.flagGroupRanges|default([]) %}
+                                            <tr class="table-active">
+                                                <td colspan="5">
+                                                    <strong>{{ flagGroupOffer.name|default(flagGroupOffer.flagCategory.name|default('—')) }}</strong>
+                                                    <span class="small text-secondary"> &middot; rozsah: {{ regRange.shortName|default(regRange.slug) }}</span>
                                                 </td>
                                             </tr>
+                                            {% for flagOffer in flagGroupOffer.flagOffers|default([]) %}
+                                                <tr>
+                                                    <td style="padding-left: 2em;">
+                                                        {{ flagOffer.name|default(flagOffer.flag.name|default('—')) }}
+                                                    </td>
+                                                    <td class="text-center {% if flagOffer.price|default(0) > 0 %}text-success{% elseif flagOffer.price|default(0) < 0 %}text-danger{% endif %}">
+                                                        {% set p = flagOffer.price|default(0) %}
+                                                        {% if p > 0 %}+{{ p }}{% elseif p < 0 %}{{ p }}{% else %}0{% endif %}&nbsp;Kč
+                                                    </td>
+                                                    <td class="text-center {% if flagOffer.depositValue|default(0) > 0 %}text-success{% elseif flagOffer.depositValue|default(0) < 0 %}text-danger{% endif %}">
+                                                        {% set d = flagOffer.depositValue|default(0) %}
+                                                        {% if d > 0 %}+{{ d }}{% elseif d < 0 %}{{ d }}{% else %}0{% endif %}&nbsp;Kč
+                                                    </td>
+                                                    <td class="text-center small">
+                                                        {% if flagOffer.baseCapacity|default(null) %}{{ flagOffer.baseCapacity }}{% else %}—{% endif %}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <a class="btn btn-sm btn-outline-primary"
+                                                           href="{{ path('oswis_org_oswis_calendar_web_admin_flag_offer_edit', {id: flagOffer.id}) }}">Upravit</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
                                         {% endfor %}
                                     {% endfor %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <div class="col-12">
