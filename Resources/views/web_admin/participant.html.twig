@@ -506,4 +506,26 @@
             } only %}
         {% endif %}
     </div>
+
+    {# Obsluha zaškrtávátka „překročit kapacitu" — JEDNOU na stránku.
+       V partialu _participant_flag_row byla vykreslená 22× (jednou za kategorii). #}
+    <script>
+        (function () {
+            if (window.__oswisKapacitaInit) { return; }
+            window.__oswisKapacitaInit = true;
+            document.addEventListener('change', function (event) {
+                var box = event.target;
+                if (!box || box.name !== 'admin_override') { return; }
+                var form = box.closest('form');
+                if (!form) { return; }
+                var plne = form.querySelectorAll('.oa-opt--full input[name="flagOfferIds[]"]');
+                for (var i = 0; i < plne.length; i++) {
+                    // Volbu, kterou účastník už má, needitujeme — ta zakázaná není a odškrtnout ji nesmíme.
+                    if (plne[i].defaultChecked) { continue; }
+                    plne[i].disabled = !box.checked;
+                    if (!box.checked) { plne[i].checked = false; }
+                }
+            });
+        })();
+    </script>
 {% endblock body_content %}

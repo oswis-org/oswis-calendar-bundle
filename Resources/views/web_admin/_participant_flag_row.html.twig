@@ -32,7 +32,10 @@
                 {% endif %}
                 {% for fo in cat.flagOffers %}
                     <label class="oa-opt{{ fo.full ? ' oa-opt--full' : '' }}">
-                        <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]" value="{{ fo.offer.id }}" {{ fo.selected ? 'checked' : '' }} {{ fo.full ? 'disabled' : '' }}>
+                        {# ⚠️ Zakázat jde jen volbu, kterou účastník JEŠTĚ NEMÁ. Zakázaný prvek prohlížeč NEODESÍLÁ,
+                           takže u už vybrané a mezitím naplněné volby by uložení jakékoli změny v téhle kategorii
+                           jeho příznak TIŠE SMAZALO. #}
+                        <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]" value="{{ fo.offer.id }}" {{ fo.selected ? 'checked' : '' }} {{ (fo.full and not fo.selected) ? 'disabled' : '' }}>
                         <span class="oa-opt__label">{{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}</span>
                         {% if fo.offer.price|default(0) != 0 %}<span class="oa-opt__meta">{{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }}&nbsp;Kč</span>{% endif %}
                         {% if fo.remaining is not null %}<span class="oa-opt__meta">zbývá {{ fo.remaining }}</span>{% endif %}
@@ -50,6 +53,9 @@
             <div class="oa-flag__actions">
                 <button type="submit" class="btn btn-sm btn-primary">Uložit</button>
                 <label class="oa-flag__override" title="Obejít naplněnou kapacitu">
+                    {# Zaškrtnutí musí naplněné volby opravdu ZPŘÍSTUPNIT. Dřív jen odeslalo příznak
+                       serveru, jenže volba zůstala `disabled`, takže ji nešlo ani vybrat, ani odeslat —
+                       funkce byla nepoužitelná právě pro případ, kvůli kterému existuje. #}
                     <input type="checkbox" name="admin_override" value="1"> překročit kapacitu
                 </label>
             </div>
