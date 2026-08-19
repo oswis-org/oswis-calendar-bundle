@@ -562,6 +562,32 @@ oswis_org_oswis_calendar_web_admin_participant_set_gender:
     participantId: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_payment_transfer:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::transferPayment
+  path: "/web_admin/platby/{paymentId}/prevest"
+  requirements:
+    paymentId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participants_duplicates:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::duplicates
+  path: "/web_admin/prihlasky/duplicity"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_participant_move_payments:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::movePayments
+  path: "/web_admin/ucastnici/{participantId}/presunout-platby"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_edit_contact:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::editContact
+  path: "/web_admin/ucastnici/{participantId}/kontakt"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_partial_stay:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::setPartialStay
   path: "/web_admin/ucastnici/{participantId}/partial-stay"

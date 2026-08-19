@@ -274,6 +274,93 @@ class ParticipantRepository extends ServiceEntityRepository
     }
 
     /**
+     * Detail duplicitních přihlášek pro srovnávací obrazovku — ke KAŽDÉ přihlášce to, co na ní visí.
+     *
+     * ⚠️ **Duplicita NENÍ automaticky chyba.** Ověřeno na datech 19. 8. 2026: ze tří případů byly
+     * dva omyl (dvakrát TÝŽ turnus, u jednoho z nich nic zaplaceno), ale třetí byla legitimní —
+     * člověk jel oba turnusy a poslal na ně DVĚ různé platby (různá externí id i data).
+     * Obrazovka proto nesmí nic navrhovat jako „správné", jen ukázat fakta a nechat rozhodnout tým.
+     *
+     * Vrací se úmyslně i počet plateb a částka: podle nich se pozná, kterou přihlášku nelze
+     * jen tak zrušit, aniž by se nejdřív přesunuly peníze.
+     *
+     * @return list<array{participantId: int, contactId: int, name: string, eventName: string,
+     *                    createdAt: ?\DateTimeInterface, payments: int, paid: float, notes: int}>
+     */
+    public function findDuplicateRegistrationDetails(Event $parentEvent, int $limit = 60): array
+    {
+        $contactIds = array_column($this->findDuplicateRegistrations($parentEvent, $limit), 'contactId');
+        if ([] === $contactIds) {
+            return [];
+        }
+        /** @var list<array{participantId: int|string, contactId: int|string, name: ?string,
+         *                 eventName: ?string, createdAt: ?\DateTimeInterface}> $rows */
+        $rows = $this->createQueryBuilder('p')
+            ->select(
+                'p.id AS participantId, IDENTITY(pc.contact) AS contactId, c.name AS name,'
+                .' e.name AS eventName, p.createdAt AS createdAt'
+            )
+            ->innerJoin('p.event', 'e')
+            ->innerJoin('p.participantContacts', 'pc')
+            ->innerJoin('pc.contact', 'c')
+            ->where('e.superEvent = :parent')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere('pc.contact IN (:contacts)')
+            ->orderBy('c.name', 'ASC')
+            ->addOrderBy('p.id', 'ASC')
+            ->setParameter('parent', $parentEvent)
+            ->setParameter('contacts', $contactIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $participantId = (int) $row['participantId'];
+            $souhrn = $this->souhrnPrihlasky($participantId);
+            $out[] = [
+                'participantId' => $participantId,
+                'contactId'     => (int) $row['contactId'],
+                'name'          => is_string($row['name'] ?? null) ? $row['name'] : '',
+                'eventName'     => is_string($row['eventName'] ?? null) ? $row['eventName'] : '',
+                'createdAt'     => $row['createdAt'] ?? null,
+                'payments'      => $souhrn['payments'],
+                'paid'          => $souhrn['paid'],
+                'notes'         => $souhrn['notes'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Počty a částka k jedné přihlášce. Schválně syrovým SQL: hydratace plného grafu účastníka
+     * mutuje `getName()` na L2-cachovaných entitách (viz `WebAdminParticipantsController::setGender`)
+     * a tady jde jen o tři čísla.
+     *
+     * @return array{payments: int, paid: float, notes: int}
+     */
+    private function souhrnPrihlasky(int $participantId): array
+    {
+        $spojeni = $this->getEntityManager()->getConnection();
+        /** @var array{plateb: int|string, castka: string|float|null}|false $platby */
+        $platby = $spojeni->fetchAssociative(
+            'SELECT COUNT(*) AS plateb, COALESCE(SUM(numeric_value), 0) AS castka'
+            .' FROM calendar_participant_payment WHERE participant_id = :id',
+            ['id' => $participantId],
+        );
+        $poznamek = $spojeni->fetchOne(
+            'SELECT COUNT(*) FROM calendar_participant_note WHERE participant_id = :id AND deleted_at IS NULL',
+            ['id' => $participantId],
+        );
+
+        return [
+            'payments' => false === $platby ? 0 : (int) $platby['plateb'],
+            'paid'     => false === $platby ? 0.0 : (float) $platby['castka'],
+            'notes'    => is_numeric($poznamek) ? (int) $poznamek : 0,
+        ];
+    }
+
+    /**
      * Lidé, kteří mají pod default akcí VÍC NEŽ JEDNU živou přihlášku.
      *
      * PROČ: server-side pojistka proti dvojímu odeslání formuláře je záměrně **60sekundová** — řeší

@@ -139,6 +139,44 @@
                             <td>Telefon</td>
                             <td>{% if contact.phone|default %}<a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>{% else %}—{% endif %}</td>
                         </tr></tbody>
+                        {# Oprava údajů kontaktu. Do 19. 8. 2026 nešlo ve web adminu opravit ani
+                           překlep ve jméně — routa na editaci kontaktu prostě neexistovala, přestože
+                           na těchhle polích visí rozesílání pošty i příjezdová evidence.
+                           Schované v `<details>`, aby se detail nezahltil: běžně se čte, needituje. #}
+                        <tbody><tr>
+                            <td>Opravit údaje
+                                <div class="block small">jméno, e-mail, telefon</div>
+                            </td>
+                            <td>
+                                <details>
+                                    <summary style="cursor:pointer; color:var(--oa-primary);">upravit</summary>
+                                    <form method="post" style="margin-top:.5rem;"
+                                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_contact', {participantId: participantId}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_contact_' ~ participantId) }}">
+                                        <label class="small" for="contactName-{{ participantId }}">Jméno</label>
+                                        <input id="contactName-{{ participantId }}" type="text" name="contactName" maxlength="170"
+                                               class="form-control form-control-sm" value="{{ contact.name|default('') }}">
+                                        <label class="small" for="contactEmail-{{ participantId }}">E-mail</label>
+                                        <input id="contactEmail-{{ participantId }}" type="email" name="contactEmail" maxlength="170"
+                                               class="form-control form-control-sm" value="{{ contact.email|default('') }}">
+                                        <label class="small" for="contactPhone-{{ participantId }}">Telefon</label>
+                                        <input id="contactPhone-{{ participantId }}" type="tel" name="contactPhone" maxlength="60"
+                                               class="form-control form-control-sm" value="{{ contact.phone|default('') }}">
+                                        <div class="small text-muted" style="margin:.35rem 0;">
+                                            Prázdné pole se neuloží — hodnota zůstane, jaká byla.
+                                            {% if contact.appUser|default %}
+                                                Účastník má uživatelský účet, takže se <strong>jméno i e-mail
+                                                změní i tam</strong> (pošta chodí na adresu účtu).
+                                                {% if contact.appUser.username|default and contact.appUser.username == contact.appUser.email|default %}
+                                                    S e-mailem se změní i <strong>přihlašovací jméno</strong> — je zatím shodné s adresou.
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Uložit údaje</button>
+                                    </form>
+                                </details>
+                            </td>
+                        </tr></tbody>
                         <tbody><tr>
                             <td>Uživatelský účet</td>
                             <td>
@@ -257,6 +295,24 @@
                             <td class="text-center">
                                 {% if is_granted('ROLE_ADMIN') and payment.id|default %}
                                     <a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_payment_edit', { id: payment.id }) }}">Upravit</a>
+                                    {# Převod zálohy na jiného člověka — typicky když někdo nejede
+                                       a jde za něj kamarád. Schované v `<details>`, ať to nejde
+                                       udělat omylem; bankovní údaje platby se nemění. #}
+                                    <details style="display:inline-block; text-align:left;">
+                                        <summary style="cursor:pointer; color:var(--oa-primary); display:inline;">Převést</summary>
+                                        <form method="post" style="margin-top:.35rem;"
+                                              action="{{ path('oswis_org_oswis_calendar_web_admin_payment_transfer', { paymentId: payment.id }) }}"
+                                              onsubmit="return confirm('Převést platbu {{ payment.numericValue|default(0) }} Kč na jinou přihlášku? Bankovní údaje zůstanou beze změny.');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('payment_transfer_' ~ payment.id) }}">
+                                            <input type="text" name="targetParticipant" class="form-control form-control-sm"
+                                                   placeholder="ID přihlášky nebo e-mail" style="width:14rem;" required>
+                                            <div class="small text-muted" style="margin:.25rem 0;">
+                                                Peníze se přiřadí jinému člověku. VS ani datum se nemění —
+                                                jsou to údaje ze skutečného převodu.
+                                            </div>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Převést platbu</button>
+                                        </form>
+                                    </details>
                                 {% endif %}
                             </td>
                         </tr>

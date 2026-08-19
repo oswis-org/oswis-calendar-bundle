@@ -1,0 +1,87 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block body_content %}
+    <div class="container">
+        <h1>Duplicitní přihlášky{% if event %} — {{ event.name }}{% endif %}</h1>
+
+        {# ⚠️ Klíčové sdělení celé obrazovky: duplicita NENÍ automaticky chyba. Ověřeno na datech
+           19. 8. 2026 — ze tří případů byly dva omyl (dvakrát týž turnus) a jeden legitimní:
+           člověk jel oba turnusy a poslal dvě různé platby. Kdyby obrazovka jednu z přihlášek
+           označovala za „špatnou", tým by podle toho rušil i platné přihlášky. #}
+        <p style="max-width: 46rem;">
+            Lidé, kteří mají pod letošní akcí <strong>víc než jednu živou přihlášku</strong>.
+            <strong>Není to samo o sobě chyba</strong> — kdo jede oba turnusy, má tu přihlášky dvě
+            právem. Rozhodni podle toho, co na které přihlášce visí.
+        </p>
+
+        {% if skupiny is empty %}
+            <p><em>Žádné duplicitní přihlášky. Nic k řešení.</em></p>
+        {% else %}
+            {% for contactId, skupina in skupiny %}
+                <h2 style="margin-top: 1.25rem;">{{ skupina.name }}</h2>
+                <table class="list">
+                    <thead>
+                    <tr>
+                        <th>Přihláška</th>
+                        <th>Turnus</th>
+                        <th>Vytvořena</th>
+                        <th>Zaplaceno</th>
+                        <th>Poznámky</th>
+                        <th>Akce</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for p in skupina.prihlasky %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', {participantId: p.participantId}) }}">
+                                    #{{ p.participantId }}
+                                </a>
+                            </td>
+                            <td>{{ p.eventName }}</td>
+                            <td>{{ p.createdAt ? p.createdAt.format('j. n. Y H:i') : '—' }}</td>
+                            <td>
+                                {% if p.payments > 0 %}
+                                    <strong>{{ p.paid|number_format(0, ',', ' ') }}&nbsp;Kč</strong>
+                                    <span class="small text-muted">({{ p.payments }}&nbsp;×)</span>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ p.notes > 0 ? p.notes : '—' }}</td>
+                            <td>
+                                {# Přesun plateb je jediná věc, která tu dosud chyběla — zrušit
+                                   přihlášku šlo vždy, ale ne když na ní visely peníze. #}
+                                {% if p.payments > 0 and skupina.prihlasky|length > 1 %}
+                                    <form method="post" style="display:inline-flex; gap:.25rem; align-items:center;"
+                                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_move_payments', {participantId: p.participantId}) }}"
+                                          onsubmit="return confirm('Přesunout {{ p.payments }} plateb z přihlášky #{{ p.participantId }} na vybranou přihlášku?');">
+                                        <input type="hidden" name="_token"
+                                               value="{{ csrf_token('participant_move_payments_' ~ p.participantId) }}">
+                                        <select name="targetParticipantId" class="form-select form-select-sm" style="width:auto;">
+                                            {# `{% for … if … %}` Twig 3 nezná — podmínka musí dovnitř. #}
+                                            {% for cil in skupina.prihlasky %}
+                                                {% if cil.participantId != p.participantId %}
+                                                    <option value="{{ cil.participantId }}">na #{{ cil.participantId }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Přesunout platby</button>
+                                    </form>
+                                {% endif %}
+                                <form method="post" style="display:inline;"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', {participantId: p.participantId}) }}"
+                                      onsubmit="return confirm('Opravdu zrušit přihlášku #{{ p.participantId }}{% if p.payments > 0 %} — POZOR, visí na ní {{ p.paid|number_format(0, ',', ' ') }} Kč{% endif %}?');">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('participant_delete_' ~ p.participantId) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Zrušit přihlášku</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

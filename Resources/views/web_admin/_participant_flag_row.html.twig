@@ -38,7 +38,8 @@
                         <input type="{{ single ? 'radio' : 'checkbox' }}" name="flagOfferIds[]" value="{{ fo.offer.id }}" {{ fo.selected ? 'checked' : '' }} {{ (fo.full and not fo.selected) ? 'disabled' : '' }}>
                         <span class="oa-opt__label">{{ fo.offer.flag.name|default(fo.offer.name|default('příznak')) }}</span>
                         {% if fo.offer.price|default(0) != 0 %}<span class="oa-opt__meta">{{ fo.offer.price > 0 ? '+' : '' }}{{ fo.offer.price }}&nbsp;Kč</span>{% endif %}
-                        {% if fo.remaining is not null %}<span class="oa-opt__meta">zbývá {{ fo.remaining }}</span>{% endif %}
+                        {% if fo.full %}<span class="oa-opt__full-tag">plné</span>{% endif %}
+                        {% if fo.remaining is not null and not fo.full %}<span class="oa-opt__meta">zbývá {{ fo.remaining }}</span>{% endif %}
                     </label>
                     {% if fo.formValueAllowed %}
                         <div class="oa-opt__text-row">

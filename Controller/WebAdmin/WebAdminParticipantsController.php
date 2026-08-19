@@ -6,7 +6,9 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Event\EventService;
 use OswisOrg\OswisCalendarBundle\Service\Accommodation\RoommatePreferenceService;
 use OswisOrg\OswisCalendarBundle\Service\Communication\CommunicationTimelineService;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagGroupOffer;
@@ -17,6 +19,9 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetail;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailCategory;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\AddressBook\ContactInterface;
@@ -39,6 +44,9 @@ final class WebAdminParticipantsController extends AbstractController
         private readonly RoommatePreferenceService $roommatePreferenceService,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
+        // Pro srovnání duplicitních přihlášek (default akce + dotaz na duplicity).
+        private readonly EventService $eventService,
+        private readonly ParticipantRepository $participantRepository,
     ) {
     }
 
@@ -645,6 +653,470 @@ final class WebAdminParticipantsController extends AbstractController
         };
         $this->addFlash('success', sprintf('Pohlaví účastníka #%d: %s.', $participantId, $label));
 
+        return new RedirectResponse($this->generateUrl(
+            'oswis_org_oswis_calendar_web_admin_participant_detail',
+            ['participantId' => $participantId],
+        ));
+    }
+
+    /**
+     * Srovnání duplicitních přihlášek — kdo má pod letošní akcí víc než jednu živou přihlášku.
+     *
+     * ⚠️ **Nic tu nenavrhuje, co je „správně".** Na datech 19. 8. 2026 byly ze tří případů dva
+     * omyl (dvakrát týž turnus) a jeden **legitimní** — člověk jel oba turnusy a poslal dvě různé
+     * platby. Rozhodnutí patří týmu; obrazovka jen ukáže, co na které přihlášce visí.
+     *
+     * Rušení přihlášky se NEDUPLIKUJE — používá se existující akce `participant_delete`.
+     * Chybějící díl byl **přesun plateb**: dokud peníze sedí na té přihlášce, která se má zrušit,
+     * není co dělat.
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function duplicates(): Response
+    {
+        $event = $this->eventService->getDefaultEvent();
+        $skupiny = [];
+        if (null !== $event) {
+            foreach ($this->participantRepository->findDuplicateRegistrationDetails($event) as $radek) {
+                $skupiny[$radek['contactId']]['name'] = $radek['name'];
+                $skupiny[$radek['contactId']]['prihlasky'][] = $radek;
+            }
+        }
+
+        return $this->render('@OswisOrgOswisCalendar/web_admin/participants/duplicates.html.twig', [
+            'event'    => $event,
+            'skupiny'  => $skupiny,
+            'title'    => 'Duplicitní přihlášky',
+        ]);
+    }
+
+    /**
+     * Přesune VŠECHNY platby z jedné přihlášky na druhou.
+     *
+     * Proč to musí existovat: když se člověk přihlásí dvakrát a zaplatí na tu přihlášku, která
+     * se má zrušit, nešlo s tím doteď nic dělat — zrušením by se peníze „ztratily" z pohledu
+     * druhé přihlášky. Obě přihlášky musí patřit TÉMUŽ člověku, jinak by se dala platba
+     * přesunout komukoliv.
+     *
+     * Zapisuje se cíleným SQL UPDATE: přesouvá se jen cizí klíč, žádná hodnota platby se nemění,
+     * takže není co počítat přes UnitOfWork (a hydratace plného grafu je tu stejně nežádoucí).
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function movePayments(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_move_payments_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $cilId = (int) $request->request->get('targetParticipantId', 0);
+        if ($cilId === $participantId || $cilId <= 0) {
+            $this->addFlash('error', 'Cílová přihláška není platná.');
+
+            return $this->zpetNaDuplicity();
+        }
+        $spojeni = $this->em->getConnection();
+        $kontaktZdroje = $this->kontaktPrihlasky($participantId);
+        $kontaktCile = $this->kontaktPrihlasky($cilId);
+        if (null === $kontaktZdroje || $kontaktZdroje !== $kontaktCile) {
+            // Pojistka proti překlepu v id: peníze se smí posunout jen mezi přihláškami TÉHOŽ člověka.
+            $this->addFlash('error', 'Přesun zamítnut — přihlášky nepatří stejnému člověku.');
+
+            return $this->zpetNaDuplicity();
+        }
+        $presunuto = $spojeni->executeStatement(
+            'UPDATE calendar_participant_payment SET participant_id = :cil WHERE participant_id = :zdroj',
+            ['cil' => $cilId, 'zdroj' => $participantId],
+        );
+        $cache = $this->em->getCache();
+        if (null !== $cache) {
+            $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $participantId);
+            $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $cilId);
+        }
+        $this->addFlash(
+            0 === $presunuto ? 'info' : 'success',
+            0 === $presunuto
+                ? sprintf('Přihláška #%d žádné platby nemá — nebylo co přesunout.', $participantId)
+                : sprintf('Přesunuto %d plateb z přihlášky #%d na #%d.', $presunuto, $participantId, $cilId),
+        );
+
+        return $this->zpetNaDuplicity();
+    }
+
+    /**
+     * Převod JEDNÉ platby na přihlášku JINÉHO člověka — typicky když někdo nejede a jde za něj kamarád,
+     * takže se má převést i záloha.
+     *
+     * ⚠️ Vědomě oddělené od `movePayments()`: ten smí posouvat peníze jen mezi přihláškami TÉHOŽ
+     * člověka (duplicity) a chrání se před překlepem v id. Tady se peníze převádějí mezi LIDMI,
+     * takže je to samostatná akce, **jen pro `ROLE_ADMIN`** a s vlastním potvrzením.
+     *
+     * ⚠️ Bankovní údaje platby (`variableSymbol`, `externalId`, datum) se **nemění** — je to záznam
+     * o skutečném převodu z výpisu a je to audit stopa (viz `feedback_raw_payment_csv_keep`).
+     * Mění se jen to, komu je platba přiřazená; kdo, kdy a od koho ji převedl, se zapíše do
+     * interní poznámky platby, aby se to dalo dohledat i za rok.
+     *
+     * Cíl se zadává **id přihlášky nebo e-mailem** — id se z jiné přihlášky opisuje špatně.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function transferPayment(Request $request, int $paymentId): Response
+    {
+        if (!$this->isCsrfTokenValid('payment_transfer_'.$paymentId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $platba = $this->em->find(ParticipantPayment::class, $paymentId);
+        $zdrojId = $platba?->getParticipant()?->getId();
+        if (!$platba instanceof ParticipantPayment || null === $zdrojId) {
+            throw $this->createNotFoundException('Platba nenalezena.');
+        }
+        $zadani = trim((string) $request->request->get('targetParticipant', ''));
+        $cilId = $this->najdiPrihlasku($zadani);
+        if (null === $cilId) {
+            $this->addFlash('error', sprintf('Cílová přihláška „%s" nenalezena — zadej ID přihlášky nebo e-mail.', $zadani));
+
+            return $this->zpetNaDetail($zdrojId);
+        }
+        if ($cilId === $zdrojId) {
+            $this->addFlash('info', 'Platba už na téhle přihlášce je.');
+
+            return $this->zpetNaDetail($zdrojId);
+        }
+
+        $spojeni = $this->em->getConnection();
+        $stopa = sprintf(
+            '[%s] Platba převedena z přihlášky #%d na #%d (%s).',
+            new \DateTimeImmutable()->format('j. n. Y H:i'),
+            $zdrojId,
+            $cilId,
+            (string) ($this->getUser()?->getUserIdentifier() ?? 'neznámý admin'),
+        );
+        $spojeni->executeStatement(
+            'UPDATE calendar_participant_payment'
+            .' SET participant_id = :cil, internal_note = TRIM(CONCAT(COALESCE(internal_note, \'\'), :stopa))'
+            .' WHERE id = :id',
+            ['cil' => $cilId, 'stopa' => "\n".$stopa, 'id' => $paymentId],
+        );
+
+        $cache = $this->em->getCache();
+        if (null !== $cache) {
+            $cache->evictEntity(ParticipantPayment::class, $paymentId);
+            $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $zdrojId);
+            $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $cilId);
+        }
+        $this->logger->info($stopa);
+        $this->addFlash('success', sprintf(
+            'Platba %s Kč převedena na přihlášku #%d. Bankovní údaje (VS, datum) zůstaly beze změny — jsou to údaje ze skutečného převodu.',
+            (string) $platba->getNumericValue(),
+            $cilId,
+        ));
+
+        return $this->zpetNaDetail($zdrojId);
+    }
+
+    /**
+     * Najde ŽIVOU přihlášku podle jejího id nebo podle e-mailu kontaktu.
+     *
+     * Zadávat cizí přihlášku samotným číslem je past na překlep, takže se bere i e-mail —
+     * ten má admin po ruce z komunikace.
+     */
+    private function najdiPrihlasku(string $zadani): ?int
+    {
+        if ('' === $zadani) {
+            return null;
+        }
+        $spojeni = $this->em->getConnection();
+        if (ctype_digit($zadani)) {
+            $id = $spojeni->fetchOne(
+                'SELECT id FROM calendar_participant WHERE id = :id AND deleted_at IS NULL',
+                ['id' => (int) $zadani],
+            );
+
+            return is_numeric($id) ? (int) $id : null;
+        }
+        $id = $spojeni->fetchOne(
+            'SELECT p.id FROM calendar_participant p
+               JOIN calendar_participant_contact pc ON pc.participant_id = p.id AND pc.deleted_at IS NULL
+               JOIN address_book_contact_detail d ON d.contact_id = pc.contact_id
+               JOIN address_book_contact_detail_category c ON c.id = d.category_id AND c.type = :typ
+              WHERE p.deleted_at IS NULL AND d.content = :mail
+              ORDER BY p.id DESC LIMIT 1',
+            ['typ' => ContactDetailCategory::TYPE_EMAIL, 'mail' => $zadani],
+        );
+
+        return is_numeric($id) ? (int) $id : null;
+    }
+
+    /** Id kontaktu, kterému přihláška patří (nebo null). Slouží jako pojistka u přesunu plateb. */
+    private function kontaktPrihlasky(int $participantId): ?int
+    {
+        $id = $this->em->getConnection()->fetchOne(
+            'SELECT contact_id FROM calendar_participant_contact'
+            .' WHERE participant_id = :id AND deleted_at IS NULL ORDER BY id ASC LIMIT 1',
+            ['id' => $participantId],
+        );
+
+        return is_numeric($id) ? (int) $id : null;
+    }
+
+    private function zpetNaDuplicity(): RedirectResponse
+    {
+        return new RedirectResponse(
+            $this->generateUrl('oswis_org_oswis_calendar_web_admin_participants_duplicates')
+        );
+    }
+
+    /**
+     * Oprava ÚDAJŮ KONTAKTU u přihlášky — jméno, e-mail, telefon.
+     *
+     * Proč to vzniklo: ve web adminu **neexistovala žádná cesta, jak opravit překlep ve jméně
+     * ani změnit e-mail či telefon** (ověřeno 19. 8. 2026 — routa na editaci kontaktu prostě
+     * nebyla). Přitom na těchto polích visí rozesílání pošty, párování plateb i příjezdová
+     * evidence. User 19. 8.: „editaci kontaktu můžeme dát rovnou do editace přihlášky, aby se
+     * upravilo obojí najednou".
+     *
+     * ⚠️ **Jméno se NEROZKLÁDÁ tady.** `setName()` má netriviální parser (tituly, prostřední
+     * jména, jednoslovná jména, spojovníky) a právě jeho obcházení vyrobilo na produkci
+     * „napůl uložené přihlášky" bez jména. Voláme tedy `setName()` na entitě a teprve
+     * VÝSLEDNÉ části zapíšeme cíleným DQL UPDATE.
+     *
+     * ⚠️ **Nesmí se flushovat celý graf** (viz `setGender()`): hydratace plného detailu mutuje
+     * `getName()`/`sortableName` na L2-cachovaných entitách a následný flush by počítal
+     * changeset přes celý graf a vyčerpal paměť. Proto lightweight načtení + DQL + evikce L2.
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function editContact(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_edit_contact_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            false,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        $contact = $participant->getContactForRead();
+        if (!$contact instanceof Person || null === $contact->getId()) {
+            $this->addFlash('error', 'Kontakt účastníka není osoba — údaje nelze upravit.');
+
+            return $this->zpetNaDetail($participantId);
+        }
+        $personId = $contact->getId();
+
+        $zmeny = [];
+        $chyby = [];
+
+        $ucet = $contact->getAppUser();
+
+        $noveJmeno = trim((string) $request->request->get('contactName', ''));
+        if ('' !== $noveJmeno && $noveJmeno !== (string) $contact->getName()) {
+            $zmeny[] = $this->ulozJmeno($personId, $noveJmeno);
+            // Jméno musí sedět i na ÚČTU, jinak se rozejde s přihláškou: účet má vlastní
+            // `name`/`given_name`/… a bere se z něj oslovení i podpis v aplikaci.
+            if (null !== $ucet?->getId()) {
+                $this->ulozJmenoUctu($ucet->getId(), $noveJmeno);
+            }
+        }
+
+        foreach ([
+            ['pole' => 'contactEmail', 'typ' => ContactDetailCategory::TYPE_EMAIL, 'popis' => 'e-mail'],
+            ['pole' => 'contactPhone', 'typ' => ContactDetailCategory::TYPE_PHONE, 'popis' => 'telefon'],
+        ] as $udaj) {
+            $nova = trim((string) $request->request->get($udaj['pole'], ''));
+            if ('' === $nova) {
+                continue;
+            }
+            if ('e-mail' === $udaj['popis'] && !filter_var($nova, FILTER_VALIDATE_EMAIL)) {
+                $chyby[] = sprintf('„%s" není platná e-mailová adresa — e-mail nezměněn.', $nova);
+
+                continue;
+            }
+            $puvodni = ContactDetailCategory::TYPE_EMAIL === $udaj['typ'] ? $contact->getEmail() : $contact->getPhone();
+            if ($nova === (string) $puvodni) {
+                continue;
+            }
+            $ulozeno = $this->ulozKontaktniUdaj($personId, $udaj['typ'], $nova);
+            if (null === $ulozeno) {
+                $chyby[] = sprintf('%s se nepodařilo uložit — kontakt zatím žádný nemá a nový se zakládá jinde.', ucfirst($udaj['popis']));
+
+                continue;
+            }
+            $zmeny[] = sprintf('%s → %s', $udaj['popis'], $nova);
+            // ⚠️ E-mail se MUSÍ změnit i na účtu. `getMailerAddress()` bere adresu účtu
+            // přednostně, takže při změně jen na kontaktu by pošta dál chodila na starou
+            // adresu — a účastník by se dožadoval, proč mu nic nechodí.
+            if (ContactDetailCategory::TYPE_EMAIL === $udaj['typ'] && null !== $ucet?->getId()) {
+                $zmeny[] = $this->ulozMailUctu($ucet->getId(), (string) $ucet->getEmail(), (string) $ucet->getUsername(), $nova);
+            }
+        }
+
+        $this->vyhodZCache($personId, $participantId);
+
+        foreach ($chyby as $chyba) {
+            $this->addFlash('error', $chyba);
+        }
+        if ([] === $zmeny) {
+            if ([] === $chyby) {
+                $this->addFlash('info', 'Žádná změna — údaje zůstaly stejné.');
+            }
+
+            return $this->zpetNaDetail($participantId);
+        }
+        $this->addFlash('success', sprintf('Upraveno u přihlášky #%d: %s.', $participantId, implode(', ', $zmeny)));
+
+        return $this->zpetNaDetail($participantId);
+    }
+
+    /**
+     * Zapíše jméno rozložené SKUTEČNÝM parserem entity (viz varování v `editContact()`).
+     *
+     * @return string popis změny do hlášky
+     */
+    private function ulozJmeno(int $personId, string $noveJmeno): string
+    {
+        $osoba = $this->em->find(Person::class, $personId);
+        if (!$osoba instanceof Person) {
+            return 'jméno';
+        }
+        $osoba->setName($noveJmeno);
+        // ⚠️ DVA samostatné UPDATE, ne jeden. Dědičnost je JOINED: `name`/`sortableName` sedí
+        // v tabulce kontaktu, ostatní části jména v tabulce osoby. Jeden DQL UPDATE přes obojí
+        // se nechoval správně — do `name` se uložilo jen křestní jméno („Test" místo
+        // „Test Kontaktovský", odhaleno testem 19. 8. 2026).
+        $this->em->createQuery(
+            'UPDATE '.AbstractContact::class.' c SET c.name = :name, c.sortableName = :sortable WHERE c.id = :id'
+        )
+            ->setParameter('name', $osoba->getName())
+            ->setParameter('sortable', $osoba->getSortableName())
+            ->setParameter('id', $personId)
+            ->execute();
+        $this->em->createQuery(
+            'UPDATE '.Person::class.' p SET p.givenName = :given, p.additionalName = :additional,'
+            .' p.familyName = :family, p.honorificPrefix = :prefix, p.honorificSuffix = :suffix,'
+            .' p.nickname = :nickname WHERE p.id = :id'
+        )
+            ->setParameter('given', $osoba->getGivenName())
+            ->setParameter('additional', $osoba->getAdditionalName())
+            ->setParameter('family', $osoba->getFamilyName())
+            ->setParameter('prefix', $osoba->getHonorificPrefix())
+            ->setParameter('suffix', $osoba->getHonorificSuffix())
+            ->setParameter('nickname', $osoba->getNickname())
+            ->setParameter('id', $personId)
+            ->execute();
+        // Entita zůstala „špinavá" po setName(); odpojíme ji, ať ji nechytí případný cizí flush.
+        $this->em->detach($osoba);
+
+        return sprintf('jméno → %s', $noveJmeno);
+    }
+
+    /**
+     * Srovná jméno na uživatelském účtu s kontaktem.
+     *
+     * `core_app_user` je JEDNA tabulka (žádná JOINED dědičnost jako u kontaktu), takže jediný
+     * UPDATE stačí. Rozklad na části zase dělá parser entity, ne tenhle kód.
+     */
+    private function ulozJmenoUctu(int $ucetId, string $noveJmeno): void
+    {
+        $ucet = $this->em->find(AppUser::class, $ucetId);
+        if (!$ucet instanceof AppUser) {
+            return;
+        }
+        $ucet->setName($noveJmeno);
+        $this->em->createQuery(
+            'UPDATE '.AppUser::class.' u SET u.name = :name, u.sortableName = :sortable,'
+            .' u.givenName = :given, u.additionalName = :additional, u.familyName = :family,'
+            .' u.honorificPrefix = :prefix, u.honorificSuffix = :suffix, u.nickname = :nickname'
+            .' WHERE u.id = :id'
+        )
+            ->setParameter('name', $ucet->getName())
+            ->setParameter('sortable', $ucet->getSortableName())
+            ->setParameter('given', $ucet->getGivenName())
+            ->setParameter('additional', $ucet->getAdditionalName())
+            ->setParameter('family', $ucet->getFamilyName())
+            ->setParameter('prefix', $ucet->getHonorificPrefix())
+            ->setParameter('suffix', $ucet->getHonorificSuffix())
+            ->setParameter('nickname', $ucet->getNickname())
+            ->setParameter('id', $ucetId)
+            ->execute();
+        $this->em->detach($ucet);
+        $this->em->getCache()?->evictEntity(AppUser::class, $ucetId);
+    }
+
+    /**
+     * Změní e-mail účtu — a s ním i přihlašovací jméno, POKUD bylo shodné se starým e-mailem.
+     *
+     * Většina účtů vzniká z přihlášky, takže `username` == e-mail; kdyby se změnil jen e-mail,
+     * zůstalo by přihlašovací jméno viset na staré adrese a působilo by to jako chyba.
+     * Vlastní přihlašovací jméno (např. `zakjakub`) se ale NEPŘEPISUJE — to by člověku
+     * změnilo účet pod rukama.
+     *
+     * @return string popis změny do hlášky
+     */
+    private function ulozMailUctu(int $ucetId, string $puvodniMail, string $puvodniLogin, string $novyMail): string
+    {
+        $menitLogin = '' !== $puvodniLogin && 0 === strcasecmp($puvodniLogin, $puvodniMail);
+        $dotaz = $this->em->createQuery(
+            $menitLogin
+                ? 'UPDATE '.AppUser::class.' u SET u.email = :mail, u.username = :mail WHERE u.id = :id'
+                : 'UPDATE '.AppUser::class.' u SET u.email = :mail WHERE u.id = :id'
+        );
+        $dotaz->setParameter('mail', $novyMail)->setParameter('id', $ucetId)->execute();
+        $this->em->getCache()?->evictEntity(AppUser::class, $ucetId);
+
+        return $menitLogin ? 'e-mail i přihlašovací jméno účtu' : 'e-mail účtu';
+    }
+
+    /**
+     * Přepíše obsah PRVNÍHO kontaktního údaje daného typu (e-mail / telefon).
+     *
+     * `getEmail()`/`getPhone()` čtou právě první záznam, takže se mění ten, který je všude vidět.
+     * Když kontakt údaj daného typu nemá, vrací null — zakládání nového záznamu (i s kategorií)
+     * sem nepatří, dělá se při registraci.
+     *
+     * @return string|null nová hodnota, nebo null když není co přepsat
+     */
+    private function ulozKontaktniUdaj(int $personId, string $typ, string $hodnota): ?string
+    {
+        /** @var list<array{id: int|string}> $radky */
+        $radky = $this->em->createQuery(
+            'SELECT d.id FROM '.ContactDetail::class.' d'
+            .' JOIN d.detailCategory c WHERE d.contact = :contact AND c.type = :typ'
+            .' ORDER BY d.id ASC'
+        )
+            ->setParameter('contact', $personId)
+            ->setParameter('typ', $typ)
+            ->setMaxResults(1)
+            ->getScalarResult();
+        if ([] === $radky) {
+            return null;
+        }
+        $id = (int) $radky[0]['id'];
+        $this->em->createQuery('UPDATE '.ContactDetail::class.' d SET d.content = :obsah WHERE d.id = :id')
+            ->setParameter('obsah', $hodnota)
+            ->setParameter('id', $id)
+            ->execute();
+        $cache = $this->em->getCache();
+        $cache?->evictEntity(ContactDetail::class, $id);
+
+        return $hodnota;
+    }
+
+    /**
+     * DQL UPDATE obchází L2 cache — vyhodit oba konce dědičnosti i přihlášku,
+     * jinak detail po přesměrování ukáže starou hodnotu (totéž řeší `setGender()`).
+     */
+    private function vyhodZCache(int $personId, int $participantId): void
+    {
+        $cache = $this->em->getCache();
+        if (null === $cache) {
+            return;
+        }
+        $cache->evictEntity(AbstractContact::class, $personId);
+        $cache->evictEntity(Person::class, $personId);
+        $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $participantId);
+    }
+
+    private function zpetNaDetail(int $participantId): RedirectResponse
+    {
         return new RedirectResponse($this->generateUrl(
             'oswis_org_oswis_calendar_web_admin_participant_detail',
             ['participantId' => $participantId],

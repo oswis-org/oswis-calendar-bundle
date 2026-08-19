@@ -74,6 +74,17 @@
             <b>Zaplaceno v&nbsp;plné výši</b>
         {% endif %}
     </li>
+    {# Platby se nenačítají okamžitě (bankovní výpis se zpracovává dávkově), takže kdo právě
+       zaplatil, vidí tady pořád dlužnou částku a bojí se, že se platba ztratila — nebo ji
+       pošle znovu. Ukazuje se JEN když opravdu něco zbývá. Formulace bez rodu. #}
+    {% if participant.remainingPrice > 0 %}
+        <li style="color: #495057;">
+            <small>
+                Platby se do systému načítají s několikadenním zpožděním. Pokud už máte zaplaceno,
+                částka se tu projeví během několika dní — posílat ji znovu není potřeba.
+            </small>
+        </li>
+    {% endif %}
     {% if participant.payments|length > 0 %}
         <li>
             <strong>Platby:</strong>

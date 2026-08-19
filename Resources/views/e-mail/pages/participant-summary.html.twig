@@ -87,6 +87,18 @@
                     <span itemprop="totalPrice">{{ participant.price }}</span>,-&nbsp;<span itemprop="priceCurrency" content="CZK">Kč</span>.
                 </mj-text>
             {% endif %}
+            {# Platby se nenačítají okamžitě — bankovní výpis se zpracovává dávkově. Bez téhle
+               věty lidé, kteří zaplatili hned po přihlášce, píšou týmu, že „platba nedorazila“,
+               nebo ji pošlou podruhé. Vykání i tykání řeší `f`, rod tu potřeba není. #}
+            <mj-text>
+                <small>
+                    Platby párujeme s&nbsp;několikadenním zpožděním, takže se
+                    {{ f ? 'Vaše' : 'Tvoje' }} platba objeví v&nbsp;přihlášce až za&nbsp;pár dní.
+                    {# Rod přes `{{ a }}` jako všude jinde v mailech; uvnitř řetězce by se NEVYHODNOTIL. #}
+                    Pokud {% if f %}jste už zaplatili{% else %}jsi už zaplatil{{ a }}{% endif %},
+                    není potřeba nic posílat znovu.
+                </small>
+            </mj-text>
         {% endif %}
     {% endblock message_payment_outer %}
 
