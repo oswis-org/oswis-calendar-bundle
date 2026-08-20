@@ -748,10 +748,10 @@ final class WebAdminParticipantsController extends AbstractController
      * člověka (duplicity) a chrání se před překlepem v id. Tady se peníze převádějí mezi LIDMI,
      * takže je to samostatná akce, **jen pro `ROLE_ADMIN`** a s vlastním potvrzením.
      *
-     * ⚠️ Bankovní údaje platby (`variableSymbol`, `externalId`, datum) se **nemění** — je to záznam
-     * o skutečném převodu z výpisu a je to audit stopa (viz `feedback_raw_payment_csv_keep`).
-     * Mění se jen to, komu je platba přiřazená; kdo, kdy a od koho ji převedl, se zapíše do
-     * interní poznámky platby, aby se to dalo dohledat i za rok.
+     * ⚠️ **Nepřesouvá se řádek platby.** Vzniknou DVĚ nové platby typu `internal`: záporná na
+     * zdrojové přihlášce a kladná na cílové — tak, jak to tým dělá i ručně (upřesnění usera
+     * 19. 8. 2026). Původní bankovní platba zůstane nedotčená, takže vazba na výpis drží
+     * a na zdrojové přihlášce je vidět, že tam peníze byly a kam odešly.
      *
      * Cíl se zadává **id přihlášky nebo e-mailem** — id se z jiné přihlášky opisuje špatně.
      */
@@ -779,35 +779,84 @@ final class WebAdminParticipantsController extends AbstractController
             return $this->zpetNaDetail($zdrojId);
         }
 
+        $castka = (float) $platba->getNumericValue();
+        if (0.0 === $castka) {
+            $this->addFlash('error', 'Nulovou platbu není co převádět.');
+
+            return $this->zpetNaDetail($zdrojId);
+        }
         $spojeni = $this->em->getConnection();
-        $stopa = sprintf(
-            '[%s] Platba převedena z přihlášky #%d na #%d (%s).',
-            new \DateTimeImmutable()->format('j. n. Y H:i'),
+        $ted = new \DateTimeImmutable();
+        $kdo = (string) ($this->getUser()?->getUserIdentifier() ?? 'neznámý admin');
+
+        // Tým to takhle dělá i ručně: na jedné přihlášce ZÁPORNÁ platba, na druhé KLADNÁ
+        // (upřesnění usera 19. 8. 2026). Typ `internal` už se v datech používá — 27 záporných
+        // plateb tohohle typu tam bylo i před touhle funkcí.
+        //
+        // ⚠️ PŮVODNÍ bankovní platba se NEMĚNÍ. Je to záznam ze skutečného výpisu; kdyby se
+        // přepsala nebo přesunula, ztratila by se vazba na banku a na zdrojové přihlášce by
+        // vypadalo, že tam peníze nikdy nebyly.
+        //
+        // ⚠️ `confirmed_by_mail_at` se vyplňuje SCHVÁLNĚ: cron rozesílá potvrzení každé platbě,
+        // která ho má prázdné (`findAwaitingConfirmationIds`), takže bez toho by oběma lidem
+        // odešel mail o „přijaté platbě" — u té záporné obzvlášť nesmyslný.
+        $vloz = static function (int $prihlaska, float $hodnota, string $poznamka) use ($spojeni, $ted): void {
+            $spojeni->executeStatement(
+                'INSERT INTO calendar_participant_payment'
+                .' (participant_id, numeric_value, type, note, date_time, created_at, updated_at, confirmed_by_mail_at)'
+                .' VALUES (:prihlaska, :hodnota, :typ, :poznamka, :ted, :ted, :ted, :ted)',
+                [
+                    'prihlaska' => $prihlaska,
+                    'hodnota'   => $hodnota,
+                    'typ'       => ParticipantPayment::TYPE_INTERNAL,
+                    'poznamka'  => $poznamka,
+                    'ted'       => $ted->format('Y-m-d H:i:s'),
+                ],
+            );
+        };
+        // Znění podle toho, jak si to tým píše ručně už od 2021 („PŘEVOD ZÁLOHY NA VERONIKU
+        // TURKOVOU" / „PŘEVOD ZÁLOHY OD ŠARLOTY ŠPUNDOVÉ") — tedy se JMÉNEM, ne jen číslem
+        // přihlášky. Číslo se přidává navíc, ať je vazba jednoznačná i u dvou stejných jmen.
+        $jmenoZdroje = $this->jmenoPrihlasky($zdrojId) ?? ('přihláška #'.$zdrojId);
+        $jmenoCile = $this->jmenoPrihlasky($cilId) ?? ('přihláška #'.$cilId);
+        $vloz(
             $zdrojId,
-            $cilId,
-            (string) ($this->getUser()?->getUserIdentifier() ?? 'neznámý admin'),
+            -$castka,
+            sprintf('Převod zálohy na %s (#%d), %s, %s.', $jmenoCile, $cilId, $kdo, $ted->format('j. n. Y')),
         );
-        $spojeni->executeStatement(
-            'UPDATE calendar_participant_payment'
-            .' SET participant_id = :cil, internal_note = TRIM(CONCAT(COALESCE(internal_note, \'\'), :stopa))'
-            .' WHERE id = :id',
-            ['cil' => $cilId, 'stopa' => "\n".$stopa, 'id' => $paymentId],
+        $vloz(
+            $cilId,
+            $castka,
+            sprintf('Převod zálohy od %s (#%d), %s, %s.', $jmenoZdroje, $zdrojId, $kdo, $ted->format('j. n. Y')),
         );
 
         $cache = $this->em->getCache();
         if (null !== $cache) {
-            $cache->evictEntity(ParticipantPayment::class, $paymentId);
             $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $zdrojId);
             $cache->evictEntity(\OswisOrg\OswisCalendarBundle\Entity\Participant\Participant::class, $cilId);
         }
-        $this->logger->info($stopa);
+        $this->logger->info(sprintf('Převod zálohy %s Kč z přihlášky #%d na #%d (%s).', $castka, $zdrojId, $cilId, $kdo));
         $this->addFlash('success', sprintf(
-            'Platba %s Kč převedena na přihlášku #%d. Bankovní údaje (VS, datum) zůstaly beze změny — jsou to údaje ze skutečného převodu.',
-            (string) $platba->getNumericValue(),
+            'Převedeno %s Kč na přihlášku #%d — na téhle přihlášce přibyla záporná platba, na cílové kladná.'
+            .' Původní bankovní platba zůstala beze změny a účastníkům se nic nerozesílalo.',
+            $castka,
             $cilId,
         ));
 
         return $this->zpetNaDetail($zdrojId);
+    }
+
+    /** Jméno člověka za přihláškou — do poznámky u převodu, aby byla čitelná i bez proklikávání. */
+    private function jmenoPrihlasky(int $participantId): ?string
+    {
+        $jmeno = $this->em->getConnection()->fetchOne(
+            'SELECT c.name FROM calendar_participant_contact pc'
+            .' JOIN address_book_abstract_contact c ON c.id = pc.contact_id'
+            .' WHERE pc.participant_id = :id AND pc.deleted_at IS NULL ORDER BY pc.id ASC LIMIT 1',
+            ['id' => $participantId],
+        );
+
+        return is_string($jmeno) && '' !== $jmeno ? $jmeno : null;
     }
 
     /**

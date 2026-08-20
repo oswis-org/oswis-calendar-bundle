@@ -62,7 +62,8 @@
                         <td><code>{{ role.type|default('—') }}</code></td>
                         <td class="text-end">{{ used }}</td>
                         <td class="text-end" style="white-space: nowrap;">
-                            <a class="btn btn-sm btn-outline-secondary"
+                            {# Modrý obrys jako „Upravit" všude jinde v adminu (10× proti tomuhle jednomu šedému). #}
+                              <a class="btn btn-sm btn-outline-primary"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_staff_role_edit', { id: role.id }) }}">Upravit</a>
                             {% if used == 0 %}
                                 <form method="post" style="display: inline;"

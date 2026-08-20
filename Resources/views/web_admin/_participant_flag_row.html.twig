@@ -52,7 +52,9 @@
                 {% endfor %}
             </div>
             <div class="oa-flag__actions">
-                <button type="submit" class="btn btn-sm btn-primary">Uložit</button>
+                {# Modrý obrys jako ostatní „Uložit" na detailu přihlášky (pohlaví, údaje kontaktu,
+   partial-stay). Tenhle jediný byl plný a na jedné obrazovce tak byla dvě různá uložení. #}
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
                 <label class="oa-flag__override" title="Obejít naplněnou kapacitu">
                     {# Zaškrtnutí musí naplněné volby opravdu ZPŘÍSTUPNIT. Dřív jen odeslalo příznak
                        serveru, jenže volba zůstala `disabled`, takže ji nešlo ani vybrat, ani odeslat —
