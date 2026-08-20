@@ -1084,3 +1084,21 @@ services:
     autowire: true
     autoconfigure: true
     tags: [ 'console.command' ]
+
+  # Repozitář odběrů push — jako ostatní repozitáře musí být registrovaný ručně,
+  # jinak ho autowire kontroleru nenajde.
+  OswisOrg\OswisCalendarBundle\Repository\Push\PushSubscriptionRepository:
+    autowire: true
+    autoconfigure: true
+    tags: ['doctrine.repository_service']
+
+  # ── Push notifikace ───────────────────────────────────────────────────────────
+  # VAPID klíče se NEDÁVAJÍ do repozitáře — berou se z prostředí. Když nejsou nastavené,
+  # služba se tiše vypne (viz PushNotificationService::jeNastaveno) a nástěnka funguje dál
+  # jako čistá nástěnka. Klíče se vyrobí jednou:
+  #   php -r 'require "vendor/autoload.php"; print_r(Minishlink\WebPush\VAPID::createVapidKeys());'
+  OswisOrg\OswisCalendarBundle\Service\Push\PushNotificationService:
+    arguments:
+      $vapidPublicKey: '%env(default::PUSH_VAPID_PUBLIC_KEY)%'
+      $vapidPrivateKey: '%env(default::PUSH_VAPID_PRIVATE_KEY)%'
+      $vapidSubject: '%env(default::PUSH_VAPID_SUBJECT)%'

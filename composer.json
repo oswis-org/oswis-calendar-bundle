@@ -32,11 +32,16 @@
     "ext-iconv": "*",
     "bigit/vokativ": "dev-zakjakub-master",
     "endroid/qr-code": "^6.1",
+    "minishlink/web-push": "^9.0 || ^10.0 || ^11.0",
+    "nyholm/psr7": "^1.8",
     "oswis-org/oswis-address-book-bundle": "^0.1.0 || ^0.1.1",
     "oswis-org/oswis-core-bundle": "^0.2.42",
+    "psr/http-client": "^1.0",
+    "psr/http-factory": "^1.0",
     "rikudou/czqrpayment": "^v5.0",
     "symfony/expression-language": "^8.1",
     "symfony/html-sanitizer": "^8.1",
+    "symfony/http-client": "^8.1",
     "webklex/php-imap": "~6.2.0"
   },
   "require-dev": {

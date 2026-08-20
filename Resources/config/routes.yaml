@@ -562,6 +562,23 @@ oswis_org_oswis_calendar_web_admin_participant_set_gender:
     participantId: '\d+'
   methods: [POST]
 
+# ── Push notifikace ─────────────────────────────────────────────────────────────
+# Appka si vyžádá svolení, dostane od prohlížeče adresu schránky a klíče a pošle je sem.
+oswis_org_oswis_calendar_api_push_key:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\PushSubscriptionController::verejnyKlic
+  path: "/api/push/verejny-klic"
+  methods: [GET]
+
+oswis_org_oswis_calendar_api_push_subscribe:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\PushSubscriptionController::registruj
+  path: "/api/push/odber"
+  methods: [POST]
+
+oswis_org_oswis_calendar_api_push_unsubscribe:
+  controller: OswisOrg\OswisCalendarBundle\Controller\Api\PushSubscriptionController::zrus
+  path: "/api/push/odber/zrusit"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_payment_transfer:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::transferPayment
   path: "/web_admin/platby/{paymentId}/prevest"

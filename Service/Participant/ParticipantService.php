@@ -423,15 +423,194 @@ class ParticipantService
      * (flag groups, registrations) — those keep their original deletedAt timestamps.
      * Admin must restore them separately if needed.
      */
+    /**
+     * Tolerance v sekundách, ve které se smazání child záznamu považuje za součást téhož úkonu.
+     *
+     * Registrace i příznaky se mažou v jedné transakci s přihláškou, takže mají prakticky shodný
+     * čas — u #3449 na produkci byl u všech pěti záznamů shodný na vteřinu. Pár sekund rezervy
+     * pokryje pomalý flush.
+     */
+    private const OBNOVA_TOLERANCE_SEKUND = 10;
+
+    /**
+     * Obnoví soft-smazanou přihlášku VČETNĚ toho, co se smazalo spolu s ní.
+     *
+     * ⚠️ Dřív se obnovila jen samotná přihláška (`setDeletedAt(null)`) a registrace i příznaky
+     * zůstaly smazané. Výsledek byl HORŠÍ než smazaná přihláška: na produkci #3449 (Natálie
+     * Réblová, nalezeno 20. 8. 2026) přihláška vypadala platně a živě, ale měla **cenu 0 Kč,
+     * hlásila „Zaplaceno v plné výši" a neměla ubytování, tričko, fakultu ani souhlas s evidencí
+     * dat**. Účastnice by dorazila na akci, na kterou v systému nebyla pořádně přihlášená, a
+     * v součtech pro kuchyň i ubytování by chyběla. Nebyla to náhoda — `delete()` tyhle
+     * kolekce záměrně nechává být (viz jeho komentář) a obnova to nikdy nedorovnala.
+     *
+     * **Obnoví se JEN to, co bylo smazané spolu s přihláškou** (shodný čas ± tolerance).
+     * Co člověk smazal dřív a záměrně — třeba starou velikost trička po výměně — zůstane
+     * smazané. Proto se čas smazání musí přečíst DŘÍV, než se vynuluje.
+     */
     public function restore(Participant $participant): void
     {
         if (!$participant->isDeleted()) {
             return;
         }
+        $smazanoV = $participant->getDeletedAt();
         $participant->setDeletedAt(null);
+        $obnoveno = null !== $smazanoV ? $this->obnovSmazaneSpolu($participant, $smazanoV) : 0;
         $this->em->persist($participant);
         $this->em->flush();
-        $this->logger->info("Participant ({$participant->getId()}) restored from soft-delete.");
+        $this->logger->info(
+            "Participant ({$participant->getId()}) restored from soft-delete; child records restored: {$obnoveno}."
+        );
+        // Symetrie s `delete()`: zrušení přihlášky účastníkovi mail pošle, obnovení mu ho dosud
+        // NEPOSLALO — člověk se tedy nedozvěděl, že mu přihláška zase platí, a poslední zpráva,
+        // kterou od nás měl, bylo „Zrušení přihlášky". `notifyParticipantChanged()` si sám vybere
+        // správný typ (souhrn / rozdíl oproti poslednímu mailu).
+        // Best-effort — selhání mailu nesmí shodit obnovu.
+        try {
+            $this->participantMailService->notifyParticipantChanged($participant);
+        } catch (\Throwable $e) {
+            $this->logger->error(sprintf(
+                'Restore notice for participant #%d failed: %s',
+                $participant->getId() ?? 0,
+                $e->getMessage(),
+            ));
+        }
+    }
+
+    /**
+     * Dorovná přihlášku, která už byla obnovená STARÝM způsobem (jen `deletedAt = null`) a přišla
+     * tím o registraci a příznaky.
+     *
+     * Existuje kvůli #3449 na produkci (20. 8. 2026): přihláška vypadala platně, ale měla cenu
+     * 0 Kč a hlásila „Zaplaceno v plné výši“. Přes `restore()` už ji dorovnat nejde — není
+     * smazaná, takže by se hned vrátil. Čas smazání se proto bere ze samotných child záznamů.
+     *
+     * @return int kolik záznamů se obnovilo
+     */
+    public function dorovnejPoStareObnove(Participant $participant, bool $nasucho = false): int
+    {
+        if ($participant->isDeleted()) {
+            return 0;
+        }
+        $smazanoV = $this->nejcastejsiCasSmazaniDeti($participant);
+        if (null === $smazanoV) {
+            return 0;
+        }
+        $obnoveno = $this->obnovSmazaneSpolu($participant, $smazanoV, $nasucho);
+        if ($nasucho || 0 === $obnoveno) {
+            return $obnoveno;
+        }
+        $this->em->flush();
+        $this->logger->info(
+            "Participant ({$participant->getId()}) children re-linked after legacy restore: {$obnoveno}."
+        );
+        try {
+            $this->participantMailService->notifyParticipantChanged($participant);
+        } catch (\Throwable $e) {
+            $this->logger->error(sprintf(
+                'Re-link notice for participant #%d failed: %s',
+                $participant->getId() ?? 0,
+                $e->getMessage(),
+            ));
+        }
+
+        return $obnoveno;
+    }
+
+    /**
+     * Okamžik, ve kterém zmizela většina child záznamů — tedy kdy se přihláška rušila.
+     *
+     * Bere se nejčastější čas, ne nejnovější: kdyby tým mezitím zrušil ještě jeden příznak
+     * zvlášť, nesmí ten osamocený čas přebít ten hromadný.
+     */
+    private function nejcastejsiCasSmazaniDeti(Participant $participant): ?\DateTimeInterface
+    {
+        /** @var array<int, array{cas: \DateTimeInterface, pocet: int}> $vyskyty */
+        $vyskyty = [];
+        $seber = static function (?\DateTimeInterface $kdy) use (&$vyskyty): void {
+            if (null === $kdy) {
+                return;
+            }
+            $klic = $kdy->getTimestamp();
+            $vyskyty[$klic] ??= ['cas' => $kdy, 'pocet' => 0];
+            ++$vyskyty[$klic]['pocet'];
+        };
+        foreach ($participant->getParticipantRegistrations() as $registrace) {
+            $seber($registrace->getDeletedAt());
+        }
+        foreach ($participant->getFlagGroups() as $skupina) {
+            $seber($skupina->getDeletedAt());
+        }
+        foreach ($participant->getParticipantFlags(null, null, false) as $priznak) {
+            $seber($priznak->getDeletedAt());
+        }
+        if ([] === $vyskyty) {
+            return null;
+        }
+        usort($vyskyty, static fn (array $a, array $b) => $b['pocet'] <=> $a['pocet']);
+
+        return $vyskyty[0]['cas'];
+    }
+
+    /**
+     * Zruší smazání u registrací a příznaků, které zmizely ve stejném okamžiku jako přihláška.
+     *
+     * @return int kolik záznamů se obnovilo (jde do logu, ať je po ruce doklad)
+     */
+    private function obnovSmazaneSpolu(
+        Participant $participant,
+        \DateTimeInterface $smazanoV,
+        bool $nasucho = false
+    ): int {
+        $od = (new \DateTimeImmutable('@'.$smazanoV->getTimestamp()))
+            ->modify('-'.self::OBNOVA_TOLERANCE_SEKUND.' seconds');
+        $do = (new \DateTimeImmutable('@'.$smazanoV->getTimestamp()))
+            ->modify('+'.self::OBNOVA_TOLERANCE_SEKUND.' seconds');
+        $obnoveno = 0;
+
+        foreach ($participant->getParticipantRegistrations() as $registrace) {
+            if ($this->smazanoVeStejnouChvili($registrace->getDeletedAt(), $od, $do)) {
+                if (!$nasucho) {
+                    $registrace->setDeletedAt(null);
+                }
+                ++$obnoveno;
+            }
+        }
+        // ⚠️ SKUPINY příznaků se musí obnovit TAKY — a dřív než příznaky samotné.
+        // `getParticipantFlags(..., onlyActive: true)` filtruje přes skupinu, takže smazaná
+        // skupina schová i příznaky, které smazané nejsou. Přesně tohle mi 20. 8. 2026 poškodilo
+        // testovací klon: příznaky vypadaly živě, ale `getParticipantFlags()` vracelo prázdno
+        // a spadl na tom nesouvisející test.
+        foreach ($participant->getFlagGroups() as $skupina) {
+            if ($this->smazanoVeStejnouChvili($skupina->getDeletedAt(), $od, $do)) {
+                if (!$nasucho) {
+                    $skupina->setDeletedAt(null);
+                }
+                ++$obnoveno;
+            }
+        }
+        foreach ($participant->getParticipantFlags(null, null, false) as $priznak) {
+            if ($this->smazanoVeStejnouChvili($priznak->getDeletedAt(), $od, $do)) {
+                if (!$nasucho) {
+                    $priznak->setDeletedAt(null);
+                }
+                ++$obnoveno;
+            }
+        }
+
+        return $obnoveno;
+    }
+
+    private function smazanoVeStejnouChvili(
+        ?\DateTimeInterface $kdy,
+        \DateTimeImmutable $od,
+        \DateTimeImmutable $do
+    ): bool {
+        if (null === $kdy) {
+            return false;
+        }
+        $cas = $kdy->getTimestamp();
+
+        return $cas >= $od->getTimestamp() && $cas <= $do->getTimestamp();
     }
 
     /**

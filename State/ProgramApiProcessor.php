@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\IriConverterInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement;
+use OswisOrg\OswisCalendarBundle\Service\Push\PushNotificationService;
+use Psr\Log\LoggerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\ParticipantMealChoice;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
@@ -39,14 +41,31 @@ final class ProgramApiProcessor implements ProcessorInterface
         private readonly ProcessorInterface $persistProcessor,
         private readonly IriConverterInterface $iriConverter,
         private readonly RequestStack $requestStack,
+        private readonly PushNotificationService $push,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $this->resolveRelations($data);
+        $vysledek = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        // Push se odesílá AŽ PO uložení: dokud vzkaz není v databázi, nemá smysl ho rozesílat
+        // (a `pushSentAt` by se nemělo kam zapsat). Služba si sama pohlídá, že jde o zveřejněný
+        // vzkaz s vyžádaným pushem, který se ještě neposílal — takže PUT nic nerozešle podruhé.
+        //
+        // ⚠️ Chyba při odesílání NESMÍ shodit uložení vzkazu. Vzkaz na nástěnce je to podstatné;
+        // push je jen druhá cesta doručení a když selže, tým to pozná podle prázdného `pushSentAt`.
+        if ($vysledek instanceof Announcement) {
+            try {
+                $this->push->odesliVzkaz($vysledek);
+            } catch (\Throwable $e) {
+                $this->logger->error('Vzkaz uložen, ale push se nepodařilo odeslat: '.$e->getMessage());
+            }
+        }
+
+        return $vysledek;
     }
 
     /**
