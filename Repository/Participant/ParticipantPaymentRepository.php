@@ -113,6 +113,13 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Záporné položky do této výše (v Kč) jsou poplatky stržené bankou, ne vratky — nechodí
+     * za ně potvrzení. Hranice musí odpovídat prahu v mailových šablonách (infomail píše
+     * „drobný nedoplatek … dořešíme na místě"), jinak by si texty odporovaly.
+     */
+    public const HRANICE_POPLATKU_BANKY = 150;
+
+    /**
      * Platby, které čekají na potvrzovací e-mail — podklad pro odložené odesílání z cronu
      * (import je kvůli 504 už neposílá synchronně, {@see ParticipantPaymentsImportService}).
      *
@@ -122,6 +129,17 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
      * Bez stropu na stáří by první běh cronu rozeslal těmto lidem potvrzení k platbám i šest
      * let starým. Ty staré tam zůstaly z různých důvodů (chybějící appUser, spadlá šablona…)
      * a rozhodně se nemají dohánět automaticky.
+     *
+     * ⚠️ Drobné ZÁPORNÉ položky se přeskakují. Banka si při zahraničním převodu strhne
+     * poplatek (typicky 40–100 Kč) a ten se naimportuje jako záporná platba účastníka.
+     * Bez tohohle filtru za něj odejde e-mail „Vrácení/oprava platby"
+     * ({@see ParticipantMailService::sendPaymentConfirmation()} volí titulek podle znaménka),
+     * což příjemce jen zmate — nic se mu nevrací a rozdíl se řeší na místě při příjezdu.
+     * Ověřeno na produkci 21. 8. 2026: 3 takové e-maily letos odešly. Skutečné vratky za
+     * zrušené přihlášky (−1690 až −6390) jsou pod hranicí a potvrzení dostávají dál.
+     *
+     * Filtruje se TADY, ne až při odesílání: jinak by je cron à 5 minut bral jako kandidáty
+     * pořád dokola, dokud nezestárnou přes `$notBefore`.
      *
      * Vrací ID, ne entity: odesílání pak načítá po jednom a průběžně detachuje, aby dávka
      * nedržela celý objektový graf (Participant má EAGER vazby — známý OOM vzorec automailů).
@@ -135,6 +153,8 @@ class ParticipantPaymentRepository extends ServiceEntityRepository
             ->andWhere('p.participant IS NOT NULL')
             ->andWhere('p.confirmedByMailAt IS NULL')
             ->andWhere('p.createdAt >= :notBefore')->setParameter('notBefore', $notBefore)
+            ->andWhere('p.numericValue > 0 OR p.numericValue <= :poplatek')
+            ->setParameter('poplatek', -self::HRANICE_POPLATKU_BANKY)
             ->orderBy('p.id', 'ASC')
             ->setMaxResults(max(1, $limit))
             ->getQuery()->getScalarResult();

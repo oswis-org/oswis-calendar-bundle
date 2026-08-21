@@ -164,11 +164,24 @@ class ParticipantPaymentService
                     $exception->getMessage(),
                 ));
             }
-            // Průběžný detach: Participant má EAGER vazby, takže bez tohohle by dávka držela
-            // celý objektový graf (známý OOM vzorec automailů).
-            if ($this->em->contains($payment)) {
-                $this->em->detach($payment);
-            }
+            // Průběžné uvolnění paměti: Participant má EAGER vazby, takže bez tohohle by dávka
+            // držela celý objektový graf (známý OOM vzorec automailů).
+            //
+            // ⚠️ NESMÍ se použít `$em->detach($payment)`. Platba zůstane v kolekci
+            // `Participant::$payments`, která má `cascade: ['all']` — při dalším flush ji
+            // Doctrine vyhodnotí jako NOVOU a pokusí se ji vložit. Narazí na unikátní index
+            // `uniq_payment_external_id` (ten, co vznikl po incidentu 16. 8. 2026), vyhodí
+            // výjimku a tím ZAVŘE EntityManager. Zbytek dávky pak spadne na „EntityManager
+            // is closed", jenže e-mail už je odeslaný přes SMTP a `confirmedByMailAt` se
+            // neuloží → platba zůstane ve frontě a příští tick pošle TÝŽ e-mail znovu.
+            // Naměřeno na produkci 21. 8. 2026: 17 běhů po sobě, každý poslal jedno
+            // potvrzení navíc, které se nezapsalo.
+            //
+            // `clear()` je proti tomu bezpečný: identity map se vyprázdní celá, takže po něm
+            // nezůstane žádná polovičatě odpojená entita. Další iterace si platbu načte
+            // znovu podle ID ({@see ParticipantPaymentRepository::findAwaitingConfirmationIds}
+            // vrací ID právě proto).
+            $this->em->clear();
         }
 
         return $result;
