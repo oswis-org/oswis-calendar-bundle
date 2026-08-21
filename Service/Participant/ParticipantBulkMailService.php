@@ -145,7 +145,24 @@ class ParticipantBulkMailService
                     ++$failed;
                 }
                 $bulk->setProcessedCount($start + (int) $position + 1);
-                $this->em->flush();
+                try {
+                    $this->em->flush();
+                } catch (\Throwable $cursorError) {
+                    // Kurzor se nezapsal — typicky proto, že se EntityManager zavřel dřívější
+                    // chybou. Dávku ukončíme hned: bez tohohle by výjimka probublala ven,
+                    // drain by skončil neúspěchem a další tick by začal na STARÉM kurzoru.
+                    // Duplicitní odeslání hlídá test výš, tady jde o to skončit čistě
+                    // a nechat problém vidět v logu.
+                    $this->logger->critical(sprintf(
+                        'Bulk #%d: zápis kurzoru na pozici %d selhal (%s) — dávka ukončena, '
+                        .'zbytek se doručí až po nápravě.',
+                        $bulk->getId() ?? 0,
+                        $start + (int) $position + 1,
+                        $cursorError->getMessage(),
+                    ));
+
+                    break;
+                }
             }
 
             if ($bulk->getProcessedCount() >= $bulk->getTotalCount()) {
@@ -170,6 +187,23 @@ class ParticipantBulkMailService
     private function sendToParticipant(ParticipantMailBulk $bulk, Participant $participant): bool
     {
         $type = sprintf('ad-hoc-bulk-%d', $bulk->getId() ?? 0);
+
+        // Pojistka „nikdy dvakrát". Kurzor `processedCount` se zapisuje AŽ PO odeslání, takže
+        // kdyby ten zápis selhal (zavřený EntityManager), příští drain by týž slice poslal
+        // znovu. Přesně tak 21. 8. 2026 dostalo 17 lidí dvakrát potvrzení platby
+        // ({@see ParticipantPaymentService::sendPendingConfirmations()}). Tenhle test se ptá
+        // DAT, ne proměnné v paměti: existuje-li už odeslaný mail tohoto bulku, druhý nepošleme.
+        // Vrací true = „doručeno", aby kurzor postoupil a dávka se nezasekla.
+        if ($participant->hasEMailOfType($type)) {
+            $this->logger->info(sprintf(
+                'Bulk #%d → participant #%d: e-mail už odeslán dřív, přeskočeno (ochrana proti duplicitě).',
+                $bulk->getId() ?? 0,
+                $participant->getId() ?? 0,
+            ));
+
+            return true;
+        }
+
         $usesTemplate = $bulk->hasTemplate();
         $anyDelivered = false;
 
