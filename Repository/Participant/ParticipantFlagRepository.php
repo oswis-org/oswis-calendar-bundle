@@ -12,6 +12,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Exception;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantFlag;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
 
@@ -68,11 +69,36 @@ class ParticipantFlagRepository extends EntityRepository
         }
     }
 
+    /**
+     * Vyřazení zrušených záznamů — na VŠECH třech úrovních, ne jen na příznaku samotném.
+     *
+     * ⚠️ Tady byla dlouho díra, kvůli které cachovaná obsazenost trvale rostla a nikdy neklesla:
+     * filtrovalo se pouze `item.deletedAt`, jenže při zrušení přihlášky se soft-delete zapíše
+     * na PŘIHLÁŠKU — její příznaky zůstanou „živé" a počítaly se dál. Čítač tak zahrnoval i
+     * místa po zrušených lidech a kontrola kapacity pak odmítala zájemce, pro které místo bylo.
+     * Naměřeno na klonu 22. 8. 2026: 28 nabídek rozjetých, všechny nafouknuté (až o 10).
+     *
+     * Totéž platí pro skupinu příznaků, která se soft-mazává samostatně (změna kategorie).
+     */
     private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
-        if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
-            $queryBuilder->andWhere('item.deletedAt IS NULL');
+        if (!empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
+            return;
         }
+        $queryBuilder->andWhere('item.deletedAt IS NULL')
+                     ->leftJoin('item.participantFlagGroup', 'flagGroupForDeleted')
+                     ->andWhere('flagGroupForDeleted.deletedAt IS NULL');
+
+        /*
+         * Přihláška se musí ověřit PODDOTAZEM: vazba Participant → flagGroups je jednosměrná
+         * ManyToMany, takže ze skupiny příznaků na přihlášku joinem nedosáhneme.
+         */
+        $queryBuilder->andWhere(
+            'EXISTS (SELECT 1 FROM '.Participant::class.' participantForDeleted '
+            .'JOIN participantForDeleted.flagGroups flagGroupOfParticipant '
+            .'WHERE flagGroupOfParticipant = item.participantFlagGroup '
+            .'AND participantForDeleted.deletedAt IS NULL)',
+        );
     }
 
     private function addLimit(QueryBuilder $queryBuilder, ?int $limit = null, ?int $offset = null): void

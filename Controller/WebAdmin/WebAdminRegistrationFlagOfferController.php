@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Capacity;
 use OswisOrg\OswisCalendarBundle\Entity\NonPersistent\Price;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlagOffer;
@@ -29,6 +30,7 @@ final class WebAdminRegistrationFlagOfferController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -38,6 +40,11 @@ final class WebAdminRegistrationFlagOfferController extends AbstractController
         if (!$offer instanceof RegistrationFlagOffer) {
             throw $this->createNotFoundException('Příznak #'.$id.' nenalezen.');
         }
+
+        // Původní kapacita PŘED zpracováním formuláře — po `handleRequest()` už je v entitě
+        // nová hodnota a stará je nenávratně pryč.
+        $puvodniZaklad = $offer->getBaseCapacity();
+        $puvodniPlna = $offer->getFullCapacity();
 
         $form = $this->createForm(RegistrationFlagOfferEditType::class, $offer);
         $form->handleRequest($request);
@@ -56,6 +63,29 @@ final class WebAdminRegistrationFlagOfferController extends AbstractController
             ));
             $this->em->persist($offer);
             $this->em->flush();
+
+            /*
+             * Změna kapacity se ZAZNAMENÁVÁ. Historie se nikde neukládá, takže když se později
+             * ptáme „jak mohla vzniknout přeplněná kapacita", nedá se zjistit, jaký strop platil
+             * v době registrace — a bez toho je každé vysvětlení jen dohad (naráženo 22. 8. 2026
+             * u kempu 186/185). Obsazenost se loguje s nimi, ať je vidět, jestli nová hodnota
+             * sedí se skutečností už v okamžiku uložení.
+             */
+            if ($puvodniZaklad !== $offer->getBaseCapacity() || $puvodniPlna !== $offer->getFullCapacity()) {
+                $this->logger->info(sprintf(
+                    'KAPACITA PŘÍZNAKU: #%d „%s" změněna ze základní %s / plné %s na základní %s / plnou %s '
+                    .'(obsazeno %d; upravil %s).',
+                    $id,
+                    $offer->getName() ?? '',
+                    $puvodniZaklad ?? 'neomezeno',
+                    $puvodniPlna ?? 'neomezeno',
+                    $offer->getBaseCapacity() ?? 'neomezeno',
+                    $offer->getFullCapacity() ?? 'neomezeno',
+                    $offer->getUsageInt(),
+                    $this->getUser()?->getUserIdentifier() ?? 'neznámý',
+                ));
+            }
+
             $this->addFlash('success', sprintf('Příznak „%s" uložen.', $offer->getName() ?? '#'.$id));
 
             // Redirect to a parent — flag offers don't expose their owning

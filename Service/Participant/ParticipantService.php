@@ -222,6 +222,7 @@ class ParticipantService
                     throw new EventCapacityExceededException($regRange->getName());
                 }
             }
+            $this->zkontrolujKapacituPriznaku($participant);
             $this->em->persist($participant);
             $participant->updateCachedColumns();
             // Flush the new participant (and, by cascade, its ParticipantRegistration + flags)
@@ -254,6 +255,44 @@ class ParticipantService
         }
 
         return $participant;
+    }
+
+    /**
+     * Kapacita příznaků (ubytování, trička…) POD ZÁMKEM, uvnitř registrační transakce.
+     *
+     * ⚠️ Proč to nestačí kontrolovat dřív: {@see ParticipantController} volá
+     * `setParticipantFlags(..., onlySimulate: true)` PŘED transakcí a bez zámku, takže dvě
+     * souběžné registrace obě přečtou „ještě je místo" a obě zapíšou. Turnus se tu proti tomu
+     * chrání zámkem už dlouho, příznaky ne — a právě u nich je strop tvrdý (kemp, hotel).
+     *
+     * Vzor je převzatý z {@see ParticipantFlagUpdateService}, který to u ADMINSKÉ editace dělá
+     * správně: zamknout v ustáleném pořadí podle id (jinak si dvě transakce se zámky v opačném
+     * pořadí navzájem zablokují), pak `refresh()` — bez něj by se kontrolovalo proti hodnotě
+     * načtené PŘED zámkem, tedy proti témuž zastaralému číslu, kvůli kterému se zamyká.
+     *
+     * @throws FlagCapacityExceededException
+     */
+    private function zkontrolujKapacituPriznaku(Participant $participant): void
+    {
+        $nabidky = [];
+        foreach ($participant->getParticipantFlags(null, null, true) as $participantFlag) {
+            $nabidka = $participantFlag->getFlagOffer();
+            $id = $nabidka?->getId();
+            if (null !== $nabidka && null !== $id) {
+                $nabidky[$id] ??= ['nabidka' => $nabidka, 'pocet' => 0];
+                $nabidky[$id]['pocet']++;
+            }
+        }
+        ksort($nabidky);
+        foreach ($nabidky as $polozka) {
+            $nabidka = $polozka['nabidka'];
+            $this->em->lock($nabidka, LockMode::PESSIMISTIC_WRITE);
+            $this->em->refresh($nabidka);
+            $zbyva = $nabidka->getRemainingCapacity();
+            if (null !== $zbyva && $zbyva < $polozka['pocet']) {
+                throw new FlagCapacityExceededException($nabidka->getName());
+            }
+        }
     }
 
     final public function getRepository(): ParticipantRepository
@@ -457,6 +496,10 @@ class ParticipantService
         $obnoveno = null !== $smazanoV ? $this->obnovSmazaneSpolu($participant, $smazanoV) : 0;
         $this->em->persist($participant);
         $this->em->flush();
+        // ⚠️ Bez přepočtu zůstane čítač NIŽŠÍ než skutečnost — obnovená přihláška zabere místo,
+        // o kterém kontrola kapacity neví, a pustí o jednoho navíc. Tudy vzniká přeplnění, které
+        // se samo zahladí (nejbližší registrace čítač přepíše), takže se špatně dohledává.
+        $this->prepocitejObsazenost($participant);
         $this->logger->info(
             "Participant ({$participant->getId()}) restored from soft-delete; child records restored: {$obnoveno}."
         );
@@ -619,6 +662,37 @@ class ParticipantService
      * Child collections (flag groups, registrations) are left untouched — they keep their
      * own deletedAt state, mirroring the asymmetric restore() behaviour.
      */
+    /**
+     * Přepočte cachovanou obsazenost všech nabídek, kterých se přihláška týká.
+     *
+     * Kontrola kapacity čte cachované sloupce (`base_usage` / `full_usage`), ne skutečnost —
+     * kvůli výkonu. Každá cesta, která přihlášku přidá, odebere nebo vrátí, je proto povinná
+     * čítač srovnat; jinak lže až do nejbližší registrace, která ho přepíše. Právě proto se
+     * přeplněná kapacita špatně dohledává: stopa se sama zahladí.
+     *
+     * Volá se AŽ PO `flush()`: přepočet čte potvrzené řádky z databáze, takže před flushem by
+     * právě zapsanou změnu minul (Doctrine ORM 3 před DQL dotazem automaticky neflushuje).
+     */
+    private function prepocitejObsazenost(Participant $participant): void
+    {
+        try {
+            $this->flagRangeService->updateUsages($participant);
+            $offer = $participant->getOffer();
+            if (null !== $offer) {
+                $this->registrationOfferService->updateUsage($offer);
+            }
+            $this->em->flush();
+        } catch (\Throwable $e) {
+            // Přepočet nesmí shodit samotné smazání/obnovení — ale musí být VIDĚT, že čítač
+            // zůstal nesrovnaný, jinak se to projeví až u někoho úplně jiného.
+            $this->logger->error(sprintf(
+                'Přepočet obsazenosti po změně přihlášky #%d selhal (čítač kapacity může být nesprávný): %s',
+                $participant->getId() ?? 0,
+                $e->getMessage(),
+            ));
+        }
+    }
+
     public function delete(Participant $participant): void
     {
         if ($participant->isDeleted()) {
@@ -627,6 +701,9 @@ class ParticipantService
         $participant->delete();
         $this->em->persist($participant);
         $this->em->flush();
+        // Bez přepočtu zůstane cachovaný čítač nafouknutý o právě zrušenou přihlášku a její
+        // místo nikdo nedostane, dokud čítač nepřepíše nejbližší registrace.
+        $this->prepocitejObsazenost($participant);
         $this->logger->info("Participant ({$participant->getId()}) soft-deleted.");
         // Sjednocení s app/API cestou (PUT → postWrite → notifyParticipantChanged): web admin delete
         // teď taky pošle notifikaci „zrušení přihlášky", takže obě cesty se chovají stejně.
