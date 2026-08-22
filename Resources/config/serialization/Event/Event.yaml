@@ -100,6 +100,13 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_event_put'
     # Místo převzaté od nadřazené akce — turnusy vlastní `place` nemají, je jen na ročníku,
     # takže bez tohohle zůstal účastnický portál bez informace „kam se jede".
+    # Bod pro všechny (jídlo, nástup, zahájení) — appka podle toho doplňuje „Moje".
+    forEveryone:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+        - 'calendar_events_post'
+        - 'calendar_event_put'
     placeRecursive:
       groups:
         - 'calendar_events_get'

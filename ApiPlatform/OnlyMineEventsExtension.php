@@ -17,7 +17,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * When `?onlyMine=true` is set, restrict Event collection to events the current user attends
- * directly (Participant.event) or through SubEventAttendance.event.
+ * directly (Participant.event), through SubEventAttendance.event, **or** which are marked as
+ * common to everyone on that turnus ({@see Event::isForEveryone()} — meals, line-ups, opening).
+ *
+ * Ty společné body si účastník nevybírá, ale ve svém programu je potřebuje: „kdy je oběd" je
+ * pro něj stejně důležité jako „na co jsem přihlášený". Bez nich vypadal den v „Moje"
+ * poloprázdný (požadavek usera 22. 8. 2026).
  *
  * Spec: docs/superpowers/specs/2026-05-22-S2-S3-S4-calendar-ux-2.0-design.md S2 step 4.1.4
  */
@@ -69,13 +74,23 @@ final class OnlyMineEventsExtension implements QueryCollectionExtensionInterface
             $eventIds,
             static fn (mixed $v): bool => is_int($v),
         )));
+        $rootAlias = $queryBuilder->getRootAliases()[0];
         if ([] === $eventIds) {
             $queryBuilder->andWhere('1 = 0');
 
             return;
         }
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-        $queryBuilder->andWhere("$rootAlias.id IN (:onlyMineIds)")
-                     ->setParameter('onlyMineIds', $eventIds);
+
+        /*
+         * Vlastní účast NEBO společný bod turnusu, na který je účastník přihlášený.
+         * `superEvent IN (:ids)` cílí na turnus: společné body jsou jeho podakce, kdežto
+         * samotné turnusy má účastník v `$eventIds` z přihlášky.
+         */
+        $queryBuilder->andWhere(
+            $queryBuilder->expr()->orX(
+                "$rootAlias.id IN (:onlyMineIds)",
+                "$rootAlias.forEveryone = true AND IDENTITY($rootAlias.superEvent) IN (:onlyMineIds)",
+            ),
+        )->setParameter('onlyMineIds', $eventIds);
     }
 }

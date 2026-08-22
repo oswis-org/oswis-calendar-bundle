@@ -165,6 +165,21 @@ class Event implements NameableInterface
     protected bool $highlight = false;
 
     /**
+     * Bod programu, který se týká VŠECH účastníků turnusu — jídla, nástupy, zahájení.
+     *
+     * Účastník si je nevybírá a nepřihlašuje se na ně, ale musí je vidět ve svém programu:
+     * „kdy je oběd" je stejně důležité jako „na co jsem se přihlásil". Bez tohohle příznaku
+     * filtr „Moje" ukázal jen aktivity s vlastním přihlášením a den vypadal poloprázdný.
+     *
+     * ⚠️ Nedá se spolehlivě odvodit ze `signupMode === 'none'`: ten má i rotace („Převzetí
+     * triček" běží třikrát naráz pro tři pásky) a nezávazné volitelné body („Relax s vodní
+     * dýmkou"). Ověřeno na datech 2026: 74 aktivit má `none`, ale pro všechny jich je zlomek.
+     * Proto je to samostatný, ručně nastavitelný příznak.
+     */
+    #[Column(type: 'boolean', options: ['default' => false])]
+    protected bool $forEveryone = false;
+
+    /**
      * Zveřejnění PROGRAMU turnusu účastníkům (nová žádost usera): NULL = program skrytý (staví se,
      * účastníci ho v aplikaci nevidí), datum = zveřejněno od té chvíle. Na TURNUSU; brána je v
      * {@see \OswisOrg\OswisCalendarBundle\ApiPlatform\EventVisibleToUserExtension} — dokud není
@@ -519,6 +534,17 @@ class Event implements NameableInterface
     public function setHighlight(bool $highlight): void
     {
         $this->highlight = $highlight;
+    }
+
+    /** {@see $forEveryone} — bod programu společný všem účastníkům turnusu (jídlo, nástup…). */
+    public function isForEveryone(): bool
+    {
+        return $this->forEveryone;
+    }
+
+    public function setForEveryone(bool $forEveryone): void
+    {
+        $this->forEveryone = $forEveryone;
     }
 
     public function getProgramReleasedAt(): ?\DateTimeInterface
