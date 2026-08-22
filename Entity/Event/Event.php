@@ -444,6 +444,23 @@ class Event implements NameableInterface
         return $this->place ?? ($recursive ? $this->getSuperEvent()?->getPlace() : null) ?? null;
     }
 
+    /**
+     * Místo konání včetně převzetí od nadřazené akce.
+     *
+     * Turnusy vlastní `place` nemají — vyplněné je jen na ročníku (ověřeno 22. 8. 2026:
+     * `place_id` má pouze událost 46 „Seznamovák pro studenty UP 2026", turnusy 47 a 48 ne).
+     * Účastnický portál přitom potřebuje ukázat „kam se jede", takže bez převzetí by zůstal
+     * bez místa — a `place` se navíc ze serializace vynechá úplně, protože je null.
+     *
+     * Proč samostatný getter, když {@see getPlace()} rekurzi umí: serializer volá gettery
+     * BEZ argumentů, takže `$recursive` z API grup zapnout nejde. Tenhle navíc stoupá celou
+     * hierarchií, kdežto `getPlace(true)` se dívá jen o úroveň výš.
+     */
+    public function getPlaceRecursive(): ?Place
+    {
+        return $this->place ?? $this->getSuperEvent()?->getPlaceRecursive();
+    }
+
     public function getPlaceText(): ?string
     {
         return $this->placeText;

@@ -98,6 +98,14 @@ OswisOrg\OswisCalendarBundle\Entity\Event\Event:
         - 'calendar_events_post'
         - 'calendar_event_get'
         - 'calendar_event_put'
+    # Místo převzaté od nadřazené akce — turnusy vlastní `place` nemají, je jen na ročníku,
+    # takže bez tohohle zůstal účastnický portál bez informace „kam se jede".
+    placeRecursive:
+      groups:
+        - 'calendar_events_get'
+        - 'calendar_event_get'
+        - 'calendar_participants_get'
+        - 'calendar_participant_get'
     # ⚠️ Rekurzivní vazba — hloubku je nutné držet na OBOU stranách.
     # Do 2026-08-02 měl `superEvent` v kolekci neomezenou hloubku a `subEvents` max_depth 3:
     # každá ze 104 aktivit vypsala CELÝ turnus i se všemi jeho podakcemi, takže
