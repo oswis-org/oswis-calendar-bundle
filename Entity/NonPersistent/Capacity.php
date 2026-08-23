@@ -16,13 +16,27 @@ class Capacity
         $this->setCapacity($baseCapacity, $fullCapacity);
     }
 
+    /**
+     * Nastaví dvojici kapacit se vzájemným doplněním.
+     *
+     * ⚠️ Chybí-li ZÁKLADNÍ kapacita, ale plná je vyplněná, platí plná i jako základní.
+     * Dřív se v takovém případě zahodily OBĚ — kdo v administraci vyplnil jen „plná kapacita",
+     * dostal z API `null`, kontrola „plno" se nikdy neuplatnila a aktivita šla přeplnit bez
+     * jediné hlášky (naráženo 22. 8. 2026 u Lukostřelby: `full_capacity = 10` v databázi,
+     * v API `null`). Tiché zahození zadané hodnoty je horší než jakákoli interpretace.
+     *
+     * Obě prázdné = bez stropu; to zůstává.
+     */
     public function setCapacity(?int $baseCapacity = null, ?int $fullCapacity = null): void
     {
-        if (null === $baseCapacity) {
+        if (null === $baseCapacity && null === $fullCapacity) {
             $this->baseCapacity = null;
             $this->fullCapacity = null;
 
             return;
+        }
+        if (null === $baseCapacity) {
+            $baseCapacity = $fullCapacity;
         }
         if (null === $fullCapacity) {
             $this->baseCapacity = $baseCapacity;
@@ -57,13 +71,23 @@ class Capacity
         $this->fullCapacity = max(0, $fullCapacity);
     }
 
+    /**
+     * Základní kapacita, nejvýš však do plné.
+     *
+     * ⚠️ Chybí-li plná kapacita, platí základní beze změny. Dřív se tu porovnávalo
+     * `getFullCapacity() < $this->baseCapacity` bez ošetření `null`: prázdná plná kapacita se
+     * v porovnání chová jako NULA, takže podmínka vyšla vždy pravdivě a metoda vrátila `null` —
+     * zadaná základní kapacita se tím tiše ztratila. Je to týž druh chyby jako u
+     * {@see setCapacity()}, jen opačným směrem.
+     */
     public function getBaseCapacity(): ?int
     {
         if (null === $this->baseCapacity) {
             return null;
         }
+        $plna = $this->getFullCapacity();
 
-        return $this->getFullCapacity() < $this->baseCapacity ? $this->getFullCapacity() : $this->baseCapacity;
+        return null === $plna ? $this->baseCapacity : min($plna, $this->baseCapacity);
     }
 
     public function setBaseCapacity(?int $baseCapacity): void
