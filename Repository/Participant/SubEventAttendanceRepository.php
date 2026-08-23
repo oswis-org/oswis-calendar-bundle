@@ -35,13 +35,25 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
      * ({@see docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md}).
      * Transakce proti tomu NEPOMŮŽE: cache se čte dřív, než se sáhne do databáze.
      */
+    /**
+     * Kolik lidí na aktivitě opravdu je — podklad pro kontrolu kapacity i pro „8/10" v portálu.
+     *
+     * ⚠️ `p.deletedAt IS NULL` je nutné: zrušení přihlášky je soft-delete, který účast na
+     * aktivitách nechává být (`a.deletedAt` zůstane prázdné, status dál `registered`).
+     * Bez toho by odhlášený člověk dál blokoval místo a nikdo by nepoznal proč — tatáž chyba,
+     * kvůli které se do čítače obsazenosti počítaly příznaky zrušených přihlášek.
+     *
+     * Gedmo filtr `softdeleteable` tu nepomůže, v téhle aplikaci zapnutý není.
+     */
     public function countActiveByEvent(Event $event): int
     {
         $qb = $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
+            ->join('a.participant', 'p')
             ->where('a.event = :event')
             ->andWhere('a.status = :status')
             ->andWhere('a.deletedAt IS NULL')
+            ->andWhere('p.deletedAt IS NULL')
             ->setParameter('event', $event)
             ->setParameter('status', SubEventAttendance::STATUS_REGISTERED);
 
@@ -49,14 +61,21 @@ class SubEventAttendanceRepository extends ServiceEntityRepository
     }
 
     /**
+     * Jmenný seznam pro aktivitu (roster pro instruktora).
+     *
+     * ⚠️ Zrušené přihlášky sem nepatří ze stejného důvodu jako u {@see countActiveByEvent()} —
+     * instruktor potřebuje seznam lidí, kteří opravdu dorazí.
+     *
      * @return list<SubEventAttendance>
      */
     public function getActiveByEvent(Event $event): array
     {
         $result = $this->createQueryBuilder('a')
+            ->join('a.participant', 'p')
             ->where('a.event = :event')
             ->andWhere('a.status = :status')
             ->andWhere('a.deletedAt IS NULL')
+            ->andWhere('p.deletedAt IS NULL')
             ->setParameter('event', $event)
             ->setParameter('status', SubEventAttendance::STATUS_REGISTERED)
             ->getQuery()

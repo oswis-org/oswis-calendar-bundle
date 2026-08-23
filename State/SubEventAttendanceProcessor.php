@@ -109,11 +109,24 @@ final class SubEventAttendanceProcessor implements ProcessorInterface
             // podmínka nad POČTEM řádků, ne nad jejich hodnotou. Proto zámek, ne constraint.
             $this->em->lock($event, LockMode::PESSIMISTIC_WRITE);
 
-            // Kapacitu vynucujeme JEN u 'required' (BC: stávající akce mají default 'required').
-            // 'optional' = bez vynucení; 'staff' = tým zapisuje vždy (bez blokace kapacitou).
-            if (Event::SIGNUP_MODE_REQUIRED === $signupMode) {
+            // Kapacitu vynucujeme všude, kde se účastník hlásí SÁM — tedy u 'required' i 'optional'.
+            //
+            // ⚠️ Dřív se vynucovala jen u 'required', což se rozcházelo s tím, co portál ukazuje:
+            // `event-card` i `program-osa` počítají „plno" z `fullCapacity` bez ohledu na režim,
+            // takže účastník viděl „10/10" a zablokované tlačítko, ale POST by prošel — stačilo
+            // dvojí ťuknutí nebo souběh a aktivita se přeplnila. Typický případ je lukostřelba:
+            // přihlášení nepovinné (= 'optional'), ale luků je deset. Vyplněná kapacita je záměr
+            // toho, kdo ji zadal; režim říká, zda se účastník hlásit MUSÍ, ne zda platí strop.
+            //
+            // 'staff' zůstává bez vynucení: tam zapisuje tým osobně a smí i nad limit.
+            // 'none' se sem nedostane, odmítá se výš.
+            if (Event::SIGNUP_MODE_REQUIRED === $signupMode || Event::SIGNUP_MODE_OPTIONAL === $signupMode) {
+                // Nula = bez stropu, ne „nula míst". Sloupec je nullable, ale `CapacityTrait`
+                // prázdnou hodnotu místy převádí na 0, a stejně ji čte i portál
+                // (`capacityColor()` bere 0 jako neurčeno). Bez `> 0` by aktivita s nulou
+                // odmítla úplně každého hláškou „Aktivita je plná" — `0 >= 0` platí vždy.
                 $full = $event->getFullCapacity();
-                if (null !== $full) {
+                if (null !== $full && $full > 0) {
                     $count = $this->attendanceRepository->countActiveByEvent($event);
                     if ($count >= $full) {
                         throw new ConflictHttpException('Aktivita je plná.');

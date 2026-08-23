@@ -71,10 +71,28 @@ class ParticipantRegistrationRepository extends EntityRepository
         }
     }
 
+    /**
+     * Vyřadí zrušené registrace — a s nimi i registrace zrušených PŘIHLÁŠEK.
+     *
+     * ⚠️ Druhá půlka je snadné opomenutí s drahým následkem: přes tenhle dotaz počítá
+     * {@see RegistrationOfferService::updateUsage()} obsazenost turnusu. Odhlášení účastníka je
+     * soft-delete přihlášky, který její řádek v `calendar_participant_range` nechává být
+     * (`deleted_at` zůstane prázdné) — bez druhé podmínky by tedy odhlášený člověk držel místo
+     * dál a turnus by se nikdy neuvolnil. Naměřeno 23. 8. 2026: 11 takových registrací
+     * v ročnících 2022 a 2024 (turnus 76: čítač 208 proti skutečným 200).
+     *
+     * Tatáž chyba byla v {@see ParticipantFlagRepository}, kde nafukovala čítače příznaků.
+     * Gedmo filtr `softdeleteable` v této aplikaci zapnutý není, takže filtrovat je nutné ručně.
+     *
+     * `leftJoin` (ne `innerJoin`) záměrně: vazba na přihlášku je nullable a osiřelé registrace
+     * se počítaly odjakživa — tohle jim chování nemění.
+     */
     private function addIncludeDeletedQuery(QueryBuilder $queryBuilder, array $opts = []): void
     {
         if (empty($opts[self::CRITERIA_INCLUDE_DELETED])) {
             $queryBuilder->andWhere('participant_range.deletedAt IS NULL');
+            $queryBuilder->leftJoin('participant_range.participant', 'participantForDeleted');
+            $queryBuilder->andWhere('participantForDeleted.deletedAt IS NULL');
         }
     }
 
