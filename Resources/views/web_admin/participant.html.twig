@@ -92,6 +92,24 @@
                         <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
                         <button type="submit" class="btn btn-sm btn-outline-success"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Obnovit</button>
                     </form>
+                {% else %}
+                    {#
+                      Zrušení přihlášky šlo dosud jen ze seznamu a ze stránky duplicit. Na detailu —
+                      tedy tam, kde se člověk rozhoduje, protože právě prošel platby, příznaky a poštu —
+                      tlačítko chybělo a bylo nutné se vracet do seznamu a hledat řádek znovu.
+
+                      Potvrzení hlásí zaplacenou částku, pokud nějaká je: zrušit přihlášku s penězi
+                      znamená, že peníze zůstanou viset na zrušené přihlášce a je potřeba je nejdřív
+                      převést jinam nebo vrátit.
+                    #}
+                    <form method="post"
+                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
+                          style="display:inline-block; margin:0;"
+                          onsubmit="return confirm('Opravdu zrušit přihlášku #{{ participant.id }}{% if paid > 0 %} — POZOR, visí na ní {{ paid|number_format(0, ',', ' ') }} Kč{% endif %}?\n\nÚčastníkovi se odešle e-mail o zrušení přihlášky.');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                title="Zrušit přihlášku (měkké smazání — jde obnovit). Účastníkovi odejde e-mail o zrušení."><twig:ux:icon name="tabler:trash" class="oa-icon" /> Zrušit přihlášku</button>
+                    </form>
                 {% endif %}
             {% endif %}
         </div>
