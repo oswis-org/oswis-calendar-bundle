@@ -605,16 +605,22 @@ final class WebAdminParticipantsController extends AbstractController
         if (!$this->isCsrfTokenValid('participant_set_gender_'.$participantId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
-        // Lightweight load (NOT the full detail graph): the full graph hydration mutates
-        // getName()/sortableName on L2-cached entities, and a subsequent em->flush() would then
-        // compute a changeset over the whole graph and exhaust memory. We persist this single
-        // scalar with a targeted DQL UPDATE + L2 eviction instead — no flush of the UoW.
+        // Načítáme zlehka, ne celý detailní graf: hydratace celého grafu mutuje getName()
+        // a sortableName na entitách v L2 cache, takže by následný em->flush() počítal změny
+        // nad celým grafem a došla by paměť. Tenhle jeden skalár proto ukládáme cíleným
+        // DQL UPDATE + zneplatněním L2 — bez flushe jednotky práce.
+        // ⚠️ Druhý parametr je `$includeNotActivated`, NE přepínač načítání grafu. Stálo tu `false`,
+        // což tiše vyřazovalo každou přihlášku, jejíž účet ještě nebyl aktivovaný — administrace
+        // pak na uložení vrátila 404. Nejhorší na tom je, kdo do té skupiny padá: účastník, kterému
+        // aktivační mail nedorazil kvůli překlepu v adrese (prod #3846 „…@gmal.com"). Tedy přesně
+        // ten, kvůli kterému oprava kontaktu existuje. Administrátor musí smět zapsat vždy —
+        // aktivace účtu s právem opravit údaje nesouvisí.
         $participant = $this->participantService->getParticipant(
             [
                 ParticipantRepository::CRITERIA_ID              => $participantId,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
             ],
-            false,
+            true,
         ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
 
         $contact = $participant->getContactForRead();
@@ -935,12 +941,18 @@ final class WebAdminParticipantsController extends AbstractController
         if (!$this->isCsrfTokenValid('participant_edit_contact_'.$participantId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
+        // ⚠️ Druhý parametr je `$includeNotActivated`, NE přepínač načítání grafu. Stálo tu `false`,
+        // což tiše vyřazovalo každou přihlášku, jejíž účet ještě nebyl aktivovaný — administrace
+        // pak na uložení vrátila 404. Nejhorší na tom je, kdo do té skupiny padá: účastník, kterému
+        // aktivační mail nedorazil kvůli překlepu v adrese (prod #3846 „…@gmal.com"). Tedy přesně
+        // ten, kvůli kterému oprava kontaktu existuje. Administrátor musí smět zapsat vždy —
+        // aktivace účtu s právem opravit údaje nesouvisí.
         $participant = $this->participantService->getParticipant(
             [
                 ParticipantRepository::CRITERIA_ID              => $participantId,
                 ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
             ],
-            false,
+            true,
         ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
 
         $contact = $participant->getContactForRead();
