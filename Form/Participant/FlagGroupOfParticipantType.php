@@ -45,8 +45,13 @@ class FlagGroupOfParticipantType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event) {
             $data = $event->getData();
             if (!empty($data) && is_array($data)) {
-                $data['tempFlagRanges'] = is_string($data['flagRanges'] ?? []) ? [$data['flagRanges']]
-                    : $data['flagRanges'];
+                // ⚠️ Pojistka `?? []` musí být na OBOU větvích. Dřív chránila jen `is_string()`
+                // a v else se sahalo na `$data['flagRanges']` napřímo — když prohlížeč klíč
+                // neposlal, spadl warning „Undefined array key" a hodnota se ztratila.
+                // Na produkci se to stalo 24. 8. 2026 skutečnému zájemci: přihlášku odeslal,
+                // vrátil se mu formulář s chybou a on to vzdal (v DB po něm není nic).
+                $flagRanges = $data['flagRanges'] ?? [];
+                $data['tempFlagRanges'] = is_string($flagRanges) ? [$flagRanges] : $flagRanges;
             }
             $event->setData($data);
         });
