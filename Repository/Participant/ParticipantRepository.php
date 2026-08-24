@@ -354,7 +354,12 @@ class ParticipantRepository extends ServiceEntityRepository
     {
         $contactIds = array_column($this->findDuplicateRegistrations($parentEvent, $limit), 'contactId');
         if ([] === $contactIds) {
-            return [];
+            // ⚠️ Dřív se tu vracelo rovnou `[]`. Po přidání hledání podle telefonu to znamenalo,
+            // že když nejsou duplicity podle kontaktu, celá metoda skončí dřív, než se k telefonům
+            // vůbec dostane — a obrazovka hlásí „Nic k řešení", i když dvojice existuje.
+            // Na klonu to neprasklo (duplicity podle kontaktu tam jsou), ukázalo se to až
+            // na produkci u přihlášek #3438 a #3691.
+            return $this->duplicityPodleTelefonu($parentEvent, []);
         }
         /** @var list<array{participantId: int|string, contactId: int|string, name: ?string,
          *                 eventName: ?string, createdAt: ?\DateTimeInterface}> $rows */
