@@ -1,6 +1,7 @@
 {% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
 
-{% block html_title %}{{ page_title }}{% endblock %}
+{% block html_title %}
+{{ page_title }}{% endblock %}
 
 {% block body_content %}
     <main class="container" style="padding: 1rem 1.25rem 3rem;">
@@ -39,8 +40,13 @@
                     <thead>
                     <tr>
                         <th style="min-width: 9rem;">Funkce</th>
+                        {# `date('D')` dává ANGLICKOU zkratku („Tue", „Wed") — v české administraci,
+                           kterou tým čte při přípravě služeb, to nemá co dělat. Projekt nemá
+                           `twig/intl-extra`, takže zkratku mapujeme podle čísla dne v týdnu
+                           (`w`: 0 = neděle). #}
+                        {% set dnyVTydnu = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'] %}
                         {% for day in days %}
-                            <th style="white-space: nowrap; min-width: 9rem;">{{ day|date('D j. n.') }}</th>
+                            <th style="white-space: nowrap; min-width: 9rem;">{{ dnyVTydnu[day|date('w')] }} {{ day|date('j. n.') }}</th>
                         {% endfor %}
                     </tr>
                     </thead>
