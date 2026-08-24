@@ -182,7 +182,17 @@ class ParticipantController extends AbstractController
                     false,
                     $participant->getEvent(),
                     $participant->getOffer(),
-                    "Tvoje přihláška na akci $eventName byla úspěšně odeslána! Nyní je ještě nutné ji potvrdit kliknutím na odkaz v e-mailu, který jsme Ti právě zaslali.",
+                    // Adresa se ukazuje ZÁMĚRNĚ: překlep v ní je jinak neviditelný až do chvíle,
+                    // kdy člověk zjistí, že mu nic nepřišlo — a to už řeší tým (prod #3846
+                    // „…@gmal.com"). Takhle si ho všimne sám během vteřiny.
+                    sprintf(
+                        'Tvoje přihláška na akci %s byla úspěšně odeslána! Zbývá ji potvrdit '
+                        .'odkazem v e-mailu, který jsme právě poslali na %s — platí 48 hodin. '
+                        .'Pokud tam adresa není správně, nebo e-mail do pár minut nedorazí '
+                        .'(mrkni i do spamu), napiš nám.',
+                        $eventName ?? '',
+                        $participant->getContactForRead()?->getEmail() ?? 'zadanou adresu',
+                    ),
                     $form->createView()
                 );
             }
