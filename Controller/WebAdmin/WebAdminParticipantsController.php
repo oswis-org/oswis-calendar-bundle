@@ -1195,7 +1195,7 @@ final class WebAdminParticipantsController extends AbstractController
         if (null !== $cache) {
             $cache->evictEntity(Participant::class, $participantId);
         }
-        $this->addFlash('success', sprintf('Partial-stay účastníka #%d uložen.', $participantId));
+        $this->addFlash('success', sprintf('Zkrácený pobyt účastníka #%d uložen.', $participantId));
 
         return new RedirectResponse($this->generateUrl(
             'oswis_org_oswis_calendar_web_admin_participant_detail',
