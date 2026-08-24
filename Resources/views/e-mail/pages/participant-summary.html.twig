@@ -5,13 +5,28 @@
 {% block html_title %}{{ email.subject|default('Shrnutí přihlášky') }}{% endblock %}
 
 {% block content_outer %}
-    {# JSON-LD strukturovaná data (modernější forma microdata níže). Apple
-       Mail i Outlook v některých konfiguracích JSON-LD parsují stejně jako
-       microdata; pro spolehlivé „Add to Calendar" je hlavní cestou .ics
-       attachment, který přidává ParticipantMailService::attachIcsCalendar. #}
-    <mj-raw>
-        {% include '@OswisOrgOswisCalendar/other/summary/event-reservation-jsonld.html.twig' %}
-    </mj-raw>
+    {# Strukturovaná data `application/ld+json` (EventReservation) — VÝCHOZÍ STAV: VYPNUTO.
+
+       Gmail je zobrazuje jen odesílatelům, které si k tomu zaregistruje (vzorek na
+       schema.whitelisting+sample@gmail.com a schválení). Registrace kdysi proběhla, ale je to
+       roky a Google ji váže na odesílající doménu a nastavení podpisu — obojí se od té doby
+       měnilo, takže není jisté, že ještě platí. Tvrzení v původním komentáři, že JSON-LD
+       parsuje i Apple Mail a Outlook, se dokumentací nepotvrzuje: Outlook má vlastní
+       Actionable Messages a Apple Mail bere přílohu `.ics`, kterou stejně přikládáme
+       ({@see ParticipantMailService::attachIcsCalendar}).
+
+       Proč vypnuto: shrnutí je jediný náš mail, který obsahuje `<script>` — a zároveň jediný,
+       který lidem hromadně padá do spamu (ověřovací chodí v pořádku). Příčinná souvislost
+       prokázaná NENÍ, ale dokud nevíme, že nám ten blok něco přináší, nemá smysl ho posílat.
+
+       Jak ověřit, jestli funguje: otevřít shrnutí v Gmailu. Když se nahoře zobrazí karta
+       s rezervací / „Přidat do kalendáře", markup se uplatňuje a má smysl ho zapnout zpět —
+       stačí `OSWIS_MAIL_STRUCTURED_DATA=1` v `.env.local`, žádná úprava kódu. #}
+    {% if oswisMailStructuredData|default(false) %}
+        <mj-raw>
+            {% include '@OswisOrgOswisCalendar/other/summary/event-reservation-jsonld.html.twig' %}
+        </mj-raw>
+    {% endif %}
 
     {# Schema.org HTML5 microdata pro klienty, kteří JSON-LD neparsují
        (typicky Apple Mail starší verze). mj-raw INSIDE mj-column would
