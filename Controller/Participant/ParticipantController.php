@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
+use OswisOrg\OswisCalendarBundle\Exception\AlreadyRegisteredException;
 use OswisOrg\OswisCalendarBundle\Exception\ReturningParticipantException;
 use OswisOrg\OswisCalendarBundle\Form\Participant\ParticipantType;
 use OswisOrg\OswisCalendarBundle\Provider\OswisCalendarSettingsProvider;
@@ -195,6 +196,27 @@ class ParticipantController extends AbstractController
                 null,
                 $form->createView()
             );
+        } catch (AlreadyRegisteredException $are) {
+            // Přihlášku na tenhle turnus už má. Není to chyba — jen o ní neví, nebo ji
+            // nestihl potvrdit. Když čeká na ověření, nabídneme rovnou nové odeslání;
+            // jinak by musel psát týmu, což je přesně to, co se dosud dělo.
+            $participantId = $are->getParticipantId();
+
+            return $this->getResponse(
+                type: 'success',
+                title: 'Přihlášku už od Tebe máme',
+                verification: true,
+                event: $range->getEvent(),
+                range: $range,
+                message: $are->getMessage(),
+                actionUrl: $are->potrebujeOvereni() && null !== $participantId
+                    ? $this->generateUrl(
+                        'oswis_org_oswis_calendar_participant_resend_activation_email',
+                        ['participantId' => $participantId],
+                    )
+                    : null,
+                actionLabel: 'Poslat ověřovací e-mail znovu',
+            );
         } catch (ReturningParticipantException $rpe) {
             return $this->getResponse(
                 type: 'success',
@@ -273,6 +295,8 @@ class ParticipantController extends AbstractController
         ?string $message = null,
         ?FormView $formView = null,
         bool $disabled = false,
+        ?string $actionUrl = null,
+        ?string $actionLabel = null,
     ): Response {
         $template = $verification
             ? '@OswisOrgOswisCalendar/web/pages/participant-registration-confirmation.html.twig'
@@ -287,6 +311,8 @@ class ParticipantController extends AbstractController
             'message' => $message,
             'type' => $type,
             'disabled' => $disabled,
+            'actionUrl' => $actionUrl,
+            'actionLabel' => $actionLabel,
             'registrationsActive' => null !== $range && $range->isRangeActive(),
         ]);
     }

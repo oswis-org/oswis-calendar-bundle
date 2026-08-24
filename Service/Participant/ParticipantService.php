@@ -25,6 +25,7 @@ use OswisOrg\OswisCalendarBundle\Exception\EventCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
 use OswisOrg\OswisCalendarBundle\Exception\FlagOutOfRangeException;
 use OswisOrg\OswisCalendarBundle\Exception\ParticipantNotFoundException;
+use OswisOrg\OswisCalendarBundle\Exception\AlreadyRegisteredException;
 use OswisOrg\OswisCalendarBundle\Exception\ReturningParticipantException;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Registration\RegistrationFlagOfferService;
@@ -161,6 +162,26 @@ class ParticipantService
                 );
 
                 return $recent;
+            }
+        }
+
+        // Přihláška na TENTÝŽ turnus už existuje — a není to dvojklik (ten řeší okno výše).
+        //
+        // Bez tohoto kroku spadne takový člověk do větve „vrací se k nám z dřívějška" a dostane
+        // magic-link „Pokračování v přihlášce" — přestože nemá co dokončovat, přihlášku má
+        // hotovou. Tým ty maily viděl chodit do archivu a nechápal proč. Prod 24. 8. 2026:
+        // jedna účastnice takové dva dostala během odpoledne, ačkoli přihlášku #3848 už měla.
+        //
+        // ⚠️ Kontroluje se konkrétní NABÍDKA (turnus), ne celá akce: přihlásit se na oba
+        // turnusy je legitimní a nesmí to spadnout sem.
+        if (null !== $participantMailAddress && '' !== $participantMailAddress && null !== $offer) {
+            $existujici = $this->najdiZivouPrihlasku($participantMailAddress, $offer);
+            if ($existujici instanceof Participant) {
+                throw new AlreadyRegisteredException(
+                    $this->hlaskaKExistujiciPrihlasce($existujici),
+                    $existujici->getId(),
+                    !$existujici->hasActivatedContactUser(),
+                );
             }
         }
 
@@ -305,6 +326,53 @@ class ParticipantService
      *
      * @throws OswisException|NotFoundException
      */
+    /**
+     * Živá přihláška téhož člověka na TENTÝŽ turnus, bez ohledu na stáří.
+     *
+     * Páruje se přes e-mail v kontaktních údajích — stejně jako ochrana proti dvojkliku výš,
+     * jen bez časového omezení. Case-insensitive, protože lidé píšou adresu různě.
+     */
+    private function najdiZivouPrihlasku(string $eMail, RegistrationOffer $offer): ?Participant
+    {
+        $nalezeno = $this->participantRepository->createQueryBuilder('p')
+            ->innerJoin('p.participantContacts', 'pc')
+            ->innerJoin('pc.contact', 'c')
+            ->innerJoin('c.details', 'd')
+            ->andWhere('LOWER(d.content) = LOWER(:mail)')
+            ->andWhere('p.offer = :offer')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('mail', $eMail)
+            ->setParameter('offer', $offer)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $nalezeno instanceof Participant ? $nalezeno : null;
+    }
+
+    /**
+     * Text pro člověka, který se hlásí podruhé na tentýž turnus.
+     *
+     * Rozlišuje dva důvody, proč to zkouší znovu, protože každý potřebuje jinou radu:
+     * neaktivovaný účet znamená, že mu nedorazil (nebo mu propadl) ověřovací e-mail — to je
+     * zdaleka nejčastější případ a řeší se novým odesláním. Aktivovaný účet znamená, že
+     * přihlášku má hotovou a jen o ní neví.
+     */
+    private function hlaskaKExistujiciPrihlasce(Participant $existujici): string
+    {
+        if (!$existujici->hasActivatedContactUser()) {
+            return 'Přihlášku na tenhle turnus už od Tebe máme — jen jsi ji ještě nepotvrdil'
+                .'a klepnutím na odkaz v ověřovacím e-mailu. Pokud Ti nedorazil nebo už '
+                .'propadl, nech si ho níže poslat znovu a mrkni i do spamu.';
+        }
+
+        return 'Přihlášku na tenhle turnus už od Tebe máme a je potvrzená, takže znovu '
+            .'vyplňovat nic nemusíš. Podrobnosti najdeš v aplikaci nebo v e-mailu '
+            // Formulace záměrně bez rodu: `getCzechSuffixA()` je až na Person, ne na
+            // AbstractContact, a kvůli jedné větě nemá smysl tudy tahat instanceof.
+            .'„Shrnutí přihlášky". Kdyby v ní bylo potřeba něco změnit, napiš nám.';
+    }
+
     public function requestActivation(?Participant $participant): void
     {
         if (null === $participant || null === $participant->getContact(false)) {

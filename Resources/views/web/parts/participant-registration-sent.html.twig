@@ -1,8 +1,30 @@
+{#
+    Výsledek odeslání registračního formuláře.
+
+    ⚠️ Tahle část měla text NAPEVNO („Přihláška odeslána! … potvrdit pomocí odkazu, který jsme
+    zaslali") a `title` ani `message` z kontroleru vůbec nečetla. Úspěšné cestě to nevadilo —
+    text seděl — ale obě chybové větve tím lhaly: kdo se hlásil podruhé nebo měl účet
+    z dřívějška, žádnou přihlášku nevytvořil, a přesto se dozvěděl, že je přihlášen a má čekat
+    na ověřovací e-mail. Ten nikdy nepřišel, protože nebylo co ověřovat, a člověk pak psal týmu,
+    že mu „nedorazil e-mail". (Odhaleno 24. 8. 2026 při procházení příchozí pošty.)
+
+    Proto se titulek i text berou z kontroleru a původní znění zůstává jen jako výchozí.
+#}
 <header>
-    <h2 class="text-uppercase" id="registration-success">Přihláška odeslána!</h2>
-    <h3>Nyní čeká na ověření.</h3>
+    <h2 class="text-uppercase" id="registration-success">{{ title|default('Přihláška odeslána!') }}</h2>
+    {% if message|default is empty %}
+        <h3>Nyní čeká na ověření.</h3>
+    {% endif %}
 </header>
-<p>
-    Registrace byla úspěšně zaznamenána, teď je ovšem ještě <strong>nutné ji potvrdit pomocí odkazu</strong>,
-    který jsme zaslali do zadané e-mailové schránky.
-</p>
+{% if message|default is empty %}
+    <p>
+        Registrace byla úspěšně zaznamenána, teď je ovšem ještě <strong>nutné ji potvrdit pomocí odkazu</strong>,
+        který jsme zaslali do zadané e-mailové schránky.
+    </p>
+{% else %}
+    <p>{{ message }}</p>
+{% endif %}
+{% if actionUrl|default %}
+    {# Bez tohohle tlačítka zbývá člověku jediná cesta dál: napsat týmu. Přesně to dělal. #}
+    <p><a class="btn btn-primary" href="{{ actionUrl }}">{{ actionLabel|default('Pokračovat') }}</a></p>
+{% endif %}
