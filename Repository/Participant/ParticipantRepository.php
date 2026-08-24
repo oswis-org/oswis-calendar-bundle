@@ -15,6 +15,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
+use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
@@ -218,6 +219,64 @@ class ParticipantRepository extends ServiceEntityRepository
     }
 
     /**
+     * Přihlášky, které čekají na potvrzení — účet u nich není aktivovaný.
+     *
+     * Dokud člověk neklikne na odkaz v ověřovacím e-mailu, přihláška existuje, ale nic dalšího
+     * se s ní neděje: nechodí shrnutí s pokyny k platbě, nedostane se do aplikace. Tým to
+     * dosud nikde neviděl pohromadě — přišlo se na to, až když dotyčný napsal, že mu nic
+     * nedorazilo. Nejčastější příčina je překlep v adrese (prod #3846 „…@gmal.com") nebo
+     * propadlý odkaz.
+     *
+     * Ukazuje se i datum posledního odeslaného e-mailu, protože rozhodnutí zní „poslat znovu,
+     * nebo zavolat?" a to se bez něj udělat nedá.
+     *
+     * @return list<array{id: int, name: string, email: ?string, registered: ?\DateTimeInterface,
+     *                    lastMail: ?\DateTimeInterface}>
+     */
+    public function findWaitingForActivation(Event $parentEvent, int $limit = 30): array
+    {
+        // ⚠️ `lastMail` se z agregace vrací jako ŘETĚZEC („2026-07-15 13:08:11"), ne jako
+        // DateTime — Doctrine hydratuje typy jen u mapovaných polí, ne u výsledku MAX().
+        // Šablona na něm volala `.format()` a celá úvodní stránka administrace spadla na 500.
+        /** @var list<array{id: int|string, name: ?string, email: ?string,
+         *                 registered: ?\DateTimeInterface, lastMail: ?string}> $rows */
+        $rows = $this->createQueryBuilder('p')
+            ->select(
+                'p.id AS id, c.name AS name, u.email AS email, p.createdAt AS registered,'
+                .' (SELECT MAX(m2.sent) FROM '.ParticipantMail::class.' m2 WHERE m2.participant = p) AS lastMail'
+            )
+            ->innerJoin('p.event', 'e')
+            ->innerJoin('p.participantContacts', 'pc')
+            ->innerJoin('pc.contact', 'c')
+            ->leftJoin('c.appUser', 'u')
+            ->where('e.superEvent = :parent')
+            ->andWhere('p.deletedAt IS NULL')
+            // `activated IS NULL` je totéž kritérium, jaké používá `hasActivatedContactUser()`;
+            // účet bez uživatele spadá do stejné skupiny — taky se nemá kdo přihlásit.
+            ->andWhere('u.id IS NULL OR u.activated IS NULL')
+            ->setParameter('parent', $parentEvent)
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $out[] = [
+                'id'         => (int) $row['id'],
+                'name'       => is_string($row['name'] ?? null) ? $row['name'] : '',
+                'email'      => is_string($row['email'] ?? null) ? $row['email'] : null,
+                'registered' => $row['registered'] ?? null,
+                'lastMail'   => is_string($row['lastMail'] ?? null) && '' !== $row['lastMail']
+                    ? new \DateTimeImmutable($row['lastMail'])
+                    : null,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
      * Přihlášky, kterým se NIKDY nedoručilo shrnutí — tedy lidé bez pokynů k platbě.
      *
      * PROČ: shrnutí se posílá při registraci ({@see \OswisOrg\OswisCalendarBundle\EventSubscriber\ParticipantSubscriber::postWrite()})
@@ -284,8 +343,12 @@ class ParticipantRepository extends ServiceEntityRepository
      * Vrací se úmyslně i počet plateb a částka: podle nich se pozná, kterou přihlášku nelze
      * jen tak zrušit, aniž by se nejdřív přesunuly peníze.
      *
-     * @return list<array{participantId: int, contactId: int, name: string, eventName: string,
-     *                    createdAt: ?\DateTimeInterface, payments: int, paid: float, notes: int}>
+     * `klic` určuje, do které skupiny řádek patří — nově to nemusí být jen shodný kontakt,
+     * ale i shodné telefonní číslo pod různými kontakty; `duvod` je pak vysvětlení pro obrazovku.
+     *
+     * @return list<array{klic: string, duvod: ?string, participantId: int, contactId: int, name: string,
+     *                    eventName: string, createdAt: ?\DateTimeInterface, payments: int, paid: float,
+     *                    notes: int}>
      */
     public function findDuplicateRegistrationDetails(Event $parentEvent, int $limit = 60): array
     {
@@ -314,12 +377,17 @@ class ParticipantRepository extends ServiceEntityRepository
             ->getArrayResult();
 
         $out = [];
+        $podleKontaktu = [];
         foreach ($rows as $row) {
             $participantId = (int) $row['participantId'];
+            $contactId = (int) $row['contactId'];
             $souhrn = $this->souhrnPrihlasky($participantId);
+            $podleKontaktu['kontakt-'.$contactId][] = $participantId;
             $out[] = [
+                'klic'          => 'kontakt-'.$contactId,
+                'duvod'         => null,
                 'participantId' => $participantId,
-                'contactId'     => (int) $row['contactId'],
+                'contactId'     => $contactId,
                 'name'          => is_string($row['name'] ?? null) ? $row['name'] : '',
                 'eventName'     => is_string($row['eventName'] ?? null) ? $row['eventName'] : '',
                 'createdAt'     => $row['createdAt'] ?? null,
@@ -329,7 +397,112 @@ class ParticipantRepository extends ServiceEntityRepository
             ];
         }
 
+        return array_merge($out, $this->duplicityPodleTelefonu($parentEvent, $podleKontaktu));
+    }
+
+    /**
+     * Druhá cesta k duplicitě: stejné telefonní číslo pod RŮZNÝMI kontakty.
+     *
+     * Seskupení podle kontaktu (výše) najde jen člověka, který se hlásil dvakrát pod týmž
+     * kontaktem. Kdo se ale podruhé přihlásí s jinou e-mailovou adresou — typicky proto, že
+     * v té první měl překlep a nedorazil mu ověřovací e-mail — založí si kontakt i účet nový
+     * a první cesta ho nevidí. Přesně to se stalo 24. 8. 2026: dvě živé přihlášky (#3846
+     * `…@gmal.com` a #3848 `…@gmail.com`) se **stejným telefonem 735511004**, a obrazovka
+     * duplicit hlásila „Nic k řešení".
+     *
+     * Telefon je přitom **variabilní symbol** platby, takže dvě živé přihlášky se stejným
+     * číslem znamenají, že příchozí platbu nelze jednoznačně přiřadit.
+     *
+     * ⚠️ Shoda JMÉNA se tu záměrně nepoužívá — ze čtyř „duplicit" 21. 8. 2026 byly dvě
+     * jmenovkyně a mazat podle jména by znamenalo smazat zaplacenou přihlášku cizího člověka.
+     *
+     * @param  array<string, list<int>>  $jizNalezene skupiny z prvního průchodu (klíč => id přihlášek)
+     *
+     * @return list<array{klic: string, duvod: ?string, participantId: int, contactId: int, name: string,
+     *                    eventName: string, createdAt: ?\DateTimeInterface, payments: int, paid: float, notes: int}>
+     */
+    private function duplicityPodleTelefonu(Event $parentEvent, array $jizNalezene): array
+    {
+        /** @var list<array{participantId: int|string, contactId: int|string, name: ?string,
+         *                 eventName: ?string, createdAt: ?\DateTimeInterface, telefon: ?string}> $radky */
+        $radky = $this->createQueryBuilder('p')
+            ->select(
+                'p.id AS participantId, IDENTITY(pc.contact) AS contactId, c.name AS name,'
+                .' e.name AS eventName, p.createdAt AS createdAt, d.content AS telefon'
+            )
+            ->innerJoin('p.event', 'e')
+            ->innerJoin('p.participantContacts', 'pc')
+            ->innerJoin('pc.contact', 'c')
+            ->innerJoin('c.details', 'd')
+            ->innerJoin('d.detailCategory', 'cat')
+            ->where('e.superEvent = :parent')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere('cat.type = :typ')
+            ->setParameter('parent', $parentEvent)
+            ->setParameter('typ', ContactDetailCategory::TYPE_PHONE)
+            ->getQuery()
+            ->getArrayResult();
+
+        // Seskupení až v PHP: normalizace čísla (mezery, předvolba) se v DQL dělá špatně
+        // a letošních přihlášek jsou stovky, ne statisíce.
+        $skupiny = [];
+        foreach ($radky as $radek) {
+            $cislo = $this->normalizujTelefon(is_string($radek['telefon'] ?? null) ? $radek['telefon'] : '');
+            if ('' === $cislo) {
+                continue;
+            }
+            $skupiny[$cislo][(int) $radek['participantId']] = $radek;
+        }
+
+        $out = [];
+        foreach ($skupiny as $cislo => $prihlasky) {
+            if (count($prihlasky) < 2) {
+                continue;
+            }
+            // Víc přihlášek pod JEDNÍM kontaktem už našel první průchod — tady nás zajímá
+            // jen případ, kdy je za stejným číslem víc různých kontaktů.
+            $kontakty = array_unique(array_map(static fn (array $r): int => (int) $r['contactId'], $prihlasky));
+            if (count($kontakty) < 2) {
+                continue;
+            }
+            // A pokud tu tutéž sestavu přihlášek už ukazuje skupina podle kontaktu, neopakovat.
+            $ids = array_keys($prihlasky);
+            sort($ids);
+            foreach ($jizNalezene as $nalezene) {
+                $porovnani = $nalezene;
+                sort($porovnani);
+                if ($porovnani === $ids) {
+                    continue 2;
+                }
+            }
+
+            foreach ($prihlasky as $participantId => $radek) {
+                $souhrn = $this->souhrnPrihlasky($participantId);
+                $out[] = [
+                    'klic'          => 'telefon-'.$cislo,
+                    'duvod'         => 'stejné telefonní číslo '.$cislo.' pod různými kontakty'
+                                       .' — telefon je variabilní symbol, takže platbu nelze jednoznačně přiřadit',
+                    'participantId' => $participantId,
+                    'contactId'     => (int) $radek['contactId'],
+                    'name'          => is_string($radek['name'] ?? null) ? $radek['name'] : '',
+                    'eventName'     => is_string($radek['eventName'] ?? null) ? $radek['eventName'] : '',
+                    'createdAt'     => $radek['createdAt'] ?? null,
+                    'payments'      => $souhrn['payments'],
+                    'paid'          => $souhrn['paid'],
+                    'notes'         => $souhrn['notes'],
+                ];
+            }
+        }
+
         return $out;
+    }
+
+    /** Jen číslice, a z nich posledních devět — tím zmizí mezery i předvolba (+420 / 00420). */
+    private function normalizujTelefon(string $telefon): string
+    {
+        $cislice = preg_replace('/\D+/', '', $telefon) ?? '';
+
+        return strlen($cislice) >= 9 ? substr($cislice, -9) : '';
     }
 
     /**

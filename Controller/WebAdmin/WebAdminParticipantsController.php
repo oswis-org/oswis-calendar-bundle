@@ -683,8 +683,12 @@ final class WebAdminParticipantsController extends AbstractController
         $skupiny = [];
         if (null !== $event) {
             foreach ($this->participantRepository->findDuplicateRegistrationDetails($event) as $radek) {
-                $skupiny[$radek['contactId']]['name'] = $radek['name'];
-                $skupiny[$radek['contactId']]['prihlasky'][] = $radek;
+                // Klíč už není contactId: skupina může vzniknout i shodou telefonu napříč
+                // různými kontakty (člověk se přihlásil podruhé s jinou adresou).
+                $klic = $radek['klic'];
+                $skupiny[$klic]['name'] = $radek['name'];
+                $skupiny[$klic]['duvod'] = $radek['duvod'];
+                $skupiny[$klic]['prihlasky'][] = $radek;
             }
         }
 

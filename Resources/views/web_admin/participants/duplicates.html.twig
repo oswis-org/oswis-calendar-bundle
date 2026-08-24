@@ -17,8 +17,15 @@
         {% if skupiny is empty %}
             <p><em>Žádné duplicitní přihlášky. Nic k řešení.</em></p>
         {% else %}
-            {% for contactId, skupina in skupiny %}
+            {% for klic, skupina in skupiny %}
                 <h2 style="margin-top: 1.25rem;">{{ skupina.name }}</h2>
+                {% if skupina.duvod|default %}
+                    {# Proč je tu tahle dvojice, když má každá přihláška jiný kontakt — bez
+                       vysvětlení by to vypadalo jako chyba obrazovky. #}
+                    <p class="small" style="margin: -.25rem 0 .5rem; max-width: 46rem;">
+                        <strong>Proč je to tady:</strong> {{ skupina.duvod }}
+                    </p>
+                {% endif %}
                 <table class="list">
                     <thead>
                     <tr>
