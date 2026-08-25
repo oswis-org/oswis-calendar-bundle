@@ -51,7 +51,7 @@
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_mail', { participantId: participantId, mailId: e.id }) }}"
                                           style="margin-top:.5rem;" onsubmit="return confirm('Znovu odeslat tento e-mail účastníkovi?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_mail_' ~ e.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-outline-info">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">
                                             <twig:ux:icon name="tabler:refresh" class="oa-icon" /> Odeslat znovu
                                         </button>
                                     </form>

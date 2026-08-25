@@ -66,7 +66,7 @@
                                   style="margin: 0;"
                                   onsubmit="return confirm('Znovu odeslat tento e-mail účastníkovi?');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_mail_' ~ entry.id) }}">
-                                <button type="submit" class="btn btn-sm btn-outline-info" title="Znovu odeslat tento e-mail">↻ Resend</button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Znovu odeslat tento e-mail">↻ Resend</button>
                             </form>
                         {% endif %}
                     </td>

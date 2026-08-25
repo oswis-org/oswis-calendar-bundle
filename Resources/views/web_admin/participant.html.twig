@@ -68,7 +68,7 @@
                           style="display:inline-block; margin:0;"
                           onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
                         <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-info"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Aktivační e-mail</button>
+                        <button type="submit" class="btn btn-sm btn-outline-primary"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Aktivační e-mail</button>
                     </form>
                 {% endif %}
                 {# Shrnutí = pokyny k platbě + QR. Renderuje se z aktuálních dat, takže ho lze poslat
@@ -80,7 +80,7 @@
                           style="display:inline-block; margin:0;"
                           onsubmit="return confirm('Odeslat účastníkovi #{{ participant.id }} shrnutí přihlášky s pokyny k platbě?');">
                         <input type="hidden" name="_token" value="{{ csrf_token('participant_send_summary_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-info"
+                        <button type="submit" class="btn btn-sm btn-outline-primary"
                                 title="Poslat shrnutí přihlášky s pokyny k platbě a QR kódem (podle aktuálních dat)"><twig:ux:icon name="tabler:receipt" class="oa-icon" /> Shrnutí přihlášky</button>
                     </form>
                 {% endif %}
@@ -329,7 +329,11 @@
                                                 Původní bankovní platba zůstane beze změny a účastníkům
                                                 se nic nerozešle.
                                             </div>
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Převést platbu</button>
+                                            {# Plná oranžová = pohyb peněz. Dřív červená, jenže ta v administraci
+                                               znamená mazání — a tohle nic nemaže, jen přesouvá platbu jinam.
+                                               ⚠️ Oranžový OBRYS použít nelze: změřený kontrast 2,01 (limit 4,5).
+                                               Plná oranžová s černým textem má 10,45 a je z palety UP. #}
+                                            <button type="submit" class="btn btn-sm btn-warning">Převést platbu</button>
                                         </form>
                                     </details>
                                 {% endif %}
