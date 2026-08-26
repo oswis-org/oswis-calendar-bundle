@@ -519,7 +519,9 @@
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="csv" disabled>⬇ Export (CSV)</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="export" data-format="pdf" disabled>⬇ Export (PDF)</button>
                 <button type="button" class="btn btn-sm btn-outline-success" data-bulk-action="mail" disabled>✉ Hromadný e-mail</button>
-                <button type="button" class="btn btn-sm btn-outline-warning" data-bulk-action="reassign" disabled>↪ Přesunout</button>
+                {# Ne oranžový obrys: změřený kontrast 2,01 (limit 4,5). Nejde o peníze ani o mazání,
+                     takže podle pravidla běžná akce = modrý obrys (5,42). Odliší ji ikona. #}
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bulk-action="reassign" disabled>↪ Přesunout</button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bulk-action="delete" disabled>🗑 Smazat vybrané</button>
             </span>
             <span class="bulk-hint small text-secondary">Zaškrtni řádky vlevo — operace platí jen pro vybrané přihlášky.</span>

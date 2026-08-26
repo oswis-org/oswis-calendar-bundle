@@ -24,7 +24,8 @@
                               action="{{ path('oswis_org_oswis_calendar_web_admin_program_release', {eventSlug: eventSlug}) }}"
                               onsubmit="return confirm('Skrýt program účastníkům?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('program_release_' ~ event.id) }}">
-                            <button type="submit" class="btn btn-sm btn-outline-warning">Skrýt program</button>
+                            {# Ne oranžový obrys: kontrast 2,01, a tady navíc na zeleném podkladu hlášky. #}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Skrýt program</button>
                         </form>
                     </div>
                 {% else %}
