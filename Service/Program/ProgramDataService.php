@@ -141,8 +141,11 @@ final class ProgramDataService
                 $teamIds[$id] = true;
             }
         }
+        $assignments = $this->collectAssignments($turnus);
+        $vylouceni = $this->mapaVylouceni($assignments);
+        $instructorId = $instructor->getId();
         $rows = [];
-        foreach ($this->collectAssignments($turnus) as $assignment) {
+        foreach ($assignments as $assignment) {
             if ($assignment->isExcluded()) {
                 continue;
             }
@@ -150,6 +153,13 @@ final class ProgramDataService
             $byParticipant = $assignment->getParticipant() === $instructor;
             $byTeam = null !== $teamId && isset($teamIds[$teamId]);
             if (!$byParticipant && !$byTeam) {
+                continue;
+            }
+            // Jmenovaný závazek platí vždy — o něm ten záznam je. Ale kdo se sem dostal jen
+            // přes tým a je z té aktivity vyňatý, na ni nepatří.
+            $aktivitaId = $assignment->getActivity()?->getId();
+            if (!$byParticipant && null !== $aktivitaId && null !== $instructorId
+                && isset($vylouceni[$aktivitaId.'|'.$instructorId])) {
                 continue;
             }
             $rows[] = $this->itineraryRow($assignment);
@@ -196,11 +206,14 @@ final class ProgramDataService
      */
     public function getTeamOverview(Event $turnus): array
     {
+        $assignments = $this->collectAssignments($turnus);
+        $vylouceni = $this->mapaVylouceni($assignments);
         $people = [];
-        foreach ($this->collectAssignments($turnus) as $assignment) {
+        foreach ($assignments as $assignment) {
             if ($assignment->isExcluded()) {
                 continue;
             }
+            $aktivitaId = $assignment->getActivity()?->getId();
             $row = $this->itineraryRow($assignment);
             $participant = $assignment->getParticipant();
             $team = $assignment->getTeam();
@@ -209,7 +222,14 @@ final class ProgramDataService
                 $targets['p' . ($participant->getId() ?? spl_object_id($participant))] = $this->names->staffName($participant);
             } elseif (null !== $team) {
                 foreach ($team->getMembers() as $member) {
-                    $targets['p' . ($member->getId() ?? spl_object_id($member))] = $this->names->staffName($member);
+                    // Člen, který je z téhle aktivity výslovně vyňatý („tým, ale bez Franty"),
+                    // se do rozpisu nepřidává — jinak by vyloučení nemělo žádný účinek.
+                    $memberId = $member->getId();
+                    if (null !== $memberId && null !== $aktivitaId
+                        && isset($vylouceni[$aktivitaId.'|'.$memberId])) {
+                        continue;
+                    }
+                    $targets['p' . ($memberId ?? spl_object_id($member))] = $this->names->staffName($member);
                 }
             } else {
                 $external = (string) $assignment->getExternalName();
@@ -288,6 +308,43 @@ final class ProgramDataService
     }
 
     /**
+     * @return list<StaffAssignment>
+     */
+    /**
+     * Mapa vyloučení: „na téhle aktivitě tenhle člověk NENÍ", i když ho tam táhne jeho tým.
+     *
+     * ⚠️ Do 26. 8. 2026 se záznam s `excluded = true` všude jen PŘESKOČIL — což znamenalo, že
+     * vyloučení nemělo na vyloučeného žádný vliv: tým měl vlastní závazek, ten se rozpadl na
+     * všechny členy včetně toho, kdo z něj byl výslovně vyňat. Záznam „tým, ale bez Franty" byl
+     * tedy k ničemu; totéž by způsobilo jeho smazání. Franta dál viděl směnu ve svém itineráři
+     * a stál na rozpisu.
+     *
+     * Klíč je „aktivita|účastník" — vyloučení platí pro konkrétní aktivitu, ne plošně.
+     *
+     * @param  list<StaffAssignment>  $assignments
+     *
+     * @return array<string, true>
+     */
+    private function mapaVylouceni(array $assignments): array
+    {
+        $mapa = [];
+        foreach ($assignments as $assignment) {
+            if (!$assignment->isExcluded()) {
+                continue;
+            }
+            $osoba = $assignment->getParticipant()?->getId();
+            $aktivita = $assignment->getActivity()?->getId();
+            if (null !== $osoba && null !== $aktivita) {
+                $mapa[$aktivita.'|'.$osoba] = true;
+            }
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * Závazky obsazení daného turnusu.
+     *
      * @return list<StaffAssignment>
      */
     private function collectAssignments(Event $turnus): array
