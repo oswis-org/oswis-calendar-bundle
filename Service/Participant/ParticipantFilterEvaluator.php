@@ -71,6 +71,16 @@ final class ParticipantFilterEvaluator
                 sprintf('Neplatný filtrační výraz: %s', $syntaxError->getMessage()),
                 $syntaxError,
             );
+        } catch (\Throwable $chyba) {
+            // ⚠️ Syntaxi hlídá `SyntaxError`, ale výraz může spadnout AŽ PŘI VYHODNOCENÍ:
+            // `hasFlag()` bez argumentu, `hasFlag(1)` se špatným typem nebo `1/0` prolétnou
+            // parserem a shodí se až v těle funkce. Do 26. 8. 2026 to bublalo ven jako
+            // HTTP 500 s CRITICAL v logu — ověřeno na produkci na všech třech případech.
+            // Pro člověka u seznamu je to přitom překlep, ne pád serveru.
+            throw new BadRequestHttpException(
+                sprintf('Filtrační výraz se nepodařilo vyhodnotit: %s', $chyba->getMessage()),
+                $chyba,
+            );
         }
     }
 
