@@ -81,6 +81,22 @@ class AccommodationService
             );
         }
 
+        // Konkrétní lůžko už někdo drží. Appka sice obsazená lůžka označuje, jenže ten seznam
+        // si spočítala při načtení — soused u vedlejšího stolu mezitím přiřadil svoje. Přeplnit
+        // chatku je záměr (přistýlky), dát dvěma lidem týž matrac ne.
+        if (null !== $bed) {
+            $drzitel = $this->reservationRepository->findActiveByBed($bed, $participant);
+            if (null !== $drzitel) {
+                $warnings[] = new AccommodationWarning(
+                    AccommodationWarning::CODE_BED_TAKEN,
+                    sprintf(
+                        'Lůžko už drží „%s".',
+                        (string) ($drzitel->getParticipant()?->getContact()?->getName() ?? 'jiný účastník'),
+                    ),
+                );
+            }
+        }
+
         // Skupinové spolubydlení: člen skupiny přiřazený do JINÉ jednotky.
         foreach ($this->roommateGroupRepository->findByMember($participant) as $group) {
             foreach ($group->getMembers() as $member) {

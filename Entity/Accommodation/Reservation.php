@@ -20,6 +20,7 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Accommodation\ReservationRepository;
 use OswisOrg\OswisCalendarBundle\Service\Accommodation\AccommodationService;
@@ -65,6 +66,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['participant.id', 'unit.id', 'unit.facility.id', 'participant.event.id', 'status'])]
 #[Entity(repositoryClass: ReservationRepository::class)]
 #[Table(name: 'calendar_accommodation_reservation')]
+// Index MUSÍ být i tady, ne jen v migraci — jinak `schema:validate` zrezaví a naivní
+// `schema:update --force` by ho tiše zahodil (pravidlo z CLAUDE.md).
+#[UniqueConstraint(name: 'uniq_reservation_active', columns: ['active_signature'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
 class Reservation implements BasicInterface
 {
@@ -94,6 +98,39 @@ class Reservation implements BasicInterface
     #[JoinColumn(name: 'participant_id', nullable: true)]
     #[MaxDepth(1)]
     protected ?Participant $participant = null;
+
+    /**
+     * Podpis AKTIVNÍ rezervace — nese ho jen řádek, který platí; jinak je NULL.
+     *
+     * ⚠️ Počítá si ho DATABÁZE (generovaný sloupec), aplikace do něj nikdy nezapisuje. Je to
+     * druhá vrstva pod kontrolou v {@see AccommodationService::assign()}: ta si nejdřív načte
+     * stávající rezervaci a teprve pak zapisuje, což je klasické „zkontroluj a jednej". Dva
+     * check-in stoly obsluhující téhož člověka současně tam projdou oba, každý založí vlastní
+     * rezervaci — a `findActiveByParticipant` pak vrátí jednu z nich, kdežto ta druhá zůstane
+     * navěky viset v čítači obsazenosti jednotky. Přesně tuhle třídu chyby tu napáchal souběh
+     * u plateb; kontrola v aplikaci proti ní neochrání, jen unikátní index.
+     *
+     * „Aktivní" = má účastníka a status není `cancelled`/`no_show` — tedy stejná definice jako
+     * v {@see \OswisOrg\OswisCalendarBundle\Repository\Accommodation\ReservationRepository::findActiveByParticipant()}.
+     * MariaDB nemá částečné indexy a `UNIQUE (participant, status)` by nepomohl (dva různé
+     * neaktivní stavy se nebijí). Tenhle sloupec je NULL u všech neaktivních řádků a NULLy se
+     * v unikátním indexu nepovažují za shodné, takže zrušit a znovu ubytovat jde dál.
+     *
+     * Vzor převzat z {@see \OswisOrg\OswisCalendarBundle\Entity\Participant\SubEventAttendance}.
+     * Migrace: `Version20260826180000`.
+     */
+    #[Column(
+        name: 'active_signature',
+        type: 'string',
+        length: 48,
+        nullable: true,
+        insertable: false,
+        updatable: false,
+        generated: 'ALWAYS',
+        columnDefinition: "VARCHAR(48) AS (IF(participant_id IS NOT NULL"
+            ." AND status NOT IN ('cancelled', 'no_show'), CONCAT('p', participant_id), NULL)) STORED",
+    )]
+    protected ?string $activeSignature = null;
 
     #[ManyToOne(targetEntity: AccommodationUnit::class)]
     #[JoinColumn(name: 'unit_id', nullable: false)]

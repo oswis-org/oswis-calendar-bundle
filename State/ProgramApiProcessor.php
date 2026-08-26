@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\State;
 
 use ApiPlatform\Metadata\IriConverterInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement;
@@ -14,6 +15,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\ParticipantMealChoice;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantNote;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\StaffTeam;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -43,6 +45,7 @@ final class ProgramApiProcessor implements ProcessorInterface
         private readonly RequestStack $requestStack,
         private readonly PushNotificationService $push,
         private readonly LoggerInterface $logger,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -102,6 +105,12 @@ final class ProgramApiProcessor implements ProcessorInterface
                     $this->resolveSingle($data, $payload, 'targetGroup', 'setTargetGroup');
                     $this->resolveSingle($data, $payload, 'participant', 'setParticipant');
                 }
+                if ($data instanceof ParticipantNote) {
+                    // Poznámka k přihlášce — tatáž past. Hlásil ji tým z produkce 26. 8. 2026
+                    // jako „Poznámku se nepodařilo uložit (chyba 500)"; endpoint byl rozbitý
+                    // pro JAKÝKOLI tvar vazby, tedy i pro kanonické IRI.
+                    $this->resolveSingle($data, $payload, 'participant', 'setParticipant', Participant::class);
+                }
                 if ($data instanceof MealVariant) {
                     // Varianta nevisí na turnusu, ale na jídle — jinak tatáž past.
                     $this->resolveSingle($data, $payload, 'meal', 'setMeal');
@@ -141,9 +150,15 @@ final class ProgramApiProcessor implements ProcessorInterface
 
     /**
      * @param array<array-key, mixed> $payload
+     * @param class-string|null       $trida třída pro starší tvar vazby `{"id": N}`; bez ní se přijímá jen IRI
      */
-    private function resolveSingle(object $data, array $payload, string $key, string $setter): void
-    {
+    private function resolveSingle(
+        object $data,
+        array $payload,
+        string $key,
+        string $setter,
+        ?string $trida = null,
+    ): void {
         if (!array_key_exists($key, $payload)) {
             return;
         }
@@ -160,7 +175,7 @@ final class ProgramApiProcessor implements ProcessorInterface
 
             return;
         }
-        $data->$setter($this->resolve($key, $value));
+        $data->$setter($this->resolve($key, $value, $trida));
     }
 
     /**
@@ -186,8 +201,27 @@ final class ProgramApiProcessor implements ProcessorInterface
         }
     }
 
-    private function resolve(string $key, mixed $value): object
+    /**
+     * @param class-string|null $trida
+     */
+    private function resolve(string $key, mixed $value, ?string $trida = null): object
     {
+        // Nasazený mobilní klient posílá vazbu jako `{"id": 123}`, ne jako IRI. API Platform 4
+        // vnořené `{id}` neresolvuje (ve verzi 3 to fungovalo), takže z něj postaví NOVOU entitu
+        // a Doctrine to při ukládání odmítne — navenek 500. Aktualizaci appky nelze uživatelům
+        // nařídit, takže starší tvar tady přijímáme dál; kanonický zůstává IRI.
+        if (null !== $trida && is_array($value) && !isset($value['@id']) && isset($value['id'])) {
+            $id = $value['id'];
+            $nalezene = is_numeric($id) ? $this->em->getRepository($trida)->find((int) $id) : null;
+            if (null === $nalezene) {
+                throw new BadRequestHttpException(
+                    sprintf('Pole "%s" odkazuje na záznam, který neexistuje (id %s).', $key, var_export($id, true)),
+                );
+            }
+
+            return $nalezene;
+        }
+
         $iri = $this->iri($value);
         if (null === $iri) {
             throw new BadRequestHttpException(sprintf('Pole "%s" musí být IRI odkaz.', $key));

@@ -18,6 +18,15 @@ final readonly class AccommodationWarning
     public const string CODE_ROOMMATE_SPLIT = 'roommate_split';
 
     public const string CODE_BED_MISMATCH = 'bed_mismatch';
+
+    /**
+     * Konkrétní lůžko už drží někdo jiný.
+     *
+     * Není to totéž co `CODE_OVER_CAPACITY`: přeplnit chatku je záměr (přistýlky), ale dát dvěma
+     * lidem TÝŽ matrac záměr není — a obsluha to u stolu nevidí, protože seznam obsazených lůžek
+     * si appka spočítala při načtení a soused u vedlejšího stolu mezitím přiřadil svoje.
+     */
+    public const string CODE_BED_TAKEN = 'bed_taken';
     public const string CODE_FLAG_TYPE_MISMATCH = 'flag_type_mismatch';
     public const string CODE_PARTIAL_STAY = 'partial_stay';
 

@@ -7,6 +7,7 @@ namespace OswisOrg\OswisCalendarBundle\Repository\Accommodation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\AccommodationUnit;
+use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Bed;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Reservation;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
@@ -107,5 +108,26 @@ class ReservationRepository extends ServiceEntityRepository
             $result,
             static fn (mixed $row): bool => $row instanceof Reservation,
         )) : [];
+    }
+    /**
+     * Aktivní rezervace držící dané lůžko — volitelně bez rezervace jednoho účastníka.
+     *
+     * Vylučovat vlastní rezervaci je nutné kvůli přeřazení: obsluha často jen upřesní lůžko
+     * v jednotce, kterou už člověk má, a bez téhle výjimky by si to hlásil jako obsazené sám sobě.
+     */
+    public function findActiveByBed(Bed $bed, ?Participant $except = null): ?Reservation
+    {
+        $builder = $this->createQueryBuilder('r')
+            ->where('r.bed = :bed')
+            ->andWhere('r.status NOT IN (:inactive)')
+            ->setParameter('bed', $bed)
+            ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW])
+            ->setMaxResults(1);
+        if (null !== $except) {
+            $builder->andWhere('r.participant != :except')->setParameter('except', $except);
+        }
+        $result = $builder->getQuery()->setCacheable(false)->getOneOrNullResult();
+
+        return $result instanceof Reservation ? $result : null;
     }
 }

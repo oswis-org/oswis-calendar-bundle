@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use OswisOrg\OswisCalendarBundle\State\ProgramApiProcessor;
 use OswisOrg\OswisCoreBundle\Filter\SearchAnnotation;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Metadata\ApiFilter;
@@ -39,7 +40,11 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
         ),
         new Post(
             denormalizationContext: ['groups' => ['calendar_participant_notes_post']],
-            security: "is_granted('ROLE_MANAGER')"
+            security: "is_granted('ROLE_MANAGER')",
+            // Bez procesoru postaví denormalizér z vazby `participant` NOVÉHO účastníka a Doctrine
+            // to při ukládání odmítne — navenek 500 „Poznámku se nepodařilo uložit". Platilo to pro
+            // KAŽDÝ tvar vazby, i pro kanonické IRI. Procesor vazbu dosadí jako spravovanou entitu.
+            processor: ProgramApiProcessor::class,
         ),
         new Get(
             normalizationContext: ['groups' => ['calendar_participant_note_get']],
@@ -47,7 +52,8 @@ use Symfony\Component\Serializer\Attribute\MaxDepth;
         ),
         new Put(
             denormalizationContext: ['groups' => ['calendar_participant_note_put']],
-            security: "is_granted('ROLE_MANAGER')"
+            security: "is_granted('ROLE_MANAGER')",
+            processor: ProgramApiProcessor::class,
         ),
     ],
     filters: ['search'],
