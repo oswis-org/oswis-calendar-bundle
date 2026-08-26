@@ -7,6 +7,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Entity\CheckIn;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -64,6 +65,15 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
 )]
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['event.id', 'stationKind'])]
+/*
+ * Bez `OrderFilter` API Platform řadicí parametr TIŠE ignoruje — nevrátí chybu, jen se nic
+ * nestane. Appka na tabletu přitom `order[orderNumber]=asc` posílá od začátku, takže hub
+ * ukazoval příjezdovou linku v pořadí, které zrovna vrátila databáze. Ověřeno 26. 8. 2026:
+ * `asc` i `desc` vracely identických 7 stanic ({@see \App\Tests\Functional\StaniceRazeniApiTest}).
+ * `name` je tu jako druhý klíč — dvě stanice mohou mít stejné pořadí a shodu musí rozseknout
+ * něco stálého, jinak se hub a web admin (ten řadí `pořadí, pak název`) rozejdou.
+ */
+#[ApiFilter(OrderFilter::class, properties: ['orderNumber', 'name'])]
 #[Entity(repositoryClass: CheckInStationRepository::class)]
 #[Table(name: 'calendar_check_in_station')]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant')]
