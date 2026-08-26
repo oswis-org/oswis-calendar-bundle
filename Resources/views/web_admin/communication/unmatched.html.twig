@@ -111,6 +111,12 @@
                                     <div style="display: flex; gap: .25rem; align-items: center; flex-wrap: wrap; margin-bottom: .25rem;">
                                         <input type="number" form="assign-{{ m.id }}" name="participantId" placeholder="ID účastníka" min="1" style="width: 9em;">
                                         <button type="submit" form="assign-{{ m.id }}" class="btn btn-sm btn-success">Přiřadit</button>
+                                        {# ⚠️ Mazání jednotlivé zprávy bylo do 26. 8. 2026 NEDOSAŽITELNÉ: routa
+                                           i obsluha existovaly, ale nevedlo na ně tlačítko. Hromadně šlo označit
+                                           jen „spam", což zprávu nechává v seznamu. Maže se NATVRDO (tak je
+                                           obsluha psaná — jde o spam), proto potvrzení. #}
+                                        <button type="submit" form="delete-{{ m.id }}" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Nenávratně smazat nezařazený e-mail #{{ m.id }}?');">Smazat</button>
                                     </div>
                                 </td>
                             </tr>
@@ -127,6 +133,12 @@
                       action="{{ path('oswis_org_oswis_calendar_web_admin_imap_assign', { id: m.id }) }}"
                       style="display: none;">
                     <input type="hidden" name="_token" value="{{ csrf_token('unmatched_assign_' ~ m.id) }}">
+                </form>
+                <form id="delete-{{ m.id }}"
+                      method="post"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_imap_delete', { id: m.id }) }}"
+                      style="display: none;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('unmatched_delete_' ~ m.id) }}">
                 </form>
             {% endfor %}
         {% endif %}

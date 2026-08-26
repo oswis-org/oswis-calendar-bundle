@@ -26,7 +26,23 @@
                         <button type="submit" class="btn btn-sm btn-outline-danger" style="padding: .05rem .4rem;">zrušit sérii</button>
                     </form>
                 </div>
-                <div style="color: #444; font-size: .9rem; margin-top: .3rem;">{{ s.activities|join(' · ') }}</div>
+                {# Každá aktivita zvlášť, aby šla ze série odebrat. Do 26. 8. 2026 se tu jen
+                   vypisovala jména spojená tečkami, takže routa na odebrání byla nedosažitelná
+                   a jediná možnost bylo zrušit celou sérii. #}
+                <div style="color: #444; font-size: .9rem; margin-top: .3rem; display: flex; flex-wrap: wrap; gap: .35rem;">
+                    {% for a in s.activities %}
+                        <span class="badge text-bg-light" style="display: inline-flex; align-items: center; gap: .3rem;">
+                            {{ a.name }}
+                            <form method="post" style="margin: 0;"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_series_remove_activity', {eventSlug: eventSlug, activityId: a.id}) }}"
+                                  onsubmit="return confirm('Odebrat „{{ a.name }}" ze série? Aktivita zůstane v programu.');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('program_series_remove_' ~ a.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        style="padding: 0 .3rem; line-height: 1.2;" title="Odebrat ze série">×</button>
+                            </form>
+                        </span>
+                    {% endfor %}
+                </div>
             </div>
         {% else %}
             <p style="color: #adb5bd;">Zatím žádné série.</p>

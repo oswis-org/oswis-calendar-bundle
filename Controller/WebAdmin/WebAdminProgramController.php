@@ -842,7 +842,10 @@ final class WebAdminProgramController extends AbstractController
             $activities[] = ['id' => $act->getId(), 'name' => $act->getName(), 'start' => $act->getStartDateTimeRecursive()?->format('j.n. H:i'), 'seriesId' => $gid];
             if (null !== $gid && $g instanceof EventGroup) {
                 $seriesMap[$gid] ??= ['id' => $gid, 'name' => $g->getName() ?? ('#'.$gid), 'sameActivity' => $g->isSameActivity(), 'activities' => []];
-                $seriesMap[$gid]['activities'][] = $act->getName();
+                // ⚠️ Dřív se sem ukládalo jen jméno, takže šablona neměla podle čeho aktivitu
+                // odebrat — a routa `series/aktivita/{id}/odebrat` byla NEDOSAŽITELNÁ.
+                // Šlo jen zrušit celou sérii.
+                $seriesMap[$gid]['activities'][] = ['id' => $act->getId(), 'name' => $act->getName()];
             }
         }
 
