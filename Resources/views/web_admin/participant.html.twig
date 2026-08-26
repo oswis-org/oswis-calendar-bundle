@@ -344,6 +344,61 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            {# Ruční zadání platby.
+
+               Do 26. 8. 2026 to v administraci NEŠLO: platba mohla vzniknout jedině importem
+               bankovního výpisu nebo převodem od jiné přihlášky. Hotovost převzatá u stolu ani
+               převod, který se nespároval, se zadat nedaly — a v appce to přitom šlo.
+
+               ⚠️ Potvrzení odchází OKAMŽITĚ, ne cronem. Proto je zaškrtávátko a je VYPNUTÉ:
+               ruční zadání bývá oprava nebo hotovost z ruky do ruky, kdy člověk stojí u stolu. #}
+            <details style="margin-bottom:1.5rem;">
+                <summary style="cursor:pointer; color:var(--oa-primary);">Zadat platbu ručně</summary>
+                <form method="post" style="margin-top:.6rem;"
+                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_payment_new', { participantId: participantId }) }}"
+                      onsubmit="return confirm('Uložit platbu k přihlášce #{{ participantId }}?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('participant_payment_new_' ~ participantId) }}">
+                    <div style="display:flex; flex-wrap:wrap; gap:.6rem; align-items:flex-end;">
+                        <div>
+                            <label class="small" for="payment-value-{{ participantId }}">Částka (Kč)</label>
+                            <input id="payment-value-{{ participantId }}" type="text" inputmode="numeric" name="numericValue"
+                                   class="form-control form-control-sm" style="width:8rem;" placeholder="např. 1690" required>
+                        </div>
+                        <div>
+                            <label class="small" for="payment-type-{{ participantId }}">Typ</label>
+                            <select id="payment-type-{{ participantId }}" name="type" class="form-control form-control-sm" style="width:11rem;">
+                                <option value="cash">hotovost</option>
+                                <option value="bank-transfer">bankovní převod</option>
+                                <option value="card">karta</option>
+                                <option value="on-line">on-line</option>
+                                <option value="internal">interní (oprava)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="small" for="payment-date-{{ participantId }}">Datum</label>
+                            <input id="payment-date-{{ participantId }}" type="date" name="dateTime"
+                                   class="form-control form-control-sm" style="width:10rem;" value="{{ 'now'|date('Y-m-d') }}">
+                        </div>
+                        <div style="flex:1 1 14rem;">
+                            <label class="small" for="payment-note-{{ participantId }}">Poznámka (nepovinná)</label>
+                            <input id="payment-note-{{ participantId }}" type="text" name="internalNote" maxlength="255"
+                                   class="form-control form-control-sm" placeholder="např. hotovost při příjezdu">
+                        </div>
+                    </div>
+                    <div class="small text-muted" style="margin:.45rem 0;">
+                        Záporná částka = <strong>vratka</strong>. Ruční platba nemá bankovní identifikátor,
+                        takže se nesplete s importovanou.
+                    </div>
+                    <label class="small" style="display:block; margin-bottom:.45rem;">
+                        <input type="checkbox" name="sendConfirmation" value="1">
+                        Poslat účastníkovi potvrzení o platbě <span class="text-muted">(odejde hned)</span>
+                    </label>
+                    {# Plná oranžová = pohyb peněz, stejně jako „Převést platbu". #}
+                    <button type="submit" class="btn btn-sm btn-warning">Uložit platbu</button>
+                </form>
+            </details>
+
             <div class="box" style="margin-bottom:1.5rem;">
                 <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem; margin-bottom:.4rem;">
                     <span><strong>Zaplaceno {{ paid }}&nbsp;Kč</strong> <span class="text-muted">z {{ total }}&nbsp;Kč</span></span>

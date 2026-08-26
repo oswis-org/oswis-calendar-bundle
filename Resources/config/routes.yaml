@@ -598,6 +598,13 @@ oswis_org_oswis_calendar_web_admin_participant_move_payments:
     participantId: '\d+'
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_participant_payment_new:
+  controller: oswis_org_oswis_calendar.web_admin.participants_controller::addPayment
+  path: "/web_admin/ucastnici/{participantId}/platba"
+  requirements:
+    participantId: '\d+'
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_edit_contact:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::editContact
   path: "/web_admin/ucastnici/{participantId}/kontakt"

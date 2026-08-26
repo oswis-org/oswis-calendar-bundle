@@ -2,6 +2,7 @@
 
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
+use DateTime;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Exception\FlagCapacityExceededException;
@@ -16,6 +17,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFlagUpdateService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -47,6 +49,8 @@ final class WebAdminParticipantsController extends AbstractController
         // Pro srovnání duplicitních přihlášek (default akce + dotaz na duplicity).
         private readonly EventService $eventService,
         private readonly ParticipantRepository $participantRepository,
+        // Ruční zadání platby (hotovost u stolu, převod, který se neimportoval).
+        private readonly ParticipantPaymentService $paymentService,
     ) {
     }
 
@@ -940,6 +944,87 @@ final class WebAdminParticipantsController extends AbstractController
      * changeset přes celý graf a vyčerpal paměť. Proto lightweight načtení + DQL + evikce L2.
      */
     #[IsGranted('ROLE_MANAGER')]
+    /**
+     * Ruční zadání platby na detailu přihlášky.
+     *
+     * Do 26. 8. 2026 to v administraci NEŠLO VŮBEC: platba mohla vzniknout jedině importem
+     * bankovního výpisu, nebo se převést od jiné přihlášky. Hotovost převzatá u stolu ani
+     * převod, který se z výpisu nespároval, se zadat nedaly — a v appce to přitom šlo.
+     * (Nález usera; matice parity to vedla jako `web-admin ❌ / appka ✅`.)
+     *
+     * ⚠️ Potvrzení účastníkovi se odesílá OKAMŽITĚ, ne cronem, proto je to vědomá volba
+     * a výchozí stav je NEposílat: ruční zadání bývá oprava nebo hotovost předaná z ruky do
+     * ruky, kdy člověk stojí u stolu a mail mu je k ničemu.
+     */
+    public function addPayment(Request $request, int $participantId): Response
+    {
+        if (!$this->isCsrfTokenValid('participant_payment_new_'.$participantId, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $participant = $this->participantService->getParticipant(
+            [
+                ParticipantRepository::CRITERIA_ID              => $participantId,
+                ParticipantRepository::CRITERIA_INCLUDE_DELETED => true,
+            ],
+            true,
+        ) ?? throw $this->createNotFoundException('Účastník nenalezen.');
+
+        $castka = (int) round((float) str_replace([' ', ','], ['', '.'], (string) $request->request->get('numericValue')));
+        if (0 === $castka) {
+            $this->addFlash('error', 'Částka musí být nenulová (záporná = vratka).');
+
+            return $this->zpetNaDetail($participantId);
+        }
+
+        $typ = (string) $request->request->get('type', ParticipantPayment::TYPE_CASH);
+        if (!in_array($typ, ParticipantPayment::ALLOWED_TYPES, true)) {
+            $this->addFlash('error', 'Neznámý typ platby.');
+
+            return $this->zpetNaDetail($participantId);
+        }
+
+        $datum = trim((string) $request->request->get('dateTime', ''));
+        try {
+            $kdy = '' === $datum ? new DateTime() : new DateTime($datum);
+        } catch (\Exception) {
+            $this->addFlash('error', 'Datum platby se nepodařilo přečíst.');
+
+            return $this->zpetNaDetail($participantId);
+        }
+
+        $platba = new ParticipantPayment($castka, $kdy, $typ);
+        $poznamka = trim((string) $request->request->get('internalNote', ''));
+        if ('' !== $poznamka) {
+            $platba->setInternalNote($poznamka);
+        }
+        // Ruční platba nemá `externalId` z výpisu — díky tomu ji kontrola duplicit v service
+        // přeskočí a nezamění ji s importovanou. Autora zapisuje Blameable.
+        $poslatPotvrzeni = '1' === (string) $request->request->get('sendConfirmation', '0');
+
+        $vytvorena = $this->paymentService->create($platba, $poslatPotvrzeni, $participant);
+        if (null === $vytvorena) {
+            $this->addFlash('error', 'Platbu se nepodařilo uložit — podrobnosti jsou v logu.');
+
+            return $this->zpetNaDetail($participantId);
+        }
+
+        $this->logger->info(sprintf(
+            'Ručně zadána platba #%s (%d Kč, %s) k přihlášce #%d, potvrzení %s.',
+            $vytvorena->getId() ?? '?',
+            $castka,
+            $typ,
+            $participantId,
+            $poslatPotvrzeni ? 'odesláno' : 'neodesláno',
+        ));
+        $this->addFlash('success', sprintf(
+            'Platba %s\u{a0}Kč uložena.%s',
+            number_format($castka, 0, ',', ' '),
+            $poslatPotvrzeni ? ' Účastníkovi odešlo potvrzení.' : '',
+        ));
+
+        return $this->zpetNaDetail($participantId);
+    }
+
     public function editContact(Request $request, int $participantId): Response
     {
         if (!$this->isCsrfTokenValid('participant_edit_contact_'.$participantId, (string) $request->request->get('_token'))) {
