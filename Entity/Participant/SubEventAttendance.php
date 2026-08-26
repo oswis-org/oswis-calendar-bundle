@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Entity\Participant;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -54,6 +56,17 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
         ),
     ],
 )]
+/*
+ * `status` MUSÍ být filtrovatelný. Portálový kalendář si staví mapu „moje aktivity" a příznak
+ * „tohle je moje" určuje POUHOU přítomností v té mapě — status už nečte. Appka proto posílá
+ * `?status=registered`, jenže dokud tu filtr nebyl, API Platform parametr tiše ignorovalo
+ * (neznámý parametr nevrací chybu) a zrušená účast se vracela mezi přihlášenými: aktivita
+ * se po odhlášení pořád tvářila jako moje a nabízela odhlášení znovu.
+ *
+ * Ověřeno měřením 26. 8. 2026 — {@see \App\Tests\Functional\ZrusenaUcastNaAktiviteTest}.
+ * Na produkci to zatím nebylo vidět jen proto, že ze 123 účastí nebyla ani jedna zrušená.
+ */
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ['status'])]
 #[Entity(repositoryClass: SubEventAttendanceRepository::class)]
 #[Table(name: 'calendar_sub_event_attendance')]
 // Index MUSÍ být i tady, ne jen v migraci — jinak `schema:validate` zrezaví a naivní
