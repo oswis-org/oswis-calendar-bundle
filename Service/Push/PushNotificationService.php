@@ -99,7 +99,20 @@ class PushNotificationService
         );
         $vysledek['skipped'] = false;
         if ([] === $odberatele) {
-            // Není komu poslat — ale vzkaz se označí za odeslaný, ať to cron nezkouší donekonečna.
+            // Není komu poslat — vzkaz se přesto označí za odeslaný, ať to cron nezkouší donekonečna.
+            //
+            // ⚠️ Do 26. 8. 2026 se tahle větev míjela BEZ JEDINÉHO ZÁZNAMU. Tým pak v datech
+            // viděl vyplněný `pushSentAt` a mohl si myslet, že notifikace odešla — přitom ji
+            // nedostal nikdo. Je to tentýž vzorec jako u tichého selhání SMTP
+            // (`reference_smtp_failure_is_silent`): „nespadlo to" není totéž co „došlo to".
+            $this->logger->warning(sprintf(
+                'Vzkaz #%s: push nedostal NIKDO — pro cíl (akce %s, páska %s, účastník %s) není'
+                .' žádný odběr. Vzkaz je na nástěnce, ale upozornění nikomu nedorazilo.',
+                $vzkaz->getId() ?? '?',
+                $eventId,
+                $vzkaz->getTargetGroup()?->getId() ?? '—',
+                $vzkaz->getParticipant()?->getId() ?? '—',
+            ));
             $vzkaz->setPushSentAt(new \DateTimeImmutable());
             $this->em->flush();
 
