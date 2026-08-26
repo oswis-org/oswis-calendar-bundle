@@ -97,6 +97,29 @@
                                             <button type="submit" class="btn btn-sm btn-outline-primary">Zapsat příjezd</button>
                                         {% endif %}
                                     </form>
+
+                                    {# Odjezd.
+
+                                       ⚠️ Do 26. 8. 2026 ho NEŠLO zaznamenat NIKDE: sloupec `departedAt`,
+                                       routa `/odjel` i obsluha `markDeparted()` existovaly, ale nevedlo
+                                       na ně jediné tlačítko — appka hodnotu jen zobrazovala. Odjezd se
+                                       tak nedal zapsat vůbec.
+
+                                       Nabízí se až tomu, kdo přijel: na příjezdovém stole by druhé
+                                       tlačítko u nikoho jen překáželo a svádělo k překliku. #}
+                                    {% if p.arrived %}
+                                        <form method="post" style="margin: .3rem 0 0;"
+                                              action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_departed', { participantId: p.id }) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('checkin_departed_' ~ p.id) }}">
+                                            {% if p.departedAt %}
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Zrušit odjezd (překlik)">
+                                                    ✓ odjezd {{ p.departedAt|date('H:i') }}
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Zapsat odjezd</button>
+                                            {% endif %}
+                                        </form>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {% set size = p.tShirt %}
