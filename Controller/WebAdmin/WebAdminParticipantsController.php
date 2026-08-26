@@ -1025,6 +1025,7 @@ final class WebAdminParticipantsController extends AbstractController
         return $this->zpetNaDetail($participantId);
     }
 
+    #[IsGranted('ROLE_MANAGER')]
     public function editContact(Request $request, int $participantId): Response
     {
         if (!$this->isCsrfTokenValid('participant_edit_contact_'.$participantId, (string) $request->request->get('_token'))) {
