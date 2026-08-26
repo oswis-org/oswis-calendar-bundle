@@ -138,6 +138,19 @@ class Announcement implements NameableInterface
     #[Column(name: 'push_sent_at', type: 'datetime', nullable: true)]
     protected ?DateTimeInterface $pushSentAt = null;
 
+    /**
+     * Kolika zařízením push doopravdy odešel. `null` = ještě se neodesílalo, `0` = NIKOMU.
+     *
+     * ⚠️ Bez tohohle čísla nešlo poznat „odesláno" od „odesláno nikomu": `pushSentAt` se vyplní
+     * i tehdy, když cíl nemá jediný odběr (jinak by to cron zkoušel donekonečna), takže tým viděl
+     * vyplněné datum a mohl si myslet, že upozornění dorazilo. Je to tentýž vzorec jako u tichého
+     * selhání SMTP — „nespadlo to" není totéž co „došlo to".
+     *
+     * Migrace: `Version20260826200000`.
+     */
+    #[Column(name: 'push_recipients', type: 'integer', nullable: true)]
+    protected ?int $pushRecipients = null;
+
     public function __construct(?Nameable $nameable = null, ?string $textValue = null)
     {
         $this->setFieldsFromNameable($nameable);
@@ -212,6 +225,16 @@ class Announcement implements NameableInterface
     public function setPushSentAt(?DateTimeInterface $pushSentAt): void
     {
         $this->pushSentAt = $pushSentAt;
+    }
+
+    public function getPushRecipients(): ?int
+    {
+        return $this->pushRecipients;
+    }
+
+    public function setPushRecipients(?int $pushRecipients): void
+    {
+        $this->pushRecipients = $pushRecipients;
     }
 
     /** Zveřejněný = má datum zveřejnění a to už nastalo. */

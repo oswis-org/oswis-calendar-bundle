@@ -62,6 +62,14 @@ OswisOrg\OswisCalendarBundle\Entity\Announcement\Announcement:
         - 'calendar_announcement_put'
     pushSentAt:
       groups:
+        - 'calendar_announcements_get'
+        - 'calendar_announcement_get'
+    # ⚠️ Musí jet i v seznamu, ne jen v detailu: tým se na nástěnku dívá na SEZNAM vzkazů
+    # a právě tam potřebuje poznat „odesláno nikomu" od „odesláno". Kvůli tomu tu je i `pushSentAt` —
+    # bez data se nedá rozlišit „ještě neodesláno" od „odesláno nula lidem".
+    pushRecipients:
+      groups:
+        - 'calendar_announcements_get'
         - 'calendar_announcement_get'
     # Stažení vzkazu z nástěnky. Tým ho NEMAŽE natvrdo — vzkaz je provozní záznam, kdo co kdy
     # vyhlásil se během akce potřebuje dohledat. Odsud jen zápis: účastníkovi se smazané vzkazy

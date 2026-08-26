@@ -114,6 +114,10 @@ class PushNotificationService
                 $vzkaz->getParticipant()?->getId() ?? '—',
             ));
             $vzkaz->setPushSentAt(new \DateTimeImmutable());
+            // Nula se zapisuje ZÁMĚRNĚ, ne se nechává null: `null` znamená „ještě se neodesílalo",
+            // kdežto `0` znamená „odesílalo se a nedostal to nikdo". Bez toho rozdílu vypadá
+            // marný pokus stejně jako neodeslaný vzkaz a tým nemá podle čeho poznat, že je zle.
+            $vzkaz->setPushRecipients(0);
             $this->em->flush();
 
             return $vysledek;
@@ -137,6 +141,9 @@ class PushNotificationService
 
         $vysledek = array_merge($vysledek, $this->rozesli($odberatele, $obsah));
         $vzkaz->setPushSentAt(new \DateTimeImmutable());
+        // Počítá se DORUČENO, ne „kolik jsme jich zkusili". Zrušené odběry a selhání jdou mimo,
+        // jinak by číslo tvrdilo víc, než kolik lidí upozornění opravdu vidělo.
+        $vzkaz->setPushRecipients($vysledek['sent']);
         $this->em->flush();
         $this->logger->info(sprintf(
             'Push k vzkazu #%s: odesláno %d, selhalo %d, zrušených odběrů %d.',
