@@ -156,11 +156,18 @@
         {% else %}
             <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_assign', {eventSlug: eventSlug}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('pasky_prirazeni') }}">
-                <p>
+                <p style="display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
                     <button type="submit" class="btn btn-sm btn-primary">Uložit přiřazení</button>
-                    <span class="text-muted small">Ukládá se celá tabulka najednou.</span>
+                    {# Hledání je nutnost, ne ozdoba: turnus má přes 270 řádků a bez něj se konkrétní
+                       člověk hledá scrollováním. Filtruje se v prohlížeči, aby se rozdělaná
+                       přiřazení neztratila přenačtením stránky. #}
+                    <input type="search" id="pasky-hledat" class="form-control form-control-sm"
+                           style="width:16rem;" placeholder="Hledat jméno nebo #číslo"
+                           aria-label="Hledat účastníka">
+                    <span class="text-muted small" id="pasky-nalezeno"></span>
+                    <span class="text-muted small">Ukládá se celá tabulka najednou, i skryté řádky.</span>
                 </p>
-                <table class="list">
+                <table class="list" id="pasky-tabulka">
                     <thead>
                         <tr>
                             <th style="width: 3rem;">#</th>
@@ -200,5 +207,33 @@
                 </p>
             </form>
         {% endif %}
+        <script>
+            (function () {
+                var pole = document.getElementById('pasky-hledat');
+                var vysledek = document.getElementById('pasky-nalezeno');
+                if (!pole || !vysledek) { return; }
+                var radky = Array.prototype.slice.call(
+                    document.querySelectorAll('#pasky-tabulka tbody tr')
+                );
+                // Diakritika stranou: „Šerá" se musí najít i po napsání „sera".
+                var bezDiakritiky = function (text) {
+                    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                };
+                radky.forEach(function (radek) {
+                    radek.dataset.hledat = bezDiakritiky(radek.textContent || '');
+                });
+                var prekresli = function () {
+                    var dotaz = bezDiakritiky(pole.value.trim());
+                    var videt = 0;
+                    radky.forEach(function (radek) {
+                        var sedi = '' === dotaz || radek.dataset.hledat.indexOf(dotaz) !== -1;
+                        radek.hidden = !sedi;
+                        if (sedi) { videt++; }
+                    });
+                    vysledek.textContent = '' === dotaz ? '' : (videt + ' z ' + radky.length);
+                };
+                pole.addEventListener('input', prekresli);
+            })();
+        </script>
     </main>
 {% endblock body_content %}
