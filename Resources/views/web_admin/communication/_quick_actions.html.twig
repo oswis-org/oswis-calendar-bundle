@@ -28,42 +28,56 @@
     (phoneDigits matches '/^0\\d{9}$/' ? '420' ~ phoneDigits|slice(1) :
     (phoneDigits matches '/^\\d{9}$/' ? '420' ~ phoneDigits : phoneDigits)) %}
 
-<div class="quick-actions" style="display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin: .5rem 0;">
+{#
+  Rychlé akce ke kontaktu — SESKUPENÉ podle kanálu, ne šest samostatných tlačítek v řadě.
+
+  Do 27. 8. 2026 tu „Kopírovat e-mail" a „Kopírovat telefon" zabíraly dvě plná tlačítka
+  s dlouhým popiskem a v řadě dvanácti akcí se ztrácela informace, čeho se která týká.
+  Kopírování je doplněk k tomu vedlejšímu tlačítku, takže je k němu přilepené jako ikona
+  (`btn-group` z Bootstrapu) a nese `aria-label`, aby ho čtečka pojmenovala.
+#}
+<div class="quick-actions d-flex flex-wrap gap-2 align-items-center my-2">
     {# E-mail #}
     {% if email %}
-        <a class="btn btn-sm btn-outline-primary"
-           href="mailto:{{ email }}?subject={{ subject|url_encode }}"
-           title="Odeslat e-mail"><twig:ux:icon name="tabler:mail" class="oa-icon" /> E-mail</a>
-        <button type="button" class="btn btn-sm btn-outline-secondary"
-                title="Zkopírovat e-mail do schránky"
-                data-clipboard="{{ email }}"
-                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓ Zkopírováno';">
-            Kopírovat e-mail
-        </button>
+        <div class="btn-group btn-group-sm" role="group" aria-label="E-mail">
+            <a class="btn btn-outline-primary"
+               href="mailto:{{ email }}?subject={{ subject|url_encode }}"
+               title="Odeslat e-mail"><twig:ux:icon name="tabler:mail" class="oa-icon" /> E-mail</a>
+            <button type="button" class="btn btn-outline-secondary"
+                    aria-label="Zkopírovat e-mail do schránky"
+                    title="Zkopírovat e-mail do schránky"
+                    data-clipboard="{{ email }}"
+                    onclick="navigator.clipboard.writeText(this.dataset.clipboard); const p=this.innerHTML; this.textContent='✓'; setTimeout(() => { this.innerHTML = p; }, 1500);">
+                <twig:ux:icon name="tabler:copy" class="oa-icon" />
+            </button>
+        </div>
     {% else %}
         <button type="button" class="btn btn-sm btn-outline-secondary" disabled
                 title="E-mail neznáme"><twig:ux:icon name="tabler:mail" class="oa-icon" /> E-mail</button>
     {% endif %}
 
-    {# Telefon #}
+    {# Telefon — volání, SMS a WhatsApp jsou tři cesty k TÉMUŽ číslu, proto jedna skupina. #}
     {% if phone %}
-        <a class="btn btn-sm btn-outline-primary"
-           href="tel:{{ rawPhone|replace({' ': ''}) }}"
-           title="Zavolat"><twig:ux:icon name="tabler:phone" class="oa-icon" /> Volat</a>
-        <a class="btn btn-sm btn-outline-primary"
-           href="sms:{{ rawPhone|replace({' ': ''}) }}"
-           title="Poslat SMS"><twig:ux:icon name="tabler:message" class="oa-icon" /> SMS</a>
-        <a class="btn btn-sm btn-outline-success"
-           href="https://wa.me/{{ phoneE164 }}"
-           target="_blank"
-           rel="noopener"
-           title="WhatsApp"><twig:ux:icon name="tabler:brand-whatsapp" class="oa-icon" /> WhatsApp</a>
-        <button type="button" class="btn btn-sm btn-outline-secondary"
-                title="Zkopírovat telefon do schránky"
-                data-clipboard="{{ rawPhone }}"
-                onclick="navigator.clipboard.writeText(this.dataset.clipboard); this.textContent='✓ Zkopírováno';">
-            Kopírovat telefon
-        </button>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Telefon">
+            <a class="btn btn-outline-primary"
+               href="tel:{{ rawPhone|replace({' ': ''}) }}"
+               title="Zavolat"><twig:ux:icon name="tabler:phone" class="oa-icon" /> Volat</a>
+            <a class="btn btn-outline-primary"
+               href="sms:{{ rawPhone|replace({' ': ''}) }}"
+               title="Poslat SMS"><twig:ux:icon name="tabler:message" class="oa-icon" /> SMS</a>
+            <a class="btn btn-outline-success"
+               href="https://wa.me/{{ phoneE164 }}"
+               target="_blank"
+               rel="noopener"
+               title="WhatsApp"><twig:ux:icon name="tabler:brand-whatsapp" class="oa-icon" /> WhatsApp</a>
+            <button type="button" class="btn btn-outline-secondary"
+                    aria-label="Zkopírovat telefon do schránky"
+                    title="Zkopírovat telefon do schránky"
+                    data-clipboard="{{ rawPhone }}"
+                    onclick="navigator.clipboard.writeText(this.dataset.clipboard); const p=this.innerHTML; this.textContent='✓'; setTimeout(() => { this.innerHTML = p; }, 1500);">
+                <twig:ux:icon name="tabler:copy" class="oa-icon" />
+            </button>
+        </div>
     {% else %}
         <button type="button" class="btn btn-sm btn-outline-secondary" disabled
                 title="Telefon neznáme"><twig:ux:icon name="tabler:phone" class="oa-icon" /> Volat</button>

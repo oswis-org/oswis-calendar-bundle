@@ -20,8 +20,8 @@
     <div class="container">
         {# Hlavička — vzor jako web_admin/event.html.twig (h2 + odznaky) #}
         <div class="row">
-            <div class="col" style="display:flex; align-items:center; gap:.6rem; flex-wrap:wrap;">
-                <h2 style="margin:0;">
+            <div class="col d-flex align-items-center gap-2 flex-wrap">
+                <h2 class="m-0">
                     {{ contact.name|default('Účastník #' ~ participant.id) }}
                     <span class="badge text-bg-primary" style="font-size:.5em; vertical-align:middle;">#{{ participant.id }}</span>
                     {% if participant.deletedAt|default %}
@@ -45,72 +45,99 @@
             {% endif %}
         </p>
 
-        {# Akce: kontaktní + admin v jednom zalamovacím řádku #}
-        <div style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-bottom:1.5rem;">
+        {#
+          Akce nad přihláškou — SESKUPENÉ, ne dvanáct stejně důležitých tlačítek v řadě.
+
+          Do 27. 8. 2026 to byl jeden zalamovací pruh, ve kterém měly stejnou váhu věci
+          nesouměřitelné: „Volat" vedle „Stáhnout z IMAP" a hned vedle „Zrušit přihlášku",
+          které pošle účastníkovi e-mail o zrušení. Kdo stránku otevřel poprvé, neměl podle
+          čeho poznat, co je běžný úkon a co nevratný krok.
+
+          Rozdělení podle toho, čeho se akce týká:
+            1. OZVAT SE — dosáhnout na člověka (e-mail, telefon, SMS, WhatsApp)
+            2. ODESLAT / ZAPSAT — co systém pošle nebo si poznamená k TÉTO přihlášce
+            3. NÁSTROJE — ⚠️ globální, s tímhle účastníkem nesouvisí (nezařazená pošta,
+               stažení z IMAPu). Dřív seděly mezi jeho akcemi a vypadaly jako jeho.
+            4. vpravo, odděleně — NEVRATNÉ (zrušení / obnovení přihlášky)
+
+          Skupiny dělá `btn-group` z Bootstrapu, ne vlastní CSS.
+        #}
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
             {% include '@OswisOrgOswisCalendar/web_admin/communication/_quick_actions.html.twig' with { participant: participant } only %}
             {% if is_granted('ROLE_ADMIN') %}
-                <a class="btn btn-sm btn-outline-primary"
-                   href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}"
-                   title="Napsat a odeslat ad-hoc e-mail účastníkovi"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Nová zpráva</a>
-                <a class="btn btn-sm btn-outline-primary"
-                   href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}"
-                   title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt"><twig:ux:icon name="tabler:notes" class="oa-icon" /> Záznam komunikace</a>
-                <a class="btn btn-sm btn-outline-primary"
-                   href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}"
-                   title="Nezařazené příchozí / odchozí e-maily z IMAP"><twig:ux:icon name="tabler:inbox" class="oa-icon" /> Nezařazené e-maily</a>
-                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}" style="display:inline-block; margin:0;" title="Stáhnout nové e-maily z IMAP serveru">
-                    <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
-                    <button type="submit" class="btn btn-sm btn-outline-primary"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Stáhnout z IMAP</button>
-                </form>
-                {% if contact and contact.email|default and not acctActive %}
-                    <form method="post"
-                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"
-                          style="display:inline-block; margin:0;"
-                          onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-primary"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Aktivační e-mail</button>
-                    </form>
-                {% endif %}
-                {# Shrnutí = pokyny k platbě + QR. Renderuje se z aktuálních dat, takže ho lze poslat
-                   kdykoliv — i když v evidenci žádné shrnutí není (přihláška ověřená účtem, který už
-                   byl aktivovaný z dřívějška, ho historicky nedostala). #}
-                {% if contact and contact.email|default %}
-                    <form method="post"
-                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_send_summary', { participantId: participant.id }) }}"
-                          style="display:inline-block; margin:0;"
-                          onsubmit="return confirm('Odeslat účastníkovi #{{ participant.id }} shrnutí přihlášky s pokyny k platbě?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participant_send_summary_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-primary"
-                                title="Poslat shrnutí přihlášky s pokyny k platbě a QR kódem (podle aktuálních dat)"><twig:ux:icon name="tabler:receipt" class="oa-icon" /> Shrnutí přihlášky</button>
-                    </form>
-                {% endif %}
-                {% if participant.deletedAt|default %}
-                    <form method="post"
-                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
-                          style="display:inline-block; margin:0;"
-                          onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-success"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Obnovit</button>
-                    </form>
-                {% else %}
-                    {#
-                      Zrušení přihlášky šlo dosud jen ze seznamu a ze stránky duplicit. Na detailu —
-                      tedy tam, kde se člověk rozhoduje, protože právě prošel platby, příznaky a poštu —
-                      tlačítko chybělo a bylo nutné se vracet do seznamu a hledat řádek znovu.
+                <div class="btn-group btn-group-sm" role="group" aria-label="Odeslat nebo zapsat">
+                    <a class="btn btn-outline-primary"
+                       href="{{ path('oswis_org_oswis_calendar_web_admin_participant_compose_mail', { participantId: participant.id }) }}"
+                       title="Napsat a odeslat ad-hoc e-mail účastníkovi"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Nová zpráva</a>
+                    <a class="btn btn-outline-primary"
+                       href="{{ path('oswis_org_oswis_calendar_web_admin_participant_manual_note', { participantId: participant.id }) }}"
+                       title="Zaznamenat telefonát, SMS, chat nebo jiný kontakt"><twig:ux:icon name="tabler:notes" class="oa-icon" /> Záznam komunikace</a>
+                    {% if contact and contact.email|default and not acctActive %}
+                        {# Formulář uvnitř `btn-group` musí mít `m-0` a nesmí lámat řádek,
+                           jinak se skupina rozpadne na dvě řady. #}
+                        <form method="post" class="d-inline-block m-0"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_activation', { participantId: participant.id }) }}"
+                              onsubmit="return confirm('Znovu odeslat aktivační e-mail účastníkovi #{{ participant.id }}?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('participant_resend_activation_' ~ participant.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-0"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Aktivační e-mail</button>
+                        </form>
+                    {% endif %}
+                    {# Shrnutí = pokyny k platbě + QR. Renderuje se z aktuálních dat, takže ho lze poslat
+                       kdykoliv — i když v evidenci žádné shrnutí není (přihláška ověřená účtem, který už
+                       byl aktivovaný z dřívějška, ho historicky nedostala). #}
+                    {% if contact and contact.email|default %}
+                        <form method="post" class="d-inline-block m-0"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_send_summary', { participantId: participant.id }) }}"
+                              onsubmit="return confirm('Odeslat účastníkovi #{{ participant.id }} shrnutí přihlášky s pokyny k platbě?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('participant_send_summary_' ~ participant.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-start-0"
+                                    title="Poslat shrnutí přihlášky s pokyny k platbě a QR kódem (podle aktuálních dat)"><twig:ux:icon name="tabler:receipt" class="oa-icon" /> Shrnutí přihlášky</button>
+                        </form>
+                    {% endif %}
+                </div>
 
-                      Potvrzení hlásí zaplacenou částku, pokud nějaká je: zrušit přihlášku s penězi
-                      znamená, že peníze zůstanou viset na zrušené přihlášce a je potřeba je nejdřív
-                      převést jinam nebo vrátit.
-                    #}
-                    <form method="post"
-                          action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
-                          style="display:inline-block; margin:0;"
-                          onsubmit="return confirm('Opravdu zrušit přihlášku #{{ participant.id }}{% if paid > 0 %} — POZOR, visí na ní {{ paid|number_format(0, ',', ' ') }} Kč{% endif %}?\n\nÚčastníkovi se odešle e-mail o zrušení přihlášky.');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger"
-                                title="Zrušit přihlášku (měkké smazání — jde obnovit). Účastníkovi odejde e-mail o zrušení."><twig:ux:icon name="tabler:trash" class="oa-icon" /> Zrušit přihlášku</button>
+                {# ⚠️ Globální nástroje — NEtýkají se tohoto účastníka. Proto vlastní skupina
+                   a tlumená barva: „Stáhnout z IMAP" stahuje poštu celé schránky, ne jeho. #}
+                <div class="btn-group btn-group-sm" role="group" aria-label="Nástroje pošty">
+                    <a class="btn btn-outline-secondary"
+                       href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}"
+                       title="Nezařazené příchozí / odchozí e-maily z IMAP (celá schránka, ne jen tento účastník)"><twig:ux:icon name="tabler:inbox" class="oa-icon" /> Nezařazené e-maily</a>
+                    <form method="post" class="d-inline-block m-0" action="{{ path('oswis_org_oswis_calendar_web_admin_imap_refresh') }}"
+                          title="Stáhnout nové e-maily z IMAP serveru (celá schránka)">
+                        <input type="hidden" name="_token" value="{{ csrf_token('imap_refresh') }}">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary rounded-start-0"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Stáhnout z IMAP</button>
                     </form>
-                {% endif %}
+                </div>
+
+                {# Nevratné akce úplně vpravo a s odstupem — aby se na ně nedalo sáhnout omylem
+                   při míření na sousední tlačítko. #}
+                <div class="ms-auto">
+                    {% if participant.deletedAt|default %}
+                        <form method="post" class="d-inline-block m-0"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_restore', { participantId: participant.id }) }}"
+                              onsubmit="return confirm('Opravdu obnovit účastníka #{{ participant.id }}?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('participant_restore_' ~ participant.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-success"><twig:ux:icon name="tabler:refresh" class="oa-icon" /> Obnovit</button>
+                        </form>
+                    {% else %}
+                        {#
+                          Zrušení přihlášky šlo dosud jen ze seznamu a ze stránky duplicit. Na detailu —
+                          tedy tam, kde se člověk rozhoduje, protože právě prošel platby, příznaky a poštu —
+                          tlačítko chybělo a bylo nutné se vracet do seznamu a hledat řádek znovu.
+
+                          Potvrzení hlásí zaplacenou částku, pokud nějaká je: zrušit přihlášku s penězi
+                          znamená, že peníze zůstanou viset na zrušené přihlášce a je potřeba je nejdřív
+                          převést jinam nebo vrátit.
+                        #}
+                        <form method="post" class="d-inline-block m-0"
+                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_delete', { participantId: participant.id }) }}"
+                              onsubmit="return confirm('Opravdu zrušit přihlášku #{{ participant.id }}{% if paid > 0 %} — POZOR, visí na ní {{ paid|number_format(0, ',', ' ') }} Kč{% endif %}?\n\nÚčastníkovi se odešle e-mail o zrušení přihlášky.');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('participant_delete_' ~ participant.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    title="Zrušit přihlášku (měkké smazání — jde obnovit). Účastníkovi odejde e-mail o zrušení."><twig:ux:icon name="tabler:trash" class="oa-icon" /> Zrušit přihlášku</button>
+                        </form>
+                    {% endif %}
+                </div>
             {% endif %}
         </div>
 
@@ -123,7 +150,6 @@
                 <div class="col-12 col-xl-6">
                     <h3>Kontakt</h3>
                     <table class="list">
-                        <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>
                         <tbody><tr>
                             <td>Jméno</td>
                             <td><strong>{{ contact.name|default('—') }}</strong></td>
@@ -168,7 +194,7 @@
                             <td>
                                 <details>
                                     <summary style="cursor:pointer; color:var(--oa-primary);">upravit</summary>
-                                    <form method="post" style="margin-top:.5rem;"
+                                    <form class="mt-2" method="post"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_edit_contact', {participantId: participantId}) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('participant_edit_contact_' ~ participantId) }}">
                                         <label class="small" for="contactName-{{ participantId }}">Jméno</label>
@@ -215,7 +241,6 @@
                 <div class="col-12 col-xl-6">
                     <h3>Přihláška</h3>
                     <table class="list">
-                        <thead><tr><th>Položka</th><th>Hodnota</th></tr></thead>
                         <tbody><tr><td>ID přihlášky</td><td><strong>#{{ participant.id }}</strong></td></tr></tbody>
                         <tbody><tr><td>Vytvořeno</td><td>{{ participant.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('—') }}</td></tr></tbody>
                         <tbody><tr><td>Akce</td><td>{{ event.name|default('—') }}</td></tr></tbody>
@@ -225,64 +250,84 @@
                         <tbody><tr><td>Kategorie</td><td>{{ participant.participantCategory(false).name|default('—') }}</td></tr></tbody>
                         <tbody><tr><td>Var. symbol</td><td>{{ participant.variableSymbol|default('—') }}</td></tr></tbody>
                     </table>
-                    {# Osobní itinerář účastníka. Dřív osiřelý výstup (program_itinerary): renderoval
-                       se, byl krytý testem, ale odnikud na něj nevedl odkaz — dal se otevřít jen
-                       ručně sestaveným URL. Patří sem, protože potřebuje konkrétního člověka. #}
-                    {% if participant.event.slug|default %}
-                        <div id="itinerar" style="margin-top: .5rem;">
-                            <strong>Osobní itinerář</strong>
-                            <span class="text-muted" style="font-size: .8rem;">(program tohoto účastníka k vytištění)</span>
-                            <div style="margin-top: .25rem;">
-                                <a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"
-                                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_itinerary', {eventSlug: participant.event.slug, participantId: participantId}) }}">PDF</a>
+                </div>
+            </div>
+
+
+            {#
+              Úpravy TÉTO přihlášky — jedna karta, ne tři formuláře volně visící pod tabulkou.
+
+              Do 27. 8. 2026 seděly tyhle tři věci pod pravým sloupcem: pravý sloupec byl kvůli
+              nim o polovinu delší než levý, který končil u „Uživatelský účet" a nechával pod
+              sebou prázdnou plochu. Samy formuláře přitom neměly žádný obal — jen tučný popisek
+              a závorku — takže vypadaly jako zbytek, co se nevešel jinam. Patří k sobě (všechny
+              tři mění tuhle přihlášku), takže dostávají jednu kartu přes celou šířku a obě
+              tabulky nad nimi zůstanou stejně vysoké.
+
+              Textová pole navíc neměla ŽÁDNOU třídu, takže vedle stylovaného `form-select`
+              stály holé prohlížečové inputy. Teď mají `form-control` z Bootstrapu.
+            #}
+            <div class="card mb-4">
+                <div class="card-header py-2"><strong>Úpravy přihlášky</strong></div>
+                <div class="card-body d-flex flex-wrap gap-4">
+                        {# Osobní itinerář účastníka. Dřív osiřelý výstup (program_itinerary): renderoval
+                           se, byl krytý testem, ale odnikud na něj nevedl odkaz — dal se otevřít jen
+                           ručně sestaveným URL. Patří sem, protože potřebuje konkrétního člověka. #}
+                        {% if participant.event.slug|default %}
+                            <div class="mt-2" id="itinerar">
+                                <strong>Osobní itinerář</strong>
+                                <span class="text-muted small">(program tohoto účastníka k vytištění)</span>
+                                <div class="mt-1">
+                                    <a class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_itinerary', {eventSlug: participant.event.slug, participantId: participantId}) }}">PDF</a>
+                                </div>
                             </div>
-                        </div>
-                    {% endif %}
-                    {# Přesun jednotlivce. Dřív šlo přesunout jen přes hromadného průvodce, kde bylo
-                       nutné vybrat zdrojovou akci a kategorii a najít člověka v seznamu — z jeho
-                       vlastního detailu cesta nevedla. Aplikace to na detailu uměla, web-admin ne. #}
-                    {% if moveOffers|default([])|length > 0 %}
-                        <div id="presun" style="margin-top: .5rem;">
-                            <strong>Přesun na jinou nabídku</strong>
-                            <span class="text-muted" style="font-size: .8rem;">(jiný turnus téhož ročníku; účastníkovi odejde oznámení o změně přihlášky)</span>
-                            <form method="post" style="margin-top: .25rem;"
-                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_move', {participantId: participantId}) }}"
-                                  onsubmit="return confirm('Opravdu přesunout přihlášku #{{ participantId }} na vybranou nabídku? Účastníkovi odejde oznámení o změně.');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('participant_move_' ~ participantId) }}">
-                                <div style="display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end;">
-                                    <label style="font-size: .82rem;">Cílová nabídka<br>
-                                        <select name="targetOfferId" class="form-select form-select-sm" style="width: auto;">
-                                            {% for offer in moveOffers %}
-                                                <option value="{{ offer.id }}"{{ participant.offer(false).id|default(0) == offer.id ? ' selected' : '' }}>
-                                                    {{ offer.name }}{{ participant.offer(false).id|default(0) == offer.id ? ' — současná' : '' }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
+                        {% endif %}
+                        {# Přesun jednotlivce. Dřív šlo přesunout jen přes hromadného průvodce, kde bylo
+                           nutné vybrat zdrojovou akci a kategorii a najít člověka v seznamu — z jeho
+                           vlastního detailu cesta nevedla. Aplikace to na detailu uměla, web-admin ne. #}
+                        {% if moveOffers|default([])|length > 0 %}
+                            <div class="mt-2" id="presun">
+                                <strong>Přesun na jinou nabídku</strong>
+                                <span class="text-muted small">(jiný turnus téhož ročníku; účastníkovi odejde oznámení o změně přihlášky)</span>
+                                <form class="mt-1" method="post"
+                                      action="{{ path('oswis_org_oswis_calendar_web_admin_participant_move', {participantId: participantId}) }}"
+                                      onsubmit="return confirm('Opravdu přesunout přihlášku #{{ participantId }} na vybranou nabídku? Účastníkovi odejde oznámení o změně.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('participant_move_' ~ participantId) }}">
+                                    <div class="d-flex gap-2 flex-wrap align-items-end">
+                                        <label class="form-label small mb-1">Cílová nabídka<br>
+                                            <select name="targetOfferId" class="form-select form-select-sm w-auto">
+                                                {% for offer in moveOffers %}
+                                                    <option value="{{ offer.id }}"{{ participant.offer(false).id|default(0) == offer.id ? ' selected' : '' }}>
+                                                        {{ offer.name }}{{ participant.offer(false).id|default(0) == offer.id ? ' — současná' : '' }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </label>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Přesunout</button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                        <div class="mt-2" id="partial-stay">
+                            <strong>Zkrácený pobyt</strong>
+                            <span class="text-muted small">(pozdější příjezd / dřívější odjezd — volný text, plní tým z e-mailu/poznámky)</span>
+                            <form class="mt-1" method="post"
+                                  action="{{ path('oswis_org_oswis_calendar_web_admin_participant_partial_stay', {participantId: participantId}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('participant_partial_stay_' ~ participantId) }}">
+                                <div class="d-flex gap-2 flex-wrap align-items-end">
+                                    <label class="form-label small mb-1">Pozdější příjezd<br>
+                                        <input type="text" class="form-control form-control-sm" name="plannedArrival" value="{{ participant.plannedArrival|default('') }}"
+                                               placeholder="např. 2. 9. kolem 17:00" style="width: 12rem;">
                                     </label>
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Přesunout</button>
+                                    <label class="form-label small mb-1">Dřívější odjezd<br>
+                                        <input type="text" class="form-control form-control-sm" name="plannedDeparture" value="{{ participant.plannedDeparture|default('') }}"
+                                               placeholder="např. 4. 9. odpoledne" style="width: 12rem;">
+                                    </label>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
                                 </div>
                             </form>
                         </div>
-                    {% endif %}
-                    <div id="partial-stay" style="margin-top: .5rem;">
-                        <strong>Zkrácený pobyt</strong>
-                        <span class="text-muted" style="font-size: .8rem;">(pozdější příjezd / dřívější odjezd — volný text, plní tým z e-mailu/poznámky)</span>
-                        <form method="post" style="margin-top: .25rem;"
-                              action="{{ path('oswis_org_oswis_calendar_web_admin_participant_partial_stay', {participantId: participantId}) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('participant_partial_stay_' ~ participantId) }}">
-                            <div style="display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end;">
-                                <label style="font-size: .82rem;">Pozdější příjezd<br>
-                                    <input type="text" name="plannedArrival" value="{{ participant.plannedArrival|default('') }}"
-                                           placeholder="např. 2. 9. kolem 17:00" style="width: 12rem;">
-                                </label>
-                                <label style="font-size: .82rem;">Dřívější odjezd<br>
-                                    <input type="text" name="plannedDeparture" value="{{ participant.plannedDeparture|default('') }}"
-                                           placeholder="např. 4. 9. odpoledne" style="width: 12rem;">
-                                </label>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
-                            </div>
-                        </form>
-                    </div>
                 </div>
             </div>
 
@@ -301,7 +346,7 @@
                 <tbody>
                     {% for payment in participant.payments|default([]) %}
                         <tr>
-                            <td style="white-space:nowrap;">{{ payment.dateTime|date('j. n. Y', 'Europe/Prague')|default('—') }}</td>
+                            <td class="text-nowrap">{{ payment.dateTime|date('j. n. Y', 'Europe/Prague')|default('—') }}</td>
                             <td>{{ payment.type|default('—') }}</td>
                             <td class="text-center {{ payment.numericValue > 0 ? 'text-success' : 'text-danger' }}" style="white-space:nowrap;">
                                 <strong>{{ payment.numericValue > 0 ? '+' : '' }}{{ payment.numericValue|default(0) }}&nbsp;Kč</strong>
@@ -370,7 +415,7 @@
 
                ⚠️ Potvrzení odchází OKAMŽITĚ, ne cronem. Proto je zaškrtávátko a je VYPNUTÉ:
                ruční zadání bývá oprava nebo hotovost z ruky do ruky, kdy člověk stojí u stolu. #}
-            <details style="margin-bottom:1.5rem;">
+            <details class="mb-4">
                 <summary style="cursor:pointer; color:var(--oa-primary);">Zadat platbu ručně</summary>
                 <form method="post" style="margin-top:.6rem;"
                       action="{{ path('oswis_org_oswis_calendar_web_admin_participant_payment_new', { participantId: participantId }) }}"
@@ -416,7 +461,7 @@
                 </form>
             </details>
 
-            <div class="box" style="margin-bottom:1.5rem;">
+            <div class="box mb-4">
                 <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:.5rem; margin-bottom:.4rem;">
                     <span><strong>Zaplaceno {{ paid }}&nbsp;Kč</strong> <span class="text-muted">z {{ total }}&nbsp;Kč</span></span>
                     <span class="{{ (total > 0 and remaining <= 0) ? 'text-success' : 'text-danger' }}"><strong>{{ (total > 0 and remaining <= 0) ? 'zaplaceno' : 'zbývá ' ~ remaining ~ ' Kč' }}</strong></span>
@@ -445,7 +490,7 @@
                                 <div class="text-muted small" style="padding:.4rem 0; border-top:1px solid #e3e9f0;">Zatím nic nenastaveno.</div>
                             {% endfor %}
                             {% if addCats|length > 0 %}
-                                <details style="margin-top:.5rem;">
+                                <details class="mt-2">
                                     <summary class="btn btn-sm btn-outline-primary" style="display:inline-flex; cursor:pointer;">+ Přidat příznak ({{ addCats|length }})</summary>
                                     <div style="margin-top:.5rem; border-top:1px solid #e3e9f0;">
                                         {% for cat in addCats %}
@@ -460,7 +505,7 @@
             {% else %}
                 {# Read-only fallback (ne-admin, nebo žádné dostupné kategorie) #}
                 {% import '@OswisOrgOswisCalendar/web_admin/_macros.html.twig' as ui %}
-                <div class="box" style="margin-bottom:1.5rem;">
+                <div class="box mb-4">
                     {% for flagGroup in participant.flagGroups|default([]) %}
                         <div style="padding:.3rem 0; border-top:1px solid #e3e9f0;">
                             <strong>{{ flagGroup.flagGroupRange.flagCategory.name|default(flagGroup.name|default('Skupina')) }}:</strong>
@@ -483,9 +528,9 @@
             {% set notes = participant.notes|default([]) %}
             <form method="post"
                   action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_create', { participantId: participant.id }) }}"
-                  class="box" style="margin-bottom:1rem;">
+                  class="box mb-3">
                 <input type="hidden" name="_token" value="{{ csrf_token('participant_note_create_' ~ participant.id) }}">
-                <div style="display:flex; gap:.5rem; align-items:flex-start; flex-wrap:wrap;">
+                <div class="d-flex gap-2 align-items-start flex-wrap">
                     <textarea name="textValue" rows="2" placeholder="Nová poznámka…" required
                               class="form-control form-control-sm" style="flex:1 1 22rem; min-width:15rem;"></textarea>
                     <label class="small" style="white-space:nowrap; margin-top:.35rem;">
@@ -497,11 +542,11 @@
             {% if notes|length == 0 %}
                 <p class="text-muted">Žádné poznámky.</p>
             {% else %}
-                <table class="list" style="margin-bottom:1.5rem;">
+                <table class="list mb-4">
                     <thead><tr><th>Kdy / kdo</th><th>Poznámka</th><th class="text-center">Akce</th></tr></thead>
                     {% for note in notes %}
                         <tbody><tr>
-                            <td class="small" style="white-space:nowrap;">
+                            <td class="small text-nowrap">
                                 {{ note.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('') }}
                                 {% set author = note.createdBy|default %}
                                 {% if author %}<div class="block small text-muted">{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</div>{% endif %}
@@ -530,14 +575,14 @@
                                         </form>
                                         {# Už smazané poznámce se mazání nenabízí — nemá co udělat. #}
                                         {% if not note.deleted|default(false) %}
-                                            <form method="post"
+                                            <form class="m-0" method="post"
                                                   action="{{ path('oswis_org_oswis_calendar_web_admin_participant_note_delete', { participantId: participant.id, noteId: note.id }) }}"
-                                                  onsubmit="return confirm('Opravdu smazat tuto poznámku? Tobě zůstane přeškrtnutá, účastníkovi zmizí.');" style="margin:0;">
+                                                  onsubmit="return confirm('Opravdu smazat tuto poznámku? Tobě zůstane přeškrtnutá, účastníkovi zmizí.');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('participant_note_delete_' ~ note.id) }}">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:trash" class="oa-icon" /> Smazat</button>
                                             </form>
                                         {% else %}
-                                            <p class="small text-muted" style="margin:0;">Poznámka je smazaná — účastník ji nevidí.</p>
+                                            <p class="small text-muted m-0">Poznámka je smazaná — účastník ji nevidí.</p>
                                         {% endif %}
                                     </div>
                                 </details>
@@ -554,9 +599,9 @@
             {% set roommates = roommatePreferences|default([]) %}
             <form method="post"
                   action="{{ path('oswis_org_oswis_calendar_web_admin_roommate_create', { participantId: participant.id }) }}"
-                  class="box" style="margin-bottom:1rem;">
+                  class="box mb-3">
                 <input type="hidden" name="_token" value="{{ csrf_token('roommate_create_' ~ participant.id) }}">
-                <div style="display:flex; gap:.5rem; align-items:flex-start; flex-wrap:wrap;">
+                <div class="d-flex gap-2 align-items-start flex-wrap">
                     <input type="text" name="preferenceText" required maxlength="512"
                            placeholder="S kým chce bydlet (jméno, „chatka pro 4"…)"
                            class="form-control form-control-sm" style="flex:1 1 20rem; min-width:14rem;">
@@ -579,7 +624,7 @@
             {% if roommates|length == 0 %}
                 <p class="text-muted">Žádný požadavek na spolubydlení.</p>
             {% else %}
-                <table class="list" style="margin-bottom:1.5rem;">
+                <table class="list mb-4">
                     <thead><tr><th>Stav</th><th>Požadavek</th><th>Spárováno s</th><th class="text-center">Akce</th></tr></thead>
                     {% for preference in roommates %}
                         {# Druhá strana vazby z pohledu TOHOTO účastníka — u požadavku, který zadal
@@ -587,7 +632,7 @@
                         {% set isOwn = preference.participant is not null and preference.participant.id == participant.id %}
                         {% set counterpart = isOwn ? preference.withParticipant : preference.participant %}
                         <tbody><tr>
-                            <td style="white-space:nowrap;">
+                            <td class="text-nowrap">
                                 {# Odlišeno TVAREM i slovem, ne jen barvou. #}
                                 {% if preference.status == 'ok' %}
                                     <span class="badge text-bg-success">✓ spárováno</span>
@@ -623,9 +668,9 @@
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <form method="post"
+                                <form class="m-0" method="post"
                                       action="{{ path('oswis_org_oswis_calendar_web_admin_roommate_delete', { participantId: participant.id, preferenceId: preference.id }) }}"
-                                      onsubmit="return confirm('Opravdu smazat tento požadavek na spolubydlení?');" style="margin:0;">
+                                      onsubmit="return confirm('Opravdu smazat tento požadavek na spolubydlení?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('roommate_delete_' ~ preference.id) }}">
                                     <button type="submit" class="btn btn-sm btn-outline-danger"><twig:ux:icon name="tabler:trash" class="oa-icon" /></button>
                                 </form>
