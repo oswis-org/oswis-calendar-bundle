@@ -1,7 +1,17 @@
 {% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
 
-{# Program editor — přehledová stránka (spec krok 8, slice 1). Dny → aktivity + sekce + odkazy na PDF
-   výstupy. Read-only; blbuvzdorné formuláře (přidat/upravit/duplikovat) se navěsí v dalších slicech.
+{# Editor programu — JEDEN DEN NA OBRAZOVCE.
+
+   ⚠️ Do 27. 8. 2026 tahle stránka vypsala VŠECHNY dny naráz: při 112 aktivitách na turnus to byla
+   tabulka přes deset obrazovek, každý řádek s pěti tlačítky, a nad tím lišta s jedenácti dalšími.
+   Uživatel to shrnul jako „strašně složité, roztahané, nepřehledné" — a měl pravdu, problém nebyl
+   ve vzhledu, ale v tom, že obrazovka neměla jednu úlohu.
+
+   Teď má: **spravovat program jednoho dne**. Den se vybírá dlaždicemi nahoře (`?den=RRRR-MM-DD`),
+   dole je jen jeho tabulka. Všechno ostatní — bloky, dny, sekce, série, týmy a sedm tiskových
+   výstupů — je pořád tady, ale schované v „Další nástroje a tisk"; nic se nemazalo, jen se to
+   přestalo cpát na první pohled.
+
    Data: WebAdminProgramController::index (ProgramDataService). #}
 
 {% block body_content %}
@@ -69,41 +79,45 @@
             </div>
         </div>
 
-        {# Lišta akcí rozdělená do 3 jasných skupin (dřív 11 tlačítek v jedné řadě, náhodné barvy).
-           Konvence barev web-adminu: modrá plná = 1 hlavní akce · modrá obrys = provoz/navigace ·
-           oranžová obrys = výstupy/exporty (PDF/CSV) · červená = mazání · zelená = zveřejnit. #}
-        <div class="row" style="margin-top: .75rem;">
-            <div class="col" style="display: flex; gap: .6rem 1.4rem; flex-wrap: wrap; align-items: center;">
-                <twig:Admin:Toolbar label="Vytvořit:">
-                    <a class="btn btn-sm btn-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Aktivita</a>
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_block_new', {eventSlug: eventSlug}) }}"
-                       title="Nadřazený bod programu pro rotaci / sérii (např. dopolední rotace stanovišť)">+ Blok</a>
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Den</a>
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Sekce</a>
-                </twig:Admin:Toolbar>
-                {# provozní editory = modrá (navigace do sekce), sjednoceno s detailem turnusu #}
-                <twig:Admin:Toolbar label="Nástroje:">
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', {eventSlug: eventSlug}) }}">Rozpis služeb</a>
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_teams', {eventSlug: eventSlug}) }}">Týmy</a>
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_series', {eventSlug: eventSlug}) }}">Série</a>
-                </twig:Admin:Toolbar>
-                <twig:Admin:Toolbar label="Tisk (PDF):">
-                    <a class="btn btn-sm btn-outline-secondary" target="_blank"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský</a>
-                    <a class="btn btn-sm btn-outline-secondary" target="_blank"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_roster', {eventSlug: eventSlug}) }}">Služby</a>
-                    <a class="btn btn-sm btn-outline-secondary" target="_blank"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', {eventSlug: eventSlug}) }}">Tým</a>
-                    <a class="btn btn-sm btn-outline-secondary" target="_blank"
-                       href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', {eventSlug: eventSlug}) }}">Celý program</a>
-                </twig:Admin:Toolbar>
+        {# Jediná akce, kterou tým dělá denně, zůstává na očích. Zbytek (bloky, dny, sekce,
+           série, týmy, PDF) je pořád dostupný, ale je schovaný — na obrazovce jich bylo jedenáct
+           a mezi nimi se ta jedna podstatná ztrácela. #}
+        <div class="row mt-3">
+            <div class="col d-flex flex-wrap gap-3 align-items-center">
+                <a class="btn btn-primary"
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_new', {eventSlug: eventSlug}) }}">+ Přidat aktivitu</a>
+                <details class="oa-nastroje">
+                    <summary>Další nástroje a tisk</summary>
+                    <div class="oa-nastroje__obsah">
+                        <twig:Admin:Toolbar label="Vytvořit:">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_block_new', {eventSlug: eventSlug}) }}"
+                               title="Nadřazený bod programu pro rotaci / sérii (např. dopolední rotace stanovišť)">+ Blok</a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Den</a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Sekce</a>
+                        </twig:Admin:Toolbar>
+                        <twig:Admin:Toolbar label="Nástroje:">
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', {eventSlug: eventSlug}) }}">Rozpis služeb</a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_teams', {eventSlug: eventSlug}) }}">Týmy</a>
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_series', {eventSlug: eventSlug}) }}">Série</a>
+                        </twig:Admin:Toolbar>
+                        <twig:Admin:Toolbar label="Tisk (PDF):">
+                            <a class="btn btn-sm btn-outline-secondary" target="_blank"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský</a>
+                            <a class="btn btn-sm btn-outline-secondary" target="_blank"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_roster', {eventSlug: eventSlug}) }}">Služby</a>
+                            <a class="btn btn-sm btn-outline-secondary" target="_blank"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', {eventSlug: eventSlug}) }}">Tým</a>
+                            <a class="btn btn-sm btn-outline-secondary" target="_blank"
+                               href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', {eventSlug: eventSlug}) }}">Celý program</a>
+                        </twig:Admin:Toolbar>
+                    </div>
+                </details>
             </div>
         </div>
 
@@ -119,7 +133,54 @@
             </div>
         {% endif %}
 
+        {#
+          Výběr dne. Klíč dne je datum (`RRRR-MM-DD`), nezařazené aktivity mají klíč `mimo`.
+          Výchozí den: dnešek, pokud turnus zrovna běží, jinak první den s aktivitami — ať tým
+          po otevření vidí to, co zrovna řeší, a nemusí klikat.
+        #}
+        {% set dnesek = "now"|date("Y-m-d") %}
+        {% set klice = [] %}
+        {% for row in tree %}{% set klice = klice|merge([row.day ? row.day.date : "mimo"]) %}{% endfor %}
+        {% set zvoleny = app.request.query.get("den") %}
+        {# `??` tu nejde použít — Twig ho překládá na test `defined`, který funguje jen nad
+           prostou proměnnou, ne nad výsledkem filtru. Proto větvení. #}
+        {% if zvoleny not in klice %}
+            {% set sDatem = klice|filter(k => k != "mimo") %}
+            {% if dnesek in klice %}
+                {% set zvoleny = dnesek %}
+            {% elseif sDatem|length > 0 %}
+                {% set zvoleny = sDatem|first %}
+            {% else %}
+                {% set zvoleny = klice|length > 0 ? klice|first : null %}
+            {% endif %}
+        {% endif %}
+
+        {% if klice|length > 1 %}
+            <div class="row mt-3">
+                <div class="col d-flex flex-wrap gap-2" role="tablist" aria-label="Den programu">
+                    {% for row in tree %}
+                        {% set klic = row.day ? row.day.date : "mimo" %}
+                        {% set dny = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"] %}
+                        <a class="oa-den{{ klic == zvoleny ? " is-active" : "" }}"
+                           href="{{ path("oswis_org_oswis_calendar_web_admin_program_index", {eventSlug: eventSlug}) }}?den={{ klic }}"
+                           {{ klic == zvoleny ? "aria-current=\"page\"" : "" }}>
+                            {% if row.day %}
+                                <span class="oa-den__dow">{{ dny[(row.day.date|date("N")) - 1] }}</span>
+                                <span class="oa-den__datum">{{ row.day.date|date("j. n.") }}</span>
+                            {% else %}
+                                <span class="oa-den__dow">mimo</span>
+                                <span class="oa-den__datum">dny</span>
+                            {% endif %}
+                            <span class="oa-den__pocet">{{ row.activities|length }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
         {% for row in tree %}
+            {% set klic = row.day ? row.day.date : "mimo" %}
+            {% if klic == zvoleny %}
             <div class="row" style="margin-top: 1.25rem;">
                 <div class="col">
                     <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem; display: flex; align-items: baseline; gap: .5rem;">
@@ -218,17 +279,23 @@
                                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_edit', {eventSlug: eventSlug, activityId: a.id}) }}">upravit</a>
                                             <a class="btn btn-sm btn-outline-primary"
                                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_staff', {eventSlug: eventSlug, activityId: a.id}) }}">obsazení</a>
-                                            <form method="post" style="display: inline; margin: 0;"
-                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_duplicate', {eventSlug: eventSlug, activityId: a.id}) }}">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('program_activity_duplicate_' ~ a.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-primary">duplikovat</button>
-                                            </form>
-                                            <form method="post" style="display: inline; margin: 0;"
-                                                  action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_delete', {eventSlug: eventSlug, activityId: a.id}) }}"
-                                                  onsubmit="return confirm({% if a.subActivities|length > 0 %}'Smazat blok „{{ a.name|e('js') }}" i s {{ a.subActivities|length }} podakcemi? (skryje se z programu)'{% else %}'Smazat „{{ a.name|e('js') }}"? (skryje se z programu)'{% endif %});">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('program_activity_delete_' ~ a.id) }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">smazat</button>
-                                            </form>
+                                            {# Duplikovat a smazat jsou VEDLEJŠÍ úkony — jako textové odkazy, ne čtvrté
+                                               a páté tlačítko v řádku. Při deseti aktivitách na den to bylo padesát
+                                               stejně vypadajících tlačítek na obrazovce. Stejný tvar používá i řádek
+                                               dne nad tabulkou, takže to nezavádí nový vzor. #}
+                                            <span class="oa-radek-akce">
+                                                <form method="post"
+                                                      action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_duplicate', {eventSlug: eventSlug, activityId: a.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('program_activity_duplicate_' ~ a.id) }}">
+                                                    <button type="submit">duplikovat</button>
+                                                </form>
+                                                <form method="post"
+                                                      action="{{ path('oswis_org_oswis_calendar_web_admin_program_activity_delete', {eventSlug: eventSlug, activityId: a.id}) }}"
+                                                      onsubmit="return confirm({% if a.subActivities|length > 0 %}'Smazat blok „{{ a.name|e('js') }}" i s {{ a.subActivities|length }} podakcemi? (skryje se z programu)'{% else %}'Smazat „{{ a.name|e('js') }}"? (skryje se z programu)'{% endif %});">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('program_activity_delete_' ~ a.id) }}">
+                                                    <button type="submit" class="je-smazani">smazat</button>
+                                                </form>
+                                            </span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -237,6 +304,7 @@
                     </table>
                 </div>
             </div>
+            {% endif %}
         {% endfor %}
 
         {% if sections|length > 0 %}
