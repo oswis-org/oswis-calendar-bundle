@@ -270,11 +270,25 @@ final class WebAdminCheckInController extends AbstractController
             $b->getContact()?->getName(),
         );
         usort($participants, match ($sort) {
+            // Řadí se podle NÁZVU pásku, ne podle jeho barvy. Dřív se porovnával hex
+            // (`#1976d2` vs `#f57c00`), takže „Dle pásku" vracelo pořadí, které u stolu
+            // nikdo neuhodne — a dva pásky se stejnou barvou se slily dohromady.
+            // Lidi bez pásku patří na konec, ne mezi pásky podle prázdného řetězce.
             'band' => static function (Participant $a, Participant $b) use ($byName): int {
-                $ca = (string) $a->getGroup()?->getColor();
-                $cb = (string) $b->getGroup()?->getColor();
+                $na = $a->getGroup()?->getName();
+                $nb = $b->getGroup()?->getName();
+                if (null === $na && null === $nb) {
+                    return $byName($a, $b);
+                }
+                if (null === $na) {
+                    return 1;
+                }
+                if (null === $nb) {
+                    return -1;
+                }
+                $poradi = StringUtils::compareCzech($na, $nb);
 
-                return $ca === $cb ? $byName($a, $b) : strcmp($ca, $cb);
+                return 0 === $poradi ? $byName($a, $b) : $poradi;
             },
             'alpha' => $byName,
             // default 'diet': skupina s nižším mealOrder první (dietáři jdou na jídlo první),
