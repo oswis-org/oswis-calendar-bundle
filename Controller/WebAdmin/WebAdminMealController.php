@@ -11,6 +11,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\Meal;
 use OswisOrg\OswisCalendarBundle\Entity\Meal\MealVariant;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
+use OswisOrg\OswisCalendarBundle\Service\Document\OperationalDocumentService;
 use OswisOrg\OswisCoreBundle\Entity\NonPersistent\Nameable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -42,7 +43,28 @@ final class WebAdminMealController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly EventRepository $eventRepository,
+        private readonly OperationalDocumentService $documents,
     ) {
+    }
+
+    /**
+     * Kuchyňský list ke stažení přímo odsud.
+     *
+     * PROČ tady: PDF sice existuje i jako `/api/meal-output/kuchynsky-list`, jenže ta cesta
+     * sedí za firewallem `^/api`, který je **stateless a jede na JWT** — přihlášený správce
+     * web adminu má session cookie a dostal by 401. Odkaz z téhle stránky by tedy nefungoval.
+     * Původní rozhodnutí „ve web adminu výstup záměrně není" stálo na tom, že celý jídelníček
+     * žije v Ionicu; od 27. 8. 2026 to neplatí, jídla se zadávají tady.
+     */
+    #[IsGranted('ROLE_MANAGER')]
+    public function kitchenSheetPdf(string $eventSlug): Response
+    {
+        $event = $this->resolveEvent($eventSlug);
+
+        return new Response($this->documents->mealSheetPdf($event), Response::HTTP_OK, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="kuchynsky-list-'.$eventSlug.'.pdf"',
+        ]);
     }
 
     #[IsGranted('ROLE_MANAGER')]

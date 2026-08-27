@@ -20,9 +20,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Vzor je {@see ProgramOutputController}: JWT + ROLE_MANAGER, turnus přes `eventId` (to drží
  * Ionic admin) nebo `event` slug, render dělá služba a controller jen routuje.
  *
- * ⚠️ **Ve web-adminu tenhle výstup ZÁMĚRNĚ není.** Celý jídelníček žije v Ionic adminu; druhá
- * cesta ke stažení by znamenala druhé místo, kde se musí udržovat odkaz — a nedávno se ukázalo,
- * jak snadno takový odkaz chybí (route `/jidelnicek` byla týden nasazená bez položky v menu).
+ * ⚠️ **Od 27. 8. 2026 existuje i web-adminová cesta** (`WebAdminMealController::kitchenSheetPdf`),
+ * protože se tam přestěhovalo zadávání jídelníčku. Odkázat z web adminu SEM by nešlo: tahle routa
+ * sedí za firewallem `^/api`, který je stateless a jede na JWT, takže přihlášený správce se
+ * session cookie by dostal 401. Obě cesty volají tutéž službu, takže se PDF neliší.
  */
 #[IsGranted('ROLE_MANAGER')]
 final class MealOutputController

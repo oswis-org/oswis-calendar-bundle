@@ -965,3 +965,8 @@ oswis_org_oswis_calendar_web_admin_meal_seed:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::seed
   path: "/web_admin/jidelnicek/{eventSlug}/kostra"
   methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_meal_kitchen_sheet:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::kitchenSheetPdf
+  path: "/web_admin/jidelnicek/{eventSlug}/kuchynsky-list.pdf"
+  methods: [GET]

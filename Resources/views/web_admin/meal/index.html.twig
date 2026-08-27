@@ -20,6 +20,16 @@
             </div>
         {% endif %}
 
+        {# Kuchyňský list vede na web-adminovou routu, ne na `/api/meal-output/...`: ta sedí
+           za firewallem `^/api`, který jede na JWT, a přihlášený správce by dostal 401. #}
+        <p style="margin:.5rem 0 .25rem;">
+            <a class="btn btn-sm btn-outline-primary"
+               href="{{ path('oswis_org_oswis_calendar_web_admin_meal_kitchen_sheet', {eventSlug: eventSlug}) }}">
+                <twig:ux:icon name="tabler:printer" class="oa-icon" /> Kuchyňský list (PDF)
+            </a>
+            <span class="text-muted small">Kolik čeho uvařit + jmenný seznam dietářů.</span>
+        </p>
+
         {% if kostraDnu > 0 %}
             <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_seed', {eventSlug: eventSlug}) }}"
                   style="margin: .5rem 0 1.25rem;">
