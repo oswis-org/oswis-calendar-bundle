@@ -118,14 +118,25 @@ class ParticipantPaymentsImport
         // v dosavadních výchozích hodnotách: od PHP 8.4 je vynechání `$escape` deprecated a jeho
         // výchozí hodnota se má změnit — což by u importu plateb tiše změnilo parsování dat.
         $csvRows = str_getcsv(''.$this->getTextValue(), "\n", '"', "\\");
-        $csvPaymentRows = array_map(static fn ($row) => self::getColumnsFromCsvRow(''.$row, $csvSettings), $csvRows);
-        array_walk($csvPaymentRows, static fn (&$a) => $a = array_combine(
-            array_map(static fn (?string $item): string => $item ?? '', $csvPaymentRows[0]),
-            $a,
-        ));
-        array_shift($csvPaymentRows); # remove column header
-        foreach ($csvPaymentRows as $csvPaymentRowKey => $csvPaymentRow) {
-            $payments->add($this->makePaymentFromCsv($csvPaymentRow, $csvSettings, ''.$csvRows[$csvPaymentRowKey + 1]));
+        // První řádek je hlavička — dává sloupcům jména, pod kterými se pak čtou.
+        // Pořadí sloupců se mezi bankami liší, takže na pozice se spoléhat nelze.
+        $hlavicka = array_map(
+            static fn (?string $nazev): string => $nazev ?? '',
+            self::getColumnsFromCsvRow(''.$csvRows[0], $csvSettings),
+        );
+        foreach ($csvRows as $poradi => $syrovyRadek) {
+            if (0 === $poradi) {
+                continue;
+            }
+            $hodnoty = self::getColumnsFromCsvRow(''.$syrovyRadek, $csvSettings);
+            if (count($hodnoty) !== count($hlavicka)) {
+                // Řádek s jiným počtem sloupců než hlavička se spojit nedá; `array_combine()`
+                // by na něm skončil chybou a shodil celý import.
+                continue;
+            }
+            /** @var array<string, ?string> $radek */
+            $radek = array_combine($hlavicka, $hodnoty);
+            $payments->add($this->makePaymentFromCsv($radek, $csvSettings, ''.$syrovyRadek));
         }
 
         return $payments;
@@ -147,6 +158,12 @@ class ParticipantPaymentsImport
         );
     }
 
+    /**
+     * Řádek výpisu je klíčovaný NÁZVY SLOUPCŮ z hlavičky (viz `extractPayments()`,
+     * kde se přes `array_combine()` spojí hlavička s hodnotami) — ne pořadím.
+     *
+     * @param array<string, mixed> $csvPaymentRow
+     */
     public function makePaymentFromCsv(
         array $csvPaymentRow,
         CsvPaymentImportSettings $csvSettings,
@@ -160,7 +177,11 @@ class ParticipantPaymentsImport
             $dateTime,
             ParticipantPayment::TYPE_BANK_TRANSFER
         );
-        $payment->setInternalNote($csvRow);
+        // Syrový řádek patří do vlastního pole, ne do interní poznámky: tu formulář
+        // „Upravit platbu" nabízí k volnému psaní a přepsáním by se audit ztratil.
+        $payment->setBankRawRow($csvRow);
+        $payment->setCurrency(self::toString($csvCurrency));
+        self::vyplnDetailyZVypisu($payment, $csvPaymentRow);
         $payment->setExternalId(self::toString($csvPaymentRow[(string) $csvSettings->getIdentifierColumnName()] ?? null));
         $errors = [];
         if (!$csvCurrency || $csvCurrency !== $currencyAllowed) {
@@ -180,6 +201,39 @@ class ParticipantPaymentsImport
         $payment->setVariableSymbol($this->getVsFromCsvPayment($csvPaymentRow, $csvSettings));
 
         return $payment;
+    }
+
+    /**
+     * Rozepíše sloupce výpisu do vlastních polí platby.
+     *
+     * Bez toho zůstávaly „Zpráva pro příjemce" a „Název protiúčtu" jen uvnitř syrového
+     * řádku — tedy nedohledatelné dotazem a v administraci k přečtení jen po očích.
+     * Přitom právě podle nich se dohledává, kdo platbu poslal (viz rozlišování
+     * duplicitních přihlášek).
+     *
+     * @param array<string, mixed> $csvPaymentRow
+     */
+    private static function vyplnDetailyZVypisu(ParticipantPayment $payment, array $csvPaymentRow): void
+    {
+        $sloupce = CsvPaymentImportSettings::DETAIL_COLUMN_NAMES;
+        $hodnota = static fn (string $klic): ?string => isset($sloupce[$klic])
+            ? self::toString($csvPaymentRow[$sloupce[$klic]] ?? null)
+            : null;
+
+        $payment->setCounterpartyName($hodnota('counterpartyName'));
+        $payment->setMessageForRecipient($hodnota('messageForRecipient'));
+        $payment->setBankOperationType($hodnota('bankOperationType'));
+        $payment->setConstantSymbol($hodnota('constantSymbol'));
+        $payment->setSpecificSymbol($hodnota('specificSymbol'));
+
+        // Číslo účtu je ve výpisu rozdělené na dva sloupce; dohromady dává tvar,
+        // který jde porovnat s tím, co lidé píšou do e-mailů.
+        $ucet = $hodnota('counterpartyAccount');
+        $kodBanky = $hodnota('bankCode');
+        $payment->setCounterpartyAccount(match (true) {
+            null !== $ucet && null !== $kodBanky => $ucet.'/'.$kodBanky,
+            default                              => $ucet,
+        });
     }
 
     /**

@@ -132,6 +132,45 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     #[Column(type: 'string', nullable: true)]
     protected ?string $errorMessage = null;
 
+    /**
+     * Přesný řádek z bankovního výpisu, tak jak přišel. AUDIT — needitovat.
+     *
+     * Do 27. 8. 2026 se ukládal do `internalNote`, tedy do pole, které formulář
+     * „Upravit platbu" nabízí jako **Interní poznámka** k volnému psaní. Kdo do ní
+     * napsal, ten původní řádek z banky nenávratně přepsal — a nikde se to neohlásilo.
+     * Na klonu měly ten řádek v poznámce **všechny 5013 importované platby**, zatímco
+     * lidskou poznámku tam neměla ani jedna: pole bylo obsazené strojovými daty
+     * a nikdo ho nemohl použít k tomu, k čemu je.
+     */
+    #[Column(name: 'bank_raw_row', type: 'text', nullable: true)]
+    protected ?string $bankRawRow = null;
+
+    /** Název protiúčtu — kdo platbu poslal. */
+    #[Column(name: 'counterparty_name', type: 'string', length: 255, nullable: true)]
+    protected ?string $counterpartyName = null;
+
+    /** Protiúčet i s kódem banky ve tvaru `1465708003/0800`. */
+    #[Column(name: 'counterparty_account', type: 'string', length: 64, nullable: true)]
+    protected ?string $counterpartyAccount = null;
+
+    /** „Zpráva pro příjemce" — to, co plátce napsal. Často jediné vodítko k párování. */
+    #[Column(name: 'message_for_recipient', type: 'string', length: 255, nullable: true)]
+    protected ?string $messageForRecipient = null;
+
+    /** Typ operace podle banky, např. „Okamžitá příchozí platba". */
+    #[Column(name: 'bank_operation_type', type: 'string', length: 100, nullable: true)]
+    protected ?string $bankOperationType = null;
+
+    #[Column(name: 'constant_symbol', type: 'string', length: 16, nullable: true)]
+    protected ?string $constantSymbol = null;
+
+    #[Column(name: 'specific_symbol', type: 'string', length: 16, nullable: true)]
+    protected ?string $specificSymbol = null;
+
+    /** Měna z výpisu. Dosud se jen kontrolovala proti povolené a nikam se neukládala. */
+    #[Column(name: 'currency', type: 'string', length: 8, nullable: true)]
+    protected ?string $currency = null;
+
     public function __construct(?int $numericValue = null, ?DateTime $dateTime = null, ?string $type = null)
     {
         $this->setNumericValue($numericValue);
@@ -173,6 +212,100 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     public function getErrorMessage(): ?string
     {
         return $this->errorMessage;
+    }
+
+    public function getBankRawRow(): ?string
+    {
+        return $this->bankRawRow;
+    }
+
+    public function setBankRawRow(?string $bankRawRow): void
+    {
+        $this->bankRawRow = $bankRawRow;
+    }
+
+    public function getCounterpartyName(): ?string
+    {
+        return $this->counterpartyName;
+    }
+
+    public function setCounterpartyName(?string $counterpartyName): void
+    {
+        $this->counterpartyName = self::orez($counterpartyName, 255);
+    }
+
+    public function getCounterpartyAccount(): ?string
+    {
+        return $this->counterpartyAccount;
+    }
+
+    public function setCounterpartyAccount(?string $counterpartyAccount): void
+    {
+        $this->counterpartyAccount = self::orez($counterpartyAccount, 64);
+    }
+
+    public function getMessageForRecipient(): ?string
+    {
+        return $this->messageForRecipient;
+    }
+
+    public function setMessageForRecipient(?string $messageForRecipient): void
+    {
+        $this->messageForRecipient = self::orez($messageForRecipient, 255);
+    }
+
+    public function getBankOperationType(): ?string
+    {
+        return $this->bankOperationType;
+    }
+
+    public function setBankOperationType(?string $bankOperationType): void
+    {
+        $this->bankOperationType = self::orez($bankOperationType, 100);
+    }
+
+    public function getConstantSymbol(): ?string
+    {
+        return $this->constantSymbol;
+    }
+
+    public function setConstantSymbol(?string $constantSymbol): void
+    {
+        $this->constantSymbol = self::orez($constantSymbol, 16);
+    }
+
+    public function getSpecificSymbol(): ?string
+    {
+        return $this->specificSymbol;
+    }
+
+    public function setSpecificSymbol(?string $specificSymbol): void
+    {
+        $this->specificSymbol = self::orez($specificSymbol, 16);
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?string $currency): void
+    {
+        $this->currency = self::orez($currency, 8);
+    }
+
+    /**
+     * Hodnoty jdou z cizího CSV, takže se na délku sloupce nedá spolehnout — bez ořezu
+     * by delší jméno protiúčtu shodilo celý import na chybě z databáze.
+     */
+    private static function orez(?string $hodnota, int $delka): ?string
+    {
+        if (null === $hodnota) {
+            return null;
+        }
+        $orezane = mb_substr(trim($hodnota), 0, $delka);
+
+        return '' === $orezane ? null : $orezane;
     }
 
     public function setErrorMessage(?string $errorMessage): void

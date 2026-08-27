@@ -12,8 +12,25 @@
             <tr><th>Částka</th><td>{{ payment.numericValue|default(0) }},- Kč</td></tr>
             <tr><th>VS</th><td>{{ payment.variableSymbol|default('—') }}</td></tr>
             <tr><th>Datum</th><td>{{ payment.dateTime ? payment.dateTime|date('j. n. Y H:i') : '—' }}</td></tr>
+            {# Tohle je obrazovka, kde se rozhoduje, komu nepřiřazená platba patří. Právě proto
+               tu stojí jméno plátce, jeho účet a zpráva pro příjemce samostatně — dřív byly jen
+               uvnitř syrového řádku z výpisu, tedy k přečtení po očích mezi středníky. #}
+            <tr><th>Kdo poslal</th><td>{{ payment.counterpartyName|default('—') }}</td></tr>
+            <tr><th>Protiúčet</th><td>{{ payment.counterpartyAccount|default('—') }}</td></tr>
+            <tr><th>Zpráva pro příjemce</th><td>{{ payment.messageForRecipient|default('—') }}</td></tr>
             <tr><th>Poznámka</th><td>{{ payment.note|default('—') }}</td></tr>
             <tr><th>Interní poznámka</th><td>{{ payment.internalNote|default('—') }}</td></tr>
+            {% if payment.bankRawRow|default %}
+                <tr>
+                    <th>Řádek z výpisu</th>
+                    <td>
+                        <details>
+                            <summary style="cursor:pointer; color:var(--oa-primary);">zobrazit</summary>
+                            <code class="small" style="word-break:break-all;">{{ payment.bankRawRow }}</code>
+                        </details>
+                    </td>
+                </tr>
+            {% endif %}
             <tr>
                 <th>Aktuální přiřazení</th>
                 <td>

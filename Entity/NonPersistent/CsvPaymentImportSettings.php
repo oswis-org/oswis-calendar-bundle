@@ -27,6 +27,30 @@ class CsvPaymentImportSettings
     public const DEFAULT_CURRENCY_COLUMN_NAME = 'Měna';
     public const DEFAULT_CURRENCY_ALLOWED = 'CZK';
 
+    /**
+     * Sloupce výpisu, které se ukládají do vlastních polí platby.
+     *
+     * Klíč = pole platby, hodnota = název sloupce v hlavičce CSV. Sloupec, který
+     * v hlavičce není, se přeskočí — banky se v pojmenování liší a import kvůli
+     * chybějícímu detailu padat nesmí.
+     *
+     * Ověřeno proti hlavičce skutečných výpisů (ČSOB, 27. 8. 2026):
+     * "Datum";"Objem";"Měna";"Číslo účtu";"Protiúčet";"Kód banky";"KS";"VS";"SS";
+     * "Zpráva pro příjemce";"Poznámka";"ID operace";"Název protiúčtu";"Typ";…
+     *
+     * @var array<string, string>
+     */
+    public const DETAIL_COLUMN_NAMES
+        = [
+            'counterpartyName'    => 'Název protiúčtu',
+            'counterpartyAccount' => 'Protiúčet',
+            'bankCode'            => 'Kód banky',
+            'messageForRecipient' => 'Zpráva pro příjemce',
+            'bankOperationType'   => 'Typ',
+            'constantSymbol'      => 'KS',
+            'specificSymbol'      => 'SS',
+        ];
+
     protected ?string $delimiter = self::DEFAULT_DELIMITER;
 
     protected ?string $enclosure = self::DEFAULT_ENCLOSURE;

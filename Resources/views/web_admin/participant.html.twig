@@ -306,9 +306,26 @@
                             <td class="text-center {{ payment.numericValue > 0 ? 'text-success' : 'text-danger' }}" style="white-space:nowrap;">
                                 <strong>{{ payment.numericValue > 0 ? '+' : '' }}{{ payment.numericValue|default(0) }}&nbsp;Kč</strong>
                             </td>
+                            {# Dřív tu stál CELÝ řádek z bankovního výpisu i se středníky a uvozovkami
+                               a zabíral půlku tabulky. Užitečné části z něj jsou od 27. 8. 2026 ve vlastních
+                               polích platby; syrový řádek zůstává (audit), ale schovaný pod rozbalovátkem. #}
                             <td>
-                                {{ payment.note|default }}
-                                {% if payment.internalNote|default %}<div class="block small text-muted">{{ payment.internalNote }}</div>{% endif %}
+                                {% if payment.messageForRecipient|default %}
+                                    <div>{{ payment.messageForRecipient }}</div>
+                                {% endif %}
+                                {% if payment.counterpartyName|default or payment.counterpartyAccount|default %}
+                                    <div class="small text-muted">
+                                        {{ payment.counterpartyName|default('(neuvedeno)') }}{% if payment.counterpartyAccount|default %} · {{ payment.counterpartyAccount }}{% endif %}
+                                    </div>
+                                {% endif %}
+                                {% if payment.note|default %}<div>{{ payment.note }}</div>{% endif %}
+                                {% if payment.internalNote|default %}<div class="small text-muted">{{ payment.internalNote }}</div>{% endif %}
+                                {% if payment.bankRawRow|default %}
+                                    <details>
+                                        <summary style="cursor:pointer; color:var(--oa-primary); font-size:.82rem;">Řádek z výpisu</summary>
+                                        <code class="small" style="word-break:break-all;">{{ payment.bankRawRow }}</code>
+                                    </details>
+                                {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if is_granted('ROLE_ADMIN') and payment.id|default %}

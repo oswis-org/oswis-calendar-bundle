@@ -75,4 +75,18 @@
         <td colspan="{{ noteColspan }}"><small>Interní poznámka: {{ payment.internalNote }}</small></td>
     </tr>
 {% endif %}
+{# Kdo platbu poslal a co k ní napsal — dřív to bylo jen uvnitř syrového řádku z výpisu,
+   který se sem tiskl jako „Interní poznámka". Syrový řádek se tu záměrně NEVYPISUJE:
+   tenhle výpis se používá i v přehledu plateb, kde by z každé platby udělal odstavec. #}
+{% if payment.counterpartyName|default or payment.messageForRecipient|default %}
+    <tr>
+        <td colspan="{{ noteColspan }}">
+            <small>
+                {%- if payment.counterpartyName|default %}Od: {{ payment.counterpartyName }}{% if payment.counterpartyAccount|default %} ({{ payment.counterpartyAccount }}){% endif %}{% endif -%}
+                {%- if payment.counterpartyName|default and payment.messageForRecipient|default %} · {% endif -%}
+                {%- if payment.messageForRecipient|default %}Zpráva: {{ payment.messageForRecipient }}{% endif -%}
+            </small>
+        </td>
+    </tr>
+{% endif %}
 </tbody>

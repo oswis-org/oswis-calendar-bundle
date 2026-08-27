@@ -58,6 +58,14 @@
                 {% if payment.internalNote %}
                     <tr><td colspan="3"><small>Interní poznámka: {{ payment.internalNote }}</small></td></tr>
                 {% endif %}
+                {# Report chodí na archivní adresu týmu, ne účastníkům. Kdo poslal a co napsal
+                   je tu to podstatné — dřív to bylo jen uvnitř syrového řádku z výpisu. #}
+                {% if payment.counterpartyName|default %}
+                    <tr><td colspan="3"><small>Od: {{ payment.counterpartyName }}{% if payment.counterpartyAccount|default %} ({{ payment.counterpartyAccount }}){% endif %}</small></td></tr>
+                {% endif %}
+                {% if payment.messageForRecipient|default %}
+                    <tr><td colspan="3"><small>Zpráva pro příjemce: {{ payment.messageForRecipient }}</small></td></tr>
+                {% endif %}
                 </tbody>
             {% endfor %}
         </table>
