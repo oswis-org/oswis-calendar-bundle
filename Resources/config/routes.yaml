@@ -928,3 +928,40 @@ oswis_org_oswis_calendar_web_admin_announcement_delete:
   methods: [POST]
   requirements:
     announcementId: '\d+'
+
+# Jídelníček turnusu ve web adminu — modul žil jen v Ionicu a na produkci proto bylo 0 jídel.
+oswis_org_oswis_calendar_web_admin_meals:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::index
+  path: "/web_admin/jidelnicek/{eventSlug}"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_meal_save:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::saveMeal
+  path: "/web_admin/jidelnicek/{eventSlug}/jidlo"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_meal_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::deleteMeal
+  path: "/web_admin/jidelnicek/{eventSlug}/jidlo/{mealId}/smazat"
+  methods: [POST]
+  requirements:
+    mealId: '\d+'
+
+oswis_org_oswis_calendar_web_admin_meal_variant_save:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::saveVariant
+  path: "/web_admin/jidelnicek/{eventSlug}/jidlo/{mealId}/varianta"
+  methods: [POST]
+  requirements:
+    mealId: '\d+'
+
+oswis_org_oswis_calendar_web_admin_meal_variant_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::deleteVariant
+  path: "/web_admin/jidelnicek/{eventSlug}/varianta/{variantId}/smazat"
+  methods: [POST]
+  requirements:
+    variantId: '\d+'
+
+oswis_org_oswis_calendar_web_admin_meal_seed:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::seed
+  path: "/web_admin/jidelnicek/{eventSlug}/kostra"
+  methods: [POST]

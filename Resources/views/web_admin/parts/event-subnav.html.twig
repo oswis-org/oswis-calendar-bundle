@@ -5,7 +5,7 @@
    Parametry (include with { ... } only):
      - eventSlug  (povinné) — slug turnusu pro odkazy
      - eventName  (nepovinné) — popisek turnusu vlevo
-     - current    (nepovinné) — klíč aktivní položky: overview|participants|bands|board|checkin|program|roster
+     - current    (nepovinné) — klíč aktivní položky: overview|participants|bands|board|meals|checkin|program|roster
 
    Funkce týmu ZÁMĚRNĚ není v pruhu — je to globální číselník rolí (bez eventSlug), ne podstránka
    turnusu; odkaz na něj žije na stránce Rozpis služeb a v úvodce. #}
@@ -20,6 +20,8 @@
        href="{{ path('oswis_org_oswis_calendar_web_admin_participant_groups', { eventSlug: eventSlug }) }}">Pásky</a>
     <a class="oa-subnav__item{{ _cur == 'board' ? ' is-active' : '' }}"
        href="{{ path('oswis_org_oswis_calendar_web_admin_announcements', { eventSlug: eventSlug }) }}">Nástěnka</a>
+    <a class="oa-subnav__item{{ _cur == 'meals' ? ' is-active' : '' }}"
+       href="{{ path('oswis_org_oswis_calendar_web_admin_meals', { eventSlug: eventSlug }) }}">Jídelníček</a>
     <a class="oa-subnav__item{{ _cur == 'checkin' ? ' is-active' : '' }}"
        href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">Check-in</a>
     <a class="oa-subnav__item{{ _cur == 'program' ? ' is-active' : '' }}"

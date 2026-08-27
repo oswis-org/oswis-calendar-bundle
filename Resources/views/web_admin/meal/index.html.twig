@@ -1,0 +1,166 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+            with { eventSlug: eventSlug, eventName: (event.shortName|default(event.name|default(''))), current: 'meals' } only %}
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Jídla turnusu a jejich varianty. Z toho se skládá <strong>kuchyňský list</strong>
+            (kolik čeho uvařit) a účastníci si podle toho v appce vybírají.
+        </p>
+
+        {% if dny is empty %}
+            <div class="alert alert-warning" style="max-width: 60rem;">
+                <strong>Jídelníček je prázdný.</strong> Kuchyňský list tedy nemá co vytisknout
+                a účastníci si nemají z čeho vybrat. Nejrychlejší začátek je založit kostru —
+                snídani, oběd a večeři na každý den turnusu — a pak k nim dopsat varianty.
+            </div>
+        {% endif %}
+
+        {% if kostraDnu > 0 %}
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_seed', {eventSlug: eventSlug}) }}"
+                  style="margin: .5rem 0 1.25rem;">
+                <input type="hidden" name="_token" value="{{ csrf_token('jidla_kostra') }}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <twig:ux:icon name="tabler:wand" class="oa-icon" /> Založit kostru jídel ({{ kostraDnu }} dnů)
+                </button>
+                <span class="text-muted small">
+                    Snídaně, oběd a večeře na každý den. Co už existuje, se nezaloží podruhé.
+                </span>
+            </form>
+        {% endif %}
+
+        {% for den in dny %}
+            <h3 style="margin-top: 1.25rem;">{{ den.datum|date('l j. n. Y', 'Europe/Prague')|capitalize }}</h3>
+            <table class="list">
+                <thead>
+                    <tr>
+                        <th style="width: 8rem;">Jídlo</th>
+                        <th style="width: 11rem;">Výdej</th>
+                        <th>Varianty</th>
+                        <th style="width: 6rem;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for jidlo in den.jidla %}
+                        <tr>
+                            <td>
+                                <strong>{{ typy[jidlo.type]|default(jidlo.type) }}</strong>
+                                {% if jidlo.name %}<div class="small text-muted">{{ jidlo.name }}</div>{% endif %}
+                            </td>
+                            <td>
+                                {% if jidlo.servedFrom %}
+                                    {{ jidlo.servedFrom|date('H:i', 'Europe/Prague') }}{% if jidlo.servedTo %}–{{ jidlo.servedTo|date('H:i', 'Europe/Prague') }}{% endif %}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                                <details style="margin-top:.25rem;">
+                                    <summary style="cursor:pointer; color:var(--oa-primary); font-size:.82rem;">Upravit</summary>
+                                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_save', {eventSlug: eventSlug}) }}"
+                                          style="margin-top:.35rem; display:flex; flex-direction:column; gap:.25rem;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('jidlo_ulozit') }}">
+                                        <input type="hidden" name="id" value="{{ jidlo.id }}">
+                                        <input type="date" name="date" class="form-control form-control-sm"
+                                               value="{{ jidlo.date|date('Y-m-d') }}" required>
+                                        <select name="type" class="form-select form-select-sm">
+                                            {% for klic, popis in typy %}
+                                                <option value="{{ klic }}" {{ jidlo.type == klic ? 'selected' : '' }}>{{ popis }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="text" name="name" class="form-control form-control-sm"
+                                               placeholder="popisek (nepovinné)" value="{{ jidlo.name }}">
+                                        <input type="time" name="servedFrom" class="form-control form-control-sm"
+                                               value="{{ jidlo.servedFrom ? jidlo.servedFrom|date('H:i') : '' }}">
+                                        <input type="time" name="servedTo" class="form-control form-control-sm"
+                                               value="{{ jidlo.servedTo ? jidlo.servedTo|date('H:i') : '' }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                                    </form>
+                                </details>
+                            </td>
+                            <td>
+                                {% set varianty = jidlo.variants|filter(v => not v.deletedAt) %}
+                                {% if varianty is empty %}
+                                    {# Jídlo bez variant projde do kuchyňského listu jako prázdný řádek —
+                                       proto se to říká rovnou tady, ne až u tisku. #}
+                                    <span class="badge text-bg-warning">bez variant</span>
+                                {% else %}
+                                    <ul style="margin:0 0 .35rem 1rem; padding:0;">
+                                        {% for varianta in varianty|sort((a, b) => a.position <=> b.position) %}
+                                            <li style="margin:.1rem 0;">
+                                                {{ varianta.name }}
+                                                {% if varianta.meatFree %}<span class="badge text-bg-success">bezmasé</span>{% endif %}
+                                                {% if varianta.allergens %}<span class="small text-muted">alergeny: {{ varianta.allergens }}</span>{% endif %}
+                                                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_variant_delete', {eventSlug: eventSlug, variantId: varianta.id}) }}"
+                                                      style="display:inline;"
+                                                      onsubmit="return confirm('Odebrat variantu „{{ varianta.name }}“?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('varianta_smazat_' ~ varianta.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-link text-danger" style="padding:0 .25rem;">odebrat</button>
+                                                </form>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_variant_save', {eventSlug: eventSlug, mealId: jidlo.id}) }}"
+                                      style="display:flex; gap:.35rem; flex-wrap:wrap; align-items:center;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('varianta_ulozit_' ~ jidlo.id) }}">
+                                    <input type="text" name="name" required placeholder="název varianty"
+                                           class="form-control form-control-sm" style="width:14rem;">
+                                    <input type="text" name="allergens" placeholder="alergeny"
+                                           class="form-control form-control-sm" style="width:8rem;">
+                                    <label style="display:flex; gap:.25rem; align-items:center;" class="small">
+                                        <input type="checkbox" name="meatFree" value="1"> bezmasé
+                                    </label>
+                                    <input type="number" name="position" value="{{ varianty|length }}"
+                                           class="form-control form-control-sm" style="width:4.5rem;" aria-label="Pořadí">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Přidat</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_delete', {eventSlug: eventSlug, mealId: jidlo.id}) }}"
+                                      onsubmit="return confirm('Odebrat toto jídlo z jídelníčku?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('jidlo_smazat_' ~ jidlo.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Odebrat</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+
+        <h3 style="margin-top:1.5rem;">Přidat jídlo</h3>
+        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_meal_save', {eventSlug: eventSlug}) }}"
+              style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap; max-width:60rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('jidlo_ulozit') }}">
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Datum</span>
+                <input type="date" name="date" required class="form-control form-control-sm">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Jídlo</span>
+                <select name="type" class="form-select form-select-sm" style="width:9rem;">
+                    {% for klic, popis in typy %}<option value="{{ klic }}">{{ popis }}</option>{% endfor %}
+                </select>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Popisek</span>
+                <input type="text" name="name" class="form-control form-control-sm" style="width:14rem;"
+                       placeholder="nepovinné">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Výdej od</span>
+                <input type="time" name="servedFrom" class="form-control form-control-sm">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">do</span>
+                <input type="time" name="servedTo" class="form-control form-control-sm">
+            </label>
+            <button type="submit" class="btn btn-sm btn-primary">
+                <twig:ux:icon name="tabler:plus" class="oa-icon" /> Přidat
+            </button>
+        </form>
+    </main>
+{% endblock body_content %}
