@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantIncomingMailRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Enum\Communication\CommunicationChannel;
@@ -123,9 +124,18 @@ class ParticipantIncomingMail implements CommunicationEntryInterface
         $this->subject = $subject;
     }
 
+    /**
+     * Náhled zprávy do časové osy. Když textová část chybí (Gmail a Outlook na webu
+     * posílají často jen HTML), vezme se text z HTML — jinak by odchozí odpovědi
+     * v přehledu komunikace neměly náhled ŽÁDNÝ a půlka konverzace by vypadala prázdně.
+     */
     public function getSummary(): ?string
     {
-        return null === $this->body ? null : mb_substr($this->body, 0, 200);
+        $text = null !== $this->body && '' !== trim($this->body)
+            ? $this->body
+            : AbstractMail::plainTextFromHtml($this->bodyHtml);
+
+        return null === $text ? null : mb_substr(trim($text), 0, 200);
     }
 
     public function getBody(): ?string

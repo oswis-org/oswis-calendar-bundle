@@ -21,6 +21,7 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactDetail;
 use OswisOrg\OswisAddressBookBundle\Entity\ContactDetailCategory;
@@ -263,7 +264,17 @@ final class WebAdminParticipantsController extends AbstractController
         // Změny se stejným časovým razítkem se sloučí do jedné položky (proti hlučnému per-příznak logu).
         $timeline = [];
         foreach ($entries as $commEntry) {
-            $timeline[] = ['at' => $commEntry->getOccurredAt(), 'kind' => 'comm', 'entry' => $commEntry];
+            // `vlakno` = předmět bez „Re:"/„Fwd:". Podle něj šablona pozná, že řádek je
+            // pokračování konverzace, a nezopakuje potřetí týž tučný předmět. Klíč vlákna
+            // z entity se k tomu použít NEDÁ — je odvozený i od adresy, takže naše odpověď
+            // a odpověď účastníka mají různý.
+            $timeline[] = [
+                'at'     => $commEntry->getOccurredAt(),
+                'kind'   => 'comm',
+                'entry'  => $commEntry,
+                'change' => null,
+                'vlakno' => AbstractMail::normalizeSubject($commEntry->getSubject()),
+            ];
         }
         $historyGroups = [];
         foreach ($history as $ev) {
@@ -274,7 +285,15 @@ final class WebAdminParticipantsController extends AbstractController
             $historyGroups[$tsKey]['events'][] = $ev;
         }
         foreach ($historyGroups as $group) {
-            $timeline[] = ['at' => $group['at'], 'kind' => 'change', 'change' => $this->summarizeHistoryGroup($group['events'])];
+            // Stejné klíče jako u komunikace — díky tomu je `$timeline` jednotné pole
+            // a nemusí se jeho tvar popisovat anotací.
+            $timeline[] = [
+                'at'     => $group['at'],
+                'kind'   => 'change',
+                'entry'  => null,
+                'change' => $this->summarizeHistoryGroup($group['events']),
+                'vlakno' => null,
+            ];
         }
         usort($timeline, static function (array $a, array $b): int {
             $ta = $a['at'] instanceof \DateTimeInterface ? $a['at']->getTimestamp() : PHP_INT_MIN;
@@ -428,7 +447,11 @@ final class WebAdminParticipantsController extends AbstractController
      * participant, anything else (`false` / `null`) widens the lookup to also
      * include deleted/non-activated rows. No DB mutation happens here despite
      * the route name — the actual arrival timestamp is set elsewhere.
+     *
+     * Renders the same template as `detail()`, so it must never sit at a lower
+     * level than `detail()` — otherwise it becomes a way around it.
      */
+    #[IsGranted('ROLE_MANAGER')]
     public function arrival(int $participantId, ?bool $arrival = true): Response
     {
         $strict = (true === $arrival);

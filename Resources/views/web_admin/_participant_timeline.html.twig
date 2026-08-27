@@ -1,41 +1,67 @@
 {# Sloučená timeline (komunikace + kondenzované změny přihlášky), nejnovější nahoře.
    Vlastní prvek v jazyce aplikace: brand modré tečky/linka, nativní .badge, Ciutadella nadpisy.
    Každý záznam je rozbalovací (<details>) — po rozkliknutí ukáže plné metadata + tělo e-mailu.
-   Vstup: timeline (list<{at, kind:'comm'|'change', entry?, change?}>), isAdmin, participantId, resendableMailIds. #}
+   Vstup: timeline (list<{at, kind:'comm'|'change', entry?, change?}>), isAdmin, participantId, resendableMailIds.
+
+   ⚠️ Rozvržení řádku: PŘEDMĚT je na prvním řádku, NÁHLED TEXTU na druhém a přes celou šířku.
+   Dřív byly oba ve `<span>`ech vedle sebe, takže dlouhý předmět („Re: Než vyrazíš na Seznamovák
+   pro studenty UP 2026 – Seznamovák 2026") sežral celou šířku a z vlastní zprávy zbylo pár slov
+   useknutých okrajem okna. Kdo si to chce ověřit: `TimelineNahledTest` uloží výřez do var/. #}
 {% set adm = isAdmin|default(false) %}
 {% if timeline|default([])|length == 0 %}
     <p class="text-muted" style="margin:.25rem 0 1.5rem;">Žádné záznamy.</p>
 {% else %}
+    <p class="oswis-tl__legenda">
+        <span class="oswis-tl__dot oswis-tl__dot--in"></span> od účastníka
+        <span class="oswis-tl__dot oswis-tl__dot--out"></span> od nás
+        <span class="oswis-tl__dot oswis-tl__dot--internal"></span> interní / změna přihlášky
+    </p>
     <div class="oswis-tl">
         {% for item in timeline %}
+            {# Vlákno se pozná podle předchozího (novějšího) řádku: nejnovější zpráva vlákna nese
+               plný předmět, starší odpovědi pod ní se zobrazí jako „↳ …" drobným písmem. Bez toho
+               tu stálo osmkrát pod sebou tučné „Re: Pohovor - Seznamovák" a řádky se slily. #}
+            {% set predchozi = loop.index0 > 0 ? timeline[loop.index0 - 1] : null %}
+            {% set predchoziVlakno = predchozi is not null ? predchozi.vlakno|default : null %}
             {% if item.kind == 'comm' %}
                 {% set e = item.entry %}
                 {% set internal = not e.isPublicForParticipant() %}
                 {% set author = e.authorAppUser|default %}
                 {% set bodyHtml = e.bodyHtml|default %}
                 {% set bodyText = e.body|default %}
-                {% set hasDetail = bodyHtml or bodyText %}
+                {% set smer = e.direction.value %}
+                {% set pokracovani = item.vlakno|default and item.vlakno == predchoziVlakno %}
+                {% set odesilatel = e.fromName|default ?: (e.fromAddress|default ?: (author ? author.shortName|default(author.name|default('')) : '')) %}
+                {% set nahled = e.summary|default %}
                 <div class="oswis-tl__row">
                     <div class="oswis-tl__time">
                         {% if e.occurredAt %}{{ e.occurredAt|date('j. n. Y', 'Europe/Prague') }}<span>{{ e.occurredAt|date('H:i', 'Europe/Prague') }}</span>{% else %}—{% endif %}
                     </div>
-                    <div class="oswis-tl__rail"><span class="oswis-tl__dot" title="E-mail / komunikace"></span></div>
+                    <div class="oswis-tl__rail">
+                        <span class="oswis-tl__dot oswis-tl__dot--{{ smer }}"
+                              title="{{ e.channel.label() }} · {{ e.direction.label() }}"></span>
+                    </div>
                     <div class="oswis-tl__body">
                         <details class="oswis-tl__entry">
                             <summary class="oswis-tl__sum">
-                                <span class="oswis-tl__title">
-                                    {{ e.subject|default('(bez předmětu)') }}
+                                <span class="oswis-tl__head">
+                                    <twig:ux:icon name="{{ e.channel.iconifyName() }}" class="oswis-tl__ico" />
+                                    {% if pokracovani %}
+                                        <span class="oswis-tl__title oswis-tl__title--pokr">↳ {{ e.subject|default('(bez předmětu)') }}</span>
+                                    {% else %}
+                                        <span class="oswis-tl__title">{{ e.subject|default('(bez předmětu)') }}</span>
+                                    {% endif %}
                                     {% if internal and adm %}<span class="badge text-bg-secondary">interní</span>{% endif %}
+                                    {% if odesilatel %}<span class="oswis-tl__kdo">{{ odesilatel }}</span>{% endif %}
                                 </span>
-                                <span class="oswis-tl__meta">
-                                    {{ e.channel.label() }} · {{ e.direction.label() }}{% if e.summary|default %} — {{ e.summary|slice(0, 110) }}{% if e.summary|length > 110 %}…{% endif %}{% endif %}
-                                </span>
+                                {% if nahled %}<span class="oswis-tl__preview">{{ nahled }}{% if e.summary|length >= 200 %}…{% endif %}</span>{% endif %}
                             </summary>
                             <div class="oswis-tl__detail">
                                 <dl class="oswis-tl__facts">
                                     <dt>Kanál</dt><dd>{{ e.channel.label() }}</dd>
                                     <dt>Směr</dt><dd>{{ e.direction.label() }}</dd>
                                     {% if e.occurredAt %}<dt>Kdy</dt><dd>{{ e.occurredAt|date('j. n. Y H:i', 'Europe/Prague') }}</dd>{% endif %}
+                                    {% if e.fromAddress|default %}<dt>Od</dt><dd>{{ e.fromName|default }} &lt;{{ e.fromAddress }}&gt;</dd>{% endif %}
                                     {% if author %}<dt>Kdo</dt><dd>{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</dd>{% endif %}
                                     {% if e.messageId|default %}<dt>Message-ID</dt><dd class="oswis-tl__mono">{{ e.messageId }}</dd>{% endif %}
                                 </dl>
@@ -62,15 +88,19 @@
                 </div>
             {% else %}
                 {% set c = item.change %}
-                {% set extraLines = c.lines|length > 2 %}
                 <div class="oswis-tl__row">
                     <div class="oswis-tl__time">{{ item.at|date('j. n. Y', 'Europe/Prague') }}<span>{{ item.at|date('H:i', 'Europe/Prague') }}</span></div>
-                    <div class="oswis-tl__rail"><span class="oswis-tl__dot" title="Změna přihlášky"></span></div>
+                    <div class="oswis-tl__rail">
+                        <span class="oswis-tl__dot oswis-tl__dot--internal" title="Změna přihlášky"></span>
+                    </div>
                     <div class="oswis-tl__body">
                         <details class="oswis-tl__entry">
                             <summary class="oswis-tl__sum">
-                                <span class="oswis-tl__title">{{ c.title }}</span>
-                                {% if c.lines|length > 0 %}<span class="oswis-tl__meta">{{ c.lines|first|length > 110 ? (c.lines|first|slice(0, 110)) ~ '…' : c.lines|first }}</span>{% endif %}
+                                <span class="oswis-tl__head">
+                                    <twig:ux:icon name="tabler:pencil" class="oswis-tl__ico" />
+                                    <span class="oswis-tl__title">{{ c.title }}</span>
+                                </span>
+                                {% if c.lines|length > 0 %}<span class="oswis-tl__preview">{{ c.lines|first|length > 200 ? (c.lines|first|slice(0, 200)) ~ '…' : c.lines|first }}</span>{% endif %}
                             </summary>
                             <div class="oswis-tl__detail">
                                 {% for line in c.lines %}
@@ -85,6 +115,9 @@
     </div>
     <style>
         .oswis-tl { margin: .25rem 0 1.5rem; }
+        .oswis-tl__legenda { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; margin: .1rem 0 .6rem; font-size: .78rem; color: #6c757d; }
+        .oswis-tl__legenda .oswis-tl__dot { margin: 0 .1rem 0 .8rem; }
+        .oswis-tl__legenda .oswis-tl__dot:first-child { margin-left: 0; }
         .oswis-tl__row { display: flex; gap: .6rem; align-items: stretch; }
         .oswis-tl__time { width: 5.5rem; flex: none; text-align: right; font-size: .78rem; color: #6c757d; white-space: nowrap; line-height: 1.25; padding-top: .15rem; }
         .oswis-tl__time span { display: block; font-size: .72rem; }
@@ -92,14 +125,28 @@
         .oswis-tl__rail::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #d6e3ef; transform: translateX(-50%); }
         .oswis-tl__row:first-child .oswis-tl__rail::before { top: .35rem; }
         .oswis-tl__row:last-child .oswis-tl__rail::before { bottom: auto; height: .35rem; }
-        .oswis-tl__dot { position: relative; z-index: 1; display: block; width: .7rem; height: .7rem; margin: .35rem auto 0; border-radius: 50%; background: var(--oa-primary, #006FAD); border: 2px solid #fff; box-shadow: 0 0 0 1px #d6e3ef; }
+        /* Směr se pozná TVAREM, ne jen barvou: plná tečka = od účastníka, prstýnek = od nás,
+           šedá = interní. Barva samotná by u barvosleposti i na tisku nestačila. */
+        .oswis-tl__dot { position: relative; z-index: 1; display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; box-shadow: 0 0 0 1px #d6e3ef; }
+        .oswis-tl__rail .oswis-tl__dot { display: block; margin: .35rem auto 0; border: 2px solid #fff; }
+        .oswis-tl__dot--in { background: var(--oa-primary, #006FAD); }
+        .oswis-tl__dot--out { background: #fff; box-shadow: 0 0 0 2px var(--oa-primary, #006FAD); }
+        .oswis-tl__rail .oswis-tl__dot--out { border-color: #fff; }
+        .oswis-tl__dot--internal { background: #8a949e; }
         .oswis-tl__body { flex: 1 1 auto; min-width: 0; padding-bottom: .85rem; }
-        .oswis-tl__entry { }
         .oswis-tl__sum { cursor: pointer; list-style: none; display: block; }
         .oswis-tl__sum::-webkit-details-marker { display: none; }
         .oswis-tl__sum::before { content: '▸'; color: var(--oa-muted, #6c757d); font-size: .8em; margin-right: .35rem; display: inline-block; transition: transform .12s; }
         .oswis-tl__entry[open] > .oswis-tl__sum::before { transform: rotate(90deg); }
+        .oswis-tl__head { display: inline; }
+        .oswis-tl__ico { color: #6c757d; vertical-align: -.12em; margin-right: .3rem; }
         .oswis-tl__title { font-weight: 600; }
+        .oswis-tl__title--pokr { font-weight: 400; color: #6c757d; font-size: .85rem; }
+        .oswis-tl__kdo { color: #6c757d; font-size: .82rem; margin-left: .4rem; }
+        .oswis-tl__kdo::before { content: '· '; }
+        /* Náhled zprávy je to podstatné, proto vlastní řádek přes celou šířku a tmavší šedá
+           než u popisků (#495057 = 8,6:1 na bílé, s rezervou nad AA). */
+        .oswis-tl__preview { display: block; color: #495057; font-size: .875rem; line-height: 1.35; margin-top: .1rem; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
         .oswis-tl__meta { color: #6c757d; font-size: .85rem; margin-top: .05rem; word-break: break-word; }
         .oswis-tl__detail { margin: .4rem 0 .2rem; padding-left: 1.15rem; }
         .oswis-tl__facts { display: grid; grid-template-columns: auto 1fr; gap: .05rem .6rem; margin: 0 0 .5rem; font-size: .82rem; }
@@ -111,7 +158,12 @@
         .oswis-tl__mail img { max-width: 100%; height: auto; }
         .oswis-tl__nobody { font-size: .82rem; margin: .2rem 0; }
         @media (max-width: 575.98px) {
-            .oswis-tl__rail { display: none; }
+            /* Svislá linka na úzkém displeji nemá kde být, ale TEČKA ANO — bez ní by se
+               na mobilu nedalo poznat, co je od účastníka a co od nás. Proto se schová
+               jen linka a tečka se posadí vedle data. */
+            .oswis-tl__rail { width: auto; display: flex; align-items: center; }
+            .oswis-tl__rail::before { display: none; }
+            .oswis-tl__rail .oswis-tl__dot { margin: 0; }
             .oswis-tl__time { width: auto; text-align: left; }
             .oswis-tl__row { gap: .35rem; flex-wrap: wrap; }
             .oswis-tl__body { flex-basis: 100%; }
