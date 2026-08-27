@@ -910,3 +910,21 @@ oswis_org_oswis_calendar_web_admin_participant_group_distribute:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantGroupController::distribute
   path: "/web_admin/pasky/{eventSlug}/rozdelit"
   methods: [POST]
+
+# Nástěnka turnusu ve web adminu — vzkazy pro účastníky šly do 27. 8. 2026 psát jen z Ionicu.
+oswis_org_oswis_calendar_web_admin_announcements:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAnnouncementController::index
+  path: "/web_admin/nastenka/{eventSlug}"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_announcement_save:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAnnouncementController::save
+  path: "/web_admin/nastenka/{eventSlug}/vzkaz"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_announcement_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAnnouncementController::delete
+  path: "/web_admin/nastenka/{eventSlug}/vzkaz/{announcementId}/smazat"
+  methods: [POST]
+  requirements:
+    announcementId: '\d+'

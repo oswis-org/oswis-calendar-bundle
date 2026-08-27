@@ -1,0 +1,172 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+            with { eventSlug: eventSlug, eventName: (event.shortName|default(event.name|default(''))), current: 'board' } only %}
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Vzkazy, které účastníci uvidí v appce. Zveřejněný vzkaz se dá poslat i jako
+            <strong>push notifikaci</strong> — to je jediná cesta, jak lidem něco říct hned.
+        </p>
+
+        {# Číslo odběratelů je tu schválně nahoře: bez něj se dá odeslat vzkaz s pushem
+           s pocitem, že se něco stalo, a přitom nemá kdo poslouchat. #}
+        {% if odberatelu == 0 %}
+            <div class="alert alert-warning" style="max-width: 60rem;">
+                <strong>Push notifikace zatím nemá kdo dostat.</strong> Nikdo z tohoto turnusu
+                si je zatím nezapnul v appce. Vzkaz se na nástěnce objeví, ale upozornění
+                nikomu nedorazí.
+            </div>
+        {% else %}
+            <p class="text-muted small">Push notifikace odebírá <strong>{{ odberatelu }}</strong> lidí z tohoto turnusu.</p>
+        {% endif %}
+
+        <h3>Nový vzkaz</h3>
+        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_announcement_save', {eventSlug: eventSlug}) }}"
+              style="max-width: 60rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('vzkaz_ulozit') }}">
+            <p style="margin:.35rem 0;">
+                <label class="small" for="vzkaz-nadpis">Nadpis</label>
+                <input id="vzkaz-nadpis" type="text" name="name" required maxlength="255"
+                       class="form-control" placeholder="např. Sraz na nádraží v 12:30">
+            </p>
+            <p style="margin:.35rem 0;">
+                <label class="small" for="vzkaz-text">Text</label>
+                <textarea id="vzkaz-text" name="textValue" rows="4" class="form-control"
+                          placeholder="Co mají účastníci vědět."></textarea>
+            </p>
+            <p style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end; margin:.5rem 0;">
+                <label style="display:flex; flex-direction:column; gap:.2rem;">
+                    <span class="small">Komu</span>
+                    <select name="targetGroup" class="form-select form-select-sm" style="width:14rem;">
+                        <option value="">všem v turnusu</option>
+                        {% for pasek in pasky %}
+                            <option value="{{ pasek.id }}">jen pásek {{ pasek.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:.2rem;">
+                    <span class="small">Připnout nahoru do</span>
+                    <input type="datetime-local" name="pinnedUntil" class="form-control form-control-sm">
+                </label>
+                <label style="display:flex; gap:.35rem; align-items:center;">
+                    <input type="checkbox" name="publish" value="1" checked>
+                    <span class="small">zveřejnit hned</span>
+                </label>
+                <label style="display:flex; gap:.35rem; align-items:center;">
+                    <input type="checkbox" name="push" value="1">
+                    <span class="small">poslat push notifikaci</span>
+                </label>
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <twig:ux:icon name="tabler:plus" class="oa-icon" /> Uložit vzkaz
+                </button>
+            </p>
+            <p class="text-muted small" style="margin:0;">
+                Push odejde jen u <strong>zveřejněného</strong> vzkazu a <strong>jen jednou</strong> —
+                opakované uložení už lidem nic nepošle.
+            </p>
+        </form>
+
+        <h3 style="margin-top:1.5rem;">Vzkazy turnusu ({{ vzkazy|length }})</h3>
+        {% if vzkazy is empty %}
+            <p class="text-muted">Na nástěnce zatím nic není.</p>
+        {% else %}
+            <table class="list">
+                <thead>
+                    <tr>
+                        <th>Nadpis a text</th>
+                        <th style="width: 10rem;">Komu</th>
+                        <th style="width: 12rem;">Stav</th>
+                        <th style="width: 13rem;">Push</th>
+                        <th style="width: 7rem;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vzkaz in vzkazy %}
+                        {% set pripnuty = vzkaz.pinnedUntil and vzkaz.pinnedUntil > date() %}
+                        <tr>
+                            <td>
+                                <strong>{{ vzkaz.name }}</strong>
+                                {% if pripnuty %}<span class="badge text-bg-primary">připnuto</span>{% endif %}
+                                {% if vzkaz.textValue %}
+                                    <div class="small text-muted" style="white-space:pre-wrap;">{{ vzkaz.textValue }}</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ vzkaz.targetGroup ? 'pásek ' ~ vzkaz.targetGroup.name : 'všem' }}</td>
+                            <td>
+                                {% if vzkaz.publishedAt %}
+                                    <span class="badge text-bg-success">zveřejněno</span>
+                                    <div class="small text-muted">{{ vzkaz.publishedAt|date('j. n. Y H:i', 'Europe/Prague') }}</div>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">koncept</span>
+                                {% endif %}
+                                {% if vzkaz.pinnedUntil %}
+                                    <div class="small text-muted">připnuto do {{ vzkaz.pinnedUntil|date('j. n. Y H:i', 'Europe/Prague') }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {# Vyplněné `pushSentAt` samo o sobě NEZNAMENÁ, že notifikaci někdo dostal —
+                                   proto se tu ukazuje počet příjemců, a nula se hlásí jako problém. #}
+                                {% if not vzkaz.pushRequested %}
+                                    <span class="text-muted small">nežádán</span>
+                                {% elseif not vzkaz.pushSentAt %}
+                                    <span class="badge text-bg-warning">čeká na odeslání</span>
+                                {% elseif vzkaz.pushRecipients is null %}
+                                    <span class="badge text-bg-secondary">odeslán</span>
+                                    <div class="small text-muted">počet příjemců se tehdy nezaznamenal</div>
+                                {% elseif vzkaz.pushRecipients == 0 %}
+                                    <span class="badge text-bg-danger">nedostal nikdo</span>
+                                {% else %}
+                                    <span class="badge text-bg-success">doručeno {{ vzkaz.pushRecipients }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <details>
+                                    <summary style="cursor:pointer; color:var(--oa-primary); font-size:.85rem;">Upravit</summary>
+                                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_announcement_save', {eventSlug: eventSlug}) }}"
+                                          style="margin-top:.4rem; display:flex; flex-direction:column; gap:.3rem;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('vzkaz_ulozit') }}">
+                                        <input type="hidden" name="id" value="{{ vzkaz.id }}">
+                                        <input type="text" name="name" value="{{ vzkaz.name }}" required
+                                               class="form-control form-control-sm">
+                                        <textarea name="textValue" rows="3" class="form-control form-control-sm">{{ vzkaz.textValue }}</textarea>
+                                        <select name="targetGroup" class="form-select form-select-sm">
+                                            <option value="">všem v turnusu</option>
+                                            {% for pasek in pasky %}
+                                                <option value="{{ pasek.id }}" {{ vzkaz.targetGroup and vzkaz.targetGroup.id == pasek.id ? 'selected' : '' }}>
+                                                    jen pásek {{ pasek.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="datetime-local" name="pinnedUntil" class="form-control form-control-sm"
+                                               value="{{ vzkaz.pinnedUntil ? vzkaz.pinnedUntil|date('Y-m-d\\TH:i', 'Europe/Prague') : '' }}">
+                                        <label style="display:flex; gap:.35rem; align-items:center;">
+                                            <input type="checkbox" name="publish" value="1" {{ vzkaz.publishedAt ? 'checked' : '' }}>
+                                            <span class="small">zveřejněno</span>
+                                        </label>
+                                        <label style="display:flex; gap:.35rem; align-items:center;">
+                                            <input type="checkbox" name="push" value="1" {{ vzkaz.pushRequested ? 'checked' : '' }}>
+                                            <span class="small">poslat push</span>
+                                        </label>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                                    </form>
+                                </details>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_announcement_delete', {eventSlug: eventSlug, announcementId: vzkaz.id}) }}"
+                                          style="margin-top:.3rem;"
+                                          onsubmit="return confirm('Stáhnout vzkaz „{{ vzkaz.name }}“ z nástěnky?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('vzkaz_smazat_' ~ vzkaz.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Stáhnout</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </main>
+{% endblock body_content %}
