@@ -155,27 +155,27 @@
             {% endif %}
         {% endif %}
 
+        {#
+          Výběr dne. ⚠️ ZÁMĚRNĚ to nejsou dlaždice: první pokus (27. 8. 2026) je okopíroval
+          z cizí aplikace a na stránce, kde je jinak tabulka s modrou hlavičkou, působily jako
+          nalepený cizí prvek — uživatel to hned odmítl. Stránka má vlastní slovník (odkazy,
+          tučné zvýraznění aktivního), tak se používá on. Nový vizuální vzor se sem netahá.
+        #}
         {% if klice|length > 1 %}
-            <div class="row mt-3">
-                <div class="col d-flex flex-wrap gap-2" role="tablist" aria-label="Den programu">
-                    {% for row in tree %}
-                        {% set klic = row.day ? row.day.date : "mimo" %}
-                        {% set dny = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"] %}
-                        <a class="oa-den{{ klic == zvoleny ? " is-active" : "" }}"
-                           href="{{ path("oswis_org_oswis_calendar_web_admin_program_index", {eventSlug: eventSlug}) }}?den={{ klic }}"
-                           {{ klic == zvoleny ? "aria-current=\"page\"" : "" }}>
-                            {% if row.day %}
-                                <span class="oa-den__dow">{{ dny[(row.day.date|date("N")) - 1] }}</span>
-                                <span class="oa-den__datum">{{ row.day.date|date("j. n.") }}</span>
-                            {% else %}
-                                <span class="oa-den__dow">mimo</span>
-                                <span class="oa-den__datum">dny</span>
-                            {% endif %}
-                            <span class="oa-den__pocet">{{ row.activities|length }}</span>
-                        </a>
-                    {% endfor %}
-                </div>
-            </div>
+            {% set dny = ["pondělí", "úterý", "středa", "čtvrtek", "pátek", "sobota", "neděle"] %}
+            <p class="oa-dny">
+                {% for row in tree %}
+                    {% set klic = row.day ? row.day.date : "mimo" %}
+                    {% if klic == zvoleny %}
+                        <strong>{% if row.day %}{{ dny[(row.day.date|date("N")) - 1] }} {{ row.day.date|date("j. n.") }}{% else %}mimo dny{% endif %}
+                            ({{ row.activities|length }})</strong>
+                    {% else %}
+                        <a href="{{ path("oswis_org_oswis_calendar_web_admin_program_index", {eventSlug: eventSlug}) }}?den={{ klic }}">{% if row.day %}{{ dny[(row.day.date|date("N")) - 1] }} {{ row.day.date|date("j. n.") }}{% else %}mimo dny{% endif %}
+                            ({{ row.activities|length }})</a>
+                    {% endif %}
+                    {%- if not loop.last %} · {% endif %}
+                {% endfor %}
+            </p>
         {% endif %}
 
         {% for row in tree %}
@@ -185,8 +185,10 @@
                 <div class="col">
                     <h3 style="margin: 0 0 .4rem; border-bottom: 2px solid #006fad; padding-bottom: .2rem; display: flex; align-items: baseline; gap: .5rem;">
                         {% if row.day %}
+                            {% set dnyN = ['pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota', 'neděle'] %}
                             <span>{{ row.day.name ?? 'Den' }}
-                                <small style="color: #6c757d; font-weight: normal;">{{ row.day.date }}</small></span>
+                                {# Datum lidsky, ne syrové `2026-09-01` z databáze. #}
+                                <small style="color: #6c757d; font-weight: normal;">{{ dnyN[(row.day.date|date('N')) - 1] }} {{ row.day.date|date('j. n. Y') }}</small></span>
                             <span style="margin-left: auto; font-size: .8rem; font-weight: normal; display: inline-flex; gap: .4rem; align-items: baseline;">
                                 {# Program dne v PDF. Dřív osiřelý výstup (program_day) — renderoval se
                                    a byl krytý testem, ale odnikud na něj nevedl odkaz. #}
