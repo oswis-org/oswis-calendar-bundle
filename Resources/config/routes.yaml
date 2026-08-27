@@ -881,3 +881,32 @@ oswis_org_oswis_calendar_web_admin_service_roster_delete:
   requirements:
     id: '\d+'
   methods: [POST]
+
+# Pásky (skupiny účastníků) turnusu — jediná obrazovka, kde se dají zakládat i hromadně
+# přiřazovat. Do 27. 8. 2026 to uměl jen Ionic a jen po jednom účastníkovi.
+oswis_org_oswis_calendar_web_admin_participant_groups:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantGroupController::index
+  path: "/web_admin/pasky/{eventSlug}"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_participant_group_save:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantGroupController::save
+  path: "/web_admin/pasky/{eventSlug}/pasek"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_group_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantGroupController::delete
+  path: "/web_admin/pasky/{eventSlug}/pasek/{groupId}/smazat"
+  methods: [POST]
+  requirements:
+    groupId: '\d+'
+
+oswis_org_oswis_calendar_web_admin_participant_group_assign:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantGroupController::assign
+  path: "/web_admin/pasky/{eventSlug}/prirazeni"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_participant_group_distribute:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminParticipantGroupController::distribute
+  path: "/web_admin/pasky/{eventSlug}/rozdelit"
+  methods: [POST]

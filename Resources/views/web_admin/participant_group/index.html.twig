@@ -1,0 +1,204 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+            with { eventSlug: eventSlug, eventName: (event.shortName|default(event.name|default(''))), current: 'bands' } only %}
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Pásky rozdělují účastníky turnusu do barevných skupin. Řídí se podle nich
+            <strong>pořadí výdeje jídla</strong>, sloupec <em>Skupina / pásek</em> na check-inu,
+            řazení příjezdového seznamu i tisk <em>Seznam dle pásku</em>.
+        </p>
+
+        {# Nejdřív pásky, teprve pak lidi: dokud není do čeho rozdělovat, je tabulka dole k ničemu. #}
+        <h3>Pásky turnusu</h3>
+        {% if pasky is empty %}
+            <div class="alert alert-warning" style="max-width: 60rem;">
+                <strong>Turnus zatím nemá jediný pásek.</strong> Dokud nějaký nezaložíš, ukazuje
+                check-in u všech „bez skupiny“, řazení „Dle pásku“ nedělá nic a tisk seznamu
+                dle pásku je jeden nerozdělený seznam.
+            </div>
+        {% else %}
+            <table class="list" style="max-width: 60rem;">
+                <thead>
+                    <tr>
+                        <th style="width: 3rem;"></th>
+                        <th>Název</th>
+                        <th style="width: 9rem;">Pořadí na jídlo</th>
+                        <th class="text-end" style="width: 7rem;">Přiřazeno</th>
+                        <th style="width: 12rem;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pasek in pasky %}
+                        {% set prirazeno = pocty[pasek.id]|default(0) %}
+                        <tr>
+                            <td>
+                                {% if pasek.color %}
+                                    <span title="{{ pasek.color }}" style="display:inline-block; width:1.1rem; height:1.1rem; border-radius:50%; background:{{ pasek.color }}; border:1px solid #999;"></span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_save', {eventSlug: eventSlug}) }}"
+                                      style="display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('pasek_ulozit') }}">
+                                    <input type="hidden" name="id" value="{{ pasek.id }}">
+                                    <input type="text" name="name" value="{{ pasek.name }}" required
+                                           class="form-control form-control-sm" style="width:12rem;"
+                                           aria-label="Název pásku">
+                                    <input type="color" name="color" value="{{ pasek.color|default('#006FAD') }}"
+                                           class="form-control form-control-sm" style="width:3.5rem; padding:.1rem;"
+                                           aria-label="Barva pásku">
+                                    <input type="number" name="mealOrder" value="{{ pasek.mealOrder }}"
+                                           class="form-control form-control-sm" style="width:5.5rem;"
+                                           aria-label="Pořadí na jídlo">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Uložit</button>
+                                </form>
+                            </td>
+                            <td>{{ pasek.mealOrder is null ? '—' : pasek.mealOrder }}</td>
+                            <td class="text-end">{{ prirazeno }}</td>
+                            <td>
+                                {% if prirazeno > 0 %}
+                                    <span class="text-muted small">nejde smazat, má lidi</span>
+                                {% else %}
+                                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_delete', {eventSlug: eventSlug, groupId: pasek.id}) }}"
+                                          onsubmit="return confirm('Opravdu smazat pásek „{{ pasek.name }}“?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('pasek_smazat_' ~ pasek.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <h3 style="margin-top:1.5rem;">Nový pásek</h3>
+        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_save', {eventSlug: eventSlug}) }}"
+              style="display:flex; gap:.5rem; align-items:flex-end; flex-wrap:wrap; max-width:60rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('pasek_ulozit') }}">
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Název</span>
+                <input type="text" name="name" required placeholder="např. MODRÁ"
+                       class="form-control form-control-sm" style="width:12rem;">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Barva</span>
+                <input type="color" name="color" value="#006FAD"
+                       class="form-control form-control-sm" style="width:3.5rem; padding:.1rem;">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:.2rem;">
+                <span class="small">Pořadí na jídlo</span>
+                <input type="number" name="mealOrder" placeholder="10"
+                       class="form-control form-control-sm" style="width:6.5rem;">
+            </label>
+            <button type="submit" class="btn btn-sm btn-primary">
+                <twig:ux:icon name="tabler:plus" class="oa-icon" /> Založit
+            </button>
+        </form>
+        <p class="text-muted small" style="max-width:60rem; margin-top:.4rem;">
+            Nižší <strong>pořadí na jídlo</strong> jde k výdeji dřív. Dietáři obvykle první.
+        </p>
+
+        {% if nahled %}
+            {# Rozdělení se NEZAPÍŠE, dokud si ho člověk neprohlédne. Kdyby se zapisovalo rovnou,
+               omyl u 270 lidí se opravuje hůř, než se dělá. #}
+            <h3 style="margin-top:1.5rem;">Náhled rozdělení</h3>
+            <div class="alert alert-info" style="max-width:60rem;">
+                <p style="margin:0 0 .5rem;">
+                    Takhle by rozdělení dopadlo{% if nahled.vsechny %} — <strong>včetně lidí, kteří už pásek mají</strong>{% else %} (jen lidé bez pásku){% endif %}.
+                    Zatím se <strong>nic nezapsalo</strong>.
+                </p>
+                <ul style="margin:0 0 .75rem 1.1rem;">
+                    {% for nazev, pocet in nahled.souhrn %}
+                        <li><strong>{{ nazev }}</strong>: {{ pocet }}</li>
+                    {% endfor %}
+                </ul>
+                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_distribute', {eventSlug: eventSlug}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('pasky_rozdelit') }}">
+                    <input type="hidden" name="vsechny" value="{{ nahled.vsechny ? '1' : '0' }}">
+                    <input type="hidden" name="potvrdit" value="1">
+                    <button type="submit" class="btn btn-sm btn-primary">Zapsat rozdělení</button>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       href="{{ path('oswis_org_oswis_calendar_web_admin_participant_groups', {eventSlug: eventSlug}) }}">Zpět</a>
+                </form>
+            </div>
+        {% endif %}
+
+        <h3 style="margin-top:1.5rem;">Rozdělit rovnoměrně</h3>
+        <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_distribute', {eventSlug: eventSlug}) }}"
+              style="display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; max-width:60rem;">
+            <input type="hidden" name="_token" value="{{ csrf_token('pasky_rozdelit') }}">
+            <button type="submit" class="btn btn-sm btn-outline-primary" {{ pasky is empty ? 'disabled' : '' }}>
+                <twig:ux:icon name="tabler:wand" class="oa-icon" /> Rozdělit lidi bez pásku
+            </button>
+            <label style="display:flex; gap:.35rem; align-items:center;">
+                <input type="checkbox" name="vsechny" value="1">
+                <span class="small">přerozdělit i ty, kdo pásek už mají</span>
+            </label>
+            <span class="text-muted small">Napřed se ukáže náhled, zapisuje se až po potvrzení.</span>
+        </form>
+
+        <h3 style="margin-top:1.5rem;">
+            Účastníci ({{ ucastnici|length }})
+            {% if bezPasku > 0 %}
+                <span class="badge text-bg-warning">bez pásku: {{ bezPasku }}</span>
+            {% else %}
+                <span class="badge text-bg-success">všichni mají pásek</span>
+            {% endif %}
+        </h3>
+        {% if ucastnici is empty %}
+            <p class="text-muted">Turnus zatím nemá žádné přihlášky.</p>
+        {% else %}
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_participant_group_assign', {eventSlug: eventSlug}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('pasky_prirazeni') }}">
+                <p>
+                    <button type="submit" class="btn btn-sm btn-primary">Uložit přiřazení</button>
+                    <span class="text-muted small">Ukládá se celá tabulka najednou.</span>
+                </p>
+                <table class="list">
+                    <thead>
+                        <tr>
+                            <th style="width: 3rem;">#</th>
+                            <th>Jméno</th>
+                            <th style="width: 14rem;">Pásek</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ucastnik in ucastnici %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', {participantId: ucastnik.id}) }}">
+                                        {{ ucastnik.contactForRead.name|default('(bez jména)') }}
+                                    </a>
+                                    {# Číslo přihlášky je tu kvůli jmenovcům: dvě „Ema Pruzincova" se
+                                       jinak od sebe v tabulce nerozeznají. #}
+                                    <span class="text-muted small">#{{ ucastnik.id }}</span>
+                                </td>
+                                <td>
+                                    <select name="pasek[{{ ucastnik.id }}]" class="form-select form-select-sm"
+                                            aria-label="Pásek pro {{ ucastnik.contactForRead.name|default('#' ~ ucastnik.id) }}">
+                                        <option value="">— bez pásku —</option>
+                                        {% for pasek in pasky %}
+                                            <option value="{{ pasek.id }}" {{ ucastnik.group and ucastnik.group.id == pasek.id ? 'selected' : '' }}>
+                                                {{ pasek.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p style="margin-top:.75rem;">
+                    <button type="submit" class="btn btn-sm btn-primary">Uložit přiřazení</button>
+                </p>
+            </form>
+        {% endif %}
+    </main>
+{% endblock body_content %}
