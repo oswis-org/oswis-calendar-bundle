@@ -55,8 +55,12 @@
                    zveřejnění: vada v programu, který účastníci UŽ vidí, je naléhavější, ne míň. #}
                 {% if kontrola|default([])|length > 0 %}
                     <div class="alert alert-warning" style="margin: .75rem 0 0; padding: .55rem 1rem;">
-                        <strong>Před zveřejněním zkontroluj {{ kontrola|length }}
-                            {{ kontrola|length == 1 ? 'aktivitu' : (kontrola|length < 5 ? 'aktivity' : 'aktivit') }}:</strong>
+                        {# Nadpis se musí řídit stavem brány. Po zveřejnění tu stálo „Před zveřejněním
+                           zkontroluj…" přímo pod zeleným pruhem „ZVEŘEJNĚNO" — dvě protichůdné věty nad
+                           sebou. Seznam se ukazuje schválně i po zveřejnění (viz komentář výš), takže
+                           se mění text, ne podmínka. #}
+                        <strong>{{ event.isProgramReleased ? 'Zkontroluj' : 'Před zveřejněním zkontroluj' }} {{ kontrola|length }}
+                            {{ kontrola|length == 1 ? 'aktivitu' : (kontrola|length < 5 ? 'aktivity' : 'aktivit') }}{% if event.isProgramReleased %} — účastníci program už vidí{% endif %}:</strong>
                         <ul style="margin: .35rem 0 0; padding-left: 1.2rem;">
                             {% for nalez in kontrola %}
                                 <li style="font-size: .9rem;">
@@ -178,6 +182,18 @@
             </p>
         {% endif %}
 
+        {#
+          „Místo" a „Obsazení" se z importu nevyplňují, takže na 112 aktivitách 1. turnusu
+          to byly dva sloupce plné pomlček — čtvrtina šířky tabulky bez jediného údaje.
+          Sloupec se schová, jen když je prázdný v CELÉM programu; jakmile má hodnotu byť
+          jediná aktivita, vrátí se. Schválně ne po dnech — sloupec, který se mezi dny
+          objevuje a mizí, se čte hůř než pomlčky.
+          Počítá se přes `reduce`, protože `{% set %}` uvnitř `{% for %}` v Twigu za smyčku
+          nepřeteče — na to už tahle šablona jednou najela (viz komentář u výběru dne).
+        #}
+        {% set maMisto = tree|reduce((acc, row) => acc + (row.activities|filter(a => a.placeText)|length), 0) > 0 %}
+        {% set maObsazeni = tree|reduce((acc, row) => acc + (row.activities|filter(a => a.staff|length > 0)|length), 0) > 0 %}
+
         {% for row in tree %}
             {% set klic = row.day ? row.day.date : "mimo" %}
             {% if klic == zvoleny %}
@@ -235,9 +251,9 @@
                             <tr>
                                 <th style="width: 6rem;">Čas</th>
                                 <th>Aktivita</th>
-                                <th>Místo</th>
+                                {% if maMisto %}<th>Místo</th>{% endif %}
                                 <th>Kategorie</th>
-                                <th>Obsazení</th>
+                                {% if maObsazeni %}<th>Obsazení</th>{% endif %}
                                 <th style="width: 4rem;"></th>
                             </tr>
                         </thead>
@@ -263,13 +279,13 @@
                                             </div>
                                         {% endfor %}
                                     </td>
-                                    <td style="color: #444;">{{ a.placeText ?? '—' }}</td>
+                                    {% if maMisto %}<td style="color: #444;">{{ a.placeText ?? '—' }}</td>{% endif %}
                                     <td>{% if a.category %}<span class="badge text-bg-info">{{ a.category }}</span>{% else %}—{% endif %}</td>
-                                    <td style="font-size: .9rem;">
+                                    {% if maObsazeni %}<td style="font-size: .9rem;">
                                         {% for s in a.staff %}
                                             {{ s.name }}{% if s.roleLabel %} <span style="color: #6c757d;">({{ s.roleLabel }})</span>{% endif %}{% if not loop.last %}, {% endif %}
                                         {% else %}<span style="color: #adb5bd;">—</span>{% endfor %}
-                                    </td>
+                                    </td>{% endif %}
                                     <td style="white-space: nowrap;">
                                         {% if a.id %}
                                             {% if a.isBlock %}
