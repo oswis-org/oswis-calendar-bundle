@@ -34,7 +34,7 @@ final readonly class EventAggregationsService
 
     /**
      * @return array{
-     *     occupancy: array{event: Event, occupancy: int, subEvents: list<array{event: Event, occupancy: int}>},
+     *     occupancy: array{event: Event, occupancy: int, subEvents: list<array{event: Event, occupancy: int}>, programActivities: int},
      *     flagsUsageByRange: array<int, array<string, mixed>>,
      *     flagsUsageByFlag: array<int, array<string, mixed>>,
      *     otherAggregations: array<string, array<string, int>>,
@@ -80,20 +80,47 @@ final readonly class EventAggregationsService
     }
 
     /**
-     * @return array{event: Event, occupancy: int, subEvents: list<array{event: Event, occupancy: int}>}
+     * Tabulka „Počet nezrušených přihlášek" na přehledu události.
+     *
+     * Vypisují se JEN podudálosti, na které se dá přihlásit — tedy ročníky a turnusy.
+     * Aktivity programu jsou od zavedení programového modulu taky podudálosti (jejich
+     * `superEvent` je turnus), takže sem po nahrání programu spadlo všech 112 aktivit
+     * 1. turnusu a stránka narostla na 114 řádků / 11,5 obrazovky — a všech 112 nových
+     * řádků ukazovalo nulu, protože na aktivitu se nikdo nepřihlašuje. Ověřeno v datech:
+     * přihlášky nesou pouze typy `year-of-event` a `batch-of-event`, všech ostatních
+     * 187 událostí (sport, evening-program, lecture, …) má nula přihlášek.
+     *
+     * Podmínka je schválně dvojitá — `isBatchOrYear()` NEBO nenulová obsazenost. Kdyby
+     * se někdy přihlašovalo na něco jiného (nebo měla podudálost chybějící kategorii,
+     * což je v datech 33 událostí), filtr ji NESMÍ schovat: čísla na přehledu se používají
+     * k počítání lidí a tiché zmizení řádku by bylo horší než ten přerostlý výpis.
+     *
+     * @return array{event: Event, occupancy: int, subEvents: list<array{event: Event, occupancy: int}>, programActivities: int}
      */
     private function buildOccupancy(Event $event, int $occupancy): array
     {
         $subEventCounts = $this->participantService->getRepository()->countAttendeesGroupedBySubEvent($event);
         $subEvents = [];
+        $programActivities = 0;
         foreach ($event->getSubEvents() as $subEvent) {
+            $subEventOccupancy = $subEventCounts[(int) $subEvent->getId()] ?? 0;
+            if (!$subEvent->isBatchOrYear() && $subEventOccupancy < 1) {
+                ++$programActivities;
+
+                continue;
+            }
             $subEvents[] = [
                 'event'     => $subEvent,
-                'occupancy' => $subEventCounts[(int) $subEvent->getId()] ?? 0,
+                'occupancy' => $subEventOccupancy,
             ];
         }
 
-        return ['event' => $event, 'occupancy' => $occupancy, 'subEvents' => $subEvents];
+        return [
+            'event'             => $event,
+            'occupancy'         => $occupancy,
+            'subEvents'         => $subEvents,
+            'programActivities' => $programActivities,
+        ];
     }
 
     /**

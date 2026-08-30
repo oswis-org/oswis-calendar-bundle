@@ -125,6 +125,20 @@
                                         </tr>
                                         </tbody>
                                     {% endfor %}
+                                    {# Aktivity programu jsou taky podudálosti, ale nikdo se na ně nepřihlašuje —
+                                       místo stovky řádků s nulou jeden řádek s odkazem do editoru programu. #}
+                                    {% if occupancy.programActivities|default(0) > 0 %}
+                                        <tbody>
+                                        <tr>
+                                            <td colspan="2" class="small">
+                                                Dále <strong>{{ occupancy.programActivities }}</strong>
+                                                {{ occupancy.programActivities == 1 ? 'aktivita programu' : (occupancy.programActivities < 5 ? 'aktivity programu' : 'aktivit programu') }}
+                                                — na ty se účastníci nepřihlašují zvlášť.
+                                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_program_index', {'eventSlug': event.slug}) }}">Otevřít program</a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    {% endif %}
                                 </table>
                             </div>
                         </div>
