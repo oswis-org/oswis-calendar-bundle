@@ -50,10 +50,14 @@ class ParticipantPaymentService
             $existingId = '' === $externalId || !$paymentsRepository instanceof ParticipantPaymentRepository
                 ? null
                 : $paymentsRepository->findIdByExternalId($externalId);
+            $jePrevzataZDatabaze = false;
+            $ucastnikPredZmenou = null;
             if (null !== $existingId && $existingId !== $paymentId) {
                 $payment->setImport(null);
                 $payment->setParticipant(null);
                 $payment = $this->em->find(ParticipantPayment::class, $existingId) ?? $payment;
+                $jePrevzataZDatabaze = true;
+                $ucastnikPredZmenou = $payment->getParticipant()?->getId();
                 $this->logger->info("Found duplicity (id '$paymentId') of payment with external id '$externalId'.");
             }
             if (null !== $participant) {
@@ -73,6 +77,31 @@ class ParticipantPaymentService
                 if (null !== $managedParticipant) {
                     $payment->setParticipant($managedParticipant);
                 }
+            }
+            /*
+             * Řádek, který v systému UŽ JE a nic se na něm nemění, se nezapisuje.
+             *
+             * ⚠️ Tohle je oprava vypršení importu, ne kosmetika. Bankovní výpis se posílá CELÝ,
+             * takže při každém importu je drtivá většina řádků duplicita. Dosud se i pro ně
+             * volalo `persist()` + `flush()` — flush na řádek, nad stále rostoucí jednotkou
+             * práce, takže cena rostla víc než lineárně.
+             *
+             * Naměřeno na produkci z přístupového logu (doba odpovědi na POST importu):
+             *     21. 8. 105 s → 23. 8. 112 s → 28. 8. 124 s → 30. 8. spadlo na limit 120 s.
+             * Import tedy tři týdny dobíhal o vlásek a pak hranici překročil. Nebyla to náhoda
+             * ani nová verze (poslední nasazení 27. 8., import po něm 28. 8. ještě prošel) —
+             * bylo to plynulé zpomalování, které by se samo nespravilo.
+             *
+             * Podmínka je schválně ÚZKÁ: přeskakuje se jen tehdy, když jsme platbu převzali
+             * z databáze A NEZMĚNILO se u ní přiřazení k přihlášce. Dopárování dosud nespárované
+             * platby tím pádem projde a uloží se — právě kvůli tomu se `continue` nedá dát hned
+             * po nalezení duplicity.
+             *
+             * Mail se tu nezanedbává: import volá `create($payment, false, …)`, potvrzení rozesílá
+             * cron přes `sendPendingConfirmations()`.
+             */
+            if ($jePrevzataZDatabaze && $ucastnikPredZmenou === $payment->getParticipant()?->getId()) {
+                return $payment;
             }
             $this->em->persist($payment);
             $this->em->flush();
