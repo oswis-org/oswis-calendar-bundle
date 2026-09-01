@@ -27,6 +27,10 @@
                     {% if participant.deletedAt|default %}
                         <span class="badge text-bg-danger" style="font-size:.5em; vertical-align:middle;">SMAZÁNO {{ participant.deletedAt|date('j. n. Y') }}</span>
                     {% endif %}
+                    {# Příjezd patří do hlavičky: kdo detail otevře, musí to vidět hned, ne až na check-inu. #}
+                    {% if participant.arrived|default(false) %}
+                        <span class="badge text-bg-success" style="font-size:.5em; vertical-align:middle;">PŘIJEL/A {{ participant.arrivedAt|date('j. n. H:i') }}</span>
+                    {% endif %}
                     {% if acctActive %}
                         <span class="badge text-bg-success" style="font-size:.5em; vertical-align:middle;">účet aktivován</span>
                     {% elseif contact.email|default %}

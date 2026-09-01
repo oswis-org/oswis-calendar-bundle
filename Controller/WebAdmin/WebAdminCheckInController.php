@@ -4,6 +4,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCalendarBundle\Entity\CheckIn\ParticipantStationVisit;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
@@ -96,6 +97,7 @@ final class WebAdminCheckInController extends AbstractController
         $title = 'Check-in — '.($event->getName() ?? $eventSlug);
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/check-in.html.twig', [
+            'visitsByParticipant' => $this->loadVisits($event),
             'event'        => $event,
             'eventSlug'    => $eventSlug,
             'participants' => $participants,
@@ -179,6 +181,72 @@ final class WebAdminCheckInController extends AbstractController
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="seznam-pasky-'.$eventSlug.'.pdf"',
         ]);
+    }
+
+    /**
+     * Průchody stanicemi pro celý turnus JEDNÍM dotazem, zaindexované podle účastníka.
+     *
+     * Přes `participant.getStationVisits()` by to bylo 267 dotazů (jeden na řádek) na obrazovce,
+     * která už teď renderuje přes dvě sekundy — proto se to načítá takhle.
+     *
+     * @return array<int, list<ParticipantStationVisit>>
+     */
+    private function loadVisits(Event $event): array
+    {
+        /** @var list<ParticipantStationVisit> $visits */
+        $visits = $this->em->createQueryBuilder()
+            ->select('v', 's')
+            ->from(ParticipantStationVisit::class, 'v')
+            ->join('v.station', 's')
+            ->join('v.participant', 'p')
+            ->where('s.event = :event')
+            ->andWhere('p.deletedAt IS NULL')
+            ->setParameter('event', $event)
+            ->orderBy('s.orderNumber', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $byParticipant = [];
+        foreach ($visits as $visit) {
+            $participantId = $visit->getParticipant()?->getId();
+            if (null !== $participantId) {
+                $byParticipant[$participantId][] = $visit;
+            }
+        }
+
+        return $byParticipant;
+    }
+
+    /**
+     * Zruší zapsaný průchod stanicí.
+     *
+     * ⚠️ Tohle dřív NEŠLO NIKDE. Appka průchod zapíše jedním klepnutím, ale zrušit ho neuměla —
+     * `CheckInService.removeVisit()` sice existuje, jenže ji nevolalo žádné tlačítko, a obsluha
+     * `markOtherStation()` na už odbavené stanici jen mlčky skončí (`if (step.done) return`).
+     * Překlep u stolu tak byl NEVRATNÝ; uživatel to nahlásil 1. 9. 2026 na stanici parkování.
+     *
+     * Maže se natvrdo (`remove`), protože záznam znamená „prošel" — a když neprošel, nemá tam
+     * co zůstat ani jako smazaný: unikátní klíč (participant, station) by pak bránil zapsat
+     * skutečný průchod. Ztráta informace je tu ta žádaná náprava, ne škoda.
+     */
+    public function deleteVisit(Request $request, int $visitId): Response
+    {
+        if (!$this->isCsrfTokenValid("checkin_visit_delete_$visitId", (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $visit = $this->em->find(ParticipantStationVisit::class, $visitId);
+        if (!$visit instanceof ParticipantStationVisit) {
+            throw $this->createNotFoundException('Průchod stanicí nenalezen.');
+        }
+        $eventSlug = (string) $visit->getStation()?->getEvent()?->getSlug();
+        $this->em->remove($visit);
+        $this->em->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse(['smazano' => true]);
+        }
+
+        return new RedirectResponse($this->safeBackToList($request, $eventSlug));
     }
 
     private function resolveEvent(string $eventSlug): Event

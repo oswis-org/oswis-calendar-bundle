@@ -970,3 +970,10 @@ oswis_org_oswis_calendar_web_admin_meal_kitchen_sheet:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMealController::kitchenSheetPdf
   path: "/web_admin/jidelnicek/{eventSlug}/kuchynsky-list.pdf"
   methods: [GET]
+
+# Zrušení zapsaného průchodu stanicí (překlep u stolu byl do 1. 9. 2026 nevratný) — ROLE_MANAGER
+oswis_org_oswis_calendar_web_admin_checkin_visit_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminCheckInController::deleteVisit
+  path: "/web_admin/check-in/pruchod/{visitId}/zrusit"
+  requirements: { visitId: '\d+' }
+  methods: [POST]

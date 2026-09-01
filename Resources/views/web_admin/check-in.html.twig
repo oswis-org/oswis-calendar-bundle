@@ -84,6 +84,29 @@
                                 <td>
                                     <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: p.id }) }}"
                                        target="_blank" rel="noopener">{{ p.contact.name ?? ('#' ~ p.id) }}</a>
+                                    {#
+                                        Průchody stanicemi, které zapsala appka — každý se dá zrušit.
+
+                                        ⚠️ Do 1. 9. 2026 to nešlo NIKDE: appka průchod zapíše jedním klepnutím,
+                                        ale zrušit ho neumí, takže překlep u stolu byl nevratný. Vykresluje se
+                                        jen tomu, kdo nějaký průchod má — u ostatních to nezabírá místo.
+                                    #}
+                                    {% set visits = visitsByParticipant[p.id] ?? [] %}
+                                    {% if visits|length > 0 %}
+                                        <div style="display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .25rem;">
+                                            {% for visit in visits %}
+                                                <form method="post" style="margin: 0;" data-checkin="visit-delete"
+                                                      action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_visit_delete', { visitId: visit.id }) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('checkin_visit_delete_' ~ visit.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                            style="padding: .05rem .4rem; font-size: .8rem;"
+                                                            title="Zrušit zapsaný průchod stanicí {{ visit.station.name }} (překlep)">
+                                                        {{ visit.station.name }}{% if visit.value %} · {{ visit.value }}{% endif %} ✕
+                                                    </button>
+                                                </form>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {% if g %}
@@ -279,6 +302,29 @@
                 var form = udalost.target;
                 if (!form.matches || !form.matches("form[data-checkin]")) { return; }
                 udalost.preventDefault();
+
+                // Zrušení průchodu stanicí: potvrzuje se, protože je to jediná nevratná akce
+                // na téhle obrazovce — příjezd/odjezd/tričko se dají zase odkliknout, tohle ne.
+                if (form.dataset.checkin === "visit-delete") {
+                    var popisek = form.querySelector("button").textContent.replace("\u2715", "").trim();
+                    if (!window.confirm("Opravdu zrušit zapsaný průchod stanicí „" + popisek + "\u201C?")) { return; }
+                    var tlacitkoPruchod = form.querySelector("button");
+                    tlacitkoPruchod.disabled = true;
+                    fetch(form.action, {
+                        method: "POST",
+                        body: new FormData(form),
+                        credentials: "same-origin",
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    }).then(function (odpoved) {
+                        if (!odpoved.ok) { throw new Error("HTTP " + odpoved.status); }
+                        form.remove();
+                    }).catch(function (chyba) {
+                        tlacitkoPruchod.disabled = false;
+                        window.alert("Průchod se NEPODAŘILO zrušit (" + chyba.message + "). Zkus to prosím znovu.");
+                    });
+
+                    return;
+                }
 
                 var tr = form.closest("tr[data-ucastnik]");
                 var tlacitko = form.querySelector("button");

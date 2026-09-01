@@ -60,6 +60,19 @@
                     <strong style="font-size: 1.08em; color: #1a2533;">{{ participantContact.contact.name|default('(bez jména)') }}</strong>
                 </li>
             {% endfor %}
+            {#
+                Kdo už přijel. Do 1. 9. 2026 to bylo vidět JEN na obrazovce check-inu — kdokoliv
+                jiný (kancelář, zdravotník, kdo hledá člověka v seznamu) se to odsud nedozvěděl.
+                Bez rodu: „přijel" u dívek čte jako chyba a projdou tudy stovky lidí.
+            #}
+            {% if participant.arrived|default(false) %}
+                <li style="list-style-type: '✅';">
+                    <span class="badge text-bg-success">příjezd {{ participant.arrivedAt|date('j. n. H:i') }}</span>
+                    {% if participant.departedAt|default %}
+                        <span class="badge text-bg-secondary">odjezd {{ participant.departedAt|date('j. n. H:i') }}</span>
+                    {% endif %}
+                </li>
+            {% endif %}
             {% for participantRange in participant.participantRegistrations(false, false) %}
                 {# Turnus + přihláška záměrně v JEDNOM řádku (požadavek 2026-06-12). #}
                 <li style="list-style-type: '📅'; {{ participantRange.active|default ? '' : 'text-decoration:line-through;' }}">
