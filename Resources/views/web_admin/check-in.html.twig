@@ -10,10 +10,11 @@
         <div class="row">
             <div class="col" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                 <h2 style="margin: 0;">Check-in — {{ event.name ?? eventSlug }}</h2>
-                <span class="badge text-bg-success" style="font-size: 1rem;">Přijelo {{ arrived }} / {{ total }}</span>
-                {% if noShow > 0 %}
-                    <span class="badge text-bg-secondary" style="font-size: 1rem;">Nepřijelo {{ noShow }}</span>
-                {% endif %}
+                <span class="badge text-bg-success" style="font-size: 1rem;" id="oa-prijelo">Přijelo {{ arrived }} / {{ total }}</span>
+                {# Odznak „Nepřijelo" se vykresluje i při nule (skrytě) — jinak by ho JS neměl kam
+                   dopsat, až se poslední příjezd zase odklikne zpátky. #}
+                <span class="badge text-bg-secondary" style="font-size: 1rem;" id="oa-neprijelo"
+                      {% if noShow <= 0 %}hidden{% endif %}>Nepřijelo {{ noShow }}</span>
                 <a class="btn btn-sm btn-outline-primary" style="margin-left: auto;"
                    href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_progress', { eventSlug: eventSlug }) }}"><twig:ux:icon name="tabler:chart-bar" class="oa-icon" /> Průběh příjezdu</a>
                 <a class="btn btn-sm btn-outline-primary"
@@ -41,6 +42,23 @@
             </div>
         </div>
 
+        {#
+            Hledání jména. U stolu stojí člověk a řekne jméno — bez tohohle se 267 jmen hledá
+            scrollováním, protože seznam se nikde nefiltroval. Filtruje se v prohlížeči (žádný
+            požadavek na server), bez ohledu na diakritiku a velikost písmen, takže „ríha" najde
+            i „Říhu". Pole je `hidden` a JavaScript ho odkryje: bez JS by to byla mrtvá ozdoba.
+        #}
+        <div class="row" style="margin-top: .75rem;" id="oa-hledani-radek" hidden>
+            <div class="col" style="display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;">
+                <label for="oa-hledani" class="form-label" style="margin: 0; font-weight: 600;">Najít člověka:</label>
+                <input type="search" id="oa-hledani" class="form-control" autocomplete="off"
+                       placeholder="začni psát jméno nebo příjmení…"
+                       style="max-width: 22rem; font-size: 1.1rem;">
+                <span id="oa-hledani-pocet" class="text-muted small" aria-live="polite"></span>
+                <button type="button" id="oa-hledani-zrusit" class="btn btn-sm btn-outline-secondary" hidden>Zrušit filtr</button>
+            </div>
+        </div>
+
         <div class="row" style="margin-top: .75rem;">
             <div class="col" style="overflow-x: auto;">
                 <table class="list" style="min-width: 720px;">
@@ -59,7 +77,9 @@
                         {% for p in participants %}
                             {% set g = p.group %}
                             {% set remaining = p.remainingPrice %}
-                            <tr class="{{ p.arrived ? 'table-success' : '' }}">
+                            <tr class="{{ p.arrived ? 'table-success' : '' }}"
+                                data-ucastnik="{{ p.id }}"
+                                data-jmeno="{{ p.contact.name ?? ('#' ~ p.id) }}">
                                 <td>{{ loop.index }}</td>
                                 <td>
                                     <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: p.id }) }}"
@@ -87,7 +107,7 @@
                                     {% if p.plannedDeparture %}<span class="badge text-bg-warning" title="dřívější odjezd"><twig:ux:icon name="tabler:arrow-back-up" class="oa-icon" /> {{ p.plannedDeparture }}</span>{% endif %}
                                 </td>
                                 <td>
-                                    <form method="post" style="margin: 0;"
+                                    <form method="post" style="margin: 0;" data-checkin="arrived"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_arrived', { participantId: p.id }) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('checkin_arrived_' ~ p.id) }}">
                                         {% if p.arrived %}
@@ -110,9 +130,14 @@
 
                                        Nabízí se až tomu, kdo přijel: na příjezdovém stole by druhé
                                        tlačítko u nikoho jen překáželo a svádělo k překliku. #}
-                                    {% if p.arrived %}
-                                        <form method="post" style="margin: .3rem 0 0;"
-                                              action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_departed', { participantId: p.id }) }}">
+                                    {#
+                                        Formulář se vykresluje VŽDY, jen se skrývá — jinak by po zápisu
+                                        příjezdu bez načtení stránky nebyl po ruce jeho CSRF token
+                                        a odjezd by se nedal zapsat, dokud se stránka nenačte znovu.
+                                    #}
+                                    <form method="post" style="margin: .3rem 0 0;" data-checkin="departed"
+                                          {% if not p.arrived %}hidden{% endif %}
+                                          action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_departed', { participantId: p.id }) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('checkin_departed_' ~ p.id) }}">
                                             {% if p.departedAt %}
                                                 <button type="submit" class="btn btn-sm btn-outline-secondary" title="Zrušit odjezd (překlik)">
@@ -120,19 +145,18 @@
                                                 </button>
                                             {% else %}
                                                 <button type="submit" class="btn btn-sm btn-outline-primary">Zapsat odjezd</button>
-                                            {% endif %}
-                                        </form>
-                                    {% endif %}
+                                        {% endif %}
+                                    </form>
                                 </td>
                                 <td>
                                     {% set size = p.tShirt %}
-                                    <form method="post" style="margin: 0;"
+                                    <form method="post" style="margin: 0;" data-checkin="tshirt"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_tshirt', { participantId: p.id }) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('checkin_tshirt_' ~ p.id) }}">
                                         {% if p.tShirtHandedOver %}
-                                            <button type="submit" class="btn btn-sm btn-success" title="Zrušit výdej (překlik)">✓ vydáno{% if size %} ({{ size }}){% endif %}</button>
+                                            <button type="submit" class="btn btn-sm btn-success" data-velikost="{{ size }}" title="Zrušit výdej (překlik)">✓ vydáno{% if size %} ({{ size }}){% endif %}</button>
                                         {% else %}
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Vydat{% if size %} {{ size }}{% endif %}</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" data-velikost="{{ size }}">Vydat{% if size %} {{ size }}{% endif %}</button>
                                         {% endif %}
                                     </form>
                                 </td>
@@ -145,4 +169,150 @@
             </div>
         </div>
     </div>
+
+    {#
+        Obsluha stolu. Dvě věci, bez kterých se tahle obrazovka na příjezdu nedá použít:
+
+        1. HLEDÁNÍ — filtruje řádky v prohlížeči, bez diakritiky a bez ohledu na velikost písmen.
+        2. ZÁPIS BEZ NAČTENÍ STRÁNKY — plný render seznamu je ~700 kB a přes 2 s na serveru;
+           po každém zápisu by se navíc zahodilo rozepsané hledání i pozice ve stránce.
+
+        Vše je progresivní: bez JavaScriptu se pole neukáže a formuláře odesílají postaru
+        (přesměrování zpět na seznam), takže se nic nerozbije — jen to bude pomalé.
+    #}
+    <script>
+        (function () {
+            "use strict";
+
+            var telo = document.querySelector("table.list tbody");
+            if (!telo) { return; }
+
+            /* --- Hledání ------------------------------------------------------------- */
+            var radek = document.getElementById("oa-hledani-radek");
+            var pole = document.getElementById("oa-hledani");
+            var pocet = document.getElementById("oa-hledani-pocet");
+            var zrusit = document.getElementById("oa-hledani-zrusit");
+            var radky = Array.prototype.slice.call(telo.querySelectorAll("tr[data-ucastnik]"));
+
+            function bezDiakritiky(text) {
+                return (text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            }
+
+            radky.forEach(function (tr) {
+                tr.dataset.hledatelne = bezDiakritiky(tr.dataset.jmeno);
+            });
+
+            function filtruj() {
+                // Hledá se po slovech, takže „nov ada" najde „Adélu Nováčkovou" bez ohledu na pořadí.
+                var slova = bezDiakritiky(pole.value).split(/\s+/).filter(Boolean);
+                var videno = 0;
+                radky.forEach(function (tr) {
+                    var sedi = slova.every(function (s) { return tr.dataset.hledatelne.indexOf(s) !== -1; });
+                    tr.hidden = !sedi;
+                    if (sedi) { videno++; }
+                });
+                zrusit.hidden = slova.length === 0;
+                if (slova.length === 0) {
+                    pocet.textContent = "";
+                } else if (videno === 0) {
+                    pocet.textContent = "Nikdo takový v tomhle turnusu není.";
+                } else {
+                    pocet.textContent = "Odpovídá " + videno + " z " + radky.length + ".";
+                }
+            }
+
+            radek.hidden = false;
+            pole.addEventListener("input", filtruj);
+            zrusit.addEventListener("click", function () { pole.value = ""; filtruj(); pole.focus(); });
+            // Escape maže filtr — u stolu se tím jedním hmatem přejde k dalšímu člověku.
+            pole.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") { pole.value = ""; filtruj(); }
+            });
+            pole.focus();
+
+            /* --- Zápis bez načtení stránky -------------------------------------------- */
+            var odznakPrijelo = document.getElementById("oa-prijelo");
+            var odznakNeprijelo = document.getElementById("oa-neprijelo");
+
+            function prepocitejOdznaky() {
+                var prijelo = radky.filter(function (tr) { return tr.classList.contains("table-success"); }).length;
+                if (odznakPrijelo) { odznakPrijelo.textContent = "Přijelo " + prijelo + " / " + radky.length; }
+                if (odznakNeprijelo) {
+                    var neprijelo = radky.length - prijelo;
+                    odznakNeprijelo.textContent = "Nepřijelo " + neprijelo;
+                    odznakNeprijelo.hidden = neprijelo <= 0;
+                }
+            }
+
+            function vykresli(tr, stav) {
+                var tlacitkoPrijezd = tr.querySelector('form[data-checkin="arrived"] button');
+                var formOdjezd = tr.querySelector('form[data-checkin="departed"]');
+                var tlacitkoOdjezd = formOdjezd ? formOdjezd.querySelector("button") : null;
+                var tlacitkoTricko = tr.querySelector('form[data-checkin="tshirt"] button');
+
+                tr.classList.toggle("table-success", !!stav.arrived);
+
+                if (tlacitkoPrijezd) {
+                    tlacitkoPrijezd.className = "btn btn-sm " + (stav.arrived ? "btn-success" : "btn-outline-primary");
+                    tlacitkoPrijezd.textContent = stav.arrived ? ("\u2713 p\u0159\u00EDjezd " + (stav.arrivedAt || "")) : "Zapsat p\u0159\u00EDjezd";
+                    tlacitkoPrijezd.title = stav.arrived ? "Zru\u0161it p\u0159\u00EDjezd (p\u0159eklik)" : "";
+                }
+                if (formOdjezd) {
+                    // Odjezd se nabízí jen tomu, kdo přijel — jinak by na příjezdovém stole jen sváděl k překliku.
+                    formOdjezd.hidden = !stav.arrived;
+                }
+                if (tlacitkoOdjezd) {
+                    tlacitkoOdjezd.className = "btn btn-sm " + (stav.departed ? "btn-outline-secondary" : "btn-outline-primary");
+                    tlacitkoOdjezd.textContent = stav.departed ? ("\u2713 odjezd " + (stav.departedAt || "")) : "Zapsat odjezd";
+                }
+                if (tlacitkoTricko) {
+                    var velikost = tlacitkoTricko.dataset.velikost || "";
+                    tlacitkoTricko.className = "btn btn-sm " + (stav.tshirt ? "btn-success" : "btn-outline-secondary");
+                    tlacitkoTricko.textContent = stav.tshirt
+                        ? ("\u2713 vyd\u00E1no" + (velikost ? " (" + velikost + ")" : ""))
+                        : ("Vydat" + (velikost ? " " + velikost : ""));
+                }
+                prepocitejOdznaky();
+            }
+
+            telo.addEventListener("submit", function (udalost) {
+                var form = udalost.target;
+                if (!form.matches || !form.matches("form[data-checkin]")) { return; }
+                udalost.preventDefault();
+
+                var tr = form.closest("tr[data-ucastnik]");
+                var tlacitko = form.querySelector("button");
+                if (!tr || !tlacitko || tlacitko.disabled) { return; }
+
+                // Dvojklik u stolu by stav přepnul TAM a ZPĚT — člověk by odešel jako nepřijetý.
+                tlacitko.disabled = true;
+                var puvodni = tlacitko.textContent;
+                tlacitko.textContent = "\u2026";
+
+                fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                    credentials: "same-origin",
+                    headers: { "X-Requested-With": "XMLHttpRequest" }
+                }).then(function (odpoved) {
+                    if (!odpoved.ok) { throw new Error("HTTP " + odpoved.status); }
+                    return odpoved.json();
+                }).then(function (stav) {
+                    tlacitko.disabled = false;
+                    vykresli(tr, stav);
+                }).catch(function (chyba) {
+                    // Tichý neúspěch je tady to nejhorší, co se může stát: člověk odejde od stolu
+                    // a v systému není. Řádek se proto obarví a řekne se to nahlas.
+                    tlacitko.disabled = false;
+                    tlacitko.textContent = puvodni;
+                    tr.style.outline = "3px solid #c0392b";
+                    window.alert(
+                        "Zápis se NEULOŽIL (" + chyba.message + ").\n\n"
+                        + "Zkus to prosím znovu. Pokud to padá pořád, načti stránku znovu (F5) — "
+                        + "formuláře fungují i bez tohohle zrychlení."
+                    );
+                });
+            });
+        })();
+    </script>
 {% endblock %}

@@ -15,6 +15,7 @@ use OswisOrg\OswisCalendarBundle\Service\WebAdmin\AdminReturnUrl;
 use OswisOrg\OswisCoreBundle\Service\ExportService;
 use OswisOrg\OswisCoreBundle\Utils\StringUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -250,6 +251,21 @@ final class WebAdminCheckInController extends AbstractController
             default   => $participant->setDepartedAt(null !== $participant->getDepartedAt() ? null : new DateTime()),
         };
         $this->em->flush();
+
+        // U stolu se odbaví stovky lidí za sebou, takže se sem chodí přes `fetch()` a stránka se
+        // NEnačítá znovu ({@see check-in.html.twig}). Plný render tohohle seznamu je ~700 kB a přes
+        // 2 s na serveru — a po každém zápisu by navíc odskočil na začátek a zahodil rozepsané
+        // hledání. Odpověď proto nese jen nový stav řádku; přesměrování zůstává pro prohlížeč
+        // BEZ JavaScriptu, kde formuláře fungují dál postaru (papírová záloha téhle obrazovky).
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'arrived'    => $participant->isArrived(),
+                'arrivedAt'  => $participant->getArrivedAt()?->format('H:i'),
+                'departed'   => null !== $participant->getDepartedAt(),
+                'departedAt' => $participant->getDepartedAt()?->format('H:i'),
+                'tshirt'     => $participant->isTShirtHandedOver(),
+            ]);
+        }
 
         return new RedirectResponse($this->safeBackToList($request, (string) $participant->getEvent()?->getSlug()));
     }
