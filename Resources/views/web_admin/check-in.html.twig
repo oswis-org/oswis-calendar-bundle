@@ -4,6 +4,7 @@
    řazení (dietáři-first / pásek / abecedně), zkrácený pobyt + platba na řádku. Data: WebAdminCheckInController. #}
 
 {% block body_content %}
+    {% import '@OswisOrgOswisCalendar/web_admin/_macros.html.twig' as ui %}
     <div class="container" style="padding: 1rem;">
         {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
             with { eventSlug: eventSlug, eventName: (event is defined ? (event.shortName|default(event.name|default(''))) : ''), current: 'checkin' } only %}
@@ -69,6 +70,7 @@
                             <th>Skupina / pásek</th>
                             <th>Platba</th>
                             <th>Zkrácený pobyt</th>
+                            <th>Příznaky a poznámky</th>
                             <th style="width: 12rem;">Příjezd</th>
                             <th style="width: 11rem;">Tričko</th>
                         </tr>
@@ -129,6 +131,32 @@
                                     {% if p.plannedArrival %}<span class="badge text-bg-warning" title="pozdější příjezd"><twig:ux:icon name="tabler:clock" class="oa-icon" /> {{ p.plannedArrival }}</span>{% endif %}
                                     {% if p.plannedDeparture %}<span class="badge text-bg-warning" title="dřívější odjezd"><twig:ux:icon name="tabler:arrow-back-up" class="oa-icon" /> {{ p.plannedDeparture }}</span>{% endif %}
                                 </td>
+                                {#
+                                    Kontrola přihlášky u stolu. Bez tohohle se dietu, tričko ani poznámku
+                                    („přijede až v pátek", „platí na místě") nedalo u stolu zjistit jinak než
+                                    otevřením detailu v nové záložce — na 267 lidí neúnosné.
+
+                                    Nestojí to ani jeden dotaz navíc: příznaky i poznámky už načítá
+                                    `primeAggregationCollections()` kvůli řazení a platbám.
+                                #}
+                                <td style="font-size: .85rem;">
+                                    {% for flagGroup in p.flagGroups|default([]) %}
+                                        {% for participantFlag in flagGroup.participantFlags|default([]) %}
+                                            {% if participantFlag.active|default %}
+                                                {{ ui.flag_badge(
+                                                    participantFlag.flagOffer.flag.color,
+                                                    participantFlag.flagOffer.flag.shortName|default(participantFlag.flagOffer.flag.name)
+                                                ) }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% for note in p.notes|default([])|filter(n => n.textValue|default|length > 0 and not n.deletedAt|default) %}
+                                        <div style="color: #8a4b00; margin-top: .15rem;">
+                                            <twig:ux:icon name="tabler:note" class="oa-icon" />
+                                            {% if not note.publicNote|default(false) %}<strong style="color:#b00000;">[INTERNÍ]</strong> {% endif %}{{ note.textValue }}
+                                        </div>
+                                    {% endfor %}
+                                </td>
                                 <td>
                                     <form method="post" style="margin: 0;" data-checkin="arrived"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_checkin_arrived', { participantId: p.id }) }}">
@@ -185,7 +213,7 @@
                                 </td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="7" class="text-center text-muted">Žádní účastníci v tomto turnusu.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted">Žádní účastníci v tomto turnusu.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
