@@ -1,26 +1,24 @@
 {% extends '@OswisOrgOswisCore/e-mail/pages/message.html.twig' %}
 
-{# Ad-hoc mail composed manually by admin from the OSWIS web admin.
+{# Ad-hoc mail composed manually by admin from the OSWIS web admin (single mail from the participant
+   detail, or the bulk composer).
    Variables (set in PHP `$data`):
      - participant: Participant
      - appUser:     AppUser
      - contact:     AbstractContact
-     - salutationName / f / a: Czech salutation helpers (from message.html.twig base)
+     - salutationName / f / a: Czech salutation helpers (from message.html.twig base); `f` MUST come
+                    from $participant->isFormal(true), otherwise the base falls back to formal
      - subject:     string — used as e-mail subject (passed via TemplatedEmail->subject())
      - bodyHtml:    string — rich text body (safe HTML, already sanitized server-side)
-     - adminName:   ?string — name of the admin who composed the mail (footer attribution)
+
+   Záměrně NEpřepisuje patičku (`content_footer_inner`). Tu dodává aplikace — u Seznamováku
+   „S pozdravem, Tým Seznamováku…" + kontakty — a ruční mail má končit stejně jako všechny
+   ostatní. Dřív tu byl vlastní text „Zprávu poslal {login} (administrátor) / … neváhejte nás
+   kontaktovat odpovědí na tento e-mail", který podpis týmu nahradil. Kdo mail poslal, se
+   eviduje v DB (ParticipantMail.createdBy, u hromadného ParticipantMailBulk.adminName), do
+   textu pro účastníka nepatří.
 #}
 
 {% block content_inner %}
     {{ bodyHtml|default('')|raw }}
-{% endblock %}
-
-{% block content_footer_inner %}
-    {% if adminName|default %}
-        <span style="color: #606060; font-size: .9em;">
-            Zprávu poslal{{ a }} {{ adminName }} (administrátor)
-        </span>
-        <br>
-    {% endif %}
-    V případě nejasností nebo problémů nás neváhej{{ f ? 'te' : '' }} kontaktovat odpovědí na tento e-mail.
 {% endblock %}

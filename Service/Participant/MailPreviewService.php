@@ -116,6 +116,11 @@ final class MailPreviewService
             'appUser'          => $appUser,
             'contact'          => $contact,
             'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+            // Tykání/vykání se bere z přihlášky (kategorie), přesně jako v ParticipantMailService.
+            // Bez toho spadne message.html.twig na výchozí `true`, takže hromadný mail vykal
+            // („Dobrý den Jakube!", „neváhejte") uprostřed textu psaného v tykání — zatímco
+            // všechny ostatní maily téže přihlášce tykají.
+            'f'                => $participant->isFormal(true) ?? false,
             'type'             => 'preview',
             'category'         => null,
             'participantToken' => null,
