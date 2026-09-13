@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "4cd149c4796498a46323d5bae9dc4409",
+  "content-hash": "82ed4619a1e829f74f537ed04e50468b",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -4498,16 +4498,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.2.52",
+      "version": "v0.2.53",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "f661d76f6608f75b7a3aed2a65a2c7dc9e87338a"
+        "reference": "438edc61a406423004e0c122debc4973db2c7199"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/f661d76f6608f75b7a3aed2a65a2c7dc9e87338a",
-        "reference": "f661d76f6608f75b7a3aed2a65a2c7dc9e87338a",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/438edc61a406423004e0c122debc4973db2c7199",
+        "reference": "438edc61a406423004e0c122debc4973db2c7199",
         "shasum": ""
       },
       "require": {
@@ -4616,9 +4616,9 @@
       ],
       "support": {
         "issues": "https://github.com/oswis-org/oswis-core-bundle/issues",
-        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.52"
+        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.53"
       },
-      "time": "2026-09-13T15:16:44+00:00"
+      "time": "2026-09-13T16:02:55+00:00"
     },
     {
       "name": "paragonie/random_compat",
