@@ -429,6 +429,7 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
       - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantChangeService'
       - '@monolog.logger'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory'
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailService:
     alias: oswis_org_oswis_calendar.participant.participant_mail_service
     public: true
@@ -1044,6 +1045,12 @@ services:
     arguments:
       - '@twig'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory'
+
+  ## Jediný zdroj kontextu šablony mailu k přihlášce (spec 2026-09-13 §3.4)
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory:
+    autowire: true
+    public: true
 
   ## Termíny plateb (spec 2026-09-13 §6.5) — jediné místo výpočtu pro všechny maily
   OswisOrg\OswisCalendarBundle\Service\Payment\PaymentDeadlineCalculator:

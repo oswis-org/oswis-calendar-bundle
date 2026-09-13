@@ -42,7 +42,8 @@ class ParticipantMailService
         protected ParticipantMailCategoryRepository $categoryRepository,
         protected ParticipantMailRepository $participantMailRepository,
         protected ParticipantChangeService $changeService,
-        protected LoggerInterface $logger
+        protected LoggerInterface $logger,
+        protected ParticipantMailContextFactory $contextFactory,
     ) {
     }
 
@@ -122,7 +123,6 @@ class ParticipantMailService
      */
     public function sendRegistrationChanged(Participant $participant, array $changes): void
     {
-        $contact = $participant->getContact();
         $event = $participant->getEvent();
         $title = 'Změna v přihlášce'.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : '');
         foreach ($participant->getContactPersons(true) as $contactPerson) {
@@ -133,19 +133,12 @@ class ParticipantMailService
                 $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CHANGED);
                 $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
                 $templatedEmail = $participantMail->getTemplatedEmail();
-                $data = [
-                    'participant'    => $participant,
-                    'appUser'        => $appUser,
-                    'contact'        => $contact,
-                    // f (vykání) JEN z participant.formal/kategorie — contact/appUser sloupec `formal` NEEXISTUJE,
-                    // takže šablonový default `contact.formal ?? appUser.formal ?? true` vykal i tykací kategorie.
-                    'f'              => $participant->isFormal(true) ?? false,
-                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-                    'changes'        => $changes,
-                    'type'           => ParticipantMail::TYPE_REGISTRATION_CHANGED,
-                    'depositAmount'  => $participant->getRemainingDeposit(),
-                    'restAmount'     => $participant->getRemainingPriceRest(),
-                ];
+                $data = $this->contextFactory->create($participant, $appUser, [
+                    'changes'       => $changes,
+                    'type'          => ParticipantMail::TYPE_REGISTRATION_CHANGED,
+                    'depositAmount' => $participant->getRemainingDeposit(),
+                    'restAmount'    => $participant->getRemainingPriceRest(),
+                ]);
                 $data = $this->embedQrPayments($templatedEmail, $participant, $data, true);
                 $this->em->persist($participantMail);
                 $this->mailService->sendEMail($participantMail, self::REGISTRATION_CHANGED_TEMPLATE, $data);
@@ -169,7 +162,6 @@ class ParticipantMailService
      */
     public function sendRegistrationCancelled(Participant $participant): void
     {
-        $contact = $participant->getContact();
         $event = $participant->getEvent();
         $title = 'Zrušení přihlášky'.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : '');
         foreach ($participant->getContactPersons(true) as $contactPerson) {
@@ -179,15 +171,9 @@ class ParticipantMailService
             try {
                 $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CANCELLED);
                 $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-                $data = [
-                    'participant'    => $participant,
-                    'appUser'        => $appUser,
-                    'contact'        => $contact,
-                    // f (vykání) jen z participant.formal/kategorie — viz sendRegistrationChanged.
-                    'f'              => $participant->isFormal(true) ?? false,
-                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-                    'type'           => ParticipantMail::TYPE_REGISTRATION_CANCELLED,
-                ];
+                $data = $this->contextFactory->create($participant, $appUser, [
+                    'type' => ParticipantMail::TYPE_REGISTRATION_CANCELLED,
+                ]);
                 $this->em->persist($participantMail);
                 $this->mailService->sendEMail($participantMail, self::REGISTRATION_CANCELLED_TEMPLATE, $data);
                 $this->em->flush();
@@ -299,21 +285,12 @@ class ParticipantMailService
         $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
         $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-        $contact = $participant->getContact();
-        $data = [
-            'participant' => $participant,
-            'appUser' => $appUser,
-            'contact' => $contact,
-            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-            'category' => $mailCategory,
-            'type' => $type,
+        $data = $this->contextFactory->create($participant, $appUser, [
+            'category'         => $mailCategory,
+            'type'             => $type,
             'participantToken' => $participantToken,
-            'isIS' => $isIS,
-            'registrations' => $participant->getParticipantRegistrations(true),
-            // Tykání/vykání dle kategorie účastníka (override > kategorie), ne dle (neexistujícího)
-            // contact.formal v base šabloně, který by spadl na default vykání.
-            'f' => $participant->isFormal(true) ?? false,
-        ];
+            'isIS'             => $isIS,
+        ]);
         $templatedEmail = $participantMail->getTemplatedEmail();
         if (ParticipantMail::TYPE_SUMMARY === $type) {
             $data = $this->embedQrPayments($templatedEmail, $participant, $data);
@@ -636,18 +613,12 @@ class ParticipantMailService
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
         $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-        $contact = $participant->getContact();
-        $data = [
-            'payment' => $payment,
-            'participant' => $participant,
-            'appUser' => $appUser,
-            'contact' => $contact,
-            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+        $data = $this->contextFactory->create($participant, $appUser, [
+            'payment'  => $payment,
             'category' => $mailCategory,
-            'type' => ParticipantMail::TYPE_PAYMENT,
-            'isIS' => false,
-            'f' => $participant->isFormal(true) ?? false,
-        ];
+            'type'     => ParticipantMail::TYPE_PAYMENT,
+            'isIS'     => false,
+        ]);
         $this->em->persist($participantMail);
         $this->em->persist($payment);
         $templateName = $twigTemplate->getTemplateName();
@@ -702,18 +673,12 @@ class ParticipantMailService
                 // mark before send aby MailerSubscriber nastavil Auto-Submitted: no.
                 $participantMail->markAsManual();
 
-                $contact = $participant->getContact();
-                $data = [
-                    'participant'    => $participant,
-                    'appUser'        => $appUser,
-                    'contact'        => $contact,
-                    'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-                    'subject'        => $subject,
-                    'bodyHtml'       => $bodyHtml,
-                    'adminName'      => $adminName,
-                    'type'           => $type,
-                    'f'              => $participant->isFormal(true) ?? false,
-                ];
+                $data = $this->contextFactory->create($participant, $appUser, [
+                    'subject'   => $subject,
+                    'bodyHtml'  => $bodyHtml,
+                    'adminName' => $adminName,
+                    'type'      => $type,
+                ]);
 
                 $this->em->persist($participantMail);
                 $this->mailService->sendEMail(
@@ -796,16 +761,10 @@ class ParticipantMailService
         $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
         $participantMail->setParticipantMailCategory($mailCategory);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-        $contact = $participant->getContact();
-        $data = [
-            'participant' => $participant,
-            'appUser' => $appUser,
-            'contact' => $contact,
-            'salutationName' => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
+        $data = $this->contextFactory->create($participant, $appUser, [
             'category' => $mailCategory,
-            'type' => $group->getType(),
-            'f' => $participant->isFormal(true) ?? false,
-        ];
+            'type'     => $group->getType(),
+        ]);
         $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
-use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Twig\Environment;
@@ -39,6 +39,7 @@ final class MailPreviewService
     public function __construct(
         private readonly Environment $twig,
         private readonly ParticipantRepository $participantRepository,
+        private readonly ParticipantMailContextFactory $contextFactory,
     ) {
     }
 
@@ -103,7 +104,6 @@ final class MailPreviewService
      */
     public function buildContext(Participant $participant, array $extra = []): array
     {
-        $contact = $participant->getContact();
         $appUser = null;
         foreach ($participant->getContactPersons(true) as $contactPerson) {
             if ($contactPerson instanceof AbstractContact && null !== $contactPerson->getAppUser()) {
@@ -111,27 +111,22 @@ final class MailPreviewService
                 break;
             }
         }
-        $base = [
-            'participant'      => $participant,
-            'appUser'          => $appUser,
-            'contact'          => $contact,
-            'salutationName'   => $contact instanceof Person ? $contact->getSalutationName() : $contact?->getName(),
-            // Tykání/vykání se bere z přihlášky (kategorie), přesně jako v ParticipantMailService.
-            // Bez toho spadne message.html.twig na výchozí `true`, takže hromadný mail vykal
-            // („Dobrý den Jakube!", „neváhejte") uprostřed textu psaného v tykání — zatímco
-            // všechny ostatní maily téže přihlášce tykají.
-            'f'                => $participant->isFormal(true) ?? false,
+        if (($extra['appUser'] ?? null) instanceof AppUser) {
+            $appUser = $extra['appUser'];
+        }
+
+        // Základ (oslovení, tykání `f`, koncovka `a`, termíny plateb…) z JEDINÉHO místa — dřív se tu
+        // skládal zvlášť a chybělo `f` → hromadný mail vykal uprostřed tykaného textu (10. 9. 2026).
+        // Náhled nemá per-příjemce části, které vznikají až při odeslání (QR přes cid:) → prázdné.
+        return $this->contextFactory->create($participant, $appUser, array_merge([
             'type'             => 'preview',
             'category'         => null,
             'participantToken' => null,
             'isIS'             => false,
-            'registrations'    => $participant->getParticipantRegistrations(true),
             'payment'          => null,
             'depositQr'        => '',
             'restQr'           => '',
-        ];
-
-        return array_merge($base, $extra);
+        ], $extra));
     }
 
     /**
