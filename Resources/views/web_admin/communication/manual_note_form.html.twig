@@ -21,7 +21,7 @@
         {% endif %}
 
         <p>
-            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_communication', { participantId: participant.id }) }}"
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id, _fragment: 'komunikace' }) }}"
                class="btn btn-sm btn-link">← Zpět na historii komunikace</a>
         </p>
 

@@ -87,8 +87,8 @@ final class WebAdminManualNoteController extends AbstractController
                 $this->addFlash('success', 'Záznam komunikace přidán.');
 
                 return new RedirectResponse($this->generateUrl(
-                    'oswis_org_oswis_calendar_web_admin_participant_communication',
-                    ['participantId' => $participantId],
+                    'oswis_org_oswis_calendar_web_admin_participant_detail',
+                    ['participantId' => $participantId, '_fragment' => 'komunikace'],
                 ));
             }
         }

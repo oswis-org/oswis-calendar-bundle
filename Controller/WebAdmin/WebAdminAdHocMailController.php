@@ -11,7 +11,6 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
 use OswisOrg\OswisCoreBundle\Mail\Catalog\MailCatalog;
-use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -42,6 +41,7 @@ final class WebAdminAdHocMailController extends AbstractController
         $form = $this->createForm(AdHocMailType::class);
         $form->handleRequest($request);
         $validation = null;
+        // Sem se po odeslání formuláře dostane jen neúspěch (chyby, nebo nic neodešlo) → 422 a text zůstává.
 
         if ($form->isSubmitted() && $form->isValid()) {
             $mail = new ParticipantManualMail(self::field($form, 'subject'), self::field($form, 'body'), adminName: $this->adminName());
@@ -58,8 +58,8 @@ final class WebAdminAdHocMailController extends AbstractController
                     }
 
                     return new RedirectResponse($this->generateUrl(
-                        'oswis_org_oswis_calendar_web_admin_participant_communication',
-                        ['participantId' => $participantId],
+                        'oswis_org_oswis_calendar_web_admin_participant_detail',
+                        ['participantId' => $participantId, '_fragment' => 'komunikace'],
                     ));
                 }
                 $this->addFlash('danger', 'Zpráva nikam neodešla: '.implode(' | ', $result['errors']));
@@ -73,13 +73,7 @@ final class WebAdminAdHocMailController extends AbstractController
             'variableCatalog' => $this->mailCatalog->groupedForPanel(),
             'page_title'      => sprintf('Nová zpráva účastníkovi #%d :: ADMIN', $participantId),
             'pageTitle'       => sprintf('Nová zpráva účastníkovi #%d', $participantId),
-        ], new Response(status: self::status($validation)));
-    }
-
-    /** Neodeslaná zpráva (chyby) = 422, jako neplatný formulář — text zůstává ve formuláři. */
-    private static function status(?MailValidationResult $validation): int
-    {
-        return null !== $validation && $validation->hasErrors() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK;
+        ], new Response(status: $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
     }
 
     /** @param FormInterface<mixed> $form */
