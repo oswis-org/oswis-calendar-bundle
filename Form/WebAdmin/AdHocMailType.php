@@ -33,7 +33,7 @@ final class AdHocMailType extends AbstractType
                 ],
             ])
             ->add('body', TextareaType::class, [
-                'label'       => 'Tělo zprávy (HTML povoleno: <p>, <a>, <strong>, <em>, <br>, <ul>, <ol>, <li>)',
+                'label'       => 'Text zprávy',
                 'required'    => true,
                 'attr'        => ['rows' => 12, 'style' => 'font-family: monospace;'],
                 'constraints' => [

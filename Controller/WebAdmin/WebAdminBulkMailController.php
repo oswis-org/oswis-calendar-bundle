@@ -9,11 +9,14 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Mail\Catalog\MailCatalog;
+use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
+use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,7 +41,7 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantBulkMailService $bulkMailService,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantMailBulkRepository $bulkRepository,
-        private readonly MailPreviewService $mailPreview,
+        private readonly ParticipantManualMailer $mailer,
         private readonly EntityManagerInterface $em,
         private readonly MailCatalog $mailCatalog,
     ) {
@@ -77,6 +80,18 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
 
+        return $this->renderCompose($ids);
+    }
+
+    /**
+     * Formulář hromadné zprávy — i po neúspěšném zařazení, s tím, co autor napsal, a s výsledkem kontroly.
+     *
+     * @param list<int> $ids
+     */
+    private function renderCompose(array $ids, ?ParticipantManualMail $mail = null, ?MailValidationResult $validation = null): Response
+    {
+        $status = null !== $mail ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK;
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_mail/compose.html.twig', [
             'title'           => 'Hromadný e-mail :: ADMIN',
             'pageTitle'       => 'Hromadný e-mail',
@@ -86,7 +101,11 @@ final class WebAdminBulkMailController extends AbstractController
             'recipients'      => $this->participantRepository->findByIds($ids),
             'campaigns'       => $this->campaignTemplates(),
             'variableCatalog' => $this->mailCatalog->groupedForPanel(),
-        ]);
+            'subject'         => $mail->subject ?? '',
+            'body'            => $mail->body ?? '',
+            'templateSlug'    => $mail->templateSlug ?? '',
+            'validation'      => $validation,
+        ], new Response(status: $status));
     }
 
     /** Live preview through MJML for a chosen recipient (default: the first). No send. */
@@ -104,37 +123,31 @@ final class WebAdminBulkMailController extends AbstractController
         if (!$participant instanceof Participant) {
             return new Response('<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – příjemce nenalezen.</p>');
         }
-        [$subject, $body] = $this->readMessage($request);
-        $templateSlug = trim((string) $request->request->get('templateSlug', ''));
-
-        // "Stored template" mode → render the whole campaign/snippet (DatabaseLoader resolves a slug).
-        if ('' !== $templateSlug) {
-            $result = $this->mailPreview->renderTemplate($templateSlug, $participant, [], $subject);
-
-            return new Response($result['html']);
+        $mail = $this->readMessage($request);
+        // Nejdřív kontrola: s chybou se místo náhledu ukáže, co opravit (dřív prázdné místo nebo Twig doslova).
+        $validation = $this->mailer->validate($mail, [$participant]);
+        if ($validation->hasErrors()) {
+            return new Response(self::problemsHtml($validation->errors()));
         }
-
-        // Free-body mode: body is trusted Twig (entity-API variables + conditional blocks) → render +
-        // sanitize first, then drop into the ad-hoc wrapper. A body Twig error shows inline, not blank.
         try {
-            $renderedBody = $this->mailPreview->renderBodyFragment($body, $participant);
+            return new Response($this->mailer->preview($mail, $participant)['html']);
         } catch (\Throwable $exception) {
-            $renderedBody = sprintf(
-                '<div style="color:#842029;background:#f8d7da;border:1px solid #f5c2c7;padding:.75rem;'
-                .'border-radius:.375rem;font-family:monospace;white-space:pre-wrap;">'
-                .'<strong>Chyba v těle (Twig):</strong><br>%s</div>',
-                htmlspecialchars($exception->getMessage(), ENT_QUOTES),
-            );
+            return new Response(self::problemsHtml([new MailProblem(MailProblem::ERROR, $exception->getMessage())]));
         }
+    }
 
-        $result = $this->mailPreview->renderTemplate(
-            ParticipantBulkMailService::AD_HOC_TEMPLATE,
-            $participant,
-            ['bodyHtml' => $renderedBody, 'adminName' => $this->adminName(), 'type' => 'ad-hoc-bulk-preview'],
-            $subject,
-        );
+    /**
+     * Chyby do náhledového iframu (styl je uvnitř náhledu, ne v administraci).
+     *
+     * @param list<MailProblem> $problems
+     */
+    private static function problemsHtml(array $problems): string
+    {
+        $items = array_map(static fn (MailProblem $p): string => '<li>'.htmlspecialchars($p->message, ENT_QUOTES).'</li>', $problems);
 
-        return new Response($result['html']);
+        return '<div style="font-family:sans-serif;color:#842029;background:#f8d7da;border:1px solid #f5c2c7;'
+            .'border-radius:.375rem;padding:1rem;"><strong>Zprávu nejde odeslat — oprav prosím:</strong><ul>'
+            .implode('', $items).'</ul></div>';
     }
 
     /** Step 2: queue the bulk (snapshot of recipients). Sends nothing; the drain does. */
@@ -144,11 +157,8 @@ final class WebAdminBulkMailController extends AbstractController
             throw $this->createAccessDeniedException('Neplatný CSRF token.');
         }
         $ids = $this->readIds($request);
-        [$subject, $body] = $this->readMessage($request);
-        $templateSlug = trim((string) $request->request->get('templateSlug', ''));
-        // A bulk needs a subject + recipients + either a free body OR a stored template.
-        if ([] === $ids || '' === trim($subject) || ('' === trim($body) && '' === $templateSlug)) {
-            $this->addFlash('warning', 'Vyplňte předmět, vyberte příjemce a zadejte text nebo uloženou šablonu.');
+        if ([] === $ids) {
+            $this->addFlash('warning', 'Nebyli vybráni žádní příjemci.');
 
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
@@ -157,15 +167,27 @@ final class WebAdminBulkMailController extends AbstractController
 
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
+        $mail = $this->readMessage($request);
+        // Předmět + text NEBO uložená kampaň. Chyba = formulář zpátky i s tím, co autor napsal.
+        if ('' === trim($mail->subject) || ('' === trim($mail->body) && !$mail->usesTemplate())) {
+            $this->addFlash('warning', 'Vyplň předmět a text zprávy, nebo vyber uloženou kampaň.');
 
-        // Queue-validation: the service renders the message against the first recipient and rejects a
-        // bulk whose Twig won't compile — so a typo never reaches real recipients via the drain.
+            return $this->renderCompose($ids, $mail);
+        }
+        // Kontrola VŠECH příjemců — s chybou zprávu nejde zařadit, takže se k lidem nedostane.
+        $validation = $this->bulkMailService->validate($mail, $ids);
+        if ($validation->hasErrors()) {
+            return $this->renderCompose($ids, $mail, $validation);
+        }
         try {
-            $bulk = $this->bulkMailService->queue($subject, $body, $ids, $this->adminName(), '' !== $templateSlug ? $templateSlug : null);
+            $bulk = $this->bulkMailService->queue($mail, $ids, $validation);
         } catch (OswisException $exception) {
-            $this->addFlash('danger', 'E-mail nelze zařadit – chyba v těle (Twig): '.$exception->getMessage());
+            $this->addFlash('danger', 'Zprávu nejde zařadit: '.$exception->getMessage());
 
-            return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
+            return $this->renderCompose($ids, $mail, $validation);
+        }
+        foreach ($validation->warnings() as $problem) {
+            $this->addFlash('warning', $problem->message);
         }
         $this->addFlash('success', sprintf('Hromadný e-mail zařazen: %d příjemců. Spustí se odesílání.', count($ids)));
 
@@ -222,17 +244,15 @@ final class WebAdminBulkMailController extends AbstractController
         return array_keys($ids);
     }
 
-    /**
-     * @return array{0: string, 1: string} [subject, raw body] — the body is stored verbatim as trusted
-     *                                      Twig; it is rendered and HTML-sanitized at send/preview time
-     *                                      (see {@see MailPreviewService::renderBodyFragment}), not here.
-     */
-    private function readMessage(Request $request): array
+    /** Předmět, text (Twig) a případná uložená kampaň z formuláře — vykreslí se až pro každého příjemce. */
+    private function readMessage(Request $request): ParticipantManualMail
     {
-        return [
+        return new ParticipantManualMail(
             trim((string) $request->request->get('subject', '')),
             (string) $request->request->get('body', ''),
-        ];
+            (string) $request->request->get('templateSlug', ''),
+            $this->adminName(),
+        );
     }
 
     private function adminName(): ?string

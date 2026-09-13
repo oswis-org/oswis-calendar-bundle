@@ -1,0 +1,24 @@
+{#
+    Výsledek kontroly zprávy ({@see MailValidator}) — chyby brání odeslání, varování ne.
+    Parametr: validation (MailValidationResult|null).
+#}
+{% if validation|default(null) and validation.all|length > 0 %}
+    <div class="mb-3" role="alert">
+        {% if validation.hasErrors %}
+            <div class="alert alert-danger mb-2">
+                <strong>Zprávu nejde odeslat — oprav prosím:</strong>
+                <ul class="mb-0">
+                    {% for problem in validation.errors %}<li>{{ problem.message }}</li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        {% if validation.warnings|length > 0 %}
+            <div class="alert alert-warning mb-0">
+                <strong>Upozornění</strong> (odeslat jde, ale zkontroluj to):
+                <ul class="mb-0">
+                    {% for problem in validation.warnings %}<li>{{ problem.message }}</li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
-use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
-use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
+use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
 use Twig\Environment;
 
 /**
@@ -27,19 +25,11 @@ use Twig\Environment;
  */
 final class MailPreviewService
 {
-    /**
-     * Mirrors the f / a / salName seeding at the top of message.html.twig so a free body FRAGMENT
-     * (which does not extend that base) still has the Czech salutation helpers in scope.
-     */
-    private const string SALUTATION_PRELUDE =
-        "{% set f = f is defined ? f : (contact.formal|default(appUser.formal|default(true))) %}"
-        ."{% set a = a is defined ? a : (contact.czechSuffixA|default(appUser.czechSuffixA|default(''))) %}"
-        ."{% set salName = salutationName|default(contact.salutationName|default(appUser.salutationName|default)) %}";
-
     public function __construct(
         private readonly Environment $twig,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantMailContextFactory $contextFactory,
+        private readonly MailRenderer $renderer,
     ) {
     }
 
@@ -61,11 +51,8 @@ final class MailPreviewService
     }
 
     /**
-     * Superset render context covering every mail kind (summary / payment / campaign / ad-hoc), with
-     * send-neutral safe defaults for the per-recipient bits that cannot exist in a preview (the QR
-     * payment images are embedded via cid: at real send time → empty strings here). $extra overrides
-     * the defaults (e.g. the ad-hoc body, the composing admin's name). Mirrors the $data arrays built
-     * by {@see ParticipantMailService} so the preview matches the real send.
+     * Kontext náhledu — {@see ParticipantMailContextFactory::createNeutral()}; `$extra['appUser']`
+     * vybere konkrétního adresáta (u organizace), jinak první.
      *
      * @param array<string, mixed> $extra
      *
@@ -73,29 +60,9 @@ final class MailPreviewService
      */
     public function buildContext(Participant $participant, array $extra = []): array
     {
-        $appUser = null;
-        foreach ($participant->getContactPersons(true) as $contactPerson) {
-            if ($contactPerson instanceof AbstractContact && null !== $contactPerson->getAppUser()) {
-                $appUser = $contactPerson->getAppUser();
-                break;
-            }
-        }
-        if (($extra['appUser'] ?? null) instanceof AppUser) {
-            $appUser = $extra['appUser'];
-        }
+        $appUser = ($extra['appUser'] ?? null) instanceof AppUser ? $extra['appUser'] : null;
 
-        // Základ (oslovení, tykání `f`, koncovka `a`, termíny plateb…) z JEDINÉHO místa — dřív se tu
-        // skládal zvlášť a chybělo `f` → hromadný mail vykal uprostřed tykaného textu (10. 9. 2026).
-        // Náhled nemá per-příjemce části, které vznikají až při odeslání (QR přes cid:) → prázdné.
-        return $this->contextFactory->create($participant, $appUser, array_merge([
-            'type'             => 'preview',
-            'category'         => null,
-            'participantToken' => null,
-            'isIS'             => false,
-            'payment'          => null,
-            'depositQr'        => '',
-            'restQr'           => '',
-        ], $extra));
+        return $this->contextFactory->createNeutral($participant, $appUser, $extra);
     }
 
     /**
@@ -142,42 +109,8 @@ final class MailPreviewService
     }
 
     /**
-     * Render a TRUSTED body FRAGMENT (not a full template — it does not extend message.html.twig) as
-     * Twig against the recipient context, then sanitize the rendered HTML. The fragment may use
-     * entity-API variables and conditional blocks — e.g. {{ contact.salutationName }} or
-     * {% if participant.event(false).slug == 'seznamovak-up-2026-1' %}…{% endif %} — and the Czech
-     * salutation helpers (f / a / salName) thanks to the prepended prelude. Throws on a Twig error so
-     * the caller can decide (queue-validation rejects; the drain falls back to the raw body). The
-     * sanitized output is then wrapped by the ad-hoc template's content_inner via {{ bodyHtml|raw }}.
-     *
-     * @param array<string, mixed> $extra overrides (e.g. the specific recipient appUser of an org)
-     */
-    public function renderBodyFragment(string $bodyTwig, Participant $participant, array $extra = []): string
-    {
-        $context = $this->buildContext($participant, $extra);
-
-        return $this->sanitizeHtml($this->twig->createTemplate(self::SALUTATION_PRELUDE.$bodyTwig)->render($context));
-    }
-
-    /**
-     * Sanitize rendered body HTML — safe elements + http/https/mailto/tel links only. Applied to the
-     * Twig OUTPUT (not the trusted source), so admins keep full Twig power while the delivered markup
-     * stays safe. Same config the bulk composer used on input before bodies became trusted Twig.
-     */
-    public function sanitizeHtml(string $html): string
-    {
-        return (new HtmlSanitizer(
-            (new HtmlSanitizerConfig())
-                ->allowSafeElements()
-                ->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])
-                ->allowRelativeLinks(false)
-                ->allowRelativeMedias(false),
-        ))->sanitize($html);
-    }
-
-    /**
-     * Render a subject line — as trusted Twig source when it contains Twig markup, else verbatim.
-     * A broken subject template falls back to the raw string (the body preview is what matters).
+     * Předmět přes {@see MailRenderer::renderSubject()} (stejně jako při odeslání); rozbitý předmět
+     * v náhledu zůstane, jak je napsaný — podstatný je náhled textu, chyby hlásí kontrola.
      *
      * @param array<string, mixed> $context
      */
@@ -186,11 +119,8 @@ final class MailPreviewService
         if (null === $subject || '' === trim($subject)) {
             return $subject;
         }
-        if (!str_contains($subject, '{{') && !str_contains($subject, '{%')) {
-            return $subject;
-        }
         try {
-            return trim($this->twig->createTemplate($subject)->render($context));
+            return $this->renderer->renderSubject($subject, $context);
         } catch (\Throwable) {
             return $subject;
         }

@@ -22,16 +22,32 @@
                class="btn btn-sm btn-link">← Zpět na historii komunikace</a>
         </p>
 
+        {% include '@OswisOrgOswisCalendar/web_admin/mail/_problems.html.twig' with { validation: validation|default(null) } only %}
+
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
         {{ form_row(form.subject) }}
-        {{ form_row(form.body) }}
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                {{ form_label(form.body) }}
+                {{ form_widget(form.body) }}
+                {{ form_errors(form.body) }}
+                {% include '@OswisOrgOswisCalendar/web_admin/mail/_body_help.html.twig' with { recipientCount: 1 } only %}
+            </div>
+            <div class="col-md-4 mb-3">
+                {% include '@OswisOrgOswisCalendar/web_admin/mail/_insert_panel.html.twig' with { catalog: variableCatalog|default({}), target: form.body.vars.id } only %}
+            </div>
+        </div>
         <p class="text-muted">
-            <small>
-                E-mail se vytvoří z OSWIS šablony a uloží do historie komunikace (kanál: <strong>ad-hoc</strong>).
-                Tělo HTML se před odesláním sanitizuje (povoleno: bezpečné značky + odkazy http/https/mailto/tel).
-            </small>
+            <small>E-mail odejde na všechny adresy přihlášky s aktivovaným účtem a uloží se do historie komunikace.</small>
         </p>
-        {{ form_row(form.submit) }}
+        <div class="mb-3">
+            <button type="button" class="btn btn-outline-secondary" id="mailPreviewBtn"><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled</button>
+            {{ form_widget(form.submit) }}
+        </div>
         {{ form_end(form) }}
+
+        {% include '@OswisOrgOswisCalendar/web_admin/mail/_preview.html.twig' with {
+            ids: participant.id ~ '', subjectField: form.subject.vars.id, bodyField: form.body.vars.id
+        } only %}
     </main>
 {% endblock %}

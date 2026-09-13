@@ -3,54 +3,53 @@
 namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
 use Doctrine\ORM\EntityManagerInterface;
-use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
-use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
-use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
-use OswisOrg\OswisCoreBundle\Service\MailService;
+use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
+use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use Psr\Log\LoggerInterface;
 
 /**
  * Queue + drain of the ad-hoc bulk e-mail outbox ({@see ParticipantMailBulk}). Sending is synchronous
  * blocking SMTP, so a bulk is drained in capped batches (cron command / JS auto-drain), never in one
- * request. Per-recipient send replicates {@see ParticipantMailService::sendAdHoc} but tags each mail
- * with the bulk (audit), is failure-aware (counts only real isSent deliveries), and advances the bulk
- * cursor per recipient so a crash re-sends at most one.
+ * request. Kontrola, vykreslení a odeslání jednomu příjemci jdou stejnou cestou jako „Nová zpráva"
+ * ({@see ParticipantManualMailer}); tahle služba přidává frontu, kurzor a ochranu proti duplicitě.
  */
 class ParticipantBulkMailService
 {
-    public const AD_HOC_TEMPLATE = '@OswisOrgOswisCalendar/e-mail/pages/participant-ad-hoc.html.twig';
-
     public function __construct(
         protected EntityManagerInterface $em,
-        protected MailService $mailService,
-        protected ParticipantMailRepository $participantMailRepository,
-        protected MailPreviewService $mailPreview,
+        protected ParticipantManualMailer $mailer,
         protected LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Create a queued bulk (snapshot of recipient IDs). Sends nothing. The optional $templateSlug
-     * selects a stored campaign/snippet to send instead of the free body. Queue-validation renders the
-     * message against the first recipient and throws {@see OswisException} if the Twig won't compile —
-     * a typo is caught here, never delivered to real recipients via the drain.
+     * Kontrola hromadné zprávy proti VŠEM příjemcům (spec 2026-09-13 §3.5).
+     *
+     * @param array<int> $participantIds
+     */
+    public function validate(ParticipantManualMail $mail, array $participantIds): MailValidationResult
+    {
+        return $this->mailer->validate($mail, $this->participants($participantIds));
+    }
+
+    /**
+     * Create a queued bulk (snapshot of recipient IDs). Sends nothing. Kontrolu dělá volající
+     * ({@see validate()}) a výsledek předá sem — 285 příjemců se tak nekontroluje dvakrát; zprávu
+     * s chybou zařadit nejde.
      *
      * @param array<int> $participantIds
      *
-     * @throws OswisException when the message fails to render against the first recipient
+     * @throws OswisException když kontrola našla chyby
      */
-    public function queue(
-        string $subject,
-        string $bodyHtml,
-        array $participantIds,
-        ?string $adminName = null,
-        ?string $templateSlug = null,
-    ): ParticipantMailBulk {
-        $this->validateRender($bodyHtml, $templateSlug, $participantIds);
-        $bulk = new ParticipantMailBulk($subject, $bodyHtml, $participantIds, $adminName, $templateSlug);
+    public function queue(ParticipantManualMail $mail, array $participantIds, MailValidationResult $validation): ParticipantMailBulk
+    {
+        if ($validation->hasErrors()) {
+            throw new OswisException(implode(' | ', array_map(static fn (MailProblem $p): string => $p->message, $validation->errors())));
+        }
+        $bulk = new ParticipantMailBulk($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug);
         $this->em->persist($bulk);
         $this->em->flush();
 
@@ -58,35 +57,21 @@ class ParticipantBulkMailService
     }
 
     /**
-     * Render the message (stored template, or free body fragment) against the FIRST recipient and throw
-     * on a Twig error. With no resolvable recipient there is nothing to validate (the empty-recipient
-     * guard lives in the controller). {@see queue}.
-     *
      * @param array<int> $participantIds
      *
-     * @throws OswisException
+     * @return list<Participant>
      */
-    private function validateRender(string $bodyHtml, ?string $templateSlug, array $participantIds): void
+    private function participants(array $participantIds): array
     {
-        $firstId = array_values($participantIds)[0] ?? null;
-        $participant = null !== $firstId ? $this->em->find(Participant::class, (int) $firstId) : null;
-        if (!$participant instanceof Participant) {
-            return;
-        }
-        try {
-            if (null !== $templateSlug && '' !== trim($templateSlug)) {
-                $result = $this->mailPreview->renderTemplate(trim($templateSlug), $participant);
-                if (null !== $result['error']) {
-                    throw new OswisException($result['error']);
-                }
-            } else {
-                $this->mailPreview->renderBodyFragment($bodyHtml, $participant);
+        $participants = [];
+        foreach ($participantIds as $participantId) {
+            $participant = $this->em->find(Participant::class, (int) $participantId);
+            if ($participant instanceof Participant) {
+                $participants[] = $participant;
             }
-        } catch (OswisException $exception) {
-            throw $exception;
-        } catch (\Throwable $exception) {
-            throw new OswisException($exception->getMessage());
         }
+
+        return $participants;
     }
 
     /**
@@ -134,14 +119,17 @@ class ParticipantBulkMailService
             $sent = 0;
             $failed = 0;
 
+            $mail = ParticipantManualMail::fromBulk($bulk);
             foreach ($slice as $position => $participantId) {
                 $participant = $this->em->find(Participant::class, $participantId);
-                $delivered = $participant instanceof Participant && $this->sendToParticipant($bulk, $participant);
-                if ($delivered) {
+                $delivery = $participant instanceof Participant
+                    ? $this->sendToParticipant($bulk, $mail, $participant)
+                    : ['sent' => 0, 'errors' => ['přihláška neexistuje']];
+                if ($delivery['sent'] > 0) {
                     $bulk->recordSent();
                     ++$sent;
                 } else {
-                    $bulk->recordFailed(sprintf('#%d: nedoručeno', (int) $participantId));
+                    $bulk->recordFailed(sprintf('#%d: %s', (int) $participantId, $delivery['errors'][0] ?? 'nedoručeno'));
                     ++$failed;
                 }
                 $bulk->setProcessedCount($start + (int) $position + 1);
@@ -177,14 +165,12 @@ class ParticipantBulkMailService
     }
 
     /**
-     * Send the bulk's message to one participant's contact persons (Person = 1 address, Org = N).
-     * Renders per recipient: a stored campaign/snippet template (template_slug) as a full mail, OR the
-     * free body as a trusted Twig fragment (entity-API variables + conditional blocks) into the ad-hoc
-     * wrapper. A body render error for one recipient falls back to the raw (sanitized) body + a log
-     * line, so one recipient missing a field never blocks the rest of the bulk. Returns true if at
-     * least one address was actually delivered (isSent).
+     * Zpráva jedné přihlášce (všem jejím adresám) přes {@see ParticipantManualMailer::send()}.
+     * Chyba vykreslení u jednoho příjemce = ten nedostane nic (zapíše se do selhání), zbytek běží dál.
+     *
+     * @return array{sent: int, errors: list<string>}
      */
-    private function sendToParticipant(ParticipantMailBulk $bulk, Participant $participant): bool
+    private function sendToParticipant(ParticipantMailBulk $bulk, ParticipantManualMail $mail, Participant $participant): array
     {
         $type = sprintf('ad-hoc-bulk-%d', $bulk->getId() ?? 0);
 
@@ -193,7 +179,7 @@ class ParticipantBulkMailService
         // znovu. Přesně tak 21. 8. 2026 dostalo 17 lidí dvakrát potvrzení platby
         // ({@see ParticipantPaymentService::sendPendingConfirmations()}). Tenhle test se ptá
         // DAT, ne proměnné v paměti: existuje-li už odeslaný mail tohoto bulku, druhý nepošleme.
-        // Vrací true = „doručeno", aby kurzor postoupil a dávka se nezasekla.
+        // Počítá se jako doručené, aby kurzor postoupil a dávka se nezasekla.
         if ($participant->hasEMailOfType($type)) {
             $this->logger->info(sprintf(
                 'Bulk #%d → participant #%d: e-mail už odeslán dřív, přeskočeno (ochrana proti duplicitě).',
@@ -201,75 +187,14 @@ class ParticipantBulkMailService
                 $participant->getId() ?? 0,
             ));
 
-            return true;
+            return ['sent' => 1, 'errors' => []];
+        }
+        $delivery = $this->mailer->send($mail, $participant, $type, $bulk);
+        foreach ($delivery['errors'] as $error) {
+            $this->logger->error(sprintf('Bulk #%d → participant #%d: %s', $bulk->getId() ?? 0, $participant->getId() ?? 0, $error));
         }
 
-        $usesTemplate = $bulk->hasTemplate();
-        $anyDelivered = false;
-
-        foreach ($participant->getContactPersons(true) as $contactPerson) {
-            if (!$contactPerson instanceof AbstractContact) {
-                continue;
-            }
-            $appUser = $contactPerson->getAppUser();
-            if (null === $appUser) {
-                continue;
-            }
-            try {
-                $participantMail = new ParticipantMail($participant, $appUser, $bulk->getSubject(), $type);
-                $participantMail->setBulk($bulk);
-                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-                $participantMail->markAsManual();
-
-                if ($usesTemplate) {
-                    $templateName = (string) $bulk->getTemplateSlug();
-                    $data = $this->mailPreview->buildContext($participant, [
-                        'appUser'   => $appUser,
-                        'adminName' => $bulk->getAdminName(),
-                        'type'      => $type,
-                    ]);
-                } else {
-                    try {
-                        $renderedBody = $this->mailPreview->renderBodyFragment(
-                            $bulk->getBodyHtml(),
-                            $participant,
-                            ['appUser' => $appUser],
-                        );
-                    } catch (\Throwable $bodyError) {
-                        $renderedBody = $this->mailPreview->sanitizeHtml($bulk->getBodyHtml());
-                        $this->logger->warning(sprintf(
-                            'Bulk #%d → participant #%d: body Twig render failed, raw fallback used: %s',
-                            $bulk->getId() ?? 0,
-                            $participant->getId() ?? 0,
-                            $bodyError->getMessage(),
-                        ));
-                    }
-                    $templateName = self::AD_HOC_TEMPLATE;
-                    $data = $this->mailPreview->buildContext($participant, [
-                        'appUser'   => $appUser,
-                        'adminName' => $bulk->getAdminName(),
-                        'type'      => $type,
-                        'bodyHtml'  => $renderedBody,
-                    ]);
-                }
-
-                $this->em->persist($participantMail);
-                $this->mailService->sendEMail($participantMail, $templateName, $data);
-                if ($participantMail->isSent()) {
-                    $anyDelivered = true;
-                }
-            } catch (\Throwable $e) {
-                $this->logger->error(sprintf(
-                    'Bulk #%d → participant #%d (%s): %s',
-                    $bulk->getId() ?? 0,
-                    $participant->getId() ?? 0,
-                    (string) $appUser->getEmail(),
-                    $e->getMessage(),
-                ));
-            }
-        }
-
-        return $anyDelivered;
+        return $delivery;
     }
 
     /**

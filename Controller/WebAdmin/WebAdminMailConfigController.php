@@ -13,9 +13,11 @@ use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailGroupEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\TwigTemplateEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,6 +39,7 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly MailPreviewService $mailPreview,
         private readonly ParticipantRepository $participantRepository,
+        private readonly ParticipantManualMailer $manualMailer,
     ) {
     }
 
@@ -223,7 +226,7 @@ final class WebAdminMailConfigController extends AbstractController
         $template = new TwigTemplate();
         $form = $this->createForm(TwigTemplateEditType::class, $template);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
             $this->em->persist($template);
             $this->em->flush();
             $this->addFlash('success', sprintf('Twig šablona „%s" vytvořena.', $template->getName() ?? '#'.$template->getId()));
@@ -250,7 +253,7 @@ final class WebAdminMailConfigController extends AbstractController
             ?? throw $this->createNotFoundException('Twig šablona nenalezena.');
         $form = $this->createForm(TwigTemplateEditType::class, $template);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
             $this->em->persist($template);
             $this->em->flush();
             $this->addFlash('success', sprintf('Twig šablona „%s" uložena.', $template->getName() ?? '#'.$id));
@@ -266,6 +269,31 @@ final class WebAdminMailConfigController extends AbstractController
             'pageTitle'          => sprintf('Twig šablona: %s', $template->getName() ?? '#'.$id),
             'page_title'         => sprintf('Twig šablona: %s :: ADMIN', $template->getName() ?? '#'.$id),
         ]);
+    }
+
+    /**
+     * Kontrola kampaně / bloku před uložením (nález B5: překlep se uložil a rozbilo se až odeslání).
+     * Chyby = u pole obsahu a nic se neuloží; varování = po uložení jako upozornění. Systémové šablony
+     * se tu nekontrolují — potřebují data konkrétního mailu (platba…), která vzorová přihláška nemá.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function templateHasErrors(FormInterface $form, TwigTemplate $template): bool
+    {
+        $source = (string) $template->getTextValue();
+        if ($template->isRegular() || '' === trim($source)
+            || !in_array($template->getKind(), [TwigTemplate::KIND_CAMPAIGN, TwigTemplate::KIND_SNIPPET], true)) {
+            return false;
+        }
+        $validation = $this->manualMailer->validateTemplateSource($source, $this->participantRepository->findSampleParticipants(3));
+        foreach ($validation->errors() as $problem) {
+            $form->get('textValue')->addError(new FormError($problem->message));
+        }
+        foreach ($validation->hasErrors() ? [] : $validation->warnings() as $problem) {
+            $this->addFlash('warning', $problem->message);
+        }
+
+        return $validation->hasErrors();
     }
 
     /**

@@ -573,7 +573,7 @@ class ParticipantMailService
         //     se nic neodeslalo.
         // Prázdný seznam příjemců znamená, že účastník nemá AKTIVOVANÝ uživatelský účet
         // ({@see Person::getContactPersons()} vrací prázdno, když `hasActivatedUser()` neplatí).
-        // Stejně to řeší i ad-hoc maily níž v tomhle souboru — sjednoceno.
+        // Stejně to řeší i ruční zprávy ({@see ParticipantManualMailer::send()}) — sjednoceno.
         if (1 > $sent) {
             throw new OswisException(
                 sprintf('Potvrzení platby #%d nebylo odesláno', $paymentId ?? 0)
@@ -630,82 +630,8 @@ class ParticipantMailService
     }
 
     /**
-     * @param Participant $participant
-     * @param ParticipantMailGroup $group
-     *
      * @throws OswisException
      */
-    /**
-     * Send an ad-hoc mail composed manually by an admin to a participant.
-     *
-     * Type is prefixed with "ad-hoc-" so CommunicationChannel detection on the
-     * timeline picks it up as AD_HOC_MAIL rather than SYSTEM_MAIL.
-     *
-     * @return array{sent: int, errors: list<string>}
-     * @throws OswisException when zero mails went out at all.
-     */
-    public function sendAdHoc(
-        Participant $participant,
-        string $subject,
-        string $bodyHtml,
-        ?string $adminName = null,
-    ): array {
-        $contactPersons = $participant->getContactPersons(true);
-        $sent = 0;
-        $errors = [];
-
-        foreach ($contactPersons as $contactPerson) {
-            if (!$contactPerson instanceof AbstractContact) {
-                continue;
-            }
-            $appUser = $contactPerson->getAppUser();
-            if (null === $appUser) {
-                continue;
-            }
-            try {
-                // Per-iteration unique type: date('YmdHis') has 1-second
-                // granularity, two contacts processed in the same second
-                // would collide on this string. Append the current count.
-                $type = sprintf('ad-hoc-%s-%d', date('YmdHis'), $sent + count($errors) + 1);
-                $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
-                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-                // Ad-hoc compose = admin píše ručně, ne systémový automat —
-                // mark before send aby MailerSubscriber nastavil Auto-Submitted: no.
-                $participantMail->markAsManual();
-
-                $data = $this->contextFactory->create($participant, $appUser, [
-                    'subject'   => $subject,
-                    'bodyHtml'  => $bodyHtml,
-                    'adminName' => $adminName,
-                    'type'      => $type,
-                ]);
-
-                $this->em->persist($participantMail);
-                $this->mailService->sendEMail(
-                    $participantMail,
-                    '@OswisOrgOswisCalendar/e-mail/pages/participant-ad-hoc.html.twig',
-                    $data,
-                );
-                $this->em->flush();
-                $sent++;
-            } catch (\Throwable $e) {
-                $errors[] = $appUser->getEmail().': '.$e->getMessage();
-                $this->logger->error(
-                    sprintf('Ad-hoc mail to participant %d failed: %s', $participant->getId() ?? 0, $e->getMessage()),
-                );
-            }
-        }
-
-        if (0 === $sent) {
-            throw new OswisException(
-                'Ad-hoc e-mail nikam neodeslán'
-                .($contactPersons->count() === 0 ? ' (účastník nemá ani jeden kontakt s registrovaným uživatelem).' : '. '.implode(' | ', $errors)),
-            );
-        }
-
-        return ['sent' => $sent, 'errors' => $errors];
-    }
-
     public function sendMessage(Participant $participant, ParticipantMailGroup $group): void
     {
         $participantId = $participant->getId();

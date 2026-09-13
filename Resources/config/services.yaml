@@ -1046,6 +1046,16 @@ services:
       - '@twig'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository'
       - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory'
+      - '@OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer'
+
+  ## Ruční zprávy přihláškám — jedna cesta pro jednotlivou i hromadnou zprávu (spec 2026-09-13 §5)
+  OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer:
+    autowire: true
+    public: true
+    arguments:
+      $em: '@doctrine.orm.entity_manager'
+      $mailService: '@oswis_org_oswis_core.mail_service'
+      $logger: '@monolog.logger'
 
   ## Jediný zdroj kontextu šablony mailu k přihlášce (spec 2026-09-13 §3.4)
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory:
@@ -1071,9 +1081,7 @@ services:
     public: true
     arguments:
       - '@doctrine.orm.entity_manager'
-      - '@oswis_org_oswis_core.mail_service'
-      - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository'
-      - '@OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer'
       - '@monolog.logger'
   oswis_org_oswis_calendar.participant.bulk_mail_service:
     alias: OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService
