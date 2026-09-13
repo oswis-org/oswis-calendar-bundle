@@ -130,24 +130,32 @@ final class WebAdminBulkMailController extends AbstractController
             return new Response(self::problemsHtml($validation->errors()));
         }
         try {
-            return new Response($this->mailer->preview($mail, $participant)['html']);
+            $html = $this->mailer->preview($mail, $participant)['html'];
         } catch (\Throwable $exception) {
             return new Response(self::problemsHtml([new MailProblem(MailProblem::ERROR, $exception->getMessage())]));
         }
+        // Varování nad náhledem — autor je vidí PŘED odesláním, ne až po něm.
+        if ([] !== $validation->warnings()) {
+            $html = (string) preg_replace('~(<body[^>]*>)~i', '$1'.self::problemsHtml($validation->warnings()), $html, 1);
+        }
+
+        return new Response($html);
     }
 
     /**
-     * Chyby do náhledového iframu (styl je uvnitř náhledu, ne v administraci).
+     * Chyby / varování do náhledového iframu (styl je uvnitř náhledu, ne v administraci).
      *
-     * @param list<MailProblem> $problems
+     * @param list<MailProblem> $problems všechny stejné závažnosti
      */
     private static function problemsHtml(array $problems): string
     {
         $items = array_map(static fn (MailProblem $p): string => '<li>'.htmlspecialchars($p->message, ENT_QUOTES).'</li>', $problems);
+        [$colors, $title] = MailProblem::WARNING === ($problems[0]->severity ?? null)
+            ? ['color:#664d03;background:#fff3cd;border:1px solid #ffecb5;', 'Upozornění — odeslat jde, ale zkontroluj to:']
+            : ['color:#842029;background:#f8d7da;border:1px solid #f5c2c7;', 'Zprávu nejde odeslat — oprav prosím:'];
 
-        return '<div style="font-family:sans-serif;color:#842029;background:#f8d7da;border:1px solid #f5c2c7;'
-            .'border-radius:.375rem;padding:1rem;"><strong>Zprávu nejde odeslat — oprav prosím:</strong><ul>'
-            .implode('', $items).'</ul></div>';
+        return '<div style="font-family:sans-serif;'.$colors.'border-radius:.375rem;padding:1rem;margin:0 0 1rem;">'
+            .'<strong>'.$title.'</strong><ul>'.implode('', $items).'</ul></div>';
     }
 
     /** Step 2: queue the bulk (snapshot of recipients). Sends nothing; the drain does. */
@@ -174,9 +182,10 @@ final class WebAdminBulkMailController extends AbstractController
 
             return $this->renderCompose($ids, $mail);
         }
-        // Kontrola VŠECH příjemců — s chybou zprávu nejde zařadit, takže se k lidem nedostane.
+        // Kontrola VŠECH příjemců — s chybou zprávu nejde zařadit, s varováním až po potvrzení autora
+        // (dřív se varování ukázalo až po zařazení, kdy už mail odcházel — 13. 9. 2026).
         $validation = $this->bulkMailService->validate($mail, $ids);
-        if ($validation->hasErrors()) {
+        if (!$validation->isConfirmedBy($request->request->getString('confirmWarnings'))) {
             return $this->renderCompose($ids, $mail, $validation);
         }
         try {
@@ -185,9 +194,6 @@ final class WebAdminBulkMailController extends AbstractController
             $this->addFlash('danger', 'Zprávu nejde zařadit: '.$exception->getMessage());
 
             return $this->renderCompose($ids, $mail, $validation);
-        }
-        foreach ($validation->warnings() as $problem) {
-            $this->addFlash('warning', $problem->message);
         }
         $this->addFlash('success', sprintf('Hromadný e-mail zařazen: %d příjemců. Spustí se odesílání.', count($ids)));
 

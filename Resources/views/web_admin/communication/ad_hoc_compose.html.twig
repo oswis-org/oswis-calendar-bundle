@@ -40,6 +40,7 @@
         <p class="text-muted">
             <small>E-mail odejde na všechny adresy přihlášky s aktivovaným účtem a uloží se do historie komunikace.</small>
         </p>
+        {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation|default(null) } only %}
         <div class="mb-3">
             <button type="button" class="btn btn-outline-secondary" id="mailPreviewBtn"><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled</button>
             {{ form_widget(form.submit) }}

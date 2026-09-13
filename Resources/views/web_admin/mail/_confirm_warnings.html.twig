@@ -1,0 +1,14 @@
+{#
+    Potvrzení „odeslat i tak" u zprávy, která má jen varování (bez chyb). Hodnota = otisk varování:
+    potvrzení platí jen pro TATO varování — po úpravě textu s jinými varováními se kontrola zeptá znovu.
+    Parametr: validation (MailValidationResult|null). Vkládá se DOVNITŘ formuláře, k tlačítku odeslání.
+#}
+{% if validation|default(null) and not validation.hasErrors and validation.warnings|length > 0 %}
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="confirmWarnings" id="confirmWarnings"
+               value="{{ validation.warningsFingerprint }}" required>
+        <label class="form-check-label" for="confirmWarnings">
+            Viděl(a) jsem upozornění výše a chci zprávu odeslat i tak.
+        </label>
+    </div>
+{% endif %}

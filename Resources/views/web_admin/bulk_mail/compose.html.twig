@@ -104,6 +104,7 @@
                 </div>
             </div>
 
+            {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation|default(null) } only %}
             <div class="mb-3">
                 <button type="button" class="btn btn-outline-secondary" id="mailPreviewBtn"><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled (1. příjemce)</button>
                 <button type="submit" class="btn btn-primary"><twig:ux:icon name="tabler:mail" class="oa-icon" /> Zařadit a odeslat ({{ recipientCount }})</button>

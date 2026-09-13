@@ -46,15 +46,13 @@ final class WebAdminAdHocMailController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $mail = new ParticipantManualMail(self::field($form, 'subject'), self::field($form, 'body'), adminName: $this->adminName());
             $validation = $this->mailer->validate($mail, [$participant]);
-            if (!$validation->hasErrors()) {
+            // Bez chyb a s potvrzenými varováními (varování se ukáže PŘED odesláním, ne po něm).
+            if ($validation->isConfirmedBy($request->request->getString('confirmWarnings'))) {
                 $result = $this->mailer->send($mail, $participant, 'ad-hoc-'.$this->clock->now()->format('YmdHis'));
                 if ($result['sent'] > 0) {
                     $this->addFlash('success', sprintf('Zpráva účastníkovi #%d odeslána (adres: %d).', $participantId, $result['sent']));
                     if ([] !== $result['errors']) {
                         $this->addFlash('warning', 'Na některé adresy se nedoručilo: '.implode(' | ', $result['errors']));
-                    }
-                    foreach ($validation->warnings() as $problem) {
-                        $this->addFlash('warning', $problem->message);
                     }
 
                     return new RedirectResponse($this->generateUrl(
