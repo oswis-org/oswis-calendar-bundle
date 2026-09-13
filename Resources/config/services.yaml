@@ -1045,6 +1045,11 @@ services:
       - '@twig'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository'
 
+  ## Termíny plateb (spec 2026-09-13 §6.5) — jediné místo výpočtu pro všechny maily
+  OswisOrg\OswisCalendarBundle\Service\Payment\PaymentDeadlineCalculator:
+    autowire: true
+    public: true
+
   ## Bulk e-mail outbox: drain service + cron command
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService:
     autowire: true
