@@ -516,6 +516,12 @@ oswis_org_oswis_calendar_web_admin_bulk_mail_drain:
   path: "/web_admin/prihlasky/hromadny-email/odeslat-davku"
   methods: [POST]
 
+# Náhled pro editor textu mailu (spec 2026-09-13 §4.5): JSON — předmět, HTML, chyby, varování.
+oswis_org_oswis_calendar_web_admin_message_preview:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMessagePreviewController::preview
+  path: "/web_admin/zpravy/nahled"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
   path: "/web_admin/prijezd/{participantId}/{arrival?}"

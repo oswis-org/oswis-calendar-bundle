@@ -21,7 +21,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
@@ -34,6 +33,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class WebAdminBulkMailController extends AbstractController
 {
+    use ManualMailRequestTrait;
+
     /** Hard ceiling on recipients per bulk (real mail; mirrors the export cap rationale). */
     private const int MAX_RECIPIENTS = 1000;
 
@@ -123,7 +124,7 @@ final class WebAdminBulkMailController extends AbstractController
         if (!$participant instanceof Participant) {
             return new Response('<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – příjemce nenalezen.</p>');
         }
-        $mail = $this->readMessage($request);
+        $mail = $this->manualMailFromRequest($request);
         // Nejdřív kontrola: s chybou se místo náhledu ukáže, co opravit (dřív prázdné místo nebo Twig doslova).
         $validation = $this->mailer->validate($mail, [$participant]);
         if ($validation->hasErrors()) {
@@ -175,7 +176,7 @@ final class WebAdminBulkMailController extends AbstractController
 
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
-        $mail = $this->readMessage($request);
+        $mail = $this->manualMailFromRequest($request);
         // Předmět + text NEBO uložená kampaň. Chyba = formulář zpátky i s tím, co autor napsal.
         if ('' === trim($mail->subject) || ('' === trim($mail->body) && !$mail->usesTemplate())) {
             $this->addFlash('warning', 'Vyplň předmět a text zprávy, nebo vyber uloženou kampaň.');
@@ -248,23 +249,5 @@ final class WebAdminBulkMailController extends AbstractController
         }
 
         return array_keys($ids);
-    }
-
-    /** Předmět, text (Twig) a případná uložená kampaň z formuláře — vykreslí se až pro každého příjemce. */
-    private function readMessage(Request $request): ParticipantManualMail
-    {
-        return new ParticipantManualMail(
-            trim((string) $request->request->get('subject', '')),
-            (string) $request->request->get('body', ''),
-            (string) $request->request->get('templateSlug', ''),
-            $this->adminName(),
-        );
-    }
-
-    private function adminName(): ?string
-    {
-        $user = $this->getUser();
-
-        return $user instanceof UserInterface ? $user->getUserIdentifier() : null;
     }
 }

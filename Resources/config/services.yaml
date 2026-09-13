@@ -179,6 +179,11 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMessagePreviewController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminManualNoteController:
     autowire: true
     autoconfigure: true

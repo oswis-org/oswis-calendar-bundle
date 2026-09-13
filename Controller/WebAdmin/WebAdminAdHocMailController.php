@@ -17,7 +17,6 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
@@ -27,6 +26,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class WebAdminAdHocMailController extends AbstractController
 {
+    use ManualMailRequestTrait;
+
     public function __construct(
         private readonly ParticipantService $participantService,
         private readonly ParticipantManualMailer $mailer,
@@ -80,13 +81,6 @@ final class WebAdminAdHocMailController extends AbstractController
         $value = $form->get($name)->getData();
 
         return is_string($value) ? $value : '';
-    }
-
-    private function adminName(): ?string
-    {
-        $user = $this->getUser();
-
-        return $user instanceof UserInterface ? $user->getUserIdentifier() : null;
     }
 
     private function loadParticipant(int $participantId): Participant
