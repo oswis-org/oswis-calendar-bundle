@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "1dc826e9ce2b5945e60e196b8d1ef26b",
+  "content-hash": "4cd149c4796498a46323d5bae9dc4409",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -4498,16 +4498,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.2.51",
+      "version": "v0.2.52",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "9613346a5f13460927f6670b6152e0effb295b4a"
+        "reference": "f661d76f6608f75b7a3aed2a65a2c7dc9e87338a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/9613346a5f13460927f6670b6152e0effb295b4a",
-        "reference": "9613346a5f13460927f6670b6152e0effb295b4a",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/f661d76f6608f75b7a3aed2a65a2c7dc9e87338a",
+        "reference": "f661d76f6608f75b7a3aed2a65a2c7dc9e87338a",
         "shasum": ""
       },
       "require": {
@@ -4549,6 +4549,7 @@
         "symfony/dependency-injection": "^8.1",
         "symfony/expression-language": "^8.1",
         "symfony/form": "^8.1",
+        "symfony/html-sanitizer": "^8.1",
         "symfony/mailer": "^8.1",
         "symfony/mime": "^8.1",
         "symfony/monolog-bundle": "^3.10 || ^4.0",
@@ -4615,9 +4616,9 @@
       ],
       "support": {
         "issues": "https://github.com/oswis-org/oswis-core-bundle/issues",
-        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.51"
+        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.52"
       },
-      "time": "2026-08-27T07:15:57+00:00"
+      "time": "2026-09-13T15:16:44+00:00"
     },
     {
       "name": "paragonie/random_compat",
