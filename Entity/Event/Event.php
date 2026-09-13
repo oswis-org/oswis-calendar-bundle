@@ -160,6 +160,22 @@ class Event implements NameableInterface
     #[Column(type: 'integer', nullable: true)]
     protected ?int $price = null;
 
+    /** Záloha splatná do N dní od potvrzení přihlášky. Prázdné = převezme se z nadřazené akce. */
+    #[Column(type: 'integer', nullable: true)]
+    protected ?int $depositDueDays = null;
+
+    /** Datum splatnosti doplatku. Prázdné = převezme se z nadřazené akce. */
+    #[Column(type: 'date', nullable: true)]
+    protected ?DateTime $restDueDate = null;
+
+    /**
+     * Pozdní přihláška (potvrzená méně než N dní před termínem doplatku nebo po něm) a platba po
+     * termínu: mail napíše „do N dnů". Prázdné = z nadřazené akce, jinak 3 (PaymentDeadlineCalculator).
+     * Spec docs/superpowers/specs/2026-09-13-emaily-design.md §6.5.
+     */
+    #[Column(type: 'integer', nullable: true)]
+    protected ?int $latePaymentDays = null;
+
     /** Zvýraznění aktivity v programu. */
     #[Column(type: 'boolean', options: ['default' => false])]
     protected bool $highlight = false;
@@ -514,6 +530,37 @@ class Event implements NameableInterface
     public function setSignupDeadline(?\DateTimeInterface $signupDeadline): void
     {
         $this->signupDeadline = $signupDeadline;
+    }
+
+    /** `$recursive` = když akce hodnotu nemá, převezme ji z nadřazené (jako `getBankAccount(true)`). */
+    public function getDepositDueDays(bool $recursive = false): ?int
+    {
+        return $this->depositDueDays ?? ($recursive ? $this->getSuperEvent()?->getDepositDueDays(true) : null);
+    }
+
+    public function setDepositDueDays(?int $depositDueDays): void
+    {
+        $this->depositDueDays = null === $depositDueDays ? null : max(0, $depositDueDays);
+    }
+
+    public function getRestDueDate(bool $recursive = false): ?DateTime
+    {
+        return $this->restDueDate ?? ($recursive ? $this->getSuperEvent()?->getRestDueDate(true) : null);
+    }
+
+    public function setRestDueDate(?DateTime $restDueDate): void
+    {
+        $this->restDueDate = $restDueDate;
+    }
+
+    public function getLatePaymentDays(bool $recursive = false): ?int
+    {
+        return $this->latePaymentDays ?? ($recursive ? $this->getSuperEvent()?->getLatePaymentDays(true) : null);
+    }
+
+    public function setLatePaymentDays(?int $latePaymentDays): void
+    {
+        $this->latePaymentDays = null === $latePaymentDays ? null : max(1, $latePaymentDays);
     }
 
     public function getPrice(): ?int
