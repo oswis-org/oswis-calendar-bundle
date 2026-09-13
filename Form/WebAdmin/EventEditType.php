@@ -14,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -171,6 +172,30 @@ final class EventEditType extends AbstractType
                 'label' => 'Uložit',
                 'attr'  => ['class' => 'btn btn-primary'],
             ]);
+
+        // Termíny plateb (spec 2026-09-13 §6.5) jen u turnusu/ročníku, ne u programové aktivity.
+        if (true === $options['payment_deadlines']) {
+            $builder
+                ->add('depositDueDays', IntegerType::class, [
+                    'label'    => 'Záloha splatná do (dní od potvrzení přihlášky)',
+                    'required' => false,
+                    'attr'     => ['min' => 0],
+                    'help'     => 'Prázdné = převezme se z ročníku.',
+                ])
+                ->add('restDueDate', DateType::class, [
+                    'label'    => 'Doplatek splatný do',
+                    'required' => false,
+                    'widget'   => 'single_text',
+                    'input'    => 'datetime',
+                    'help'     => 'Prázdné = převezme se z ročníku.',
+                ])
+                ->add('latePaymentDays', IntegerType::class, [
+                    'label'    => 'Pozdní přihláška: celou částku do (dní)',
+                    'required' => false,
+                    'attr'     => ['min' => 1],
+                    'help'     => 'Pro přihlášky potvrzené méně než tolik dní před termínem doplatku nebo po něm a pro platby po termínu. Prázdné = z ročníku, jinak 3.',
+                ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -181,8 +206,11 @@ final class EventEditType extends AbstractType
             'groups'     => [],
             // Nabídka bloků (Event program-block) pro pole parentBlock; naplní kontroler dle turnusu.
             'blocks'     => [],
+            // Termíny plateb — jen editace akce (turnus/ročník), ne programová aktivita.
+            'payment_deadlines' => false,
         ]);
         $resolver->setAllowedTypes('groups', 'array');
         $resolver->setAllowedTypes('blocks', 'array');
+        $resolver->setAllowedTypes('payment_deadlines', 'bool');
     }
 }

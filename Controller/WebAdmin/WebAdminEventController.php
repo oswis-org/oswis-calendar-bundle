@@ -34,7 +34,7 @@ final class WebAdminEventController extends AbstractController
     public function edit(Request $request, string $eventSlug): Response
     {
         $event = $this->loadEvent($eventSlug);
-        $form = $this->createForm(EventEditType::class, $event);
+        $form = $this->createForm(EventEditType::class, $event, ['payment_deadlines' => true]);
         $form->get('startDate')->setData($event->getStartDateTime());
         $form->get('endDate')->setData($event->getEndDateTime());
         $form->handleRequest($request);

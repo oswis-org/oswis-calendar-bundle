@@ -85,6 +85,27 @@
             </div>
         </fieldset>
 
+        {% if form.depositDueDays is defined %}
+            <fieldset class="admin-fieldset">
+                <legend>Termíny plateb</legend>
+                <p class="small">Použijí je maily (shrnutí přihlášky, potvrzení platby, kampaně). Mail nikdy neuvede
+                    datum v&nbsp;minulosti — po termínu napíše „do N dnů".</p>
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">{{ form_row(form.depositDueDays) }}</div>
+                    <div class="col-12 col-md-4 mb-3">{{ form_row(form.restDueDate) }}</div>
+                    <div class="col-12 col-md-4 mb-3">{{ form_row(form.latePaymentDays) }}</div>
+                </div>
+                {% set rocnik = event.superEvent|default(null) %}
+                {% if rocnik %}
+                    {% set rocnikDoplatek = rocnik.getRestDueDate(true) %}
+                    <p class="small">Z ročníku „{{ rocnik.shortName|default(rocnik.name|default('')) }}":
+                        záloha {{ rocnik.getDepositDueDays(true) ?? '—' }} dní ·
+                        doplatek {{ rocnikDoplatek ? rocnikDoplatek|date('j. n. Y') : '—' }} ·
+                        pozdní {{ rocnik.getLatePaymentDays(true) ?? '—' }} dní</p>
+                {% endif %}
+            </fieldset>
+        {% endif %}
+
         <div style="position: sticky; bottom: 0; background: rgba(255,255,255,.95); border-top: 1px solid #dee2e6; padding: .75rem 0; margin-top: 1rem; display: flex; gap: .5rem; justify-content: flex-end;">
             <a href="{{ back_url|default((event.slug|default(false)) ? path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: event.slug }) : '#') }}"
                class="btn btn-link">Zrušit</a>
