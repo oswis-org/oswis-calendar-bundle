@@ -496,11 +496,6 @@ oswis_org_oswis_calendar_web_admin_bulk_mail_compose:
   path: "/web_admin/prihlasky/hromadny-email"
   methods: [POST]
 
-oswis_org_oswis_calendar_web_admin_bulk_mail_preview:
-  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::preview
-  path: "/web_admin/prihlasky/hromadny-email/nahled"
-  methods: [POST]
-
 oswis_org_oswis_calendar_web_admin_bulk_mail_queue:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::queue
   path: "/web_admin/prihlasky/hromadny-email/zaradit"

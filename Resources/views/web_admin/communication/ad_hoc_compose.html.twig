@@ -26,29 +26,13 @@
 
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
         {{ form_row(form.subject) }}
-        <div class="row">
-            <div class="col-md-8 mb-3">
-                {{ form_label(form.body) }}
-                {{ form_widget(form.body) }}
-                {{ form_errors(form.body) }}
-                {% include '@OswisOrgOswisCalendar/web_admin/mail/_body_help.html.twig' with { recipientCount: 1 } only %}
-            </div>
-            <div class="col-md-4 mb-3">
-                {% include '@OswisOrgOswisCalendar/web_admin/mail/_insert_panel.html.twig' with { catalog: variableCatalog|default({}), target: form.body.vars.id } only %}
-            </div>
-        </div>
+        {{ form_row(form.body) }}
         <p class="text-muted">
-            <small>E-mail odejde na všechny adresy přihlášky s aktivovaným účtem a uloží se do historie komunikace.</small>
+            <small>E-mail odejde na všechny adresy přihlášky s aktivovaným účtem a uloží se do historie komunikace.
+                Před odesláním se zpráva zkontroluje.</small>
         </p>
         {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation|default(null) } only %}
-        <div class="mb-3">
-            <button type="button" class="btn btn-outline-secondary" id="mailPreviewBtn"><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled</button>
-            {{ form_widget(form.submit) }}
-        </div>
+        <div class="mb-3">{{ form_widget(form.submit) }}</div>
         {{ form_end(form) }}
-
-        {% include '@OswisOrgOswisCalendar/web_admin/mail/_preview.html.twig' with {
-            ids: participant.id ~ '', subjectField: form.subject.vars.id, bodyField: form.body.vars.id
-        } only %}
     </main>
 {% endblock %}

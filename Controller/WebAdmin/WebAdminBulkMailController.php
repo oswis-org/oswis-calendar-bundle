@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\ORM\EntityManagerInterface;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
-use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
-use OswisOrg\OswisCoreBundle\Mail\Catalog\MailCatalog;
-use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
+use OswisOrg\OswisCoreBundle\Mail\Editor\MailEditorConfig;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,9 +39,8 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantBulkMailService $bulkMailService,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantMailBulkRepository $bulkRepository,
-        private readonly ParticipantManualMailer $mailer,
         private readonly EntityManagerInterface $em,
-        private readonly MailCatalog $mailCatalog,
+        private readonly MailEditorConfig $editorConfig,
     ) {
     }
 
@@ -101,62 +97,13 @@ final class WebAdminBulkMailController extends AbstractController
             'recipientCount'  => count($ids),
             'recipients'      => $this->participantRepository->findByIds($ids),
             'campaigns'       => $this->campaignTemplates(),
-            'variableCatalog' => $this->mailCatalog->groupedForPanel(),
+            'editorConfig'    => $this->editorConfig->toArray(),
+            'previewUrl'      => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
             'subject'         => $mail->subject ?? '',
             'body'            => $mail->body ?? '',
             'templateSlug'    => $mail->templateSlug ?? '',
             'validation'      => $validation,
         ], new Response(status: $status));
-    }
-
-    /** Live preview through MJML for a chosen recipient (default: the first). No send. */
-    public function preview(Request $request): Response
-    {
-        if (!$this->isCsrfTokenValid('bulk_mail_preview', (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Neplatný CSRF token.');
-        }
-        $ids = $this->readIds($request);
-        // Preview for a specific recipient if asked (and it really is in the snapshot), else the first.
-        $chosenRaw = (string) $request->request->get('previewParticipantId', '');
-        $chosen = ctype_digit($chosenRaw) ? (int) $chosenRaw : 0;
-        $previewId = ($chosen > 0 && in_array($chosen, $ids, true)) ? $chosen : ($ids[0] ?? null);
-        $participant = null !== $previewId ? $this->participantRepository->find($previewId) : null;
-        if (!$participant instanceof Participant) {
-            return new Response('<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – příjemce nenalezen.</p>');
-        }
-        $mail = $this->manualMailFromRequest($request);
-        // Nejdřív kontrola: s chybou se místo náhledu ukáže, co opravit (dřív prázdné místo nebo Twig doslova).
-        $validation = $this->mailer->validate($mail, [$participant]);
-        if ($validation->hasErrors()) {
-            return new Response(self::problemsHtml($validation->errors()));
-        }
-        try {
-            $html = $this->mailer->preview($mail, $participant)['html'];
-        } catch (\Throwable $exception) {
-            return new Response(self::problemsHtml([new MailProblem(MailProblem::ERROR, $exception->getMessage())]));
-        }
-        // Varování nad náhledem — autor je vidí PŘED odesláním, ne až po něm.
-        if ([] !== $validation->warnings()) {
-            $html = (string) preg_replace('~(<body[^>]*>)~i', '$1'.self::problemsHtml($validation->warnings()), $html, 1);
-        }
-
-        return new Response($html);
-    }
-
-    /**
-     * Chyby / varování do náhledového iframu (styl je uvnitř náhledu, ne v administraci).
-     *
-     * @param list<MailProblem> $problems všechny stejné závažnosti
-     */
-    private static function problemsHtml(array $problems): string
-    {
-        $items = array_map(static fn (MailProblem $p): string => '<li>'.htmlspecialchars($p->message, ENT_QUOTES).'</li>', $problems);
-        [$colors, $title] = MailProblem::WARNING === ($problems[0]->severity ?? null)
-            ? ['color:#664d03;background:#fff3cd;border:1px solid #ffecb5;', 'Upozornění — odeslat jde, ale zkontroluj to:']
-            : ['color:#842029;background:#f8d7da;border:1px solid #f5c2c7;', 'Zprávu nejde odeslat — oprav prosím:'];
-
-        return '<div style="font-family:sans-serif;'.$colors.'border-radius:.375rem;padding:1rem;margin:0 0 1rem;">'
-            .'<strong>'.$title.'</strong><ul>'.implode('', $items).'</ul></div>';
     }
 
     /** Step 2: queue the bulk (snapshot of recipients). Sends nothing; the drain does. */

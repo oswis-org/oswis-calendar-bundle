@@ -17,7 +17,7 @@
             Jde o <strong>reálné odeslání</strong> živým lidem — zkontrolujte text a náhled.
         </div>
 
-        {# Recipient list — see exactly who gets the mail + preview it for any specific one. #}
+        {# Seznam příjemců — kdo přesně zprávu dostane (náhled pro kohokoli z nich je u textu). #}
         <details class="mb-3"{{ recipientCount <= 25 ? ' open' : '' }}>
             <summary style="cursor:pointer;font-weight:600;"><twig:ux:icon name="tabler:clipboard-list" class="oa-icon" /> Seznam příjemců ({{ recipientCount }}) — zobrazit / skrýt</summary>
             <div style="max-height:320px;overflow:auto;border:1px solid #dee2e6;border-radius:.375rem;margin-top:.5rem;">
@@ -28,7 +28,6 @@
                             <th>Jméno</th>
                             <th>Akce</th>
                             <th>E-mail</th>
-                            <th style="width:6rem;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,14 +37,9 @@
                                 <td>{{ r.contact ? (r.contact.name|default('(bez jména)')) : '(bez kontaktu)' }}</td>
                                 <td>{{ r.event ? (r.event.shortName|default(r.event.name)|default('—')) : '—' }}</td>
                                 <td><small>{{ (r.contact and r.contact.appUser) ? r.contact.appUser.email : '—' }}</small></td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary mail-preview-one"
-                                            data-pid="{{ r.id }}"
-                                            data-name="{{ (r.contact ? (r.contact.name|default('#'~r.id)) : ('#'~r.id))|e('html_attr') }}"><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled</button>
-                                </td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="5" style="text-align:center;color:#6c757d;">Žádní příjemci.</td></tr>
+                            <tr><td colspan="4" style="text-align:center;color:#6c757d;">Žádní příjemci.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -88,50 +82,47 @@
                 <small class="text-muted">Odešle se celá uložená kampaň (vykreslená pro každého příjemce). Vlastní text se ignoruje.</small>
             </div>
 
-            {# Free-body mode #}
-            <div id="bmBodySection">
-                <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label for="bm_body" class="form-label">Text zprávy</label>
-                        <textarea class="form-control" id="bm_body" name="body" rows="14" required
-                                  style="font-family: monospace;"
-                                  placeholder="&lt;p&gt;Ahoj…&lt;/p&gt;">{{ body|default('') }}</textarea>
-                        {% include '@OswisOrgOswisCalendar/web_admin/mail/_body_help.html.twig' with { recipientCount: recipientCount } only %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        {% include '@OswisOrgOswisCalendar/web_admin/mail/_insert_panel.html.twig' with { catalog: variableCatalog|default({}), target: 'bm_body' } only %}
-                    </div>
-                </div>
+            {# Text zprávy v editoru; náhled vedle ukazuje zprávu (nebo kampaň) pro vybraného příjemce. #}
+            <div id="bmBodySection" class="mb-3">
+                <label for="bm_body" class="form-label" id="bmBodyLabel">Text zprávy</label>
+                {% include '@OswisOrgOswisCore/mail/editor.html.twig' with {
+                    name: 'body', id: 'bm_body', value: body|default(''), config: editorConfig, required: true,
+                    preview: {
+                        url: previewUrl,
+                        recipients: recipients|default([])|map(r => { id: r.id, label: '#' ~ r.id ~ ' ' ~ (r.contact ? r.contact.name : '') }),
+                        subjectField: 'bm_subject',
+                        templateField: 'bm_template',
+                    },
+                } only %}
             </div>
 
+            <p class="text-muted"><small>Před zařazením se zpráva zkontroluje pro {{ recipientCount == 1 ? 'příjemce' : 'všech ' ~ recipientCount ~ ' příjemců' }}
+                a vykreslí se každému zvlášť.</small></p>
             {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation|default(null) } only %}
             <div class="mb-3">
-                <button type="button" class="btn btn-outline-secondary" id="mailPreviewBtn"><twig:ux:icon name="tabler:eye" class="oa-icon" /> Náhled (1. příjemce)</button>
                 <button type="submit" class="btn btn-primary"><twig:ux:icon name="tabler:mail" class="oa-icon" /> Zařadit a odeslat ({{ recipientCount }})</button>
             </div>
         </form>
-
-        {% include '@OswisOrgOswisCalendar/web_admin/mail/_preview.html.twig' with {
-            ids: idsCsv, subjectField: 'bm_subject', bodyField: 'bm_body', templateField: 'bm_template'
-        } only %}
     </main>
 
     <script>
         (function () {
-            var body = document.getElementById('bm_body');
             var tplSelect = document.getElementById('bm_template');
             var bodySection = document.getElementById('bmBodySection');
             var tplSection = document.getElementById('bmTemplateSection');
+            var editorRoot = bodySection.querySelector('.mail-editor');
+            var bodyLabel = document.getElementById('bmBodyLabel');
 
-            // Režim: vlastní text (s nabídkou Vložit) NEBO uložená kampaň. `required` jen u aktivního,
-            // aby prohlížeč neblokoval platné odeslání v neaktivním režimu.
+            // Režim: vlastní text NEBO uložená kampaň. V režimu kampaně se editor skryje a náhled
+            // ukazuje kampaň; text pak není povinný (hlídá editor, `mail-editor--template-mode`).
             function applyMode(mode) {
                 var isTemplate = mode === 'template';
                 tplSection.style.display = isTemplate ? '' : 'none';
-                bodySection.style.display = isTemplate ? 'none' : '';
-                body.required = !isTemplate;
+                if (editorRoot) { editorRoot.classList.toggle('mail-editor--template-mode', isTemplate); }
+                bodyLabel.hidden = isTemplate;
                 tplSelect.required = isTemplate;
                 if (!isTemplate) { tplSelect.value = ''; }
+                tplSelect.dispatchEvent(new Event('change'));
             }
             Array.prototype.forEach.call(document.querySelectorAll('input[name=mailMode]'), function (r) {
                 r.addEventListener('change', function () { if (r.checked) { applyMode(r.value); } });

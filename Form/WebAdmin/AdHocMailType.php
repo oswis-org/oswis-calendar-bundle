@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
+use OswisOrg\OswisCoreBundle\Form\Type\MailBodyType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -14,10 +14,8 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
- * Web-admin form for composing an ad-hoc e-mail to a participant.
- *
- * `body` is treated as trusted HTML — sanitized in the controller via
- * symfony/html-sanitizer before being passed to the Twig template.
+ * „Nová zpráva" jedné přihlášce. Text (`body`) je Twig + HTML z editoru ({@see MailBodyType}); čistí
+ * a vykresluje ho ParticipantManualMailer stejně jako hromadný mail. Volba `preview` = náhled vedle textu.
  */
 final class AdHocMailType extends AbstractType
 {
@@ -32,12 +30,12 @@ final class AdHocMailType extends AbstractType
                     new Length(max: 200, maxMessage: 'Předmět může mít maximálně 200 znaků.'),
                 ],
             ])
-            ->add('body', TextareaType::class, [
+            ->add('body', MailBodyType::class, [
                 'label'       => 'Text zprávy',
                 'required'    => true,
-                'attr'        => ['rows' => 12, 'style' => 'font-family: monospace;'],
+                'preview'     => $options['preview'],
                 'constraints' => [
-                    new NotBlank(message: 'Vyplň prosím tělo zprávy.'),
+                    new NotBlank(message: 'Vyplň prosím text zprávy.'),
                 ],
             ])
             ->add('submit', SubmitType::class, [
@@ -51,6 +49,8 @@ final class AdHocMailType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => null,
+            'preview'    => null,
         ]);
+        $resolver->setAllowedTypes('preview', ['null', 'array']);
     }
 }

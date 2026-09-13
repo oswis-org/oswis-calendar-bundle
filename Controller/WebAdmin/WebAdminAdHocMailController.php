@@ -10,7 +10,6 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantService;
-use OswisOrg\OswisCoreBundle\Mail\Catalog\MailCatalog;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -31,7 +30,6 @@ final class WebAdminAdHocMailController extends AbstractController
     public function __construct(
         private readonly ParticipantService $participantService,
         private readonly ParticipantManualMailer $mailer,
-        private readonly MailCatalog $mailCatalog,
         private readonly ClockInterface $clock,
     ) {
     }
@@ -39,7 +37,11 @@ final class WebAdminAdHocMailController extends AbstractController
     public function compose(Request $request, int $participantId): Response
     {
         $participant = $this->loadParticipant($participantId);
-        $form = $this->createForm(AdHocMailType::class);
+        $form = $this->createForm(AdHocMailType::class, null, ['preview' => [
+            'url'          => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
+            'recipients'   => [['id' => $participantId, 'label' => sprintf('Přihláška #%d', $participantId)]],
+            'subjectField' => 'ad_hoc_mail_subject',
+        ]]);
         $form->handleRequest($request);
         $validation = null;
         // Sem se po odeslání formuláře dostane jen neúspěch (chyby, nebo nic neodešlo) → 422 a text zůstává.
@@ -69,7 +71,6 @@ final class WebAdminAdHocMailController extends AbstractController
             'participant'     => $participant,
             'form'            => $form,
             'validation'      => $validation,
-            'variableCatalog' => $this->mailCatalog->groupedForPanel(),
             'page_title'      => sprintf('Nová zpráva účastníkovi #%d :: ADMIN', $participantId),
             'pageTitle'       => sprintf('Nová zpráva účastníkovi #%d', $participantId),
         ], new Response(status: $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));

@@ -8,6 +8,8 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
+use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +31,7 @@ final class WebAdminMessagePreviewController extends AbstractController
     public function __construct(
         private readonly ParticipantManualMailer $mailer,
         private readonly ParticipantRepository $participantRepository,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -42,15 +45,18 @@ final class WebAdminMessagePreviewController extends AbstractController
             return new JsonResponse(['error' => 'Příjemce pro náhled nebyl nalezen.'], Response::HTTP_NOT_FOUND);
         }
         $mail = $this->manualMailFromRequest($request);
-        $validation = $this->mailer->validate($mail, [$participant]);
         $subject = null;
         $html = null;
-        if (!$validation->hasErrors()) {
-            try {
+        try {
+            $validation = $this->mailer->validate($mail, [$participant]);
+            if (!$validation->hasErrors()) {
                 ['subject' => $subject, 'html' => $html] = $this->mailer->preview($mail, $participant);
-            } catch (\Throwable $exception) {
-                $validation->error($exception->getMessage());
             }
+        } catch (\Throwable $exception) {
+            // Chyba prostředí (MJML, databáze…), ne textu — autorovi krátce, podrobnosti do logu.
+            $this->logger->error('Náhled zprávy selhal: '.$exception->getMessage(), ['exception' => $exception]);
+            $validation = new MailValidationResult();
+            $validation->error('Náhled se nepodařilo vytvořit (chyba na serveru, je zapsaná v logu). Zkus to prosím znovu.');
         }
 
         return new JsonResponse([
