@@ -110,14 +110,8 @@
                                             data-token="{{ item.token|e('html_attr') }}">{{ item.label }}</button>
                                 {% endfor %}
                             {% endfor %}
-                            {% if snippets|default([])|length > 0 %}
-                                <div style="font-size:.8em;color:#6c757d;text-transform:uppercase;margin:.5rem 0 .15rem;">Bloky (snippety)</div>
-                                {% for s in snippets %}
-                                    <button type="button" class="btn btn-sm btn-outline-info bm-insert"
-                                            style="margin:.1rem;font-size:.85em;"
-                                            data-token="{{ ("{% include '" ~ s.slug ~ "' %}")|e('html_attr') }}">{{ s.name|default(s.slug) }}</button>
-                                {% endfor %}
-                            {% endif %}
+                            {# Bloky (rekapitulace, informace o akci i bloky týmu z DB) jsou v katalogu
+                               jako {{ blok('…') }} — dřív tu byl zvláštní seznam s {% include %}. #}
                         </div>
                     </div>
                 </div>

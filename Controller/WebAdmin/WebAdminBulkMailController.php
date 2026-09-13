@@ -13,6 +13,7 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Mail\Catalog\MailCatalog;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,23 +40,19 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantMailBulkRepository $bulkRepository,
         private readonly MailPreviewService $mailPreview,
         private readonly EntityManagerInterface $em,
+        private readonly MailCatalog $mailCatalog,
     ) {
     }
 
     /**
-     * Stored campaign/snippet templates offered in the composer — campaigns for the "send a whole
-     * stored mail" mode, snippets for click-to-insert {% include %} into the free body.
+     * Stored campaign templates offered in the composer for the "send a whole stored mail" mode.
+     * (Bloky k vložení do vlastního textu jsou v katalogu jako `{{ blok('…') }}`, spec 2026-09-13 §3.4.)
      *
-     * @return array<string, list<TwigTemplate>>
+     * @return list<TwigTemplate>
      */
-    private function offerableTemplates(): array
+    private function campaignTemplates(): array
     {
-        $repo = $this->em->getRepository(TwigTemplate::class);
-
-        return [
-            'campaigns' => $repo->findBy(['kind' => TwigTemplate::KIND_CAMPAIGN], ['name' => 'ASC']),
-            'snippets'  => $repo->findBy(['kind' => TwigTemplate::KIND_SNIPPET], ['name' => 'ASC']),
-        ];
+        return $this->em->getRepository(TwigTemplate::class)->findBy(['kind' => TwigTemplate::KIND_CAMPAIGN], ['name' => 'ASC']);
     }
 
     /** Step 1: open the compose form for the selected recipients (POSTed from the list bulk bar). */
@@ -80,18 +77,15 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
 
-        $templates = $this->offerableTemplates();
-
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_mail/compose.html.twig', [
-            'title'          => 'Hromadný e-mail :: ADMIN',
-            'pageTitle'      => 'Hromadný e-mail',
-            'ids'            => $ids,
-            'idsCsv'         => implode(',', $ids),
-            'recipientCount' => count($ids),
-            'recipients'     => $this->participantRepository->findByIds($ids),
-            'campaigns'      => $templates['campaigns'],
-            'snippets'       => $templates['snippets'],
-            'variableCatalog' => MailPreviewService::variableCatalog(),
+            'title'           => 'Hromadný e-mail :: ADMIN',
+            'pageTitle'       => 'Hromadný e-mail',
+            'ids'             => $ids,
+            'idsCsv'          => implode(',', $ids),
+            'recipientCount'  => count($ids),
+            'recipients'      => $this->participantRepository->findByIds($ids),
+            'campaigns'       => $this->campaignTemplates(),
+            'variableCatalog' => $this->mailCatalog->groupedForPanel(),
         ]);
     }
 
