@@ -1052,6 +1052,10 @@ services:
     autowire: true
     public: true
 
+  ## Vložené bloky mailů k přihlášce (spec 2026-09-13 §3.4)
+  OswisOrg\OswisCalendarBundle\Mail\ParticipantMailBlockProvider:
+    tags: [ 'oswis.mail_block_provider' ]
+
   ## Termíny plateb (spec 2026-09-13 §6.5) — jediné místo výpočtu pro všechny maily
   OswisOrg\OswisCalendarBundle\Service\Payment\PaymentDeadlineCalculator:
     autowire: true
