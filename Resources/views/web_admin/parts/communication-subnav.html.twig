@@ -1,0 +1,11 @@
+{# Podmenu sekce Komunikace (spec e-mailů 2026-09-13 §7) — na všech jejích stránkách, ať jde mezi nimi
+   přecházet a je vidět „kde jsem" (dřív vedla na tyto stránky jen úvodní stránka administrace, nález E1–E3).
+   Dávka 1 = stávající stránky; další dávky přidají Napsat / Odeslané / Systémové maily / Nastavení.
+   Parametr `current`: overview|bulk|campaigns|unmatched. #}
+{% set _items = [
+    { key: 'overview', label: 'Přehled', url: path('oswis_org_oswis_calendar_web_admin_communication_index') },
+    { key: 'bulk', label: 'Hromadné e-maily', url: path('oswis_org_oswis_calendar_web_admin_bulk_mail_status') },
+    { key: 'campaigns', label: 'Kampaně a šablony', url: path('oswis_org_oswis_calendar_web_admin_mail_config') },
+    { key: 'unmatched', label: 'Nezařazená pošta', url: path('oswis_org_oswis_calendar_web_admin_imap_unmatched') },
+] %}
+<twig:Admin:Subnav :items="_items" :current="current|default(null)" ariaLabel="Podmenu Komunikace" />

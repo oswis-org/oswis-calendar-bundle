@@ -9,6 +9,7 @@
 
 {% block body_content %}
     <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'campaigns' } only %}
         <h2>{{ pageTitle }}</h2>
         <p class="text-muted" style="max-width: 60rem;">
             Konfigurace odchozích systémových e-mailů pro účastníky: <strong>skupiny</strong> definují

@@ -9,32 +9,14 @@
 
    Funkce týmu ZÁMĚRNĚ není v pruhu — je to globální číselník rolí (bez eventSlug), ne podstránka
    turnusu; odkaz na něj žije na stránce Rozpis služeb a v úvodce. #}
-{% set _cur = current|default('') %}
-<nav class="oa-subnav" aria-label="Podmenu turnusu">
-    {% if eventName|default %}<span class="oa-subnav__label">{{ eventName }}</span>{% endif %}
-    <a class="oa-subnav__item{{ _cur == 'overview' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: eventSlug }) }}">Přehled</a>
-    <a class="oa-subnav__item{{ _cur == 'participants' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list', { eventSlug: eventSlug, participantCategorySlug: 'attendee' }) }}">Účastníci</a>
-    <a class="oa-subnav__item{{ _cur == 'bands' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_participant_groups', { eventSlug: eventSlug }) }}">Pásky</a>
-    <a class="oa-subnav__item{{ _cur == 'board' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_announcements', { eventSlug: eventSlug }) }}">Nástěnka</a>
-    <a class="oa-subnav__item{{ _cur == 'meals' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_meals', { eventSlug: eventSlug }) }}">Jídelníček</a>
-    <a class="oa-subnav__item{{ _cur == 'checkin' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) }}">Check-in</a>
-    <a class="oa-subnav__item{{ _cur == 'program' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_program_index', { eventSlug: eventSlug }) }}">Program</a>
-    <a class="oa-subnav__item{{ _cur == 'roster' ? ' is-active' : '' }}"
-       href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: eventSlug }) }}">Rozpis služeb</a>
-</nav>
-<style>
-    .oa-subnav { display: flex; flex-wrap: wrap; gap: .1rem 1.15rem; align-items: center;
-        border-bottom: 2px solid #e3e9f0; margin: 0 0 1.15rem; padding: 0; }
-    .oa-subnav__label { font-weight: 700; color: #6c757d; margin-right: .5rem; }
-    .oa-subnav__item { padding: .45rem 0 .5rem; color: #006FAD; text-decoration: none;
-        border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
-    .oa-subnav__item:hover { border-bottom-color: rgba(0, 111, 173, .35); }
-    .oa-subnav__item.is-active { font-weight: 700; border-bottom-color: #006FAD; }
-</style>
+{% set _items = [
+    { key: 'overview', label: 'Přehled', url: path('oswis_org_oswis_calendar_web_admin_event', { eventSlug: eventSlug }) },
+    { key: 'participants', label: 'Účastníci', url: path('oswis_org_oswis_calendar_web_admin_participants_list', { eventSlug: eventSlug, participantCategorySlug: 'attendee' }) },
+    { key: 'bands', label: 'Pásky', url: path('oswis_org_oswis_calendar_web_admin_participant_groups', { eventSlug: eventSlug }) },
+    { key: 'board', label: 'Nástěnka', url: path('oswis_org_oswis_calendar_web_admin_announcements', { eventSlug: eventSlug }) },
+    { key: 'meals', label: 'Jídelníček', url: path('oswis_org_oswis_calendar_web_admin_meals', { eventSlug: eventSlug }) },
+    { key: 'checkin', label: 'Check-in', url: path('oswis_org_oswis_calendar_web_admin_checkin_list', { eventSlug: eventSlug }) },
+    { key: 'program', label: 'Program', url: path('oswis_org_oswis_calendar_web_admin_program_index', { eventSlug: eventSlug }) },
+    { key: 'roster', label: 'Rozpis služeb', url: path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: eventSlug }) },
+] %}
+<twig:Admin:Subnav :items="_items" :current="current|default(null)" :label="eventName|default(null)" ariaLabel="Podmenu turnusu" />

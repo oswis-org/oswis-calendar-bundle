@@ -4,6 +4,7 @@
 
 {% block body_content %}
     <main class="container">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'campaigns' } only %}
         <h2>{{ pageTitle }}</h2>
         <p>
             <a class="btn btn-sm btn-link"

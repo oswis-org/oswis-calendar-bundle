@@ -4,6 +4,7 @@
 
 {% block body_content %}
     <main class="container">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'bulk' } only %}
         <h2>{{ pageTitle }}</h2>
         <p>
             <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="btn btn-sm btn-link">← Zpět na seznam přihlášek</a>

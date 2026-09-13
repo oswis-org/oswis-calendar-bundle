@@ -4,6 +4,7 @@
 
 {% block body_content %}
     <main class="container" style="padding-bottom: 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'overview' } only %}
         <h2 style="margin-top: 1rem;">{{ pageTitle|default('Komunikace') }}</h2>
         <p class="text-muted" style="margin-bottom: 1.5rem;">
             Rozcestník komunikace s účastníky. Per-účastníkovou historii zpráv otevři přes detail
