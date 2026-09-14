@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "82ed4619a1e829f74f537ed04e50468b",
+  "content-hash": "f51125880b5e5b4d1c4e18c170e90cdb",
   "packages": [
     {
       "name": "adci/full-name-parser",
@@ -4498,16 +4498,16 @@
     },
     {
       "name": "oswis-org/oswis-core-bundle",
-      "version": "v0.2.53",
+      "version": "v0.2.54",
       "source": {
         "type": "git",
         "url": "https://github.com/oswis-org/oswis-core-bundle.git",
-        "reference": "438edc61a406423004e0c122debc4973db2c7199"
+        "reference": "64b276052490e65eb99c30e86ad4f3b46891821f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/438edc61a406423004e0c122debc4973db2c7199",
-        "reference": "438edc61a406423004e0c122debc4973db2c7199",
+        "url": "https://api.github.com/repos/oswis-org/oswis-core-bundle/zipball/64b276052490e65eb99c30e86ad4f3b46891821f",
+        "reference": "64b276052490e65eb99c30e86ad4f3b46891821f",
         "shasum": ""
       },
       "require": {
@@ -4572,6 +4572,9 @@
         "twig/string-extra": "^3.20",
         "vich/uploader-bundle": "^2.6"
       },
+      "conflict": {
+        "oswis-org/oswis-calendar-bundle": "<0.2.122"
+      },
       "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.74",
         "phpstan/phpstan": "^2.1",
@@ -4616,9 +4619,9 @@
       ],
       "support": {
         "issues": "https://github.com/oswis-org/oswis-core-bundle/issues",
-        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.53"
+        "source": "https://github.com/oswis-org/oswis-core-bundle/tree/v0.2.54"
       },
-      "time": "2026-09-13T16:02:55+00:00"
+      "time": "2026-09-14T06:02:51+00:00"
     },
     {
       "name": "paragonie/random_compat",
