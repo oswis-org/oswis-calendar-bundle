@@ -445,7 +445,17 @@ class ParticipantService
     /** @return bool DORUČILO se to? (`false` = mail vznikl, ale neodešel — SMTP nevyhazuje výjimku) */
     private function requestActivationForUser(Participant $participant, AppUser $appUser): bool
     {
-        $participantToken = $this->tokenService->create($participant, $appUser, AppUserToken::TYPE_ACTIVATION, false);
+        // Platnost 48 h jako aktivace účtu (AppUserService::PLATNOST_ODKAZU_HODIN, rozhodnuto 24. 8. 2026:
+        // „kdo se přihlásí večer a e-mail otevře až druhý den po škole, stihl to jen tak tak"). Tahle cesta —
+        // e-mail „Ověření přihlášky" po odeslání přihlášky i „Poslat ověření znovu" — tehdy zůstala na
+        // výchozích 24 h, přestože potvrzovací stránka i úvodka adminu už slibovaly 48 (audit 14. 9. 2026).
+        $participantToken = $this->tokenService->create(
+            $participant,
+            $appUser,
+            AppUserToken::TYPE_ACTIVATION,
+            false,
+            AppUserService::PLATNOST_ODKAZU_HODIN,
+        );
         $odeslano = $this->participantMailService->sendSummaryToUser(
             $participant,
             $appUser,

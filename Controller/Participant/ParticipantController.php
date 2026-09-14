@@ -40,6 +40,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Exceptions\TokenInvalidException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -187,11 +188,13 @@ class ParticipantController extends AbstractController
                     // „…@gmal.com"). Takhle si ho všimne sám během vteřiny.
                     sprintf(
                         'Tvoje přihláška na akci %s byla úspěšně odeslána! Zbývá ji potvrdit '
-                        .'odkazem v e-mailu, který jsme právě poslali na %s — platí 48 hodin. '
+                        .'odkazem v e-mailu, který jsme právě poslali na %s — platí %d hodin. '
                         .'Pokud tam adresa není správně, nebo e-mail do pár minut nedorazí '
                         .'(mrkni i do spamu), napiš nám.',
                         $eventName ?? '',
                         $participant->getContactForRead()?->getEmail() ?? 'zadanou adresu',
+                        // Z téže konstanty jako platnost tokenu (ParticipantService::requestActivationForUser).
+                        AppUserService::PLATNOST_ODKAZU_HODIN,
                     ),
                     $form->createView()
                 );
