@@ -18,16 +18,8 @@
             { value: 'offers',      label: 'Nabídky / rozsahy' },
             { value: 'flag-offers', label: 'Nabídky příznaků' },
         ] %}
-        <div style="margin: 1.5rem 0 1rem; display: flex; gap: .25rem; border-bottom: 2px solid #006FAD; flex-wrap: wrap;">
-            {% for tab in tabs %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_admin_catalog', { tab: tab.value }) }}"
-                   class="btn btn-sm"
-                   style="border-radius: .375rem .375rem 0 0; {{ activeTab == tab.value ? 'background: #006FAD; color: white;' : 'background: #f8f9fa; color: #006FAD;' }}">
-                    {{ tab.label }}
-                    <span class="badge" style="background: rgba(255,255,255,.3); margin-left: .25rem;">{{ counts[tab.value] }}</span>
-                </a>
-            {% endfor %}
-        </div>
+        <twig:Admin:Tabs :current="activeTab"
+                         :items="tabs|map(t => t|merge({key: t.value, url: path('oswis_org_oswis_calendar_web_admin_catalog', { tab: t.value }), count: counts[t.value]}))" />
 
         {% if activeTab == 'flags' %}
             <table class="list">

@@ -23,18 +23,8 @@
             { value: 'categories', label: 'Kategorie',       count: categories|length },
             { value: 'templates',  label: 'Twig šablony',    count: templates|length },
         ] %}
-        <div style="margin: 1.5rem 0 1rem; display: flex; gap: .25rem; border-bottom: 2px solid #006FAD; flex-wrap: wrap;">
-            {% for tab in tabs %}
-                <a href="{{ path('oswis_org_oswis_calendar_web_admin_mail_config', { tab: tab.value }) }}"
-                   class="btn btn-sm"
-                   style="border-radius: .375rem .375rem 0 0; {{ activeTab == tab.value ? 'background: #006FAD; color: white;' : 'background: #f8f9fa; color: #006FAD;' }}">
-                    {{ tab.label }}
-                    {# Badge colours are set per state: the old rgba(255,255,255,.3) background made
-                       the white badge text invisible on inactive (light) tabs. #}
-                    <span class="badge" style="margin-left: .25rem; {{ activeTab == tab.value ? 'background: rgba(255,255,255,.3); color: #fff;' : 'background: #dbe9f2; color: #005a8c;' }}">{{ tab.count }}</span>
-                </a>
-            {% endfor %}
-        </div>
+        <twig:Admin:Tabs :current="activeTab"
+                         :items="tabs|map(t => t|merge({key: t.value, url: path('oswis_org_oswis_calendar_web_admin_mail_config', { tab: t.value })}))" />
 
         {% if activeTab == 'groups' %}
             <p style="margin-bottom: .75rem;">
