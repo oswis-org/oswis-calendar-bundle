@@ -93,7 +93,7 @@
                     <li>
                         {{ payment.numericValue|default('0') }},- Kč
                         <small>[{{ payment.dateTime|date("j. n. Y") }}]</small>
-                        {% if payment.type %}<small> [{{ payment.type }}]</small>{% endif %}
+                        {% if payment.type %}<small> [{{ payment.typeLabel }}]</small>{% endif %}
                         {% if payment.note|default|length > 0 %}
                             <br><small style="color: #495057;">{{ payment.note }}</small>
                         {% endif %}

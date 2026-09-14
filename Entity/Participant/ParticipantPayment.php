@@ -119,6 +119,18 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
             self::TYPE_ON_LINE,
             self::TYPE_INTERNAL,
         ];
+    /**
+     * České popisky typů — jediný zdroj pro výběry (ruční platba na detailu, úprava platby) i výpisy (detail,
+     * přehled plateb, rekapitulace v e-mailu). Znění převzaté z výběru ruční platby na detailu přihlášky.
+     */
+    public const TYPE_LABELS
+        = [
+            self::TYPE_CASH          => 'hotovost',
+            self::TYPE_BANK_TRANSFER => 'bankovní převod',
+            self::TYPE_CARD          => 'karta',
+            self::TYPE_ON_LINE       => 'on-line',
+            self::TYPE_INTERNAL      => 'interní (oprava)',
+        ];
     #[ManyToOne(targetEntity: Participant::class, inversedBy: 'payments', fetch: 'EAGER')]
     #[JoinColumn(nullable: true)]
     #[MaxDepth(1)]
@@ -189,6 +201,14 @@ class ParticipantPayment implements BasicInterface, TypeInterface, MyDateTimeInt
     public static function getAllowedTypesDefault(): array
     {
         return self::ALLOWED_TYPES;
+    }
+
+    /** Český popisek typu ({@see TYPE_LABELS}); neznámý typ vrátí, jak je, prázdný `null`. */
+    public function getTypeLabel(): ?string
+    {
+        $type = $this->getType();
+
+        return null === $type ? null : (self::TYPE_LABELS[$type] ?? $type);
     }
 
     public static function getAllowedTypesCustom(): array

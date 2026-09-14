@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -31,9 +32,12 @@ class ParticipantPaymentEditType extends AbstractType
                 'label'    => 'Variabilní symbol',
                 'required' => false,
             ])
-            ->add('type', TextType::class, [
-                'label'    => 'Typ platby (bank-transfer / card / cash / on-line / internal)',
-                'required' => false,
+            // Výběr, ne text: překlep v kódu typu dřív shodil uložení chybou 500 (entita neznámý typ odmítne výjimkou).
+            ->add('type', ChoiceType::class, [
+                'label'       => 'Typ platby',
+                'required'    => false,
+                'placeholder' => '— neuvedeno —',
+                'choices'     => array_flip(ParticipantPayment::TYPE_LABELS),
             ])
             ->add('note', TextareaType::class, [
                 'label'    => 'Poznámka (veřejná)',

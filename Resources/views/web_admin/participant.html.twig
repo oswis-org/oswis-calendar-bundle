@@ -351,7 +351,7 @@
                     {% for payment in participant.payments|default([]) %}
                         <tr>
                             <td class="text-nowrap">{{ payment.dateTime|date_or('j. n. Y', '—', 'Europe/Prague') }}</td>
-                            <td>{{ payment.type|default('—') }}</td>
+                            <td>{{ payment.typeLabel|default('—') }}</td>
                             <td class="text-center {{ payment.numericValue > 0 ? 'text-success' : 'text-danger' }}" style="white-space:nowrap;">
                                 <strong>{{ payment.numericValue > 0 ? '+' : '' }}{{ payment.numericValue|default(0) }}&nbsp;Kč</strong>
                             </td>
@@ -434,11 +434,9 @@
                         <div>
                             <label class="small" for="payment-type-{{ participantId }}">Typ</label>
                             <select id="payment-type-{{ participantId }}" name="type" class="form-control form-control-sm" style="width:11rem;">
-                                <option value="cash">hotovost</option>
-                                <option value="bank-transfer">bankovní převod</option>
-                                <option value="card">karta</option>
-                                <option value="on-line">on-line</option>
-                                <option value="internal">interní (oprava)</option>
+                                {% for typ, popisek in constant('OswisOrg\\OswisCalendarBundle\\Entity\\Participant\\ParticipantPayment::TYPE_LABELS') %}
+                                    <option value="{{ typ }}">{{ popisek }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div>

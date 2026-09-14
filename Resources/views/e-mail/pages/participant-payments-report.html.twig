@@ -28,7 +28,7 @@
                         {% set valueColor = payment.numericValue|default < 0 ? 'red' : 'green' %}
                         <strong style="color: {{ valueColor }}">{{ payment.numericValue|default(0) }},-&nbsp;Kč</strong><br>
                         <small>VS: {{ payment.variableSymbol|default }}</small><br>
-                        <small>{{ payment.type|default }}</small>
+                        <small>{{ payment.typeLabel|default }}</small>
                     </td>
                     {% set assignedColor = payment.participant|default ? 'green' : 'red' %}
                     {% set assignedBackgroundColor = payment.participant|default ? 'rgba(50,255,50,.2)' : 'rgba(255,50,50,.2)' %}
