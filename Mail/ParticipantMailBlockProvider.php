@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Mail;
 
-use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCoreBundle\Mail\Block\MailBlock;
 use OswisOrg\OswisCoreBundle\Mail\Block\MailBlockProviderInterface;
 
@@ -18,15 +17,12 @@ final class ParticipantMailBlockProvider implements MailBlockProviderInterface
             'Rekapitulace přihlášky',
             '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig',
         );
+        // Totéž, co sekce „Událost" v rekapitulaci. Ne `event-summary.html.twig` — to jsou jen
+        // neviditelná metadata pro Gmail a do zprávy by nevložila nic, co by adresát viděl.
         yield new MailBlock(
             'informace-o-akci',
             'Informace o akci',
-            '@OswisOrgOswisCalendar/other/summary/event-summary.html.twig',
-            static function (array $context): array {
-                $participant = $context['participant'] ?? null;
-
-                return ['event' => $participant instanceof Participant ? $participant->getEvent(false) : null];
-            },
+            '@OswisOrgOswisCalendar/other/summary/event-info.html.twig',
         );
     }
 }

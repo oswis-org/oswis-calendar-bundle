@@ -1,0 +1,49 @@
+{# Viditelné informace o akci: název s odkazem na stránku akce, termín, místo, pořadatel. Jedna šablona pro
+   rekapitulaci přihlášky i blok mailu „Informace o akci" (`{{ blok('informace-o-akci') }}`). Metadata akce
+   pro Gmail (neviditelná) jsou zvlášť v `event-summary.html.twig`. Stačí `participant`; mailový kontext
+   dodává `registrations` jen platné, holé vložení (stránka check-inu) ukáže i zrušené přeškrtnuté. #}
+{% set activeEvent = activeEvent is defined ? activeEvent : participant.event(false)|default %}
+<h3>Událost</h3>
+<ul>
+    {% for registration in registrations|default(participant.participantRegistrations|default([])) %}
+        <li style="{{ registration.deletedAt|default ? 'text-decoration: line-through; color: #495057;' : '' }}">
+            <b>
+                {% if registration.event.slug|default %}
+                    <a href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': registration.event.slug})) }}"
+                       target="_blank">
+                        {{ registration.event.name|default }}
+                    </a>
+                {% else %}
+                    {{ registration.event.name|default }}
+                {% endif %}
+            </b>
+        </li>
+    {% endfor %}
+    <li>
+        od {{ activeEvent.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
+        do {{ activeEvent.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
+    </li>
+    {% if activeEvent.place(true)|default %}
+        {% set place = activeEvent.place(true) %}
+        <li>
+            {% if place.url|default %}
+                <a href="{{ place.url }}" title="{{ place.name }}" target="_blank">{{ place.name }}</a>
+            {% else %}
+                {{ place.name }}
+            {% endif %}
+        </li>
+    {% endif %}
+    {% if activeEvent.organizer.contact|default %}
+        {% set org = activeEvent.organizer.contact %}
+        <li>
+            {% if org.url|default %}
+                <a href="{{ absolute_url(path('oswis_org_oswis_address_book_organization', {'slug': org.slug|default})) }}"
+                   target="_blank">
+                    {{ org.name }}
+                </a>
+            {% else %}
+                {{ org.name }}
+            {% endif %}
+        </li>
+    {% endif %}
+</ul>
