@@ -43,6 +43,10 @@
     </p>
 {% endblock %}
 
+{# Věta NAD podpisem, ne místo něj. Od vzniku tohoto mailu (9. 6. 2026) tu blok přepisoval celou patičku,
+   takže změnový mail jako jediný neměl podpis týmu ani kontakty (audit 14. 9. 2026). `parent()` = patička
+   z aplikace (podpis „S pozdravem, Tým Seznamováku…" + kontakty). #}
 {% block content_footer_inner %}
-    V případě nejasností nás neváhej{{ f ? 'te' : '' }} kontaktovat odpovědí na tento e-mail.
+    <p>V případě nejasností nás neváhej{{ f ? 'te' : '' }} kontaktovat odpovědí na tento e-mail.</p>
+    {{ parent() }}
 {% endblock %}
