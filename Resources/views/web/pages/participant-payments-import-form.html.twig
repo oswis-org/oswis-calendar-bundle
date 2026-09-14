@@ -1,12 +1,15 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
-{% extends '@OswisOrgOswisCore/web/page-skeleton-default.html.twig' %}
+{# Kostra ADMINU, ne veřejného webu: stránka je v administraci (odkaz z Plateb a úvodky), ale kreslila
+   se s hlavičkou, menu a drobečky veřejného webu — bez menu adminu (audit 14. 9. 2026, V10). Hláška
+   po importu už admin kostru měla (WebAdminParticipantPaymentsImportController::renderMessage). #}
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
 
 {% block body_content %}
-    <main class="container" id="main-content-container">
+    <main class="container" id="main-content-container" style="padding: 1rem 1.25rem 3rem;">
         <div class="row">
             <div class="col-12">
                 <header>
-                    <h2 class="text-uppercase mb-2">Import plateb účastníků akcí</h2>
+                    <h2>Import plateb účastníků akcí</h2>
                 </header>
                 {# ⚠️ Pojistka proti dvojímu odeslání. iPhone Safari (a in-app prohlížeč
                    Instagramu) posílá formulář i 3–5× v rychlém sledu — u přihlášky se to řeší
