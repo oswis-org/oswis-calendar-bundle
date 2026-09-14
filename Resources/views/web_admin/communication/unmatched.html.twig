@@ -51,10 +51,16 @@
                         Označit jako spam
                     </button>
                     <button type="submit" name="action" value="unprocessed" class="btn btn-sm btn-outline-secondary">
-                        Vrátit k zpracování
+                        Vrátit ke zpracování
                     </button>
                 </div>
 
+                {# Náhled těla (až 200 znaků) nese často dlouhé URL bez mezery — sledovací odkazy ve spamu
+                   mají přes 170 znaků. Bez `overflow-wrap: anywhere` v buňkách roztáhlo takové slovo sloupec
+                   a tabulka přetekla stránku (1 503 px v okně 1 280, audit 14. 9. 2026, V6). `anywhere`,
+                   ne `break-word`: jen `anywhere` zmenší i minimální šířku sloupce v tabulce. Obal roluje
+                   tabulku na úzkém displeji, kam se šest sloupců nevejde. #}
+                <div class="oa-table-scroll">
                 <table class="list">
                     <thead>
                         <tr>
@@ -63,11 +69,14 @@
                                        onclick="document.querySelectorAll('input[name=\'mail_ids[]\']').forEach(c => c.checked = this.checked);"
                                        title="Vybrat / zrušit výběr všech">
                             </th>
-                            <th style="width: 9rem;">Datum</th>
+                            {# Šířky vyvážené tak, aby hlavní prostor dostal náhled — podle něj se pozná, komu
+                               zpráva patří. Dokud tabulka přetékala, prohlížeč pevné šířky ignoroval a „Akce"
+                               měla ~140 px (pole na řádku, tlačítka pod ním); 10rem ten zaběhnutý vzhled drží. #}
+                            <th style="width: 6.5rem;">Datum</th>
                             <th style="width: 3.5rem;">Směr</th>
-                            <th style="width: 18rem;">Od / Komu</th>
+                            <th style="width: 14rem;">Od / Komu</th>
                             <th>Předmět / Náhled</th>
-                            <th style="width: 22rem;">Akce</th>
+                            <th style="width: 10rem;">Akce</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,7 +100,7 @@
                                         <span class="badge text-bg-info" title="Příchozí (INBOX)" style="font-size: .8rem;">↓ IN</span>
                                     {% endif %}
                                 </td>
-                                <td style="vertical-align: top;">
+                                <td style="vertical-align: top; overflow-wrap: anywhere;">
                                     <strong>{{ m.fromName|default('(bez jména)') }}</strong><br>
                                     <small><a href="mailto:{{ m.fromAddress }}">{{ m.fromAddress|default('?') }}</a></small>
                                     {% if m.status != 'unprocessed' %}
@@ -101,7 +110,7 @@
                                         </span>
                                     {% endif %}
                                 </td>
-                                <td style="vertical-align: top;">
+                                <td style="vertical-align: top; overflow-wrap: anywhere;">
                                     <strong>{{ m.subject|default('(bez předmětu)') }}</strong>
                                     {% if m.body %}
                                         <div class="small text-muted">{{ m.body|slice(0, 200) }}{% if m.body|length > 200 %}…{% endif %}</div>
@@ -124,6 +133,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                </div>
             </form>
 
             {# Per-row assign forms placed outside the bulk form to keep the
