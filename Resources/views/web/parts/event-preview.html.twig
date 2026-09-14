@@ -39,9 +39,9 @@
                     <div class="col-12 col-md-4 text-md-start">
                         <i class="fas fa-calendar-day text-muted"></i>&nbsp;<small class="p-2">{{ range_text }}</small>
                         <span itemprop="startDate"
-                              content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+                              content="{{ event.startDate|date_or("Y-m-d\\TH:i:sP") }}"></span>
                         <span itemprop="endDate"
-                              content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default('') }}"></span>
+                              content="{{ event.endDate|date_or("Y-m-d\\TH:i:sP") }}"></span>
                     </div>
                     <div class="col-12 col-md-4 text-md-center">
                         {% if event.place(true)|default %}

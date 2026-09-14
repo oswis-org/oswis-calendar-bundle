@@ -10,8 +10,8 @@
             </a>
             <wbr>
             {{ range_text ? '('~range_text~')' : null }}
-            <meta itemprop="startDate" content="{{ subEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
-            <meta itemprop="endDate" content="{{ subEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+            <meta itemprop="startDate" content="{{ subEvent.startDate|date_or("Y-m-d\\TH:i:sP") }}"/>
+            <meta itemprop="endDate" content="{{ subEvent.endDate|date_or("Y-m-d\\TH:i:sP") }}"/>
             <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
                 <meta itemprop="name" content="{{ subEvent.organizer(true).contact.name|default }}"/>
                 <meta itemprop="url" content="{{ subEvent.organizer(true).contact.url|default }}"/>

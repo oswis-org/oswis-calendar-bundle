@@ -179,10 +179,10 @@
                                                 {% if rangeDeposit > 0 %}{{ rangeDeposit }}&nbsp;Kč{% else %}—{% endif %}
                                             </td>
                                             <td class="text-center small text-muted">
-                                                {{ regRange.startDateTime|date('j. n. Y H:i')|default('—') }}
+                                                {{ regRange.startDateTime|date_or('j. n. Y H:i', '—') }}
                                             </td>
                                             <td class="text-center small text-muted">
-                                                {{ regRange.endDate|date('j. n. Y H:i')|default('—') }}
+                                                {{ regRange.endDate|date_or('j. n. Y H:i', '—') }}
                                             </td>
                                             <td class="text-center">
                                                 {% if regRange.usageInt|default > 0 %}

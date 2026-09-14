@@ -6,7 +6,7 @@
             <small>EXT. ID: {{ payment.externalId|default }}</small><br>
         {% endif %}
         {% if payment.dateTime|default %}
-            <small>{{ payment.dateTime|date("j. n. Y H:i")|default }}</small><br>
+            <small>{{ payment.dateTime|date_or("j. n. Y H:i") }}</small><br>
         {% endif %}
         {% if payment.import.id|default %}
             <small>IMPORT {{ payment.import.id|default('0') }}</small><br>

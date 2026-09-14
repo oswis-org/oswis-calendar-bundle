@@ -22,8 +22,8 @@
         "@type": "Event",
         "name": "{{ event.name|default('')|e('js') }}",
         "url": "{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug|default})) }}",
-        "startDate": "{{ event.startDateTime|date('c')|default('') }}",
-        "endDate": "{{ event.endDateTime|date('c')|default('') }}"
+        "startDate": "{{ event.startDateTime|date_or('c') }}",
+        "endDate": "{{ event.endDateTime|date_or('c') }}"
         {% if place %}
         ,"location": {
             "@type": "Place",

@@ -1,8 +1,8 @@
 <meta itemprop="name" content="{{ event.name|default }}"/>
 <link itemprop="url"
       href="{{ absolute_url(path('oswis_org_oswis_calendar_web_event', {'eventSlug': event.slug|default})) }}"/>
-<meta itemprop="startDate" content="{{ event.startDate|date("c")|default }}"/>
-<meta itemprop="endDate" content="{{ event.endDate|date("c")|default }}"/>
+<meta itemprop="startDate" content="{{ event.startDate|date_or("c") }}"/>
+<meta itemprop="endDate" content="{{ event.endDate|date_or("c") }}"/>
 {% set place = event.place(true)|default %}
 {% if place|default %}
     <div itemprop="event.location" itemscope itemtype="http://schema.org/Place">

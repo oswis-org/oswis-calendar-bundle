@@ -28,8 +28,8 @@
         <h3 class="mb-3 p-1 text-center text-primary">
             <small class="p-1">{{ date_range_string(event.startDateTime(null), event.endDateTime(null)) }}</small>
         </h3>
-        <span itemprop="startDate" content="{{ event.startDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
-        <span itemprop="endDate" content="{{ event.endDate|date("Y-m-d\\TH:i:sP")|default }}"></span>
+        <span itemprop="startDate" content="{{ event.startDate|date_or("Y-m-d\\TH:i:sP") }}"></span>
+        <span itemprop="endDate" content="{{ event.endDate|date_or("Y-m-d\\TH:i:sP") }}"></span>
         {% set subEvents = event.subEvents|filter(e => e.publicOnWeb) %}
         {% if subEvents|length > 0 %}
             {% include '@OswisOrgOswisCalendar/web/parts/event-sub-events-list.html.twig'
@@ -53,8 +53,8 @@
                     ) %}
                     {{ range_text ? '('~range_text~')' : null }}
                     <meta itemprop="startDate"
-                          content="{{ event.superEvent.startDate|date("Y-m-d\\TH:i:sP")|default }}"/>
-                    <meta itemprop="endDate" content="{{ event.superEvent.endDate|date("Y-m-d\\TH:i:sP")|default }}"/>
+                          content="{{ event.superEvent.startDate|date_or("Y-m-d\\TH:i:sP") }}"/>
+                    <meta itemprop="endDate" content="{{ event.superEvent.endDate|date_or("Y-m-d\\TH:i:sP") }}"/>
                     <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
                         <meta itemprop="name" content="{{ event.superEvent.organizer(true).contact.name|default }}"/>
                         <meta itemprop="url" content="{{ event.superEvent.organizer(true).contact.url|default }}"/>

@@ -85,8 +85,8 @@
                     #}
                 </div>
                 <span itemprop="availability" content="http://schema.org/InStock"></span>
-                <div itemprop="validFrom" content="{{ range.startDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
-                <div itemprop="validThrough" content="{{ range.endDate|date("Y-m-d\\TH:i:sP")|default }}"></div>
+                <div itemprop="validFrom" content="{{ range.startDate|date_or("Y-m-d\\TH:i:sP") }}"></div>
+                <div itemprop="validThrough" content="{{ range.endDate|date_or("Y-m-d\\TH:i:sP") }}"></div>
             </div>
             <div class="card-footer row m-0">
                 <div class="col p-0">

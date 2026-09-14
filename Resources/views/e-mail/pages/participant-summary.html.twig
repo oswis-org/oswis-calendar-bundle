@@ -56,19 +56,19 @@
                 {% if participant.deletedAt|default %}
                     {% if participant.contact.organization|default %}
                         Vaše organizace <b>{{ participant.contact.name }}</b> byl{{ a }}
-                        {{ participant.deletedAt|date('j. n. Y')|default('') }}
+                        {{ participant.deletedAt|date_or('j. n. Y') }}
                         úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ event.name|default }}</b>.
                     {% else %}
-                        Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.deletedAt|date('j. n. Y')|default('') }}
+                        Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.deletedAt|date_or('j. n. Y') }}
                         úspěšně <b>odhlášen{{ a }}</b> z&nbsp;akce <b>{{ event.name|default }}</b>.
                     {% endif %}
                 {% else %}
                     {% if participant.contact.organization|default %}
                         Vaše organizace <b>{{ participant.contact.name }}</b> byl{{ a }}
-                        {{ participant.createdAt|date('j. n. Y')|default('') }}
+                        {{ participant.createdAt|date_or('j. n. Y') }}
                         úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name|default }}</b>.
                     {% else %}
-                        Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.createdAt|date('j. n. Y')|default('') }}
+                        Byl{{ a }} js{{ f ? 'te' : 'i' }} {{ participant.createdAt|date_or('j. n. Y') }}
                         úspěšně přihlášen{{ a }} na&nbsp;akci <b>{{ event.name|default }}</b>.
                     {% endif %}
                 {% endif %}

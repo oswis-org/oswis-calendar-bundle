@@ -47,8 +47,8 @@
                 <li>
                     <b>{{ data.eventParticipant.event.name }}</b><br>
                     <small>
-                        (od {{ data.eventParticipant.event.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
-                        do {{ data.eventParticipant.event.endDate|date("j. n. Y H:i")|default('neuvedeno') }})
+                        (od {{ data.eventParticipant.event.startDate|date_or("j. n. Y H:i", 'neuvedeno') }}
+                        do {{ data.eventParticipant.event.endDate|date_or("j. n. Y H:i", 'neuvedeno') }})
                     </small>
                 </li>
                 {% for study in data.eventParticipant.contact.studies %}

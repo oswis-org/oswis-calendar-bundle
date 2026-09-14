@@ -20,8 +20,8 @@
         </li>
     {% endfor %}
     <li>
-        od {{ activeEvent.startDate|date("j. n. Y H:i")|default('neuvedeno') }}
-        do {{ activeEvent.endDate|date("j. n. Y H:i")|default('neuvedeno') }}
+        od {{ activeEvent.startDate|date_or("j. n. Y H:i", 'neuvedeno') }}
+        do {{ activeEvent.endDate|date_or("j. n. Y H:i", 'neuvedeno') }}
     </li>
     {% if activeEvent.place(true)|default %}
         {% set place = activeEvent.place(true) %}

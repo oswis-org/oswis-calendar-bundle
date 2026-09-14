@@ -21,7 +21,7 @@
                     <td>
                         <strong>ID {{ payment.id|default }}</strong><br>
                         {% if payment.externalId|default %}<small>EXT. ID: {{ payment.externalId|default }}</small><br>{% endif %}
-                        {% if payment.dateTime|default %}<small>{{ payment.dateTime|date('j. n. Y')|default }}</small><br>{% endif %}
+                        {% if payment.dateTime|default %}<small>{{ payment.dateTime|date_or('j. n. Y') }}</small><br>{% endif %}
                         {% if payment.import.id|default %}<small>IMPORT {{ payment.import.id|default('0') }}</small><br>{% endif %}
                     </td>
                     <td>

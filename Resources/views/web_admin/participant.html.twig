@@ -41,7 +41,7 @@
         </div>
         <p class="text-muted" style="margin:.15rem 0 1rem;">
             {{ event.name|default('—') }}{% if superEvent %} · {{ superEvent.name }}{% endif %}
-            · vytvořeno {{ participant.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('—') }}
+            · vytvořeno {{ participant.createdAt|date_or('j. n. Y H:i', '—', 'Europe/Prague') }}
             {% if total > 0 and remaining <= 0 %}
                 · <span class="text-success">zaplaceno</span>
             {% else %}
@@ -246,7 +246,7 @@
                     <h3>Přihláška</h3>
                     <table class="list">
                         <tbody><tr><td>ID přihlášky</td><td><strong>#{{ participant.id }}</strong></td></tr></tbody>
-                        <tbody><tr><td>Vytvořeno</td><td>{{ participant.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('—') }}</td></tr></tbody>
+                        <tbody><tr><td>Vytvořeno</td><td>{{ participant.createdAt|date_or('j. n. Y H:i', '—', 'Europe/Prague') }}</td></tr></tbody>
                         <tbody><tr><td>Akce</td><td>{{ event.name|default('—') }}</td></tr></tbody>
                         {% if superEvent %}
                             <tbody><tr><td>Nadřazená akce</td><td>{{ superEvent.name }}</td></tr></tbody>
@@ -350,7 +350,7 @@
                 <tbody>
                     {% for payment in participant.payments|default([]) %}
                         <tr>
-                            <td class="text-nowrap">{{ payment.dateTime|date('j. n. Y', 'Europe/Prague')|default('—') }}</td>
+                            <td class="text-nowrap">{{ payment.dateTime|date_or('j. n. Y', '—', 'Europe/Prague') }}</td>
                             <td>{{ payment.type|default('—') }}</td>
                             <td class="text-center {{ payment.numericValue > 0 ? 'text-success' : 'text-danger' }}" style="white-space:nowrap;">
                                 <strong>{{ payment.numericValue > 0 ? '+' : '' }}{{ payment.numericValue|default(0) }}&nbsp;Kč</strong>
@@ -551,7 +551,7 @@
                     {% for note in notes %}
                         <tbody><tr>
                             <td class="small text-nowrap">
-                                {{ note.createdAt|date('j. n. Y H:i', 'Europe/Prague')|default('') }}
+                                {{ note.createdAt|date_or('j. n. Y H:i', '', 'Europe/Prague') }}
                                 {% set author = note.createdBy|default %}
                                 {% if author %}<div class="block small text-muted">{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</div>{% endif %}
                                 <span class="badge {{ note.publicNote|default(false) ? 'text-bg-info' : 'text-bg-secondary' }}">{{ note.publicNote|default(false) ? 'veřejná' : 'interní' }}</span>
