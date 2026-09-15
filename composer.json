@@ -42,6 +42,8 @@
     "symfony/expression-language": "^8.1",
     "symfony/html-sanitizer": "^8.1",
     "symfony/http-client": "^8.1",
+    "symfony/ux-icons": "^3.1",
+    "symfony/ux-twig-component": "^3.1",
     "webklex/php-imap": "~6.2.0"
   },
   "require-dev": {

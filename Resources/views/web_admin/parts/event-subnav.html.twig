@@ -19,4 +19,4 @@
     { key: 'program', label: 'Program', url: path('oswis_org_oswis_calendar_web_admin_program_index', { eventSlug: eventSlug }) },
     { key: 'roster', label: 'Rozpis služeb', url: path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: eventSlug }) },
 ] %}
-<twig:Admin:Subnav :items="_items" :current="current|default(null)" :label="eventName|default(null)" ariaLabel="Podmenu turnusu" />
+<twig:OswisOrgOswisCore:Admin:Subnav :items="_items" :current="current|default(null)" :label="eventName|default(null)" ariaLabel="Podmenu turnusu" />

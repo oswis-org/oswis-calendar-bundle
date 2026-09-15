@@ -18,7 +18,7 @@
             { value: 'offers',      label: 'Nabídky / rozsahy' },
             { value: 'flag-offers', label: 'Nabídky příznaků' },
         ] %}
-        <twig:Admin:Tabs :current="activeTab"
+        <twig:OswisOrgOswisCore:Admin:Tabs :current="activeTab"
                          :items="tabs|map(t => t|merge({key: t.value, url: path('oswis_org_oswis_calendar_web_admin_catalog', { tab: t.value }), count: counts[t.value]}))" />
 
         {% if activeTab == 'flags' %}
@@ -158,9 +158,9 @@
 
         <p class="text-muted" style="margin-top: 1.5rem; max-width: 60rem;">
             <small>
-                Plná správa (přidávání, editace) probíhá přes <a href="/api/v1/docs">API Platform</a>.
-                Vytváření nových nabídek pro nový ročník je nejjednodušší skrz
-                <a href="{{ path('app_web_admin_clone_year') }}">klonování ročníku</a>.
+                Plná správa (přidávání, editace) probíhá přes <a href="{{ path('api_doc') }}">API Platform</a>.
+                {# Tips of the application (e.g. its own tools) — the bundle does not know application routes. #}
+                {% block catalog_footer_extra %}{% endblock %}
             </small>
         </p>
     </main>

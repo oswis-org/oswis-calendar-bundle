@@ -1,0 +1,80 @@
+{#- Calendar sections of the admin homepage. Included by the application into the core homepage
+    block `admin_sections` (core does not know calendar routes). -#}
+<h2>Účastníci a přihlášky</h2>
+<ul>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}">Všechny přihlášky</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_unpaid') }}">Nezaplacené přihlášky</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_unpaid_deposit') }}">Nezaplacené zálohy</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_overpaid') }}">Přeplacené přihlášky</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_food') }}">Stravovací omezení</a>
+    </li>
+    {# Permanent entry: the homepage alert about duplicates is shown only when some exist. #}
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_duplicates') }}">Duplicitní přihlášky</a>
+    </li>
+    {% if is_granted('ROLE_ADMIN') %}
+        <li>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_reassign') }}">Hromadný přesun účastníků</a>
+        </li>
+    {% endif %}
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_compare_years') }}">Srovnání ročníků</a>
+    </li>
+</ul>
+
+<h2>Platby</h2>
+<ul>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_payments_list', { filter: 'orphaned' }) }}">Nepřiřazené platby</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_payments_list', { filter: 'all' }) }}">Přehled plateb</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_payments_import') }}">Import plateb (CSV)</a>
+    </li>
+</ul>
+
+<h2>Katalog (příznaky, nabídky, rozsahy)</h2>
+<ul>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_catalog', { tab: 'flags' }) }}">Příznaky</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_catalog', { tab: 'categories' }) }}">Kategorie příznaků</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_catalog', { tab: 'offers' }) }}">Nabídky / rozsahy</a>
+    </li>
+    <li>
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_catalog', { tab: 'flag-offers' }) }}">Nabídky příznaků</a>
+    </li>
+    <li>
+        {# Team roles catalogue — used by the service roster and activity staffing. #}
+        <a href="{{ path('oswis_org_oswis_calendar_web_admin_staff_roles') }}">Funkce týmu (rozpis služeb)</a>
+    </li>
+</ul>
+
+{% if is_granted('ROLE_ADMIN') %}
+    <h2>Komunikace</h2>
+    <ul>
+        <li>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_communication_index') }}">Historie komunikace (přehled)</a>
+        </li>
+        <li>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_imap_unmatched') }}">Nezařazené e-maily (IMAP)</a>
+        </li>
+        <li>
+            <a href="{{ path('oswis_org_oswis_calendar_web_admin_mail_config') }}">Konfigurace e-mailů (šablony, skupiny, kategorie)</a>
+        </li>
+    </ul>
+{% endif %}

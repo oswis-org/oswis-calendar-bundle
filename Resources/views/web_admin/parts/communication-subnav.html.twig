@@ -8,4 +8,4 @@
     { key: 'campaigns', label: 'Kampaně a šablony', url: path('oswis_org_oswis_calendar_web_admin_mail_config') },
     { key: 'unmatched', label: 'Nezařazená pošta', url: path('oswis_org_oswis_calendar_web_admin_imap_unmatched') },
 ] %}
-<twig:Admin:Subnav :items="_items" :current="current|default(null)" ariaLabel="Podmenu Komunikace" />
+<twig:OswisOrgOswisCore:Admin:Subnav :items="_items" :current="current|default(null)" ariaLabel="Podmenu Komunikace" />

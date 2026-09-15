@@ -23,7 +23,7 @@
             { value: 'categories', label: 'Kategorie',       count: categories|length },
             { value: 'templates',  label: 'Twig šablony',    count: templates|length },
         ] %}
-        <twig:Admin:Tabs :current="activeTab"
+        <twig:OswisOrgOswisCore:Admin:Tabs :current="activeTab"
                          :items="tabs|map(t => t|merge({key: t.value, url: path('oswis_org_oswis_calendar_web_admin_mail_config', { tab: t.value })}))" />
 
         {% if activeTab == 'groups' %}

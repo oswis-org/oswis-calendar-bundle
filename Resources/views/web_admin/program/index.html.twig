@@ -21,9 +21,9 @@
         {% set dayCount = tree|filter(row => row.day is not null)|length %}
         {% set activityCount = 0 %}
         {% for row in tree %}{% set activityCount = activityCount + row.activities|length %}{% endfor %}
-        <twig:Admin:PageHeader :title="'Program — ' ~ (event.name ?? eventSlug)">
+        <twig:OswisOrgOswisCore:Admin:PageHeader :title="'Program — ' ~ (event.name ?? eventSlug)">
             <span class="badge text-bg-primary" style="font-size: .95rem;">{{ dayCount }} dní · {{ activityCount }} aktivit</span>
-        </twig:Admin:PageHeader>
+        </twig:OswisOrgOswisCore:Admin:PageHeader>
 
         <div class="row" style="margin-top: .5rem;">
             <div class="col">
@@ -93,7 +93,7 @@
                 <details class="oa-nastroje">
                     <summary>Další nástroje a tisk</summary>
                     <div class="oa-nastroje__obsah">
-                        <twig:Admin:Toolbar label="Vytvořit:">
+                        <twig:OswisOrgOswisCore:Admin:Toolbar label="Vytvořit:">
                             <a class="btn btn-sm btn-outline-primary"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_block_new', {eventSlug: eventSlug}) }}"
                                title="Nadřazený bod programu pro rotaci / sérii (např. dopolední rotace stanovišť)">+ Blok</a>
@@ -101,16 +101,16 @@
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_day_new', {eventSlug: eventSlug}) }}">+ Den</a>
                             <a class="btn btn-sm btn-outline-primary"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_section_new', {eventSlug: eventSlug}) }}">+ Sekce</a>
-                        </twig:Admin:Toolbar>
-                        <twig:Admin:Toolbar label="Nástroje:">
+                        </twig:OswisOrgOswisCore:Admin:Toolbar>
+                        <twig:OswisOrgOswisCore:Admin:Toolbar label="Nástroje:">
                             <a class="btn btn-sm btn-outline-primary"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_service_roster', {eventSlug: eventSlug}) }}">Rozpis služeb</a>
                             <a class="btn btn-sm btn-outline-primary"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_teams', {eventSlug: eventSlug}) }}">Týmy</a>
                             <a class="btn btn-sm btn-outline-primary"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_series', {eventSlug: eventSlug}) }}">Série</a>
-                        </twig:Admin:Toolbar>
-                        <twig:Admin:Toolbar label="Tisk (PDF):">
+                        </twig:OswisOrgOswisCore:Admin:Toolbar>
+                        <twig:OswisOrgOswisCore:Admin:Toolbar label="Tisk (PDF):">
                             <a class="btn btn-sm btn-outline-secondary" target="_blank"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_instructor', {eventSlug: eventSlug}) }}">Instruktorský</a>
                             <a class="btn btn-sm btn-outline-secondary" target="_blank"
@@ -119,7 +119,7 @@
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_team', {eventSlug: eventSlug}) }}">Tým</a>
                             <a class="btn btn-sm btn-outline-secondary" target="_blank"
                                href="{{ path('oswis_org_oswis_calendar_web_admin_program_full', {eventSlug: eventSlug}) }}">Celý program</a>
-                        </twig:Admin:Toolbar>
+                        </twig:OswisOrgOswisCore:Admin:Toolbar>
                     </div>
                 </details>
             </div>
