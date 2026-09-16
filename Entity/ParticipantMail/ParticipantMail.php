@@ -221,16 +221,6 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
 
     // ---- CommunicationEntryInterface ----
 
-    public function getOccurredAt(): ?\DateTimeInterface
-    {
-        return $this->getSent();
-    }
-
-    public function getDirection(): CommunicationDirection
-    {
-        return CommunicationDirection::OUT;
-    }
-
     public function getChannel(): CommunicationChannel
     {
         return str_starts_with($this->getType() ?? '', 'ad-hoc-')
@@ -238,28 +228,9 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
             : CommunicationChannel::SYSTEM_MAIL;
     }
 
-    public function getSummary(): ?string
-    {
-        return null;
-    }
-
     // getBody() / getBodyHtml() satisfied by parent (AbstractMail) — the rendered
     // mail body is captured + persisted at send time by MailService.
 
-    public function isPublicForParticipant(): bool
-    {
-        return true;
-    }
-
     // getMessageId() satisfied by parent::getMessageID() — PHP method names are case-insensitive.
 
-    public function getInReplyTo(): ?string
-    {
-        return null;
-    }
-
-    public function getAuthorAppUser(): ?AppUser
-    {
-        return null;
-    }
 }

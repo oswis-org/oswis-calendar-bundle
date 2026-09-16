@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Service\Communication;
 
+use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
+use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserEditMail;
+use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMail;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Repository\Imap\ParticipantIncomingMailRepository;
@@ -25,6 +29,7 @@ final readonly class CommunicationTimelineService
         private ParticipantMailRepository $mailRepository,
         private ParticipantManualNoteRepository $manualNoteRepository,
         private ParticipantIncomingMailRepository $incomingMailRepository,
+        private EntityManagerInterface $em,
     ) {
     }
 
@@ -35,6 +40,7 @@ final readonly class CommunicationTimelineService
     {
         $entries = array_merge(
             $this->fetchMails($participant),
+            $this->fetchAccountMails($participant),
             $this->manualNoteRepository->findByParticipant($participant),
             $this->incomingMailRepository->findByParticipant($participant),
         );
@@ -64,9 +70,10 @@ final readonly class CommunicationTimelineService
      */
     private function fetchMails(Participant $participant): array
     {
+        // Bez podmínky na `sent`: neúspěšné pokusy a zprávy v nejistém stavu patří do historie
+        // stejně jako doručené — tým se jinak nedozví, že e-mail nedorazil (a ptá se ho účastník).
         $qb = $this->mailRepository->createQueryBuilder('mail')
             ->andWhere('mail.participant = :participant')
-            ->andWhere('mail.sent IS NOT NULL')
             ->setParameter('participant', $participant)
             ->orderBy('mail.sent', 'DESC')
             ->addOrderBy('mail.id', 'DESC');
@@ -80,6 +87,48 @@ final readonly class CommunicationTimelineService
         foreach ($result as $row) {
             if ($row instanceof ParticipantMail) {
                 $entries[] = $row;
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * E-maily k ÚČTU kontaktních osob přihlášky (aktivace účtu, zapomenuté heslo, změna údajů,
+     * pokračování v přihlášce).
+     *
+     * Do historie patří: když se člověk ptá „nepřišel mi e-mail", tým dosud neviděl právě tu
+     * půlku pošty, které se to nejčastěji týká. Účty jsou v core, přihlášky v kalendáři — směr
+     * závislostí sedí (kalendář smí do core).
+     *
+     * @return list<CommunicationEntryInterface>
+     */
+    private function fetchAccountMails(Participant $participant): array
+    {
+        $appUserIds = [];
+        foreach ($participant->getContactPersons(false) as $contactPerson) {
+            $appUserId = $contactPerson instanceof AbstractContact ? $contactPerson->getAppUser()?->getId() : null;
+            if (null !== $appUserId) {
+                $appUserIds[] = $appUserId;
+            }
+        }
+        if ([] === $appUserIds) {
+            return [];
+        }
+        $entries = [];
+        foreach ([AppUserMail::class, AppUserEditMail::class] as $class) {
+            $result = $this->em->createQueryBuilder()
+                ->select('mail')
+                ->from($class, 'mail')
+                ->andWhere('mail.appUser IN (:appUsers)')
+                ->setParameter('appUsers', $appUserIds)
+                ->orderBy('mail.id', 'DESC')
+                ->getQuery()
+                ->getResult();
+            foreach (is_array($result) ? $result : [] as $row) {
+                if ($row instanceof CommunicationEntryInterface) {
+                    $entries[] = $row;
+                }
             }
         }
 

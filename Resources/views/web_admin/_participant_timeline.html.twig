@@ -51,7 +51,17 @@
                                     {% else %}
                                         <span class="oswis-tl__title">{{ e.subject|default('(bez předmětu)') }}</span>
                                     {% endif %}
-                                    {% if internal and adm %}<span class="badge text-bg-secondary">interní</span>{% endif %}
+                                    {% set stav = e.status|default(null) %}
+                                    {# „Interní" = poznámka týmu. U e-mailu, který se nepodařilo doručit,
+                                       by to bylo matoucí — tam mluví štítek stavu. #}
+                                    {% if internal and adm and stav is null %}<span class="badge text-bg-secondary">interní</span>{% endif %}
+                                    {# Stav doručení jen tam, kde není „odesláno" — jinak by u každého řádku
+                                       svítil štítek, který nic nesděluje. #}
+                                    {% if stav is not null and stav.value != 'sent' %}
+                                        <span class="badge text-bg-{{ stav.value in ['failed', 'bounced'] ? 'danger' : (stav.value == 'sending' ? 'warning' : 'secondary') }}">
+                                            {{ stav.value == 'sending' ? 'nejisté' : stav.label()|lower }}
+                                        </span>
+                                    {% endif %}
                                     {% if odesilatel %}<span class="oswis-tl__kdo">{{ odesilatel }}</span>{% endif %}
                                 </span>
                                 {% if nahled %}<span class="oswis-tl__preview">{{ nahled }}{% if e.summary|length >= 200 %}…{% endif %}</span>{% endif %}
@@ -64,6 +74,29 @@
                                     {% if e.fromAddress|default %}<dt>Od</dt><dd>{{ e.fromName|default }} &lt;{{ e.fromAddress }}&gt;</dd>{% endif %}
                                     {% if author %}<dt>Kdo</dt><dd>{{ author.shortName|default(author.name|default(author.username|default('—'))) }}</dd>{% endif %}
                                     {% if e.messageId|default %}<dt>Message-ID</dt><dd class="oswis-tl__mono">{{ e.messageId }}</dd>{% endif %}
+                                    {% set stav = e.status|default(null) %}
+                                    {% if stav is not null %}
+                                        <dt>Stav</dt>
+                                        <dd>
+                                            {{ stav.label() }}
+                                            {% if stav.value == 'sending' %}
+                                                — nevíme, jestli zpráva odešla; ověř ji v archivní schránce
+                                                a podle toho ji pošli znovu, nebo nech být. Sama se znovu nepošle.
+                                            {% endif %}
+                                            {% if e.statusMessage|default %}
+                                                {% set duvod = e.statusMessage|mail_failure_reason %}
+                                                {% if duvod %}
+                                                    <br>{{ duvod }}
+                                                    <br><small class="text-muted">{{ e.statusMessage }}</small>
+                                                {% else %}
+                                                    <br><span class="text-muted">{{ e.statusMessage }}</span>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if e.attemptCount|default(0) > 1 %}
+                                                <br><span class="text-muted">Pokusů o odeslání: {{ e.attemptCount }}</span>
+                                            {% endif %}
+                                        </dd>
+                                    {% endif %}
                                 </dl>
                                 {% if bodyHtml %}
                                     <div class="oswis-tl__mail">{{ bodyHtml|sanitize_html }}</div>
