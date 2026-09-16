@@ -14,7 +14,6 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentReposi
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
 use OswisOrg\OswisCoreBundle\Service\SystemMailService;
-use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
 use Psr\Log\LoggerInterface;
 
 class ParticipantPaymentService
@@ -230,7 +229,9 @@ class ParticipantPaymentService
             return $this->systemMailService->send(
                 'payment-import-report',
                 $archiveAddress->getAddress(),
-                EmailUtils::mimeEnc('Report nových plateb'),
+                // Bez `mimeEnc()`: kódování hlavičky si udělá Symfony samo a do záznamu
+                // patří čitelný předmět, ne „=?utf-8?B?…?=".
+                'Report nových plateb',
                 '@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig',
                 ['payments' => $payments],
                 recipientName: $archiveAddress->getName(),

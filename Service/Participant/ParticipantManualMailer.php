@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
-use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
@@ -31,7 +30,6 @@ use Twig\Environment;
 final class ParticipantManualMailer
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
         private readonly MailService $mailService,
         private readonly ParticipantMailRepository $participantMailRepository,
         private readonly ParticipantMailContextFactory $contextFactory,
@@ -134,17 +132,16 @@ final class ParticipantManualMailer
             $participantMail->setBulk($bulk);
             // Hromadná rozesílka běží po dávkách a kurzor se zapisuje až po odeslání; klíč
             // jedinečnosti je to, co i po pádu uprostřed dávky zaručí jednu zprávu na adresáta.
-            $participantMail->setDeliveryKey((string) DeliveryKey::of(
+            $participantMail->setDeliveryKey(DeliveryKey::ofOrNull(
                 'bulk',
-                $bulk->getId() ?? 0,
-                $participant->getId() ?? 0,
-                $appUser->getId() ?? 0,
-            ));
+                $bulk->getId(),
+                $participant->getId(),
+                $appUser->getId(),
+            )?->value);
         }
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         // Ruční zpráva, ne automat → MailerSubscriber nastaví Auto-Submitted: no.
         $participantMail->markAsManual();
-        $this->em->persist($participantMail);
         $this->mailService->sendEMail($participantMail, $template, $data);
 
         return $participantMail;

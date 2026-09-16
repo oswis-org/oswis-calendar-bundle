@@ -141,7 +141,6 @@ class ParticipantMailService
                     'restAmount'    => $participant->getRemainingPriceRest(),
                 ]);
                 $data = $this->embedQrPayments($templatedEmail, $participant, $data, true);
-                $this->em->persist($participantMail);
                 $this->mailService->sendEMail($participantMail, self::REGISTRATION_CHANGED_TEMPLATE, $data);
                 $this->em->flush();
             } catch (\Throwable $exception) {
@@ -175,7 +174,6 @@ class ParticipantMailService
                 $data = $this->contextFactory->create($participant, $appUser, [
                     'type' => ParticipantMail::TYPE_REGISTRATION_CANCELLED,
                 ]);
-                $this->em->persist($participantMail);
                 $this->mailService->sendEMail($participantMail, self::REGISTRATION_CANCELLED_TEMPLATE, $data);
                 $this->em->flush();
             } catch (\Throwable $exception) {
@@ -297,7 +295,6 @@ class ParticipantMailService
             $data = $this->embedQrPayments($templatedEmail, $participant, $data);
             $this->attachIcsCalendar($templatedEmail, $participant);
         }
-        $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();
@@ -625,7 +622,7 @@ class ParticipantMailService
         // spustí cron, tlačítko v administraci nebo import — a ať se sejdou jakkoli. Samotné
         // `confirmedByMailAt` to neuhlídá (21. 8. 2026: 17 duplicitních potvrzení).
         $participantMail->setDeliveryKey(
-            (string) DeliveryKey::of('payment', $payment->getId() ?? 0, $appUser->getId() ?? 0),
+            DeliveryKey::ofOrNull('payment', $payment->getId(), $appUser->getId())?->value,
         );
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $data = $this->contextFactory->create($participant, $appUser, [
@@ -634,7 +631,6 @@ class ParticipantMailService
             'type'     => ParticipantMail::TYPE_PAYMENT,
             'isIS'     => false,
         ]);
-        $this->em->persist($participantMail);
         $this->em->persist($payment);
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
@@ -705,18 +701,17 @@ class ParticipantMailService
         $participantMail->setParticipantMailCategory($mailCategory);
         // Automail: každý druh jednou na přihlášku a adresáta — hlídá unikátní index, ne jen
         // dotaz „kdo ještě nedostal" (dva běhy cronu se můžou potkat).
-        $participantMail->setDeliveryKey((string) DeliveryKey::of(
+        $participantMail->setDeliveryKey(DeliveryKey::ofOrNull(
             'automail',
-            (string) $group->getType(),
-            $participant->getId() ?? 0,
-            $appUser->getId() ?? 0,
-        ));
+            $group->getType(),
+            $participant->getId(),
+            $appUser->getId(),
+        )?->value);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $data = $this->contextFactory->create($participant, $appUser, [
             'category' => $mailCategory,
             'type'     => $group->getType(),
         ]);
-        $this->em->persist($participantMail);
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();
