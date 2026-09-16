@@ -1074,6 +1074,11 @@ services:
   OswisOrg\OswisCalendarBundle\Mail\ParticipantMailCatalogProvider:
     tags: [ 'oswis.mail_catalog_provider' ]
 
+  ## Cíle odkazů v textu mailu — stránka akce a formulář přihlášky (dávka 2c, připomínky 3 a 8)
+  OswisOrg\OswisCalendarBundle\Mail\ParticipantLinkTargetProvider:
+    autowire: true
+    tags: [ 'oswis.mail_link_target_provider' ]
+
   ## Termíny plateb (spec 2026-09-13 §6.5) — jediné místo výpočtu pro všechny maily
   OswisOrg\OswisCalendarBundle\Service\Payment\PaymentDeadlineCalculator:
     autowire: true
