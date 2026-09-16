@@ -180,7 +180,9 @@ class ParticipantBulkMailService
         // ({@see ParticipantPaymentService::sendPendingConfirmations()}). Tenhle test se ptá
         // DAT, ne proměnné v paměti: existuje-li už odeslaný mail tohoto bulku, druhý nepošleme.
         // Počítá se jako doručené, aby kurzor postoupil a dávka se nezasekla.
-        if ($participant->hasEMailOfType($type)) {
+        // I nedokončený pokus (stav „odesílá se") se počítá: nevíme, jestli zpráva odešla, a druhý
+        // pokus by ji mohl doručit dvakrát. Kurzor dávky se stejně posouvá, takže se o nic nepřijde.
+        if ($participant->hasEMailOfType($type, onlyDelivered: false)) {
             $this->logger->info(sprintf(
                 'Bulk #%d → participant #%d: e-mail už odeslán dřív, přeskočeno (ochrana proti duplicitě).',
                 $bulk->getId() ?? 0,

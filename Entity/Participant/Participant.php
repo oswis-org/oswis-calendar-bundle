@@ -1055,10 +1055,18 @@ class Participant implements ParticipantInterface
         return $this->payments;
     }
 
-    public function hasEMailOfType(?string $type = null): bool
+    /**
+     * Má přihláška e-mail daného druhu?
+     *
+     * `$onlyDelivered = false` se ptá i na pokusy, které neskončily odesláním — tak se ptá ochrana
+     * proti duplicitě u hromadných rozesílek: záznam ve stavu „odesílá se" znamená, že nevíme,
+     * jestli zpráva odešla, a druhý pokus by mohl doručit dvakrát.
+     */
+    public function hasEMailOfType(?string $type = null, bool $onlyDelivered = true): bool
     {
         return $this->getEMails()->filter(
-                static fn (ParticipantMail $mail) => $mail->isSent() && $mail->getType() === $type
+                static fn (ParticipantMail $mail) => ($mail->isSent() || !$onlyDelivered)
+                                                     && $mail->getType() === $type
             )->count() > 0;
     }
 
