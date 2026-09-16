@@ -13,17 +13,15 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantPayment;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantPaymentRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Provider\OswisCoreSettingsProvider;
+use OswisOrg\OswisCoreBundle\Service\SystemMailService;
 use OswisOrg\OswisCoreBundle\Utils\EmailUtils;
 use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
 
 class ParticipantPaymentService
 {
     public function __construct(
         protected EntityManagerInterface $em,
-        protected MailerInterface $mailer,
+        protected SystemMailService $systemMailService,
         protected LoggerInterface $logger,
         protected OswisCoreSettingsProvider $coreSettings,
         protected ParticipantMailService $participantMailService
@@ -216,23 +214,27 @@ class ParticipantPaymentService
         return $result;
     }
 
+    /**
+     * Report o importovaných platbách do archivní schránky.
+     *
+     * Jde stejnou cestou jako ostatní pošta (systémový e-mail bez konkrétního člověka), takže se
+     * uloží a má stav — do 16. 9. 2026 se předával rovnou maileru a nikde po něm nezůstala stopa.
+     *
+     * @throws OswisException
+     */
     final public function sendPaymentsReport(Collection $payments): bool
     {
+        $archiveAddress = $this->coreSettings->getArchiveMailerAddress()
+                          ?? throw new OswisException('Není nastavená adresa archivu.');
         try {
-            $email = new TemplatedEmail();
-            $email->to(
-                $this->coreSettings->getArchiveMailerAddress()
-                ??
-                throw new OswisException('Není nastavená adresa archivu.')
-            );
-            $email->subject(EmailUtils::mimeEnc('Report nových plateb'));
-            $email->htmlTemplate('@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig');
-            $email->context(['payments' => $payments]);
-            $this->mailer->send($email);
-
-            return true;
-        } catch (TransportExceptionInterface $e) {
-            throw new OswisException('Problém s odesláním reportu o CSV platbách. '.$e->getMessage());
+            return $this->systemMailService->send(
+                'payment-import-report',
+                $archiveAddress->getAddress(),
+                EmailUtils::mimeEnc('Report nových plateb'),
+                '@OswisOrgOswisCalendar/e-mail/pages/participant-payments-report.html.twig',
+                ['payments' => $payments],
+                recipientName: $archiveAddress->getName(),
+            )->isSent();
         } catch (Exception $e) {
             throw new OswisException('Problém s vytvářením reportu o CSV platbách. '.$e->getMessage());
         }

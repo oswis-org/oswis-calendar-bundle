@@ -25,6 +25,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
+use OswisOrg\OswisCoreBundle\Mail\Delivery\DeliveryKey;
 use OswisOrg\OswisCoreBundle\Service\MailService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -501,6 +502,11 @@ class ParticipantMailService
         return 'oswis.seznamovakup.cz';
     }
 
+    /**
+     * @param array<string, mixed> $mailData
+     *
+     * @return array<string, mixed>
+     */
     public function embedQrPayments(TemplatedEmail $templatedEmail, Participant $participant, array $mailData, bool $remainingOnly = false): array
     {
         $participantId = $participant->getId();
@@ -554,8 +560,11 @@ class ParticipantMailService
                 continue;
             }
             try {
-                $this->sendPaymentConfirmationToUser($payment, $appUser);
-                $sent++;
+                // Počítá se DORUČENÍ, ne pokus: selhání SMTP výjimku nevyhodí, takže tlačítko
+                // „Poslat potvrzení" hlásilo úspěch i tehdy, když neodešlo nic (audit V11).
+                if ($this->sendPaymentConfirmationToUser($payment, $appUser)->isSent()) {
+                    $sent++;
+                }
             } catch (NotFoundException|NotImplementedException|InvalidTypeException $exception) {
                 /** @phpstan-ignore-next-line */
                 $userId = $contactPerson->getAppUser()?->getId();
@@ -592,11 +601,11 @@ class ParticipantMailService
      * @throws NotFoundException
      * @throws NotImplementedException
      */
-    public function sendPaymentConfirmationToUser(ParticipantPayment $payment, AppUser $appUser): void
+    public function sendPaymentConfirmationToUser(ParticipantPayment $payment, AppUser $appUser): ParticipantMail
     {
         $participant = $payment->getParticipant();
         if (null === $participant) {
-            return;
+            throw new NotFoundException('Platba nemá přihlášku, není komu potvrzení poslat.');
         }
         if (null === ($mailCategory = $this->getMailCategoryByType(ParticipantMail::TYPE_PAYMENT))) {
             throw new NotImplementedException(ParticipantMail::TYPE_PAYMENT, 'u e-mailů k přihláškám');
@@ -612,6 +621,12 @@ class ParticipantMailService
         $title = $this->withEventTitle($title, $participant->getEvent());
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
         $participantMail->setParticipantMailCategory($mailCategory);
+        // Klíč jedinečnosti: potvrzení téže platby témuž účtu pustí databáze jen jednou, ať ho
+        // spustí cron, tlačítko v administraci nebo import — a ať se sejdou jakkoli. Samotné
+        // `confirmedByMailAt` to neuhlídá (21. 8. 2026: 17 duplicitních potvrzení).
+        $participantMail->setDeliveryKey(
+            (string) DeliveryKey::of('payment', $payment->getId() ?? 0, $appUser->getId() ?? 0),
+        );
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $data = $this->contextFactory->create($participant, $appUser, [
             'payment'  => $payment,
@@ -627,6 +642,8 @@ class ParticipantMailService
             $payment->setConfirmedByMailAt($participantMail->getSent());
         }
         $this->em->flush();
+
+        return $participantMail;
     }
 
     /**
@@ -686,6 +703,14 @@ class ParticipantMailService
         $title = $this->withEventTitle($twigTemplate->getName() ?? $defaultTitle, $group->getEvent());
         $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
         $participantMail->setParticipantMailCategory($mailCategory);
+        // Automail: každý druh jednou na přihlášku a adresáta — hlídá unikátní index, ne jen
+        // dotaz „kdo ještě nedostal" (dva běhy cronu se můžou potkat).
+        $participantMail->setDeliveryKey((string) DeliveryKey::of(
+            'automail',
+            (string) $group->getType(),
+            $participant->getId() ?? 0,
+            $appUser->getId() ?? 0,
+        ));
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $data = $this->contextFactory->create($participant, $appUser, [
             'category' => $mailCategory,

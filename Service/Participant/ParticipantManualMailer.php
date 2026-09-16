@@ -11,6 +11,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Mail\Delivery\DeliveryKey;
 use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidator;
@@ -131,6 +132,14 @@ final class ParticipantManualMailer
         $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
         if (null !== $bulk) {
             $participantMail->setBulk($bulk);
+            // Hromadná rozesílka běží po dávkách a kurzor se zapisuje až po odeslání; klíč
+            // jedinečnosti je to, co i po pádu uprostřed dávky zaručí jednu zprávu na adresáta.
+            $participantMail->setDeliveryKey((string) DeliveryKey::of(
+                'bulk',
+                $bulk->getId() ?? 0,
+                $participant->getId() ?? 0,
+                $appUser->getId() ?? 0,
+            ));
         }
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         // Ruční zpráva, ne automat → MailerSubscriber nastaví Auto-Submitted: no.

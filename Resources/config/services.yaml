@@ -365,7 +365,7 @@ services:
     public: true
     arguments:
       - '@doctrine.orm.entity_manager'
-      - '@mailer.mailer'
+      - '@OswisOrg\OswisCoreBundle\Service\SystemMailService'
       - '@monolog.logger'
       - '@oswis_org_oswis_core.oswis_core_settings_provider'
       - '@oswis_org_oswis_calendar.participant.participant_mail_service'
