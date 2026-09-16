@@ -26,9 +26,11 @@
             <link itemprop="modifyReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
             <link itemprop="cancelReservationUrl" href="{{ absolute_url(path('oswis_org_oswis_core_homepage_action')) }}"/>
             {% if tokenUrl|default %}
+                {# `data-sensitive`: data pro Gmail nesou tutéž jednorázovou adresu jako tlačítko —
+                   do uložené kopie e-mailu proto nepatří ani odsud. #}
                 <div itemprop="potentialAction" itemscope itemtype="http://schema.org/ConfirmAction">
                     <meta itemprop="name" content="Potvrdit"/>
-                    <link itemprop="url" href="{{ tokenUrl }}"/>
+                    <link itemprop="url" href="{{ tokenUrl }}" data-sensitive="link"/>
                 </div>
             {% endif %}
             <div itemprop="reservationFor" itemscope itemtype="http://schema.org/Event">
@@ -68,13 +70,8 @@
             <b>Ještě je nutné přihlášku dokončit</b> a potvrdit tím, že zadaná adresa
             patří {{ f ? 'Vám' : 'Tobě' }} a není v ní žádný překlep:
         </mj-text>
-        <mj-button href="{{ tokenUrl }}" background-color="#006FAD" color="#ffffff" font-weight="700" font-size="16px" inner-padding="14px 24px" border-radius="4px">
-            Ověřit přihlášku
-        </mj-button>
-        <mj-text font-size="11px" color="#666666">
-            Pokud tlačítko nefunguje, zkopíruj{{ f ? 'te' : '' }} si tuto adresu do prohlížeče:<br>
-            <a href="{{ tokenUrl }}" style="color:#006FAD; word-break:break-all;">{{ tokenUrl }}</a>
-        </mj-text>
+        {% include '@OswisOrgOswisCore/e-mail/parts/token-link.html.twig'
+            with {url: tokenUrl, label: 'Ověřit přihlášku', formal: f} only %}
         {% if participantToken.validHours|default %}
             <mj-text font-size="11px" color="#888888">
                 Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.

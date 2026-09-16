@@ -130,10 +130,8 @@
             {% endif %}
         </mj-text>
         {% if appUser.plainPassword|default %}
-            <mj-text>Bylo nastaveno nové, náhodně vygenerované heslo:</mj-text>
-            <mj-text font-family="monospace" font-size="16px" background-color="#f0f0f0" padding="10px 20px" align="center">
-                {{ appUser.plainPassword }}
-            </mj-text>
+            {% include '@OswisOrgOswisCore/e-mail/parts/generated-password.html.twig'
+                with {password: appUser.plainPassword} only %}
         {% elseif appUser.password|default %}
             <mj-text font-size="12px" color="#666666">
                 Heslo bylo nastaveno uživatelem při registraci nebo aktivaci uživatele.

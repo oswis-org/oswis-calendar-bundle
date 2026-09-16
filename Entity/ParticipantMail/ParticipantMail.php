@@ -17,6 +17,7 @@ use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantToken;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMail;
@@ -50,6 +51,7 @@ use OswisOrg\OswisCoreBundle\Interfaces\Communication\CommunicationEntryInterfac
 )]
 #[Entity]
 #[Table(name: 'calendar_participant_mail')]
+#[UniqueConstraint(name: 'uniq_participant_mail_delivery_key', columns: ['delivery_key'])]
 #[Index(name: 'IDX_PARTICIPANT_MAIL_THREAD_KEY', columns: ['thread_key'])]
 #[Index(name: 'IDX_PARTICIPANT_MAIL_BULK', columns: ['bulk_id'])]
 #[Cache(usage: 'NONSTRICT_READ_WRITE', region: 'calendar_participant_mail')]
