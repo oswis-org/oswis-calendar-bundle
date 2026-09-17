@@ -19,4 +19,30 @@
     { key: 'program', label: 'Program', url: path('oswis_org_oswis_calendar_web_admin_program_index', { eventSlug: eventSlug }) },
     { key: 'roster', label: 'Rozpis služeb', url: path('oswis_org_oswis_calendar_web_admin_service_roster', { eventSlug: eventSlug }) },
 ] %}
-<twig:OswisOrgOswisCore:Admin:Subnav :items="_items" :current="current|default(null)" :label="eventName|default(null)" ariaLabel="Podmenu turnusu" />
+{# Přepínač ročníku a turnusů. Dřív tu byl jen NÁZEV akce, takže přepnout se na druhý turnus
+   znamenalo vrátit se do Akcí a projít výběrem znovu; a na ročníku (který sám žádné přihlášky nemá)
+   končily podstránky s nulou bez vysvětlení. Zůstane na TÉŽE stránce, jen pro jinou akci. #}
+{% set _prepinac = oswis_prepinac_akci(eventSlug) %}
+{% if _prepinac|length > 1 %}
+    <form method="get" class="oa-event-switch" action="">
+        <label class="oa-event-switch__label" for="oa-event-switch">Akce</label>
+        <select class="form-select form-select-sm" id="oa-event-switch" name="eventSlug"
+                data-oa-event-switch aria-label="Přepnout ročník nebo turnus">
+            {% for volba in _prepinac %}
+                <option value="{{ path(app.request.attributes.get('_route'), (app.request.attributes.get('_route_params')|default({}))|merge({ eventSlug: volba.slug })) }}"
+                        {{- volba.current ? ' selected' : '' }}>{{ volba.label }}</option>
+            {% endfor %}
+        </select>
+        <noscript><button type="submit" class="btn btn-sm btn-outline-primary">Přepnout</button></noscript>
+    </form>
+    <script>
+        (function () {
+            var vyber = document.querySelector('[data-oa-event-switch]');
+            if (!vyber) { return; }
+            vyber.addEventListener('change', function () {
+                if (vyber.value) { window.location.href = vyber.value; }
+            });
+        })();
+    </script>
+{% endif %}
+<twig:OswisOrgOswisCore:Admin:Subnav :items="_items" :current="current|default(null)" :label="_prepinac|length > 1 ? null : eventName|default(null)" ariaLabel="Podmenu turnusu" />

@@ -21,6 +21,11 @@ services:
     autowire: true
     tags: [ 'twig.extension' ]
 
+  ## Přepínač ročníku a turnusů v podmenu administrace (výtka uživatele 17. 9. 2026)
+  OswisOrg\OswisCalendarBundle\Twig\Extension\EventSwitcherExtension:
+    autowire: true
+    tags: [ 'twig.extension' ]
+
   ## Program module data layer (read-only DTO arrays for outputs)
   OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService:
     autowire: true

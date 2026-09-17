@@ -167,6 +167,17 @@
                     <span class="text-muted small" id="pasky-nalezeno"></span>
                     <span class="text-muted small">Ukládá se celá tabulka najednou, i skryté řádky.</span>
                 </p>
+                {# Počty po barvách — bez nich se nedá poznat, jestli je rozdělení rovnoměrné. #}
+                <p class="oa-pasek-pocty">
+                    {% for pasek in pasky %}
+                        <span class="oa-pasek-pocet">
+                            <span class="oa-pasek-swatch" style="{{ pasek.color ? 'background:' ~ pasek.color : '' }}" aria-hidden="true"></span>
+                            {{ pasek.name }}
+                            <strong data-pasek-pocet="{{ pasek.id }}">0</strong>
+                        </span>
+                    {% endfor %}
+                    <span class="oa-pasek-pocet">bez pásku <strong data-pasek-pocet="">0</strong></span>
+                </p>
                 <table class="list" id="pasky-tabulka">
                     <thead>
                         <tr>
@@ -187,12 +198,23 @@
                                        jinak od sebe v tabulce nerozeznají. #}
                                     <span class="text-muted small">#{{ ucastnik.id }}</span>
                                 </td>
-                                <td>
+                                {# Barva pásky musí být VIDĚT, ne jen jako název v rozbalovátku:
+                                   u stolu se pásky rozdávají podle barvy, ne podle slova. Čtvereček
+                                   vlevo drží aktuální výběr (překreslí ho `pasky-barvy` níže) a volby
+                                   v nabídce jsou podbarvené samy. #}
+                                <td class="oa-pasek-cell">
+                                    <span class="oa-pasek-swatch{{ ucastnik.group ? '' : ' oa-pasek-swatch--zadny' }}"
+                                          data-pasek-swatch
+                                          style="{{ ucastnik.group and ucastnik.group.color ? 'background:' ~ ucastnik.group.color : '' }}"
+                                          aria-hidden="true"></span>
                                     <select name="pasek[{{ ucastnik.id }}]" class="form-select form-select-sm"
+                                            data-pasek-select
                                             aria-label="Pásek pro {{ ucastnik.contactForRead.name|default('#' ~ ucastnik.id) }}">
                                         <option value="">— bez pásku —</option>
                                         {% for pasek in pasky %}
-                                            <option value="{{ pasek.id }}" {{ ucastnik.group and ucastnik.group.id == pasek.id ? 'selected' : '' }}>
+                                            <option value="{{ pasek.id }}" data-barva="{{ pasek.color|default('') }}"
+                                                    {{- pasek.color ? ' style="background-color: ' ~ pasek.color ~ '26"' : '' }}
+                                                    {{- ucastnik.group and ucastnik.group.id == pasek.id ? ' selected' : '' }}>
                                                 {{ pasek.name }}
                                             </option>
                                         {% endfor %}
@@ -233,6 +255,32 @@
                     vysledek.textContent = '' === dotaz ? '' : (videt + ' z ' + radky.length);
                 };
                 pole.addEventListener('input', prekresli);
+            })();
+
+            // Barva u řádku a počty po barvách. Počítá se z rozdělaného výběru, ne z databáze —
+            // jinak by čísla po změně rozbalovátka lhala až do uložení.
+            (function () {
+                var tabulka = document.getElementById('pasky-tabulka');
+                if (!tabulka) { return; }
+                var vybery = Array.prototype.slice.call(tabulka.querySelectorAll('[data-pasek-select]'));
+                var prepocitat = function () {
+                    var pocty = {};
+                    vybery.forEach(function (vyber) {
+                        var volba = vyber.options[vyber.selectedIndex];
+                        var barva = volba ? (volba.dataset.barva || '') : '';
+                        var swatch = vyber.parentNode.querySelector('[data-pasek-swatch]');
+                        if (swatch) {
+                            swatch.style.background = barva;
+                            swatch.classList.toggle('oa-pasek-swatch--zadny', '' === vyber.value);
+                        }
+                        pocty[vyber.value] = (pocty[vyber.value] || 0) + 1;
+                    });
+                    Array.prototype.forEach.call(document.querySelectorAll('[data-pasek-pocet]'), function (bunka) {
+                        bunka.textContent = String(pocty[bunka.dataset.pasekPocet] || 0);
+                    });
+                };
+                vybery.forEach(function (vyber) { vyber.addEventListener('change', prepocitat); });
+                prepocitat();
             })();
         </script>
     </main>
