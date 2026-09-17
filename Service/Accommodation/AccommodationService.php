@@ -8,6 +8,7 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\AccommodationUnit;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Bed;
+use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Reservation;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationFlag;
@@ -61,8 +62,10 @@ class AccommodationService
             );
         }
 
-        // Kapacita: nepočítat účastníkovu vlastní stávající rezervaci v této jednotce (re-assign).
-        $occupied = $this->reservationRepository->countActiveByUnit($unit);
+        // Kapacita se počítá JEN v rámci téže akce — pokoj se používá každý turnus i ročník znovu
+        // a odhlášená (`checked_out`) rezervace zůstává aktivní navždy.
+        $akce = $participant->getEvent(false);
+        $occupied = $this->reservationRepository->countActiveByUnit($unit, $akce);
         $existing = $this->reservationRepository->findActiveByParticipant($participant);
         if (null !== $existing && $existing->getUnit()?->getId() === $unit->getId()) {
             --$occupied;
@@ -85,7 +88,7 @@ class AccommodationService
         // si spočítala při načtení — soused u vedlejšího stolu mezitím přiřadil svoje. Přeplnit
         // chatku je záměr (přistýlky), dát dvěma lidem týž matrac ne.
         if (null !== $bed) {
-            $drzitel = $this->reservationRepository->findActiveByBed($bed, $participant);
+            $drzitel = $this->reservationRepository->findActiveByBed($bed, $participant, $akce);
             if (null !== $drzitel) {
                 $warnings[] = new AccommodationWarning(
                     AccommodationWarning::CODE_BED_TAKEN,
@@ -204,10 +207,10 @@ class AccommodationService
      *
      * @return list<Participant>
      */
-    public function getOccupantsOfUnit(AccommodationUnit $unit): array
+    public function getOccupantsOfUnit(AccommodationUnit $unit, ?Event $event = null): array
     {
         $occupants = [];
-        foreach ($this->reservationRepository->getByUnit($unit) as $reservation) {
+        foreach ($this->reservationRepository->getByUnit($unit, $event) as $reservation) {
             $participant = $reservation->getParticipant();
             if ($participant instanceof Participant) {
                 $occupants[] = $participant;

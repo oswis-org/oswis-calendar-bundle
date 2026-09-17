@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Repository\Accommodation;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\AccommodationUnit;
 use OswisOrg\OswisCalendarBundle\Entity\Accommodation\Bed;
@@ -35,21 +36,39 @@ class ReservationRepository extends ServiceEntityRepository
      * s duplicitními platbami 16. 8. 2026
      * ({@see docs/OSWIS_1_INCIDENT_PAYMENT_DUPLICATES_2026-08-16.md}).
      */
-    public function countActiveByUnit(AccommodationUnit $unit): int
+    public function countActiveByUnit(AccommodationUnit $unit, ?Event $event = null): int
     {
-        $result = $this->createQueryBuilder('r')
+        $builder = $this->createQueryBuilder('r')
             ->select('COUNT(r.id)')
             ->leftJoin('r.participant', 'p')
             ->where('r.unit = :unit')
             ->andWhere('r.status NOT IN (:inactive)')
             ->andWhere('p.id IS NULL OR p.deletedAt IS NULL')
             ->setParameter('unit', $unit)
-            ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW])
-            ->getQuery()
-            ->setCacheable(false)
-            ->getSingleScalarResult();
+            ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW]);
+        self::omezNaAkci($builder, $event);
+        $result = $builder->getQuery()->setCacheable(false)->getSingleScalarResult();
 
         return is_numeric($result) ? (int) $result : 0;
+    }
+
+    /**
+     * Obsazenost se počítá JEN v rámci téže akce.
+     *
+     * Pokoj se používá každý turnus i každý ročník znovu a `checked_out` rezervace zůstává aktivní
+     * navždy — bez tohohle omezení by po zapsání jednoho turnusu hlásil systém „Jednotka je plná"
+     * druhému turnusu a od dalšího ročníku napořád. Varování jsou měkká, takže by se je obsluha
+     * u příjezdového stolu naučila přehlížet — a s nimi i to, které má smysl (dva lidé na lůžku).
+     */
+    private static function omezNaAkci(QueryBuilder $builder, ?Event $event): void
+    {
+        if (null === $event) {
+            return;
+        }
+        if (!in_array('p', $builder->getAllAliases(), true)) {
+            $builder->innerJoin('r.participant', 'p');
+        }
+        $builder->andWhere('p.event = :akce')->setParameter('akce', $event);
     }
 
     /** Aktivní rezervace účastníka (kde bydlí) — 1 účastník = max 1 aktivní. */
@@ -72,15 +91,15 @@ class ReservationRepository extends ServiceEntityRepository
      *
      * @return list<Reservation>
      */
-    public function getByUnit(AccommodationUnit $unit): array
+    public function getByUnit(AccommodationUnit $unit, ?Event $event = null): array
     {
-        $result = $this->createQueryBuilder('r')
+        $builder = $this->createQueryBuilder('r')
             ->where('r.unit = :unit')
             ->andWhere('r.status NOT IN (:inactive)')
             ->setParameter('unit', $unit)
-            ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW])
-            ->getQuery()
-            ->getResult();
+            ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW]);
+        self::omezNaAkci($builder, $event);
+        $result = $builder->getQuery()->getResult();
 
         return is_array($result) ? array_values(array_filter(
             $result,
@@ -115,7 +134,7 @@ class ReservationRepository extends ServiceEntityRepository
      * Vylučovat vlastní rezervaci je nutné kvůli přeřazení: obsluha často jen upřesní lůžko
      * v jednotce, kterou už člověk má, a bez téhle výjimky by si to hlásil jako obsazené sám sobě.
      */
-    public function findActiveByBed(Bed $bed, ?Participant $except = null): ?Reservation
+    public function findActiveByBed(Bed $bed, ?Participant $except = null, ?Event $event = null): ?Reservation
     {
         $builder = $this->createQueryBuilder('r')
             ->where('r.bed = :bed')
@@ -123,6 +142,7 @@ class ReservationRepository extends ServiceEntityRepository
             ->setParameter('bed', $bed)
             ->setParameter('inactive', [Reservation::STATUS_CANCELLED, Reservation::STATUS_NO_SHOW])
             ->setMaxResults(1);
+        self::omezNaAkci($builder, $event);
         if (null !== $except) {
             $builder->andWhere('r.participant != :except')->setParameter('except', $except);
         }
