@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Mail;
 
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Event\EventCategory;
 use OswisOrg\OswisCalendarBundle\Entity\Registration\RegistrationOffer;
 use OswisOrg\OswisCoreBundle\Mail\Link\MailLinkTarget;
 use OswisOrg\OswisCoreBundle\Mail\Link\MailLinkTargetProviderInterface;
@@ -51,13 +52,20 @@ final readonly class ParticipantLinkTargetProvider implements MailLinkTargetProv
     /** @return list<array{value: string, label: string}> */
     private function eventOptions(): array
     {
-        // Jen to, co má veřejnou stránku: bez `publicOnWeb` by se do nabídky dostaly i body programu
-        // („Společná fotka", „Ukončení akce"), které jsou v systému taky akce, ale odkaz na ně nedává smysl.
+        // Dvě podmínky, každá z jiného důvodu:
+        // 1. DRUH akce — ročník nebo turnus (`Event::isYearOrBatch()`, stejné rozlišení jako v API
+        //    `EventVisibleToUserExtension`). Bez toho by se do nabídky dostaly podakce programu
+        //    („Společná fotka", „Informační schůze instruktorů"), které jsou v systému taky akce,
+        //    ale vlastní stránku nemají.
+        // 2. `publicOnWeb` — veřejná stránka akce bez něj vrací 404 (`EventController::showEvent`),
+        //    takže odkaz na ni by byl rozbitý.
         $query = $this->em->createQuery(
-            'SELECT e FROM '.Event::class.' e
+            'SELECT e FROM '.Event::class.' e JOIN e.category c
              WHERE e.deletedAt IS NULL AND e.slug IS NOT NULL AND e.publicOnWeb = TRUE
+               AND c.type IN (:druhy)
              ORDER BY e.startDateTime DESC'
-        )->setMaxResults(self::LIMIT);
+        )->setParameter('druhy', [EventCategory::YEAR_OF_EVENT, EventCategory::BATCH_OF_EVENT])
+            ->setMaxResults(self::LIMIT);
         $options = [];
         foreach ($query->toIterable() as $event) {
             if (!$event instanceof Event || '' === $event->getSlug()) {
