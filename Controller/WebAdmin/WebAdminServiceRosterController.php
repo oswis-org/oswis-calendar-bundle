@@ -13,7 +13,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffAssignment;
 use OswisOrg\OswisCalendarBundle\Entity\Staff\StaffRole;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\StaffAssignmentEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
-use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\EventTeamResolver;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,8 +39,8 @@ final class WebAdminServiceRosterController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly EventRepository $eventRepository,
         private readonly StaffAssignmentRepository $assignmentRepository,
-        private readonly ParticipantRepository $participantRepository,
         private readonly StaffTeamRepository $teamRepository,
+        private readonly EventTeamResolver $eventTeamResolver,
     ) {
     }
 
@@ -194,28 +194,16 @@ final class WebAdminServiceRosterController extends AbstractController
     }
 
     /**
-     * Pool týmu = účastníci turnusu i jeho NADŘAZENÉ akce mimo běžné „attendee" — tým bývá
-     * registrovaný na rodičovské akci (turnusy jsou její pod-akce), takže scope jen na turnus by ho minul.
+     * Pool týmu turnusu — jediná definice je v {@see EventTeamResolver}.
+     *
+     * Dřív tu byla vlastní kopie (a táž kopie i v programu), obě braly i kategorii „Pořadatel",
+     * tedy pořádající SPOLEK jako člověka na směnu. Opraveno 19. 9. 2026.
      *
      * @return list<Participant>
      */
     private function staffPool(Event $turnus): array
     {
-        $scope = $turnus->getSuperEvent() ?? $turnus;
-        $pool = [];
-        foreach (['organizer', 'staff', 'manager'] as $type) {
-            foreach ($this->participantRepository->getParticipants([
-                ParticipantRepository::CRITERIA_EVENT                 => $scope,
-                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 3,
-                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $type,
-            ]) as $participant) {
-                if ($participant instanceof Participant && null !== $participant->getId()) {
-                    $pool[$participant->getId()] = $participant;
-                }
-            }
-        }
-
-        return array_values($pool);
+        return $this->eventTeamResolver->members($turnus);
     }
 
     /**

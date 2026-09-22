@@ -46,6 +46,11 @@ services:
     autowire: true
     public: true
 
+  ## JEDINÁ definice toho, kdo je „tým akce" (dřív nakopírovaná ve dvou kontrolerech, obě špatně)
+  OswisOrg\OswisCalendarBundle\Service\Participant\EventTeamResolver:
+    autowire: true
+    public: true
+
   ## Export definitions
   OswisOrg\OswisCalendarBundle\Export\ParticipantExportDefinition:
     autowire: true

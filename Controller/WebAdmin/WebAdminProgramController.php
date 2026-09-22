@@ -24,7 +24,7 @@ use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ProgramDayEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\StaffTeamEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Event\EventRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Staff\StaffAssignmentRepository;
-use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\EventTeamResolver;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\StaffTeamRepository;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramDataService;
 use OswisOrg\OswisCalendarBundle\Service\Program\ProgramReleaseCheck;
@@ -52,39 +52,28 @@ final class WebAdminProgramController extends AbstractController
         private readonly EventRepository $eventRepository,
         private readonly EntityManagerInterface $em,
         private readonly StaffAssignmentRepository $assignmentRepository,
-        private readonly ParticipantRepository $participantRepository,
         private readonly EventDuplicateProcessor $duplicateProcessor,
         private readonly StaffTeamRepository $teamRepository,
+        private readonly EventTeamResolver $eventTeamResolver,
         private readonly ProgramReleaseCheck $releaseCheck,
     ) {
     }
 
     /**
-     * Staff okruh turnusu pro obsazení / členství týmů = účastníci turnusu mimo běžné „attendee"
-     * (organizer/staff/manager…). CRITERIA_PARTICIPANT_TYPE bere jen jeden typ, tak sloučíme přes typy.
+     * Staff okruh turnusu pro obsazení a členství týmů — jediná definice je
+     * v {@see EventTeamResolver}.
+     *
+     * Dřív tu byla vlastní kopie (a táž kopie i v rozpisu služeb), obě braly i kategorii
+     * „Pořadatel", tedy pořádající SPOLEK jako člověka. Opraveno 19. 9. 2026.
      *
      * @return list<array{id: int|null, name: string}>
      */
     private function staffPool(Event $turnus): array
     {
-        $pool = [];
-        foreach (['organizer', 'staff', 'manager'] as $type) {
-            foreach ($this->participantRepository->getParticipants([
-                ParticipantRepository::CRITERIA_EVENT                 => $turnus,
-                ParticipantRepository::CRITERIA_EVENT_RECURSIVE_DEPTH => 3,
-                ParticipantRepository::CRITERIA_PARTICIPANT_TYPE      => $type,
-            ]) as $p) {
-                if ($p instanceof Participant && null !== $p->getId()) {
-                    $pool[$p->getId()] = ['id' => $p->getId(), 'name' => $this->programData->staffName($p)];
-                }
-            }
-        }
-        $pool = array_values($pool);
-        // České řazení jmen (Collator cs_CZ) — `strcoll` je v C-locale bytová komparace a hází
-        // diakritiku za „z" (viz WebAdminCheckInController / compareParticipants).
-        usort($pool, static fn (array $a, array $b): int => StringUtils::compareCzech($a['name'], $b['name']));
-
-        return $pool;
+        return array_map(
+            fn (Participant $p): array => ['id' => $p->getId(), 'name' => $this->programData->staffName($p)],
+            $this->eventTeamResolver->members($turnus),
+        );
     }
 
     /**
