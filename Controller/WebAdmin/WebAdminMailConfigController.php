@@ -15,6 +15,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
+use OswisOrg\OswisCoreBundle\Mail\Editor\MailEditorConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -40,6 +41,7 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly MailPreviewService $mailPreview,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantManualMailer $manualMailer,
+        private readonly MailEditorConfig $editorConfig,
     ) {
     }
 
@@ -284,7 +286,8 @@ final class WebAdminMailConfigController extends AbstractController
             'form'               => $form,
             'entity'             => $template,
             'kind'               => 'template',
-            'sampleParticipants' => [],
+            'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
+            'editorConfig'       => $this->editorConfig->toArray(),
             'pageTitle'          => $pageTitle,
             'page_title'         => $pageTitle.' :: ADMIN',
         ]);
@@ -358,8 +361,9 @@ final class WebAdminMailConfigController extends AbstractController
             'entity'             => $template,
             'kind'               => 'template',
             'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
-            'pageTitle'          => sprintf('Twig šablona: %s', $template->getName() ?? '#'.$id),
-            'page_title'         => sprintf('Twig šablona: %s :: ADMIN', $template->getName() ?? '#'.$id),
+            'editorConfig'       => $this->editorConfig->toArray(),
+            'pageTitle'          => sprintf('Šablona e-mailu: %s', $template->getName() ?? '#'.$id),
+            'page_title'         => sprintf('Šablona e-mailu: %s :: ADMIN', $template->getName() ?? '#'.$id),
         ]);
     }
 

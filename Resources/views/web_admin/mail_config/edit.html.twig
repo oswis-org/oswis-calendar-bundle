@@ -11,8 +11,44 @@
                href="{{ path('oswis_org_oswis_calendar_web_admin_mail_config') }}">← Zpět na konfiguraci e-mailů</a>
         </p>
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
-        {{ form_widget(form) }}
-        {{ form_end(form, { render_rest: false }) }}
+        {% if kind == 'template' %}
+            {# Obsah kampaně se píše v TOMTÉŽ editoru jako „Nová zpráva" a hromadný mail — ne v holém
+               poli s Twigem, jak to tu bylo do 22. 9. 2026. Editor je na tyhle zdroje ověřený: test
+               věrnosti provede každou kampaň z klonu editorem a zpět a porovná vykreslený mail.
+               Co editor neumí zobrazit, drží jako chráněný kód a vrátí beze změny.
+
+               Pole se proto vykreslují po jednom: jen `textValue` se nahrazuje editorem, zbytek
+               formuláře zůstává standardní. `name` a `id` musí sedět na Symfony formulář —
+               podle `id` si obsah bere i náhled níž. #}
+            {{ form_errors(form) }}
+            {{ form_row(form.name) }}
+            {{ form_row(form.shortName) }}
+            {{ form_row(form.forcedSlug) }}
+            {{ form_row(form.kind) }}
+            {{ form_row(form.description) }}
+            {{ form_row(form.regularTemplateName) }}
+            <div class="mb-3">
+                <label for="twig_template_edit_textValue" class="form-label">Obsah e-mailu</label>
+                {% include '@OswisOrgOswisCore/mail/editor.html.twig' with {
+                    name: 'twig_template_edit[textValue]',
+                    id: 'twig_template_edit_textValue',
+                    value: form.textValue.vars.value,
+                    config: editorConfig,
+                    required: false,
+                    rows: 18,
+                    label: 'Obsah e-mailu',
+                } only %}
+                <small class="text-muted">Použije se jen tehdy, když nahoře není vyplněná Twig cesta.</small>
+                {{ form_errors(form.textValue) }}
+            </div>
+            {{ form_row(form.submit) }}
+        {% else %}
+            {{ form_widget(form) }}
+        {% endif %}
+        {# `render_rest` musí zůstat ZAPNUTÉ: u vypisování polí po jednom (větev šablony) je mezi
+           nedovykreslenými poli i skrytý CSRF token — bez něj formulář spadne na „neplatný token"
+           a šablona se neuloží. Ve větvi s `form_widget(form)` nepřidá nic. #}
+        {{ form_end(form) }}
 
         {% if kind == 'group' and entity.filterExpression and (not form.vars.submitted or form.vars.valid) %}
             {# Filter sanity-check: the unified participant list evaluates the SAME expression language,
