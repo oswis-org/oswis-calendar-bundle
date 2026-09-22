@@ -64,6 +64,17 @@
     </li>
 </ul>
 
+{# Spolek a tým — rovina, která NENÍ vázaná na akci: kdo je v organizaci a od kdy.
+   Sekce vznikla 19. 9. 2026 s obrazovkou pozic; je tu místo, kam může dorůst zbytek
+   adresáře (kontakty, organizace), pro který dnes administrace neexistuje vůbec. #}
+<h2>Spolek a tým</h2>
+<ul>
+    <li>
+        <a href="{{ path('oswis_org_oswis_address_book_web_admin_positions') }}">Pozice v organizaci</a>
+        — kdo je ve spolku, s jakou funkcí a od kdy
+    </li>
+</ul>
+
 {% if is_granted('ROLE_ADMIN') %}
     <h2>Komunikace</h2>
     <ul>

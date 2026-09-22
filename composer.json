@@ -34,7 +34,7 @@
     "endroid/qr-code": "^6.1",
     "minishlink/web-push": "^9.0 || ^10.0 || ^11.0",
     "nyholm/psr7": "^1.8",
-    "oswis-org/oswis-address-book-bundle": "^0.1.0 || ^0.1.1",
+    "oswis-org/oswis-address-book-bundle": "^0.1.11",
     "oswis-org/oswis-core-bundle": "^0.2.55",
     "psr/http-client": "^1.0",
     "psr/http-factory": "^1.0",
