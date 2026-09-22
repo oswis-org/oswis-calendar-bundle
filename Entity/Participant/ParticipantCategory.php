@@ -68,6 +68,20 @@ class ParticipantCategory implements NameableInterface
     public const TYPE_PARTNER = 'partner';
     public const TYPE_GUEST = 'guest';
     public const TYPE_MANAGER = 'manager';
+
+    /**
+     * Zkušební účastník — přihláška, která se nemá počítat mezi skutečné.
+     *
+     * ⚠️ Tenhle typ byl v DATECH od osiva 3. 7. 2020 („Testovací účastník"), ale v
+     * {@see self::ALLOWED_TYPES} chyběl. Načtení z databáze projde (Doctrine obchází
+     * konstruktor), ale uložení té kategorie přes {@see self::setType()} by hodilo
+     * `InvalidTypeException`. Doplněno 19. 9. 2026; hlídá to
+     * `TypyKategoriiPrihlasekSediSKodemTest`.
+     *
+     * Záměrně NENÍ `attendee`: všechna místa, která počítají účastníky, filtrují na
+     * `TYPE_ATTENDEE` přesně, takže zkušební přihlášky do počtů nespadnou — a to je správně.
+     */
+    public const TYPE_ATTENDEE_TEST = 'attendee-test';
     public const MANAGEMENT_TYPES = [self::TYPE_MANAGER];
 
     public const ALLOWED_TYPES
@@ -79,6 +93,7 @@ class ParticipantCategory implements NameableInterface
             self::TYPE_GUEST,     // Somebody who performs at the event.
             self::TYPE_MANAGER,   // Somebody who manages the event.
             self::TYPE_TEAM_MEMBER,
+            self::TYPE_ATTENDEE_TEST,
         ];
 
     /** Send formal (or informal) e-mails? */

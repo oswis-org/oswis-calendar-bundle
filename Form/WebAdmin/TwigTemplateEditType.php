@@ -20,7 +20,13 @@ final class TwigTemplateEditType extends AbstractType
         $builder
             ->add('name', TextType::class, ['label' => 'Název', 'required' => false])
             ->add('shortName', TextType::class, ['label' => 'Krátký název', 'required' => false])
-            ->add('slug', TextType::class, ['label' => 'Slug', 'required' => false])
+            // Pole je navázané na `forcedSlug`, ne na `slug`: `setSlug()` je jím přebíjené, takže
+            // editace `slug` u řádku s vyplněným `forcedSlug` (což je 31 z 34 šablon) NIC nedělala.
+            ->add('forcedSlug', TextType::class, [
+                'label'    => 'Slug (adresa šablony)',
+                'required' => false,
+                'help'     => 'Podle sluga se šablona hledá — musí být jedinečný. Při shodě by se použila ta starší.',
+            ])
             ->add('kind', ChoiceType::class, [
                 'label'       => 'Druh',
                 'required'    => false,

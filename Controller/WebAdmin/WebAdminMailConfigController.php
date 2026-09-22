@@ -59,9 +59,35 @@ final class WebAdminMailConfigController extends AbstractController
             'groups'     => $groups,
             'categories' => $categories,
             'templates'  => $templates,
+            'pouziti'    => $this->pouzitiSablon($groups),
             'pageTitle'  => 'Konfigurace e-mailů',
             'page_title' => 'Konfigurace e-mailů :: ADMIN',
         ]);
+    }
+
+    /**
+     * Které mailové skupiny kterou šablonu používají.
+     *
+     * PROČ: v seznamu šablon se za roky nasčítaly ročníkové kopie (2020 … 2026) a nebylo z něj
+     * poznat, která ještě někam patří a která je jen historie — takže se nikdo neodvážil nic
+     * uklidit. Tohle je ten chybějící článek „kde se to používá".
+     *
+     * @param list<ParticipantMailGroup> $groups
+     *
+     * @return array<int, list<string>> id šablony → názvy skupin
+     */
+    private function pouzitiSablon(array $groups): array
+    {
+        $pouziti = [];
+        foreach ($groups as $group) {
+            $templateId = $group->getTwigTemplate()?->getId();
+            if (null === $templateId) {
+                continue;
+            }
+            $pouziti[$templateId][] = $group->getName() ?? '#'.$group->getId();
+        }
+
+        return $pouziti;
     }
 
     public function editGroup(Request $request, int $id): Response
@@ -149,7 +175,7 @@ final class WebAdminMailConfigController extends AbstractController
             return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_mail_config'));
         }
 
-        $pageTitle = null !== $from ? sprintf('Nová mail group (kopie „%s")', $from->getName() ?? '#'.$fromId) : 'Nová mail group';
+        $pageTitle = null !== $from ? sprintf('Nová mailová skupina (kopie „%s")', $from->getName() ?? '#'.$fromId) : 'Nová mailová skupina';
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
             'form'       => $form,
@@ -205,7 +231,7 @@ final class WebAdminMailConfigController extends AbstractController
             }
         }
 
-        $pageTitle = null !== $from ? sprintf('Nová mail kategorie (kopie „%s")', $from->getName() ?? '#'.$fromId) : 'Nová mail kategorie';
+        $pageTitle = null !== $from ? sprintf('Nová kategorie e-mailů (kopie „%s")', $from->getName() ?? '#'.$fromId) : 'Nová kategorie e-mailů';
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
             'form'       => $form,
@@ -224,6 +250,19 @@ final class WebAdminMailConfigController extends AbstractController
     public function newTemplate(Request $request): Response
     {
         $template = new TwigTemplate();
+        $fromId = $request->query->getInt('from');
+        $from = $fromId > 0 ? $this->em->find(TwigTemplate::class, $fromId) : null;
+        if ($from instanceof TwigTemplate) {
+            $template->setName($from->getName());
+            $template->setShortName($from->getShortName());
+            $template->setDescription($from->getDescription());
+            $template->setKind($from->getKind());
+            $template->setRegularTemplateName($from->getRegularTemplateName());
+            $template->setTextValue($from->getTextValue());
+            // Slug se ZÁMĚRNĚ nekopíruje: šablona se hledá podle sluga a při shodě vyhraje
+            // ta s nižším id — kopie se stejným slugem by se tedy tiše nikdy nepoužila.
+            $template->setForcedSlug($this->navrhnoutSlugKopie($from));
+        }
         $form = $this->createForm(TwigTemplateEditType::class, $template);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
@@ -237,23 +276,76 @@ final class WebAdminMailConfigController extends AbstractController
             ));
         }
 
+        $pageTitle = $from instanceof TwigTemplate
+            ? sprintf('Nová šablona (kopie „%s")', $from->getName() ?? '#'.$fromId)
+            : 'Nová Twig šablona';
+
         return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
             'form'               => $form,
             'entity'             => $template,
             'kind'               => 'template',
             'sampleParticipants' => [],
-            'pageTitle'          => 'Nová Twig šablona',
-            'page_title'         => 'Nová Twig šablona :: ADMIN',
+            'pageTitle'          => $pageTitle,
+            'page_title'         => $pageTitle.' :: ADMIN',
         ]);
+    }
+
+    /**
+     * Slug pro kopii šablony — takový, který ještě není obsazený.
+     *
+     * Ročníkové kopie (`…-2025-1-turnus-feedback` → `…-2026-1-turnus-feedback`) jsou tu naprostá
+     * většina, takže když slug obsahuje ročník, posune se o rok; jinak se přidá `-kopie`. Je to
+     * jen NÁVRH — pole zůstává k ruční úpravě. Důležité je, že návrh nikdy nekoliduje: při shodě
+     * slugů vyhraje řádek s nižším id, takže kopie se stejným slugem by se tiše nikdy nepoužila.
+     */
+    private function navrhnoutSlugKopie(TwigTemplate $from): string
+    {
+        $slug = $from->getSlug();
+        if (1 === preg_match('~^(.*?)(20\d{2})(.*)$~', $slug, $shoda)) {
+            $posunuty = $shoda[1].((int) $shoda[2] + 1).$shoda[3];
+            if (!$this->slugJeObsazeny($posunuty)) {
+                return $posunuty;
+            }
+        }
+        $zaklad = $slug.'-kopie';
+        $kandidat = $zaklad;
+        for ($poradi = 2; $this->slugJeObsazeny($kandidat); ++$poradi) {
+            $kandidat = $zaklad.'-'.$poradi;
+        }
+
+        return $kandidat;
+    }
+
+    /** Je slug už zabraný jinou šablonou? (Kontroluje i `forcedSlug`, ze kterého se slug počítá.) */
+    private function slugJeObsazeny(string $slug, ?int $kromeId = null): bool
+    {
+        if ('' === $slug) {
+            return false;
+        }
+        $dotaz = $this->em->createQueryBuilder()
+            ->select('COUNT(t.id)')->from(TwigTemplate::class, 't')
+            ->where('t.slug = :slug OR t.forcedSlug = :slug')
+            ->setParameter('slug', $slug);
+        if (null !== $kromeId) {
+            $dotaz->andWhere('t.id <> :krome')->setParameter('krome', $kromeId);
+        }
+
+        return ((int) $dotaz->getQuery()->getSingleScalarResult()) > 0;
     }
 
     public function editTemplate(Request $request, int $id): Response
     {
         $template = $this->em->find(TwigTemplate::class, $id)
             ?? throw $this->createNotFoundException('Twig šablona nenalezena.');
+        // Formulář edituje `forcedSlug`; u řádků, kde vyplněný není (šablony založené tímhle
+        // formulářem), by se jinak ukázalo prázdno a uložení by slug přepsalo na odvozený z názvu —
+        // u dvou šablon se stejným názvem tedy na tentýž. Předvyplníme tím, co dnes reálně platí.
+        if (null === $template->getForcedSlug()) {
+            $template->setForcedSlug($template->getSlug());
+        }
         $form = $this->createForm(TwigTemplateEditType::class, $template);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
+        if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template, $id)) {
             $this->em->persist($template);
             $this->em->flush();
             $this->addFlash('success', sprintf('Twig šablona „%s" uložena.', $template->getName() ?? '#'.$id));
@@ -276,14 +368,18 @@ final class WebAdminMailConfigController extends AbstractController
      * Chyby = u pole obsahu a nic se neuloží; varování = po uložení jako upozornění. Systémové šablony
      * se tu nekontrolují — potřebují data konkrétního mailu (platba…), která vzorová přihláška nemá.
      *
+     * Slug se kontroluje u VŠECH druhů: šablona se hledá podle něj a při shodě vyhraje řádek
+     * s nižším id, takže duplicitní slug by tiše umlčel novější šablonu.
+     *
      * @param FormInterface<mixed> $form
      */
-    private function templateHasErrors(FormInterface $form, TwigTemplate $template): bool
+    private function templateHasErrors(FormInterface $form, TwigTemplate $template, ?int $id = null): bool
     {
+        $slugSpatne = $this->slugMaProblem($form, $template, $id);
         $source = (string) $template->getTextValue();
         if ($template->isRegular() || '' === trim($source)
             || !in_array($template->getKind(), [TwigTemplate::KIND_CAMPAIGN, TwigTemplate::KIND_SNIPPET], true)) {
-            return false;
+            return $slugSpatne;
         }
         $validation = $this->manualMailer->validateTemplateSource($source, $this->participantRepository->findSampleParticipants(3));
         foreach ($validation->errors() as $problem) {
@@ -293,7 +389,34 @@ final class WebAdminMailConfigController extends AbstractController
             $this->addFlash('warning', $problem->message);
         }
 
-        return $validation->hasErrors();
+        return $slugSpatne || $validation->hasErrors();
+    }
+
+    /**
+     * Slug musí být vyplněný a jedinečný — jinak by šablona zůstala nedosažitelná.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function slugMaProblem(FormInterface $form, TwigTemplate $template, ?int $id): bool
+    {
+        $slug = $template->getForcedSlug() ?? '';
+        if ('' === $slug) {
+            $form->get('forcedSlug')->addError(new FormError(
+                'Vyplň slug. Bez něj se slug odvodí z názvu — a dvě šablony se stejným názvem by pak měly tentýž.',
+            ));
+
+            return true;
+        }
+        if ($this->slugJeObsazeny($slug, $id)) {
+            $form->get('forcedSlug')->addError(new FormError(sprintf(
+                'Slug „%s" už jiná šablona má. Při shodě se použije ta starší, takže tahle by se nikdy neodeslala.',
+                $slug,
+            )));
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

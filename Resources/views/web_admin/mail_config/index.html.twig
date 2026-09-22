@@ -29,7 +29,7 @@
         {% if activeTab == 'groups' %}
             <p style="margin-bottom: .75rem;">
                 <a class="btn btn-sm btn-success"
-                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new') }}">+ Nová mail-skupina</a>
+                   href="{{ path('oswis_org_oswis_calendar_web_admin_mail_group_new') }}">+ Nová mailová skupina</a>
             </p>
             <div class="oa-table-scroll">
                 <table class="list">
@@ -139,9 +139,11 @@
                             <th>Název</th>
                             <th style="width: 8rem;">Druh</th>
                             <th style="width: 18rem;">Slug</th>
-                            <th>Cesta</th>
-                            <th style="width: 11rem; text-align: center;">Inline obsah?</th>
-                            <th style="width: 6rem;"></th>
+                            {# „Cesta" a „Inline obsah?" byly dva sloupce na jednu informaci —
+                               u kampaní byl vždy prázdný ten první, u systémových ten druhý. #}
+                            <th style="width: 14rem;">Obsah</th>
+                            <th title="Které mailové skupiny šablonu používají">Používá</th>
+                            <th style="width: 11rem;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,26 +153,41 @@
                                 <td><strong>{{ t.name|default('—') }}</strong></td>
                                 <td>
                                     {% set kindLabels = {'system': 'Systémový', 'campaign': 'Kampaň', 'snippet': 'Blok', 'page': 'Stránka', 'pdf': 'PDF'} %}
+                                    {% set kindClasses = {'system': 'text-bg-secondary', 'campaign': 'text-bg-primary', 'snippet': 'text-bg-info', 'page': 'text-bg-secondary', 'pdf': 'text-bg-secondary'} %}
                                     {% if t.kind %}
-                                        <span class="badge" style="background:#e7f1ff;color:#0a58ca;border:1px solid #b6d4fe;border-radius:.4em;padding:.1em .5em;font-size:.8em;">{{ kindLabels[t.kind]|default(t.kind) }}</span>
+                                        <span class="badge {{ kindClasses[t.kind]|default('text-bg-secondary') }}">{{ kindLabels[t.kind]|default(t.kind) }}</span>
                                     {% else %}—{% endif %}
                                 </td>
                                 <td><code style="font-size: .85em;">{{ t.slug|default('—') }}</code></td>
-                                <td><code style="font-size: .85em;">{{ t.regularTemplateName|default('—') }}</code></td>
-                                <td style="text-align: center;">
-                                    {% if t.textValue|default %}
-                                        <span title="Inline HTML, {{ t.textValue|length }} znaků">✓ {{ t.textValue|length }} znaků</span>
+                                <td style="font-size: .85em;">
+                                    {% if t.regularTemplateName %}
+                                        <code>{{ t.regularTemplateName }}</code>
+                                    {% elseif t.textValue|default %}
+                                        vlastní, {{ t.textValue|length }} znaků
                                     {% else %}
-                                        —
+                                        <span class="text-danger" title="Šablona nemá ani cestu, ani vlastní obsah — neodešle se nic.">prázdná</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td style="font-size: .85em;">
+                                    {# Názvy skupin se skoro vždy shodují s názvem šablony, takže by sloupec jen
+                                       zdvojoval text. Podstatná je odpověď „jde tahle šablona ještě smazat?" —
+                                       proto počet a jména až v popisku. #}
+                                    {% if pouziti[t.id] is defined %}
+                                        {% set pocet = pouziti[t.id]|length %}
+                                        <span title="{{ pouziti[t.id]|join(', ') }}">{{ pocet }} {{ pocet == 1 ? 'skupina' : (pocet < 5 ? 'skupiny' : 'skupin') }}</span>
+                                    {% else %}
+                                        <span class="text-muted">nepoužívá se</span>
+                                    {% endif %}
+                                </td>
+                                <td style="white-space: nowrap;">
                                     <a class="btn btn-sm btn-outline-primary"
                                        href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: t.id }) }}"><twig:ux:icon name="tabler:pencil" class="oa-icon" /> Upravit</a>
+                                    <a class="btn btn-sm btn-outline-secondary" title="Založit novou šablonu předvyplněnou z této (slug se posune na další ročník — zkontroluj ho)"
+                                       href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_new', { from: t.id }) }}"><twig:ux:icon name="tabler:copy" class="oa-icon" /> Kopie</a>
                                 </td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="7" style="text-align: center; color: #6c757d;">Žádné šablony.</td></tr>
+                            <tr><td colspan="7" class="text-muted" style="text-align: center;">Žádné šablony.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

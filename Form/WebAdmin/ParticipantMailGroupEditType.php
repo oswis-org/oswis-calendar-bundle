@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFilterEvaluator;
@@ -78,6 +79,19 @@ final class ParticipantMailGroupEditType extends AbstractType
             ->add('onlyActive', CheckboxType::class, [
                 'label'    => 'Pouze aktivní účastníci',
                 'required' => false,
+            ])
+            ->add('participantCategories', EntityType::class, [
+                'label'        => 'Komu smí psát (kategorie přihlášek)',
+                'class'        => ParticipantCategory::class,
+                'choice_label' => static fn (ParticipantCategory $c): string => $c->getName() ?? '?',
+                'multiple'     => true,
+                'expanded'     => true,
+                'required'     => false,
+                'by_reference' => false,
+                'help'         => 'Nevybráno = jen Účastníci (bezpečný výchozí stav). Vyber kategorie '
+                    .'jen tehdy, když chceš psát někomu jinému — třeba týmu. Pozor: „Člen týmu" a '
+                    .'„Personál" jsou dvě různé skupiny lidí (tým akce × personál kempu), i když '
+                    .'mají stejný typ.',
             ])
             ->add('filterExpression', TextareaType::class, [
                 'label'    => 'Filtr příjemců (volitelný)',

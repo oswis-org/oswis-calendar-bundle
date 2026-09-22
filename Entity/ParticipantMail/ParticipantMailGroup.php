@@ -12,14 +12,20 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Cache;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\ParticipantCategory;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantFilterEvaluator;
 use OswisOrg\OswisCoreBundle\Entity\AbstractClass\AbstractMailGroup;
@@ -72,6 +78,35 @@ class ParticipantMailGroup extends AbstractMailGroup
     protected bool $onlyActive = true;
 
     /**
+     * Kategorie přihlášek, kterým skupina smí psát.
+     *
+     * PROČ to tu je (nalezeno 18. 9. 2026): skupina se dosud omezovala jen akcí, `onlyActive`
+     * a filtrem — kategorii přihlášky **neřešilo nic**. Pozor na svůdnou záměnu: pole `category`
+     * o kus výš je kategorie MAILU („Ověření přihlášky", „Shrnutí"), ne kategorie přihlášky.
+     * Důsledek byl, že jakmile by na ročník přibyla přihláška člena týmu, hosta nebo personálu,
+     * spadli by do publika účastnických rozesílek („Než vyrazíš na Seznamovák…").
+     *
+     * **PRÁZDNÉ = jen kategorie typu `attendee`.** Je to úmyslně bezpečný výchozí stav: všech
+     * 28 historických skupin bylo psaných pro účastníky, takže prázdná kolekce zachovává jejich
+     * záměr beze změny dat. Zároveň tím z výchozího stavu vypadávají i testovací přihlášky
+     * (`attendee-test`), což je správně.
+     *
+     * Psát týmu jde dál — ale musí to být **vědomý úkon**: v té skupině se kategorie vyberou.
+     * Tvrdý zákaz tu schválně NENÍ; tiché zahazování pošty je horší vada než pošta navíc
+     * a týmu psát legitimně chceme.
+     *
+     * Záměrně kategorie, NE typ: „Člen týmu" a „Personál" sdílejí `type = staff`, a to jsou
+     * podle zadání dvě různé populace (tým akce × personál kempu).
+     *
+     * @var Collection<int, ParticipantCategory>
+     */
+    #[ManyToMany(targetEntity: ParticipantCategory::class, fetch: 'EAGER')]
+    #[JoinTable(name: 'calendar_participant_mail_group_participant_category')]
+    #[JoinColumn(name: 'mail_group_id', referencedColumnName: 'id')]
+    #[InverseJoinColumn(name: 'participant_category_id', referencedColumnName: 'id')]
+    protected Collection $participantCategories;
+
+    /**
      * Optional recipient filter — a {@see ParticipantFilterEvaluator} boolean expression
      * (same language as the unified participant list: hasFlag('…'), hasFlagInCategory('fakulta'),
      * isPaid(), eventSlug() …). Null/blank = no extra restriction. Lets a campaign target a segment
@@ -94,7 +129,54 @@ class ParticipantMailGroup extends AbstractMailGroup
         ?ParticipantMailCategory $participantMailCategory = null
     ) {
         parent::__construct($nameable, $priority, $range, $twigTemplate, $automaticMailing);
+        $this->participantCategories = new ArrayCollection();
         $this->setCategory($participantMailCategory);
+    }
+
+    /** @return Collection<int, ParticipantCategory> */
+    public function getParticipantCategories(): Collection
+    {
+        return $this->participantCategories;
+    }
+
+    public function addParticipantCategory(?ParticipantCategory $category): void
+    {
+        if (null !== $category && !$this->getParticipantCategories()->contains($category)) {
+            $this->getParticipantCategories()->add($category);
+        }
+    }
+
+    public function removeParticipantCategory(?ParticipantCategory $category): void
+    {
+        if (null !== $category) {
+            $this->getParticipantCategories()->removeElement($category);
+        }
+    }
+
+    /**
+     * Smí tahle skupina psát téhle přihlášce?
+     *
+     * Prázdná kolekce = jen typ `attendee` (viz {@see $participantCategories}). Vyplněná = přesně
+     * vyjmenované kategorie. FAIL-CLOSED: přihláška bez kategorie nedostane nic — radši nikoho
+     * neoslovit než oslovit někoho, o kom nevíme, co je zač.
+     */
+    public function isApplicableByParticipantCategory(Participant $participant): bool
+    {
+        $category = $participant->getParticipantCategory();
+        if (null === $category) {
+            return false;
+        }
+        $allowed = $this->getParticipantCategories();
+        if ($allowed->isEmpty()) {
+            return ParticipantCategory::TYPE_ATTENDEE === $category->getType();
+        }
+        foreach ($allowed as $allowedCategory) {
+            if ($allowedCategory->getId() === $category->getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function isCategory(?ParticipantMailCategory $category): bool
@@ -162,6 +244,9 @@ class ParticipantMailGroup extends AbstractMailGroup
             return false;
         }
         if ($this->event && !$entity->isContainedInEvent($this->event)) {
+            return false;
+        }
+        if (!$this->isApplicableByParticipantCategory($entity)) {
             return false;
         }
 
