@@ -883,6 +883,13 @@ oswis_org_oswis_calendar_web_admin_service_roster_delete:
     id: '\d+'
   methods: [POST]
 
+# Ubytování turnusu — kdo kde spí. JEN KE ČTENÍ (zapisuje check-in a AccommodationService).
+# Do 19. 9. 2026 obrazovka neexistovala: model i data byly, ale šlo se na ně podívat jen přes DB.
+oswis_org_oswis_calendar_web_admin_accommodation:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminAccommodationController::index
+  path: "/web_admin/ubytovani/{eventSlug}"
+  methods: [GET]
+
 # Pásky (skupiny účastníků) turnusu — jediná obrazovka, kde se dají zakládat i hromadně
 # přiřazovat. Do 27. 8. 2026 to uměl jen Ionic a jen po jednom účastníkovi.
 oswis_org_oswis_calendar_web_admin_participant_groups:

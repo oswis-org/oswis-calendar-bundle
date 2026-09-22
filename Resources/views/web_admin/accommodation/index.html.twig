@@ -1,0 +1,93 @@
+{# Ubytování turnusu — kdo kde spí.
+
+   Jen ke čtení: zapisuje se přes check-in a `AccommodationService::assign()`. Druhá cesta
+   k zápisu by znamenala druhou sadu pravidel o kapacitě a lůžkách.
+
+   Do 19. 9. 2026 tahle obrazovka NEEXISTOVALA — model i data byly, ale podívat se na ně
+   šlo jen přes databázi. #}
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container" style="padding: 1rem 1.25rem 3rem;">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/event-subnav.html.twig'
+            with { eventSlug: eventSlug, eventName: (event.shortName|default(event.name|default(''))), current: 'accommodation' } only %}
+        <h2>{{ pageTitle }}</h2>
+        <p class="text-muted" style="max-width: 60rem;">
+            Kdo kde spí. Údaje sem zapisuje <strong>check-in</strong> a hromadné zápisy —
+            tahle stránka je jen ukazuje.
+        </p>
+
+        {% if jednotky is empty %}
+            <div class="alert alert-warning" style="max-width: 60rem;">
+                <strong>Na tomhle turnusu není zapsaná jediná rezervace.</strong>
+                Ubytování se zapisuje na check-inu při příjezdu, nebo hromadně z ubytovacího listu.
+            </div>
+        {% else %}
+            <p>
+                <strong>{{ pocetRezervaci }}</strong>
+                {{ pocetRezervaci == 1 ? 'rezervace' : (pocetRezervaci < 5 ? 'rezervace' : 'rezervací') }}
+                v <strong>{{ jednotky|length }}</strong>
+                {{ jednotky|length == 1 ? 'jednotce' : (jednotky|length < 5 ? 'jednotkách' : 'jednotkách') }}.
+            </p>
+
+            {% set posledniZarizeni = null %}
+            {% for radek in jednotky %}
+                {% if radek.facility != posledniZarizeni %}
+                    <h3 style="margin-top: 1.5rem;">{{ radek.facility }}</h3>
+                    {% set posledniZarizeni = radek.facility %}
+                {% endif %}
+                <div class="list" style="margin-bottom: 0.75rem;">
+                    <div class="list__item">
+                        <strong>{{ radek.unit.name|default('(bez názvu)') }}</strong>
+                        {% if radek.unit.unitType %}<span class="text-muted"> · {{ radek.unit.unitType }}</span>{% endif %}
+                        <span class="badge {{ radek.obsazeno > radek.kapacita ? 'text-bg-danger' : 'text-bg-secondary' }}"
+                              style="margin-left: 0.5rem;"
+                              {% if radek.obsazeno > radek.kapacita %}title="Obsazeno víc lidí, než je kapacita jednotky."{% endif %}>
+                            {{ radek.obsazeno }} / {{ radek.kapacita }}
+                        </span>
+                    </div>
+                    {% for r in radek.rezervace %}
+                        {% set p = r.participant %}
+                        <div class="list__item">
+                            {% if p %}
+                                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: p.id }) }}">{{ p.sortableName }}</a>
+                            {% else %}
+                                <span class="text-muted">(bez přihlášky)</span>
+                            {% endif %}
+                            {% if r.bed %}<span class="text-muted"> · lůžko {{ r.bed.name|default(r.bed.id) }}</span>{% endif %}
+                            {% if r.fromDate or r.toDate %}
+                                <span class="text-muted">
+                                    · {{ r.fromDate ? r.fromDate|date('j. n.') : '' }}–{{ r.toDate ? r.toDate|date('j. n.') : '' }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <h3 style="margin-top: 2rem;">Bez ubytování</h3>
+        {% if bezUbytovani is empty %}
+            <p class="text-muted">Každý účastník turnusu má zapsané ubytování.</p>
+        {% else %}
+            <p class="text-muted" style="max-width: 60rem;">
+                <strong>{{ bezUbytovani|length }}</strong> účastníků turnusu nemá zapsanou rezervaci.
+                Nemusí to být chyba — takhle vypadá i ten, kdo spal ve vlastním stanu nebo dojížděl.
+            </p>
+            {# Seznam je schválně SBALENÝ: při 300+ lidech je to jinak stěna jmen, která
+               odsune všechno ostatní mimo obrazovku. Číslo je vidět hned, jména na klik. #}
+            <details>
+                <summary style="cursor: pointer;">Vypsat jména ({{ bezUbytovani|length }})</summary>
+                <div class="list" style="margin-top: 0.5rem;">
+                    {% for p in bezUbytovani %}
+                        <div class="list__item">
+                            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: p.id }) }}">{{ p.sortableName }}</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </details>
+        {% endif %}
+    </main>
+{% endblock %}
