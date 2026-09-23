@@ -393,9 +393,12 @@ final class WebAdminMailConfigController extends AbstractController
      */
     private function templateHasErrors(FormInterface $form, TwigTemplate $template, ?int $id = null): bool
     {
+        // Obě kontroly vždy (ne `||`): každá hlásí u jiného pole a uživatel má vidět všechny chyby naráz.
         $slugSpatne = $this->slugMaProblem($form, $template, $id);
+        $bezObalky = $this->kampanBezObalky($form, $template);
+        $zakladniChyba = $slugSpatne || $bezObalky;
         if ('' === trim((string) $template->getTextValue())) {
-            return $slugSpatne; // jen rodič = mail podle souboru, není co kontrolovat
+            return $zakladniChyba; // jen rodič = mail podle souboru, není co kontrolovat
         }
         // Kontroluje se SLOŽENÝ zdroj (rodič + text) — tak, jak ho uvidí odeslání.
         $source = $template->getSlozenyZdroj();
@@ -414,7 +417,7 @@ final class WebAdminMailConfigController extends AbstractController
                 return true;
             }
 
-            return $slugSpatne;
+            return $zakladniChyba;
         }
         $validation = $this->manualMailer->validateTemplateSource($source, $this->participantRepository->findSampleParticipants(3));
         foreach ($validation->errors() as $problem) {
@@ -424,7 +427,30 @@ final class WebAdminMailConfigController extends AbstractController
             $this->addFlash('warning', $problem->message);
         }
 
-        return $slugSpatne || $validation->hasErrors();
+        return $zakladniChyba || $validation->hasErrors();
+    }
+
+    /**
+     * Kampaň je CELÝ e-mail — musí z něčeho vycházet (obálka dodá hlavičku, oslovení, podpis a patičku).
+     *
+     * PROČ: kampaň #35 (13. 9. 2026) se uložila jako holý text bez obálky. Poslala se správně v režimu
+     * „tělo zprávy" (ten obálku přidá sám), ale v nabídce kampaní hromadného mailu zůstala past: vybraná
+     * jako kampaň by odešla jen jako pár odstavců bez hlavičky a podpisu. Samotný text k vložení do zprávy
+     * je Blok. Rodič v textu (`{% extends %}` na začátku — data před převodem 23. 9. 2026) se počítá taky.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function kampanBezObalky(FormInterface $form, TwigTemplate $template): bool
+    {
+        if (TwigTemplate::KIND_CAMPAIGN !== $template->getKind()
+            || 1 === preg_match('/^\s*\{%-?\s*extends\b/', $template->getSlozenyZdroj())) {
+            return false;
+        }
+        $form->get('regularTemplateName')->addError(new FormError(
+            'Kampaň je celý e-mail — vyber, z čeho vychází (obvykle „Obecná zpráva"). Bez obálky by odešla bez hlavičky, oslovení, podpisu a patičky. Samotný text k vložení do zprávy patří do druhu „Blok".',
+        ));
+
+        return true;
     }
 
     /**
