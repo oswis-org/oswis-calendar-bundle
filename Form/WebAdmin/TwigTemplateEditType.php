@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
+use OswisOrg\OswisCoreBundle\Form\Type\MailBodyType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -50,10 +51,14 @@ final class TwigTemplateEditType extends AbstractType
                 'required' => false,
                 'help' => 'Pokud prázdné, použije se shoda podle sluga.',
             ])
-            ->add('textValue', TextareaType::class, [
-                'label'    => 'Inline obsah šablony (pouze pokud Twig cesta není zadána)',
+            // Editor mailu přes SPOLEČNÝ formulářový typ, ne ručním vložením partialu: typ se stará
+            // o jméno, id i navázání pole na formulář. Ruční vložení mě dnes stálo tři vady —
+            // shozený CSRF token, tentýž obsah na stránce dvakrát a vlastní obsluhu náhledu.
+            ->add('textValue', MailBodyType::class, [
+                'label'    => 'Obsah e-mailu',
                 'required' => false,
-                'attr'     => ['rows' => 8, 'style' => 'font-family: monospace;'],
+                'rows'     => 18,
+                'help'     => 'Použije se jen tehdy, když není vyplněná Twig cesta.',
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Uložit',

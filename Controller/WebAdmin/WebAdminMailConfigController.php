@@ -14,8 +14,8 @@ use OswisOrg\OswisCalendarBundle\Form\WebAdmin\TwigTemplateEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
+use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
-use OswisOrg\OswisCoreBundle\Mail\Editor\MailEditorConfig;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -41,7 +41,6 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly MailPreviewService $mailPreview,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantManualMailer $manualMailer,
-        private readonly MailEditorConfig $editorConfig,
     ) {
     }
 
@@ -68,15 +67,21 @@ final class WebAdminMailConfigController extends AbstractController
     }
 
     /**
-     * Které mailové skupiny kterou šablonu používají.
+     * Které mailové skupiny kterou šablonu používají — ze VŠECH řetězců, ne jen z přihlášek.
      *
      * PROČ: v seznamu šablon se za roky nasčítaly ročníkové kopie (2020 … 2026) a nebylo z něj
      * poznat, která ještě někam patří a která je jen historie — takže se nikdo neodvážil nic
      * uklidit. Tohle je ten chybějící článek „kde se to používá".
      *
+     * ⚠️ Řetězce jsou DVA a jsou na sobě nezávislé: `ParticipantMailGroup` (kalendář — maily
+     * k přihláškám) a `AppUserMailGroup` (core — maily k účtu: ověření, aktivace, změna hesla).
+     * Když se počítal jen ten první, hlásil sloupec u šesti šablon „nepoužívá se" — mimo jiné
+     * u ověření účtu a změny hesla, tedy u nejcitlivější pošty v systému. Výtka uživatele
+     * 23. 9. 2026; takové tvrzení svádí k jejich smazání.
+     *
      * @param list<ParticipantMailGroup> $groups
      *
-     * @return array<int, list<string>> id šablony → názvy skupin
+     * @return array<int, list<string>> id šablony → názvy skupin (s označením řetězce)
      */
     private function pouzitiSablon(array $groups): array
     {
@@ -86,7 +91,14 @@ final class WebAdminMailConfigController extends AbstractController
             if (null === $templateId) {
                 continue;
             }
-            $pouziti[$templateId][] = $group->getName() ?? '#'.$group->getId();
+            $pouziti[$templateId][] = ($group->getName() ?? '#'.$group->getId()).' (přihlášky)';
+        }
+        foreach ($this->em->getRepository(AppUserMailGroup::class)->findBy([], ['id' => 'ASC']) as $group) {
+            $templateId = $group->getTwigTemplate()?->getId();
+            if (null === $templateId) {
+                continue;
+            }
+            $pouziti[$templateId][] = ($group->getName() ?? '#'.$group->getId()).' (účty)';
         }
 
         return $pouziti;
@@ -287,7 +299,6 @@ final class WebAdminMailConfigController extends AbstractController
             'entity'             => $template,
             'kind'               => 'template',
             'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
-            'editorConfig'       => $this->editorConfig->toArray(),
             'pageTitle'          => $pageTitle,
             'page_title'         => $pageTitle.' :: ADMIN',
         ]);
@@ -361,7 +372,6 @@ final class WebAdminMailConfigController extends AbstractController
             'entity'             => $template,
             'kind'               => 'template',
             'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
-            'editorConfig'       => $this->editorConfig->toArray(),
             'pageTitle'          => sprintf('Šablona e-mailu: %s', $template->getName() ?? '#'.$id),
             'page_title'         => sprintf('Šablona e-mailu: %s :: ADMIN', $template->getName() ?? '#'.$id),
         ]);
