@@ -12,6 +12,7 @@ use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailCategoryEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailGroupEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\TwigTemplateEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\DosavadniPredmetSablony;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
@@ -45,6 +46,7 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly ParticipantManualMailer $manualMailer,
         private readonly Environment $twig,
         private readonly MailParentRegistry $parentRegistry,
+        private readonly DosavadniPredmetSablony $dosavadniPredmet,
     ) {
     }
 
@@ -279,11 +281,13 @@ final class WebAdminMailConfigController extends AbstractController
             $template->setKind($from->getKind());
             $template->setRegularTemplateName($from->getRegularTemplateName());
             $template->setTextValue($from->getTextValue());
+            $template->setSubject($from->getSubject());
             // Slug se ZÁMĚRNĚ nekopíruje: šablona se hledá podle sluga a při shodě vyhraje
             // ta s nižším id — kopie se stejným slugem by se tedy tiše nikdy nepoužila.
             $template->setForcedSlug($this->navrhnoutSlugKopie($from));
         }
         $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony(), 'rodice' => $this->parentRegistry->choices($template->getRegularTemplateName())]);
+        $this->predvyplnitPredmet($form, $template);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
             $this->em->persist($template);
@@ -363,6 +367,7 @@ final class WebAdminMailConfigController extends AbstractController
             $template->setForcedSlug($template->getSlug());
         }
         $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony(), 'rodice' => $this->parentRegistry->choices($template->getRegularTemplateName())]);
+        $this->predvyplnitPredmet($form, $template);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template, $id)) {
             $this->em->persist($template);
@@ -396,7 +401,8 @@ final class WebAdminMailConfigController extends AbstractController
         // Obě kontroly vždy (ne `||`): každá hlásí u jiného pole a uživatel má vidět všechny chyby naráz.
         $slugSpatne = $this->slugMaProblem($form, $template, $id);
         $bezObalky = $this->kampanBezObalky($form, $template);
-        $zakladniChyba = $slugSpatne || $bezObalky;
+        $predmetSpatne = $this->predmetMaProblem($form, $template);
+        $zakladniChyba = $slugSpatne || $bezObalky || $predmetSpatne;
         if ('' === trim((string) $template->getTextValue())) {
             return $zakladniChyba; // jen rodič = mail podle souboru, není co kontrolovat
         }
@@ -419,7 +425,7 @@ final class WebAdminMailConfigController extends AbstractController
 
             return $zakladniChyba;
         }
-        $validation = $this->manualMailer->validateTemplateSource($source, $this->participantRepository->findSampleParticipants(3));
+        $validation = $this->manualMailer->validateTemplateSource($source, $this->participantRepository->findSampleParticipants(3), $template->getSubject());
         foreach ($validation->errors() as $problem) {
             $form->get('textValue')->addError(new FormError($problem->message));
         }
@@ -428,6 +434,47 @@ final class WebAdminMailConfigController extends AbstractController
         }
 
         return $zakladniChyba || $validation->hasErrors();
+    }
+
+    /**
+     * Předmět: kampaň a systémová šablona ho mít musí (formulář ho předvyplní dosavadním), a jeho Twig
+     * se musí dát přeložit — překlep by shodil každé odeslání. Bloky předmět nemají, u nich se nekontroluje.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function predmetMaProblem(FormInterface $form, TwigTemplate $template): bool
+    {
+        if (!in_array($template->getKind(), [TwigTemplate::KIND_CAMPAIGN, TwigTemplate::KIND_SYSTEM], true)) {
+            return false;
+        }
+        $predmet = $template->getSubject();
+        if (null === $predmet) {
+            $form->get('subject')->addError(new FormError('Vyplň předmět — co uvidí příjemce v poště. Akci do něj vlož nabídkou „Vložit údaj".'));
+
+            return true;
+        }
+        try {
+            $this->twig->parse($this->twig->tokenize(new Source($predmet, 'předmět šablony')));
+        } catch (SyntaxError $chyba) {
+            $form->get('subject')->addError(new FormError('Chyba v zápisu předmětu: '.$chyba->getRawMessage()));
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Předvyplní prázdný předmět tím, který se u šablony dosud používal (název + akce; u platby a shrnutí
+     * i s dosavadní výjimkou). Jen do formuláře — uloží se až uložením, a náhled ho ukáže předem.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function predvyplnitPredmet(FormInterface $form, TwigTemplate $template): void
+    {
+        if (!$template->hasSubject() && null !== ($predmet = $this->dosavadniPredmet->twig($template))) {
+            $form->get('subject')->setData($predmet);
+        }
     }
 
     /**
@@ -512,7 +559,7 @@ final class WebAdminMailConfigController extends AbstractController
         return [
             'url'           => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
             'recipients'    => $recipients,
-            'subjectField'  => 'twig_template_edit_name',
+            'subjectField'  => 'twig_template_edit_subject',
             'templateField' => '',
             'document'      => true,
             'parentField'   => 'twig_template_edit_regularTemplateName',

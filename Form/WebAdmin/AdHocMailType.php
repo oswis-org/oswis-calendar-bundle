@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCoreBundle\Form\Type\MailBodyType;
+use OswisOrg\OswisCoreBundle\Form\Type\MailSubjectType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
@@ -22,9 +22,11 @@ final class AdHocMailType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('subject', TextType::class, [
+            // Předmět s „Vložit údaj" — tatáž nabídka proměnných jako text zprávy (i předmět je Twig).
+            ->add('subject', MailSubjectType::class, [
                 'label'       => 'Předmět',
                 'required'    => true,
+                'attr'        => ['maxlength' => 200],
                 'constraints' => [
                     new NotBlank(message: 'Vyplň prosím předmět.'),
                     new Length(max: 200, maxMessage: 'Předmět může mít maximálně 200 znaků.'),

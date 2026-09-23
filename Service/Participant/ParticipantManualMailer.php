@@ -65,9 +65,9 @@ final class ParticipantManualMailer
      *
      * @param iterable<Participant> $participants
      */
-    public function validateTemplateSource(string $source, iterable $participants): MailValidationResult
+    public function validateTemplateSource(string $source, iterable $participants, ?string $subject = null): MailValidationResult
     {
-        return $this->validator->validateTemplateSource($source, $this->recipients($participants, 'kontrola'));
+        return $this->validator->validateTemplateSource($source, $this->recipients($participants, 'kontrola'), $subject);
     }
 
     /**
@@ -81,13 +81,10 @@ final class ParticipantManualMailer
         $context = $this->context($mail, $participant, null, 'nahled');
         if (null !== ($dokument = self::zdrojDokumentu($mail))) {
             // Neuložená kampaň z editoru šablony: vykreslit TAK, jak ji při odeslání načte
-            // DatabaseLoader (syrový zdroj, žádná obálka navíc) — a předmět i s akcí přihlášky,
-            // jak ho sestaví automail. Náhled pak ukazuje, co doopravdy odejde.
+            // DatabaseLoader (syrový zdroj, žádná obálka navíc) — a předmět z pole „Předmět" šablony
+            // tak, jak ho vykreslí odeslání (akce je v něm proměnná, nic se nepřilepí).
             return [
-                'subject' => ParticipantMailService::withEventTitle(
-                    $this->renderer->renderSubject($mail->subject, $context),
-                    $participant->getEvent(),
-                ),
+                'subject' => $this->renderer->renderTemplateSubject($mail->subject, $context, ''),
                 'html'    => $this->twig->createTemplate($dokument)->render($context),
             ];
         }

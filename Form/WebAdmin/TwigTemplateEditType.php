@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
 
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Form\Type\MailBodyType;
+use OswisOrg\OswisCoreBundle\Form\Type\MailSubjectType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -20,6 +21,12 @@ final class TwigTemplateEditType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, ['label' => 'Název', 'required' => false])
+            // Vlastní předmět (Twig) — dřív předmětem byl název šablony a akce se lepila za něj natvrdo.
+            ->add('subject', MailSubjectType::class, [
+                'label'    => 'Předmět',
+                'required' => false,
+                'help'     => 'Co uvidí příjemce jako předmět. Údaje (třeba akci) vlož nabídkou vedle — každý příjemce dostane své. Bloky předmět nemají.',
+            ])
             ->add('shortName', TextType::class, ['label' => 'Krátký název', 'required' => false])
             // Pole je navázané na `forcedSlug`, ne na `slug`: `setSlug()` je jím přebíjené, takže
             // editace `slug` u řádku s vyplněným `forcedSlug` (což je 31 z 34 šablon) NIC nedělala.

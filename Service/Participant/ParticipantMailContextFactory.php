@@ -42,6 +42,9 @@ final class ParticipantMailContextFactory
             // Totéž, co dopočítá message.html.twig (`contact.czechSuffixA|default(…)`), ale výslovně,
             // aby to měl i text mailu vykreslovaný mimo tu šablonu (MailRenderer).
             'a'                => $contact instanceof Person ? $contact->getCzechSuffixA() : '',
+            // Název akce do předmětu šablony („Infomail – {{ akce }}") — totéž, co dosud lepila přípona.
+            // Automail bez akce přihlášky ho přepíše akcí skupiny (`$extra`).
+            'akce'             => ParticipantMailService::nazevAkce($participant->getEvent()),
             'registrations'    => $participant->getParticipantRegistrations(true),
             'paymentDeadlines' => $this->paymentDeadlines->forParticipant($participant),
         ], $extra);

@@ -25,6 +25,8 @@ final class ParticipantMailCatalogProvider implements MailCatalogProviderInterfa
         yield new MailCatalogItem('Příjemce', 'Koncovka vykání „-te" (napiš/napište)', "f ? 'te' : ''", $v, mayBeEmpty: true, chip: '-te');
         yield new MailCatalogItem('Akce', 'Název akce', 'participant.event(false).name', $v, chip: 'Akce');
         yield new MailCatalogItem('Akce', 'Krátký název akce', 'participant.event(false).shortName', $v, chip: 'Akce (krátce)');
+        // Totéž, co dosud lepila přípona předmětu: krátký název akce, jinak celý (23. 9. 2026).
+        yield new MailCatalogItem('Akce', 'Akce do předmětu (krátký název, jinak celý)', 'akce', $v, mayBeEmpty: true, chip: 'Akce (předmět)');
         yield new MailCatalogItem('Platba', 'Variabilní symbol', 'participant.variableSymbol', $v, chip: 'VS');
         yield new MailCatalogItem('Platba', 'Cena celkem (Kč)', 'participant.price', $v, chip: 'Cena');
         yield new MailCatalogItem('Platba', 'Zbývá zaplatit (Kč)', 'participant.remainingPrice', $v, chip: 'Zbývá');

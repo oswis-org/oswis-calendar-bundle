@@ -26,6 +26,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\NotImplementedException;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Interfaces\Mail\MailCategoryInterface;
 use OswisOrg\OswisCoreBundle\Mail\Delivery\DeliveryKey;
+use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
 use OswisOrg\OswisCoreBundle\Service\MailService;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -45,6 +46,7 @@ class ParticipantMailService
         protected ParticipantChangeService $changeService,
         protected LoggerInterface $logger,
         protected ParticipantMailContextFactory $contextFactory,
+        protected MailRenderer $mailRenderer,
     ) {
     }
 
@@ -276,20 +278,24 @@ class ParticipantMailService
         if (null === $appUser) {
             throw new NotFoundException('Uživatel nebyl nalezen.');
         }
-        $title = $twigTemplate->getName() ?? 'Přihláška na akci';
-        if ($participant->getDeletedAt()) {
-            $title = "Shrnutí smazané přihlášky";
-        }
-        $title = $this->withEventTitle($title, $participant->getEvent());
-        $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
-        $participantMail->setParticipantMailCategory($mailCategory);
-        $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $data = $this->contextFactory->create($participant, $appUser, [
             'category'         => $mailCategory,
             'type'             => $type,
             'participantToken' => $participantToken,
             'isIS'             => $isIS,
         ]);
+        $title = $twigTemplate->getName() ?? 'Přihláška na akci';
+        if ($participant->getDeletedAt()) {
+            $title = "Shrnutí smazané přihlášky";
+        }
+        $title = $this->mailRenderer->renderTemplateSubject(
+            $twigTemplate->getSubject(),
+            $data,
+            $this->withEventTitle($title, $participant->getEvent()),
+        );
+        $participantMail = new ParticipantMail($participant, $appUser, $title, $type, $participantToken);
+        $participantMail->setParticipantMailCategory($mailCategory);
+        $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $templatedEmail = $participantMail->getTemplatedEmail();
         if (ParticipantMail::TYPE_SUMMARY === $type) {
             $data = $this->embedQrPayments($templatedEmail, $participant, $data);
@@ -490,12 +496,23 @@ class ParticipantMailService
      */
     public static function withEventTitle(string $title, ?Event $event): string
     {
+        $eventName = self::nazevAkce($event);
+
+        return '' === $eventName || str_contains($title, $eventName) ? $title : $title.' – '.$eventName;
+    }
+
+    /**
+     * Název akce do předmětu: krátký, jinak celý, jinak prázdný. Totéž, co dosud lepila přípona
+     * {@see withEventTitle()} — a od 23. 9. 2026 i proměnná `akce` pro předmět šablony.
+     */
+    public static function nazevAkce(?Event $event): string
+    {
         $eventName = $event?->getShortName();
         if (empty($eventName)) {
             $eventName = $event?->getName();
         }
 
-        return empty($eventName) || str_contains($title, $eventName) ? $title : $title.' – '.$eventName;
+        return empty($eventName) ? '' : $eventName;
     }
 
     private function getMessageIdDomain(): string
@@ -619,7 +636,17 @@ class ParticipantMailService
             throw new NotFoundException("Skupina '$groupName' nebo šablona '$templateName' e-mailů nebyla nalezena.");
         }
         $title = $payment->getNumericValue() < 0 ? 'Vrácení/oprava platby' : 'Přijetí platby';
-        $title = $this->withEventTitle($title, $participant->getEvent());
+        $data = $this->contextFactory->create($participant, $appUser, [
+            'payment'  => $payment,
+            'category' => $mailCategory,
+            'type'     => ParticipantMail::TYPE_PAYMENT,
+            'isIS'     => false,
+        ]);
+        $title = $this->mailRenderer->renderTemplateSubject(
+            $twigTemplate->getSubject(),
+            $data,
+            $this->withEventTitle($title, $participant->getEvent()),
+        );
         $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_PAYMENT);
         $participantMail->setParticipantMailCategory($mailCategory);
         // Klíč jedinečnosti: potvrzení téže platby témuž účtu pustí databáze jen jednou, ať ho
@@ -629,12 +656,6 @@ class ParticipantMailService
             DeliveryKey::ofOrNull('payment', $payment->getId(), $appUser->getId())?->value,
         );
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-        $data = $this->contextFactory->create($participant, $appUser, [
-            'payment'  => $payment,
-            'category' => $mailCategory,
-            'type'     => ParticipantMail::TYPE_PAYMENT,
-            'isIS'     => false,
-        ]);
         $this->em->persist($payment);
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
@@ -709,8 +730,18 @@ class ParticipantMailService
         // Akce skupiny zůstává jako záloha pro případ přihlášky bez akce (5 z 3 485).
         // Dřív se název akce lepil bez mezery → „Informace k akciSeznamovák“.
         $event = $participant->getEvent() ?? $group->getEvent();
+        // `akce` i tady z akce přihlášky, jinak skupiny — jako dosavadní přípona.
+        $data = $this->contextFactory->create($participant, $appUser, [
+            'category' => $mailCategory,
+            'type'     => $group->getType(),
+            'akce'     => self::nazevAkce($event),
+        ]);
         $defaultTitle = $this->withEventTitle('Informace k akci', $event);
-        $title = $this->withEventTitle($twigTemplate->getName() ?? $defaultTitle, $event);
+        $title = $this->mailRenderer->renderTemplateSubject(
+            $twigTemplate->getSubject(),
+            $data,
+            $this->withEventTitle($twigTemplate->getName() ?? $defaultTitle, $event),
+        );
         $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
         $participantMail->setParticipantMailCategory($mailCategory);
         // Automail: každý druh jednou na přihlášku a adresáta — hlídá unikátní index, ne jen
@@ -722,10 +753,6 @@ class ParticipantMailService
             $appUser->getId(),
         )?->value);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-        $data = $this->contextFactory->create($participant, $appUser, [
-            'category' => $mailCategory,
-            'type'     => $group->getType(),
-        ]);
         $templateName = $twigTemplate->getTemplateName();
         $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();

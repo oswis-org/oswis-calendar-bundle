@@ -56,7 +56,12 @@
 
             <div class="mb-3">
                 <label for="bm_subject" class="form-label">Předmět</label>
-                <input type="text" class="form-control" id="bm_subject" name="subject" maxlength="255" required value="{{ subject|default('') }}">
+                {# Předmět s „Vložit údaj" — tatáž šablona pole jako u šablon a Nové zprávy. #}
+                {% include '@OswisOrgOswisCore/mail/subject.html.twig' with {
+                    input: '<input type="text" class="form-control" id="bm_subject" name="subject" maxlength="255" required value="' ~ subject|default('')|e('html_attr') ~ '">',
+                    id: 'bm_subject',
+                    groups: editorConfig.variableGroups,
+                } only %}
             </div>
 
             {# Mode: free body (Twig) vs. send a stored campaign/snippet as the whole mail. #}

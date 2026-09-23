@@ -1063,6 +1063,10 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory'
       - '@OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer'
 
+  ## Dosavadní předmět šablony jako Twig (předvyplnění pole „Předmět", ověření na produkci — 23. 9. 2026)
+  OswisOrg\OswisCalendarBundle\Service\Participant\DosavadniPredmetSablony:
+    autowire: true
+    public: true
   ## Ruční zprávy přihláškám — jedna cesta pro jednotlivou i hromadnou zprávu (spec 2026-09-13 §5)
   OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer:
     autowire: true
