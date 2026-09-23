@@ -44,7 +44,7 @@ final class WebAdminMessagePreviewController extends AbstractController
         if (!$participant instanceof Participant) {
             return new JsonResponse(['error' => 'Příjemce pro náhled nebyl nalezen.'], Response::HTTP_NOT_FOUND);
         }
-        $mail = $this->manualMailFromRequest($request);
+        $mail = $this->manualMailFromRequest($request, allowDocument: true);
         $subject = null;
         $html = null;
         try {

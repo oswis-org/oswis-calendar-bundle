@@ -11,6 +11,10 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
  * zpráva jednomu = zpráva pro N). Předmět je Twig; obsah je buď text ve formátu těla mailu
  * (proměnné, bloky, tlačítka — {@see \OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer}), nebo
  * uložená šablona (kampaň) podle slugu.
+ *
+ * `document` = obsah je CELÝ Twig dokument (`{% extends %}` + bloky) — neuložená kampaň z editoru
+ * šablony. Vykreslí se tak, jak ji při odeslání načte DatabaseLoader, bez balení do obálky. Jen pro
+ * náhled; odesílat se dá dál jen tělo zprávy, nebo uložená kampaň podle slugu.
  */
 final readonly class ParticipantManualMail
 {
@@ -21,6 +25,7 @@ final readonly class ParticipantManualMail
         public string $body = '',
         ?string $templateSlug = null,
         public ?string $adminName = null,
+        public bool $document = false,
     ) {
         $this->templateSlug = null !== $templateSlug && '' !== trim($templateSlug) ? trim($templateSlug) : null;
     }

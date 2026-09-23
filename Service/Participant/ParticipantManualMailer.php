@@ -49,6 +49,9 @@ final class ParticipantManualMailer
     public function validate(ParticipantManualMail $mail, iterable $participants): MailValidationResult
     {
         $recipients = $this->recipients($participants, 'kontrola', $mail->adminName);
+        if (self::isDocument($mail)) {
+            return $this->validator->validateTemplateSource($mail->body, $recipients, '' !== $mail->subject ? $mail->subject : null);
+        }
 
         return null !== $mail->templateSlug
             ? $this->validator->validateTemplate($mail->templateSlug, $recipients, $mail->subject)
@@ -75,12 +78,37 @@ final class ParticipantManualMailer
     public function preview(ParticipantManualMail $mail, Participant $participant): array
     {
         $context = $this->context($mail, $participant, null, 'nahled');
+        if (self::isDocument($mail)) {
+            // Neuložená kampaň z editoru šablony: vykreslit TAK, jak ji při odeslání načte
+            // DatabaseLoader (syrový zdroj, žádná obálka navíc) — a předmět i s akcí přihlášky,
+            // jak ho sestaví automail. Náhled pak ukazuje, co doopravdy odejde.
+            return [
+                'subject' => ParticipantMailService::withEventTitle(
+                    $this->renderer->renderSubject($mail->subject, $context),
+                    $participant->getEvent(),
+                ),
+                'html'    => $this->twig->createTemplate($mail->body)->render($context),
+            ];
+        }
         [$template, $data] = $this->templateAndData($mail, $context);
 
         return [
             'subject' => $this->renderer->renderSubject($mail->subject, $context),
             'html'    => $this->twig->render($template, $data),
         ];
+    }
+
+    /**
+     * Je obsah celý Twig dokument (neuložená kampaň), nebo tělo zprávy?
+     *
+     * Příznak z editoru šablony nestačí sám: na téže obrazovce se upravují i bloky (kind=snippet),
+     * a to JE tělo zprávy, které se balí do obálky. Rozhoduje proto i obsah — dokument má `extends`.
+     */
+    private static function isDocument(ParticipantManualMail $mail): bool
+    {
+        return $mail->document
+            && null === $mail->templateSlug
+            && 1 === preg_match('/\{%-?\s*extends\b/', $mail->body);
     }
 
     /**

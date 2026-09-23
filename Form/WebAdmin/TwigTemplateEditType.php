@@ -59,6 +59,7 @@ final class TwigTemplateEditType extends AbstractType
                 'required' => false,
                 'rows'     => 18,
                 'help'     => 'Použije se jen tehdy, když není vyplněná Twig cesta.',
+                'preview'  => $options['preview'],
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Uložit',
@@ -68,6 +69,8 @@ final class TwigTemplateEditType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults(['data_class' => TwigTemplate::class]);
+        // `preview` = konfigurace sjednoceného náhledu pro editor (dodává kontroler — zná routy a vzorové příjemce).
+        $resolver->setDefaults(['data_class' => TwigTemplate::class, 'preview' => null]);
+        $resolver->setAllowedTypes('preview', ['null', 'array']);
     }
 }

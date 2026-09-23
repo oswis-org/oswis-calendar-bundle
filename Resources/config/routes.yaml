@@ -820,12 +820,6 @@ oswis_org_oswis_calendar_web_admin_mail_template_edit:
     id: '\d+'
   methods: [GET, POST]
 
-oswis_org_oswis_calendar_web_admin_mail_template_preview:
-  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::previewTemplate
-  path: "/web_admin/e-maily/sablony/{id}/nahled"
-  requirements:
-    id: '\d+'
-  methods: [POST]
 
 # Číselník funkcí týmu (StaffRole) — spotřebovává ho rozpis služeb i obsazení aktivit.
 oswis_org_oswis_calendar_web_admin_staff_roles:

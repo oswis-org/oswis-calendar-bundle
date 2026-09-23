@@ -484,7 +484,11 @@ class ParticipantMailService
      * která je letošní. Vzor je shodný s „Změna v přihlášce – <akce>“, který to dělal odjakživa.
      * Když už název v předmětu je (šablony si ho někdy nesou samy), nepřidává se podruhé.
      */
-    private function withEventTitle(string $title, ?Event $event): string
+    /**
+     * Předmět s názvem akce — JEDINÉ místo, kde se přípona skládá. Veřejné, aby náhled v editoru
+     * ukázal předmět přesně tak, jak odejde (dřív ho ukazoval bez přípony).
+     */
+    public static function withEventTitle(string $title, ?Event $event): string
     {
         $eventName = $event?->getShortName();
         if (empty($eventName)) {

@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\ORM\EntityManagerInterface;
-use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
+use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailCategory;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailCategoryEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailGroupEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\TwigTemplateEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
-use OswisOrg\OswisCalendarBundle\Service\Participant\MailPreviewService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
@@ -38,7 +37,6 @@ final class WebAdminMailConfigController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly MailPreviewService $mailPreview,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantManualMailer $manualMailer,
     ) {
@@ -277,7 +275,7 @@ final class WebAdminMailConfigController extends AbstractController
             // ta s nižším id — kopie se stejným slugem by se tedy tiše nikdy nepoužila.
             $template->setForcedSlug($this->navrhnoutSlugKopie($from));
         }
-        $form = $this->createForm(TwigTemplateEditType::class, $template);
+        $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony()]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
             $this->em->persist($template);
@@ -298,7 +296,6 @@ final class WebAdminMailConfigController extends AbstractController
             'form'               => $form,
             'entity'             => $template,
             'kind'               => 'template',
-            'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
             'pageTitle'          => $pageTitle,
             'page_title'         => $pageTitle.' :: ADMIN',
         ]);
@@ -357,7 +354,7 @@ final class WebAdminMailConfigController extends AbstractController
         if (null === $template->getForcedSlug()) {
             $template->setForcedSlug($template->getSlug());
         }
-        $form = $this->createForm(TwigTemplateEditType::class, $template);
+        $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony()]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template, $id)) {
             $this->em->persist($template);
@@ -371,7 +368,6 @@ final class WebAdminMailConfigController extends AbstractController
             'form'               => $form,
             'entity'             => $template,
             'kind'               => 'template',
-            'sampleParticipants' => $this->participantRepository->findSampleParticipants(30),
             'pageTitle'          => sprintf('Šablona e-mailu: %s', $template->getName() ?? '#'.$id),
             'page_title'         => sprintf('Šablona e-mailu: %s :: ADMIN', $template->getName() ?? '#'.$id),
         ]);
@@ -434,40 +430,40 @@ final class WebAdminMailConfigController extends AbstractController
     }
 
     /**
-     * Live preview of a mail template through the real MJML pipeline (#139 used to edit blind). POST,
-     * CSRF. Renders the POSTed (unsaved) source when present — trusted Twig, same trust the editor
-     * already grants — else the persisted template; against a chosen / most-recent sample participant.
-     * Returns an HTML fragment for the editor's preview iframe; render errors come back as a readable
-     * block, never a 500. {@see MailPreviewService}.
+     * Náhled v editoru šablony = TENTÝŽ sjednocený náhled jako Nová zpráva a hromadný mail
+     * (`/web_admin/zpravy/nahled`): vedle textu, s předmětem a s kontrolou. Do 23. 9. 2026 tu byl vlastní
+     * blok pod formulářem s vlastním JS, vlastní routou a vlastním CSRF — neukazoval předmět ani chyby
+     * a fungoval jen u uložené šablony.
+     *
+     * `document: true` — kampaň je celý Twig dokument, ne tělo zprávy; bloky (kind=snippet) pozná
+     * server podle obsahu a zabalí je do obálky jako běžný text. Předmětem je pole „Název".
+     *
+     * @return array{url: string, recipients: list<array{id: int, label: string}>, subjectField: string, templateField: string, document: bool}
      */
-    public function previewTemplate(Request $request, int $id): Response
+    private function nahledSablony(): array
     {
-        if (!$this->isCsrfTokenValid('mail_template_preview', (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        $recipients = [];
+        foreach ($this->participantRepository->findSampleParticipants(30) as $participant) {
+            if (null === ($id = $participant->getId())) {
+                continue;
+            }
+            // Jméno z čistého getteru — `getName()` entitu mění (a přes L2 cache by se to propsalo).
+            $contact = $participant->getContact();
+            $event = $participant->getEvent();
+            $recipients[] = ['id' => $id, 'label' => trim(sprintf(
+                '#%d %s%s',
+                $id,
+                $contact instanceof Person ? $contact->getFullName() : '',
+                null !== $event ? ' · '.($event->getShortName() ?? $event->getName() ?? '') : '',
+            ))];
         }
-        $template = $this->em->find(TwigTemplate::class, $id);
-        if (!$template instanceof TwigTemplate) {
-            return new Response(
-                '<p style="font-family:sans-serif;color:#666">Šablona nenalezena.</p>',
-                Response::HTTP_NOT_FOUND,
-            );
-        }
-        // Not getInt(): the sample selector's "— nejnovější —" option posts an empty string, which
-        // InputBag::getInt() rejects with a 400. Empty / non-numeric → null → pick the latest sample.
-        $participantIdRaw = (string) $request->request->get('participantId', '');
-        $participantId = ctype_digit($participantIdRaw) ? (int) $participantIdRaw : 0;
-        $participant = $this->mailPreview->pickSampleParticipant($participantId > 0 ? $participantId : null);
-        if (!$participant instanceof Participant) {
-            return new Response(
-                '<p style="font-family:sans-serif;color:#666">Náhled nelze vytvořit – není k dispozici žádný vzorový účastník (přihláška).</p>',
-            );
-        }
-        $source = trim((string) $request->request->get('source', ''));
-        $subject = $template->getName();
-        $result = '' !== $source
-            ? $this->mailPreview->renderSource($source, $participant, [], $subject)
-            : $this->mailPreview->renderTemplate($template->getTemplateName(), $participant, [], $subject);
 
-        return new Response($result['html']);
+        return [
+            'url'           => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
+            'recipients'    => $recipients,
+            'subjectField'  => 'twig_template_edit_name',
+            'templateField' => '',
+            'document'      => true,
+        ];
     }
 }
