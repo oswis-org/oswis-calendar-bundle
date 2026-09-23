@@ -160,12 +160,16 @@
                                 </td>
                                 <td><code style="font-size: .85em;">{{ t.slug|default('—') }}</code></td>
                                 <td style="font-size: .85em;">
+                                    {# Rodič a vlastní text se od 23. 9. 2026 SKLÁDAJÍ (dřív buď–anebo). #}
                                     {% if t.regularTemplateName %}
-                                        <code>{{ t.regularTemplateName }}</code>
-                                    {% elseif t.textValue|default %}
-                                        vlastní, {{ t.textValue|length }} znaků
+                                        <div>vychází z <code>{{ t.regularTemplateName }}</code></div>
+                                    {% endif %}
+                                    {% if t.textValue|default %}
+                                        <div>vlastní, {{ t.textValue|length }} znaků</div>
+                                    {% elseif t.regularTemplateName %}
+                                        <div class="text-muted">beze změn oproti rodiči</div>
                                     {% else %}
-                                        <span class="text-danger" title="Šablona nemá ani cestu, ani vlastní obsah — neodešle se nic.">prázdná</span>
+                                        <span class="text-danger" title="Šablona nemá rodiče ani vlastní obsah — neodešle se nic.">prázdná</span>
                                     {% endif %}
                                 </td>
                                 <td style="font-size: .85em;">

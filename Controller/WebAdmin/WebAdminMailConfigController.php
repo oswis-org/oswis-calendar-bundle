@@ -22,6 +22,9 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Twig\Environment;
+use Twig\Error\SyntaxError;
+use Twig\Source;
 
 /**
  * Web admin CRUD over the mail templating chain so admins don't have to
@@ -39,6 +42,7 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantManualMailer $manualMailer,
+        private readonly Environment $twig,
     ) {
     }
 
@@ -386,9 +390,26 @@ final class WebAdminMailConfigController extends AbstractController
     private function templateHasErrors(FormInterface $form, TwigTemplate $template, ?int $id = null): bool
     {
         $slugSpatne = $this->slugMaProblem($form, $template, $id);
-        $source = (string) $template->getTextValue();
-        if ($template->isRegular() || '' === trim($source)
-            || !in_array($template->getKind(), [TwigTemplate::KIND_CAMPAIGN, TwigTemplate::KIND_SNIPPET], true)) {
+        if ('' === trim((string) $template->getTextValue())) {
+            return $slugSpatne; // jen rodič = mail podle souboru, není co kontrolovat
+        }
+        // Kontroluje se SLOŽENÝ zdroj (rodič + text) — tak, jak ho uvidí odeslání.
+        $source = $template->getSlozenyZdroj();
+        if (!in_array($template->getKind(), [TwigTemplate::KIND_CAMPAIGN, TwigTemplate::KIND_SNIPPET], true)) {
+            // Systémovou šablonu se vzorovou přihláškou vykreslit nejde (potřebuje platbu, token…),
+            // ale ZÁPIS se ověřit dá vždy — hlavně text mimo bloky, který by u šablony s rodičem
+            // shodil každé odeslání (Twig ho odmítne už při překladu).
+            try {
+                $this->twig->parse($this->twig->tokenize(new Source($source, 'kontrola šablony')));
+            } catch (SyntaxError $chyba) {
+                $zprava = str_contains($chyba->getRawMessage(), 'outside Twig blocks')
+                    ? 'Šablona vychází z jiné šablony, takže text smí být jen uvnitř bloků — text mimo bloky by shodil každé odeslání.'
+                    : 'Chyba v zápisu šablony: '.$chyba->getRawMessage();
+                $form->get('textValue')->addError(new FormError($zprava));
+
+                return true;
+            }
+
             return $slugSpatne;
         }
         $validation = $this->manualMailer->validateTemplateSource($source, $this->participantRepository->findSampleParticipants(3));
@@ -438,7 +459,7 @@ final class WebAdminMailConfigController extends AbstractController
      * `document: true` — kampaň je celý Twig dokument, ne tělo zprávy; bloky (kind=snippet) pozná
      * server podle obsahu a zabalí je do obálky jako běžný text. Předmětem je pole „Název".
      *
-     * @return array{url: string, recipients: list<array{id: int, label: string}>, subjectField: string, templateField: string, document: bool}
+     * @return array{url: string, recipients: list<array{id: int, label: string}>, subjectField: string, templateField: string, document: bool, parentField: string}
      */
     private function nahledSablony(): array
     {
@@ -464,6 +485,7 @@ final class WebAdminMailConfigController extends AbstractController
             'subjectField'  => 'twig_template_edit_name',
             'templateField' => '',
             'document'      => true,
+            'parentField'   => 'twig_template_edit_regularTemplateName',
         ];
     }
 }

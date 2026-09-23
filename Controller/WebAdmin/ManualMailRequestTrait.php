@@ -30,6 +30,7 @@ trait ManualMailRequestTrait
             (string) $request->request->get('templateSlug', ''),
             $this->adminName(),
             $allowDocument && '1' === (string) $request->request->get('document', ''),
+            $allowDocument ? (trim((string) $request->request->get('parent', '')) ?: null) : null,
         );
     }
 

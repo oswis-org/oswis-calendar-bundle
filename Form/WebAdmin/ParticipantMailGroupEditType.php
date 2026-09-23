@@ -35,7 +35,7 @@ final class ParticipantMailGroupEditType extends AbstractType
             ->add('twigTemplate', EntityType::class, [
                 'label'        => 'Twig šablona',
                 'class'        => TwigTemplate::class,
-                'choice_label' => static fn (TwigTemplate $t): string => sprintf('%s (%s)', $t->getName() ?? '?', $t->getRegularTemplateName() ?? '—'),
+                'choice_label' => static fn (TwigTemplate $t): string => sprintf('%s (%s)', $t->getName() ?? '?', $t->getSlug()),
                 'required'     => false,
                 'placeholder'  => '(žádná)',
             ])

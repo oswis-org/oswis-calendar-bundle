@@ -26,6 +26,8 @@ final readonly class ParticipantManualMail
         ?string $templateSlug = null,
         public ?string $adminName = null,
         public bool $document = false,
+        /** Rodič z pole „Vychází z" — doplní se do zdroje stejně jako při odeslání (jen s `document`). */
+        public ?string $parent = null,
     ) {
         $this->templateSlug = null !== $templateSlug && '' !== trim($templateSlug) ? trim($templateSlug) : null;
     }

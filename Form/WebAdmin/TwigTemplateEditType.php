@@ -46,10 +46,12 @@ final class TwigTemplateEditType extends AbstractType
                 'required' => false,
                 'attr'     => ['rows' => 3],
             ])
+            // Rodič šablony: `{% extends %}` se do zdroje doplní sám (TwigTemplate::slozitZdroj). Do 23. 9. 2026
+            // pole znamenalo „místo obsahu" a text z databáze se u vyplněné cesty nepoužil vůbec.
             ->add('regularTemplateName', TextType::class, [
-                'label' => 'Twig cesta (např. @OswisOrgOswisCalendar/e-mail/pages/participant-summary.html.twig)',
+                'label'    => 'Vychází z',
                 'required' => false,
-                'help' => 'Pokud prázdné, použije se shoda podle sluga.',
+                'help'     => 'Šablona, ze které tahle vychází — obálka mailu nebo jiná šablona. Obsah níže pak jen přepisuje její bloky; když ho necháš prázdný, odejde mail přesně podle ní.',
             ])
             // Editor mailu přes SPOLEČNÝ formulářový typ, ne ručním vložením partialu: typ se stará
             // o jméno, id i navázání pole na formulář. Ruční vložení mě dnes stálo tři vady —
@@ -58,7 +60,7 @@ final class TwigTemplateEditType extends AbstractType
                 'label'    => 'Obsah e-mailu',
                 'required' => false,
                 'rows'     => 18,
-                'help'     => 'Použije se jen tehdy, když není vyplněná Twig cesta.',
+                'help'     => 'U šablony, která z něčeho vychází, patří text jen do bloků — mimo ně by shodil odeslání.',
                 'preview'  => $options['preview'],
             ])
             ->add('submit', SubmitType::class, [

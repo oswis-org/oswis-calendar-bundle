@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 
+use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisAddressBookBundle\Entity\Person;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMail;
@@ -49,8 +50,8 @@ final class ParticipantManualMailer
     public function validate(ParticipantManualMail $mail, iterable $participants): MailValidationResult
     {
         $recipients = $this->recipients($participants, 'kontrola', $mail->adminName);
-        if (self::isDocument($mail)) {
-            return $this->validator->validateTemplateSource($mail->body, $recipients, '' !== $mail->subject ? $mail->subject : null);
+        if (null !== ($dokument = self::zdrojDokumentu($mail))) {
+            return $this->validator->validateTemplateSource($dokument, $recipients, '' !== $mail->subject ? $mail->subject : null);
         }
 
         return null !== $mail->templateSlug
@@ -78,7 +79,7 @@ final class ParticipantManualMailer
     public function preview(ParticipantManualMail $mail, Participant $participant): array
     {
         $context = $this->context($mail, $participant, null, 'nahled');
-        if (self::isDocument($mail)) {
+        if (null !== ($dokument = self::zdrojDokumentu($mail))) {
             // Neuložená kampaň z editoru šablony: vykreslit TAK, jak ji při odeslání načte
             // DatabaseLoader (syrový zdroj, žádná obálka navíc) — a předmět i s akcí přihlášky,
             // jak ho sestaví automail. Náhled pak ukazuje, co doopravdy odejde.
@@ -87,7 +88,7 @@ final class ParticipantManualMailer
                     $this->renderer->renderSubject($mail->subject, $context),
                     $participant->getEvent(),
                 ),
-                'html'    => $this->twig->createTemplate($mail->body)->render($context),
+                'html'    => $this->twig->createTemplate($dokument)->render($context),
             ];
         }
         [$template, $data] = $this->templateAndData($mail, $context);
@@ -99,16 +100,20 @@ final class ParticipantManualMailer
     }
 
     /**
-     * Je obsah celý Twig dokument (neuložená kampaň), nebo tělo zprávy?
+     * Zdroj celého Twig dokumentu (neuložená kampaň z editoru šablony), nebo null, když jde o tělo zprávy.
      *
-     * Příznak z editoru šablony nestačí sám: na téže obrazovce se upravují i bloky (kind=snippet),
-     * a to JE tělo zprávy, které se balí do obálky. Rozhoduje proto i obsah — dokument má `extends`.
+     * Rodič z pole „Vychází z" se doplní TÝMŽ {@see TwigTemplate::slozitZdroj()} jako při odeslání,
+     * takže náhled i kontrola vidí přesně to, co odejde. Příznak z editoru nestačí sám: na téže obrazovce
+     * se upravují i bloky (kind=snippet), a to je tělo zprávy — rozhoduje proto i výsledek (`extends`).
      */
-    private static function isDocument(ParticipantManualMail $mail): bool
+    private static function zdrojDokumentu(ParticipantManualMail $mail): ?string
     {
-        return $mail->document
-            && null === $mail->templateSlug
-            && 1 === preg_match('/\{%-?\s*extends\b/', $mail->body);
+        if (!$mail->document || null !== $mail->templateSlug) {
+            return null;
+        }
+        $zdroj = TwigTemplate::slozitZdroj($mail->parent, $mail->body);
+
+        return 1 === preg_match('/\{%-?\s*extends\b/', $zdroj) ? $zdroj : null;
     }
 
     /**
