@@ -694,9 +694,19 @@ class ParticipantMailService
         if (null === ($twigTemplate = $group->getTwigTemplate())) {
             throw new NotFoundException('Šablona e-mailů nebyla nalezena.');
         }
+        // Název akce v předmětu se bere z akce PŘIHLÁŠKY, ne z akce skupiny — stejně jako u shrnutí,
+        // ověření, platby, změny i zrušení.
+        //
+        // PROČ: smyslem přípony je, aby kdo jezdí opakovaně poznal, které akce se zpráva týká
+        // (commit d9b9c51d, 31. 7. 2026). Skupina ale může viset na ROČNÍKU, zatímco příjemci jsou
+        // z turnusů — a pak dostal týž člověk u infomailu „– Seznamovák 2026" a u všeho ostatního
+        // „– 1. turnus 2026". Doloženo na produkci: 581 infomailů 21. 8. 2026.
+        //
+        // Akce skupiny zůstává jako záloha pro případ přihlášky bez akce (5 z 3 485).
         // Dřív se název akce lepil bez mezery → „Informace k akciSeznamovák“.
-        $defaultTitle = $this->withEventTitle('Informace k akci', $group->getEvent());
-        $title = $this->withEventTitle($twigTemplate->getName() ?? $defaultTitle, $group->getEvent());
+        $event = $participant->getEvent() ?? $group->getEvent();
+        $defaultTitle = $this->withEventTitle('Informace k akci', $event);
+        $title = $this->withEventTitle($twigTemplate->getName() ?? $defaultTitle, $event);
         $participantMail = new ParticipantMail($participant, $appUser, $title, $group->getType());
         $participantMail->setParticipantMailCategory($mailCategory);
         // Automail: každý druh jednou na přihlášku a adresáta — hlídá unikátní index, ne jen
