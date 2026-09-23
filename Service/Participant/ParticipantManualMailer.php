@@ -83,16 +83,19 @@ final class ParticipantManualMailer
             // Neuložená kampaň z editoru šablony: vykreslit TAK, jak ji při odeslání načte
             // DatabaseLoader (syrový zdroj, žádná obálka navíc) — a předmět z pole „Předmět" šablony
             // tak, jak ho vykreslí odeslání (akce je v něm proměnná, nic se nepřilepí).
+            $predmet = $this->renderer->renderTemplateSubject($mail->subject, $context, '');
+
             return [
-                'subject' => $this->renderer->renderTemplateSubject($mail->subject, $context, ''),
-                'html'    => $this->twig->createTemplate($dokument)->render($context),
+                'subject' => $predmet,
+                'html'    => $this->twig->createTemplate($dokument)->render(MailPreviewService::sPredmetem($context, $predmet)),
             ];
         }
         [$template, $data] = $this->templateAndData($mail, $context);
+        $predmet = $this->renderer->renderSubject($mail->subject, $context);
 
         return [
-            'subject' => $this->renderer->renderSubject($mail->subject, $context),
-            'html'    => $this->twig->render($template, $data),
+            'subject' => $predmet,
+            'html'    => $this->twig->render($template, MailPreviewService::sPredmetem($data, $predmet)),
         ];
     }
 

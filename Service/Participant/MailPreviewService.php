@@ -76,9 +76,11 @@ final class MailPreviewService
     {
         $context = $this->buildContext($participant, $extra);
         try {
+            $predmet = $this->renderSubject($subject, $context);
+
             return [
-                'html'    => $this->twig->render($templateName, $context),
-                'subject' => $this->renderSubject($subject, $context),
+                'html'    => $this->twig->render($templateName, self::sPredmetem($context, $predmet)),
+                'subject' => $predmet,
                 'error'   => null,
             ];
         } catch (\Throwable $exception) {
@@ -98,14 +100,34 @@ final class MailPreviewService
     {
         $context = $this->buildContext($participant, $extra);
         try {
+            $predmet = $this->renderSubject($subject, $context);
+
             return [
-                'html'    => $this->twig->createTemplate($source)->render($context),
-                'subject' => $this->renderSubject($subject, $context),
+                'html'    => $this->twig->createTemplate($source)->render(self::sPredmetem($context, $predmet)),
+                'subject' => $predmet,
                 'error'   => null,
             ];
         } catch (\Throwable $exception) {
             return ['html' => $this->errorHtml($exception), 'subject' => $subject, 'error' => $exception->getMessage()];
         }
+    }
+
+    /**
+     * Kontext s `email.subject` — při odeslání ho dodá Symfony Mailer (TemplatedEmail) a obálka z něj
+     * skládá titulek a náhledový text ve schránce. Bez něj ukazoval náhled náhradní text, který nikdo
+     * nedostal (23.–24. 9. 2026).
+     *
+     * @param array<string, mixed> $context
+     *
+     * @return array<string, mixed>
+     */
+    public static function sPredmetem(array $context, ?string $predmet): array
+    {
+        if (null === $predmet || '' === $predmet || array_key_exists('email', $context)) {
+            return $context;
+        }
+
+        return $context + ['email' => ['subject' => $predmet]];
     }
 
     /**
