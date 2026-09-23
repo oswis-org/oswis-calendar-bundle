@@ -15,6 +15,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
+use OswisOrg\OswisCoreBundle\Mail\Parent\MailParentRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -43,6 +44,7 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantManualMailer $manualMailer,
         private readonly Environment $twig,
+        private readonly MailParentRegistry $parentRegistry,
     ) {
     }
 
@@ -279,7 +281,7 @@ final class WebAdminMailConfigController extends AbstractController
             // ta s nižším id — kopie se stejným slugem by se tedy tiše nikdy nepoužila.
             $template->setForcedSlug($this->navrhnoutSlugKopie($from));
         }
-        $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony()]);
+        $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony(), 'rodice' => $this->parentRegistry->choices($template->getRegularTemplateName())]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template)) {
             $this->em->persist($template);
@@ -358,7 +360,7 @@ final class WebAdminMailConfigController extends AbstractController
         if (null === $template->getForcedSlug()) {
             $template->setForcedSlug($template->getSlug());
         }
-        $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony()]);
+        $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony(), 'rodice' => $this->parentRegistry->choices($template->getRegularTemplateName())]);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template, $id)) {
             $this->em->persist($template);

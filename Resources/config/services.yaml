@@ -1089,6 +1089,11 @@ services:
     autowire: true
     tags: [ 'oswis.mail_link_target_provider' ]
 
+  ## Obálky mailů k přihláškám pro pole „Vychází z" u šablony e-mailu (23. 9. 2026)
+  OswisOrg\OswisCalendarBundle\Mail\ParticipantMailParentProvider:
+    autowire: true
+    tags: [ 'oswis.mail_parent_provider' ]
+
   ## Termíny plateb (spec 2026-09-13 §6.5) — jediné místo výpočtu pro všechny maily
   OswisOrg\OswisCalendarBundle\Service\Payment\PaymentDeadlineCalculator:
     autowire: true

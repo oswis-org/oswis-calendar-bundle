@@ -48,10 +48,14 @@ final class TwigTemplateEditType extends AbstractType
             ])
             // Rodič šablony: `{% extends %}` se do zdroje doplní sám (TwigTemplate::slozitZdroj). Do 23. 9. 2026
             // pole znamenalo „místo obsahu" a text z databáze se u vyplněné cesty nepoužil vůbec.
-            ->add('regularTemplateName', TextType::class, [
-                'label'    => 'Vychází z',
-                'required' => false,
-                'help'     => 'Šablona, ze které tahle vychází — obálka mailu nebo jiná šablona. Obsah níže pak jen přepisuje její bloky; když ho necháš prázdný, odejde mail přesně podle ní.',
+            // Výběr, ne ručně psaná cesta: překlep by znamenal šablonu, která nejde vykreslit. Nabídku
+            // skládají poskytovatelé v bundlech (MailParentRegistry); neznámá hodnota v ní zůstane jako „jiné: …".
+            ->add('regularTemplateName', ChoiceType::class, [
+                'label'       => 'Vychází z',
+                'required'    => false,
+                'choices'     => $options['rodice'],
+                'placeholder' => '— nic: samostatný text, nebo blok k vložení —',
+                'help'        => 'Obálka, ze které šablona vychází. Obsah níže pak přepisuje jen její bloky; když ho necháš prázdný, odejde mail přesně podle obálky.',
             ])
             // Editor mailu přes SPOLEČNÝ formulářový typ, ne ručním vložením partialu: typ se stará
             // o jméno, id i navázání pole na formulář. Ruční vložení mě dnes stálo tři vady —
@@ -72,7 +76,9 @@ final class TwigTemplateEditType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         // `preview` = konfigurace sjednoceného náhledu pro editor (dodává kontroler — zná routy a vzorové příjemce).
-        $resolver->setDefaults(['data_class' => TwigTemplate::class, 'preview' => null]);
+        // `rodice` = nabídka obálek (popisek → Twig jméno) pro „Vychází z" — dodává kontroler z MailParentRegistry.
+        $resolver->setDefaults(['data_class' => TwigTemplate::class, 'preview' => null, 'rodice' => []]);
         $resolver->setAllowedTypes('preview', ['null', 'array']);
+        $resolver->setAllowedTypes('rodice', 'array');
     }
 }
