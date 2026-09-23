@@ -162,7 +162,8 @@
                                 <td style="font-size: .85em;">
                                     {# Rodič a vlastní text se od 23. 9. 2026 SKLÁDAJÍ (dřív buď–anebo). #}
                                     {% if t.regularTemplateName %}
-                                        <div>vychází z <code>{{ t.regularTemplateName }}</code></div>
+                                        {# Popisek jako ve výběru „Vychází z"; cesta k souboru jen v bublině. #}
+                                        <div title="{{ t.regularTemplateName }}">vychází z: {{ obalky[t.regularTemplateName]|default(t.regularTemplateName)|split(' — ')|first }}</div>
                                     {% endif %}
                                     {% if t.textValue|default %}
                                         <div>vlastní, {{ t.textValue|length }} znaků</div>

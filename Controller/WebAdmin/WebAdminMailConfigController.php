@@ -65,6 +65,8 @@ final class WebAdminMailConfigController extends AbstractController
             'categories' => $categories,
             'templates'  => $templates,
             'pouziti'    => $this->pouzitiSablon($groups),
+            // Tytéž lidské popisky obálek jako ve výběru „Vychází z" — ne syrová cesta k souboru.
+            'obalky'     => array_map(static fn ($o): string => $o->label, $this->parentRegistry->all()),
             'pageTitle'  => 'Konfigurace e-mailů',
             'page_title' => 'Konfigurace e-mailů :: ADMIN',
         ]);
