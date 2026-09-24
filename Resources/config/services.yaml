@@ -12,6 +12,14 @@ services:
       tags: [ 'oswis.export_definition' ]
 
   ## Program module Twig helpers (staff_name / time_block / roman) — STOPA 1.3 výstupy
+  # Podmínka ze stavebnice v editoru mailu: pravidla("…") nad filtrem přihlášek (dávka 2c, bod 7)
+  OswisOrg\OswisCalendarBundle\Twig\Extension\ParticipantAudienceExtension:
+    autowire: true
+    tags: [ 'twig.extension' ]
+  OswisOrg\OswisCalendarBundle\Mail\ParticipantAudienceProvider:
+    autowire: true
+    tags: [ 'oswis.mail_audience_provider' ]
+
   OswisOrg\OswisCalendarBundle\Twig\Extension\ProgramExtension:
     autowire: true
     tags: [ 'twig.extension' ]
@@ -1065,6 +1073,9 @@ services:
 
   ## Hodnoty údajů příjemce pro dialog editoru (dávka 2c, bod 4)
   OswisOrg\OswisCalendarBundle\Service\Participant\MailVariableValues:
+    autowire: true
+    public: true
+  OswisOrg\OswisCalendarBundle\Service\Participant\MailAudienceCounter:
     autowire: true
     public: true
   ## Dosavadní předmět šablony jako Twig (předvyplnění pole „Předmět", ověření na produkci — 23. 9. 2026)

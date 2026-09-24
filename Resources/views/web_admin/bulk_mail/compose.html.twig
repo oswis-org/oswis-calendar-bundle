@@ -95,6 +95,7 @@
                     preview: {
                         url: previewUrl,
                         valuesUrl: valuesUrl|default(''),
+                        audienceUrl: audienceUrl|default(''),
                         recipients: recipients|default([])|map(r => { id: r.id, label: '#' ~ r.id ~ ' ' ~ (r.contact ? r.contact.name : '') }),
                         subjectField: 'bm_subject',
                         templateField: 'bm_template',

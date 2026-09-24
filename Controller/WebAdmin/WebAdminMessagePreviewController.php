@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\MailAudienceCounter;
 use OswisOrg\OswisCalendarBundle\Service\Participant\MailVariableValues;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
@@ -34,7 +35,25 @@ final class WebAdminMessagePreviewController extends AbstractController
         private readonly ParticipantRepository $participantRepository,
         private readonly LoggerInterface $logger,
         private readonly MailVariableValues $variableValues,
+        private readonly MailAudienceCounter $audienceCounter,
     ) {
+    }
+
+    /**
+     * Pro kolik příjemců výběru platí podmínka ze stavebnice (`expression` = výraz filtru přihlášek)
+     * a zda platí pro příjemce z náhledu. Stejný token jako náhled. Nic neukládá.
+     */
+    public function audience(Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid(self::CSRF_ID, (string) $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Platnost stránky vypršela — stránku obnov.'], Response::HTTP_FORBIDDEN);
+        }
+        $sample = $this->participantRepository->find($request->request->getInt('participantId'));
+        if (!$sample instanceof Participant) {
+            return new JsonResponse(['error' => 'Příjemce pro ukázku nebyl nalezen.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return new JsonResponse($this->audienceCounter->count((string) $request->request->get('expression'), $sample, $this->recipients($request, $sample)));
     }
 
     /**
@@ -51,10 +70,19 @@ final class WebAdminMessagePreviewController extends AbstractController
         if (!$sample instanceof Participant) {
             return new JsonResponse(['error' => 'Příjemce pro ukázku nebyl nalezen.'], Response::HTTP_NOT_FOUND);
         }
-        $ids = array_slice(array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $request->request->get('ids')))))), 0, 5000);
-        $recipients = [] === $ids ? [$sample] : $this->participantRepository->findBy(['id' => $ids]);
+        return new JsonResponse($this->variableValues->compute($sample, $this->recipients($request, $sample)));
+    }
 
-        return new JsonResponse($this->variableValues->compute($sample, $recipients));
+    /**
+     * Příjemci výběru z `ids` (čárkami, nejvýš 5000); bez výběru jen příjemce z náhledu.
+     *
+     * @return list<Participant>
+     */
+    private function recipients(Request $request, Participant $sample): array
+    {
+        $ids = array_slice(array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $request->request->get('ids')))))), 0, 5000);
+
+        return [] === $ids ? [$sample] : $this->participantRepository->findBy(['id' => $ids]);
     }
 
     public function preview(Request $request): JsonResponse

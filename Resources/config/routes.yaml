@@ -522,6 +522,11 @@ oswis_org_oswis_calendar_web_admin_message_values:
   path: "/web_admin/zpravy/hodnoty"
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_message_audience:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMessagePreviewController::audience
+  path: "/web_admin/zpravy/podminka"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
   path: "/web_admin/prijezd/{participantId}/{arrival?}"

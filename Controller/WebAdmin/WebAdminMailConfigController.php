@@ -559,6 +559,7 @@ final class WebAdminMailConfigController extends AbstractController
         return [
             'url'           => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
             'valuesUrl'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_values'),
+            'audienceUrl'  => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_audience'),
             'recipients'    => $recipients,
             'subjectField'  => 'twig_template_edit_subject',
             'templateField' => '',
