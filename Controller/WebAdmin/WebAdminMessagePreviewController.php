@@ -6,6 +6,7 @@ namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
+use OswisOrg\OswisCalendarBundle\Service\Participant\MailVariableValues;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
@@ -32,7 +33,28 @@ final class WebAdminMessagePreviewController extends AbstractController
         private readonly ParticipantManualMailer $mailer,
         private readonly ParticipantRepository $participantRepository,
         private readonly LoggerInterface $logger,
+        private readonly MailVariableValues $variableValues,
     ) {
+    }
+
+    /**
+     * Hodnoty údajů příjemce pro dialog „Vložit údaj příjemce": u vybraného příjemce náhledu a počty
+     * prázdných nad výběrem (`ids`, čárkami). Stejný token jako náhled; POST, protože nese výběr
+     * příjemců. Nic neukládá.
+     */
+    public function values(Request $request): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid(self::CSRF_ID, (string) $request->request->get('_token'))) {
+            return new JsonResponse(['error' => 'Platnost stránky vypršela — stránku obnov.'], Response::HTTP_FORBIDDEN);
+        }
+        $sample = $this->participantRepository->find($request->request->getInt('participantId'));
+        if (!$sample instanceof Participant) {
+            return new JsonResponse(['error' => 'Příjemce pro ukázku nebyl nalezen.'], Response::HTTP_NOT_FOUND);
+        }
+        $ids = array_slice(array_values(array_unique(array_filter(array_map('intval', explode(',', (string) $request->request->get('ids')))))), 0, 5000);
+        $recipients = [] === $ids ? [$sample] : $this->participantRepository->findBy(['id' => $ids]);
+
+        return new JsonResponse($this->variableValues->compute($sample, $recipients));
     }
 
     public function preview(Request $request): JsonResponse

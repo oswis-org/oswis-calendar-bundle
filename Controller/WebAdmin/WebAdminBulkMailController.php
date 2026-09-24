@@ -99,6 +99,7 @@ final class WebAdminBulkMailController extends AbstractController
             'campaigns'       => $this->campaignTemplates(),
             'editorConfig'    => $this->editorConfig->toArray(),
             'previewUrl'      => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
+            'valuesUrl'       => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_values'),
             'subject'         => $mail->subject ?? '',
             'body'            => $mail->body ?? '',
             'templateSlug'    => $mail->templateSlug ?? '',

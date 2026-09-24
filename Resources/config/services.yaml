@@ -1063,6 +1063,10 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantMailContextFactory'
       - '@OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer'
 
+  ## Hodnoty údajů příjemce pro dialog editoru (dávka 2c, bod 4)
+  OswisOrg\OswisCalendarBundle\Service\Participant\MailVariableValues:
+    autowire: true
+    public: true
   ## Dosavadní předmět šablony jako Twig (předvyplnění pole „Předmět", ověření na produkci — 23. 9. 2026)
   OswisOrg\OswisCalendarBundle\Service\Participant\DosavadniPredmetSablony:
     autowire: true

@@ -517,6 +517,11 @@ oswis_org_oswis_calendar_web_admin_message_preview:
   path: "/web_admin/zpravy/nahled"
   methods: [POST]
 
+oswis_org_oswis_calendar_web_admin_message_values:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMessagePreviewController::values
+  path: "/web_admin/zpravy/hodnoty"
+  methods: [POST]
+
 oswis_org_oswis_calendar_web_admin_participant_arrival:
   controller: oswis_org_oswis_calendar.web_admin.participants_controller::arrival
   path: "/web_admin/prijezd/{participantId}/{arrival?}"

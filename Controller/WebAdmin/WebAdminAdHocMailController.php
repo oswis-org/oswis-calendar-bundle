@@ -39,6 +39,7 @@ final class WebAdminAdHocMailController extends AbstractController
         $participant = $this->loadParticipant($participantId);
         $form = $this->createForm(AdHocMailType::class, null, ['preview' => [
             'url'          => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
+            'valuesUrl'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_values'),
             'recipients'   => [['id' => $participantId, 'label' => sprintf('Přihláška #%d', $participantId)]],
             'subjectField' => 'ad_hoc_mail_subject',
         ]]);
