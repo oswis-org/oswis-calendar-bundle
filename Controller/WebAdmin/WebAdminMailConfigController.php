@@ -17,6 +17,7 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Mail\Parent\MailParentRegistry;
+use OswisOrg\OswisCoreBundle\Mail\Validation\UnclosedTags;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -410,8 +411,16 @@ final class WebAdminMailConfigController extends AbstractController
         $source = $template->getSlozenyZdroj();
         if (!in_array($template->getKind(), [TwigTemplate::KIND_CAMPAIGN, TwigTemplate::KIND_SNIPPET], true)) {
             // Systémovou šablonu se vzorovou přihláškou vykreslit nejde (potřebuje platbu, token…),
-            // ale ZÁPIS se ověřit dá vždy — hlavně text mimo bloky, který by u šablony s rodičem
-            // shodil každé odeslání (Twig ho odmítne už při překladu).
+            // ale ZÁPIS se ověřit dá vždy. Nejdřív značka bez „>" (kampaně ji hlídá MailValidator).
+            $rozbite = UnclosedTags::messages($source);
+            foreach ($rozbite as $zprava) {
+                $form->get('textValue')->addError(new FormError($zprava));
+            }
+            if ([] !== $rozbite) {
+                return true;
+            }
+            // Pak Twig — hlavně text mimo bloky, který by u šablony s rodičem shodil každé odeslání
+            // (Twig ho odmítne už při překladu).
             try {
                 $this->twig->parse($this->twig->tokenize(new Source($source, 'kontrola šablony')));
             } catch (SyntaxError $chyba) {
