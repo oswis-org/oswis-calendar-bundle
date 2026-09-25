@@ -8,6 +8,7 @@ use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
+use OswisOrg\OswisCoreBundle\Mail\Rendering\NonBreakingSpaces;
 use Twig\Environment;
 
 /**
@@ -79,7 +80,7 @@ final class MailPreviewService
             $predmet = $this->renderSubject($subject, $context);
 
             return [
-                'html'    => $this->twig->render($templateName, self::sPredmetem($context, $predmet)),
+                'html'    => NonBreakingSpaces::apply($this->twig->render($templateName, self::sPredmetem($context, $predmet))),
                 'subject' => $predmet,
                 'error'   => null,
             ];
@@ -103,7 +104,7 @@ final class MailPreviewService
             $predmet = $this->renderSubject($subject, $context);
 
             return [
-                'html'    => $this->twig->createTemplate($source)->render(self::sPredmetem($context, $predmet)),
+                'html'    => NonBreakingSpaces::apply($this->twig->createTemplate($source)->render(self::sPredmetem($context, $predmet))),
                 'subject' => $predmet,
                 'error'   => null,
             ];

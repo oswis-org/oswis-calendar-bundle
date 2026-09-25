@@ -13,6 +13,7 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailRepositor
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
 use OswisOrg\OswisCoreBundle\Mail\Delivery\DeliveryKey;
 use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
+use OswisOrg\OswisCoreBundle\Mail\Rendering\NonBreakingSpaces;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidator;
 use OswisOrg\OswisCoreBundle\Service\MailService;
@@ -87,7 +88,7 @@ final class ParticipantManualMailer
 
             return [
                 'subject' => $predmet,
-                'html'    => $this->twig->createTemplate($dokument)->render(MailPreviewService::sPredmetem($context, $predmet)),
+                'html'    => NonBreakingSpaces::apply($this->twig->createTemplate($dokument)->render(MailPreviewService::sPredmetem($context, $predmet))),
             ];
         }
         [$template, $data] = $this->templateAndData($mail, $context);
@@ -95,7 +96,7 @@ final class ParticipantManualMailer
 
         return [
             'subject' => $predmet,
-            'html'    => $this->twig->render($template, MailPreviewService::sPredmetem($data, $predmet)),
+            'html'    => NonBreakingSpaces::apply($this->twig->render($template, MailPreviewService::sPredmetem($data, $predmet))),
         ];
     }
 
