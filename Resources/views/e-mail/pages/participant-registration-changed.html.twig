@@ -37,7 +37,7 @@
     {% include '@OswisOrgOswisCalendar/other/summary/participant-summary.html.twig' %}
     {% include '@OswisOrgOswisCalendar/other/qr-payment/event-participant-qr-payment.html.twig' with {'depositLabel': 'Zbývající záloha', 'restLabel': 'Zbývající doplatek'} %}
 
-    <p style="color:#888888; font-size:13px; margin-top:18px;">
+    <p style="color:{{ oswis.colors.faint }}; font-size:13px; margin-top:18px;">
         Pokud {{ f ? 'jste tyto změny neprovedl' ~ a ~ ' Vy' : 'jsi tyto změny neprovedl' ~ a ~ ' ty' }},
         dej{{ f ? 'te' : '' }} nám prosím vědět odpovědí na tento e-mail.
     </p>

@@ -63,7 +63,7 @@
     </mj-text>
 
     {% if tokenUrl|default %}
-        <mj-text font-size="18px" font-weight="700" color="#006FAD">
+        <mj-text font-size="18px" font-weight="700" color="{{ oswis.colors.primary }}">
             Ověření přihlášky
         </mj-text>
         <mj-text>
@@ -73,13 +73,13 @@
         {% include '@OswisOrgOswisCore/e-mail/parts/token-link.html.twig'
             with {url: tokenUrl, label: 'Ověřit přihlášku', formal: f} only %}
         {% if participantToken.validHours|default %}
-            <mj-text font-size="11px" color="#888888">
+            <mj-text font-size="11px" color="{{ oswis.colors.faint }}">
                 Odkaz je platný {{ participantToken.validHours }} hodin od vygenerování.
             </mj-text>
         {% endif %}
     {% endif %}
 
-    <mj-text font-size="12px" color="#666666">
+    <mj-text font-size="12px" color="{{ oswis.colors.muted }}">
         Potvrzením registrace souhlasí{{ f ? 'te' : 'š' }} se zpracováním
         {{ f ? 'Vašich' : 'Tvých' }} osobních údajů nutných pro zorganizování této akce.
         {% if participant.event.organizer.contact.name|default %}
@@ -92,10 +92,10 @@
            hover není a barvoslepému nepomůže vůbec. Odkazy, jejichž textem JE adresa, se poznají
            samy a zůstávají bez podtržení. #}
         <a href="{{ absolute_url(path('oswis_org_oswis_core_gdpr_action')) }}" target="_blank"
-           style="color:#006FAD; text-decoration:underline;">našich webových stránkách</a>.
+           style="color:{{ oswis.colors.primary }}; text-decoration:underline;">našich webových stránkách</a>.
     </mj-text>
 
-    <mj-text font-size="12px" color="#666666">
+    <mj-text font-size="12px" color="{{ oswis.colors.muted }}">
         Pro zrušení nebo změnu přihlášky nás kontaktuj{{ f ? 'te' : '' }} odpovědí na tuto zprávu.
     </mj-text>
 {% endblock content_outer %}
