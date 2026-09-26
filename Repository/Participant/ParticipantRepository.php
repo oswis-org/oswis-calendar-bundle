@@ -607,10 +607,40 @@ class ParticipantRepository extends ServiceEntityRepository
         bool $includeDeleted = false,
         int $afterId = 0,
     ): array {
-        $qb = $this->createQueryBuilder('p')->select('p.id');
+        $qb = $this->mailScope($event, $type, $recursiveDepth, $includeDeleted, false)->select('p.id');
         if ($afterId > 0) {
             $qb->andWhere('p.id > :afterId')->setParameter('afterId', $afterId);
         }
+        $qb->orderBy('p.id', 'ASC')->setMaxResults(max(1, $limit));
+
+        $ids = [];
+        foreach ($qb->getQuery()->getScalarResult() as $row) {
+            if (is_array($row) && isset($row['id']) && is_numeric($row['id'])) {
+                $ids[] = (int) $row['id'];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Kolika přihláškám akce (i podakcí) už mail daného typu ODEŠEL — doplněk k
+     * {@see findUnmailedParticipantIds()} se stejným rozsahem (výpis příjemců skupiny).
+     */
+    public function countMailedParticipants(Event $event, string $type, int $recursiveDepth = 4, bool $includeDeleted = false): int
+    {
+        $count = $this->mailScope($event, $type, $recursiveDepth, $includeDeleted, true)->select('COUNT(p.id)')->getQuery()->getSingleScalarResult();
+
+        return is_numeric($count) ? (int) $count : 0;
+    }
+
+    /**
+     * Přihlášky akce (rekurzivně přes nadřazené akce) s mailem typu `$type` odeslaným (`$mailed`),
+     * nebo neodeslaným. Neúspěšný pokus (`sent IS NULL`) se za odeslaný nepočítá → zkusí se znovu.
+     */
+    private function mailScope(Event $event, string $type, int $recursiveDepth, bool $includeDeleted, bool $mailed): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('p');
         // Recursive event scope (to-one superEvent joins → no row multiplication; not selected).
         $qb->leftJoin('p.event', 'e0');
         $eventOr = 'p.event = :ev';
@@ -623,20 +653,11 @@ class ParticipantRepository extends ServiceEntityRepository
         if (!$includeDeleted) {
             $qb->andWhere('p.deletedAt IS NULL');
         }
-        // Already-sent dedup, SQL-side (failed rows with sent IS NULL are NOT excluded → retried).
         $qb->andWhere(
-            'NOT EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pm WHERE pm.participant = p AND pm.type = :mailType AND pm.sent IS NOT NULL)',
+            ($mailed ? '' : 'NOT ').'EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pm WHERE pm.participant = p AND pm.type = :mailType AND pm.sent IS NOT NULL)',
         )->setParameter('mailType', $type);
-        $qb->orderBy('p.id', 'ASC')->setMaxResults(max(1, $limit));
 
-        $ids = [];
-        foreach ($qb->getQuery()->getScalarResult() as $row) {
-            if (is_array($row) && isset($row['id']) && is_numeric($row['id'])) {
-                $ids[] = (int) $row['id'];
-            }
-        }
-
-        return $ids;
+        return $qb;
     }
 
     /**

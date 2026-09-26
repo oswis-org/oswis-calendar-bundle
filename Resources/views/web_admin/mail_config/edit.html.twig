@@ -33,5 +33,8 @@
             </p>
         {% endif %}
 
+        {% if kind == 'group' and prijemci|default(null) %}
+            {% include '@OswisOrgOswisCalendar/web_admin/mail_config/_prijemci.html.twig' with { group: entity, prijemci: prijemci } only %}
+        {% endif %}
     </main>
 {% endblock %}

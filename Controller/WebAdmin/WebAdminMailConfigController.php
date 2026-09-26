@@ -13,6 +13,7 @@ use OswisOrg\OswisCalendarBundle\Form\WebAdmin\ParticipantMailGroupEditType;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\TwigTemplateEditType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\DosavadniPredmetSablony;
+use OswisOrg\OswisCalendarBundle\Service\Participant\MailGroupRecipients;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
@@ -48,6 +49,7 @@ final class WebAdminMailConfigController extends AbstractController
         private readonly Environment $twig,
         private readonly MailParentRegistry $parentRegistry,
         private readonly DosavadniPredmetSablony $dosavadniPredmet,
+        private readonly MailGroupRecipients $mailGroupRecipients,
     ) {
     }
 
@@ -131,6 +133,9 @@ final class WebAdminMailConfigController extends AbstractController
             'form'       => $form,
             'entity'     => $group,
             'kind'       => 'group',
+            // Komu skupina napíše — stejný výběr jako automatické rozesílání (nic neodesílá).
+            // Po neúspěšném odeslání formuláře drží entita neuložené hodnoty → přehled by lhal.
+            'prijemci'   => $form->isSubmitted() ? null : $this->mailGroupRecipients->prehled($group),
             'pageTitle'  => sprintf('Mail group: %s', $group->getName() ?? '#'.$id),
             'page_title' => sprintf('Mail group: %s :: ADMIN', $group->getName() ?? '#'.$id),
         ]);

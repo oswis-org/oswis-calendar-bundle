@@ -1,0 +1,72 @@
+{#
+    Komu mailová skupina napíše (26. 9. 2026). Počítá MailGroupRecipients — tentýž výběr jako
+    automatické rozesílání, takže tady je vidět přesně to, co by odešlo. Nic neodesílá.
+    Parametry: group (ParticipantMailGroup), prijemci (MailGroupRecipients::prehled()).
+#}
+{% set dostanou = prijemci.dostanou|length %}
+{% set vyrazeno = prijemci.vyrazeni|reduce((soucet, radky) => soucet + radky|length, 0) %}
+<section class="mt-4" aria-labelledby="prijemci-nadpis">
+    <h3 id="prijemci-nadpis">Příjemci</h3>
+    {% if not prijemci.platnaSkupina %}
+        <div class="alert alert-warning">Skupina nemá akci nebo mailovou kategorii — nikomu nenapíše.</div>
+    {% else %}
+        {% if group.automaticMailing and prijemci.okno %}
+            <div class="alert alert-danger">
+                <strong>Automatické rozesílání běží.</strong> Cron každou minutu posílá e-mail dalším příjemcům níže (po dávkách).
+            </div>
+        {% elseif group.automaticMailing %}
+            <div class="alert alert-warning">
+                Automatické rozesílání je zapnuté, ale skupina je teď mimo časové okno — nic neodchází.
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <strong>Automatické rozesílání je vypnuté</strong> — nic neodchází.
+                {% if dostanou > 0 %}
+                    {{ prijemci.okno ? 'Po zapnutí začne cron rozesílat do minuty.' : 'Po zapnutí se nic nestane, dokud nezačne časové okno.' }}
+                {% endif %}
+            </div>
+        {% endif %}
+        <dl class="row mb-2">
+            <dt class="col-sm-5">Dostanou e-mail</dt>
+            <dd class="col-sm-7" data-prijemci="dostanou"><strong>{{ dostanou }}</strong></dd>
+            <dt class="col-sm-5">Z toho bez aktivovaného účtu (e-mail nedorazí)</dt>
+            <dd class="col-sm-7" data-prijemci="bez-uctu">{{ prijemci.bezUctu }}</dd>
+            <dt class="col-sm-5">Už ho dostali</dt>
+            <dd class="col-sm-7" data-prijemci="uz-dostali">{{ prijemci.uzDostali }}</dd>
+            <dt class="col-sm-5">Nedostanou (pravidla skupiny)</dt>
+            <dd class="col-sm-7" data-prijemci="vyrazeni">{{ vyrazeno }}</dd>
+        </dl>
+        <p class="small text-muted">
+            Počítá se ze stejných pravidel jako rozesílání: přihlášky akce „{{ group.event.name|default('?') }}“ (i turnusů pod ní),
+            kterým tenhle e-mail ještě neodešel{{ group.onlyActive ? ', jen aktivní' : '' }},
+            {{ group.participantCategories is empty ? 'jen kategorie Účastník' : 'jen vybrané kategorie přihlášek' }}{{ group.filterExpression ? ' a filtr skupiny' : '' }}.
+        </p>
+        {% if dostanou > 0 %}
+            <details class="mb-2">
+                <summary>Seznam příjemců ({{ dostanou }})</summary>
+                <table class="table table-sm mt-2">
+                    <thead><tr><th scope="col">Přihláška</th><th scope="col">Akce</th><th scope="col"><span class="visually-hidden">Poznámka</span></th></tr></thead>
+                    <tbody>
+                    {% for radek in prijemci.dostanou %}
+                        <tr>
+                            <td><a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: radek.id }) }}">{{ radek.jmeno }}</a></td>
+                            <td>{{ radek.akce }}</td>
+                            <td>{% if radek.bezUctu %}<span class="badge text-bg-warning">bez aktivovaného účtu</span>{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+        {% endif %}
+        {% for duvod, radky in prijemci.vyrazeni %}
+            <details class="mb-2">
+                <summary>Nedostanou — {{ duvod }} ({{ radky|length }})</summary>
+                <ul class="mt-2">
+                    {% for radek in radky %}
+                        <li><a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: radek.id }) }}">{{ radek.jmeno }}</a>{{ radek.akce ? ' · ' ~ radek.akce : '' }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+        {% endfor %}
+    {% endif %}
+</section>

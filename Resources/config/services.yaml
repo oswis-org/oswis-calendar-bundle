@@ -1173,3 +1173,7 @@ services:
       $vapidPublicKey: '%env(default::PUSH_VAPID_PUBLIC_KEY)%'
       $vapidPrivateKey: '%env(default::PUSH_VAPID_PRIVATE_KEY)%'
       $vapidSubject: '%env(default::PUSH_VAPID_SUBJECT)%'
+  ## Komu mailová skupina napíše — jeden výběr pro rozesílání, zkušební běh i výpis v administraci (26. 9. 2026)
+  OswisOrg\OswisCalendarBundle\Service\Participant\MailGroupRecipients:
+    autowire: true
+    public: true

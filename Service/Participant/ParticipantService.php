@@ -57,6 +57,7 @@ class ParticipantService
         protected readonly RegistrationOfferService $registrationOfferService,
         protected readonly AppUserTypeService $appUserTypeService,
         protected readonly ParticipantFilterEvaluator $filterEvaluator,
+        protected readonly MailGroupRecipients $mailGroupRecipients,
     ) {
     }
 
@@ -1082,36 +1083,21 @@ class ParticipantService
                 );
                 continue;
             }
+            // Výběr kandidátů je společný s výpisem příjemců v administraci (MailGroupRecipients).
             $remaining = max(1, $limit);
-            $afterId = 0;
-            while ($remaining > 0) {
-                $ids = $this->participantRepository->findUnmailedParticipantIds(
-                    $groupEvent,
-                    $groupType,
-                    max(1, $limit),
-                    4,
-                    !$group->isOnlyActive(),
-                    $afterId,
-                );
-                if ([] === $ids) {
-                    break;
+            foreach ($this->mailGroupRecipients->kandidati($group, max(1, $limit)) as $participant => $duvod) {
+                if (null !== $duvod || !$group->isApplicableByDate()) {
+                    continue;
                 }
-                foreach ($ids as $id) {
-                    $afterId = $id;
-                    $participant = $this->em->find(Participant::class, $id);
-                    if (!$participant instanceof Participant || !$group->isApplicable($participant)) {
-                        continue;
-                    }
-                    try {
-                        $this->participantMailService->sendMessage($participant, $group);
-                        ++$sent;
-                    } catch (\Throwable $e) {
-                        ++$failed;
-                        $errors[] = sprintf('#%d: %s', $id, $e->getMessage());
-                    }
-                    if (--$remaining <= 0) {
-                        break;
-                    }
+                try {
+                    $this->participantMailService->sendMessage($participant, $group);
+                    ++$sent;
+                } catch (\Throwable $e) {
+                    ++$failed;
+                    $errors[] = sprintf('#%d: %s', $participant->getId() ?? 0, $e->getMessage());
+                }
+                if (--$remaining <= 0) {
+                    break;
                 }
             }
         }
@@ -1139,36 +1125,17 @@ class ParticipantService
             $recipients = 0;
             if ($groupEvent instanceof Event && null !== $groupType && null === $filterError) {
                 $remaining = max(1, $limit);
-                $afterId = 0;
-                while ($remaining > 0) {
-                    $ids = $this->participantRepository->findUnmailedParticipantIds(
-                        $groupEvent,
-                        $groupType,
-                        max(1, $limit),
-                        4,
-                        !$group->isOnlyActive(),
-                        $afterId,
-                    );
-                    if ([] === $ids) {
-                        break;
+                foreach ($this->mailGroupRecipients->kandidati($group, max(1, $limit)) as $participant => $duvod) {
+                    // Preview is read-only → detach each candidate so a high --automail-limit
+                    // scan can't accumulate the whole event in memory (the em->find loop is the
+                    // known automail OOM pattern; here it is safe to bound because we never write).
+                    $this->em->detach($participant);
+                    if (null !== $duvod || !$group->isApplicableByDate()) {
+                        continue;
                     }
-                    foreach ($ids as $id) {
-                        $afterId = $id;
-                        $participant = $this->em->find(Participant::class, $id);
-                        $applicable = $participant instanceof Participant && $group->isApplicable($participant);
-                        if ($participant instanceof Participant) {
-                            // Preview is read-only → detach each candidate so a high --automail-limit
-                            // scan can't accumulate the whole event in memory (the em->find loop is the
-                            // known automail OOM pattern; here it is safe to bound because we never write).
-                            $this->em->detach($participant);
-                        }
-                        if (!$applicable) {
-                            continue;
-                        }
-                        ++$recipients;
-                        if (--$remaining <= 0) {
-                            break;
-                        }
+                    ++$recipients;
+                    if (--$remaining <= 0) {
+                        break;
                     }
                 }
             }

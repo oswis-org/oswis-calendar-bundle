@@ -57,7 +57,8 @@ final class ParticipantMailGroupEditType extends AbstractType
                 'label'    => 'Automatické rozesílání',
                 'required' => false,
                 'help'     => '⚠️ POZOR: skupina s prázdným oknem platí VŽDY — zapnutí bez nastaveného '
-                    .'okna začne rozesílat do 5 minut (cron). Nejdřív nastav okno, pak teprve zapni.',
+                    .'okna začne rozesílat do minuty (cron běží každou minutu). Komu a kolik e-mailů '
+                    .'odejde, ukazuje oddíl „Příjemci" pod formulářem.',
             ])
             ->add('startDateTime', DateTimeType::class, [
                 'label'    => 'Okno OD',
@@ -99,7 +100,7 @@ final class ParticipantMailGroupEditType extends AbstractType
                 'attr'     => [
                     'rows'        => 2,
                     'maxlength'   => ParticipantFilterEvaluator::MAX_EXPRESSION_LENGTH,
-                    'placeholder' => "hasFlagInCategory('fakulta') and isPaid()",
+                    'placeholder' => "např. hasFlagInCategory('fakulta') and isPaid()",
                     'style'       => 'font-family: monospace;',
                 ],
                 'help'     => 'Stejný jazyk jako pokročilý filtr v seznamu přihlášek: hasFlag(\'slug\'), '

@@ -237,20 +237,33 @@ class ParticipantMailGroup extends AbstractMailGroup
 
     public function isApplicableByRestrictions(?object $entity): bool
     {
-        if (!($entity instanceof Participant)) {
-            return false;
+        return $entity instanceof Participant && null === $this->duvodVyrazeni($entity);
+    }
+
+    /**
+     * Proč skupina téhle přihlášce NEnapíše (česky, pro výpis příjemců) — null = napíše.
+     *
+     * Jediné místo s pravidly skupiny: {@see isApplicableByRestrictions()} (odeslání) i výpis
+     * příjemců v administraci čtou tohle, takže výpis nemůže ukazovat něco jiného, než co odejde.
+     * Časové okno je vlastnost skupiny, ne přihlášky — viz {@see isApplicableByDate()}.
+     */
+    public function duvodVyrazeni(Participant $participant): ?string
+    {
+        if ($this->onlyActive && !$participant->isActive()) {
+            return 'Přihláška není aktivní';
         }
-        if ($this->onlyActive && !$entity->isActive()) {
-            return false;
+        if ($this->event && !$participant->isContainedInEvent($this->event)) {
+            return 'Přihláška není na akci skupiny';
         }
-        if ($this->event && !$entity->isContainedInEvent($this->event)) {
-            return false;
-        }
-        if (!$this->isApplicableByParticipantCategory($entity)) {
-            return false;
+        if (!$this->isApplicableByParticipantCategory($participant)) {
+            $kategorie = $participant->getParticipantCategory()?->getName();
+
+            return null === $kategorie
+                ? 'Přihláška nemá kategorii'
+                : sprintf('Kategorie přihlášky „%s" — skupina píše %s', $kategorie, $this->getParticipantCategories()->isEmpty() ? 'jen účastníkům' : 'jen vybraným kategoriím');
         }
 
-        return $this->isApplicableByFilter($entity);
+        return $this->isApplicableByFilter($participant) ? null : 'Neodpovídá filtru skupiny';
     }
 
     /**
