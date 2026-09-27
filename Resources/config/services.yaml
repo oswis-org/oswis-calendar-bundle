@@ -2,6 +2,11 @@
 ## OswisCalendarBundle - Services configuration
 ## oswis-org/oswis-calendar-bundle/Resources/config/services.yaml
 ##
+parameters:
+  # Výchozí tempo odesílání (přepíše proměnná prostředí OSWIS_AUTOMAIL_LIMIT / OSWIS_BULK_MAX_RECIPIENTS).
+  oswis_calendar.automail_limit: 100
+  oswis_calendar.bulk_max_recipients: 0
+
 services:
   _defaults:
     autowire: true      # Automatically injects dependencies in your services.
@@ -1137,6 +1142,10 @@ services:
       - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService'
       - '@OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository'
       - '@oswis_org_oswis_calendar.participant.participant_service'
+      - '@OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantPaymentService'
+      # Tempo odesílání z prostředí (zahřívání nové IP po přechodu na vlastní Postfix, 27. 9. 2026).
+      - '%env(int:default:oswis_calendar.automail_limit:OSWIS_AUTOMAIL_LIMIT)%'
+      - '%env(int:default:oswis_calendar.bulk_max_recipients:OSWIS_BULK_MAX_RECIPIENTS)%'
     tags: [ 'console.command' ]
 
   OswisOrg\OswisCalendarBundle\Command\Setup2026FlagsCommand:

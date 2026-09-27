@@ -40,6 +40,10 @@ final class SendMailCommand extends Command
         private readonly ParticipantMailBulkRepository $bulkRepository,
         private readonly ParticipantService $participantService,
         private readonly ParticipantPaymentService $paymentService,
+        /** Výchozí strop automailů na skupinu a běh — z prostředí OSWIS_AUTOMAIL_LIMIT (zahřívání nové IP, 27. 9. 2026). */
+        private readonly int $vychoziLimitAutomailu = 100,
+        /** Výchozí strop příjemců hromadných mailů na běh — OSWIS_BULK_MAX_RECIPIENTS (0 = vše čekající). */
+        private readonly int $vychoziStropHromadnych = 0,
     ) {
         parent::__construct();
     }
@@ -55,9 +59,9 @@ final class SendMailCommand extends Command
     {
         $this
             ->addOption('batch', null, InputOption::VALUE_REQUIRED, 'Recipients per drain batch.', '15')
-            ->addOption('max-recipients', null, InputOption::VALUE_REQUIRED, 'Cap total bulk recipients processed this run (0 = drain all pending).', '0')
+            ->addOption('max-recipients', null, InputOption::VALUE_REQUIRED, 'Cap total bulk recipients processed this run (0 = drain all pending; default from OSWIS_BULK_MAX_RECIPIENTS).', (string) $this->vychoziStropHromadnych)
             ->addOption('automails', null, InputOption::VALUE_NONE, 'ALSO run the auto-mail engine (off by default — sends real automatic mails).')
-            ->addOption('automail-limit', null, InputOption::VALUE_REQUIRED, 'Max participants per auto-mail group when --automails.', '100')
+            ->addOption('automail-limit', null, InputOption::VALUE_REQUIRED, 'Max participants per auto-mail group when --automails (default from OSWIS_AUTOMAIL_LIMIT).', (string) $this->vychoziLimitAutomailu)
             ->addOption('payment-confirmation-limit', null, InputOption::VALUE_REQUIRED, 'Max deferred payment confirmations per run.', '200')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Report what would be sent without sending.');
     }
@@ -66,9 +70,9 @@ final class SendMailCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $batch = max(1, $this->intOption($input, 'batch', 15));
-        $maxRecipients = max(0, $this->intOption($input, 'max-recipients', 0));
+        $maxRecipients = max(0, $this->intOption($input, 'max-recipients', $this->vychoziStropHromadnych));
         $withAutomails = (bool) $input->getOption('automails');
-        $automailLimit = max(1, $this->intOption($input, 'automail-limit', 100));
+        $automailLimit = max(1, $this->intOption($input, 'automail-limit', $this->vychoziLimitAutomailu));
         $paymentConfirmationLimit = max(1, $this->intOption($input, 'payment-confirmation-limit', 200));
         $dryRun = (bool) $input->getOption('dry-run');
 
