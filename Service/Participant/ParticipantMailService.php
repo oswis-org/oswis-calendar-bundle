@@ -658,7 +658,9 @@ class ParticipantMailService
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $this->em->persist($payment);
         $templateName = $twigTemplate->getTemplateName();
-        $this->mailService->sendEMail($participantMail, $templateName, $data);
+        // Záznam, který se skutečně použil — při opakování odmítnutého potvrzení je to ten starší.
+        $zaznam = $this->mailService->sendEMail($participantMail, $templateName, $data);
+        $participantMail = $zaznam instanceof ParticipantMail ? $zaznam : $participantMail;
         if ($participantMail->getSent() && !$payment->isConfirmedByMail()) {
             $payment->setConfirmedByMailAt($participantMail->getSent());
         }
@@ -754,12 +756,14 @@ class ParticipantMailService
         )?->value);
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         $templateName = $twigTemplate->getTemplateName();
-        $this->mailService->sendEMail($participantMail, $templateName, $data);
+        // Záznam, který se skutečně použil: odmítnutý automail se zkouší znovu jako TENTÝŽ záznam
+        // (MailRetryPolicy) — kontrolovat nový objekt by hlásilo „neodesláno" i po úspěchu.
+        $zaznam = $this->mailService->sendEMail($participantMail, $templateName, $data);
         $this->em->flush();
 
         // True success signal — MailService::sendEMail swallows transport errors (sets statusMessage,
         // leaves sent = NULL). Callers must not count a failed delivery as sent.
-        return $participantMail->isSent();
+        return $zaznam->isSent();
     }
 
 }

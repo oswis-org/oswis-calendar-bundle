@@ -176,9 +176,10 @@ final class ParticipantManualMailer
         $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
         // Ruční zpráva, ne automat → MailerSubscriber nastaví Auto-Submitted: no.
         $participantMail->markAsManual();
-        $this->mailService->sendEMail($participantMail, $template, $data);
+        // Záznam, který se skutečně použil (u hromadné rozesílky s klíčem může jít o starší, opakovaný).
+        $zaznam = $this->mailService->sendEMail($participantMail, $template, $data);
 
-        return $participantMail;
+        return $zaznam instanceof ParticipantMail ? $zaznam : $participantMail;
     }
 
     /**

@@ -61,12 +61,17 @@ final readonly class MailGroupRecipients
     /**
      * Přehled pro stránku skupiny (nic neodesílá, nic nemění).
      *
+     * ⚠️ Přihlášky po zpracování ODPOJUJE (paměť u velkých akcí) — ve stejném EntityManageru pak
+     * nic nezapisovat nad jejich kontakty (Doctrine by odpojený kontakt vložila znovu); před
+     * zápisem `EntityManager::clear()`. Stránka skupiny jen vykresluje, rozesílání běží zvlášť.
+     *
      * @return array{
      *     okno: bool,
      *     dostanou: list<array{id: int, jmeno: string, akce: string, bezUctu: bool}>,
      *     vyrazeni: array<string, list<array{id: int, jmeno: string, akce: string}>>,
      *     uzDostali: int,
      *     bezUctu: int,
+     *     neodeslane: array{ceka: int, vycerpano: int, nejiste: int},
      *     platnaSkupina: bool,
      * }
      */
@@ -102,6 +107,10 @@ final readonly class MailGroupRecipients
                 ? $this->participants->countMailedParticipants($event, $type, self::HLOUBKA_AKCI, !$group->isOnlyActive())
                 : 0,
             'bezUctu'       => $bezUctu,
+            // Odmítnutá / nejistá doručení mimo seznam „dostanou" — aby nezmizela z očí (MailRetryPolicy).
+            'neodeslane'    => $event instanceof Event && null !== $type
+                ? $this->participants->countBlockedMail($event, $type, self::HLOUBKA_AKCI, !$group->isOnlyActive())
+                : ['ceka' => 0, 'vycerpano' => 0, 'nejiste' => 0],
             'platnaSkupina' => $event instanceof Event && null !== $type,
         ];
     }

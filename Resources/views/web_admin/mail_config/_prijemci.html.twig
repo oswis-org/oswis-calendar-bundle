@@ -35,6 +35,15 @@
             <dd class="col-sm-7" data-prijemci="uz-dostali">{{ prijemci.uzDostali }}</dd>
             <dt class="col-sm-5">Nedostanou (pravidla skupiny)</dt>
             <dd class="col-sm-7" data-prijemci="vyrazeni">{{ vyrazeno }}</dd>
+            {% set neodeslane = prijemci.neodeslane %}
+            {% if neodeslane.ceka + neodeslane.vycerpano + neodeslane.nejiste > 0 %}
+                <dt class="col-sm-5">Neodeslané — čekají na další pokus</dt>
+                <dd class="col-sm-7" data-prijemci="ceka">{{ neodeslane.ceka }} <span class="small text-muted">(zkusí se znovu nejdřív 30 min po selhání, nejvýš 5×)</span></dd>
+                <dt class="col-sm-5">Neodeslané — pokusy vyčerpané</dt>
+                <dd class="col-sm-7" data-prijemci="vycerpano">{{ neodeslane.vycerpano }}</dd>
+                <dt class="col-sm-5">Nejisté (nevíme, jestli odešlo)</dt>
+                <dd class="col-sm-7" data-prijemci="nejiste">{{ neodeslane.nejiste }} <span class="small text-muted">(automaticky se neopakují — ověřit v archivu)</span></dd>
+            {% endif %}
         </dl>
         <p class="small text-muted">
             Počítá se ze stejných pravidel jako rozesílání: přihlášky akce „{{ group.event.name|default('?') }}“ (i turnusů pod ní),

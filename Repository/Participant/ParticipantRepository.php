@@ -11,6 +11,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
+use OswisOrg\OswisCoreBundle\Enum\Mail\MailDeliveryStatus;
+use OswisOrg\OswisCoreBundle\Mail\Delivery\MailRetryPolicy;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use OswisOrg\OswisAddressBookBundle\Entity\AbstractClass\AbstractContact;
@@ -636,12 +638,77 @@ class ParticipantRepository extends ServiceEntityRepository
 
     /**
      * Přihlášky akce (rekurzivně přes nadřazené akce) s mailem typu `$type` odeslaným (`$mailed`),
-     * nebo neodeslaným. Neúspěšný pokus (`sent IS NULL`) se za odeslaný nepočítá → zkusí se znovu.
+     * nebo takové, kterým se TEĎ smí poslat (`!$mailed`).
+     *
+     * „Smí teď" vynechá přihlášky, jejichž doručení tohoto typu nejde automaticky zopakovat
+     * ({@see MailRetryPolicy}): nejisté (SENDING/QUEUED — nevíme, jestli odešlo), vyčerpané pokusy
+     * a odmítnuté v prodlevě. Jinak by stály ve frontě první a zabraly celý limit běhu —
+     * 26. 9. 2026 tak 100 odmítnutých zablokovalo rozesílku dalším 113 lidem.
      */
     private function mailScope(Event $event, string $type, int $recursiveDepth, bool $includeDeleted, bool $mailed): QueryBuilder
     {
+        $qb = $this->eventScope($event, $recursiveDepth, $includeDeleted);
+        $qb->andWhere(
+            ($mailed ? '' : 'NOT ').'EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pm WHERE pm.participant = p AND pm.type = :mailType AND pm.sent IS NOT NULL)',
+        )->setParameter('mailType', $type);
+        if (!$mailed) {
+            $qb->andWhere('NOT EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pb WHERE pb.participant = p AND pb.type = :mailType AND pb.sent IS NULL AND '.self::NEOPAKOVATELNE.')');
+            self::parametryOpakovani($qb);
+        }
+
+        return $qb;
+    }
+
+    /**
+     * Kolik přihlášek akce má doručení tohoto typu, které se automaticky neopakuje — pro výpis
+     * příjemců skupiny (aby odmítnutí nezmizela z očí).
+     *
+     * @return array{ceka: int, vycerpano: int, nejiste: int}
+     */
+    public function countBlockedMail(Event $event, string $type, int $recursiveDepth = 4, bool $includeDeleted = false): array
+    {
+        $podminky = [
+            'ceka'      => 'pb.status = :failed AND pb.attemptCount < :maxPokusu AND pb.updatedAt > :hranice',
+            'vycerpano' => 'pb.status = :failed AND pb.attemptCount >= :maxPokusu',
+            'nejiste'   => '(pb.status = :sending OR pb.status = :queued)',
+        ];
+        $vysledek = [];
+        foreach ($podminky as $klic => $podminka) {
+            $qb = $this->eventScope($event, $recursiveDepth, $includeDeleted)->select('COUNT(p.id)')
+                ->andWhere('NOT EXISTS (SELECT 1 FROM '.ParticipantMail::class.' ps WHERE ps.participant = p AND ps.type = :mailType AND ps.sent IS NOT NULL)')
+                ->andWhere('EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pb WHERE pb.participant = p AND pb.type = :mailType AND pb.sent IS NULL AND '.$podminka.')')
+                ->setParameter('mailType', $type);
+            self::parametryOpakovani($qb, $podminka);
+            $pocet = $qb->getQuery()->getSingleScalarResult();
+            $vysledek[$klic] = is_numeric($pocet) ? (int) $pocet : 0;
+        }
+
+        return $vysledek;
+    }
+
+    /** Doručení, které se automaticky NEopakuje (nejisté, vyčerpané, v prodlevě) — MailRetryPolicy. */
+    private const string NEOPAKOVATELNE = '(pb.status = :sending OR pb.status = :queued OR (pb.status = :failed AND (pb.attemptCount >= :maxPokusu OR pb.updatedAt > :hranice)))';
+
+    private static function parametryOpakovani(QueryBuilder $qb, string $dotaz = self::NEOPAKOVATELNE): void
+    {
+        $parametry = [
+            'sending'   => MailDeliveryStatus::SENDING,
+            'queued'    => MailDeliveryStatus::QUEUED,
+            'failed'    => MailDeliveryStatus::FAILED,
+            'maxPokusu' => MailRetryPolicy::MAX_POKUSU,
+            'hranice'   => MailRetryPolicy::hranice(),
+        ];
+        foreach ($parametry as $nazev => $hodnota) {
+            if (str_contains($dotaz, ':'.$nazev)) {
+                $qb->setParameter($nazev, $hodnota);
+            }
+        }
+    }
+
+    /** Přihlášky akce i jejích podakcí (to-one superEvent joiny → bez násobení řádků). */
+    private function eventScope(Event $event, int $recursiveDepth, bool $includeDeleted): QueryBuilder
+    {
         $qb = $this->createQueryBuilder('p');
-        // Recursive event scope (to-one superEvent joins → no row multiplication; not selected).
         $qb->leftJoin('p.event', 'e0');
         $eventOr = 'p.event = :ev';
         for ($i = 0; $i < max(0, $recursiveDepth); $i++) {
@@ -653,9 +720,6 @@ class ParticipantRepository extends ServiceEntityRepository
         if (!$includeDeleted) {
             $qb->andWhere('p.deletedAt IS NULL');
         }
-        $qb->andWhere(
-            ($mailed ? '' : 'NOT ').'EXISTS (SELECT 1 FROM '.ParticipantMail::class.' pm WHERE pm.participant = p AND pm.type = :mailType AND pm.sent IS NOT NULL)',
-        )->setParameter('mailType', $type);
 
         return $qb;
     }
