@@ -1,0 +1,107 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OswisOrg\OswisCalendarBundle\Form\WebAdmin;
+
+use OswisOrg\OswisCoreBundle\Form\Type\MailBodyType;
+use OswisOrg\OswisCoreBundle\Form\Type\MailSubjectType;
+use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+/**
+ * Hromadný e-mail vybraným přihláškám — vlastní text v editoru ({@see MailBodyType}), NEBO celá uložená kampaň.
+ *
+ * Do 28. 9. 2026 byla obrazovka ručně psané HTML a controller četl pole z POSTu sám (vlastní kontrola CSRF,
+ * „předmět + text nebo kampaň" jednou společnou hláškou). Teď stejně jako „Nová zpráva" ({@see AdHocMailType})
+ * a šablony: CSRF a kontrola formulářem, chyba u pole, kterého se týká. O režimu rozhoduje server
+ * (`mailMode`), ne to, zda JavaScript stihl vyprázdnit výběr kampaně.
+ *
+ * Volby: `campaigns` (název => slug uložených kampaní), `preview` (náhled vedle textu, viz {@see MailBodyType}).
+ */
+final class BulkMailType extends AbstractType
+{
+    public const string MODE_BODY = 'body';
+    public const string MODE_TEMPLATE = 'template';
+
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        /** @var array<string, string> $campaigns */
+        $campaigns = $options['campaigns'];
+        $builder
+            // Snímek příjemců z výběru v seznamu přihlášek (ID oddělená čárkou) — nese se mezi kroky.
+            ->add('idsCsv', HiddenType::class)
+            ->add('subject', MailSubjectType::class, [
+                'label'       => 'Předmět',
+                'required'    => true,
+                'constraints' => [
+                    new NotBlank(message: 'Vyplň prosím předmět.'),
+                    new Length(max: MailRenderer::SUBJECT_MAX_LENGTH, maxMessage: 'Předmět může mít nejvýš {{ limit }} znaků.'),
+                ],
+            ])
+            ->add('mailMode', ChoiceType::class, [
+                'label'       => 'Co se pošle',
+                'expanded'    => true,
+                'choices'     => ['✍ Vlastní text' => self::MODE_BODY, 'Uložená kampaň' => self::MODE_TEMPLATE],
+                // Přepínač jako skupina tlačítek (Bootstrap `btn-check` — motiv formulářů ho umí sám).
+                'attr'        => ['class' => 'btn-group', 'role' => 'group', 'aria-label' => 'Co se pošle'],
+                'label_attr'  => ['class' => 'btn btn-outline-primary btn-sm'],
+                'choice_attr' => static fn (string $mode): array => ['class' => 'btn-check']
+                    + (self::MODE_TEMPLATE === $mode && [] === $campaigns ? ['disabled' => 'disabled'] : []),
+            ])
+            ->add('templateSlug', ChoiceType::class, [
+                'label'       => 'Uložená šablona (kampaň)',
+                'required'    => false,
+                'placeholder' => '— vyber kampaň —',
+                'choices'     => $campaigns,
+                'help'        => 'Odešle se celá uložená kampaň (vykreslená pro každého příjemce). Vlastní text se ignoruje.',
+            ])
+            // `required` = editor hlídá prázdný text už v prohlížeči (v režimu kampaně ne — třída
+            // `mail-editor--template-mode`); o platnosti rozhoduje {@see overitRezim()}, ne NotBlank.
+            ->add('body', MailBodyType::class, [
+                'label'    => 'Text zprávy',
+                'required' => true,
+                'preview'  => $options['preview'],
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class'  => null,
+            'campaigns'   => [],
+            'preview'     => null,
+            'constraints' => [new Callback(self::overitRezim(...))],
+        ]);
+        $resolver->setAllowedTypes('campaigns', 'array');
+        $resolver->setAllowedTypes('preview', ['null', 'array']);
+    }
+
+    /**
+     * Vlastní text musí být vyplněný; kampaň vybraná. Druhé pole se v daném režimu nekontroluje ani nepoužije.
+     *
+     * @param array<string, mixed>|null $data
+     */
+    public static function overitRezim(?array $data, ExecutionContextInterface $context): void
+    {
+        if (self::MODE_TEMPLATE === ($data['mailMode'] ?? null)) {
+            if (!is_string($data['templateSlug'] ?? null) || '' === $data['templateSlug']) {
+                $context->buildViolation('Vyber uloženou kampaň.')->atPath('[templateSlug]')->addViolation();
+            }
+
+            return;
+        }
+        $body = $data['body'] ?? null;
+        if (!is_string($body) || '' === trim($body)) {
+            $context->buildViolation('Napiš text zprávy, nebo vyber uloženou kampaň.')->atPath('[body]')->addViolation();
+        }
+    }
+}
