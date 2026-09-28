@@ -9,6 +9,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use OswisOrg\OswisCoreBundle\Mail\Quota\MailDailyQuota;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -25,7 +26,14 @@ class ParticipantBulkMailService
         protected LoggerInterface $logger,
         /** Denní limit hromadných (dávka 3.1); bez něj bez omezení. */
         protected ?MailDailyQuota $quota = null,
+        /** Hodiny pro „odeslat po" (dávka 3.2); bez nich systémový čas. */
+        protected ?ClockInterface $clock = null,
     ) {
+    }
+
+    private function now(): \DateTimeImmutable
+    {
+        return $this->clock?->now() ?? new \DateTimeImmutable();
     }
 
     /**
@@ -47,12 +55,15 @@ class ParticipantBulkMailService
      *
      * @throws OswisException když kontrola našla chyby
      */
-    public function queue(ParticipantManualMail $mail, array $participantIds, MailValidationResult $validation): ParticipantMailBulk
+    public function queue(ParticipantManualMail $mail, array $participantIds, MailValidationResult $validation, ?\DateTimeImmutable $sendAt = null): ParticipantMailBulk
     {
         if ($validation->hasErrors()) {
             throw new OswisException(implode(' | ', array_map(static fn (MailProblem $p): string => $p->message, $validation->errors())));
         }
         $bulk = new ParticipantMailBulk($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug);
+        // Nejdřív za 30 s (čas na zrušení), nebo ve zvolený čas (naplánované odeslání) — dávka 3.2.
+        $nejdriv = $this->now()->modify(sprintf('+%d seconds', ParticipantMailBulk::ODKLAD_SEKUND));
+        $bulk->setSendAfter(null !== $sendAt && $sendAt > $nejdriv ? $sendAt : $nejdriv);
         $this->em->persist($bulk);
         $this->em->flush();
 
@@ -94,11 +105,14 @@ class ParticipantBulkMailService
      * Denní limit hromadných ({@see MailDailyQuota}): když je vyčerpaný, dávka skončí PŘED dalším příjemcem
      * (`limit: true`), kurzor zůstane a další den se pokračuje tam, kde se skončilo.
      *
-     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool, limit: bool}
+     * Čas „odeslat po" (dávka 3.2): dokud neuplynul, nic se neodešle (`waiting: true`). Zrušení se kontroluje
+     * před KAŽDÝM příjemcem přímo v databázi — „Zastavit" z administrace tak platí i uprostřed dávky.
+     *
+     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool, limit: bool, waiting: bool, cancelled: bool, sendAfter: ?string}
      */
     public function drainBatch(ParticipantMailBulk $bulk, int $batchSize = 15): array
     {
-        if ($bulk->isDone()) {
+        if ($bulk->isFinished()) {
             return $this->progress($bulk, 0, 0);
         }
         $lockName = sprintf('oswis_bulk_drain_%d', $bulk->getId() ?? 0);
@@ -112,7 +126,10 @@ class ParticipantBulkMailService
         try {
             // Fresh cursor: our entity may predate a drain that just finished on another connection.
             $this->em->refresh($bulk);
-            if ($bulk->isDone()) {
+            if ($bulk->isFinished()) {
+                return $this->progress($bulk, 0, 0);
+            }
+            if (!$bulk->isDue($this->now())) {
                 return $this->progress($bulk, 0, 0);
             }
             if (ParticipantMailBulk::STATUS_SENDING !== $bulk->getStatus()) {
@@ -127,6 +144,13 @@ class ParticipantBulkMailService
 
             $mail = ParticipantManualMail::fromBulk($bulk);
             foreach ($slice as $position => $participantId) {
+                // Zrušeno / zastaveno z administrace (i během téhle dávky) — dál nic.
+                if (ParticipantMailBulk::STATUS_CANCELLED === $connection->fetchOne('SELECT status FROM calendar_participant_mail_bulk WHERE id = ?', [$bulk->getId()])) {
+                    $this->em->refresh($bulk);
+                    $this->logger->info(sprintf('Bulk #%d: zrušeno z administrace — zastaveno na pozici %d.', $bulk->getId() ?? 0, $bulk->getProcessedCount()));
+
+                    return $this->progress($bulk, $sent, $failed);
+                }
                 if (null !== $this->quota && !$this->quota->bulkAllowed()) {
                     $this->logger->info(sprintf('Bulk #%d: denní limit hromadných (%d) vyčerpán — pokračuje zítra od pozice %d.', $bulk->getId() ?? 0, $this->quota->bulkLimit(), $bulk->getProcessedCount()));
 
@@ -164,7 +188,7 @@ class ParticipantBulkMailService
                 }
             }
 
-            if ($bulk->getProcessedCount() >= $bulk->getTotalCount()) {
+            if ($bulk->getProcessedCount() >= $bulk->getTotalCount() && !$bulk->isCancelled()) {
                 $bulk->setStatus(ParticipantMailBulk::STATUS_DONE);
                 $this->em->flush();
             }
@@ -211,10 +235,11 @@ class ParticipantBulkMailService
     }
 
     /**
-     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool, limit: bool}
+     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool, limit: bool, waiting: bool, cancelled: bool, sendAfter: ?string}
      */
     private function progress(ParticipantMailBulk $bulk, int $sent, int $failed, bool $busy = false, bool $limit = false): array
     {
+        $sendAfter = $bulk->getSendAfter();
         return [
             'sent'      => $sent,
             'failed'    => $failed,
@@ -223,6 +248,9 @@ class ParticipantBulkMailService
             'done'      => $bulk->isDone(),
             'busy'      => $busy,
             'limit'     => $limit,
+            'waiting'   => $bulk->isWaiting($this->now()),
+            'cancelled' => $bulk->isCancelled(),
+            'sendAfter' => $sendAfter?->format(\DATE_ATOM),
         ];
     }
 }

@@ -30,6 +30,7 @@
                 <tbody>
                     {% for bulk in bulks %}
                         <tr data-bulk-id="{{ bulk.id }}" data-sent="{{ bulk.sentCount }}" data-failed="{{ bulk.failedCount }}"
+                            data-finished="{{ bulk.finished ? '1' : '0' }}"
                             {% if bulk.id == highlight %}style="background:#fffbe6"{% endif %}>
                             <td>{{ bulk.id }}</td>
                             <td>
@@ -37,14 +38,29 @@
                                 {% if bulk.adminName %}<br><small class="text-muted">{{ bulk.adminName }}</small>{% endif %}
                             </td>
                             <td><small>{{ bulk.createdAt|date('Y-m-d H:i') }}</small></td>
-                            <td class="bm-status">{{ bulk.status }}</td>
+                            <td class="bm-status">
+                                {%- if bulk.done -%}odesláno
+                                {%- elseif bulk.cancelled -%}zrušeno{{ bulk.cancelledBy ? ' (' ~ bulk.cancelledBy ~ ')' : '' }}
+                                {%- elseif bulk.waiting(now) -%}naplánováno na {{ bulk.sendAfter|date('j. n. H:i:s') }}
+                                {%- elseif bulk.processedCount > 0 -%}odesílá se
+                                {%- else -%}čeká na odeslání
+                                {%- endif -%}
+                            </td>
                             <td class="bm-progress">{{ bulk.processedCount }}/{{ bulk.totalCount }}</td>
                             <td class="bm-tally">{{ bulk.sentCount }} / {{ bulk.failedCount }}</td>
                             <td>
-                                {% if not bulk.done %}
-                                    <button type="button" class="btn btn-sm btn-primary bm-drain-btn" data-bulk-id="{{ bulk.id }}">Odeslat teď</button>
-                                {% else %}
+                                {% if bulk.done %}
                                     ✓
+                                {% elseif not bulk.cancelled %}
+                                    {# Zrušit před spuštěním / zastavit zbytek (dávka 3.2); odeslané zůstává odeslané. #}
+                                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_cancel', { id: bulk.id }) }}" class="d-inline"
+                                          onsubmit="return confirm('{{ bulk.processedCount > 0 ? 'Zastavit rozesílku? Kdo už mail dostal, ten ho má; zbytku se neodešle.' : 'Zrušit rozesílku? Neodejde nikomu.' }}');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('bulk_mail_cancel_' ~ bulk.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger bm-cancel-btn">{{ bulk.processedCount > 0 ? 'Zastavit' : 'Zrušit' }}</button>
+                                    </form>
+                                    {% if not bulk.waiting(now) %}
+                                        <button type="button" class="btn btn-sm btn-primary bm-drain-btn" data-bulk-id="{{ bulk.id }}">Odeslat teď</button>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         </tr>
@@ -71,7 +87,10 @@
 
             function update(row, p) {
                 if (!row) { return; }
-                row.querySelector('.bm-status').textContent = p.done ? 'done' : (p.limit ? 'pozastaveno — denní limit, pokračuje zítra' : 'sending');
+                row.querySelector('.bm-status').textContent = p.done ? 'odesláno'
+                    : (p.cancelled ? 'zrušeno'
+                        : (p.limit ? 'pozastaveno — denní limit, pokračuje zítra'
+                            : (p.waiting ? 'naplánováno na ' + new Date(p.sendAfter).toLocaleTimeString('cs-CZ') : 'odesílá se')));
                 row.querySelector('.bm-progress').textContent = p.processed + '/' + p.total;
                 var sent = parseInt(row.getAttribute('data-sent') || '0', 10) + (p.sent || 0);
                 var failed = parseInt(row.getAttribute('data-failed') || '0', 10) + (p.failed || 0);
@@ -88,9 +107,16 @@
                 return drainOnce(id).then(function (p) {
                     if (p.error) { return; }
                     update(rowFor(id), p);
-                    if (p.done) { return; }
+                    if (p.done || p.cancelled) { return; }
                     // Denní limit hromadných vyčerpaný — dál nezkoušet; zbytek pošle cron zítra.
                     if (p.limit) { return; }
+                    // Naplánováno (i 30 s na zrušení) — počkat do času odeslání, pak znovu (zrušení mezitím drain pozná).
+                    if (p.waiting && p.sendAfter) {
+                        var wait = Math.max(1000, Math.min(new Date(p.sendAfter).getTime() - Date.now() + 1000, 60000));
+                        return new Promise(function (resolve) {
+                            setTimeout(function () { resolve(drainLoop(id)); }, wait);
+                        });
+                    }
                     // busy = another drain (cron / second tab) holds the per-bulk lock —
                     // back off instead of hammering; the re-poll picks up its progress.
                     if (p.busy) {
@@ -112,8 +138,7 @@
 
             // Auto-drain pending bulks on load (immediate path + fallback when no cron runs).
             document.querySelectorAll('tr[data-bulk-id]').forEach(function (row) {
-                var status = row.querySelector('.bm-status');
-                if (status && status.textContent.trim() !== 'done') {
+                if (row.getAttribute('data-finished') !== '1') {
                     drainLoop(row.getAttribute('data-bulk-id'));
                 }
             });

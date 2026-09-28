@@ -74,6 +74,8 @@
                 {{ form_row(form.body) }}
             </div>
 
+            <div class="mb-3" style="max-width: 20rem;">{{ form_row(form.sendAt) }}</div>
+
             <p class="text-muted"><small>Před zařazením se zpráva zkontroluje pro {{ recipientCount == 1 ? 'příjemce' : 'všech ' ~ recipientCount ~ ' příjemců' }}
                 a vykreslí se každému zvlášť.</small></p>
             {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation|default(null) } only %}

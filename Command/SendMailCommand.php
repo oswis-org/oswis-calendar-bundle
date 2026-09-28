@@ -168,7 +168,7 @@ final class SendMailCommand extends Command
                     break;
                 }
                 $bulksTouched++;
-                while (!$bulk->isDone()) {
+                while (!$bulk->isFinished()) {
                     if (0 !== $maxRecipients && $processedThisRun >= $maxRecipients) {
                         break;
                     }

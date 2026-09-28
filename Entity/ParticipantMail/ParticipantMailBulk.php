@@ -37,6 +37,11 @@ class ParticipantMailBulk
     public const STATUS_SENDING = 'sending';
 
     public const STATUS_DONE = 'done';
+    /** Zrušeno před spuštěním, nebo zastaveno uprostřed (zbytek se neodešle) — dávka 3.2. */
+    public const STATUS_CANCELLED = 'cancelled';
+
+    /** Po „Zařadit a odeslat" se rozesílka spustí až po této době — do té doby ji jde zrušit (spec §5.1, 5.3 h). */
+    public const int ODKLAD_SEKUND = 30;
 
     #[Id]
     #[GeneratedValue]
@@ -81,6 +86,18 @@ class ParticipantMailBulk
 
     #[Column(type: 'text', nullable: true)]
     protected ?string $failedNote = null;
+
+    /**
+     * Neodesílat dřív než v tuto chvíli (dávka 3.2): 30 s na zrušení po zařazení, nebo zvolený čas
+     * (naplánované odeslání). NULL = hned (zprávy zařazené před zavedením). Web i cron (`bin/console`)
+     * zapisují i čtou v pražském čase, takže se porovnává bez převodu.
+     */
+    #[Column(name: 'send_after', type: 'datetime_immutable', nullable: true)]
+    protected ?\DateTimeImmutable $sendAfter = null;
+
+    /** Kdo rozesílku zrušil / zastavil (jméno správce jako text — bez vazby, viz popis třídy). */
+    #[Column(name: 'cancelled_by', type: 'string', length: 255, nullable: true)]
+    protected ?string $cancelledBy = null;
 
     /**
      * @param array<int> $participantIds normalized to a 0-indexed list (callers may pass filtered/keyed arrays)
@@ -148,6 +165,52 @@ class ParticipantMailBulk
     public function isDone(): bool
     {
         return self::STATUS_DONE === $this->status;
+    }
+
+    public function isCancelled(): bool
+    {
+        return self::STATUS_CANCELLED === $this->status;
+    }
+
+    /** Už se nic dalšího neodešle — hotovo, nebo zrušeno. */
+    public function isFinished(): bool
+    {
+        return $this->isDone() || $this->isCancelled();
+    }
+
+    public function getSendAfter(): ?\DateTimeImmutable
+    {
+        return $this->sendAfter;
+    }
+
+    public function setSendAfter(?\DateTimeImmutable $sendAfter): void
+    {
+        $this->sendAfter = $sendAfter;
+    }
+
+    /** Smí se už odesílat? (čas „odeslat po" uplynul, nebo žádný není) */
+    public function isDue(\DateTimeInterface $now): bool
+    {
+        return null === $this->sendAfter || $this->sendAfter <= $now;
+    }
+
+    /** Ještě nic neodešlo a čeká se na čas odeslání — naplánováno (i běžících 30 s na zrušení). */
+    public function isWaiting(\DateTimeInterface $now): bool
+    {
+        return !$this->isFinished() && 0 === $this->processedCount && !$this->isDue($now);
+    }
+
+    public function cancel(?string $who): void
+    {
+        if (!$this->isFinished()) {
+            $this->status = self::STATUS_CANCELLED;
+            $this->cancelledBy = $who;
+        }
+    }
+
+    public function getCancelledBy(): ?string
+    {
+        return $this->cancelledBy;
     }
 
     /** @return list<int> */

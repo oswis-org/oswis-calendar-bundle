@@ -159,7 +159,7 @@ final class WebAdminBulkMailController extends AbstractController
         if (!$form->isValid()) {
             return $this->renderCompose($ids, $form);
         }
-        /** @var array{subject: string, mailMode: string, templateSlug: ?string, body: ?string} $data */
+        /** @var array{subject: string, mailMode: string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable} $data */
         $data = $form->getData();
         $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
         $mail = new ParticipantManualMail(
@@ -175,13 +175,16 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->renderCompose($ids, $form, $validation);
         }
         try {
-            $bulk = $this->bulkMailService->queue($mail, $ids, $validation);
+            $bulk = $this->bulkMailService->queue($mail, $ids, $validation, $data['sendAt']);
         } catch (OswisException $exception) {
             $this->addFlash('danger', 'Zprávu nejde zařadit: '.$exception->getMessage());
 
             return $this->renderCompose($ids, $form, $validation);
         }
-        $this->addFlash('success', sprintf('Hromadný e-mail zařazen: %d příjemců. Spustí se odesílání.', count($ids)));
+        $zacatek = $bulk->getSendAfter();
+        $this->addFlash('success', null !== $data['sendAt'] && null !== $zacatek
+            ? sprintf('Hromadný e-mail pro %d příjemců je naplánovaný na %s. Do té doby ho tady jde zrušit.', count($ids), $zacatek->format('j. n. Y H:i'))
+            : sprintf('Hromadný e-mail pro %d příjemců se začne odesílat za %d sekund — do té doby ho tady jde zrušit.', count($ids), ParticipantMailBulk::ODKLAD_SEKUND));
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status', ['highlight' => $bulk->getId()]);
     }
@@ -219,8 +222,36 @@ final class WebAdminBulkMailController extends AbstractController
             'pageTitle' => 'Hromadné e-maily',
             'bulks'     => $this->bulkRepository->findRecent(30),
             'highlight' => $request->query->getInt('highlight'),
+            'now'       => new \DateTimeImmutable(),
             'limit'     => $this->denniLimit(),
         ]);
+    }
+
+    /**
+     * Zrušit rozesílku před spuštěním, nebo zastavit zbytek během odesílání (POST, CSRF) — dávka 3.2.
+     * Odeslané zůstává odeslané; rozesílka se kontroluje před každým příjemcem, takže zastavení platí hned.
+     */
+    public function cancel(Request $request, int $id): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_mail_cancel_'.$id, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        $bulk = $this->bulkRepository->find($id);
+        if (!$bulk instanceof ParticipantMailBulk) {
+            throw $this->createNotFoundException('Hromadný e-mail nenalezen.');
+        }
+        if ($bulk->isFinished()) {
+            $this->addFlash('warning', sprintf('Hromadný e-mail #%d už je %s — nebylo co rušit.', $id, $bulk->isDone() ? 'odeslaný' : 'zrušený'));
+        } else {
+            $zacal = $bulk->getProcessedCount() > 0;
+            $bulk->cancel($this->adminName());
+            $this->em->flush();
+            $this->addFlash('success', $zacal
+                ? sprintf('Hromadný e-mail #%d zastaven — odešel %d z %d příjemců, zbytek se neodešle.', $id, $bulk->getProcessedCount(), $bulk->getTotalCount())
+                : sprintf('Hromadný e-mail #%d zrušen — neodešel nikomu.', $id));
+        }
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status', ['highlight' => $id]);
     }
 
     /** Drain one batch of a bulk (POST, CSRF) → JSON progress. Used by the status-page auto-drain. */

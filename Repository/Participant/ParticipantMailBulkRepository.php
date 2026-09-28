@@ -15,15 +15,18 @@ class ParticipantMailBulkRepository extends ServiceEntityRepository
     }
 
     /**
-     * Bulks that still need draining (queued or mid-flight), oldest first.
+     * Bulks that still need draining (queued or mid-flight) and are DUE (čas „odeslat po" uplynul), oldest first.
+     * Zrušené a naplánované do budoucna se nevrací (dávka 3.2).
      *
      * @return list<ParticipantMailBulk>
      */
-    public function findPending(int $limit = 20): array
+    public function findPending(int $limit = 20, ?\DateTimeImmutable $now = null): array
     {
         $rows = $this->createQueryBuilder('b')
-            ->where('b.status != :done')
-            ->setParameter('done', ParticipantMailBulk::STATUS_DONE)
+            ->where('b.status NOT IN (:finished)')
+            ->andWhere('b.sendAfter IS NULL OR b.sendAfter <= :now')
+            ->setParameter('finished', [ParticipantMailBulk::STATUS_DONE, ParticipantMailBulk::STATUS_CANCELLED])
+            ->setParameter('now', $now ?? new \DateTimeImmutable())
             ->orderBy('b.createdAt', 'ASC')
             ->setMaxResults(max(1, $limit))
             ->getQuery()

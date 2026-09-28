@@ -506,6 +506,14 @@ oswis_org_oswis_calendar_web_admin_bulk_mail_status:
   path: "/web_admin/prihlasky/hromadne-emaily"
   methods: [GET]
 
+# Zrušit / zastavit hromadný e-mail (dávka 3.2) — POST s CSRF.
+oswis_org_oswis_calendar_web_admin_bulk_mail_cancel:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::cancel
+  path: "/web_admin/prihlasky/hromadne-emaily/{id}/zrusit"
+  methods: [POST]
+  requirements:
+    id: '\d+'
+
 oswis_org_oswis_calendar_web_admin_bulk_mail_drain:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::drain
   path: "/web_admin/prihlasky/hromadny-email/odeslat-davku"

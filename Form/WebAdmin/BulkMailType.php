@@ -9,6 +9,7 @@ use OswisOrg\OswisCoreBundle\Form\Type\MailSubjectType;
 use OswisOrg\OswisCoreBundle\Mail\Rendering\MailRenderer;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -66,6 +67,14 @@ final class BulkMailType extends AbstractType
             ])
             // `required` = editor hlídá prázdný text už v prohlížeči (v režimu kampaně ne — třída
             // `mail-editor--template-mode`); o platnosti rozhoduje {@see overitRezim()}, ne NotBlank.
+            // Naplánované odeslání (dávka 3.2). Prázdné = za 30 s — do té doby jde rozesílku zrušit.
+            ->add('sendAt', DateTimeType::class, [
+                'label'    => 'Odeslat v (nepovinné)',
+                'required' => false,
+                'widget'   => 'single_text',
+                'input'    => 'datetime_immutable',
+                'help'     => 'Prázdné = začne se odesílat za 30 sekund; do té doby i do zvoleného času jde rozesílku na stránce „Hromadné e-maily" zrušit.',
+            ])
             ->add('body', MailBodyType::class, [
                 'label'    => 'Text zprávy',
                 'required' => true,
@@ -92,6 +101,10 @@ final class BulkMailType extends AbstractType
      */
     public static function overitRezim(?array $data, ExecutionContextInterface $context): void
     {
+        $sendAt = $data['sendAt'] ?? null;
+        if ($sendAt instanceof \DateTimeInterface && $sendAt < new \DateTimeImmutable()) {
+            $context->buildViolation('Zvolený čas už minul — nech pole prázdné (odešle se hned), nebo vyber čas v budoucnu.')->atPath('[sendAt]')->addViolation();
+        }
         if (self::MODE_TEMPLATE === ($data['mailMode'] ?? null)) {
             if (!is_string($data['templateSlug'] ?? null) || '' === $data['templateSlug']) {
                 $context->buildViolation('Vyber uloženou kampaň.')->atPath('[templateSlug]')->addViolation();
