@@ -91,6 +91,10 @@ class ParticipantMailGroup extends AbstractMailGroup
      * záměr beze změny dat. Zároveň tím z výchozího stavu vypadávají i testovací přihlášky
      * (`attendee-test`), což je správně.
      *
+     * **Výjimka — maily o vlastní přihlášce** ({@see ParticipantMail::PERSONAL_TYPES}: potvrzení,
+     * shrnutí, platba, změna, zrušení): prázdné u nich = **všechny kategorie**, protože je dostává
+     * jen ten, komu přihláška patří (rozhodnutí 27. 9. 2026).
+     *
      * Psát týmu jde dál — ale musí to být **vědomý úkon**: v té skupině se kategorie vyberou.
      * Tvrdý zákaz tu schválně NENÍ; tiché zahazování pošty je horší vada než pošta navíc
      * a týmu psát legitimně chceme.
@@ -156,17 +160,22 @@ class ParticipantMailGroup extends AbstractMailGroup
     /**
      * Smí tahle skupina psát téhle přihlášce?
      *
-     * Prázdná kolekce = jen typ `attendee` (viz {@see $participantCategories}). Vyplněná = přesně
+     * Prázdná kolekce = jen typ `attendee` (viz {@see $participantCategories}), u mailů o vlastní
+     * přihlášce ({@see ParticipantMail::PERSONAL_TYPES}) všechny kategorie. Vyplněná = přesně
      * vyjmenované kategorie. FAIL-CLOSED: přihláška bez kategorie nedostane nic — radši nikoho
-     * neoslovit než oslovit někoho, o kom nevíme, co je zač.
+     * neoslovit než oslovit někoho, o kom nevíme, co je zač (neplatí pro vlastní přihlášku bez
+     * výběru: tam je adresát jednoznačný).
      */
     public function isApplicableByParticipantCategory(Participant $participant): bool
     {
+        $allowed = $this->getParticipantCategories();
+        if ($allowed->isEmpty() && $this->isPersonal()) {
+            return true;
+        }
         $category = $participant->getParticipantCategory();
         if (null === $category) {
             return false;
         }
-        $allowed = $this->getParticipantCategories();
         if ($allowed->isEmpty()) {
             return ParticipantCategory::TYPE_ATTENDEE === $category->getType();
         }
@@ -202,6 +211,12 @@ class ParticipantMailGroup extends AbstractMailGroup
     public function getType(): ?string
     {
         return $this->getCategory()?->getType();
+    }
+
+    /** Mail o vlastní přihlášce — viz {@see ParticipantMail::PERSONAL_TYPES}. */
+    public function isPersonal(): bool
+    {
+        return ParticipantMail::isPersonalType($this->getType());
     }
 
     public function getEvent(): ?Event

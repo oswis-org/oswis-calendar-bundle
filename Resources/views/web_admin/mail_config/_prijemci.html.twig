@@ -7,7 +7,15 @@
 {% set vyrazeno = prijemci.vyrazeni|reduce((soucet, radky) => soucet + radky|length, 0) %}
 <section class="mt-4" aria-labelledby="prijemci-nadpis">
     <h3 id="prijemci-nadpis">Příjemci</h3>
-    {% if not prijemci.platnaSkupina %}
+    {% if group.personal and not group.automaticMailing %}
+        {# Maily o vlastní přihlášce nerozesílá cron — odchází jednotlivě, když se s přihláškou něco stane (28. 9. 2026). #}
+        <div class="alert alert-info" data-prijemci="osobni">
+            <strong>Mail o vlastní přihlášce</strong> — nerozesílá se hromadně. Odejde jednotlivě tomu, komu přihláška
+            patří (kontaktním osobám s aktivovaným účtem), ve chvíli, kdy se s přihláškou něco stane: registrace,
+            shrnutí, přijetí platby, změna nebo zrušení přihlášky.
+            {{ group.participantCategories is empty ? 'Platí pro všechny kategorie přihlášek.' : 'Jen pro vybrané kategorie přihlášek.' }}
+        </div>
+    {% elseif not prijemci.platnaSkupina %}
         <div class="alert alert-warning">Skupina nemá akci nebo mailovou kategorii — nikomu nenapíše.</div>
     {% else %}
         {% if group.automaticMailing and prijemci.okno %}
@@ -48,7 +56,7 @@
         <p class="small text-muted">
             Počítá se ze stejných pravidel jako rozesílání: přihlášky akce „{{ group.event.name|default('?') }}“ (i turnusů pod ní),
             kterým tenhle e-mail ještě neodešel{{ group.onlyActive ? ', jen aktivní' : '' }},
-            {{ group.participantCategories is empty ? 'jen kategorie Účastník' : 'jen vybrané kategorie přihlášek' }}{{ group.filterExpression ? ' a filtr skupiny' : '' }}.
+            {{ group.participantCategories is not empty ? 'jen vybrané kategorie přihlášek' : (group.personal ? 'všechny kategorie přihlášek (mail o vlastní přihlášce)' : 'jen kategorie Účastník') }}{{ group.filterExpression ? ' a filtr skupiny' : '' }}.
         </p>
         {% if dostanou > 0 %}
             <details class="mb-2">

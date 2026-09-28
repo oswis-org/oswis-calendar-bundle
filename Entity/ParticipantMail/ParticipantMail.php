@@ -73,15 +73,37 @@ class ParticipantMail extends AbstractMail implements CommunicationEntryInterfac
      *   `strict_variables=false` (production) silently renders "0,- Kč, dnešní datum, vše uhrazeno".
      * - `activation-request`: the template needs a valid `participantToken`; a re-send would ship a dead link.
      *   Use the dedicated "↻ Aktivační e-mail" action, which mints a fresh token.
-     * - `registration-changed`: rendered from a file template with a computed diff, not from a DB mail category.
+     * - `registration-changed`: the template lists a computed diff that exists only at the moment of the change.
      */
     public const NON_RESENDABLE_TYPES = [
         self::TYPE_PAYMENT,
         self::TYPE_ACTIVATION_REQUEST,
         self::TYPE_REGISTRATION_CHANGED,
-        // `registration-cancelled`: standalone file template (like registration-changed), not a DB category.
+        // `registration-cancelled`: an announcement of a one-off event; re-sending it later would only confuse.
         self::TYPE_REGISTRATION_CANCELLED,
     ];
+
+    /**
+     * Maily o VLASTNÍ přihlášce — dostane je ten, komu přihláška patří, ať je v jakékoli kategorii.
+     *
+     * Rozhodnutí uživatele 27. 9. 2026 (krok 4): výchozí „nevybrané kategorie = jen Účastníci" je
+     * pojistka pro HROMADNÉ rozesílky; u potvrzení registrace, shrnutí nebo platby by naopak
+     * tiše vynechalo člena týmu či hosta, který se přihlásil a na svůj mail čeká.
+     * Vybere-li skupina kategorie výslovně, platí výběr i tady. Viz
+     * {@see ParticipantMailGroup::isApplicableByParticipantCategory()}.
+     */
+    public const PERSONAL_TYPES = [
+        self::TYPE_ACTIVATION_REQUEST,
+        self::TYPE_SUMMARY,
+        self::TYPE_PAYMENT,
+        self::TYPE_REGISTRATION_CHANGED,
+        self::TYPE_REGISTRATION_CANCELLED,
+    ];
+
+    public static function isPersonalType(?string $type): bool
+    {
+        return null !== $type && in_array($type, self::PERSONAL_TYPES, true);
+    }
 
     public static function isResendableType(?string $type): bool
     {

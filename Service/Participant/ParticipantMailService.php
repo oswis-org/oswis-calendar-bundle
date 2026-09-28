@@ -119,31 +119,35 @@ class ParticipantMailService
 
     /**
      * Send the "registration changed" notice (the computed diff) to each of the participant's contact
-     * persons via a standalone file template. No dedup — every real change should notify. Per-recipient
-     * failures are logged, not thrown.
+     * persons. No dedup — every real change should notify. Per-recipient failures are logged, not thrown.
+     *
+     * Šablona a předmět jdou z administrace (mailová kategorie `registration-changed` → skupina →
+     * šablona), stejně jako shrnutí; když skupina nebo šablona chybí, odejde mail jako dřív ze
+     * souborové šablony — viz {@see osobniSablona()}.
      *
      * @param array{hasChanges: bool, flags: array<string, array{added: list<string>, removed: list<string>}>, registrationsAdded: list<string>, registrationsRemoved: list<string>, contactUpdated: bool} $changes
      */
     public function sendRegistrationChanged(Participant $participant, array $changes): void
     {
-        $event = $participant->getEvent();
-        $title = 'Změna v přihlášce'.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : '');
         foreach ($participant->getContactPersons(true) as $contactPerson) {
             if (!$contactPerson instanceof AbstractContact || null === ($appUser = $contactPerson->getAppUser())) {
                 continue;
             }
             try {
-                $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CHANGED);
-                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
-                $templatedEmail = $participantMail->getTemplatedEmail();
                 $data = $this->contextFactory->create($participant, $appUser, [
                     'changes'       => $changes,
                     'type'          => ParticipantMail::TYPE_REGISTRATION_CHANGED,
                     'depositAmount' => $participant->getRemainingDeposit(),
                     'restAmount'    => $participant->getRemainingPriceRest(),
                 ]);
-                $data = $this->embedQrPayments($templatedEmail, $participant, $data, true);
-                $this->mailService->sendEMail($participantMail, self::REGISTRATION_CHANGED_TEMPLATE, $data);
+                [$templateName, $title, $mailCategory] = $this->osobniSablona(
+                    $participant, ParticipantMail::TYPE_REGISTRATION_CHANGED, self::REGISTRATION_CHANGED_TEMPLATE, 'Změna v přihlášce', $data,
+                );
+                $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CHANGED);
+                $participantMail->setParticipantMailCategory($mailCategory);
+                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
+                $data = $this->embedQrPayments($participantMail->getTemplatedEmail(), $participant, $data, true);
+                $this->mailService->sendEMail($participantMail, $templateName, $data);
                 $this->em->flush();
             } catch (\Throwable $exception) {
                 $this->logger->error(sprintf(
@@ -157,26 +161,30 @@ class ParticipantMailService
     }
 
     /**
-     * Send the "registration cancelled" notice to each of the participant's contact persons via a
-     * standalone file template. Fired on soft-delete from BOTH the web admin ({@see ParticipantService::delete})
-     * and the API/app PUT ({@see notifyParticipantChanged}), so cancellation behaves the same everywhere.
-     * Plain notice — no diff, no QR. Per-recipient failures are logged, not thrown (must not break delete).
+     * Send the "registration cancelled" notice to each of the participant's contact persons. Fired on
+     * soft-delete from BOTH the web admin ({@see ParticipantService::delete}) and the API/app PUT
+     * ({@see notifyParticipantChanged}), so cancellation behaves the same everywhere. Plain notice —
+     * no diff, no QR. Per-recipient failures are logged, not thrown (must not break delete).
+     *
+     * Šablona a předmět z administrace, se záchranou souborovou šablonou — viz {@see osobniSablona()}.
      */
     public function sendRegistrationCancelled(Participant $participant): void
     {
-        $event = $participant->getEvent();
-        $title = 'Zrušení přihlášky'.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : '');
         foreach ($participant->getContactPersons(true) as $contactPerson) {
             if (!$contactPerson instanceof AbstractContact || null === ($appUser = $contactPerson->getAppUser())) {
                 continue;
             }
             try {
-                $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CANCELLED);
-                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
                 $data = $this->contextFactory->create($participant, $appUser, [
                     'type' => ParticipantMail::TYPE_REGISTRATION_CANCELLED,
                 ]);
-                $this->mailService->sendEMail($participantMail, self::REGISTRATION_CANCELLED_TEMPLATE, $data);
+                [$templateName, $title, $mailCategory] = $this->osobniSablona(
+                    $participant, ParticipantMail::TYPE_REGISTRATION_CANCELLED, self::REGISTRATION_CANCELLED_TEMPLATE, 'Zrušení přihlášky', $data,
+                );
+                $participantMail = new ParticipantMail($participant, $appUser, $title, ParticipantMail::TYPE_REGISTRATION_CANCELLED);
+                $participantMail->setParticipantMailCategory($mailCategory);
+                $participantMail->setPastMails($this->participantMailRepository->findByParticipant($participant));
+                $this->mailService->sendEMail($participantMail, $templateName, $data);
                 $this->em->flush();
             } catch (\Throwable $exception) {
                 $this->logger->error(sprintf(
@@ -187,6 +195,44 @@ class ParticipantMailService
                 ));
             }
         }
+    }
+
+    /**
+     * Šablona, předmět a mailová kategorie pro mail o změně / zrušení přihlášky.
+     *
+     * Do 28. 9. 2026 šly tyhle dva maily natvrdo ze souborové šablony, takže je v administraci nešlo
+     * upravit ani najít. Teď se hledají stejně jako shrnutí (kategorie podle typu → platná skupina →
+     * šablona; šablona má za rodiče tutéž souborovou šablonu, takže bez vlastního textu vypadá mail
+     * stejně). **Záchrana:** chybí-li kategorie, skupina nebo šablona (např. před migrací, nebo když
+     * někdo skupinu smaže či omezí), odejde mail přesně jako dřív — souborová šablona a předmět
+     * „<název> – <akce>". Změna ani zrušení přihlášky tedy nikdy neskončí bez oznámení.
+     *
+     * @param array<string, mixed> $data kontext šablony (i pro předmět)
+     *
+     * @return array{0: string, 1: string, 2: ?ParticipantMailCategory} šablona, předmět, kategorie
+     */
+    private function osobniSablona(Participant $participant, string $type, string $souborovaSablona, string $nazev, array $data): array
+    {
+        $event = $participant->getEvent();
+        $mailCategory = $this->getMailCategoryByType($type);
+        $twigTemplate = null === $mailCategory ? null : $this->getMailGroupByCategory($participant, $mailCategory)?->getTwigTemplate();
+        if (null === $twigTemplate) {
+            $this->logger->warning(sprintf(
+                'Mail „%s" k přihlášce #%d: v administraci chybí kategorie, platná skupina nebo šablona — posílám souborovou šablonu.',
+                $type,
+                $participant->getId() ?? 0,
+            ));
+
+            // Předmět přesně jako před převodem (i s pomlčkou u akce bez názvu).
+            return [$souborovaSablona, $nazev.(null !== $event ? ' – '.($event->getShortName() ?? $event->getName() ?? '') : ''), $mailCategory];
+        }
+        $title = $this->mailRenderer->renderTemplateSubject(
+            $twigTemplate->getSubject(),
+            $data,
+            $this->withEventTitle($twigTemplate->getName() ?? $nazev, $event),
+        );
+
+        return [$twigTemplate->getTemplateName(), $title, $mailCategory];
     }
 
     /**

@@ -89,7 +89,9 @@ final class ParticipantMailGroupEditType extends AbstractType
                 'expanded'     => true,
                 'required'     => false,
                 'by_reference' => false,
-                'help'         => 'Nevybráno = jen Účastníci (bezpečný výchozí stav). Vyber kategorie '
+                'help'         => 'Nevybráno = jen Účastníci (bezpečný výchozí stav); u mailů o vlastní přihlášce '
+                    .'(ověření, shrnutí, platba, změna, zrušení) nevybráno = všechny kategorie, protože '
+                    .'je dostane jen ten, komu přihláška patří. Vyber kategorie '
                     .'jen tehdy, když chceš psát někomu jinému — třeba týmu. Pozor: „Člen týmu" a '
                     .'„Personál" jsou dvě různé skupiny lidí (tým akce × personál kempu), i když '
                     .'mají stejný typ.',

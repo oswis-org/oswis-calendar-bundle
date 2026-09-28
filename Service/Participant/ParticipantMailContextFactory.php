@@ -70,6 +70,11 @@ final class ParticipantMailContextFactory
             'payment'          => null,
             'depositQr'        => '',
             'restQr'           => '',
+            // Mail o změně přihlášky (od 28. 9. 2026 šablona v administraci): prázdný rozdíl a zbývající
+            // částky — skutečný rozdíl vzniká jen v okamžiku změny ({@see ParticipantMailService::sendRegistrationChanged()}).
+            'changes'          => ['hasChanges' => false, 'flags' => [], 'registrationsAdded' => [], 'registrationsRemoved' => [], 'contactUpdated' => false],
+            'depositAmount'    => $participant->getRemainingDeposit(),
+            'restAmount'       => $participant->getRemainingPriceRest(),
         ], $extra));
     }
 
