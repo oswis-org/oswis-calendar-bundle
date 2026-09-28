@@ -13,6 +13,7 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
+use OswisOrg\OswisCoreBundle\Mail\Quota\MailDailyQuota;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -41,7 +42,23 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantRepository $participantRepository,
         private readonly ParticipantMailBulkRepository $bulkRepository,
         private readonly EntityManagerInterface $em,
+        private readonly MailDailyQuota $quota,
     ) {
+    }
+
+    /**
+     * Denní limit pro stránky hromadných mailů (dávka 3.1).
+     *
+     * @return array{sent: int, remaining: ?int, bulk: int, hard: int}
+     */
+    private function denniLimit(): array
+    {
+        return [
+            'sent'      => $this->quota->sentToday(),
+            'remaining' => $this->quota->remainingForBulk(),
+            'bulk'      => $this->quota->bulkLimit(),
+            'hard'      => $this->quota->hardLimit(),
+        ];
     }
 
     /**
@@ -121,6 +138,7 @@ final class WebAdminBulkMailController extends AbstractController
             'recipients'     => $this->participantRepository->findByIds($ids),
             'form'           => $form,
             'validation'     => $validation,
+            'limit'          => $this->denniLimit(),
         ], new Response(status: $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
     }
 
@@ -201,6 +219,7 @@ final class WebAdminBulkMailController extends AbstractController
             'pageTitle' => 'Hromadné e-maily',
             'bulks'     => $this->bulkRepository->findRecent(30),
             'highlight' => $request->query->getInt('highlight'),
+            'limit'     => $this->denniLimit(),
         ]);
     }
 

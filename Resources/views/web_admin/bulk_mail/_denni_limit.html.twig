@@ -1,0 +1,16 @@
+{#
+    Denní limit odeslaných e-mailů (dávka 3.1, spec e-mailů §5.5) — kolik se dnes odeslalo a kolik hromadným zbývá.
+    Parametry: limit (array z WebAdminBulkMailController::denniLimit()), recipientCount (nepovinné — formulář).
+#}
+{% if limit.remaining is not null %}
+    {% set nestihne = recipientCount|default(0) > limit.remaining %}
+    <div class="alert {{ nestihne or limit.remaining == 0 ? 'alert-warning' : 'alert-light border' }} py-2 small" data-denni-limit>
+        <strong>Denní limit:</strong> dnes odesláno {{ limit.sent }} e-mailů · hromadným zbývá <strong>{{ limit.remaining }}</strong>
+        (limit hromadných {{ limit.bulk }}{{ limit.hard > 0 ? ', celkem ' ~ limit.hard : '' }}; systémové maily — registrace, platby — mají rezervu).
+        {% if nestihne %}
+            <br>Dnes odejde nejvýš {{ limit.remaining }} z {{ recipientCount }} zpráv, zbytek se pošle automaticky zítra. Pokud to má odejít celé dnes, je potřeba zvýšit limit (proměnná <code>OSWIS_MAIL_DAILY_BULK_LIMIT</code> na serveru).
+        {% elseif limit.remaining == 0 %}
+            <br>Dnes už hromadně nic neodejde — rozesílka pokračuje zítra.
+        {% endif %}
+    </div>
+{% endif %}

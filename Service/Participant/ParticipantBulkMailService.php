@@ -8,6 +8,7 @@ use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
+use OswisOrg\OswisCoreBundle\Mail\Quota\MailDailyQuota;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -22,6 +23,8 @@ class ParticipantBulkMailService
         protected EntityManagerInterface $em,
         protected ParticipantManualMailer $mailer,
         protected LoggerInterface $logger,
+        /** Denní limit hromadných (dávka 3.1); bez něj bez omezení. */
+        protected ?MailDailyQuota $quota = null,
     ) {
     }
 
@@ -88,7 +91,10 @@ class ParticipantBulkMailService
      * breaks on zero progress and resumes next tick). The entity is refresh()ed AFTER acquiring the
      * lock — the caller may hold a cursor that another drain has meanwhile advanced.
      *
-     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool}
+     * Denní limit hromadných ({@see MailDailyQuota}): když je vyčerpaný, dávka skončí PŘED dalším příjemcem
+     * (`limit: true`), kurzor zůstane a další den se pokračuje tam, kde se skončilo.
+     *
+     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool, limit: bool}
      */
     public function drainBatch(ParticipantMailBulk $bulk, int $batchSize = 15): array
     {
@@ -121,6 +127,11 @@ class ParticipantBulkMailService
 
             $mail = ParticipantManualMail::fromBulk($bulk);
             foreach ($slice as $position => $participantId) {
+                if (null !== $this->quota && !$this->quota->bulkAllowed()) {
+                    $this->logger->info(sprintf('Bulk #%d: denní limit hromadných (%d) vyčerpán — pokračuje zítra od pozice %d.', $bulk->getId() ?? 0, $this->quota->bulkLimit(), $bulk->getProcessedCount()));
+
+                    return $this->progress($bulk, $sent, $failed, limit: true);
+                }
                 $participant = $this->em->find(Participant::class, $participantId);
                 $delivery = $participant instanceof Participant
                     ? $this->sendToParticipant($bulk, $mail, $participant)
@@ -200,9 +211,9 @@ class ParticipantBulkMailService
     }
 
     /**
-     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool}
+     * @return array{sent: int, failed: int, processed: int, total: int, done: bool, busy: bool, limit: bool}
      */
-    private function progress(ParticipantMailBulk $bulk, int $sent, int $failed, bool $busy = false): array
+    private function progress(ParticipantMailBulk $bulk, int $sent, int $failed, bool $busy = false, bool $limit = false): array
     {
         return [
             'sent'      => $sent,
@@ -211,6 +222,7 @@ class ParticipantBulkMailService
             'total'     => $bulk->getTotalCount(),
             'done'      => $bulk->isDone(),
             'busy'      => $busy,
+            'limit'     => $limit,
         ];
     }
 }

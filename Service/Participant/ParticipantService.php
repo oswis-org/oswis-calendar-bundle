@@ -41,6 +41,7 @@ use OswisOrg\OswisCoreBundle\Exceptions\UserNotFoundException;
 use OswisOrg\OswisCoreBundle\Exceptions\UserNotUniqueException;
 use OswisOrg\OswisCoreBundle\Service\AppUserService;
 use OswisOrg\OswisCoreBundle\Service\AppUserTypeService;
+use OswisOrg\OswisCoreBundle\Mail\Quota\MailDailyQuota;
 use Psr\Log\LoggerInterface;
 
 class ParticipantService
@@ -58,6 +59,8 @@ class ParticipantService
         protected readonly AppUserTypeService $appUserTypeService,
         protected readonly ParticipantFilterEvaluator $filterEvaluator,
         protected readonly MailGroupRecipients $mailGroupRecipients,
+        /** Denní limit hromadných — automaily se na něm zastaví (dávka 3.1); bez něj bez omezení. */
+        protected readonly ?MailDailyQuota $quota = null,
     ) {
     }
 
@@ -1088,6 +1091,13 @@ class ParticipantService
             foreach ($this->mailGroupRecipients->kandidati($group, max(1, $limit)) as $participant => $duvod) {
                 if (null !== $duvod || !$group->isApplicableByDate()) {
                     continue;
+                }
+                // Denní limit hromadných: zbytek pošle cron zítra (kdo mail nedostal, zůstává kandidátem).
+                if (null !== $this->quota && !$this->quota->bulkAllowed()) {
+                    $errors[] = sprintf('Denní limit hromadných e-mailů (%d) je vyčerpán — automaily pokračují zítra.', $this->quota->bulkLimit());
+                    $this->logger->info('Automaily: denní limit hromadných vyčerpán, pokračuje se zítra.');
+
+                    return ['sent' => $sent, 'failed' => $failed, 'errors' => $errors];
                 }
                 try {
                     $this->participantMailService->sendMessage($participant, $group);

@@ -10,6 +10,8 @@
             <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="btn btn-sm btn-link">← Zpět na seznam přihlášek</a>
         </p>
 
+        {% include '@OswisOrgOswisCalendar/web_admin/bulk_mail/_denni_limit.html.twig' with { limit: limit } only %}
+
         {% if bulks is empty %}
             <p class="text-muted">Žádné hromadné e-maily.</p>
         {% else %}
@@ -69,7 +71,7 @@
 
             function update(row, p) {
                 if (!row) { return; }
-                row.querySelector('.bm-status').textContent = p.done ? 'done' : 'sending';
+                row.querySelector('.bm-status').textContent = p.done ? 'done' : (p.limit ? 'pozastaveno — denní limit, pokračuje zítra' : 'sending');
                 row.querySelector('.bm-progress').textContent = p.processed + '/' + p.total;
                 var sent = parseInt(row.getAttribute('data-sent') || '0', 10) + (p.sent || 0);
                 var failed = parseInt(row.getAttribute('data-failed') || '0', 10) + (p.failed || 0);
@@ -87,6 +89,8 @@
                     if (p.error) { return; }
                     update(rowFor(id), p);
                     if (p.done) { return; }
+                    // Denní limit hromadných vyčerpaný — dál nezkoušet; zbytek pošle cron zítra.
+                    if (p.limit) { return; }
                     // busy = another drain (cron / second tab) holds the per-bulk lock —
                     // back off instead of hammering; the re-poll picks up its progress.
                     if (p.busy) {

@@ -176,8 +176,11 @@ final class SendMailCommand extends Command
                     $totalSent += $progress['sent'];
                     $totalFailed += $progress['failed'];
                     $processedThisRun += $progress['sent'] + $progress['failed'];
+                    if ($progress['limit']) {
+                        $io->note(sprintf('Bulk #%d: denní limit hromadných vyčerpán — pokračuje se zítra.', $bulk->getId() ?? 0));
+                    }
                     if (0 === $progress['sent'] + $progress['failed']) {
-                        break; // nothing advanced (empty slice) — avoid spin
+                        break; // nothing advanced (empty slice, denní limit) — avoid spin
                     }
                 }
             }

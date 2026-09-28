@@ -17,6 +17,8 @@
             Jde o <strong>reálné odeslání</strong> živým lidem — zkontrolujte text a náhled.
         </div>
 
+        {% include '@OswisOrgOswisCalendar/web_admin/bulk_mail/_denni_limit.html.twig' with { limit: limit, recipientCount: recipientCount } only %}
+
         {# Seznam příjemců — kdo přesně zprávu dostane (náhled pro kohokoli z nich je u textu). #}
         <details class="mb-3"{{ recipientCount <= 25 ? ' open' : '' }}>
             <summary style="cursor:pointer;font-weight:600;"><twig:ux:icon name="tabler:clipboard-list" class="oa-icon" /> Seznam příjemců ({{ recipientCount }}) — zobrazit / skrýt</summary>
