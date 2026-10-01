@@ -262,6 +262,12 @@ class ParticipantMailBulk
         }
     }
 
+    /** Příjemce přeskočený (např. přihláška mezitím zrušená) — jen poznámka, nepočítá se mezi chyby. */
+    public function recordSkipped(string $note): void
+    {
+        $this->failedNote = mb_substr(trim(($this->failedNote ?? '')."\n".trim($note)), 0, 60000);
+    }
+
     public function getFailedNote(): ?string
     {
         return $this->failedNote;

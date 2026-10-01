@@ -71,6 +71,42 @@ class ParticipantBulkMailService
     }
 
     /**
+     * Kontrola před odesláním (spec §5.2, dávka 3.3): kolik zpráv odejde a kdo nedostane nic a proč — stejným
+     * výběrem adres jako odeslání ({@see ParticipantMailContextFactory::recipientUsers()}), takže ukazuje skutečnost.
+     *
+     * @param array<int> $participantIds
+     *
+     * @return array{zprav: int, prihlasek: int, vypadnou: list<array{id: int, popis: string, duvod: string}>}
+     */
+    public function prehledPrijemcu(array $participantIds): array
+    {
+        $zprav = 0;
+        $prihlasek = 0;
+        $vypadnou = [];
+        foreach ($participantIds as $participantId) {
+            $participant = $this->em->find(Participant::class, (int) $participantId);
+            if (!$participant instanceof Participant) {
+                $vypadnou[] = ['id' => (int) $participantId, 'popis' => '#'.(int) $participantId, 'duvod' => 'přihláška neexistuje'];
+                continue;
+            }
+            $popis = trim('#'.(int) $participant->getId().' '.($participant->getContact()?->getName() ?? ''));
+            if (null !== $participant->getDeletedAt()) {
+                $vypadnou[] = ['id' => (int) $participant->getId(), 'popis' => $popis, 'duvod' => 'přihláška je zrušená'];
+                continue;
+            }
+            $adres = count(ParticipantMailContextFactory::recipientUsers($participant));
+            if (0 === $adres) {
+                $vypadnou[] = ['id' => (int) $participant->getId(), 'popis' => $popis, 'duvod' => 'nemá aktivovaný účet — není komu psát'];
+                continue;
+            }
+            $zprav += $adres;
+            ++$prihlasek;
+        }
+
+        return ['zprav' => $zprav, 'prihlasek' => $prihlasek, 'vypadnou' => $vypadnou];
+    }
+
+    /**
      * @param array<int> $participantIds
      *
      * @return list<Participant>
@@ -157,6 +193,13 @@ class ParticipantBulkMailService
                     return $this->progress($bulk, $sent, $failed, limit: true);
                 }
                 $participant = $this->em->find(Participant::class, $participantId);
+                // Přihláška zrušená mezi zařazením a odesláním se přeskočí (spec §5.3 h) — není chyba, jen poznámka.
+                if ($participant instanceof Participant && null !== $participant->getDeletedAt()) {
+                    $bulk->recordSkipped(sprintf('#%d: přihláška mezitím zrušena — přeskočeno', (int) $participantId));
+                    $bulk->setProcessedCount($start + (int) $position + 1);
+                    $this->em->flush();
+                    continue;
+                }
                 $delivery = $participant instanceof Participant
                     ? $this->sendToParticipant($bulk, $mail, $participant)
                     : ['sent' => 0, 'errors' => ['přihláška neexistuje']];

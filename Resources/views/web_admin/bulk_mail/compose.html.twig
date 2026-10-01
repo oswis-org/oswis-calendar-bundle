@@ -71,7 +71,6 @@
         {{ form_start(form, { attr: {
             id: 'bulkMailForm',
             novalidate: 'novalidate',
-            onsubmit: "return confirm('Zařadit hromadný e-mail pro " ~ recipientCount ~ " příjemců a spustit odesílání?');",
         } }) }}
             {{ form_widget(form.idsCsv) }}
             {{ form_row(form.subject) }}
@@ -93,11 +92,48 @@
 
             <div class="mb-3" style="max-width: 20rem;">{{ form_row(form.sendAt) }}</div>
 
-            <p class="text-muted"><small>Před zařazením se zpráva zkontroluje pro {{ recipientCount == 1 ? 'příjemce' : 'všech ' ~ recipientCount ~ ' příjemců' }}
-                a vykreslí se každému zvlášť.</small></p>
-            {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation|default(null) } only %}
+            {# Kontrola před odesláním (spec §5.2, dávka 3.3): ukáže se po „Zkontrolovat…"; zařadí až „Odeslat" z panelu. #}
+            {% if kontrola is not null %}
+                {% set chyby = validation is not null and validation.hasErrors %}
+                {% set naplanovano = form.sendAt.vars.data is not null %}
+                <section class="card mb-3 {{ chyby or kontrola.zprav == 0 ? 'border-danger' : 'border-primary' }}" aria-labelledby="kontrola-nadpis" data-kontrola>
+                    <div class="card-body">
+                        <h3 class="h5" id="kontrola-nadpis">Kontrola před odesláním</h3>
+                        <p class="mb-2">
+                            Odejde <strong>{{ kontrola.zprav }} {{ kontrola.zprav == 1 ? 'zpráva' : (kontrola.zprav < 5 ? 'zprávy' : 'zpráv') }}</strong>
+                            pro {{ kontrola.prihlasek }} {{ kontrola.prihlasek == 1 ? 'přihlášku' : (kontrola.prihlasek < 5 ? 'přihlášky' : 'přihlášek') }}
+                            {{- naplanovano ? ', naplánováno na ' ~ form.sendAt.vars.data|date('j. n. Y H:i') : ', začne se za 30 sekund (do té doby jde zrušit)' }}.
+                        </p>
+                        {% if limit.remaining is not null and kontrola.zprav > limit.remaining %}
+                            <p class="mb-2 text-warning-emphasis">Do dnešního limitu se vejde {{ limit.remaining }} — zbytek odejde automaticky zítra.</p>
+                        {% endif %}
+                        {% if kontrola.vypadnou is not empty %}
+                            <details class="mb-2"{{ kontrola.vypadnou|length <= 10 ? ' open' : '' }}>
+                                <summary>Nedostanou nic: {{ kontrola.vypadnou|length }}</summary>
+                                <ul class="small mb-0 mt-1">
+                                    {% for v in kontrola.vypadnou %}<li>{{ v.popis }} — {{ v.duvod }}</li>{% endfor %}
+                                </ul>
+                            </details>
+                        {% endif %}
+                        {% if kontrola.zprav == 0 %}
+                            <p class="text-danger mb-0">Nikdo z vybraných zprávu nedostane — není co odeslat.</p>
+                        {% elseif chyby %}
+                            <p class="text-danger mb-0">Zpráva má chyby (výše) — po opravě ji zkontroluj znovu.</p>
+                        {% else %}
+                            {% include '@OswisOrgOswisCalendar/web_admin/mail/_confirm_warnings.html.twig' with { validation: validation } only %}
+                            <button type="submit" name="odeslat" value="1" class="btn btn-primary">
+                                <twig:ux:icon name="tabler:mail" class="oa-icon" /> {{ naplanovano ? 'Naplánovat' : 'Odeslat' }} ({{ kontrola.zprav }})
+                            </button>
+                            <span class="small text-muted ms-2">Když text ještě změníš, zkontroluj ho znovu tlačítkem níže.</span>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
             <div class="mb-3">
-                <button type="submit" class="btn btn-primary"><twig:ux:icon name="tabler:mail" class="oa-icon" /> Zařadit a odeslat ({{ recipientCount }})</button>
+                <button type="submit" class="btn {{ kontrola is null ? 'btn-primary' : 'btn-outline-primary' }}">
+                    <twig:ux:icon name="tabler:circle-check" class="oa-icon" /> {{ kontrola is null ? 'Zkontrolovat a odeslat…' : 'Zkontrolovat znovu' }}
+                </button>
+                <span class="small text-muted ms-2">Nic se zatím neodešle — nejdřív se ukáže, kolik zpráv a komu odejde.</span>
             </div>
         {{ form_end(form) }}
     </main>

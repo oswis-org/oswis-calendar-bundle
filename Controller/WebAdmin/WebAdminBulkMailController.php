@@ -145,8 +145,9 @@ final class WebAdminBulkMailController extends AbstractController
      * @param list<int>            $ids
      * @param FormInterface<mixed> $form
      * @param Participant|null     $participant přihláška, ze které se píše „Nová zpráva" (jeden příjemce)
+     * @param array{zprav: int, prihlasek: int, vypadnou: list<array{id: int, popis: string, duvod: string}>}|null $kontrola panel kontroly před odesláním
      */
-    private function renderCompose(array $ids, FormInterface $form, ?MailValidationResult $validation = null, ?Participant $participant = null): Response
+    private function renderCompose(array $ids, FormInterface $form, ?MailValidationResult $validation = null, ?Participant $participant = null, ?array $kontrola = null, ?int $status = null): Response
     {
         if (null === $participant && 1 === count($ids)) {
             // Návrat formuláře po chybě: pořád jde o zprávu jedné přihlášce (odkaz zpět, nadpis).
@@ -162,7 +163,8 @@ final class WebAdminBulkMailController extends AbstractController
             'form'           => $form,
             'validation'     => $validation,
             'limit'          => $this->denniLimit(),
-        ], new Response(status: $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+            'kontrola'       => $kontrola,
+        ], new Response(status: $status ?? ($form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK)));
     }
 
     /** Step 2: queue the bulk (snapshot of recipients). Sends nothing; the drain does. */
@@ -194,8 +196,15 @@ final class WebAdminBulkMailController extends AbstractController
         // Kontrola VŠECH příjemců — s chybou zprávu nejde zařadit, s varováním až po potvrzení autora
         // (dřív se varování ukázalo až po zařazení, kdy už mail odcházel — 13. 9. 2026).
         $validation = $this->bulkMailService->validate($mail, $ids);
-        if (!$validation->isConfirmedBy($request->request->getString('confirmWarnings'))) {
-            return $this->renderCompose($ids, $form, $validation);
+        // Kontrola před odesláním (spec §5.2): první odeslání formuláře jen ukáže panel kontroly (kolik zpráv,
+        // kdo vypadne a proč, limit, výsledek kontroly textu); zařadí až tlačítko „Odeslat" z panelu (`odeslat`).
+        // Text se mezitím dá upravit — každé odeslání se kontroluje znovu.
+        $prehled = $this->bulkMailService->prehledPrijemcu($ids);
+        if ($validation->hasErrors() || 0 === $prehled['zprav']) {
+            return $this->renderCompose($ids, $form, $validation, kontrola: $prehled);
+        }
+        if (!$request->request->has('odeslat') || !$validation->isConfirmedBy($request->request->getString('confirmWarnings'))) {
+            return $this->renderCompose($ids, $form, $validation, kontrola: $prehled, status: $request->request->has('odeslat') ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK);
         }
         try {
             $bulk = $this->bulkMailService->queue($mail, $ids, $validation, $data['sendAt']);
@@ -206,8 +215,8 @@ final class WebAdminBulkMailController extends AbstractController
         }
         $zacatek = $bulk->getSendAfter();
         $this->addFlash('success', null !== $data['sendAt'] && null !== $zacatek
-            ? sprintf('Hromadný e-mail pro %d příjemců je naplánovaný na %s. Do té doby ho tady jde zrušit.', count($ids), $zacatek->format('j. n. Y H:i'))
-            : sprintf('Hromadný e-mail pro %d příjemců se začne odesílat za %d sekund — do té doby ho tady jde zrušit.', count($ids), ParticipantMailBulk::ODKLAD_SEKUND));
+            ? sprintf('Zpráva (%d zpráv pro %d přihlášek) je naplánovaná na %s. Do té doby ji tady jde zrušit.', $prehled['zprav'], $prehled['prihlasek'], $zacatek->format('j. n. Y H:i'))
+            : sprintf('Zpráva (%d zpráv pro %d přihlášek) se začne odesílat za %d sekund — do té doby ji tady jde zrušit.', $prehled['zprav'], $prehled['prihlasek'], ParticipantMailBulk::ODKLAD_SEKUND));
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status', ['highlight' => $bulk->getId()]);
     }
