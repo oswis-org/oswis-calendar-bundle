@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OswisOrg\OswisCalendarBundle\Controller\WebAdmin;
 
 use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
 use OswisOrg\OswisCalendarBundle\Form\WebAdmin\BulkMailType;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
@@ -87,6 +88,21 @@ final class WebAdminBulkMailController extends AbstractController
     }
 
     /**
+     * „Nová zpráva" jedné přihlášce (z detailu přihlášky) — TENTÝŽ formulář a fronta jako hromadný e-mail
+     * (1 = N s N = 1; rozhodnutí uživatele 1. 10. 2026): 30 s na zrušení, plánování, uložená kampaň, denní limit,
+     * kontrola. Dřív zvláštní cesta (`WebAdminAdHocMailController`), která posílala hned a nic z toho neuměla.
+     */
+    public function composeOne(int $participantId): Response
+    {
+        $participant = $this->participantRepository->find($participantId);
+        if (!$participant instanceof Participant) {
+            throw $this->createNotFoundException('Přihláška nenalezena.');
+        }
+
+        return $this->renderCompose([$participantId], $this->bulkForm([$participantId]), participant: $participant);
+    }
+
+    /**
      * Formulář hromadné zprávy ({@see BulkMailType}) nad danými příjemci. Náhled vedle textu nabízí každého z nich.
      *
      * @param list<int> $ids
@@ -128,12 +144,19 @@ final class WebAdminBulkMailController extends AbstractController
      *
      * @param list<int>            $ids
      * @param FormInterface<mixed> $form
+     * @param Participant|null     $participant přihláška, ze které se píše „Nová zpráva" (jeden příjemce)
      */
-    private function renderCompose(array $ids, FormInterface $form, ?MailValidationResult $validation = null): Response
+    private function renderCompose(array $ids, FormInterface $form, ?MailValidationResult $validation = null, ?Participant $participant = null): Response
     {
+        if (null === $participant && 1 === count($ids)) {
+            // Návrat formuláře po chybě: pořád jde o zprávu jedné přihlášce (odkaz zpět, nadpis).
+            $participant = $this->participantRepository->find($ids[0]);
+            $participant = $participant instanceof Participant ? $participant : null;
+        }
         return $this->render('@OswisOrgOswisCalendar/web_admin/bulk_mail/compose.html.twig', [
-            'title'          => 'Hromadný e-mail :: ADMIN',
-            'pageTitle'      => 'Hromadný e-mail',
+            'title'          => (null === $participant ? 'Hromadný e-mail' : sprintf('Nová zpráva účastníkovi #%d', $participant->getId() ?? 0)).' :: ADMIN',
+            'pageTitle'      => null === $participant ? 'Hromadný e-mail' : sprintf('Nová zpráva účastníkovi #%d', $participant->getId() ?? 0),
+            'participant'    => $participant,
             'recipientCount' => count($ids),
             'recipients'     => $this->participantRepository->findByIds($ids),
             'form'           => $form,

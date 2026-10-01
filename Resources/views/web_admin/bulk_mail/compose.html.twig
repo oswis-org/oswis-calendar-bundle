@@ -4,21 +4,37 @@
 
 {% block body_content %}
     <main class="container">
-        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'bulk' } only %}
+        {# Jeden příjemce = „Nová zpráva" z detailu přihlášky (stránka patří k Účastníkům); jinak hromadný e-mail. #}
+        {% if participant is null %}
+            {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'bulk' } only %}
+        {% endif %}
         <h2><twig:ux:icon name="tabler:mail" class="oa-icon" /> {{ pageTitle }}</h2>
         <p>
-            <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="btn btn-sm btn-link">← Zpět na seznam přihlášek</a>
+            {% if participant is not null %}
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id, _fragment: 'komunikace' }) }}" class="btn btn-sm btn-link">← Zpět na historii komunikace</a>
+            {% else %}
+                <a href="{{ path('oswis_org_oswis_calendar_web_admin_participants_list') }}" class="btn btn-sm btn-link">← Zpět na seznam přihlášek</a>
+            {% endif %}
             · <a href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_status') }}" class="btn btn-sm btn-link">Stav hromadných e-mailů</a>
         </p>
 
         <div class="alert alert-info">
-            <strong>Příjemců: {{ recipientCount }}</strong> {{ recipientCount == 1 ? 'přihláška' : 'přihlášek' }}.
-            Každá přihláška = nejméně 1 e-mailová adresa (organizace může mít více).
-            Jde o <strong>reálné odeslání</strong> živým lidem — zkontrolujte text a náhled.
+            {% if participant is not null %}
+                {# Ne `|default`: kontakt bez jména má prázdné __toString(). #}
+                <strong>Příjemce:</strong> {{ participant.contact ? (participant.contact.name|default('(bez jména)')) : '(bez kontaktu)' }}
+                {%- if participant.contact and participant.contact.appUser %} · {{ participant.contact.appUser.email }}{% endif %}.
+                Zpráva odejde na všechny adresy přihlášky s aktivovaným účtem a uloží se do historie komunikace;
+                začne se odesílat za 30 sekund (do té doby jde zrušit), nebo ve zvolený čas.
+            {% else %}
+                <strong>Příjemců: {{ recipientCount }}</strong> {{ recipientCount == 1 ? 'přihláška' : (recipientCount < 5 ? 'přihlášky' : 'přihlášek') }}.
+                Každá přihláška = nejméně 1 e-mailová adresa (organizace může mít více).
+                Jde o <strong>reálné odeslání</strong> živým lidem — zkontrolujte text a náhled.
+            {% endif %}
         </div>
 
         {% include '@OswisOrgOswisCalendar/web_admin/bulk_mail/_denni_limit.html.twig' with { limit: limit, recipientCount: recipientCount } only %}
 
+        {% if participant is null %}
         {# Seznam příjemců — kdo přesně zprávu dostane (náhled pro kohokoli z nich je u textu). #}
         <details class="mb-3"{{ recipientCount <= 25 ? ' open' : '' }}>
             <summary style="cursor:pointer;font-weight:600;"><twig:ux:icon name="tabler:clipboard-list" class="oa-icon" /> Seznam příjemců ({{ recipientCount }}) — zobrazit / skrýt</summary>
@@ -47,6 +63,7 @@
                 </table>
             </div>
         </details>
+        {% endif %}
 
         {% include '@OswisOrgOswisCalendar/web_admin/mail/_problems.html.twig' with { validation: validation|default(null) } only %}
 

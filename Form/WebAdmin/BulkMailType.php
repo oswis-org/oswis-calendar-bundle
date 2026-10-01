@@ -19,11 +19,10 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
- * Hromadný e-mail vybraným přihláškám — vlastní text v editoru ({@see MailBodyType}), NEBO celá uložená kampaň.
+ * Zpráva jedné i více přihláškám (od 1. 10. 2026 i „Nová zpráva" z detailu přihlášky — 1 = N s N = 1) — vlastní text v editoru ({@see MailBodyType}), NEBO celá uložená kampaň.
  *
  * Do 28. 9. 2026 byla obrazovka ručně psané HTML a controller četl pole z POSTu sám (vlastní kontrola CSRF,
- * „předmět + text nebo kampaň" jednou společnou hláškou). Teď stejně jako „Nová zpráva" ({@see AdHocMailType})
- * a šablony: CSRF a kontrola formulářem, chyba u pole, kterého se týká. O režimu rozhoduje server
+ * „předmět + text nebo kampaň" jednou společnou hláškou). Teď stejně jako šablony: CSRF a kontrola formulářem, chyba u pole, kterého se týká. O režimu rozhoduje server
  * (`mailMode`), ne to, zda JavaScript stihl vyprázdnit výběr kampaně.
  *
  * Volby: `campaigns` (název => slug uložených kampaní), `preview` (náhled vedle textu, viz {@see MailBodyType}).
