@@ -12,6 +12,9 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepos
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
+use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
+use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Entity\MailTestInbox\MailTestInbox;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Mail\Quota\MailDailyQuota;
@@ -44,7 +47,29 @@ final class WebAdminBulkMailController extends AbstractController
         private readonly ParticipantMailBulkRepository $bulkRepository,
         private readonly EntityManagerInterface $em,
         private readonly MailDailyQuota $quota,
+        private readonly ParticipantManualMailer $manualMailer,
     ) {
+    }
+
+    /**
+     * Kam smí odejít zkouška sobě (spec §5.3 a): adresa přihlášeného správce a zkušební schránky z Nastavení.
+     *
+     * @return array<string, string> popisek => adresa
+     */
+    private function zkusebniAdresy(): array
+    {
+        $adresy = [];
+        $user = $this->getUser();
+        if ($user instanceof AppUser && '' !== ($email = mb_strtolower(trim($user->getEmail())))) {
+            $adresy[sprintf('%s (moje adresa)', $email)] = $email;
+        }
+        foreach ($this->em->getRepository(MailTestInbox::class)->findBy([], ['email' => 'ASC']) as $inbox) {
+            if (!in_array($inbox->getEmail(), $adresy, true)) {
+                $adresy[null !== $inbox->getNote() ? sprintf('%s (%s)', $inbox->getEmail(), $inbox->getNote()) : $inbox->getEmail()] = $inbox->getEmail();
+            }
+        }
+
+        return $adresy;
     }
 
     /**
@@ -124,8 +149,9 @@ final class WebAdminBulkMailController extends AbstractController
         }
 
         return $this->createForm(BulkMailType::class, ['idsCsv' => implode(',', $ids), 'mailMode' => BulkMailType::MODE_BODY] + ($data ?? []), [
-            'action'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_bulk_mail_queue'),
-            'campaigns' => $campaigns,
+            'action'        => $this->generateUrl('oswis_org_oswis_calendar_web_admin_bulk_mail_queue'),
+            'campaigns'     => $campaigns,
+            'testAddresses' => $this->zkusebniAdresy(),
             'preview'   => [
                 'url'           => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_preview'),
                 'valuesUrl'     => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_values'),
@@ -197,6 +223,9 @@ final class WebAdminBulkMailController extends AbstractController
             // Automatické ukládání smí jen ukládat koncept — nikdy nic neodeslat ani nezařadit.
             return new JsonResponse(['error' => 'invalid'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
+        if (BulkMailType::posilaZkousku($form)) {
+            return $this->poslatZkousku($ids, $data, $koncept, $form);
+        }
         $mail = new ParticipantManualMail(
             trim((string) $data['subject']),
             $kampan ? '' : (string) $data['body'],
@@ -258,6 +287,69 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->renderCompose($ids, $this->bulkForm($ids, ['konceptId' => null, 'konceptRevize' => null] + $data), status: Response::HTTP_CONFLICT);
         }
         $this->addFlash('success', 'Koncept uložen. Najdeš ho i na stránce „Hromadné e-maily" mezi rozepsanými.');
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_draft', ['id' => $bulk->getId()]);
+    }
+
+    /**
+     * Zkouška sobě (dávka 3.4, spec §5.3 a): zprávu nejdřív uloží jako koncept (zkouška se zaznamená u něj a kontrola
+     * před odesláním ji ukáže), zkontroluje ji pro příjemce z náhledu a pošle mu vykreslenou verzi s „[ZKOUŠKA]" na
+     * zaškrtnuté adresy — jen z povolených (správce + zkušební schránky). Nic se nezařadí ani nezapíše k přihlášce.
+     *
+     * @param list<int>                                                                                                                                 $ids
+     * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data
+     * @param array{id: int, revision: int}|null                                                                                                          $koncept
+     * @param FormInterface<mixed>                                                                                                                       $form
+     */
+    private function poslatZkousku(array $ids, array $data, ?array $koncept, FormInterface $form): Response
+    {
+        $povolene = $this->zkusebniAdresy();
+        $vybrane = $form->get('zkouskaAdresy')->getData();
+        $adresy = array_values(array_intersect(is_array($vybrane) ? array_map(static fn (mixed $v): string => is_scalar($v) ? (string) $v : '', $vybrane) : [], $povolene));
+        if ([] === $adresy) {
+            $this->addFlash('danger', 'Zkouška nemá kam odejít — zaškrtni svou adresu nebo zkušební schránku.');
+
+            return $this->renderCompose($ids, $form);
+        }
+        $pro = $form->get('zkouskaPro')->getData();
+        $participantId = is_numeric($pro) && in_array((int) $pro, $ids, true) ? (int) $pro : $ids[0];
+        $participant = $this->participantRepository->find($participantId);
+        if (!$participant instanceof Participant) {
+            $this->addFlash('danger', sprintf('Přihláška #%d, pro kterou se má zkouška vykreslit, neexistuje.', $participantId));
+
+            return $this->renderCompose($ids, $form);
+        }
+        $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
+        $mail = new ParticipantManualMail(trim((string) $data['subject']), $kampan ? '' : (string) $data['body'], $kampan ? $data['templateSlug'] : null, $this->adminName());
+        // Chyba v textu = zkouška neodejde (stejná kontrola jako odeslání, jen pro vybraného příjemce).
+        $validation = $this->bulkMailService->validate($mail, [$participantId]);
+        if ($validation->hasErrors()) {
+            return $this->renderCompose($ids, $form, $validation);
+        }
+        $ulozeni = new ParticipantManualMail($mail->subject, (string) $data['body'], $mail->templateSlug, $mail->adminName);
+        $bulk = $this->bulkMailService->saveDraft($ulozeni, $ids, $data['sendAt'], $koncept);
+        if (null === $bulk) {
+            $this->addFlash('danger', ParticipantBulkMailService::KONCEPT_ZMENEN.' Zkouška neodešla.');
+
+            return $this->renderCompose($ids, $this->bulkForm($ids, ['konceptId' => null, 'konceptRevize' => null] + $data), status: Response::HTTP_CONFLICT);
+        }
+        $chyby = [];
+        $odeslano = 0;
+        foreach ($adresy as $adresa) {
+            $chyba = $this->manualMailer->sendTest($mail, $participant, $adresa);
+            if (null === $chyba) {
+                ++$odeslano;
+            } else {
+                $chyby[] = sprintf('%s: %s', $adresa, $chyba);
+            }
+        }
+        $bulk->recordTest(new \DateTimeImmutable(), $this->adminName(), $adresy, $participantId, $odeslano, $chyby);
+        $this->em->flush();
+        if ([] === $chyby) {
+            $this->addFlash('success', sprintf('Zkouška (vykreslená pro #%d) odešla na %s. Zpráva je uložená jako koncept.', $participantId, implode(', ', $adresy)));
+        } else {
+            $this->addFlash('danger', sprintf('Zkouška neodešla všude (%d z %d): %s', $odeslano, count($adresy), implode(' | ', $chyby)));
+        }
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_draft', ['id' => $bulk->getId()]);
     }

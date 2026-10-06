@@ -41,6 +41,8 @@ final class BulkMailType extends AbstractType
     {
         /** @var array<string, string> $campaigns */
         $campaigns = $options['campaigns'];
+        /** @var array<string, string> $testAddresses */
+        $testAddresses = $options['testAddresses'];
         $builder
             // Snímek příjemců z výběru v seznamu přihlášek (ID oddělená čárkou) — nese se mezi kroky.
             ->add('idsCsv', HiddenType::class)
@@ -87,6 +89,21 @@ final class BulkMailType extends AbstractType
                 'required' => true,
                 'preview'  => $options['preview'],
             ])
+            // Zkouška sobě (dávka 3.4, spec §5.3 a): jen adresa správce a zkušební schránky z Nastavení, nikdy libovolná.
+            ->add('zkouskaAdresy', ChoiceType::class, [
+                'label'    => 'Poslat zkoušku na',
+                'required' => false,
+                'multiple' => true,
+                'expanded' => true,
+                'choices'  => $testAddresses,
+                'data'     => array_slice(array_values($testAddresses), 0, 1),
+            ])
+            // Pro koho zkoušku vykreslit — příjemce vybraný v náhledu (skript ho sem přepíše); jinak první.
+            ->add('zkouskaPro', HiddenType::class)
+            ->add('poslatZkousku', SubmitType::class, [
+                'label' => 'Poslat zkoušku',
+                'attr'  => ['class' => 'btn btn-outline-secondary btn-sm'],
+            ])
             // Uložit rozepsané (dávka 3.3) — i neúplné: kontroluje se jen délka předmětu (sloupec) a CSRF.
             ->add('ulozitKoncept', SubmitType::class, [
                 'label' => 'Uložit koncept',
@@ -100,12 +117,35 @@ final class BulkMailType extends AbstractType
             'data_class'  => null,
             'campaigns'   => [],
             'preview'     => null,
-            'constraints' => [new Callback(self::overitRezim(...))],
+            'testAddresses' => [],
+            'constraints' => [new Callback(self::overitRezim(...)), new Callback(self::overitZkousku(...))],
             // Koncept se uloží i neúplný — jen skupina `koncept` (délka předmětu); jinak plná kontrola.
             'validation_groups' => static fn (FormInterface $form): array => self::ukladaKoncept($form) ? [self::GROUP_DRAFT] : ['Default'],
         ]);
         $resolver->setAllowedTypes('campaigns', 'array');
+        $resolver->setAllowedTypes('testAddresses', 'array');
         $resolver->setAllowedTypes('preview', ['null', 'array']);
+    }
+
+    /** Bylo kliknuto na „Poslat zkoušku"? */
+    public static function posilaZkousku(FormInterface $form): bool
+    {
+        $button = $form->has('poslatZkousku') ? $form->get('poslatZkousku') : null;
+
+        return $button instanceof ClickableInterface && $button->isClicked();
+    }
+
+    /**
+     * Zkouška potřebuje aspoň jednu adresu (jinak se nekontroluje).
+     *
+     * @param array<string, mixed>|null $data
+     */
+    public static function overitZkousku(?array $data, ExecutionContextInterface $context): void
+    {
+        $form = $context->getRoot();
+        if ($form instanceof FormInterface && self::posilaZkousku($form) && [] === ($data['zkouskaAdresy'] ?? [])) {
+            $context->buildViolation('Zaškrtni, kam má zkouška odejít.')->atPath('[zkouskaAdresy]')->addViolation();
+        }
     }
 
     /** Bylo kliknuto na „Uložit koncept"? */

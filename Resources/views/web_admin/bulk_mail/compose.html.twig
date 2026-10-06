@@ -115,6 +115,15 @@
                         {% if limit.remaining is not null and kontrola.zprav > limit.remaining %}
                             <p class="mb-2 text-warning-emphasis">Do dnešního limitu se vejde {{ limit.remaining }} — zbytek odejde automaticky zítra.</p>
                         {% endif %}
+                        {% set zkouska = koncept is not null ? koncept.lastTest : null %}
+                        <p class="mb-2 small" data-kontrola-zkouska>
+                            {% if zkouska %}
+                                Zkouška: {{ zkouska.sent > 0 ? 'odeslána' : 'NEODEŠLA' }} {{ zkouska.at|date('j. n. Y H:i') }} na {{ zkouska.to|join(', ') }}
+                                (vykresleno pro #{{ zkouska.participantId }}){{ zkouska.errors is not empty ? ' — chyby: ' ~ zkouska.errors|join(' | ') : '' }}.
+                            {% else %}
+                                Zkouška zatím neodešla — doporučeno ověřit vzhled ve schránce (níže „Poslat zkoušku").
+                            {% endif %}
+                        </p>
                         {% if kontrola.vypadnou is not empty %}
                             <details class="mb-2"{{ kontrola.vypadnou|length <= 10 ? ' open' : '' }}>
                                 <summary>Nedostanou nic: {{ kontrola.vypadnou|length }}</summary>
@@ -145,6 +154,22 @@
                 <span class="small text-muted">Nic se zatím neodešle — nejdřív se ukáže, kolik zpráv a komu odejde. Koncept se uloží i nedopsaný (rozepsaná zpráva se ukládá i sama).</span>
                 <span class="small text-muted w-100" role="status" aria-live="polite" data-autosave-stav></span>
             </div>
+
+            {# Zkouška sobě (dávka 3.4, spec §5.3 a): vykreslí zprávu pro příjemce vybraného v náhledu. #}
+            {% set posledniZkouska = koncept is not null ? koncept.lastTest : null %}
+            <details class="mb-3" data-zkouska{{ form.zkouskaAdresy.vars.errors|length > 0 ? ' open' : '' }}>
+                <summary style="cursor:pointer;">Poslat zkoušku (sobě / do zkušebních schránek){% if posledniZkouska %} — poslední {{ posledniZkouska.at|date('j. n. H:i') }}{% endif %}</summary>
+                <div class="mt-2">
+                    {{ form_widget(form.zkouskaPro) }}
+                    {{ form_row(form.zkouskaAdresy) }}
+                    <p class="small text-muted mb-2">
+                        Zpráva se vykreslí pro příjemce vybraného v náhledu a odejde s „[ZKOUŠKA]" v předmětu. Nezapíše se do historie
+                        přihlášky ani do archivu, započítá se do denního limitu. Zkušební schránky se nastavují v
+                        <a href="{{ path('oswis_org_oswis_calendar_web_admin_mail_settings') }}">Komunikace → Nastavení</a>.
+                    </p>
+                    {{ form_widget(form.poslatZkousku) }}
+                </div>
+            </details>
         {{ form_end(form) }}
     </main>
 
@@ -178,7 +203,12 @@
             var konceptId = document.getElementById('{{ form.konceptId.vars.id }}');
             var konceptRevize = document.getElementById('{{ form.konceptRevize.vars.id }}');
             var stavUlozeni = document.querySelector('[data-autosave-stav]');
-            function snimek() { return new URLSearchParams(new FormData(form)).toString(); }
+            // Bez polí zkoušky — výběr adres a příjemce náhledu nejsou změna zprávy.
+            function snimek() {
+                var data = new URLSearchParams(new FormData(form));
+                Array.from(data.keys()).forEach(function (k) { if (k.indexOf('[zkouska') !== -1) { data.delete(k); } });
+                return data.toString();
+            }
             var puvodni = null;
             window.addEventListener('load', function () { puvodni = snimek(); });
             var odesila = false;
@@ -191,6 +221,12 @@
             // Automatické ukládání konceptu (spec §5.2): po změně a chvíli klidu se formulář uloží jako koncept
             // (týmž požadavkem jako „Uložit koncept", JSON místo přesměrování). Nikdy nic neodešle. Souběh hlídá
             // revize — když koncept mezitím změnilo jiné okno, ukládání se zastaví a autor to uvidí.
+            // Zkouška se vykreslí pro příjemce, kterého autor právě vidí v náhledu.
+            var zkouskaPro = document.getElementById('{{ form.zkouskaPro.vars.id }}');
+            var vyberNahledu = form.querySelector('select[data-mail-editor-target="recipient"]');
+            function synchronizovatZkousku() { if (vyberNahledu && zkouskaPro) { zkouskaPro.value = vyberNahledu.value; } }
+            if (vyberNahledu) { vyberNahledu.addEventListener('change', synchronizovatZkousku); synchronizovatZkousku(); }
+
             // Prodleva po poslední změně; `data-autosave-ms` na formuláři ji zkracuje (testy v prohlížeči).
             function prodleva() { return parseInt(form.getAttribute('data-autosave-ms') || '15000', 10); }
             var casovac = null;

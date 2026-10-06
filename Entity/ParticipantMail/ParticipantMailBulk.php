@@ -120,6 +120,17 @@ class ParticipantMailBulk
     protected ?\DateTimeImmutable $updatedAt = null;
 
     /**
+     * Záznam zkoušek sobě (spec §5.1, 5.3 a): kdy, kdo, na které adresy a pro koho vykresleno. Nejnovější poslední,
+     * nejvýš {@see ZKOUSEK_MAX}. Samotné zkušební maily jsou systémové e-maily (bez historie přihlášky).
+     *
+     * @var list<array{at: string, by: ?string, to: list<string>, participantId: int, sent: int, errors: list<string>}>|null
+     */
+    #[Column(name: 'tests', type: 'json', nullable: true)]
+    protected ?array $tests = null;
+
+    public const int ZKOUSEK_MAX = 20;
+
+    /**
      * @param array<int> $participantIds normalized to a 0-indexed list (callers may pass filtered/keyed arrays)
      */
     public function __construct(
@@ -228,6 +239,31 @@ class ParticipantMailBulk
         $this->sendAfter = $sendAfter;
         $this->createdAt = DateTime::createFromImmutable($now);
         $this->updatedAt = null;
+    }
+
+    /**
+     * @param list<string> $to
+     * @param list<string> $errors
+     */
+    public function recordTest(\DateTimeImmutable $at, ?string $by, array $to, int $participantId, int $sent, array $errors): void
+    {
+        $tests = $this->tests ?? [];
+        $tests[] = ['at' => $at->format(\DATE_ATOM), 'by' => $by, 'to' => $to, 'participantId' => $participantId, 'sent' => $sent, 'errors' => $errors];
+        $this->tests = array_slice($tests, -self::ZKOUSEK_MAX);
+    }
+
+    /** @return list<array{at: string, by: ?string, to: list<string>, participantId: int, sent: int, errors: list<string>}> */
+    public function getTests(): array
+    {
+        return $this->tests ?? [];
+    }
+
+    /** @return array{at: string, by: ?string, to: list<string>, participantId: int, sent: int, errors: list<string>}|null */
+    public function getLastTest(): ?array
+    {
+        $tests = $this->getTests();
+
+        return [] === $tests ? null : $tests[count($tests) - 1];
     }
 
     public function isDraft(): bool

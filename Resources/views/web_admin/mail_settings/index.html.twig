@@ -1,0 +1,58 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ pageTitle }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'settings' } only %}
+        <h2><twig:ux:icon name="tabler:inbox" class="oa-icon" /> {{ pageTitle }}</h2>
+
+        <section class="mb-4" aria-labelledby="zkusebni-nadpis">
+            <h3 class="h5" id="zkusebni-nadpis">Zkušební schránky</h3>
+            <p class="text-muted">
+                Kam smí odejít „Poslat zkoušku" z psaní zprávy — vedle adresy přihlášeného správce. Hodí se schránky u různých
+                poskytovatelů (Seznam, Gmail, Outlook…), ať jde ověřit, jak zpráva vypadá. Jiné adresy zkoušku nedostanou.
+            </p>
+            <table class="list mb-3" data-zkusebni-schranky>
+                <thead>
+                    <tr><th>Adresa</th><th>Poznámka</th><th>Přidáno</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for inbox in inboxes %}
+                        <tr data-inbox="{{ inbox.email }}">
+                            <td>{{ inbox.email }}</td>
+                            <td>{{ inbox.note|default('—') }}</td>
+                            <td><small>{{ inbox.createdAt|date('j. n. Y') }}</small></td>
+                            <td>
+                                <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_mail_test_inbox_remove', { id: inbox.id }) }}" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('mail_test_inbox_remove_' ~ inbox.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Odebrat</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-muted text-center">Zatím žádné — zkouška půjde jen na adresu přihlášeného správce.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_mail_test_inbox_add') }}" class="d-flex flex-wrap gap-2 align-items-end">
+                <input type="hidden" name="_token" value="{{ csrf_token('mail_test_inbox_add') }}">
+                <div>
+                    <label for="inbox-email" class="form-label">Adresa</label>
+                    <input type="email" id="inbox-email" name="email" class="form-control" required>
+                </div>
+                <div>
+                    <label for="inbox-note" class="form-label">Poznámka (nepovinné)</label>
+                    <input type="text" id="inbox-note" name="note" class="form-control" maxlength="255" placeholder="např. Seznam">
+                </div>
+                <button type="submit" class="btn btn-primary">Přidat schránku</button>
+            </form>
+        </section>
+
+        <section aria-labelledby="limit-nadpis">
+            <h3 class="h5" id="limit-nadpis">Denní limit</h3>
+            {% include '@OswisOrgOswisCalendar/web_admin/bulk_mail/_denni_limit.html.twig' with { limit: limit } only %}
+            <p class="small text-muted">Limit se mění v nastavení serveru (<code>OSWIS_MAIL_DAILY_LIMIT</code>, <code>OSWIS_MAIL_DAILY_BULK_LIMIT</code>).</p>
+        </section>
+    </main>
+{% endblock %}

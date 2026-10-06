@@ -529,6 +529,24 @@ oswis_org_oswis_calendar_web_admin_bulk_mail_draft_delete:
   requirements:
     id: '\d+'
 
+# Komunikace → Nastavení (dávka 3.4): zkušební schránky pro „Poslat zkoušku", přehled limitu.
+oswis_org_oswis_calendar_web_admin_mail_settings:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailSettingsController::index
+  path: "/web_admin/komunikace/nastaveni"
+  methods: [GET]
+
+oswis_org_oswis_calendar_web_admin_mail_test_inbox_add:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailSettingsController::addInbox
+  path: "/web_admin/komunikace/nastaveni/zkusebni-schranky"
+  methods: [POST]
+
+oswis_org_oswis_calendar_web_admin_mail_test_inbox_remove:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailSettingsController::removeInbox
+  path: "/web_admin/komunikace/nastaveni/zkusebni-schranky/{id}/odebrat"
+  methods: [POST]
+  requirements:
+    id: '\d+'
+
 oswis_org_oswis_calendar_web_admin_bulk_mail_drain:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::drain
   path: "/web_admin/prihlasky/hromadny-email/odeslat-davku"

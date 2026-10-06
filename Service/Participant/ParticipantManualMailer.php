@@ -17,6 +17,7 @@ use OswisOrg\OswisCoreBundle\Mail\Rendering\NonBreakingSpaces;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidator;
 use OswisOrg\OswisCoreBundle\Service\MailService;
+use OswisOrg\OswisCoreBundle\Service\SystemMailService;
 use Psr\Log\LoggerInterface;
 use Twig\Environment;
 
@@ -39,7 +40,38 @@ final class ParticipantManualMailer
         private readonly MailValidator $validator,
         private readonly Environment $twig,
         private readonly LoggerInterface $logger,
+        private readonly SystemMailService $systemMailService,
     ) {
+    }
+
+    /** Typ systémového e-mailu se zkouškou sobě. */
+    public const string TYPE_TEST = 'zkouska-zpravy';
+
+    public const string TEST_PREFIX = '[ZKOUŠKA] ';
+
+    /**
+     * Zkouška sobě (spec §5.3 a): zpráva vykreslená PŘESNĚ jako pro `$participant` (jeho první adresa s aktivovaným
+     * účtem, jinak bez adresáta — oslovení z přihlášky), odeslaná na `$address` s předmětem „[ZKOUŠKA] …".
+     * Jde jako systémový e-mail: uloží se a počítá do limitu, ale NEzapíše se do historie přihlášky a nejde do
+     * archivu. Které adresy smí dostat zkoušku, hlídá volající (správce + zkušební schránky z Nastavení).
+     *
+     * @return string|null chyba, nebo null = odesláno
+     */
+    public function sendTest(ParticipantManualMail $mail, Participant $participant, string $address): ?string
+    {
+        $appUser = ParticipantMailContextFactory::recipientUsers($participant)[0] ?? null;
+        try {
+            $context = $this->context($mail, $participant, $appUser, self::TYPE_TEST);
+            $subject = self::TEST_PREFIX.$this->renderer->renderSubject($mail->subject, $context);
+            [$template, $data] = $this->templateAndData($mail, $context);
+            $zaznam = $this->systemMailService->send(self::TYPE_TEST, $address, $subject, $template, $data, archiveCopy: false, manual: true);
+        } catch (\Throwable $exception) {
+            $this->logger->error(sprintf('Zkouška zprávy na %s (vykresleno pro přihlášku #%d) neodešla: %s', $address, $participant->getId() ?? 0, $exception->getMessage()));
+
+            return $exception->getMessage();
+        }
+
+        return $zaznam->isSent() ? null : ($zaznam->getStatusMessage() ?? 'neodesláno');
     }
 
     /**
