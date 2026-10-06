@@ -5,6 +5,7 @@ namespace OswisOrg\OswisCalendarBundle\Service\Participant;
 use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailBulk;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepository;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailProblem;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
@@ -51,21 +52,84 @@ class ParticipantBulkMailService
      * ({@see validate()}) a výsledek předá sem — 285 příjemců se tak nekontroluje dvakrát; zprávu
      * s chybou zařadit nejde.
      *
-     * @param array<int> $participantIds
+     * Odesílá-li se z konceptu (`$koncept` = [id, revize, ze které autor vycházel]), zařadí se TENTÝŽ řádek — koncept
+     * zmizí z rozepsaných a druhé „Odeslat" (jiné okno) ho už nenajde jako koncept.
      *
-     * @throws OswisException když kontrola našla chyby
+     * @param array<int>                         $participantIds
+     * @param array{id: int, revision: int}|null $koncept
+     *
+     * @throws OswisException když kontrola našla chyby, nebo se koncept mezitím změnil či odeslal
      */
-    public function queue(ParticipantManualMail $mail, array $participantIds, MailValidationResult $validation, ?\DateTimeImmutable $sendAt = null): ParticipantMailBulk
+    public function queue(ParticipantManualMail $mail, array $participantIds, MailValidationResult $validation, ?\DateTimeImmutable $sendAt = null, ?array $koncept = null): ParticipantMailBulk
     {
         if ($validation->hasErrors()) {
             throw new OswisException(implode(' | ', array_map(static fn (MailProblem $p): string => $p->message, $validation->errors())));
         }
-        $bulk = new ParticipantMailBulk($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug);
         // Nejdřív za 30 s (čas na zrušení), nebo ve zvolený čas (naplánované odeslání) — dávka 3.2.
         $nejdriv = $this->now()->modify(sprintf('+%d seconds', ParticipantMailBulk::ODKLAD_SEKUND));
-        $bulk->setSendAfter(null !== $sendAt && $sendAt > $nejdriv ? $sendAt : $nejdriv);
+        $zacatek = null !== $sendAt && $sendAt > $nejdriv ? $sendAt : $nejdriv;
+        if (null !== $koncept) {
+            $bulk = $this->ulozitDoKonceptu($koncept, $mail, $participantIds, $sendAt);
+            if (null === $bulk) {
+                throw new OswisException(self::KONCEPT_ZMENEN);
+            }
+            $bulk->zaradit($zacatek, $this->now());
+            $this->em->flush();
+
+            return $bulk;
+        }
+        $bulk = new ParticipantMailBulk($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug);
+        $bulk->setSendAfter($zacatek);
         $this->em->persist($bulk);
         $this->em->flush();
+
+        return $bulk;
+    }
+
+    public const string KONCEPT_ZMENEN = 'Koncept se mezitím změnil nebo odeslal v jiném okně. Tvůj text je pořád tady — můžeš ho uložit jako nový koncept.';
+
+    /**
+     * Uložit koncept (dávka 3.3) — i neúplný; nic se nekontroluje ani neodesílá. Bez `$koncept` vznikne nový.
+     *
+     * @param array<int>                         $participantIds
+     * @param array{id: int, revision: int}|null $koncept
+     *
+     * @return ParticipantMailBulk|null null = koncept se mezitím změnil, odeslal nebo smazal (nic se neuložilo)
+     */
+    public function saveDraft(ParticipantManualMail $mail, array $participantIds, ?\DateTimeImmutable $sendAt, ?array $koncept): ?ParticipantMailBulk
+    {
+        if (null !== $koncept) {
+            $bulk = $this->ulozitDoKonceptu($koncept, $mail, $participantIds, $sendAt);
+            if (null !== $bulk) {
+                $this->em->flush();
+            }
+
+            return $bulk;
+        }
+        $bulk = ParticipantMailBulk::koncept($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug, $sendAt, $this->now());
+        $this->em->persist($bulk);
+        $this->em->flush();
+
+        return $bulk;
+    }
+
+    /**
+     * Zamkne koncept (revize v DB) a přepíše ho tím, co autor napsal. Null = zamknout nešlo.
+     *
+     * @param array{id: int, revision: int} $koncept
+     * @param array<int>                    $participantIds
+     */
+    private function ulozitDoKonceptu(array $koncept, ParticipantManualMail $mail, array $participantIds, ?\DateTimeImmutable $sendAt): ?ParticipantMailBulk
+    {
+        $repository = $this->em->getRepository(ParticipantMailBulk::class);
+        \assert($repository instanceof ParticipantMailBulkRepository);
+        $revize = $repository->zamknoutKoncept($koncept['id'], $koncept['revision']);
+        $bulk = null === $revize ? null : $repository->find($koncept['id']);
+        if (!$bulk instanceof ParticipantMailBulk) {
+            return null;
+        }
+        $this->em->refresh($bulk);
+        $bulk->upravitKoncept($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug, $sendAt, $this->now(), (int) $revize);
 
         return $bulk;
     }
@@ -148,7 +212,8 @@ class ParticipantBulkMailService
      */
     public function drainBatch(ParticipantMailBulk $bulk, int $batchSize = 15): array
     {
-        if ($bulk->isFinished()) {
+        // Koncept se neodesílá nikdy — ani když ho sem pošle stará záložka stránky stavu (dávka 3.3).
+        if ($bulk->isFinished() || $bulk->isDraft()) {
             return $this->progress($bulk, 0, 0);
         }
         $lockName = sprintf('oswis_bulk_drain_%d', $bulk->getId() ?? 0);
@@ -162,7 +227,7 @@ class ParticipantBulkMailService
         try {
             // Fresh cursor: our entity may predate a drain that just finished on another connection.
             $this->em->refresh($bulk);
-            if ($bulk->isFinished()) {
+            if ($bulk->isFinished() || $bulk->isDraft()) {
                 return $this->progress($bulk, 0, 0);
             }
             if (!$bulk->isDue($this->now())) {

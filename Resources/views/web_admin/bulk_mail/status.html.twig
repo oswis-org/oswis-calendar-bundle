@@ -12,6 +12,45 @@
 
         {% include '@OswisOrgOswisCalendar/web_admin/bulk_mail/_denni_limit.html.twig' with { limit: limit } only %}
 
+        {# Rozepsané koncepty (dávka 3.3) — nikomu nic neodešlo; odejdou až po kontrole a „Odeslat". #}
+        {% if drafts|default([]) is not empty %}
+            <section class="mb-4" aria-labelledby="koncepty-nadpis" data-koncepty>
+                <h3 class="h5" id="koncepty-nadpis">Rozepsané koncepty ({{ drafts|length }})</h3>
+                <table class="list">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Předmět</th>
+                            <th>Příjemců</th>
+                            <th>Naposledy uloženo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for draft in drafts %}
+                            <tr data-draft-id="{{ draft.id }}">
+                                <td>{{ draft.id }}</td>
+                                <td>
+                                    {{ draft.subject is empty ? '(bez předmětu)' : draft.subject }}
+                                    {% if draft.adminName %}<br><small class="text-muted">{{ draft.adminName }}</small>{% endif %}
+                                </td>
+                                <td>{{ draft.totalCount }}</td>
+                                <td><small>{{ draft.updatedAt ? draft.updatedAt|date('j. n. Y H:i') : '—' }}</small></td>
+                                <td>
+                                    <a href="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_draft', { id: draft.id }) }}" class="btn btn-sm btn-primary">Pokračovat</a>
+                                    <form method="post" action="{{ path('oswis_org_oswis_calendar_web_admin_bulk_mail_draft_delete', { id: draft.id }) }}" class="d-inline"
+                                          onsubmit="return confirm('Smazat koncept? Napsaný text se ztratí.');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('bulk_mail_draft_delete_' ~ draft.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        {% endif %}
+
         {% if bulks is empty %}
             <p class="text-muted">Žádné hromadné e-maily.</p>
         {% else %}

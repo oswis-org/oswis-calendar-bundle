@@ -11,6 +11,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\ClickableInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Callback;
@@ -31,6 +34,8 @@ final class BulkMailType extends AbstractType
 {
     public const string MODE_BODY = 'body';
     public const string MODE_TEMPLATE = 'template';
+    /** Skupina kontrol při ukládání konceptu. */
+    public const string GROUP_DRAFT = 'koncept';
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -39,12 +44,15 @@ final class BulkMailType extends AbstractType
         $builder
             // Snímek příjemců z výběru v seznamu přihlášek (ID oddělená čárkou) — nese se mezi kroky.
             ->add('idsCsv', HiddenType::class)
+            // Koncept, ze kterého se píše (dávka 3.3): ID a revize, ze které autor vychází — ochrana proti souběhu.
+            ->add('konceptId', HiddenType::class)
+            ->add('konceptRevize', HiddenType::class)
             ->add('subject', MailSubjectType::class, [
                 'label'       => 'Předmět',
                 'required'    => true,
                 'constraints' => [
                     new NotBlank(message: 'Vyplň prosím předmět.'),
-                    new Length(max: MailRenderer::SUBJECT_MAX_LENGTH, maxMessage: 'Předmět může mít nejvýš {{ limit }} znaků.'),
+                    new Length(max: MailRenderer::SUBJECT_MAX_LENGTH, maxMessage: 'Předmět může mít nejvýš {{ limit }} znaků.', groups: ['Default', self::GROUP_DRAFT]),
                 ],
             ])
             ->add('mailMode', ChoiceType::class, [
@@ -78,6 +86,11 @@ final class BulkMailType extends AbstractType
                 'label'    => 'Text zprávy',
                 'required' => true,
                 'preview'  => $options['preview'],
+            ])
+            // Uložit rozepsané (dávka 3.3) — i neúplné: kontroluje se jen délka předmětu (sloupec) a CSRF.
+            ->add('ulozitKoncept', SubmitType::class, [
+                'label' => 'Uložit koncept',
+                'attr'  => ['class' => 'btn btn-outline-secondary', 'formnovalidate' => 'formnovalidate'],
             ]);
     }
 
@@ -88,9 +101,19 @@ final class BulkMailType extends AbstractType
             'campaigns'   => [],
             'preview'     => null,
             'constraints' => [new Callback(self::overitRezim(...))],
+            // Koncept se uloží i neúplný — jen skupina `koncept` (délka předmětu); jinak plná kontrola.
+            'validation_groups' => static fn (FormInterface $form): array => self::ukladaKoncept($form) ? [self::GROUP_DRAFT] : ['Default'],
         ]);
         $resolver->setAllowedTypes('campaigns', 'array');
         $resolver->setAllowedTypes('preview', ['null', 'array']);
+    }
+
+    /** Bylo kliknuto na „Uložit koncept"? */
+    public static function ukladaKoncept(FormInterface $form): bool
+    {
+        $button = $form->has('ulozitKoncept') ? $form->get('ulozitKoncept') : null;
+
+        return $button instanceof ClickableInterface && $button->isClicked();
     }
 
     /**

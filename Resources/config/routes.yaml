@@ -514,6 +514,21 @@ oswis_org_oswis_calendar_web_admin_bulk_mail_cancel:
   requirements:
     id: '\d+'
 
+# Koncepty zpráv (dávka 3.3): otevřít (GET) a smazat (POST s CSRF); ukládá se tlačítkem ve formuláři (…/zaradit).
+oswis_org_oswis_calendar_web_admin_bulk_mail_draft:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::draft
+  path: "/web_admin/prihlasky/hromadne-emaily/koncept/{id}"
+  methods: [GET]
+  requirements:
+    id: '\d+'
+
+oswis_org_oswis_calendar_web_admin_bulk_mail_draft_delete:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::deleteDraft
+  path: "/web_admin/prihlasky/hromadne-emaily/koncept/{id}/smazat"
+  methods: [POST]
+  requirements:
+    id: '\d+'
+
 oswis_org_oswis_calendar_web_admin_bulk_mail_drain:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminBulkMailController::drain
   path: "/web_admin/prihlasky/hromadny-email/odeslat-davku"

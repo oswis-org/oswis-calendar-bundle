@@ -9,6 +9,12 @@
             {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'bulk' } only %}
         {% endif %}
         <h2><twig:ux:icon name="tabler:mail" class="oa-icon" /> {{ pageTitle }}</h2>
+        {% if koncept is not null %}
+            <p class="text-muted small" data-koncept-info>
+                Rozepsaný koncept #{{ koncept.id }}{% if koncept.updatedAt %}, naposledy uložen {{ koncept.updatedAt|date('j. n. Y H:i') }}{% endif %}{% if koncept.adminName %} ({{ koncept.adminName }}){% endif %}.
+                Dokud ho neodešleš, nikomu nic neodejde.
+            </p>
+        {% endif %}
         <p>
             {% if participant is not null %}
                 <a href="{{ path('oswis_org_oswis_calendar_web_admin_participant_detail', { participantId: participant.id, _fragment: 'komunikace' }) }}" class="btn btn-sm btn-link">← Zpět na historii komunikace</a>
@@ -73,6 +79,8 @@
             novalidate: 'novalidate',
         } }) }}
             {{ form_widget(form.idsCsv) }}
+            {{ form_widget(form.konceptId) }}
+            {{ form_widget(form.konceptRevize) }}
             {{ form_row(form.subject) }}
 
             {# Režim: vlastní text (Twig) NEBO celá uložená kampaň. #}
@@ -129,11 +137,12 @@
                     </div>
                 </section>
             {% endif %}
-            <div class="mb-3">
+            <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
                 <button type="submit" class="btn {{ kontrola is null ? 'btn-primary' : 'btn-outline-primary' }}">
                     <twig:ux:icon name="tabler:circle-check" class="oa-icon" /> {{ kontrola is null ? 'Zkontrolovat a odeslat…' : 'Zkontrolovat znovu' }}
                 </button>
-                <span class="small text-muted ms-2">Nic se zatím neodešle — nejdřív se ukáže, kolik zpráv a komu odejde.</span>
+                {{ form_widget(form.ulozitKoncept) }}
+                <span class="small text-muted">Nic se zatím neodešle — nejdřív se ukáže, kolik zpráv a komu odejde. Koncept se uloží i nedopsaný.</span>
             </div>
         {{ form_end(form) }}
     </main>
@@ -160,6 +169,20 @@
             Array.prototype.forEach.call(document.querySelectorAll('input[name="{{ form.mailMode.vars.full_name }}"]'), function (r) {
                 r.addEventListener('change', function () { if (r.checked) { applyMode(r.value); } });
                 if (r.checked) { applyMode(r.value); }
+            });
+
+            // Upozornění při odchodu s neuloženými změnami (spec §5.2). Porovnává obsah formuláře při načtení a teď
+            // (editor zapisuje text do skrytého pole formuláře); odeslání formuláře upozornění vypne.
+            var form = document.getElementById('bulkMailForm');
+            function snimek() { return new URLSearchParams(new FormData(form)).toString(); }
+            var puvodni = null;
+            window.addEventListener('load', function () { puvodni = snimek(); });
+            var odesila = false;
+            form.addEventListener('submit', function () { odesila = true; });
+            window.addEventListener('beforeunload', function (e) {
+                if (odesila || puvodni === null || snimek() === puvodni) { return; }
+                e.preventDefault();
+                e.returnValue = '';
             });
         })();
     </script>

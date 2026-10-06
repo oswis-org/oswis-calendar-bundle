@@ -105,11 +105,12 @@ final class WebAdminBulkMailController extends AbstractController
     /**
      * Formulář hromadné zprávy ({@see BulkMailType}) nad danými příjemci. Náhled vedle textu nabízí každého z nich.
      *
-     * @param list<int> $ids
+     * @param list<int>                 $ids
+     * @param array<string, mixed>|null $data výchozí obsah (otevřený koncept, nebo text vrácený po souběhu)
      *
      * @return FormInterface<mixed>
      */
-    private function bulkForm(array $ids): FormInterface
+    private function bulkForm(array $ids, ?array $data = null): FormInterface
     {
         $campaigns = [];
         foreach ($this->campaignTemplates() as $template) {
@@ -122,10 +123,7 @@ final class WebAdminBulkMailController extends AbstractController
             $recipients[] = ['id' => $participant->getId(), 'label' => trim('#'.$participant->getId().' '.($participant->getContact()?->getName() ?? ''))];
         }
 
-        return $this->createForm(BulkMailType::class, [
-            'idsCsv'   => implode(',', $ids),
-            'mailMode' => BulkMailType::MODE_BODY,
-        ], [
+        return $this->createForm(BulkMailType::class, ['idsCsv' => implode(',', $ids), 'mailMode' => BulkMailType::MODE_BODY] + ($data ?? []), [
             'action'    => $this->generateUrl('oswis_org_oswis_calendar_web_admin_bulk_mail_queue'),
             'campaigns' => $campaigns,
             'preview'   => [
@@ -147,7 +145,7 @@ final class WebAdminBulkMailController extends AbstractController
      * @param Participant|null     $participant přihláška, ze které se píše „Nová zpráva" (jeden příjemce)
      * @param array{zprav: int, prihlasek: int, vypadnou: list<array{id: int, popis: string, duvod: string}>}|null $kontrola panel kontroly před odesláním
      */
-    private function renderCompose(array $ids, FormInterface $form, ?MailValidationResult $validation = null, ?Participant $participant = null, ?array $kontrola = null, ?int $status = null): Response
+    private function renderCompose(array $ids, FormInterface $form, ?MailValidationResult $validation = null, ?Participant $participant = null, ?array $kontrola = null, ?int $status = null, ?ParticipantMailBulk $koncept = null): Response
     {
         if (null === $participant && 1 === count($ids)) {
             // Návrat formuláře po chybě: pořád jde o zprávu jedné přihlášce (odkaz zpět, nadpis).
@@ -164,6 +162,7 @@ final class WebAdminBulkMailController extends AbstractController
             'validation'     => $validation,
             'limit'          => $this->denniLimit(),
             'kontrola'       => $kontrola,
+            'koncept'        => $koncept ?? $this->konceptZFormulare($form),
         ], new Response(status: $status ?? ($form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK)));
     }
 
@@ -184,11 +183,15 @@ final class WebAdminBulkMailController extends AbstractController
         if (!$form->isValid()) {
             return $this->renderCompose($ids, $form);
         }
-        /** @var array{subject: string, mailMode: string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable} $data */
+        /** @var array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data */
         $data = $form->getData();
         $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
+        $koncept = self::konceptZDat($data);
+        if (BulkMailType::ukladaKoncept($form)) {
+            return $this->ulozitKoncept($ids, $data, $koncept);
+        }
         $mail = new ParticipantManualMail(
-            trim($data['subject']),
+            trim((string) $data['subject']),
             $kampan ? '' : (string) $data['body'],
             $kampan ? $data['templateSlug'] : null,
             $this->adminName(),
@@ -207,11 +210,13 @@ final class WebAdminBulkMailController extends AbstractController
             return $this->renderCompose($ids, $form, $validation, kontrola: $prehled, status: $request->request->has('odeslat') ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK);
         }
         try {
-            $bulk = $this->bulkMailService->queue($mail, $ids, $validation, $data['sendAt']);
+            $bulk = $this->bulkMailService->queue($mail, $ids, $validation, $data['sendAt'], $koncept);
         } catch (OswisException $exception) {
             $this->addFlash('danger', 'Zprávu nejde zařadit: '.$exception->getMessage());
+            // Koncept se mezitím změnil / odeslal: text zůstane, ale už bez vazby na koncept (uloží se jako nový).
+            $form = null !== $koncept ? $this->bulkForm($ids, ['konceptId' => null, 'konceptRevize' => null] + $data) : $form;
 
-            return $this->renderCompose($ids, $form, $validation);
+            return $this->renderCompose($ids, $form, $validation, status: Response::HTTP_CONFLICT);
         }
         $zacatek = $bulk->getSendAfter();
         $this->addFlash('success', null !== $data['sendAt'] && null !== $zacatek
@@ -219,6 +224,102 @@ final class WebAdminBulkMailController extends AbstractController
             : sprintf('Zpráva (%d zpráv pro %d přihlášek) se začne odesílat za %d sekund — do té doby ji tady jde zrušit.', $prehled['zprav'], $prehled['prihlasek'], ParticipantMailBulk::ODKLAD_SEKUND));
 
         return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status', ['highlight' => $bulk->getId()]);
+    }
+
+    /**
+     * Uložit rozepsanou zprávu jako koncept (dávka 3.3) — i neúplnou; nic se neodesílá. Uloží se i text vlastní zprávy
+     * v režimu kampaně, aby se přepnutím zpět neztratil.
+     *
+     * @param list<int>                                                                                                                                 $ids
+     * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data
+     * @param array{id: int, revision: int}|null                                                                                                          $koncept
+     */
+    private function ulozitKoncept(array $ids, array $data, ?array $koncept): Response
+    {
+        $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
+        $mail = new ParticipantManualMail(trim((string) $data['subject']), (string) $data['body'], $kampan ? $data['templateSlug'] : null, $this->adminName());
+        $bulk = $this->bulkMailService->saveDraft($mail, $ids, $data['sendAt'], $koncept);
+        if (null === $bulk) {
+            $this->addFlash('danger', ParticipantBulkMailService::KONCEPT_ZMENEN);
+
+            return $this->renderCompose($ids, $this->bulkForm($ids, ['konceptId' => null, 'konceptRevize' => null] + $data), status: Response::HTTP_CONFLICT);
+        }
+        $this->addFlash('success', 'Koncept uložen. Najdeš ho i na stránce „Hromadné e-maily" mezi rozepsanými.');
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_draft', ['id' => $bulk->getId()]);
+    }
+
+    /** Otevřít rozepsaný koncept (dávka 3.3). Odeslaný / smazaný → stránka stavu s vysvětlením. */
+    public function draft(int $id): Response
+    {
+        $bulk = $this->bulkRepository->find($id);
+        if (!$bulk instanceof ParticipantMailBulk || !$bulk->isDraft()) {
+            $this->addFlash('warning', sprintf('Koncept #%d už neexistuje — byl odeslán nebo smazán.', $id));
+
+            return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status', ['highlight' => $id]);
+        }
+        $ids = array_values(array_filter($bulk->getParticipantIds(), static fn (int $pid): bool => $pid > 0));
+        $form = $this->bulkForm($ids, [
+            'subject'       => $bulk->getSubject(),
+            'mailMode'      => $bulk->hasTemplate() ? BulkMailType::MODE_TEMPLATE : BulkMailType::MODE_BODY,
+            'templateSlug'  => $bulk->getTemplateSlug(),
+            'body'          => $bulk->getBodyHtml(),
+            'sendAt'        => $bulk->getSendAfter(),
+            'konceptId'     => (string) $bulk->getId(),
+            'konceptRevize' => (string) $bulk->getRevision(),
+        ]);
+
+        return $this->renderCompose($ids, $form, koncept: $bulk);
+    }
+
+    /** Smazat koncept (POST, CSRF). Jen dokud je to koncept — odeslaný či zařazený zůstane. */
+    public function deleteDraft(Request $request, int $id): Response
+    {
+        if (!$this->isCsrfTokenValid('bulk_mail_draft_delete_'.$id, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Neplatný CSRF token.');
+        }
+        // Jedním příkazem a jen koncept: souběžné „Odeslat" z jiného okna se nesmaže.
+        $smazano = $this->em->getConnection()->executeStatement(
+            'DELETE FROM calendar_participant_mail_bulk WHERE id = ? AND status = ?',
+            [$id, ParticipantMailBulk::STATUS_DRAFT],
+        );
+        $this->addFlash(1 === $smazano ? 'success' : 'warning', 1 === $smazano
+            ? sprintf('Koncept #%d smazán.', $id)
+            : sprintf('Koncept #%d už neexistuje nebo byl odeslán — nic se nesmazalo.', $id));
+
+        return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_bulk_mail_status');
+    }
+
+    /**
+     * Koncept z odeslaného formuláře: ID a revize, ze které autor vycházel; bez nich null (nová zpráva).
+     *
+     * @param array<mixed> $data
+     *
+     * @return array{id: int, revision: int}|null
+     */
+    private static function konceptZDat(array $data): ?array
+    {
+        $id = $data['konceptId'] ?? null;
+        $revize = $data['konceptRevize'] ?? null;
+        if (!is_numeric($id) || (int) $id <= 0 || !is_numeric($revize)) {
+            return null;
+        }
+
+        return ['id' => (int) $id, 'revision' => (int) $revize];
+    }
+
+    /**
+     * Koncept, ke kterému formulář patří (nadpis „Koncept #…") — jen dokud je to pořád koncept.
+     *
+     * @param FormInterface<mixed> $form
+     */
+    private function konceptZFormulare(FormInterface $form): ?ParticipantMailBulk
+    {
+        $data = $form->getData();
+        $koncept = is_array($data) ? self::konceptZDat($data) : null;
+        $bulk = null !== $koncept ? $this->bulkRepository->find($koncept['id']) : null;
+
+        return $bulk instanceof ParticipantMailBulk && $bulk->isDraft() ? $bulk : null;
     }
 
     /**
@@ -253,6 +354,7 @@ final class WebAdminBulkMailController extends AbstractController
             'title'     => 'Hromadné e-maily :: ADMIN',
             'pageTitle' => 'Hromadné e-maily',
             'bulks'     => $this->bulkRepository->findRecent(30),
+            'drafts'    => $this->bulkRepository->findDrafts(),
             'highlight' => $request->query->getInt('highlight'),
             'now'       => new \DateTimeImmutable(),
             'limit'     => $this->denniLimit(),

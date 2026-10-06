@@ -32,6 +32,13 @@ use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailBulkRepos
 #[Index(name: 'IDX_PARTICIPANT_MAIL_BULK_STATUS', columns: ['status'])]
 class ParticipantMailBulk
 {
+    /**
+     * Rozepsaný koncept (dávka 3.3, spec §5.1) — neodesílá se NIKDY: rozesílka ani cron ho nevidí
+     * ({@see ParticipantMailBulkRepository::findPending()} bere jen `queued`/`sending`), odejde až po „Odeslat"
+     * z kontroly před odesláním ({@see zaradit()}).
+     */
+    public const STATUS_DRAFT = 'draft';
+
     public const STATUS_QUEUED = 'queued';
 
     public const STATUS_SENDING = 'sending';
@@ -100,6 +107,19 @@ class ParticipantMailBulk
     protected ?string $cancelledBy = null;
 
     /**
+     * Revize konceptu — ochrana proti souběhu (dvě okna, automatické ukládání): uložení projde jen s revizí, ze které
+     * autor vycházel ({@see ParticipantMailBulkRepository::zamknoutKoncept()}). Úmyslně NE `#[Version]` Doctrine:
+     * ta by zvedala verzi i při každém posunu kurzoru rozesílky a „Zastavit" z jiného spojení by rozesílku shodilo
+     * výjimkou místo čistého zastavení.
+     */
+    #[Column(type: 'integer', options: ['default' => 0])]
+    protected int $revision = 0;
+
+    /** Poslední uložení konceptu (u zařazených zpráv NULL). */
+    #[Column(name: 'updated_at', type: 'datetime_immutable', nullable: true)]
+    protected ?\DateTimeImmutable $updatedAt = null;
+
+    /**
      * @param array<int> $participantIds normalized to a 0-indexed list (callers may pass filtered/keyed arrays)
      */
     public function __construct(
@@ -162,6 +182,69 @@ class ParticipantMailBulk
         $this->status = $status;
     }
 
+    /**
+     * Nový koncept — i neúplný (bez předmětu či textu); kontrola přijde až před odesláním.
+     *
+     * @param array<int> $participantIds
+     */
+    public static function koncept(string $subject, string $bodyHtml, array $participantIds, ?string $adminName, ?string $templateSlug, ?\DateTimeImmutable $sendAfter, \DateTimeImmutable $now): self
+    {
+        $bulk = new self($subject, $bodyHtml, $participantIds, $adminName, $templateSlug);
+        $bulk->status = self::STATUS_DRAFT;
+        $bulk->sendAfter = $sendAfter;
+        $bulk->updatedAt = $now;
+
+        return $bulk;
+    }
+
+    /**
+     * Uložit změny konceptu. Revizi zvedá {@see ParticipantMailBulkRepository::zamknoutKoncept()} (atomicky v DB),
+     * tady se jen srovná stav entity.
+     *
+     * @param array<int> $participantIds
+     */
+    public function upravitKoncept(string $subject, string $bodyHtml, array $participantIds, ?string $adminName, ?string $templateSlug, ?\DateTimeImmutable $sendAfter, \DateTimeImmutable $now, int $revision): void
+    {
+        if (!$this->isDraft()) {
+            throw new \LogicException(sprintf('Hromadný e-mail #%d už není koncept.', $this->id ?? 0));
+        }
+        $this->subject = $subject;
+        $this->bodyHtml = $bodyHtml;
+        $this->participantIds = array_values($participantIds);
+        $this->adminName = $adminName;
+        $this->templateSlug = (null !== $templateSlug && '' !== trim($templateSlug)) ? trim($templateSlug) : null;
+        $this->sendAfter = $sendAfter;
+        $this->updatedAt = $now;
+        $this->revision = $revision;
+    }
+
+    /** Koncept → ve frontě (po kontrole a „Odeslat"). Čas vytvoření = čas zařazení, aby fronta držela pořadí. */
+    public function zaradit(\DateTimeImmutable $sendAfter, \DateTimeImmutable $now): void
+    {
+        if (!$this->isDraft()) {
+            throw new \LogicException(sprintf('Hromadný e-mail #%d už není koncept.', $this->id ?? 0));
+        }
+        $this->status = self::STATUS_QUEUED;
+        $this->sendAfter = $sendAfter;
+        $this->createdAt = DateTime::createFromImmutable($now);
+        $this->updatedAt = null;
+    }
+
+    public function isDraft(): bool
+    {
+        return self::STATUS_DRAFT === $this->status;
+    }
+
+    public function getRevision(): int
+    {
+        return $this->revision;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
     public function isDone(): bool
     {
         return self::STATUS_DONE === $this->status;
@@ -197,7 +280,7 @@ class ParticipantMailBulk
     /** Ještě nic neodešlo a čeká se na čas odeslání — naplánováno (i běžících 30 s na zrušení). */
     public function isWaiting(\DateTimeInterface $now): bool
     {
-        return !$this->isFinished() && 0 === $this->processedCount && !$this->isDue($now);
+        return !$this->isDraft() && !$this->isFinished() && 0 === $this->processedCount && !$this->isDue($now);
     }
 
     public function cancel(?string $who): void
