@@ -179,16 +179,23 @@ final class WebAdminBulkMailController extends AbstractController
         if (!$form->isSubmitted()) {
             return $this->redirectToRoute('oswis_org_oswis_calendar_web_admin_participants_list');
         }
+        $autosave = $request->request->has('autosave');
         // Chyba (i neplatný CSRF) = formulář zpátky i s tím, co autor napsal, a hláškou u pole.
         if (!$form->isValid()) {
-            return $this->renderCompose($ids, $form);
+            return $autosave
+                ? new JsonResponse(['error' => 'invalid'], Response::HTTP_UNPROCESSABLE_ENTITY)
+                : $this->renderCompose($ids, $form);
         }
         /** @var array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data */
         $data = $form->getData();
         $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
         $koncept = self::konceptZDat($data);
         if (BulkMailType::ukladaKoncept($form)) {
-            return $this->ulozitKoncept($ids, $data, $koncept);
+            return $this->ulozitKoncept($ids, $data, $koncept, $autosave);
+        }
+        if ($autosave) {
+            // Automatické ukládání smí jen ukládat koncept — nikdy nic neodeslat ani nezařadit.
+            return new JsonResponse(['error' => 'invalid'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         $mail = new ParticipantManualMail(
             trim((string) $data['subject']),
@@ -233,12 +240,18 @@ final class WebAdminBulkMailController extends AbstractController
      * @param list<int>                                                                                                                                 $ids
      * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data
      * @param array{id: int, revision: int}|null                                                                                                          $koncept
+     * @param bool                                                                                                                                         $autosave průběžné ukládání ze stránky (JSON místo přesměrování)
      */
-    private function ulozitKoncept(array $ids, array $data, ?array $koncept): Response
+    private function ulozitKoncept(array $ids, array $data, ?array $koncept, bool $autosave = false): Response
     {
         $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
         $mail = new ParticipantManualMail(trim((string) $data['subject']), (string) $data['body'], $kampan ? $data['templateSlug'] : null, $this->adminName());
         $bulk = $this->bulkMailService->saveDraft($mail, $ids, $data['sendAt'], $koncept);
+        if ($autosave) {
+            return null === $bulk
+                ? new JsonResponse(['error' => 'conflict', 'message' => ParticipantBulkMailService::KONCEPT_ZMENEN], Response::HTTP_CONFLICT)
+                : new JsonResponse(['id' => $bulk->getId(), 'revision' => $bulk->getRevision(), 'savedAt' => $bulk->getUpdatedAt()?->format(\DATE_ATOM)]);
+        }
         if (null === $bulk) {
             $this->addFlash('danger', ParticipantBulkMailService::KONCEPT_ZMENEN);
 

@@ -142,7 +142,8 @@
                     <twig:ux:icon name="tabler:circle-check" class="oa-icon" /> {{ kontrola is null ? 'Zkontrolovat a odeslat…' : 'Zkontrolovat znovu' }}
                 </button>
                 {{ form_widget(form.ulozitKoncept) }}
-                <span class="small text-muted">Nic se zatím neodešle — nejdřív se ukáže, kolik zpráv a komu odejde. Koncept se uloží i nedopsaný.</span>
+                <span class="small text-muted">Nic se zatím neodešle — nejdřív se ukáže, kolik zpráv a komu odejde. Koncept se uloží i nedopsaný (rozepsaná zpráva se ukládá i sama).</span>
+                <span class="small text-muted w-100" role="status" aria-live="polite" data-autosave-stav></span>
             </div>
         {{ form_end(form) }}
     </main>
@@ -174,15 +175,91 @@
             // Upozornění při odchodu s neuloženými změnami (spec §5.2). Porovnává obsah formuláře při načtení a teď
             // (editor zapisuje text do skrytého pole formuláře); odeslání formuláře upozornění vypne.
             var form = document.getElementById('bulkMailForm');
+            var konceptId = document.getElementById('{{ form.konceptId.vars.id }}');
+            var konceptRevize = document.getElementById('{{ form.konceptRevize.vars.id }}');
+            var stavUlozeni = document.querySelector('[data-autosave-stav]');
             function snimek() { return new URLSearchParams(new FormData(form)).toString(); }
             var puvodni = null;
             window.addEventListener('load', function () { puvodni = snimek(); });
             var odesila = false;
-            form.addEventListener('submit', function () { odesila = true; });
             window.addEventListener('beforeunload', function (e) {
                 if (odesila || puvodni === null || snimek() === puvodni) { return; }
                 e.preventDefault();
                 e.returnValue = '';
+            });
+
+            // Automatické ukládání konceptu (spec §5.2): po změně a chvíli klidu se formulář uloží jako koncept
+            // (týmž požadavkem jako „Uložit koncept", JSON místo přesměrování). Nikdy nic neodešle. Souběh hlídá
+            // revize — když koncept mezitím změnilo jiné okno, ukládání se zastaví a autor to uvidí.
+            // Prodleva po poslední změně; `data-autosave-ms` na formuláři ji zkracuje (testy v prohlížeči).
+            function prodleva() { return parseInt(form.getAttribute('data-autosave-ms') || '15000', 10); }
+            var casovac = null;
+            var probiha = null;
+            var zastaveno = false;
+            function oznamit(text, chyba) {
+                if (!stavUlozeni) { return; }
+                stavUlozeni.textContent = text;
+                stavUlozeni.classList.toggle('text-danger', !!chyba);
+            }
+            function maObsah() {
+                var data = new FormData(form);
+                return String(data.get('{{ form.subject.vars.full_name }}') || '').trim() !== ''
+                    || String(data.get('{{ form.body.vars.full_name }}') || '').replace(/<[^>]*>/g, '').trim() !== '';
+            }
+            function ulozit() {
+                casovac = null;
+                if (zastaveno || odesila || probiha || puvodni === null || !maObsah()) { return Promise.resolve(); }
+                var stav = snimek();
+                if (stav === puvodni) { return Promise.resolve(); }
+                var data = new FormData(form);
+                data.append('{{ form.ulozitKoncept.vars.full_name }}', '');
+                data.append('autosave', '1');
+                oznamit('Ukládám koncept…', false);
+                probiha = fetch(form.action, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                    .then(function (r) {
+                        var json = (r.headers.get('Content-Type') || '').indexOf('application/json') !== -1;
+                        return (json ? r.json() : Promise.resolve({ error: 'invalid' })).then(function (p) { return { status: r.status, p: p }; });
+                    })
+                    .then(function (v) {
+                        if (v.status === 200 && v.p.id) {
+                            // Psal autor během ukládání? Pak uložené není všechno — upozornění při odchodu zůstane a uloží se znovu.
+                            var psalBehem = snimek() !== stav;
+                            konceptId.value = String(v.p.id);
+                            konceptRevize.value = String(v.p.revision);
+                            if (psalBehem) { naplanovat(); } else { puvodni = snimek(); }
+                            oznamit('Koncept uložen automaticky v ' + new Date(v.p.savedAt).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }) + '.', false);
+                        } else if (v.status === 409) {
+                            zastaveno = true;
+                            oznamit((v.p && v.p.message) || 'Koncept se mezitím změnil v jiném okně — automatické ukládání zastaveno.', true);
+                        } else {
+                            oznamit('Koncept se automaticky neuložil (formulář má chybu) — ulož ho tlačítkem.', true);
+                        }
+                    })
+                    .catch(function () { oznamit('Koncept se automaticky neuložil (spojení) — zkusím to znovu.', true); naplanovat(); })
+                    .then(function () { probiha = null; });
+                return probiha;
+            }
+            function naplanovat() {
+                if (zastaveno || odesila) { return; }
+                if (casovac) { clearTimeout(casovac); }
+                casovac = setTimeout(ulozit, prodleva());
+            }
+            form.addEventListener('input', naplanovat);
+            form.addEventListener('change', naplanovat);
+            // Editor (Stimulus `mail-editor`) hlásí změnu textu událostí, která probublá až k formuláři.
+            form.addEventListener('mail-editor:change', naplanovat);
+
+            // Odeslání formuláře během ukládání: počkat, až ukládání doběhne (nová revize do formuláře), pak odeslat —
+            // jinak by „Odeslat" neslo starou revizi a skončilo souběhem.
+            form.addEventListener('submit', function (e) {
+                if (casovac) { clearTimeout(casovac); casovac = null; }
+                if (probiha) {
+                    e.preventDefault();
+                    var tlacitko = e.submitter || null;
+                    probiha.then(function () { form.requestSubmit(tlacitko); });
+                    return;
+                }
+                odesila = true;
             });
         })();
     </script>
