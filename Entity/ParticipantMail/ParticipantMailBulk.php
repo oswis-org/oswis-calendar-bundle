@@ -131,6 +131,27 @@ class ParticipantMailBulk
     public const int ZKOUSEK_MAX = 20;
 
     /**
+     * Přílohy zprávy (dávka 3.5): ID souborů z úložiště příloh a způsob — `priloha` / `odkaz`
+     * ({@see \OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail}). NULL = žádné.
+     *
+     * @var list<array{id: int, mode: string}>|null
+     */
+    #[Column(type: 'json', nullable: true)]
+    protected ?array $attachments = null;
+
+    /** @return list<array{id: int, mode: string}> */
+    public function getAttachments(): array
+    {
+        return $this->attachments ?? [];
+    }
+
+    /** @param list<array{id: int, mode: string}> $attachments */
+    public function setAttachments(array $attachments): void
+    {
+        $this->attachments = [] === $attachments ? null : $attachments;
+    }
+
+    /**
      * @param array<int> $participantIds normalized to a 0-indexed list (callers may pass filtered/keyed arrays)
      */
     public function __construct(

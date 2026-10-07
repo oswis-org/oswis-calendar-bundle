@@ -98,6 +98,31 @@
                 {{ form_row(form.body) }}
             </div>
 
+            {# Přílohy (dávka 3.5): soubor se nahraje hned po výběru; o způsobu (příloha / odkaz) rozhodne autor.
+               Jednomu příjemci jde vše jako příloha (rozhodnutí uživatele 7. 10. 2026). #}
+            {{ form_widget(form.prilohy) }}
+            {% set jedenPrijemce = recipientCount == 1 %}
+            <section class="mb-3" aria-labelledby="prilohy-nadpis" data-prilohy
+                     data-pole="{{ form.prilohy.vars.id }}"
+                     data-upload-url="{{ path('oswis_org_oswis_core_web_admin_mail_attachment_upload') }}"
+                     data-upload-token="{{ csrf_token('mail_attachment') }}"
+                     data-stahnout-url="{{ path('oswis_org_oswis_core_web_admin_mail_attachment_download', { id: 0 }) }}"
+                     data-jeden="{{ jedenPrijemce ? '1' : '0' }}"
+                     data-max-soubor="{{ prilohyMax.soubor }}" data-max-celkem="{{ prilohyMax.celkem }}"
+                     data-hranice-odkazu="1048576"
+                     data-info="{{ prilohy|json_encode }}">
+                <h3 class="h6 mb-2" id="prilohy-nadpis"><twig:ux:icon name="tabler:file-text" class="oa-icon" /> Přílohy</h3>
+                <ul class="list-unstyled mb-2" data-prilohy-seznam></ul>
+                <label for="prilohy-soubor" class="form-label small mb-1">Přidat soubor</label>
+                <input type="file" id="prilohy-soubor" class="form-control form-control-sm" multiple
+                       accept=".pdf,.jpg,.jpeg,.png,.gif,.docx,.xlsx,.pptx,.odt,.ods,.txt">
+                <p class="small text-muted mt-1 mb-0">
+                    PDF, obrázek JPG/PNG/GIF, Word/Excel/PowerPoint, OpenDocument nebo text; nejvýš 10 MB na soubor a 14 MB přiložených celkem.
+                    {% if not jedenPrijemce %}U hromadné zprávy jde soubor nad 1 MB výchozí jako odkaz ke stažení (pod textem mailu) — u každého souboru se dá přepnout.{% endif %}
+                </p>
+                <p class="small mb-0" role="status" aria-live="polite" data-prilohy-stav></p>
+            </section>
+
             <div class="mb-3" style="max-width: 20rem;">{{ form_row(form.sendAt) }}</div>
 
             {# Kontrola před odesláním (spec §5.2, dávka 3.3): ukáže se po „Zkontrolovat…"; zařadí až „Odeslat" z panelu. #}
@@ -114,6 +139,17 @@
                         </p>
                         {% if limit.remaining is not null and kontrola.zprav > limit.remaining %}
                             <p class="mb-2 text-warning-emphasis">Do dnešního limitu se vejde {{ limit.remaining }} — zbytek odejde automaticky zítra.</p>
+                        {% endif %}
+                        {% if prilohy is not empty %}
+                            {% set prilozeno = 0 %}{% set odkazem = 0 %}
+                            {% for p in prilohy %}{% if p.mode == 'odkaz' %}{% set odkazem = odkazem + 1 %}{% else %}{% set prilozeno = prilozeno + p.size %}{% endif %}{% endfor %}
+                            <p class="mb-2 small" data-kontrola-prilohy>
+                                Přílohy: {{ prilohy|length }}{% if prilozeno > 0 %}, přiloženo {{ (prilozeno / 1048576)|number_format(1, ',', ' ') }} MB ke každé zprávě
+                                — odejde asi {{ (prilozeno * kontrola.zprav / 1048576)|number_format(0, ',', ' ') }} MB dat{% endif %}{% if odkazem > 0 %}, {{ odkazem }} odkazem ke stažení{% endif %}.
+                            </p>
+                            {% if prilozeno * kontrola.zprav > 200 * 1048576 %}
+                                <p class="mb-2 text-warning-emphasis small">Velký objem dat — zvaž poslat větší soubory jako odkaz ke stažení (zatíží méně server i schránky příjemců).</p>
+                            {% endif %}
                         {% endif %}
                         {% set zkouska = koncept is not null ? koncept.lastTest : null %}
                         <p class="mb-2 small" data-kontrola-zkouska>
@@ -221,6 +257,110 @@
             // Automatické ukládání konceptu (spec §5.2): po změně a chvíli klidu se formulář uloží jako koncept
             // (týmž požadavkem jako „Uložit koncept", JSON místo přesměrování). Nikdy nic neodešle. Souběh hlídá
             // revize — když koncept mezitím změnilo jiné okno, ukládání se zastaví a autor to uvidí.
+            // Přílohy (dávka 3.5): seznam se kreslí ze skrytého pole (JSON [{id, mode}]) a popisu souborů; nahrání = hned po
+            // výběru. Každá změna vyvolá „change" na skrytém poli — obnoví náhled a naplánuje automatické uložení konceptu.
+            (function () {
+                var sekce = form.querySelector('[data-prilohy]');
+                if (!sekce) { return; }
+                var pole = document.getElementById(sekce.getAttribute('data-pole'));
+                var seznam = sekce.querySelector('[data-prilohy-seznam]');
+                var vstup = sekce.querySelector('#prilohy-soubor');
+                var stav = sekce.querySelector('[data-prilohy-stav]');
+                var jeden = sekce.getAttribute('data-jeden') === '1';
+                var maxSoubor = parseInt(sekce.getAttribute('data-max-soubor'), 10);
+                var maxCelkem = parseInt(sekce.getAttribute('data-max-celkem'), 10);
+                var hranice = parseInt(sekce.getAttribute('data-hranice-odkazu'), 10);
+                var info = {};
+                JSON.parse(sekce.getAttribute('data-info') || '[]').forEach(function (p) { info[p.id] = p; });
+                function polozky() { try { return JSON.parse(pole.value || '[]'); } catch (e) { return []; } }
+                function velikost(b) { return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' kB' : (b / 1048576).toFixed(1).replace('.', ',') + ' MB'; }
+                function ulozit(seznamPolozek) {
+                    pole.value = seznamPolozek.length ? JSON.stringify(seznamPolozek) : '';
+                    pole.dispatchEvent(new Event('change', { bubbles: true }));
+                    vykreslit();
+                }
+                function vykreslit() {
+                    var p = polozky();
+                    seznam.textContent = '';
+                    var prilozeno = 0;
+                    p.forEach(function (polozka) {
+                        var i = info[polozka.id] || { name: 'soubor #' + polozka.id, size: 0 };
+                        if (polozka.mode !== 'odkaz') { prilozeno += i.size; }
+                        var li = document.createElement('li');
+                        li.className = 'd-flex flex-wrap align-items-center gap-2 mb-1';
+                        li.setAttribute('data-priloha-id', polozka.id);
+                        var a = document.createElement('a');
+                        a.href = sekce.getAttribute('data-stahnout-url').replace(/\/0$/, '/' + polozka.id);
+                        a.textContent = i.name;
+                        var vel = document.createElement('small');
+                        vel.className = 'text-muted';
+                        vel.textContent = '(' + velikost(i.size) + ')';
+                        li.append(a, vel);
+                        if (!jeden) {
+                            var vyber = document.createElement('select');
+                            vyber.className = 'form-select form-select-sm w-auto';
+                            vyber.setAttribute('aria-label', 'Jak poslat ' + i.name);
+                            [['priloha', 'jako příloha'], ['odkaz', 'jako odkaz ke stažení']].forEach(function (v) {
+                                var o = document.createElement('option');
+                                o.value = v[0]; o.textContent = v[1]; o.selected = polozka.mode === v[0];
+                                vyber.append(o);
+                            });
+                            vyber.addEventListener('change', function () {
+                                ulozit(polozky().map(function (x) { return x.id === polozka.id ? { id: x.id, mode: vyber.value } : x; }));
+                            });
+                            li.append(vyber);
+                        }
+                        var odebrat = document.createElement('button');
+                        odebrat.type = 'button';
+                        odebrat.className = 'btn btn-sm btn-link text-danger p-0';
+                        odebrat.textContent = 'Odebrat';
+                        odebrat.setAttribute('aria-label', 'Odebrat ' + i.name);
+                        odebrat.addEventListener('click', function () { ulozit(polozky().filter(function (x) { return x.id !== polozka.id; })); });
+                        li.append(odebrat);
+                        seznam.append(li);
+                    });
+                    if (prilozeno > maxCelkem) {
+                        stav.textContent = 'Přiložené soubory mají dohromady ' + velikost(prilozeno) + ' — vejde se nejvýš ' + velikost(maxCelkem) + '. Pošli některé jako odkaz, nebo je odeber.';
+                        stav.className = 'small mb-0 text-danger';
+                    }
+                }
+                vstup.addEventListener('change', function () {
+                    var soubory = Array.prototype.slice.call(vstup.files || []);
+                    vstup.value = '';
+                    soubory.reduce(function (cesta, soubor) {
+                        return cesta.then(function () {
+                            if (soubor.size > maxSoubor) {
+                                stav.textContent = soubor.name + ': soubor je moc velký (' + velikost(soubor.size) + ', nejvýš ' + velikost(maxSoubor) + ').';
+                                stav.className = 'small mb-0 text-danger';
+                                return;
+                            }
+                            stav.textContent = 'Nahrávám ' + soubor.name + '…';
+                            stav.className = 'small mb-0 text-muted';
+                            var data = new FormData();
+                            data.append('_token', sekce.getAttribute('data-upload-token'));
+                            data.append('file', soubor);
+                            return fetch(sekce.getAttribute('data-upload-url'), { method: 'POST', body: data, credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                                .then(function (r) { return r.json().catch(function () { return { error: 'Server neodpověděl (HTTP ' + r.status + ').' }; }); })
+                                .then(function (p) {
+                                    if (p.error || !p.id) {
+                                        stav.textContent = soubor.name + ': ' + (p.error || 'nahrání se nepovedlo.');
+                                        stav.className = 'small mb-0 text-danger';
+                                        return;
+                                    }
+                                    info[p.id] = p;
+                                    stav.textContent = 'Nahráno: ' + p.name + '.';
+                                    stav.className = 'small mb-0 text-success';
+                                    ulozit(polozky().concat([{ id: p.id, mode: !jeden && p.size > hranice ? 'odkaz' : 'priloha' }]));
+                                });
+                        });
+                    }, Promise.resolve()).catch(function () {
+                        stav.textContent = 'Nahrání se nepovedlo (spojení). Zkus to znovu.';
+                        stav.className = 'small mb-0 text-danger';
+                    });
+                });
+                vykreslit();
+            })();
+
             // Zkouška se vykreslí pro příjemce, kterého autor právě vidí v náhledu.
             var zkouskaPro = document.getElementById('{{ form.zkouskaPro.vars.id }}');
             var vyberNahledu = form.querySelector('select[data-mail-editor-target="recipient"]');

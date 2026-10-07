@@ -18,6 +18,11 @@ use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidationResult;
 use OswisOrg\OswisCoreBundle\Mail\Validation\MailValidator;
 use OswisOrg\OswisCoreBundle\Service\MailService;
 use OswisOrg\OswisCoreBundle\Service\SystemMailService;
+use Doctrine\ORM\EntityManagerInterface;
+use OswisOrg\OswisCoreBundle\Entity\MailAttachment\MailAttachment;
+use OswisOrg\OswisCoreBundle\Mail\Attachment\AttachedFile;
+use OswisOrg\OswisCoreBundle\Mail\Attachment\MailAttachmentStore;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Psr\Log\LoggerInterface;
 use Twig\Environment;
 
@@ -41,7 +46,69 @@ final class ParticipantManualMailer
         private readonly Environment $twig,
         private readonly LoggerInterface $logger,
         private readonly SystemMailService $systemMailService,
+        private readonly EntityManagerInterface $em,
+        private readonly MailAttachmentStore $attachmentStore,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
+    }
+
+    /**
+     * Přílohy zprávy rozdělené podle způsobu (dávka 3.5): soubory k přiložení, odkazy ke stažení (do seznamu
+     * „Ke stažení" pod textem), popis do záznamu odeslaného mailu a ID, které v úložišti chybí.
+     *
+     * @return array{soubory: list<AttachedFile>, odkazy: list<array{url: string, name: string, sizeLabel: string}>, popis: list<array{id: int, name: string, size: int, mode: string}>, chybi: list<int>, prilozeno: int, odkazem: list<MailAttachment>}
+     */
+    public function prilohy(ParticipantManualMail $mail): array
+    {
+        $vysledek = ['soubory' => [], 'odkazy' => [], 'popis' => [], 'chybi' => [], 'prilozeno' => 0, 'odkazem' => []];
+        foreach ($mail->attachments as $priloha) {
+            $soubor = $this->em->find(MailAttachment::class, $priloha['id']);
+            if (!$soubor instanceof MailAttachment) {
+                $vysledek['chybi'][] = $priloha['id'];
+                continue;
+            }
+            $vysledek['popis'][] = ['id' => $priloha['id'], 'name' => $soubor->getOriginalName(), 'size' => $soubor->getSize(), 'mode' => $priloha['mode']];
+            if (ParticipantManualMail::ODKAZ === $priloha['mode']) {
+                $vysledek['odkazem'][] = $soubor;
+                $vysledek['odkazy'][] = [
+                    'url'       => $this->urlGenerator->generate('oswis_org_oswis_core_mail_attachment_public', ['token' => $soubor->getToken()], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'name'      => $soubor->getOriginalName(),
+                    'sizeLabel' => $soubor->getSizeLabel(),
+                ];
+                continue;
+            }
+            $vysledek['soubory'][] = new AttachedFile($this->attachmentStore->absolutePath($soubor), $soubor->getOriginalName(), $soubor->getMimeType());
+            $vysledek['prilozeno'] += $soubor->getSize();
+        }
+
+        return $vysledek;
+    }
+
+    /** Soubory posílané odkazem začnou být ke stažení (zpráva s odkazem právě odchází). Uloží volající. */
+    public function zverejnitOdkazy(ParticipantManualMail $mail): void
+    {
+        foreach ($this->prilohy($mail)['odkazem'] as $soubor) {
+            $soubor->zverejnit();
+        }
+    }
+
+    /** Chybějící soubor nebo přílohy nad limit = chyba zprávy (nejde ji odeslat ani zkusit). */
+    private function zkontrolovatPrilohy(ParticipantManualMail $mail, MailValidationResult $result): void
+    {
+        if ([] === $mail->attachments) {
+            return;
+        }
+        $prilohy = $this->prilohy($mail);
+        foreach ($prilohy['chybi'] as $id) {
+            $result->error(sprintf('Příloha #%d už v úložišti není — odeber ji a nahraj soubor znovu.', $id));
+        }
+        if ($prilohy['prilozeno'] > MailAttachmentStore::MAX_CELKEM) {
+            $result->error(sprintf(
+                'Přílohy mají dohromady %s, do jedné zprávy se vejde nejvýš %d MB. Pošli některé jako odkaz ke stažení.',
+                MailAttachment::velikost($prilohy['prilozeno']),
+                MailAttachmentStore::MAX_CELKEM / 1048576,
+            ));
+        }
     }
 
     /** Typ systémového e-mailu se zkouškou sobě. */
@@ -64,7 +131,11 @@ final class ParticipantManualMailer
             $context = $this->context($mail, $participant, $appUser, self::TYPE_TEST);
             $subject = self::TEST_PREFIX.$this->renderer->renderSubject($mail->subject, $context);
             [$template, $data] = $this->templateAndData($mail, $context);
-            $zaznam = $this->systemMailService->send(self::TYPE_TEST, $address, $subject, $template, $data, archiveCopy: false, manual: true);
+            $prilohy = $this->prilohy($mail);
+            $data['prilohyKeStazeni'] = $prilohy['odkazy'];
+            // Zkouška posílá skutečné odkazy — musí jít otevřít.
+            $this->zverejnitOdkazy($mail);
+            $zaznam = $this->systemMailService->send(self::TYPE_TEST, $address, $subject, $template, $data, archiveCopy: false, manual: true, attachments: $prilohy['soubory']);
         } catch (\Throwable $exception) {
             $this->logger->error(sprintf('Zkouška zprávy na %s (vykresleno pro přihlášku #%d) neodešla: %s', $address, $participant->getId() ?? 0, $exception->getMessage()));
 
@@ -84,12 +155,15 @@ final class ParticipantManualMailer
     {
         $recipients = $this->recipients($participants, 'kontrola', $mail->adminName);
         if (null !== ($dokument = self::zdrojDokumentu($mail))) {
-            return $this->validator->validateTemplateSource($dokument, $recipients, '' !== $mail->subject ? $mail->subject : null);
+            $result = $this->validator->validateTemplateSource($dokument, $recipients, '' !== $mail->subject ? $mail->subject : null);
+        } else {
+            $result = null !== $mail->templateSlug
+                ? $this->validator->validateTemplate($mail->templateSlug, $recipients, $mail->subject)
+                : $this->validator->validateMessage($mail->subject, $mail->body, $recipients);
         }
+        $this->zkontrolovatPrilohy($mail, $result);
 
-        return null !== $mail->templateSlug
-            ? $this->validator->validateTemplate($mail->templateSlug, $recipients, $mail->subject)
-            : $this->validator->validateMessage($mail->subject, $mail->body, $recipients);
+        return $result;
     }
 
     /**
@@ -124,6 +198,7 @@ final class ParticipantManualMailer
             ];
         }
         [$template, $data] = $this->templateAndData($mail, $context);
+        $data['prilohyKeStazeni'] = $this->prilohy($mail)['odkazy'];
         $predmet = $this->renderer->renderSubject($mail->subject, $context);
 
         return [
@@ -193,7 +268,10 @@ final class ParticipantManualMailer
         // a do mailu nesmí odejít nevyhodnocený Twig (dřív odešel „záložní" syrový text i se {{ … }}).
         $subject = $this->renderer->renderSubject($mail->subject, $context);
         [$template, $data] = $this->templateAndData($mail, $context);
+        $prilohy = $this->prilohy($mail);
+        $data['prilohyKeStazeni'] = $prilohy['odkazy'];
         $participantMail = new ParticipantMail($participant, $appUser, $subject, $type);
+        $participantMail->setAttachments($prilohy['popis']);
         if (null !== $bulk) {
             $participantMail->setBulk($bulk);
             // Hromadná rozesílka běží po dávkách a kurzor se zapisuje až po odeslání; klíč
@@ -209,7 +287,7 @@ final class ParticipantManualMailer
         // Ruční zpráva, ne automat → MailerSubscriber nastaví Auto-Submitted: no.
         $participantMail->markAsManual();
         // Záznam, který se skutečně použil (u hromadné rozesílky s klíčem může jít o starší, opakovaný).
-        $zaznam = $this->mailService->sendEMail($participantMail, $template, $data);
+        $zaznam = $this->mailService->sendEMail($participantMail, $template, $data, $prilohy['soubory']);
 
         return $zaznam instanceof ParticipantMail ? $zaznam : $participantMail;
     }

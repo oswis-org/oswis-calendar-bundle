@@ -74,12 +74,16 @@ class ParticipantBulkMailService
                 throw new OswisException(self::KONCEPT_ZMENEN);
             }
             $bulk->zaradit($zacatek, $this->now());
+            // Odkazy ke stažení začnou fungovat se zařazením — zpráva s nimi právě odchází (dávka 3.5).
+            $this->mailer->zverejnitOdkazy($mail);
             $this->em->flush();
 
             return $bulk;
         }
         $bulk = new ParticipantMailBulk($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug);
         $bulk->setSendAfter($zacatek);
+        $bulk->setAttachments($mail->attachments);
+        $this->mailer->zverejnitOdkazy($mail);
         $this->em->persist($bulk);
         $this->em->flush();
 
@@ -107,6 +111,7 @@ class ParticipantBulkMailService
             return $bulk;
         }
         $bulk = ParticipantMailBulk::koncept($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug, $sendAt, $this->now());
+        $bulk->setAttachments($mail->attachments);
         $this->em->persist($bulk);
         $this->em->flush();
 
@@ -130,6 +135,7 @@ class ParticipantBulkMailService
         }
         $this->em->refresh($bulk);
         $bulk->upravitKoncept($mail->subject, $mail->body, $participantIds, $mail->adminName, $mail->templateSlug, $sendAt, $this->now(), (int) $revize);
+        $bulk->setAttachments($mail->attachments);
 
         return $bulk;
     }

@@ -49,6 +49,8 @@ final class BulkMailType extends AbstractType
             // Koncept, ze kterého se píše (dávka 3.3): ID a revize, ze které autor vychází — ochrana proti souběhu.
             ->add('konceptId', HiddenType::class)
             ->add('konceptRevize', HiddenType::class)
+            // Přílohy (dávka 3.5): JSON `[{id, mode}]` — spravuje ho seznam příloh na stránce (nahrání, příloha/odkaz).
+            ->add('prilohy', HiddenType::class)
             ->add('subject', MailSubjectType::class, [
                 'label'       => 'Předmět',
                 'required'    => true,

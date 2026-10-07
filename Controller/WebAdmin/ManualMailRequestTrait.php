@@ -31,6 +31,7 @@ trait ManualMailRequestTrait
             $this->adminName(),
             $allowDocument && '1' === (string) $request->request->get('document', ''),
             $allowDocument ? (trim((string) $request->request->get('parent', '')) ?: null) : null,
+            ParticipantManualMail::prilohyZJson($request->request->getString('prilohy')),
         );
     }
 

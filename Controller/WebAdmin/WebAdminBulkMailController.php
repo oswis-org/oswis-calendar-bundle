@@ -14,7 +14,9 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantBulkMailService;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMail;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUser\AppUser;
+use OswisOrg\OswisCoreBundle\Entity\MailAttachment\MailAttachment;
 use OswisOrg\OswisCoreBundle\Entity\MailTestInbox\MailTestInbox;
+use OswisOrg\OswisCoreBundle\Mail\Attachment\MailAttachmentStore;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
 use OswisOrg\OswisCoreBundle\Exceptions\OswisException;
 use OswisOrg\OswisCoreBundle\Mail\Quota\MailDailyQuota;
@@ -157,8 +159,9 @@ final class WebAdminBulkMailController extends AbstractController
                 'valuesUrl'     => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_values'),
                 'audienceUrl'   => $this->generateUrl('oswis_org_oswis_calendar_web_admin_message_audience'),
                 'recipients'    => $recipients,
-                'subjectField'  => 'bulk_mail_subject',
-                'templateField' => 'bulk_mail_templateSlug',
+                'subjectField'     => 'bulk_mail_subject',
+                'templateField'    => 'bulk_mail_templateSlug',
+                'attachmentsField' => 'bulk_mail_prilohy',
             ],
         ]);
     }
@@ -189,6 +192,8 @@ final class WebAdminBulkMailController extends AbstractController
             'limit'          => $this->denniLimit(),
             'kontrola'       => $kontrola,
             'koncept'        => $koncept ?? $this->konceptZFormulare($form),
+            'prilohy'        => $this->prilohyZFormulare($form, $ids),
+            'prilohyMax'     => ['soubor' => MailAttachmentStore::MAX_SOUBOR, 'celkem' => MailAttachmentStore::MAX_CELKEM],
         ], new Response(status: $status ?? ($form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK)));
     }
 
@@ -212,7 +217,7 @@ final class WebAdminBulkMailController extends AbstractController
                 ? new JsonResponse(['error' => 'invalid'], Response::HTTP_UNPROCESSABLE_ENTITY)
                 : $this->renderCompose($ids, $form);
         }
-        /** @var array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data */
+        /** @var array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string, prilohy: ?string} $data */
         $data = $form->getData();
         $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
         $koncept = self::konceptZDat($data);
@@ -226,12 +231,7 @@ final class WebAdminBulkMailController extends AbstractController
         if (BulkMailType::posilaZkousku($form)) {
             return $this->poslatZkousku($ids, $data, $koncept, $form);
         }
-        $mail = new ParticipantManualMail(
-            trim((string) $data['subject']),
-            $kampan ? '' : (string) $data['body'],
-            $kampan ? $data['templateSlug'] : null,
-            $this->adminName(),
-        );
+        $mail = $this->zpravaZFormulare($ids, $data);
         // Kontrola VŠECH příjemců — s chybou zprávu nejde zařadit, s varováním až po potvrzení autora
         // (dřív se varování ukázalo až po zařazení, kdy už mail odcházel — 13. 9. 2026).
         $validation = $this->bulkMailService->validate($mail, $ids);
@@ -263,18 +263,39 @@ final class WebAdminBulkMailController extends AbstractController
     }
 
     /**
+     * Zpráva z odeslaného formuláře. `$sTextem` = i v režimu kampaně ponechat napsaný text (ukládání konceptu — přepnutím
+     * zpět se nesmí ztratit); jinak se v režimu kampaně text neposílá. Jednomu příjemci jdou všechny soubory jako příloha.
+     *
+     * @param list<int>    $ids
+     * @param array<mixed> $data
+     */
+    private function zpravaZFormulare(array $ids, array $data, bool $sTextem = false): ParticipantManualMail
+    {
+        $kampan = BulkMailType::MODE_TEMPLATE === ($data['mailMode'] ?? null);
+        $slug = $data['templateSlug'] ?? null;
+        $mail = new ParticipantManualMail(
+            trim(is_string($data['subject'] ?? null) ? $data['subject'] : ''),
+            $kampan && !$sTextem ? '' : (is_string($data['body'] ?? null) ? $data['body'] : ''),
+            $kampan && is_string($slug) ? $slug : null,
+            $this->adminName(),
+            attachments: ParticipantManualMail::prilohyZJson(is_string($data['prilohy'] ?? null) ? $data['prilohy'] : null),
+        );
+
+        return 1 === count($ids) ? $mail->vseJakoPriloha() : $mail;
+    }
+
+    /**
      * Uložit rozepsanou zprávu jako koncept (dávka 3.3) — i neúplnou; nic se neodesílá. Uloží se i text vlastní zprávy
      * v režimu kampaně, aby se přepnutím zpět neztratil.
      *
      * @param list<int>                                                                                                                                 $ids
-     * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data
+     * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string, prilohy: ?string} $data
      * @param array{id: int, revision: int}|null                                                                                                          $koncept
      * @param bool                                                                                                                                         $autosave průběžné ukládání ze stránky (JSON místo přesměrování)
      */
     private function ulozitKoncept(array $ids, array $data, ?array $koncept, bool $autosave = false): Response
     {
-        $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
-        $mail = new ParticipantManualMail(trim((string) $data['subject']), (string) $data['body'], $kampan ? $data['templateSlug'] : null, $this->adminName());
+        $mail = $this->zpravaZFormulare($ids, $data, sTextem: true);
         $bulk = $this->bulkMailService->saveDraft($mail, $ids, $data['sendAt'], $koncept);
         if ($autosave) {
             return null === $bulk
@@ -297,7 +318,7 @@ final class WebAdminBulkMailController extends AbstractController
      * zaškrtnuté adresy — jen z povolených (správce + zkušební schránky). Nic se nezařadí ani nezapíše k přihlášce.
      *
      * @param list<int>                                                                                                                                 $ids
-     * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string} $data
+     * @param array{subject: ?string, mailMode: ?string, templateSlug: ?string, body: ?string, sendAt: ?\DateTimeImmutable, konceptId: ?string, konceptRevize: ?string, prilohy: ?string} $data
      * @param array{id: int, revision: int}|null                                                                                                          $koncept
      * @param FormInterface<mixed>                                                                                                                       $form
      */
@@ -319,14 +340,13 @@ final class WebAdminBulkMailController extends AbstractController
 
             return $this->renderCompose($ids, $form);
         }
-        $kampan = BulkMailType::MODE_TEMPLATE === $data['mailMode'];
-        $mail = new ParticipantManualMail(trim((string) $data['subject']), $kampan ? '' : (string) $data['body'], $kampan ? $data['templateSlug'] : null, $this->adminName());
+        $mail = $this->zpravaZFormulare($ids, $data);
         // Chyba v textu = zkouška neodejde (stejná kontrola jako odeslání, jen pro vybraného příjemce).
         $validation = $this->bulkMailService->validate($mail, [$participantId]);
         if ($validation->hasErrors()) {
             return $this->renderCompose($ids, $form, $validation);
         }
-        $ulozeni = new ParticipantManualMail($mail->subject, (string) $data['body'], $mail->templateSlug, $mail->adminName);
+        $ulozeni = $this->zpravaZFormulare($ids, $data, sTextem: true);
         $bulk = $this->bulkMailService->saveDraft($ulozeni, $ids, $data['sendAt'], $koncept);
         if (null === $bulk) {
             $this->addFlash('danger', ParticipantBulkMailService::KONCEPT_ZMENEN.' Zkouška neodešla.');
@@ -372,6 +392,7 @@ final class WebAdminBulkMailController extends AbstractController
             'sendAt'        => $bulk->getSendAfter(),
             'konceptId'     => (string) $bulk->getId(),
             'konceptRevize' => (string) $bulk->getRevision(),
+            'prilohy'       => [] === $bulk->getAttachments() ? '' : (string) json_encode($bulk->getAttachments()),
         ]);
 
         return $this->renderCompose($ids, $form, koncept: $bulk);
@@ -411,6 +432,26 @@ final class WebAdminBulkMailController extends AbstractController
         }
 
         return ['id' => (int) $id, 'revision' => (int) $revize];
+    }
+
+    /**
+     * Přílohy z formuláře pro seznam na stránce a kontrolu před odesláním (název, velikost, způsob, stažení správcem).
+     *
+     * @param FormInterface<mixed> $form
+     * @param list<int>            $ids
+     *
+     * @return list<array{id: int, name: string, size: int, sizeLabel: string, mode: string}>
+     */
+    private function prilohyZFormulare(FormInterface $form, array $ids): array
+    {
+        $data = $form->getData();
+        $mail = $this->zpravaZFormulare($ids, is_array($data) ? $data : []);
+        $popis = [];
+        foreach ($this->manualMailer->prilohy($mail)['popis'] as $priloha) {
+            $popis[] = $priloha + ['sizeLabel' => MailAttachment::velikost($priloha['size'])];
+        }
+
+        return $popis;
     }
 
     /**

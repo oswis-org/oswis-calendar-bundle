@@ -105,6 +105,17 @@
                                 {% else %}
                                     <p class="text-muted oswis-tl__nobody">Tělo zprávy není k dispozici.</p>
                                 {% endif %}
+                                {# Co ke zprávě odešlo navíc (dávka 3.5) — správce si soubor stáhne, jinde jen název. #}
+                                {% set prilohyZpravy = e.attachments|default([]) %}
+                                {% if prilohyZpravy is iterable and prilohyZpravy is not empty %}
+                                    <p class="small mb-1 mt-1" data-tl-prilohy>
+                                        Přílohy:
+                                        {% for p in prilohyZpravy %}
+                                            {%- if adm -%}<a href="{{ path('oswis_org_oswis_core_web_admin_mail_attachment_download', { id: p.id }) }}">{{ p.name }}</a>{%- else -%}{{ p.name }}{%- endif %}
+                                            ({{ p.mode == 'odkaz' ? 'odkazem ke stažení' : 'příloha' }}){{ loop.last ? '' : ',' }}
+                                        {% endfor %}
+                                    </p>
+                                {% endif %}
                                 {% if adm and resendableMailIds is defined and resendableMailIds[e.id]|default and participantId is defined %}
                                     <form method="post"
                                           action="{{ path('oswis_org_oswis_calendar_web_admin_participant_resend_mail', { participantId: participantId, mailId: e.id }) }}"
