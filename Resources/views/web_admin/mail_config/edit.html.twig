@@ -9,8 +9,24 @@
         <p>
             <a class="btn btn-sm btn-link"
                href="{{ path('oswis_org_oswis_calendar_web_admin_mail_config') }}">← Zpět na konfiguraci e-mailů</a>
+            {% if kind == 'template' and entity.id %}
+                · <a class="btn btn-sm btn-link" href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_history', { id: entity.id }) }}">Historie verzí ({{ pocetVerzi|default(0) }})</a>
+            {% endif %}
         </p>
+        {# Souběh (dávka 4): šablonu mezitím uložil někdo jiný — nic se nepřepsalo; autor vidí rozdíl a další „Uložit"
+           už vychází z aktuální revize (přepíše vědomě). #}
+        {% if konflikt|default(null) %}
+            <div class="alert alert-warning" role="alert" data-konflikt>
+                <strong>Šablonu mezitím uložil{{ konflikt.kdo ? ' ' ~ konflikt.kdo : ' někdo jiný' }}{{ konflikt.kdy ? ' (' ~ konflikt.kdy|date('j. n. H:i', 'Europe/Prague') ~ ')' : '' }}.</strong>
+                Tvoje úpravy se neuložily — jsou pořád ve formuláři. Níže je, čím se tvůj text liší od uloženého
+                (červeně jen v uloženém, zeleně jen v tvém). Když znovu klikneš na „Uložit", tvoje verze uložené změny přepíše.
+                {% include '@OswisOrgOswisCalendar/web_admin/mail_config/_rozdil.html.twig' with { rozdil: konflikt.rozdil } only %}
+            </div>
+        {% endif %}
         {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        {% if form.revize is defined %}
+            {{ form_widget(form.revize, konflikt|default(null) ? { value: konflikt.revize } : {}) }}
+        {% endif %}
         {# Editor textu dodává formulářový typ MailBodyType (motiv je registrovaný globálně),
            takže tady stačí běžné vykreslení formuláře — žádné vypisování polí po jednom
            ani ruční vkládání partialu. #}

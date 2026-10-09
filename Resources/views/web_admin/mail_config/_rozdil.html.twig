@@ -1,0 +1,23 @@
+{# Řádkový rozdíl textu (RadkovyRozdil): odebrané červeně, přidané zeleně, beze změny šedě. Dlouhé úseky beze změny
+   se sbalí na 3 řádky okolo změny, ať je vidět podstatné. Barvy přes třídy Bootstrapu (motiv administrace). #}
+{% set kontext = 3 %}
+{% set zmeny = [] %}
+{% for r in rozdil %}{% if r.typ != 'stejne' %}{% set zmeny = zmeny|merge([loop.index0]) %}{% endif %}{% endfor %}
+{% if zmeny is empty %}
+    <p class="text-muted small mb-0" data-rozdil-zadny>Text se neliší.</p>
+{% else %}
+    <div class="oswis-rozdil border rounded small" data-rozdil style="font-family: var(--bs-font-monospace); overflow-x: auto; max-height: 32rem; overflow-y: auto;">
+        {% set vynechano = false %}
+        {% for r in rozdil %}
+            {% set blizko = false %}
+            {% for z in zmeny %}{% if (loop.parent.loop.index0 - z)|abs <= kontext %}{% set blizko = true %}{% endif %}{% endfor %}
+            {% if blizko %}
+                {% if vynechano %}<div class="px-2 text-muted bg-body-tertiary">⋯</div>{% set vynechano = false %}{% endif %}
+                <div class="px-2 {{ r.typ == 'pridano' ? 'bg-success-subtle text-success-emphasis' : (r.typ == 'odebrano' ? 'bg-danger-subtle text-danger-emphasis' : 'text-body-secondary') }}" style="white-space: pre-wrap;"
+                     {% if r.typ != 'stejne' %}data-rozdil-{{ r.typ }}{% endif %}><span aria-hidden="true">{{ r.typ == 'pridano' ? '+' : (r.typ == 'odebrano' ? '−' : ' ') }}</span><span class="visually-hidden">{{ r.typ == 'pridano' ? 'přidáno: ' : (r.typ == 'odebrano' ? 'odebráno: ' : '') }}</span> {{ r.radek }}</div>
+            {% else %}
+                {% set vynechano = true %}
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

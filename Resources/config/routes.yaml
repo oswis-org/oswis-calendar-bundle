@@ -865,6 +865,30 @@ oswis_org_oswis_calendar_web_admin_mail_template_new:
   path: "/web_admin/e-maily/sablony/nova"
   methods: [GET, POST]
 
+# Historie verzí šablony (dávka 4): seznam, verze s rozdílem, obnovení (POST s CSRF).
+oswis_org_oswis_calendar_web_admin_mail_template_history:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminTemplateHistoryController::history
+  path: "/web_admin/e-maily/sablony/{id}/historie"
+  methods: [GET]
+  requirements:
+    id: '\d+'
+
+oswis_org_oswis_calendar_web_admin_mail_template_version:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminTemplateHistoryController::version
+  path: "/web_admin/e-maily/sablony/{id}/historie/{number}"
+  methods: [GET]
+  requirements:
+    id: '\d+'
+    number: '\d+'
+
+oswis_org_oswis_calendar_web_admin_mail_template_restore:
+  controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminTemplateHistoryController::restore
+  path: "/web_admin/e-maily/sablony/{id}/historie/{number}/obnovit"
+  methods: [POST]
+  requirements:
+    id: '\d+'
+    number: '\d+'
+
 oswis_org_oswis_calendar_web_admin_mail_template_edit:
   controller: OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailConfigController::editTemplate
   path: "/web_admin/e-maily/sablony/{id}/upravit"

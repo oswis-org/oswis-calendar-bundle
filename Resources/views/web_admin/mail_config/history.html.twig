@@ -1,0 +1,32 @@
+{% extends '@OswisOrgOswisCore/web_admin/page-skeleton-web-admin.html.twig' %}
+
+{% block html_title %}{{ page_title }}{% endblock %}
+
+{% block body_content %}
+    <main class="container">
+        {% include '@OswisOrgOswisCalendar/web_admin/parts/communication-subnav.html.twig' with { current: 'campaigns' } only %}
+        <h2>{{ pageTitle }}</h2>
+        <p>
+            <a class="btn btn-sm btn-link" href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_edit', { id: template.id }) }}">← Zpět na úpravu šablony</a>
+        </p>
+        <p class="text-muted">Každé uložení, které změnilo obsah, je tu jako verze. Obnovení starší verze ji uloží jako novou — nic se neztratí.</p>
+        <table class="list" data-verze>
+            <thead>
+                <tr><th>Verze</th><th>Uloženo</th><th>Kdo</th><th>Poznámka</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for v in versions %}
+                    <tr data-verze-cislo="{{ v.number }}">
+                        <td>{{ v.number }}{% if loop.first %} <span class="badge text-bg-primary">aktuální</span>{% endif %}</td>
+                        <td><small>{{ v.createdAt|date('j. n. Y H:i', 'Europe/Prague') }}</small></td>
+                        <td>{{ v.author|default('—') }}</td>
+                        <td>{{ v.note|default('—') }}</td>
+                        <td><a class="btn btn-sm btn-outline-primary" href="{{ path('oswis_org_oswis_calendar_web_admin_mail_template_version', { id: template.id, number: v.number }) }}">Zobrazit změny</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-muted text-center">Zatím žádná verze.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+{% endblock %}

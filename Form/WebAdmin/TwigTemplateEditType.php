@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -74,6 +75,14 @@ final class TwigTemplateEditType extends AbstractType
                 'help'     => 'U šablony, která z něčeho vychází, patří text jen do bloků — mimo ně by shodil odeslání.',
                 'preview'  => $options['preview'],
             ])
+            // Historie verzí (dávka 4): nepovinná poznámka k uložené verzi a revize, ze které autor vychází (souběh).
+            ->add('poznamkaKVerzi', TextType::class, [
+                'label'    => 'Poznámka ke změně (nepovinné)',
+                'required' => false,
+                'attr'     => ['maxlength' => 255, 'placeholder' => 'např. opravený termín doplatku'],
+                'help'     => 'Uloží se do historie verzí šablony, ať je za čas jasné, proč se změnila.',
+            ])
+            ->add('revize', HiddenType::class, ['mapped' => false])
             ->add('submit', SubmitType::class, [
                 'label' => 'Uložit',
                 'attr'  => ['class' => 'btn btn-primary'],

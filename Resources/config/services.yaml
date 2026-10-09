@@ -197,6 +197,11 @@ services:
     autoconfigure: true
     public: true
 
+  OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminTemplateHistoryController:
+    autowire: true
+    autoconfigure: true
+    public: true
+
   OswisOrg\OswisCalendarBundle\Controller\WebAdmin\WebAdminMailSettingsController:
     autowire: true
     autoconfigure: true

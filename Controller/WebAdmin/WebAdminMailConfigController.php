@@ -17,6 +17,9 @@ use OswisOrg\OswisCalendarBundle\Service\Participant\MailGroupRecipients;
 use OswisOrg\OswisCalendarBundle\Service\Participant\ParticipantManualMailer;
 use OswisOrg\OswisCoreBundle\Entity\AppUserMail\AppUserMailGroup;
 use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplate;
+use OswisOrg\OswisCoreBundle\Entity\TwigTemplate\TwigTemplateVersion;
+use OswisOrg\OswisCoreBundle\Repository\TwigTemplateRepository;
+use OswisOrg\OswisCoreBundle\Utils\RadkovyRozdil;
 use OswisOrg\OswisCoreBundle\Mail\Parent\MailParentRegistry;
 use OswisOrg\OswisCoreBundle\Mail\Validation\UnclosedTags;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -374,22 +377,60 @@ final class WebAdminMailConfigController extends AbstractController
         }
         $form = $this->createForm(TwigTemplateEditType::class, $template, ['preview' => $this->nahledSablony(), 'rodice' => $this->parentRegistry->choices($template->getRegularTemplateName())]);
         $this->predvyplnitPredmet($form, $template);
+        $repository = $this->em->getRepository(TwigTemplate::class);
+        \assert($repository instanceof TwigTemplateRepository);
+        // Revize z DATABÁZE (ne z L2 cache) — výchozí bod pro kontrolu souběhu při uložení (dávka 4).
+        $form->get('revize')->setData((string) $repository->revizeZDatabaze($id));
         $form->handleRequest($request);
+        $konflikt = null;
         if ($form->isSubmitted() && $form->isValid() && !$this->templateHasErrors($form, $template, $id)) {
-            $this->em->persist($template);
-            $this->em->flush();
-            $this->addFlash('success', sprintf('Twig šablona „%s" uložena.', $template->getName() ?? '#'.$id));
+            $revize = $form->get('revize')->getData();
+            $nova = is_numeric($revize) ? $repository->zamknoutRevizi($id, (int) $revize) : null;
+            if (null !== $nova) {
+                $template->setRevision($nova);
+                $this->em->persist($template);
+                $this->em->flush();
+                $this->addFlash('success', sprintf('Twig šablona „%s" uložena.', $template->getName() ?? '#'.$id));
 
-            return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_mail_config'));
+                return new RedirectResponse($this->generateUrl('oswis_org_oswis_calendar_web_admin_mail_config'));
+            }
+            // Šablonu mezitím uložil někdo jiný: NIC se nepřepíše. Autor vidí, čím se jeho text liší od uloženého,
+            // a další „Uložit" už vychází z aktuální revize — přepíše tedy vědomě.
+            $konflikt = $this->konfliktUlozeni($template, $id, $repository->revizeZDatabaze($id));
         }
 
         return $this->render('@OswisOrgOswisCalendar/web_admin/mail_config/edit.html.twig', [
             'form'               => $form,
             'entity'             => $template,
             'kind'               => 'template',
+            'konflikt'           => $konflikt,
+            'pocetVerzi'         => $this->pocetVerzi($id),
             'pageTitle'          => sprintf('Šablona e-mailu: %s', $template->getName() ?? '#'.$id),
             'page_title'         => sprintf('Šablona e-mailu: %s :: ADMIN', $template->getName() ?? '#'.$id),
         ]);
+    }
+
+    /**
+     * Souběh při uložení šablony (dávka 4): kdo a kdy šablonu naposledy uložil a čím se od toho liší text autora.
+     *
+     * @return array{revize: int, kdo: ?string, kdy: ?\DateTimeImmutable, cislo: ?int, rozdil: list<array{typ: string, radek: string}>}
+     */
+    private function konfliktUlozeni(TwigTemplate $rozepsana, int $id, int $revize): array
+    {
+        $posledni = $this->em->getRepository(TwigTemplateVersion::class)->findOneBy(['template' => $id], ['number' => 'DESC']);
+
+        return [
+            'revize' => $revize,
+            'kdo'    => $posledni?->getAuthor(),
+            'kdy'    => $posledni?->getCreatedAt(),
+            'cislo'  => $posledni?->getNumber(),
+            'rozdil' => RadkovyRozdil::porovnat($posledni?->getTextValue(), $rozepsana->getTextValue()),
+        ];
+    }
+
+    private function pocetVerzi(int $id): int
+    {
+        return $this->em->getRepository(TwigTemplateVersion::class)->count(['template' => $id]);
     }
 
     /**
