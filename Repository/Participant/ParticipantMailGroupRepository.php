@@ -29,9 +29,11 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('mail_group');
         $queryBuilder->setParameter("category_id", $category->getId())->setParameter("now", new DateTime());
         $queryBuilder->where("mail_group.category = :category_id");
-        $queryBuilder->andWhere("mail_group.startDateTime IS NULL OR mail_group.startDateTime < :now");
-        $queryBuilder->andWhere("mail_group.endDateTime IS NULL OR mail_group.endDateTime > :now");
-        $queryBuilder->orderBy("mail_group.priority", "DESC");
+        // Okno VČETNĚ hranic — stejně jako automaily a `isApplicableByDate()` (dřív tu bylo ostře, 9. 10. 2026).
+        $queryBuilder->andWhere("mail_group.startDateTime IS NULL OR mail_group.startDateTime <= :now");
+        $queryBuilder->andWhere("mail_group.endDateTime IS NULL OR mail_group.endDateTime >= :now");
+        // Při shodné prioritě rozhoduje starší skupina — pořadí nesmí záviset na databázi.
+        $queryBuilder->orderBy("mail_group.priority", "DESC")->addOrderBy('mail_group.id', 'ASC');
         try {
             /** @var ParticipantMailGroup[] $appUserEMailGroups */
             $appUserEMailGroups = $queryBuilder->getQuery()->getResult();
@@ -45,6 +47,25 @@ class ParticipantMailGroupRepository extends ServiceEntityRepository
         } catch (Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Všechny varianty téže zprávy (skupiny jedné kategorie) v pořadí, v jakém se o příjemce „ucházejí": vyšší priorita
+     * první, při shodě starší skupina. Časové okno se nefiltruje (rozhodne `isApplicable()` u každé).
+     *
+     * @return list<ParticipantMailGroup>
+     */
+    final public function findVariants(MailCategoryInterface $category): array
+    {
+        $result = $this->createQueryBuilder('variant')
+            ->where('variant.category = :category')
+            ->setParameter('category', $category->getId())
+            ->orderBy('variant.priority', 'DESC')
+            ->addOrderBy('variant.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return array_values(array_filter(is_array($result) ? $result : [], static fn (mixed $group): bool => $group instanceof ParticipantMailGroup));
     }
 
     final public function findAutoMailGroups(?Event $event = null, ?string $type = null): Collection

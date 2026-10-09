@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use OswisOrg\OswisCalendarBundle\Entity\Event\Event;
 use OswisOrg\OswisCalendarBundle\Entity\Participant\Participant;
 use OswisOrg\OswisCalendarBundle\Entity\ParticipantMail\ParticipantMailGroup;
+use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantMailGroupRepository;
 use OswisOrg\OswisCalendarBundle\Repository\Participant\ParticipantRepository;
 
 /**
@@ -28,7 +29,25 @@ final readonly class MailGroupRecipients
     public function __construct(
         private EntityManagerInterface $em,
         private ParticipantRepository $participants,
+        private ParticipantMailGroupRepository $groups,
     ) {
+    }
+
+    /**
+     * Varianta téže zprávy, kterou přihláška dostane: PRVNÍ podle priority, která na ni sedí (pravidla i časové okno) —
+     * stejně jako u systémových mailů ({@see ParticipantMailGroupRepository::findByUser()}). Null = žádná.
+     *
+     * @param list<ParticipantMailGroup> $varianty z {@see ParticipantMailGroupRepository::findVariants()}
+     */
+    public static function viteznaVarianta(array $varianty, Participant $participant): ?ParticipantMailGroup
+    {
+        foreach ($varianty as $varianta) {
+            if ($varianta->isApplicable($participant)) {
+                return $varianta;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -45,6 +64,11 @@ final readonly class MailGroupRecipients
         if (!$event instanceof Event || null === $type) {
             return;
         }
+        // Varianty téže zprávy (jazyk, skupina lidí…): přihláška dostane jen tu PRVNÍ, která na ni sedí. Dřív každá
+        // zapnutá skupina posílala zvlášť a při limitu běhu nebo různých oknech mohl člověk z vyšší varianty dostat
+        // nižší (rozbor kampaní §1.2, 9. 10. 2026). S jedinou skupinou v kategorii se nic nemění.
+        $category = $group->getCategory();
+        $varianty = null !== $category ? $this->groups->findVariants($category) : [];
         $afterId = 0;
         while ([] !== ($ids = $this->participants->findUnmailedParticipantIds($event, $type, max(1, $davka), self::HLOUBKA_AKCI, !$group->isOnlyActive(), $afterId))) {
             $afterId = (int) end($ids);
@@ -53,7 +77,14 @@ final readonly class MailGroupRecipients
             $davkaPrihlasek = $this->participants->findBy(['id' => $ids]);
             usort($davkaPrihlasek, static fn (Participant $a, Participant $b): int => $a->getId() <=> $b->getId());
             foreach ($davkaPrihlasek as $participant) {
-                yield $participant => $group->duvodVyrazeni($participant);
+                $duvod = $group->duvodVyrazeni($participant);
+                if (null === $duvod && count($varianty) > 1) {
+                    $vitez = self::viteznaVarianta($varianty, $participant);
+                    if (null !== $vitez && $vitez->getId() !== $group->getId()) {
+                        $duvod = sprintf('Dostane jinou variantu téže zprávy: „%s"', $vitez->getName() ?? '#'.$vitez->getId());
+                    }
+                }
+                yield $participant => $duvod;
             }
         }
     }

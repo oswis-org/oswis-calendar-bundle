@@ -1071,7 +1071,13 @@ class ParticipantService
         $sent = 0;
         $failed = 0;
         $errors = [];
+        // Strop platí na CELÝ běh, ne na skupinu (dřív 100 × počet zapnutých skupin za minutu — proti smyslu tempa
+        // pro zahřívání IP; rozbor kampaní §8.3, 9. 10. 2026). Skupiny jdou podle priority.
+        $remaining = max(1, $limit);
         foreach ($this->participantMailService->getAutoMailGroups($event, $type) ?? new ArrayCollection() as $group) {
+            if ($remaining <= 0) {
+                break;
+            }
             $groupEvent = $group->getEvent();
             $groupType = $group->getType();
             if (!$groupEvent instanceof Event || null === $groupType) {
@@ -1087,7 +1093,6 @@ class ParticipantService
                 continue;
             }
             // Výběr kandidátů je společný s výpisem příjemců v administraci (MailGroupRecipients).
-            $remaining = max(1, $limit);
             foreach ($this->mailGroupRecipients->kandidati($group, max(1, $limit)) as $participant => $duvod) {
                 if (null !== $duvod || !$group->isApplicableByDate()) {
                     continue;
